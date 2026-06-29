@@ -10,9 +10,10 @@
         <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" @onclick:stopPropagation="true">
             <button type="button" class="bit-dtg-drag-handle"
                     draggable="@(!Editing ? "true" : null)"
+                    disabled="@Editing"
                     @ondragstart="() => Grid.StartRowDrag(Item)"
-                    title="Drag to reorder, or focus and use the arrow keys to move this row"
-                    aria-label="Reorder row. Press Arrow Up or Arrow Down to move this row."
+                    title="@(Editing ? null : "Drag to reorder, or focus and use the arrow keys to move this row")"
+                    aria-label="@(Editing ? null : "Reorder row. Press Arrow Up or Arrow Down to move this row.")"
                     @onkeydown="HandleReorderKeyDown">⠿</button>
         </div>
     }

@@ -317,10 +317,6 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         // to have to re-query immediately
         if (_columns.Count > 0 && mustRefreshData)
         {
-            // Record the mode we're about to refresh under so a later parameter set without a real change
-            // doesn't keep re-detecting a flip. Only set it when we actually refresh, so a mode change that
-            // arrives before the first column collection still triggers the initial load.
-            _lastRefreshedVirtualize = Virtualize;
             return RefreshDataCoreAsync();
         }
 
@@ -435,6 +431,13 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync()
     {
+        // Record the Virtualize mode this refresh runs under so every refresh path keeps the marker
+        // current: the initial column-driven load (via ColumnsFirstCollected), RefreshDataAsync, and the
+        // parameter-change trigger in OnParametersSetAsync all funnel through here. Updating it only in
+        // OnParametersSetAsync would leave it stale after those other paths, so a later parameter set
+        // could wrongly (or never) detect a virtualized/non-virtualized flip.
+        _lastRefreshedVirtualize = Virtualize;
+
         // Move into a "loading" state, cancelling any earlier-but-still-pending load. Do NOT dispose
         // the previous source here: the load that owns it may still be in flight and holding its token
         // (e.g. registered on it), so disposing now could surface an ObjectDisposedException instead of

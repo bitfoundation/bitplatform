@@ -48,12 +48,17 @@ internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<objec
     public new bool Equals(object? x, object? y) => BitDataGridValueComparer.Instance.Compare(x, y) == 0;
 
     // Must stay consistent with Equals: values the comparer treats as equal have to hash alike.
-    // Strings compare case-insensitively, so hash them that way; other values fall back to their own
-    // hash code (where CompareTo == 0 implies equal hash for well-behaved types). Null hashes to 0.
+    // Strings compare case-insensitively, so hash them that way. IComparable values fall back to their
+    // own hash code (where CompareTo == 0 implies an equal hash for well-behaved types). Any other
+    // (non-IComparable) value is ranked equal by Compare only when its ToString() matches - the
+    // comparer's final fallback - so hash it on that same canonical string rather than obj.GetHashCode(),
+    // otherwise two values the comparer calls equal could hash differently and break grouping/lookups.
+    // Null hashes to 0.
     public int GetHashCode(object? obj) => obj switch
     {
         null => 0,
         string s => StringComparer.OrdinalIgnoreCase.GetHashCode(s),
-        _ => obj.GetHashCode()
+        IComparable => obj.GetHashCode(),
+        _ => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ToString() ?? string.Empty)
     };
 }

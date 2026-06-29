@@ -44,8 +44,8 @@ internal static class AsyncQueryExecutorSupplier
             }
 
             // No registered executor supports this queryable. It's useful to detect if the developer is
-            // unaware that they should be using the EF adapter, otherwise they will likely never notice
-            // and simply deploy an inefficient app that blocks threads on each query.
+            // unaware that they should register an IAsyncQueryExecutor, otherwise they will likely never
+            // notice and simply deploy an inefficient app that blocks threads on each query.
             var providerType = queryable.Provider?.GetType();
             if (providerType is not null && IsEntityFrameworkProviderTypeCache.GetOrAdd(providerType, IsEntityFrameworkProviderType))
             {
