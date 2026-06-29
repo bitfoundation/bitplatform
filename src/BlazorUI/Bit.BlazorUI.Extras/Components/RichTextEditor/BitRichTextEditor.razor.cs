@@ -335,6 +335,11 @@ public partial class BitRichTextEditor : BitComponentBase
         {
             _toolbarRovingEnabled = false;
         }
+
+        // Move focus into the slash filter input on the render right after the menu opens so the
+        // menu is keyboard-driven (filter, arrow navigation, Enter to apply) rather than leaving
+        // focus in the editor.
+        await FocusSlashIfPendingAsync();
     }
 
     private async ValueTask OnValueSet()

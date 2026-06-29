@@ -102,12 +102,15 @@
         <div class="bit-rte-slash">
             <input type="text" class="bit-rte-inp" aria-label="@Label("filter-commands", "Filter commands")"
                    placeholder="@Label("filter-commands", "Filter commands…")"
-                   @bind="_slashFilter" @bind:event="oninput"
-                   @onkeydown="@(e => { if (e.Key == "Escape") CloseSlash(); })" />
+                   @ref="_slashInputRef"
+                   value="@_slashFilter" @oninput="OnSlashFilterInput"
+                   @onkeydown="OnSlashKeyDownAsync" />
             <div class="bit-rte-slash-list" aria-label="@Label("filter-commands", "Filter commands")">
+                @{ var _slashItemIndex = 0; }
                 @foreach (var c in FilteredSlash())
                 {
-                    <button type="button" class="bit-rte-slash-item"
+                    var _itemIndex = _slashItemIndex++;
+                    <button type="button" class="bit-rte-slash-item@(_itemIndex == _slashIndex ? " bit-rte-slash-item-sel" : null)"
                             @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
                 }
             </div>

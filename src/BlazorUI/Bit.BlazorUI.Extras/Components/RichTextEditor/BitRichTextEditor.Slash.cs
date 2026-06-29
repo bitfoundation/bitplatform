@@ -6,6 +6,9 @@ public partial class BitRichTextEditor
 {
     private bool _showSlash;
     private string _slashFilter = "";
+    private int _slashIndex;
+    private bool _focusSlashPending;
+    private ElementReference _slashInputRef = default!;
 
     private readonly record struct SlashCommand(string Key, string Label, string Command);
 
@@ -27,7 +30,12 @@ public partial class BitRichTextEditor
     {
         if (ReadOnly) return;
         _slashFilter = "";
+        _slashIndex = 0;
         _showSlash = true;
+        // Move keyboard focus into the filter input once it renders so typing filters the list
+        // (rather than landing in the editor), arrow keys navigate, and Enter applies a command
+        // instead of inserting a newline in the contenteditable surface.
+        _focusSlashPending = true;
         StateHasChanged();
     }
 
@@ -38,10 +46,57 @@ public partial class BitRichTextEditor
         return SlashCommands.Where(c => Label(c.Key, c.Label).Contains(term, StringComparison.OrdinalIgnoreCase));
     }
 
+    // Resets the highlighted item to the top of the (re)filtered list as the user types so the
+    // selection never points past the end of the shrinking result set.
+    private void OnSlashFilterInput(ChangeEventArgs e)
+    {
+        _slashFilter = e.Value?.ToString() ?? "";
+        _slashIndex = 0;
+    }
+
+    // Keyboard navigation for the slash menu: arrows move the highlight, Enter applies the
+    // highlighted command, Escape dismisses the menu. The filter input owns focus while the menu
+    // is open, so these keys are handled here and never reach the editor.
+    private async Task OnSlashKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (_showSlash is false) return;
+
+        var items = FilteredSlash().ToList();
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (items.Count > 0)
+                {
+                    _slashIndex = (_slashIndex + 1) % items.Count;
+                }
+                break;
+
+            case "ArrowUp":
+                if (items.Count > 0)
+                {
+                    _slashIndex = (_slashIndex - 1 + items.Count) % items.Count;
+                }
+                break;
+
+            case "Enter":
+                if (items.Count > 0 && _slashIndex >= 0 && _slashIndex < items.Count)
+                {
+                    await ApplySlashAsync(items[_slashIndex].Command);
+                }
+                break;
+
+            case "Escape":
+                CloseSlash();
+                break;
+        }
+    }
+
     private void CloseSlash()
     {
         _showSlash = false;
         _slashFilter = "";
+        _slashIndex = 0;
     }
 
     private async Task ApplySlashAsync(string command)
@@ -51,6 +106,20 @@ public partial class BitRichTextEditor
         if (ControlsDisabled) return;
         _showSlash = false;
         _slashFilter = "";
+        _slashIndex = 0;
         await _js.BitRichTextEditorApplySlashCommand(_editorRef, command);
+    }
+
+    // Focuses the filter input on the render that follows opening the menu. Called from the main
+    // OnAfterRenderAsync so the slash feature owns its own focus handling.
+    private async Task FocusSlashIfPendingAsync()
+    {
+        if (_focusSlashPending is false) return;
+        _focusSlashPending = false;
+        try
+        {
+            await _slashInputRef.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // circuit gone; nothing to focus
     }
 }

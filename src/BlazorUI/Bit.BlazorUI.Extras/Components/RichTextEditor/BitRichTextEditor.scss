@@ -383,6 +383,10 @@
         background: $clr-bg-sec-hover;
     }
 
+    &.bit-rte-slash-item-sel {
+        background: $clr-bg-sec-hover;
+    }
+
     &:focus-visible {
         outline: spacing(0.25) solid $clr-pri;
         outline-offset: spacing(0.125);
