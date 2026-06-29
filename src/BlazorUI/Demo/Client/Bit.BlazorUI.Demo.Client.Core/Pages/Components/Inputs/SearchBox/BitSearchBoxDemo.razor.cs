@@ -58,13 +58,6 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The default value of the text in the search box, in the case of an uncontrolled component.",
-        },
-        new()
-        {
             Name = "DisableAnimation",
             Type = "bool",
             DefaultValue = "false",

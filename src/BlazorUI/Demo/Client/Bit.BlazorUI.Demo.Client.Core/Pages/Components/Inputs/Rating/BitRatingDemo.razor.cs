@@ -29,13 +29,6 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "double?",
-            DefaultValue = "null",
-            Description = "Default rating. Must be a number between min and max. Only provide this if the Rating is an uncontrolled component; otherwise, use the rating property.",
-        },
-        new()
-        {
             Name = "GetAriaLabel",
             Type = "Func<double, double, string>?",
             DefaultValue = "null",

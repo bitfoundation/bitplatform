@@ -165,4 +165,24 @@ public class BitOtpInputTests : BunitTestContext
         com.FindAll(".bit-otp-inp")[1].FocusOut();
         Assert.IsFalse(com.FindAll(".bit-otp-inp")[1].ClassList.Contains("custom-focused"));
     }
+
+    [TestMethod]
+    public void BitOtpInputShouldRespectDefaultValue()
+    {
+        var defaultValue = "1234";
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        Assert.AreEqual(defaultValue, com.Instance.Value);
+
+        var inputs = com.FindAll(".bit-otp-inp");
+        Assert.AreEqual("1", inputs[0].GetAttribute("value"));
+        Assert.AreEqual("2", inputs[1].GetAttribute("value"));
+        Assert.AreEqual("3", inputs[2].GetAttribute("value"));
+        Assert.AreEqual("4", inputs[3].GetAttribute("value"));
+    }
 }

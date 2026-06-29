@@ -71,13 +71,6 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.",
-        },
-        new()
-        {
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",

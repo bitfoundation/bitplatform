@@ -12,6 +12,7 @@ namespace Bit.BlazorUI;
 public abstract class BitInputBase<TValue> : BitComponentBase
 {
     protected bool ValueHasBeenSet;
+    protected bool DefaultValueHasBeenSet;
 
 
 
@@ -44,6 +45,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
 
+
+    /// <summary>
+    /// The default value of the input to be used in uncontrolled mode (i.e. when the Value is not bound),
+    /// typically used alongside the <see cref="OnChange"/> callback.
+    /// </summary>
+    [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
     /// Gets or sets the display name for this field.
@@ -138,6 +145,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     public override Task SetParametersAsync(ParameterView parameters)
     {
         ValueHasBeenSet = false;
+        DefaultValueHasBeenSet = false;
 
         var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
 
@@ -147,6 +155,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             {
                 case nameof(NoValidate):
                     NoValidate = (bool)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(DefaultValue):
+                    DefaultValueHasBeenSet = true;
+                    DefaultValue = (TValue?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -317,9 +331,21 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
     protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
 
+    /// <summary>
+    /// Initializes the value of the input from the <see cref="DefaultValue"/> parameter when the
+    /// <see cref="Value"/> is not bound (uncontrolled mode).
+    /// </summary>
+    protected void SetDefaultValue()
+    {
+        if (ValueHasBeenSet || DefaultValueHasBeenSet is false) return;
+
+        Value = DefaultValue;
+    }
+
+
     protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass = false)
     {
-        if (bypass && IsEnabled is false) return;
+        if (IsEnabled is false) return;
 
         _incomingValueBeforeParsing = value;
         _parsingValidationMessages?.Clear();

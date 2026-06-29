@@ -25,12 +25,6 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public BitRatingClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Default value. Must be a number between _min and max. 
-    /// Only provide this if the CurrentValue is an uncontrolled component; otherwise, use the Value property.
-    /// </summary>
-    [Parameter] public double? DefaultValue { get; set; }
-
-    /// <summary>
     /// Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.
     /// </summary>
     [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
@@ -97,10 +91,7 @@ public partial class BitRating : BitInputBase<double>
 
     protected override async Task OnInitializedAsync()
     {
-        if (ValueHasBeenSet is false && DefaultValue.HasValue)
-        {
-            Value = DefaultValue.Value;
-        }
+        SetDefaultValue();
 
         await base.OnInitializedAsync();
     }
