@@ -372,6 +372,14 @@ namespace BitBlazorUI {
                 if (policy && policy.allowedTags && !policy.allowedTags.includes(tag)) {
                     el.replaceWith(...Array.from(el.childNodes)); return;
                 }
+                // When the active policy supplies an attribute contract, merge its per-tag and
+                // global ('*') allowlists so the media path defers to the policy too. This stops
+                // media tags (e.g. iframe) from retaining hard-coded attributes the policy never
+                // allowed; with no policy attribute map the media allowlist alone applies.
+                const policyAttrs = (policy && policy.allowedAttributes) || null;
+                const policyAllowed: string[] | null = policyAttrs
+                    ? [...(policyAttrs[tag] || []), ...(policyAttrs['*'] || [])]
+                    : null;
                 for (const attr of Array.from(el.attributes)) {
                     const name = attr.name.toLowerCase();
                     if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
@@ -379,7 +387,12 @@ namespace BitBlazorUI {
                     // attributes; drop anything else regardless of which tag carries it.
                     const allowed = allowedAttrs[tag];
                     const permitted = allowed ? allowed.has(name) : globalAttrs.has(name);
-                    if (!permitted) { el.removeAttribute(attr.name); continue; }
+                    // An attribute must clear both the media allowlist and the active policy's
+                    // attribute contract (when present) so only attributes explicitly permitted
+                    // by the active sanitization policy survive.
+                    if (!permitted || (policyAllowed && !policyAllowed.includes(name))) {
+                        el.removeAttribute(attr.name); continue;
+                    }
                     if (name === 'src') {
                         const val = (attr.value || '').trim();
                         if (tag === 'iframe') {

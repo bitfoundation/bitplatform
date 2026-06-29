@@ -5,7 +5,9 @@ public partial class BitRichTextEditor
 {
     private async Task InsertTableAsync(int rows, int cols)
     {
-        if (ReadOnly) return;
+        // Guard on ControlsDisabled (ReadOnly || source view) so table insertion can't mutate
+        // the hidden editor DOM while source view is active, matching the other command flows.
+        if (ControlsDisabled) return;
         if (rows < 1 || rows > 50 || cols < 1 || cols > 50)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-table",
@@ -17,7 +19,7 @@ public partial class BitRichTextEditor
 
     private async Task TableOpAsync(string op)
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorTableOp(_editorRef, op);
     }
 }

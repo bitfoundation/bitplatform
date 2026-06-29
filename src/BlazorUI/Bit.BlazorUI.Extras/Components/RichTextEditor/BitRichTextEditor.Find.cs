@@ -43,9 +43,14 @@ public partial class BitRichTextEditor
             return;
         }
         var count = await _js.BitRichTextEditorFind(_editorRef, _findTerm, _findCaseSensitive);
-        _findCount = count == 0
-            ? Label("no-matches", "No matches")
-            : $"{count} {(count == 1 ? Label("match", "match") : Label("matches", "matches"))}";
+        // Use full localized templates per case so translators control word order and
+        // pluralization rather than the hard-coded "{count} {match/matches}" composition.
+        _findCount = count switch
+        {
+            0 => Label("no-matches", "No matches"),
+            1 => string.Format(Label("match-count", "{0} match"), count),
+            _ => string.Format(Label("matches-count", "{0} matches"), count)
+        };
     }
 
     private async Task ReplaceCurrentAsync()
@@ -71,6 +76,6 @@ public partial class BitRichTextEditor
             return;
         }
         var n = await _js.BitRichTextEditorReplaceAll(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
-        _findCount = $"{n} {Label("replaced", "replaced")}";
+        _findCount = string.Format(Label("replaced-count", "{0} replaced"), n);
     }
 }
