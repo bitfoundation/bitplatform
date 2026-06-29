@@ -34,6 +34,7 @@ public partial class BitRichTextEditor
         if (string.IsNullOrEmpty(_findTerm))
         {
             _findCount = "";
+            ClearInlineError();
             await _js.BitRichTextEditorClearFind(_editorRef);
             return;
         }

@@ -497,7 +497,7 @@ private string focusState = ""blurred"";";
 <BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended"" />";
 
     private readonly string example11RazorCode = @"
-<BitRichTextEditor Value=""linkHtml"" ValueChanged=""HandleLinkHtmlChanged""
+<BitRichTextEditor Value=""@linkHtml"" ValueChanged=""HandleLinkHtmlChanged""
                    Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link""
                    OnError='e => linkError = $""{e.Code}: {e.Message}""' />";
     private readonly string example11CsharpCode = @"

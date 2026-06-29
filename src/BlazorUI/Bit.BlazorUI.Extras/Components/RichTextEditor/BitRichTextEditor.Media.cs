@@ -53,6 +53,7 @@ public partial class BitRichTextEditor
         await _js.BitRichTextEditorInsertImageUrl(_editorRef, url);
         _showImageInput = false;
         _imageUrl = "";
+        ClearInlineError();
     }
 
     // Known image MIME types accepted for data: URLs, mirroring the bridge's IMAGE_MIME set.
