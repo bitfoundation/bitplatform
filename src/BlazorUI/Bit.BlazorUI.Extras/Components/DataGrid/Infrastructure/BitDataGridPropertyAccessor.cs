@@ -180,8 +180,11 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         // Setter (only for a simple, writable, single-level-or-nested property)
         Action<TItem, object?>? setter = null;
         // A path crossing a struct intermediate cannot be written back through the value-type copy, so
-        // leave it read-only rather than emit a setter that compiles but silently drops writes.
-        var canWrite = lastProp is { CanWrite: true } && !crossesValueTypeIntermediate;
+        // leave it read-only rather than emit a setter that compiles but silently drops writes. The same
+        // applies when the row root TItem is itself a value type: SetValue(TItem item, ...) receives a
+        // by-value copy, so any assignment would mutate that copy and never reach the caller's row. Keep
+        // struct-root accessors read-only unless the write path is changed to use by-reference updates.
+        var canWrite = lastProp is { CanWrite: true } && !crossesValueTypeIntermediate && !typeof(TItem).IsValueType;
         if (canWrite)
         {
             var valueParam = Expression.Parameter(typeof(object), "v");

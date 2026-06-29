@@ -87,5 +87,8 @@ public struct BitDataGridItemsProviderResult<TGridItem>
 public static class BitDataGridItemsProviderResult
 {
     /// <inheritdoc cref="BitQuickGridItemsProviderResult.From{TGridItem}(ICollection{TGridItem}, int)"/>
-    public static BitQuickGridItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount) => new(items, totalItemCount);
+    // Returns the old alias type so callers still assigning to BitDataGridItemsProviderResult<TGridItem>
+    // keep compiling; the implicit conversion above bridges to BitQuickGridItemsProviderResult<TGridItem>
+    // wherever the grid's ItemsProvider expects the renamed type.
+    public static BitDataGridItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount) => new(items, totalItemCount);
 }

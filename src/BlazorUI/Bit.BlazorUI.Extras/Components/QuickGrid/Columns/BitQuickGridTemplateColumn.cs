@@ -28,3 +28,15 @@ public class BitQuickGridTemplateColumn<TGridItem> : BitQuickGridColumnBase<TGri
     protected override bool IsSortableByDefault()
         => SortBy is not null;
 }
+
+/// <summary>
+/// Backward-compatible alias for <see cref="BitQuickGridTemplateColumn{TGridItem}"/>, kept so existing
+/// Razor markup that referenced the old <c>BitDataGridTemplateColumn&lt;TGridItem&gt;</c> component keeps
+/// compiling. It inherits the renamed column, so it behaves identically while remaining discoverable
+/// alongside <see cref="BitQuickGridTemplateColumn{TGridItem}"/> during the migration window.
+/// </summary>
+/// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
+[Obsolete("BitDataGridTemplateColumn<TGridItem> has been renamed to BitQuickGridTemplateColumn<TGridItem>. Use BitQuickGridTemplateColumn<TGridItem> instead.")]
+public class BitDataGridTemplateColumn<TGridItem> : BitQuickGridTemplateColumn<TGridItem>
+{
+}

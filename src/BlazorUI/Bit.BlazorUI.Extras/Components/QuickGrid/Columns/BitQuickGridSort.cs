@@ -180,20 +180,41 @@ public class BitQuickGridSort<TGridItem>
 }
 
 /// <summary>
-/// Backward-compatible alias for <see cref="BitQuickGridSort{TGridItem}"/>, kept so existing
-/// <c>SortBy</c> declarations that referenced the old <c>BitDataGridSort&lt;TGridItem&gt;</c> name keep
-/// compiling. The factory helpers forward to <see cref="BitQuickGridSort{TGridItem}"/>, whose instances
-/// are what the grid's sort APIs now expect.
+/// Backward-compatible alias for <see cref="BitQuickGridSort{TGridItem}"/>, kept so existing code that
+/// stored, returned or accepted the old <c>BitDataGridSort&lt;TGridItem&gt;</c> type keeps compiling. It
+/// inherits the renamed type (so instances are accepted anywhere a <see cref="BitQuickGridSort{TGridItem}"/>
+/// is expected) and its factory/chaining helpers return the old type to preserve the original API shape.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 [Obsolete("BitDataGridSort<TGridItem> has been renamed to BitQuickGridSort<TGridItem>. Use BitQuickGridSort<TGridItem> instead.")]
-public static class BitDataGridSort<TGridItem>
+public class BitDataGridSort<TGridItem> : BitQuickGridSort<TGridItem>
 {
+    internal BitDataGridSort(Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> first, (LambdaExpression, bool) firstExpression)
+        : base(first, firstExpression)
+    {
+    }
+
     /// <inheritdoc cref="BitQuickGridSort{TGridItem}.ByAscending{U}(Expression{Func{TGridItem, U}})"/>
-    public static BitQuickGridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
-        => BitQuickGridSort<TGridItem>.ByAscending(expression);
+    public static new BitDataGridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
+        => new BitDataGridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
+            (expression, true));
 
     /// <inheritdoc cref="BitQuickGridSort{TGridItem}.ByDescending{U}(Expression{Func{TGridItem, U}})"/>
-    public static BitQuickGridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
-        => BitQuickGridSort<TGridItem>.ByDescending(expression);
+    public static new BitDataGridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
+        => new BitDataGridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
+            (expression, false));
+
+    /// <inheritdoc cref="BitQuickGridSort{TGridItem}.ThenAscending{U}(Expression{Func{TGridItem, U}})"/>
+    public new BitDataGridSort<TGridItem> ThenAscending<U>(Expression<Func<TGridItem, U>> expression)
+    {
+        base.ThenAscending(expression);
+        return this;
+    }
+
+    /// <inheritdoc cref="BitQuickGridSort{TGridItem}.ThenDescending{U}(Expression{Func{TGridItem, U}})"/>
+    public new BitDataGridSort<TGridItem> ThenDescending<U>(Expression<Func<TGridItem, U>> expression)
+    {
+        base.ThenDescending(expression);
+        return this;
+    }
 }
