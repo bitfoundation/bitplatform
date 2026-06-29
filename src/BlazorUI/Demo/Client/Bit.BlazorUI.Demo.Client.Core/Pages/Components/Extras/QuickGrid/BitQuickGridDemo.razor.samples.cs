@@ -411,8 +411,10 @@ protected override async Task OnInitializedAsync()
         try
         {
             // Strip characters that would break the openFDA Lucene query syntax (the firm name is
-            // wrapped in quotes), namely double quotes and backslashes, before interpolating it.
-            var firmFilter = _virtualSampleNameFilter?.Replace(""\\"", string.Empty).Replace(""\"""""", string.Empty) ?? string.Empty;
+            // wrapped in quotes), namely double quotes and backslashes, before interpolating it. Trim
+            // surrounding whitespace too, since the quoted phrase is matched exactly and stray spaces
+            // would prevent otherwise-valid firm names from matching.
+            var firmFilter = _virtualSampleNameFilter?.Replace(""\\"", string.Empty).Replace(""\"""""", string.Empty).Trim() ?? string.Empty;
             var query = new Dictionary<string, object?>
             {
                 { ""skip"", req.StartIndex },

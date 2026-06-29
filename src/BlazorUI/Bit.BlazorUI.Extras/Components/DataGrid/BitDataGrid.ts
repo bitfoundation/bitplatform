@@ -93,4 +93,41 @@ namespace BitBlazorUI {
     }
 
     installReorderKeyGuard();
+
+    // A focused, navigable data cell owns the arrow / page / home / end / enter / escape / F2 keys
+    // (cell-to-cell movement and the edit lifecycle). Their browser defaults -- scrolling the
+    // page/grid, submitting a surrounding form, resetting an input -- must be cancelled *before* the
+    // event reaches Blazor's .NET handler. As with the reorder guard, @onkeydown:preventDefault can't
+    // do this (it's evaluated at render time, can't know the upcoming key, and lags one keystroke), so
+    // a single capture-phase listener decides per-key up front. Tab and ordinary typing are left
+    // untouched so focus can still leave the grid and editors keep receiving characters.
+    const cellNavKeys = new Set([
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'Escape', 'F2'
+    ]);
+    let cellKeyGuardInstalled = false;
+    function installCellKeyGuard() {
+        if (cellKeyGuardInstalled || typeof document === 'undefined') return;
+        cellKeyGuardInstalled = true;
+        document.addEventListener('keydown', (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            if (!target) return;
+
+            // The navigable cell is the focused element itself (a div.bit-dtg-cell with a tabindex).
+            // Suppress the grid-owned keys here so arrow/page/home/end never scroll the viewport.
+            if (target.classList?.contains('bit-dtg-cell') && target.hasAttribute('tabindex')) {
+                if (cellNavKeys.has(e.key)) e.preventDefault();
+                return;
+            }
+
+            // While inline-editing the focus sits on the editor input inside the row, so only the edit
+            // lifecycle keys (Enter commits, Escape cancels) are grid-owned; cancel their native
+            // actions but leave caret movement and typing to the input.
+            if ((e.key === 'Enter' || e.key === 'Escape') &&
+                target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing')) {
+                e.preventDefault();
+            }
+        }, { capture: true });
+    }
+    installCellKeyGuard();
 }

@@ -33,6 +33,7 @@
                 <BitQuickGridPropertyColumn Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitQuickGridSortDirection.Ascending">
                     <ColumnOptions>
                         <BitSearchBox @bind-Value="typicalSampleNameFilter1"
+                                      AriaLabel="Search by name"
                                       FixedIcon
                                       Immediate DebounceTime="300"
                                       Placeholder="Search..."
@@ -54,6 +55,7 @@
                         <BitQuickGridPropertyColumn Property="@(c => c.Name)" IsDefaultSort="BitQuickGridSortDirection.Ascending" Sortable="true" Class="wide">
                             <ColumnOptions>
                                 <BitSearchBox @bind-Value="typicalSampleNameFilter2"
+                                              AriaLabel="Search by name"
                                               FixedIcon
                                               Immediate DebounceTime="300"
                                               Placeholder="Search on Name"
@@ -67,8 +69,8 @@
                         <BitQuickGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
                         <BitQuickGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
                         <BitQuickGridTemplateColumn Title="Action" Align="BitQuickGridAlign.Center">
-                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit" Title="Edit" />
-                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Delete" Title="Delete" />
+                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit" Title="Edit" AriaLabel="Edit" />
+                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Delete" Title="Delete" AriaLabel="Delete" />
                         </BitQuickGridTemplateColumn>
                     </BitQuickGrid>
                 </div>

@@ -158,6 +158,7 @@
 .bit-dtg-row.bit-dtg-editing .bit-dtg-cell,
 .bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-editing:nth-child(even) .bit-dtg-cell,
 .bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-editing:hover .bit-dtg-cell {
+    color: var(--bit-clr-fg-pri);
     background: var(--bit-clr-wrn-light);
 }
 

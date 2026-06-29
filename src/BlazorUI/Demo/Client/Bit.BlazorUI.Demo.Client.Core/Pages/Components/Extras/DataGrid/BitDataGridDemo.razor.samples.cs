@@ -382,6 +382,10 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
         var filtered = query.ToList();
         var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
 
+        // A superseded request can finish filtering/sorting/paging after a newer one started; bail
+        // out before returning so the grid never receives stale rows for a cancelled load.
+        request.CancellationToken.ThrowIfCancellationRequested();
+
         return new BitDataGridReadResult<Product>(items, filtered.Count);
     }
     finally
@@ -477,6 +481,10 @@ private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadReque
     if (ordered is not null) query = ordered;
 
     var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
+
+    // Drop a superseded batch before returning so a cancelled load never yields stale rows.
+    request.CancellationToken.ThrowIfCancellationRequested();
+
     // Pass 0 as the total count to signal there is no known total (infinite scrolling).
     return new BitDataGridReadResult<Product>(batch, 0);
 }" + ProductModelCode + SampleDataCode;

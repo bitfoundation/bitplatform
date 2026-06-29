@@ -310,7 +310,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
 
         var mustRefreshData = dataSourceHasChanged
             || (_lastRefreshedVirtualize != Virtualize)
-            || (Pagination?.GetHashCode() != _lastRefreshedPaginationStateHash);
+            || (ComputePaginationStateHash() != _lastRefreshedPaginationStateHash);
 
         // We don't want to trigger the first data load until we've collected the initial set of columns,
         // because they might perform some action like setting the default sort order, so it would be wasteful
@@ -377,6 +377,13 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         foreach (var col in _columns) hash.Add(col);
         return hash.ToHashCode();
     }
+
+    // Only the requested slice inputs (page index + page size) should trigger a re-query. The pagination
+    // state's own GetHashCode also folds in TotalItemCount, which the grid mutates after every successful
+    // load, so using it here would make a completed fetch look like a fresh pagination change and kick off
+    // an immediate redundant second query.
+    private int? ComputePaginationStateHash()
+        => Pagination is null ? null : HashCode.Combine(Pagination.CurrentPageIndex, Pagination.ItemsPerPage);
 
     private async Task StopJsEventsAsync()
     {
@@ -483,7 +490,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         else
         {
             // If we're not using Virtualize, we build and execute a request against the items provider directly
-            _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
+            _lastRefreshedPaginationStateHash = ComputePaginationStateHash();
             var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
             var request = new BitQuickGridItemsProviderRequest<TGridItem>(
                 startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
@@ -519,7 +526,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<(int, TGridItem)>> ProvideVirtualizedItems(ItemsProviderRequest request)
     {
-        _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
+        _lastRefreshedPaginationStateHash = ComputePaginationStateHash();
 
         // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
         // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount

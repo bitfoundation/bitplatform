@@ -115,7 +115,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     internal string DisplayTitle => Title ?? Humanize(Field) ?? Id;
 
-    internal bool HasField => !string.IsNullOrEmpty(Field);
+    internal bool HasField => !string.IsNullOrWhiteSpace(Field);
 
     internal BitDataGridColumnDataType EffectiveDataType
     {
@@ -234,7 +234,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     private static string? Humanize(string? field)
     {
-        if (string.IsNullOrEmpty(field)) return null;
+        if (string.IsNullOrWhiteSpace(field)) return null;
         var name = field.Contains('.') ? field[(field.LastIndexOf('.') + 1)..] : field;
         var sb = new System.Text.StringBuilder(name.Length + 4);
         for (int i = 0; i < name.Length; i++)
