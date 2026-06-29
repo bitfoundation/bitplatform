@@ -34,10 +34,12 @@ public static class WebApplicationExtensions
         if (app.Environment.IsDevelopment())
         {
             // This endpoint returns more details and must be protected by authentication and authorization in production
+            // Replace outer `IsDevelopment` check with a more robust check for production readiness before exposing this endpoint publicly
             healthChecks.MapHealthChecks("/healthz", new HealthCheckOptions
             {
                 Predicate = _ => true,
                 AllowCachingResponses = true,
+                // The following `IsDevelopment` check must remain in place to avoid exposing sensitive information in production
                 ResponseWriter = app.Environment.IsDevelopment() ? UIResponseWriter.WriteHealthCheckUIResponse : UIResponseWriter.WriteHealthCheckUIResponseNoExceptionDetails
             });
         }
