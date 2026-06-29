@@ -53,6 +53,9 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // things have changed, and to discard earlier load attempts that were superseded.
     private int? _lastRefreshedPaginationStateHash;
     private object? _lastAssignedItemsOrProvider;
+    // Tracks the Virtualize value the data was last refreshed under, so a flip between virtualized and
+    // non-virtualized rendering forces a re-query (otherwise the stale non-virtualized view would linger).
+    private bool? _lastRefreshedVirtualize;
     private CancellationTokenSource? _pendingDataLoadCancellationTokenSource;
     // Hash of the collected column set the resize handles were last bound against, so we only rebind
     // when the columns actually change rather than on every render.
@@ -306,12 +309,22 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         }
 
         var mustRefreshData = dataSourceHasChanged
+            || (_lastRefreshedVirtualize != Virtualize)
             || (Pagination?.GetHashCode() != _lastRefreshedPaginationStateHash);
 
         // We don't want to trigger the first data load until we've collected the initial set of columns,
         // because they might perform some action like setting the default sort order, so it would be wasteful
         // to have to re-query immediately
-        return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync() : Task.CompletedTask;
+        if (_columns.Count > 0 && mustRefreshData)
+        {
+            // Record the mode we're about to refresh under so a later parameter set without a real change
+            // doesn't keep re-detecting a flip. Only set it when we actually refresh, so a mode change that
+            // arrives before the first column collection still triggers the initial load.
+            _lastRefreshedVirtualize = Virtualize;
+            return RefreshDataCoreAsync();
+        }
+
+        return Task.CompletedTask;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

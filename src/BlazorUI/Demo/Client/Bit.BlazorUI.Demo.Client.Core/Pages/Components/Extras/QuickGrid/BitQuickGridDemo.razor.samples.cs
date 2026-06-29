@@ -738,9 +738,12 @@ protected override async Task OnInitializedAsync()
                 { ""$skip"", req.StartIndex }
             };
 
-            if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
+            if (string.IsNullOrWhiteSpace(_odataSampleNameFilter) is false)
             {
-                query.Add(""$filter"", $""contains(Name,'{_odataSampleNameFilter.Replace(""'"", ""''"")}')"");
+                // Use the trimmed value so a whitespace-only entry isn't treated as a real search
+                // term, while still escaping apostrophes to keep the OData string literal valid.
+                var escapedFilter = _odataSampleNameFilter.Trim().Replace(""'"", ""''"");
+                query.Add(""$filter"", $""contains(Name,'{escapedFilter}')"");
             }
 
             if (req.GetSortByProperties().Any())

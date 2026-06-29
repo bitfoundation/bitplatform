@@ -146,8 +146,11 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         if (HasField)
             Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
 
-        Grid.AddColumn(this);
-        _registeredId = Id;
+        // Only record a registered id when the grid actually accepted this column. A duplicate-id
+        // column is skipped by AddColumn (returns false); treating it as registered would let
+        // OnParametersSet later re-key a column that was never in the grid, and would suppress the
+        // retry below once the id becomes unique.
+        _registeredId = Grid.AddColumn(this) ? Id : null;
         SnapshotSemanticParameters();
     }
 
@@ -157,6 +160,19 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
             Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
         else
             Accessor = null;
+
+        // This column was skipped during initial registration because its id collided with another
+        // column (AddColumn returned false, leaving _registeredId null). Now that ColumnId/Field may
+        // have changed to a unique value, retry the registration so it can finally join the grid.
+        if (_registeredId is null)
+        {
+            if (Grid?.AddColumn(this) == true)
+            {
+                _registeredId = Id;
+                SnapshotSemanticParameters();
+            }
+            return;
+        }
 
         // ColumnId/Field are mutable parameters, so the resolved Id may have changed since the column
         // was registered. Re-register under the new id (migrating any active descriptors) so grid

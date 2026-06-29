@@ -81,7 +81,7 @@ public static class BitDataGridDataProcessor
             return result;
 
         var grouped = source
-            .GroupBy(item => column.Accessor!.GetValue(item))
+            .GroupBy(item => column.Accessor!.GetValue(item), BitDataGridValueEqualityComparer.Instance)
             .Select(g =>
             {
                 var keyText = column.FormatValue(g.Key);
@@ -308,15 +308,33 @@ public static class BitDataGridDataProcessor
         return false;
     }
 
-    private static object? CoerceToValueType(object? sample, object filterValue)    {
+    // Coerces a filter operand to the row value's runtime type before comparison. This mirrors the
+    // type-specific parsing in BitDataGridPropertyAccessor.TryConvertValue (Guid/DateOnly/TimeOnly/
+    // DateTimeOffset and enums are not handled by Convert.ChangeType), so a filter value entered as a
+    // string is converted to the property's real type the same way edits are — keeping filtering,
+    // sorting and editing consistent. Parsing uses the invariant culture to match the ISO/invariant
+    // strings the editors emit. On failure the original value is returned so the comparer can still
+    // fall back to its string-based ordering.
+    private static object? CoerceToValueType(object? sample, object filterValue)
+    {
         if (sample is null) return filterValue;
         var target = Nullable.GetUnderlyingType(sample.GetType()) ?? sample.GetType();
         if (target.IsInstanceOfType(filterValue)) return filterValue;
         try
         {
             if (target.IsEnum)
-                return filterValue is string s ? Enum.Parse(target, s, true) : Enum.ToObject(target, filterValue);
-            return Convert.ChangeType(filterValue, target, CultureInfo.CurrentCulture);
+                return filterValue is string es ? Enum.Parse(target, es, true) : Enum.ToObject(target, filterValue);
+            if (target == typeof(Guid))
+                return filterValue is Guid g ? g : Guid.Parse(filterValue.ToString()!);
+            if (target == typeof(DateOnly))
+                return filterValue is DateOnly d ? d : DateOnly.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
+            if (target == typeof(TimeOnly))
+                return filterValue is TimeOnly t ? t : TimeOnly.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
+            if (target == typeof(DateTimeOffset))
+                // DateTimeOffset is not IConvertible, so Convert.ChangeType would throw for it; parse it
+                // explicitly like the property accessor does.
+                return filterValue is DateTimeOffset dto ? dto : DateTimeOffset.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
+            return Convert.ChangeType(filterValue, target, CultureInfo.InvariantCulture);
         }
         catch { return filterValue; }
     }

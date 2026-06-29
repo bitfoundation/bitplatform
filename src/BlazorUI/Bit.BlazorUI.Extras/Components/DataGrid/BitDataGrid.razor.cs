@@ -247,15 +247,15 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal TItem? PendingNewItem => _pendingNew;
 
     // ------------------------------------------------- Column registration
-    internal void AddColumn(BitDataGridColumn<TItem> column)
+    internal bool AddColumn(BitDataGridColumn<TItem> column)
     {
-        if (_columns.Contains(column)) return;
+        if (_columns.Contains(column)) return true;
 
         // Reject a second column registering under an id that is already taken. Overwriting the
         // registry entry while both columns remain in _columns would desync the two collections, so
         // sort/filter/group/footer lookups (which resolve a column by id) could resolve to the wrong
         // instance. Skip the duplicate instead of silently shadowing the existing column.
-        if (_columnsById.ContainsKey(column.Id)) return;
+        if (_columnsById.ContainsKey(column.Id)) return false;
 
         _columns.Add(column);
         _columnsById[column.Id] = column;
@@ -274,6 +274,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             InvokeAsync(RefreshAsync);
         }
+
+        return true;
     }
 
     /// <summary>

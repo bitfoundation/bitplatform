@@ -8,6 +8,7 @@
            silently collapse null into false. Use a select whose empty option round-trips back to null
            (via SetNullable), while still parsing "true"/"false" through the accessor like Set does. *@
         <select class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
+                aria-label="@EditorLabel"
                 @onchange="e => SetNullable(e.Value)">
             <option value="">@string.Empty</option>
             <option value="true">True</option>
@@ -18,35 +19,41 @@
     case BitDataGridColumnDataType.Boolean:
         <input type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
                checked="@(GetBool())"
+               aria-label="@EditorLabel"
                @onchange="e => Set(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.Number:
         <input type="number" class="bit-dtg-editor" step="any"
                value="@(GetNumberString())"
+               aria-label="@EditorLabel"
                @oninput="e => SetNullable(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.Date:
         <input type="date" class="bit-dtg-editor"
                value="@(GetDate())"
+               aria-label="@EditorLabel"
                @onchange="e => SetNullable(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.DateTime:
         <input type="datetime-local" class="bit-dtg-editor"
                value="@(GetDateTime())"
+               aria-label="@EditorLabel"
                @onchange="e => SetDateTime(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.DateTimeOffset:
         <input type="datetime-local" class="bit-dtg-editor"
                value="@(GetDateTime())"
+               aria-label="@EditorLabel"
                @onchange="e => SetDateTimeOffset(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
         <select class="bit-dtg-editor" value="@(GetString())"
+                aria-label="@EditorLabel"
                 @onchange="e => Set(string.IsNullOrEmpty(e.Value as string) ? null : e.Value)">
             @if (IsNullableEnum || Value is null)
             {
@@ -62,6 +69,7 @@
     default:
         <input type="text" class="bit-dtg-editor"
                value="@(GetString())"
+               aria-label="@EditorLabel"
                @oninput="e => Set(e.Value)" />
         break;
 }
@@ -73,6 +81,11 @@
 
     private object? Value => Column.GetValue(Item);
     private string GetString() => Value?.ToString() ?? string.Empty;
+
+    // Each built-in editor renders a bare control with no visible <label>, so screen readers would
+    // announce it without any field context. Expose the column's title as the accessible name so the
+    // focused editor announces which column is being edited.
+    private string EditorLabel => Column.DisplayTitle;
 
     // HTML <input type="number"> always expects a period as the decimal separator regardless of the
     // browser locale, so format numeric values with the invariant culture to avoid emitting a comma

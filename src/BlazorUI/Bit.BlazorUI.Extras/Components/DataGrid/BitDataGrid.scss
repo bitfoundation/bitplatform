@@ -371,6 +371,15 @@ button.bit-dtg-htext {
     z-index: 1;
 }
 
+/* A selected cell/row paints its background with the primary color, so a primary-colored focus
+   ring would blend in and make keyboard focus invisible. Switch the ring to the selected
+   foreground color (which is guaranteed to contrast with the selected background) so the focused
+   cell stays clearly visible even while selected. */
+.bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus,
+.bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus-visible {
+    outline-color: var(--bit-clr-pri-text);
+}
+
 /* ---------------------------------------------------------- Footer */
 .bit-dtg-footer {
     position: sticky;

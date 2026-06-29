@@ -35,3 +35,25 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         return string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 }
+
+/// <summary>
+/// Equality comparer that mirrors <see cref="BitDataGridValueComparer"/>'s ordering semantics
+/// (two values are equal when the comparer ranks them as equal), so grouping keys collapse the same
+/// way sorting and Equals-based filtering treat them — e.g. strings group case-insensitively.
+/// </summary>
+internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<object?>
+{
+    public static readonly BitDataGridValueEqualityComparer Instance = new();
+
+    public new bool Equals(object? x, object? y) => BitDataGridValueComparer.Instance.Compare(x, y) == 0;
+
+    // Must stay consistent with Equals: values the comparer treats as equal have to hash alike.
+    // Strings compare case-insensitively, so hash them that way; other values fall back to their own
+    // hash code (where CompareTo == 0 implies equal hash for well-behaved types). Null hashes to 0.
+    public int GetHashCode(object? obj) => obj switch
+    {
+        null => 0,
+        string s => StringComparer.OrdinalIgnoreCase.GetHashCode(s),
+        _ => obj.GetHashCode()
+    };
+}
