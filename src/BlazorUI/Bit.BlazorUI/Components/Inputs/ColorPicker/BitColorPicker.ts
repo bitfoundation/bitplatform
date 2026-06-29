@@ -2,16 +2,28 @@
     export class ColorPicker {
         private static _bitControllers: BitController[] = [];
 
-        public static setup(dotnetObj: DotNetObject, pointerUpHandler: string, pointerMoveHandler: string): string {
+        public static setup(dotnetObj: DotNetObject, saturationPicker: HTMLElement, pointerUpHandler: string, pointerMoveHandler: string): string {
             const bitController = new BitController();
             bitController.dotnetObj = dotnetObj;
 
-            document.addEventListener('pointerup', e => {
-                dotnetObj.invokeMethodAsync(pointerUpHandler, ColorPicker.extractArgs(e as MouseEvent));
+            // Tracks whether a drag started on the saturation picker. The document-level
+            // pointermove listener only invokes .NET while a drag is active, which avoids
+            // flooding the JS-interop with a call for every pointer move on the page.
+            let dragging = false;
+
+            saturationPicker?.addEventListener('pointerdown', () => {
+                dragging = true;
             }, { signal: bitController.controller.signal });
 
             document.addEventListener('pointermove', e => {
+                if (dragging === false) return;
                 dotnetObj.invokeMethodAsync(pointerMoveHandler, ColorPicker.extractArgs(e as MouseEvent));
+            }, { signal: bitController.controller.signal });
+
+            document.addEventListener('pointerup', e => {
+                if (dragging === false) return;
+                dragging = false;
+                dotnetObj.invokeMethodAsync(pointerUpHandler, ColorPicker.extractArgs(e as MouseEvent));
             }, { signal: bitController.controller.signal });
 
             ColorPicker._bitControllers.push(bitController);
