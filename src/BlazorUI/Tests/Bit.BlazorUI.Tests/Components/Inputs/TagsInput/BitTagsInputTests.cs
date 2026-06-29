@@ -420,7 +420,9 @@ public class BitTagsInputTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, defaultValue);
         });
 
-        Assert.AreEqual(defaultValue, com.Instance.Value);
+        Assert.IsNotNull(com.Instance.Value);
+        Assert.AreEqual(defaultValue.Count, com.Instance.Value.Count);
+        CollectionAssert.AreEqual(defaultValue, com.Instance.Value.ToList());
         Assert.AreEqual(defaultValue.Count, com.FindAll(".bit-tgi-tag").Count);
     }
 }
