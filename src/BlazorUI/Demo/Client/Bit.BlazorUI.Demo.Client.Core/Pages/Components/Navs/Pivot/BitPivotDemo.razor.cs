@@ -87,11 +87,66 @@ public partial class BitPivotDemo
         new()
         {
             Name = "OverflowBehavior",
-            Type = "BitOverflowBehavior",
-            DefaultValue = "BitOverflowBehavior.None",
+            Type = "BitPivotOverflowBehavior?",
+            DefaultValue = "null",
             Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
             LinkType = LinkType.Link,
             Href = "#overflowBehavior-enum",
+        },
+        new()
+        {
+            Name = "NextIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the next button in the Slide overflow behavior using custom CSS classes for external icon libraries. Takes precedence over NextIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon of the next button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronRight).",
+        },
+        new()
+        {
+            Name = "OverflowAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label of the overflow menu button in the Menu overflow behavior.",
+        },
+        new()
+        {
+            Name = "OverflowIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the overflow menu button in the Menu overflow behavior using custom CSS classes for external icon libraries. Takes precedence over OverflowIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "OverflowIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon of the overflow menu button in the Menu overflow behavior from the built-in Fluent UI icons (default: More).",
+        },
+        new()
+        {
+            Name = "PreviousIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the previous button in the Slide overflow behavior using custom CSS classes for external icon libraries. Takes precedence over PreviousIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PreviousIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon of the previous button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronLeft).",
         },
         new()
         {
@@ -232,6 +287,41 @@ public partial class BitPivotDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the header of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header container (wrapper) of the BitPivot."
+               },
+               new()
+               {
+                   Name = "SlideButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the slide (next/previous) buttons of the BitPivot in the Slide overflow behavior."
+               },
+               new()
+               {
+                   Name = "OverflowButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow menu button of the BitPivot in the Menu overflow behavior."
+               },
+               new()
+               {
+                   Name = "OverflowCallout",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow menu (callout) of the BitPivot in the Menu overflow behavior."
+               },
+               new()
+               {
+                   Name = "OverflowItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow menu item of the BitPivot in the Menu overflow behavior."
                },
                new()
                {
@@ -424,7 +514,7 @@ public partial class BitPivotDemo
         new()
         {
             Id = "overflowBehavior-enum",
-            Name = "BitOverflowBehavior",
+            Name = "BitPivotOverflowBehavior",
             Description = "",
             Items =
             [
@@ -445,6 +535,12 @@ public partial class BitPivotDemo
                     Name= "Scroll",
                     Description="Display a scroll bar below of the tabs for moving between them.",
                     Value="2",
+                },
+                new()
+                {
+                    Name= "Slide",
+                    Description="Display next and previous buttons to slide through the tabs that don't fit.",
+                    Value="3",
                 },
             ]
         },
@@ -1459,5 +1555,36 @@ private BitPivotItem selectedPivotItem;";
         راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای
         اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
     </BitPivotItem>
+</BitPivot>";
+
+    private readonly string example15RazorCode = @"
+<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Menu"">
+    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+</BitPivot>
+
+<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Slide"">
+    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+</BitPivot>
+
+<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
+    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
 </BitPivot>";
 }
