@@ -385,7 +385,12 @@ public partial class BitRichTextEditor : BitComponentBase
     // markup behind. Invoked from OnParametersSetAsync when the policy actually changes.
     private async Task ResanitizeCurrentContentAsync()
     {
-        var html = _currentHtml ?? "";
+        // Sanitize the live content rather than the cached _currentHtml: read the source-view text
+        // when it is driving the visible content, otherwise pull the latest DOM HTML so newer user
+        // input is not overwritten by stale cached markup.
+        var html = (_inSourceView
+            ? _sourceText
+            : (_initialized ? await _js.BitRichTextEditorGetHtml(_editorRef) : _currentHtml)) ?? "";
         if (string.IsNullOrEmpty(html)) return;
 
         var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);

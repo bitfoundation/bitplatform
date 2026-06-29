@@ -106,8 +106,10 @@ public partial class BitRichTextEditor
     {
         // Reject oversized payloads from the base64 length before either path runs so neither the
         // inline data-URL fallback nor the upload path can embed/allocate an image past the limit.
-        // Every 4 base64 chars decode to at most 3 bytes.
-        var estimatedBytes = (long)base64.Length / 4 * 3;
+        // Every 4 base64 chars decode to 3 bytes minus the trailing '=' padding, so subtract the
+        // padding to avoid rejecting valid images that sit just under the limit.
+        var padding = base64.EndsWith("==", StringComparison.Ordinal) ? 2 : base64.EndsWith("=", StringComparison.Ordinal) ? 1 : 0;
+        var estimatedBytes = (long)base64.Length / 4 * 3 - padding;
         if (estimatedBytes > MaxImageBytes)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
