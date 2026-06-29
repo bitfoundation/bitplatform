@@ -10,6 +10,13 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.initialize", editor, dotnetObj, options);
     }
 
+    public static ValueTask BitRichTextEditorUpdateOptions(this IJSRuntime jsRuntime,
+                                                           ElementReference editor,
+                                                           BitRichTextEditorSetupOptions options)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateOptions", editor, options);
+    }
+
     public static ValueTask BitRichTextEditorEnableToolbarRoving(this IJSRuntime jsRuntime, ElementReference toolbar)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.enableToolbarRoving", toolbar);
@@ -38,6 +45,11 @@ internal static class BitRichTextEditorJsRuntimeExtensions
     public static ValueTask<string> BitRichTextEditorSanitizeHtml(this IJSRuntime jsRuntime, ElementReference editor, string? html)
     {
         return jsRuntime.Invoke<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", editor, html);
+    }
+
+    public static ValueTask<bool> BitRichTextEditorValidateHtml(this IJSRuntime jsRuntime, string? html)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.RichTextEditor.validateHtml", html);
     }
 
     public static ValueTask BitRichTextEditorExec(this IJSRuntime jsRuntime, ElementReference editor, string command, string? value)

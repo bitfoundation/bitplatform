@@ -7,4 +7,5 @@ internal class BitRichTextEditorSetupOptions
     public bool HasUpload { get; set; }
     public bool PlainTextPaste { get; set; }
     public int? MaxLength { get; set; }
+    public string[]? ShortcutKeys { get; set; }
 }

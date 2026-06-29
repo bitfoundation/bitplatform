@@ -324,6 +324,14 @@ public partial class BitRichTextEditorDemo
     private string? linkHtml = "<p>Read the <a href=\"https://learn.microsoft.com/aspnet/core/blazor\">Blazor docs</a> to learn more.</p>";
     private string? linkError;
 
+    private void HandleLinkHtmlChanged(string? value)
+    {
+        linkHtml = value;
+        // A successful content update means the previous error no longer applies, so clear the
+        // stale message that OnError left behind.
+        linkError = null;
+    }
+
     private string? imageHtml = "<p>Images can sit inline with text.</p>";
     private string? lastUpload;
     private Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
@@ -383,11 +391,28 @@ public partial class BitRichTextEditorDemo
     {
         formSubmitted = true;
     }
-    public class FormModel
+    public class FormModel : IValidatableObject
     {
         [Required(ErrorMessage = "The body is required.")]
-        [MinLength(20, ErrorMessage = "Add a bit more detail (min 20 characters).")]
         public string? Body { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // The bound value is HTML, so measure normalized visible text: strip tags, decode
+            // entities, and trim. Markup with no visible text (e.g. "<p></p>") passes [Required]
+            // because the raw HTML is non-empty, so require non-whitespace visible text here and
+            // base the min-length check on that same normalized text.
+            var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "");
+            var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
+            if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+            {
+                yield return new ValidationResult("The body is required.", [nameof(Body)]);
+            }
+            else if (text.Length > 0 && text.Length < 20)
+            {
+                yield return new ValidationResult("Add a bit more detail (min 20 characters).", [nameof(Body)]);
+            }
+        }
     }
 
     private string? customHtml = "<p>A custom toolbar button can run any command.</p>";
@@ -442,8 +467,7 @@ public partial class BitRichTextEditorDemo
 
 <BitRichTextEditor @bind-Value=""bindingHtml"" Placeholder=""Edit me..."" />
 
-<pre>@bindingHtml</pre>
-<div>@((MarkupString)(bindingHtml ?? """"))</div>";
+<pre>@bindingHtml</pre>";
     private readonly string example4CsharpCode = @"
 private string? bindingHtml = ""<p>The bound value is just a <strong>string</strong> you own.</p>"";";
 
@@ -473,12 +497,18 @@ private string focusState = ""blurred"";";
 <BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended"" />";
 
     private readonly string example11RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
+<BitRichTextEditor Value=""linkHtml"" ValueChanged=""HandleLinkHtmlChanged""
                    Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link""
                    OnError='e => linkError = $""{e.Code}: {e.Message}""' />";
     private readonly string example11CsharpCode = @"
 private string? linkHtml = ""<p>Read the <a href=\""https://...\"">docs</a>.</p>"";
-private string? linkError;";
+private string? linkError;
+
+private void HandleLinkHtmlChanged(string? value)
+{
+    linkHtml = value;
+    linkError = null; // a successful update clears the stale error
+}";
 
     private readonly string example12RazorCode = @"
 <BitRichTextEditor @bind-Value=""html""
@@ -580,11 +610,23 @@ private readonly FormModel formModel = new();
 private bool formSubmitted;
 private void HandleValidSubmit() => formSubmitted = true;
 
-public class FormModel
+public class FormModel : System.ComponentModel.DataAnnotations.IValidatableObject
 {
-    [Required(ErrorMessage = ""The body is required."")]
-    [MinLength(20, ErrorMessage = ""Add a bit more detail (min 20 characters)."")]
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = ""The body is required."")]
     public string? Body { get; set; }
+
+    public System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(System.ComponentModel.DataAnnotations.ValidationContext validationContext)
+    {
+        // Body is HTML, so validate the normalized visible text: strip tags, decode entities,
+        // and trim. Markup with no visible text passes [Required] (the raw HTML is non-empty),
+        // so require non-whitespace visible text and base the min-length check on it too.
+        var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? """", ""<[^>]+>"", """");
+        var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
+        if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+            yield return new System.ComponentModel.DataAnnotations.ValidationResult(""The body is required."", [nameof(Body)]);
+        else if (text.Length > 0 && text.Length < 20)
+            yield return new System.ComponentModel.DataAnnotations.ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
+    }
 }";
 
     private readonly string example27RazorCode = @"
@@ -639,5 +681,6 @@ private async Task GetEditorHtml()
 
     private readonly string example30RazorCode = @"
 <BitRichTextEditor Styles=""@(new() { Toolbar = ""border-bottom-color: red"", Editor = ""background-color: #fff8e1"" })""
-                   Placeholder=""Custom styles applied to the toolbar and editor."" />";
+                   Classes=""@(new() { Toolbar = ""custom-rte-toolbar"", Editor = ""custom-rte-editor"" })""
+                   Placeholder=""Custom styles and classes applied to the toolbar and editor."" />";
 }

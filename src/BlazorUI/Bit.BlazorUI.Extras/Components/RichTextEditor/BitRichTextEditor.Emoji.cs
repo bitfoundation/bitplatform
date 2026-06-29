@@ -55,7 +55,10 @@ public partial class BitRichTextEditor
 
     private async Task InsertEmojiAsync(string ch)
     {
-        if (ReadOnly) return;
+        // Block insertion whenever the toolbar controls are disabled (ReadOnly or source view
+        // active), matching the find/replace guard, so emoji can't be written into the live
+        // editor while the rendered DOM and raw source text are meant to stay in sync.
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorInsertText(_editorRef, ch);
     }
 }

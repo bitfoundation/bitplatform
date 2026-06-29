@@ -10,6 +10,7 @@ public class BitRichTextEditorTests : BunitTestContext
     private void SetupJsInterop()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.initialize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.updateOptions");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.enableToolbarRoving");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.setHtml");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.exec");
@@ -55,9 +56,13 @@ public class BitRichTextEditorTests : BunitTestContext
             {
                 Editor = "custom-editor",
                 Toolbar = "custom-toolbar",
-                Root = "custom-root"
+                Root = "custom-root",
+                Group = "custom-group",
+                Button = "custom-button",
+                Count = "custom-count"
             });
             parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowCount, true);
         });
 
         var root = component.Find(".bit-rte");
@@ -65,6 +70,11 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rte-ro"));
         Assert.IsTrue(component.Find(".bit-rte-edt").ClassList.Contains("custom-editor"));
         Assert.IsTrue(component.Find(".bit-rte-tlb").ClassList.Contains("custom-toolbar"));
+        Assert.IsTrue(component.Find(".bit-rte-grp").ClassList.Contains("custom-group"));
+        Assert.IsTrue(component.Find(".bit-rte-btn").ClassList.Contains("custom-button"));
+        Assert.IsTrue(component.Find(".bit-rte-cnt").ClassList.Contains("custom-count"));
+        // Note: the Source hook only renders inside the HTML source-view textarea, which requires
+        // toggling into source view (a JS-bridged action) and is covered separately.
     }
 
     [TestMethod]
@@ -90,8 +100,9 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
         });
 
-        // The inline group renders four buttons (bold, italic, underline, strikethrough).
-        Assert.IsTrue(component.FindAll(".bit-rte-tlb .bit-rte-btn").Count >= 4);
+        // The inline group renders exactly four buttons (bold, italic, underline, strikethrough)
+        // and no other groups, so the count must be exact to catch extra groups leaking in.
+        Assert.AreEqual(4, component.FindAll(".bit-rte-tlb .bit-rte-btn").Count);
     }
 
     [TestMethod]
@@ -115,7 +126,10 @@ public class BitRichTextEditorTests : BunitTestContext
 
         await component.Instance.ExecuteCommandAsync("bold");
 
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.exec");
+        // Assert the exact forwarded command (Arguments: [editor, command, value]) so a wrong
+        // command string can't slip through - merely verifying the invoke happened wouldn't.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.exec");
+        Assert.AreEqual("bold", invocation.Arguments[1]);
     }
 
     [TestMethod]
@@ -139,5 +153,51 @@ public class BitRichTextEditorTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.dispose");
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldInvokeSanitizeBridgeWhenPolicyIsSet()
+    {
+        SetupJsInterop();
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetResult("<p>clean</p>");
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.SanitizationPolicy, BitRichTextEditorSanitizationPolicy.Default);
+        });
+
+        // Capture how many times the sanitize bridge was invoked during setup so the assertion
+        // below proves the *update* path invokes it again, not an earlier render.
+        var before = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+
+        // A value change after initialization routes through the sanitization bridge.
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>");
+        });
+
+        var after = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+        Assert.IsTrue(after > before, "The Value update should route through the sanitize bridge.");
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldInvokeSanitizeBridgeWhenPolicyIsNull()
+    {
+        SetupJsInterop();
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetResult("<p>clean</p>");
+
+        // No SanitizationPolicy is set, so the component relies on the bridge's secure default
+        // allowlist; non-empty Value updates must still route through the sanitize bridge.
+        var component = RenderComponent<BitRichTextEditor>();
+
+        var before = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>");
+        });
+
+        var after = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+        Assert.IsTrue(after > before, "The Value update should route through the sanitize bridge even without an explicit policy.");
     }
 }

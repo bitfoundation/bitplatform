@@ -119,6 +119,7 @@
 
 .bit-rte-bar {
     display: flex;
+    flex-wrap: wrap;
     gap: spacing(0.7);
     align-items: center;
     padding: spacing(0.8) spacing(1);
@@ -178,6 +179,11 @@
     &:hover {
         background: $clr-bg-sec-hover;
     }
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(0.125);
+    }
 }
 
 .bit-rte-emoji-empty {
@@ -215,25 +221,34 @@
     outline: none;
     resize: vertical;
     padding: spacing(1.7) spacing(2);
-    font-family: "SFMono-Regular", Consolas, monospace;
+    font-family: SFMono-Regular, Consolas, monospace;
     font-size: 0.85rem;
     line-height: 1.5;
     background: $clr-bg-sec;
     color: $clr-fg-pri;
     box-sizing: border-box;
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(-0.25);
+    }
 }
 
 .bit-rte-edt {
     padding: spacing(1.7) spacing(2);
     outline: none;
-    overflow-y: auto;
+
+    // Scroll wide content (notably wide tables) on both axes instead of clipping it, while
+    // keeping the existing vertical scrolling behavior of the editing surface.
+    overflow: auto;
     line-height: 1.6;
     color: $clr-fg-pri;
     flex: 1;
     position: relative;
 
-    &:focus {
-        outline: none;
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(-0.25);
     }
 
     &.bit-rte-edt-empty::before {
@@ -284,7 +299,7 @@
         border-radius: $shp-border-radius;
         padding: spacing(1.5) spacing(2);
         overflow-x: auto;
-        font-family: "SFMono-Regular", Consolas, monospace;
+        font-family: SFMono-Regular, Consolas, monospace;
         font-size: 0.9rem;
     }
 
@@ -345,6 +360,12 @@
     max-width: spacing(32.5);
 }
 
+.bit-rte-slash-list {
+    display: flex;
+    flex-direction: column;
+    gap: spacing(0.25);
+}
+
 .bit-rte-slash-item {
     text-align: left;
     border: none;
@@ -357,5 +378,10 @@
 
     &:hover {
         background: $clr-bg-sec-hover;
+    }
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(0.125);
     }
 }

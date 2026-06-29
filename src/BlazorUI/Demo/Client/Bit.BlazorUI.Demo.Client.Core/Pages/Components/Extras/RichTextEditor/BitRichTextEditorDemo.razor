@@ -74,8 +74,6 @@
                 <br />
                 <div>Bound value:</div>
                 <pre>@bindingHtml</pre>
-                <div>Rendered output:</div>
-                <div>@((MarkupString)(bindingHtml ?? ""))</div>
             </DemoExample>
 
             <DemoExample Title="Debounce" RazorCode="@example5RazorCode" Id="example5">
@@ -149,7 +147,7 @@
                     <b>OnError</b> with a stable code such as invalid-url, and the content is left unchanged.
                 </div>
                 <br />
-                <BitRichTextEditor @bind-Value="linkHtml" Height="10rem"
+                <BitRichTextEditor Value="linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="10rem"
                                    Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
                                    OnError='e => linkError = $"{e.Code}: {e.Message}"'
                                    Placeholder="Select text, then add a link..." />
@@ -257,8 +255,8 @@
 
             <DemoExample Title="Find & replace" RazorCode="@example20RazorCode" Id="example20">
                 <div>
-                    The <b>Find</b> group adds a search panel with find-next and replace (single or all) over the editor content,
-                    with an optional case-sensitive toggle.
+                    The <b>Find</b> group adds a search panel that highlights matches and replaces them (single or all)
+                    over the editor content, with an optional case-sensitive toggle.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="findHtml" Height="13rem"
@@ -390,12 +388,14 @@
 
             <DemoExample Title="Style & Class" RazorCode="@example30RazorCode" Id="example30">
                 <div>
-                    Use the <b>Styles</b> and <b>Classes</b> parameters to apply custom inline styles or CSS classes to
-                    individual parts of the editor (root, toolbar, group, button, editor, source, and count).
+                    Use the <b>Styles</b> parameter to apply custom inline styles to individual parts of the editor
+                    (root, toolbar, group, button, editor, source, and count). The <b>Classes</b> parameter works the
+                    same way for CSS classes.
                 </div>
                 <br />
                 <BitRichTextEditor Styles="@(new() { Toolbar = "border-bottom-color: red", Editor = "background-color: #fff8e1" })"
-                                   Placeholder="Custom styles applied to the toolbar and editor." />
+                                   Classes="@(new() { Toolbar = "custom-rte-toolbar", Editor = "custom-rte-editor" })"
+                                   Placeholder="Custom styles and classes applied to the toolbar and editor." />
             </DemoExample>
         </Examples>
     </DemoPage>

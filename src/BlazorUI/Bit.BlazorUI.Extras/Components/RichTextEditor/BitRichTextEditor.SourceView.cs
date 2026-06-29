@@ -10,7 +10,10 @@ public partial class BitRichTextEditor
 
     private async Task ToggleSourceViewAsync()
     {
-        if (ReadOnly) return;
+        // ReadOnly blocks *entering* source view, but exiting must stay possible: if the host
+        // flips ReadOnly to true while source view is open, the editor would otherwise be
+        // trapped there with no way back to the rendered view.
+        if (ReadOnly && _inSourceView is false) return;
         ClearInlineError();
 
         if (_inSourceView is false)
@@ -21,31 +24,46 @@ public partial class BitRichTextEditor
             return;
         }
 
-        // Exiting: validate, sanitize, render.
-        if (LooksLikeValidHtml(_sourceText) is false)
+        // If ReadOnly was flipped on while source view was open, leaving must not sanitize,
+        // assign, or emit the edited source: that would mutate content the read-only contract
+        // forbids. Just exit back to the rendered (unchanged) view.
+        if (ReadOnly)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-html", "The HTML could not be parsed; fix it before leaving source view."));
+            _inSourceView = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Exiting: validate, sanitize, render.
+        if (await _js.BitRichTextEditorValidateHtml(_sourceText) is false)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-html",
+                Label("invalid-html", "The HTML could not be parsed; fix it before leaving source view.")));
             return;
         }
 
         var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, _sourceText);
 
+        // If the sanitized source is identical to what the editor already holds, there is no
+        // effective content change: just leave source view without re-rendering or re-notifying.
+        if (sanitized == _currentHtml)
+        {
+            _inSourceView = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Push the sanitized HTML to the editor DOM first; only mutate source-view/cached state
+        // once the interop bridge succeeds, so a failing bridge call leaves the editor and bound
+        // value consistent (still in source view) rather than half-committed.
+        await _js.BitRichTextEditorSetHtml(_editorRef, sanitized);
         _inSourceView = false;
         _currentHtml = sanitized;
-        await _js.BitRichTextEditorSetHtml(_editorRef, sanitized);
         StateHasChanged();
 
         await AssignValue(sanitized);
+        NotifyEditContextChanged();
         await OnChange.InvokeAsync(sanitized);
-    }
-
-    // Lightweight well-formedness check: reject mismatched angle brackets.
-    private static bool LooksLikeValidHtml(string html)
-    {
-        if (string.IsNullOrEmpty(html)) return true;
-        var open = html.Count(c => c == '<');
-        var close = html.Count(c => c == '>');
-        return open == close;
     }
 
     private void OnSourceTextChanged(ChangeEventArgs e)

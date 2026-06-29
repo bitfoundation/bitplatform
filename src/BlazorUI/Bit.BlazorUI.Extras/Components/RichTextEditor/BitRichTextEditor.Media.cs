@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Bit.BlazorUI;
 
 // Image insertion (URL, drag-drop, paste, upload callback), color, and font.
@@ -40,6 +42,8 @@ public partial class BitRichTextEditor
 
     private async Task ApplyImageUrlAsync()
     {
+        if (ControlsDisabled) return;
+
         var url = _imageUrl.Trim();
         if (IsAcceptableImageUrl(url) is false)
         {
@@ -51,24 +55,94 @@ public partial class BitRichTextEditor
         _imageUrl = "";
     }
 
-    private static bool IsAcceptableImageUrl(string url)
+    // Known image MIME types accepted for data: URLs, mirroring the bridge's IMAGE_MIME set.
+    private static readonly string[] KnownImageMimeTypes =
+        ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
+
+    // Maximum decoded image payload, mirroring the bridge's MAX_IMAGE_BYTES (10 MB). Enforced
+    // before decoding so an oversized base64 string cannot exhaust memory on the server side.
+    private const long MaxImageBytes = 10 * 1024 * 1024;
+
+    // data: image URIs are only honored when the active policy permits them (the default policy
+    // allows them); a null policy maps to the bridge default which also permits them.
+    private bool DataImageUrisAllowed => SanitizationPolicy?.AllowDataImageUris ?? true;
+
+    private static bool IsKnownImageMimeType(string contentType)
+    {
+        var mime = contentType?.Trim();
+        if (string.IsNullOrEmpty(mime)) return false;
+        // Strip any parameters (e.g. "image/png; charset=...") before matching.
+        var semicolon = mime.IndexOf(';');
+        if (semicolon >= 0) mime = mime[..semicolon].Trim();
+        return KnownImageMimeTypes.Contains(mime, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private bool IsAcceptableImageUrl(string url)
     {
         if (string.IsNullOrWhiteSpace(url) || url.Length > 2048) return false;
-        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-            || url.StartsWith("data:", StringComparison.OrdinalIgnoreCase);
+        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            // Only allow data: URLs when the policy permits them and the declared MIME is a
+            // known image type, so non-image payloads cannot be smuggled in as an "image".
+            if (DataImageUrisAllowed is false) return false;
+            // Parse the declared MIME exactly (the segment between "data:" and the first ';' or
+            // ',') and require that delimiter, so values like "data:image/pngfoo" are rejected.
+            var rest = url["data:".Length..];
+            var delimiter = rest.IndexOfAny([';', ',']);
+            if (delimiter < 0) return false;
+            return IsKnownImageMimeType(rest[..delimiter]);
+        }
+        return false;
     }
 
     /// <summary>Called by the bridge for each dropped/pasted image; returns the URL to embed.</summary>
     [JSInvokable("ResolveImageUrl")]
     public async Task<string?> _ResolveImageUrl(string fileName, string contentType, string base64)
     {
+        // Reject oversized payloads from the base64 length before either path runs so neither the
+        // inline data-URL fallback nor the upload path can embed/allocate an image past the limit.
+        // Every 4 base64 chars decode to at most 3 bytes.
+        var estimatedBytes = (long)base64.Length / 4 * 3;
+        if (estimatedBytes > MaxImageBytes)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+            return null;
+        }
+
+        // Validate the client-reported MIME on the shared path before either branch so unsupported
+        // content types can neither be embedded as inline data URLs nor reach OnImageUpload. The
+        // upload callback then acts as an additional guard rather than the first/only check.
+        if (IsKnownImageMimeType(contentType) is false)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+            return null;
+        }
+
         if (OnImageUpload is null)
+        {
+            // Inline data URL fallback: also require the policy to permit data: image URIs before
+            // embedding the (already MIME-validated) payload as one.
+            if (DataImageUrisAllowed is false)
+            {
+                await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+                return null;
+            }
             return $"data:{contentType};base64,{base64}";   // inline data URL fallback
+        }
 
         try
         {
             var bytes = Convert.FromBase64String(base64);
+            if (bytes.Length > MaxImageBytes)
+            {
+                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+                return null;
+            }
             var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, contentType, bytes));
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -79,7 +153,9 @@ public partial class BitRichTextEditor
         }
         catch (Exception ex)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" failed: {ex.Message}"));
+            // Keep infrastructure details out of the user-facing error; log them instead.
+            Debug.WriteLine($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
+            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" failed. Please try again."));
             return null;
         }
     }
@@ -93,7 +169,7 @@ public partial class BitRichTextEditor
     private async Task ApplyColorAsync(string kind, ChangeEventArgs e)
     {
         var value = e.Value?.ToString();
-        if (ReadOnly || string.IsNullOrWhiteSpace(value)) return;
+        if (ControlsDisabled || string.IsNullOrWhiteSpace(value)) return;
         await _js.BitRichTextEditorApplyColor(_editorRef, kind, value);
     }
 
@@ -101,7 +177,7 @@ public partial class BitRichTextEditor
     private async Task ApplyFontAsync(string kind, ChangeEventArgs e)
     {
         var value = e.Value?.ToString();
-        if (ReadOnly || string.IsNullOrWhiteSpace(value)) return;
+        if (ControlsDisabled || string.IsNullOrWhiteSpace(value)) return;
         await _js.BitRichTextEditorApplyFont(_editorRef, kind, value);
     }
 

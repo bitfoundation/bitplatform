@@ -23,15 +23,17 @@ public partial class BitRichTextEditor
 
     private async Task ApplyLinkAsync()
     {
+        if (ControlsDisabled) return;
+
         var url = _linkUrl.Trim();
         if (string.IsNullOrWhiteSpace(url))
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "Enter a URL for the link."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("link-url-required", "Enter a URL for the link.")));
             return;
         }
         if (url.Length > 2048 || IsAcceptableLinkUrl(url) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "That link URL is not valid."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("link-url-invalid", "That link URL is not valid.")));
             return;
         }
 
@@ -40,14 +42,17 @@ public partial class BitRichTextEditor
         else
             await _js.BitRichTextEditorCreateLink(_editorRef, url);
 
+        // The link applied successfully, so clear any stale "invalid url" message.
+        ClearInlineError();
         _showLinkInput = false;
         _linkUrl = "";
     }
 
     private async Task RemoveLinkAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "unlink", null);
+        ClearInlineError();
         _showLinkInput = false;
         _linkUrl = "";
     }
@@ -62,6 +67,8 @@ public partial class BitRichTextEditor
     {
         // Allow absolute http(s)/mailto/tel and site-relative URLs; reject script vectors.
         if (url.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)) return false;
+        // Protocol-relative URLs (//example.com) are external; require an explicit scheme.
+        if (url.StartsWith("//")) return false;
         if (url.StartsWith('/') || url.StartsWith('#') || url.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
             || url.StartsWith("tel:", StringComparison.OrdinalIgnoreCase))
             return true;

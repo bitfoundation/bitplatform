@@ -17,6 +17,8 @@ public partial class BitRichTextEditor
 
     private async Task ApplyMediaAsync()
     {
+        if (ControlsDisabled) return;
+
         var url = _mediaUrl.Trim();
         if (string.IsNullOrWhiteSpace(url) || url.Length > 2048
             || Uri.TryCreate(url, UriKind.Absolute, out var uri) is false
@@ -34,6 +36,8 @@ public partial class BitRichTextEditor
         }
 
         await _js.BitRichTextEditorInsertMedia(_editorRef, html);
+        // The media embedded successfully, so clear any stale validation message.
+        ClearInlineError();
         _showMediaInput = false;
         _mediaUrl = "";
     }
@@ -46,11 +50,11 @@ public partial class BitRichTextEditor
         // YouTube
         var ytId = TryGetYouTubeId(uri);
         if (ytId is not null)
-            return $"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/{ytId}\" " +
+            return $"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/{Esc(ytId)}\" " +
                    "frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>";
 
         // Vimeo
-        if (host.Contains("vimeo.com"))
+        if (IsHostOrSubdomainOf(host, "vimeo.com"))
         {
             var m = Regex.Match(uri.AbsolutePath, @"/(\d+)");
             if (m.Success)
@@ -70,17 +74,35 @@ public partial class BitRichTextEditor
     private static string? TryGetYouTubeId(Uri uri)
     {
         var host = uri.Host.ToLowerInvariant();
-        if (host.Contains("youtu.be"))
-            return uri.AbsolutePath.Trim('/').Split('/')[0] is { Length: > 0 } id ? id : null;
-        if (host.Contains("youtube.com"))
+        string? id = null;
+        if (IsHostOrSubdomainOf(host, "youtu.be"))
+        {
+            id = uri.AbsolutePath.Trim('/').Split('/')[0];
+        }
+        else if (IsHostOrSubdomainOf(host, "youtube.com"))
         {
             var v = GetQueryValue(uri.Query, "v");
-            if (string.IsNullOrEmpty(v) is false) return v;
-            var m = Regex.Match(uri.AbsolutePath, @"/embed/([\w-]+)");
-            if (m.Success) return m.Groups[1].Value;
+            if (string.IsNullOrEmpty(v) is false)
+            {
+                id = v;
+            }
+            else
+            {
+                var m = Regex.Match(uri.AbsolutePath, @"/embed/([\w-]+)");
+                if (m.Success) id = m.Groups[1].Value;
+            }
         }
-        return null;
+        return IsValidYouTubeId(id) ? id : null;
     }
+
+    // YouTube ids are short, URL-safe base64-ish tokens; constrain before embedding in HTML.
+    private static bool IsValidYouTubeId(string? id)
+        => id is { Length: > 0 and <= 20 } && id.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
+
+    // Exact host or a true subdomain match (e.g. "www.youtube.com" but not "youtube.com.evil.test").
+    private static bool IsHostOrSubdomainOf(string host, string domain)
+        => string.Equals(host, domain, StringComparison.OrdinalIgnoreCase)
+           || host.EndsWith("." + domain, StringComparison.OrdinalIgnoreCase);
 
     private static string? GetQueryValue(string query, string key)
     {
@@ -101,7 +123,7 @@ public partial class BitRichTextEditor
     // ---- horizontal rule ----
     private async Task InsertRuleAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "insertHorizontalRule", null);
     }
 }

@@ -4,5 +4,12 @@
     display: flex;
     gap: rem2(16px);
     flex-flow: row wrap;
-    max-width: max-content;
+}
+
+::deep .custom-rte-toolbar {
+    background-color: #f0f4ff;
+}
+
+::deep .custom-rte-editor {
+    font-style: italic;
 }

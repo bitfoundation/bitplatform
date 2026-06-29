@@ -19,11 +19,17 @@ public partial class BitRichTextEditor
 
     private void EnsureField()
     {
-        if (_hasField is false && ValueExpression is not null)
+        if (ValueExpression is null)
         {
-            _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
-            _hasField = true;
+            _hasField = false;
+            return;
         }
+
+        // Rebuild every time: FieldIdentifier.Create(ValueExpression) can resolve to a different
+        // model instance even when the same expression delegate is reused (e.g. the bound model
+        // was swapped), so caching on the expression instance alone can notify a stale field.
+        _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+        _hasField = true;
     }
 
     /// <summary>Notifies the cascaded EditContext that the bound field changed.</summary>

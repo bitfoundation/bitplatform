@@ -9,6 +9,9 @@ public partial class BitRichTextEditor : BitComponentBase
 {
     private bool _initialized;
     private string _currentHtml = "";
+    private string? _lastSetupSnapshot;
+    private string? _lastPolicySnapshot;
+    private bool _toolbarRovingEnabled;
     private ElementReference _editorRef = default!;
     private BitRichTextEditorContentFacts _facts;
     private BitRichTextEditorSelectionState _state = new();
@@ -163,7 +166,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private async Task ExecAsync(string command, string? value = null)
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, command, value);
     }
 
@@ -175,7 +178,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private async Task ExecBlockAsync(string tag)
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExecBlock(_editorRef, tag);
     }
 
@@ -184,7 +187,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private async Task ClearFormattingAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "removeFormat", null);
         await _js.BitRichTextEditorExecBlock(_editorRef, "p");
     }
@@ -225,50 +228,186 @@ public partial class BitRichTextEditor : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        ValidateCustomItems();
+
+        // Keep the JS bridge config aligned with the current C# parameter state. The first
+        // render seeds these via BitRichTextEditorSetup; afterwards parameter changes must be
+        // pushed explicitly, otherwise the bridge keeps the frozen initial options. Skip the
+        // interop call when nothing the bridge cares about (debounce, policy, upload, paste,
+        // max-length, owned shortcuts) actually changed since the last push.
+        if (_initialized)
+        {
+            var options = BuildSetupOptions();
+            var snapshot = SerializeSetupOptions(options);
+            if (snapshot != _lastSetupSnapshot)
+            {
+                // Detect whether the sanitization policy specifically changed so a tightened
+                // allowlist can be re-applied to the already-loaded content, not just future input.
+                var policySnapshot = System.Text.Json.JsonSerializer.Serialize(options.Policy);
+                var policyChanged = policySnapshot != _lastPolicySnapshot;
+
+                _lastSetupSnapshot = snapshot;
+                _lastPolicySnapshot = policySnapshot;
+                await _js.BitRichTextEditorUpdateOptions(_editorRef, options);
+
+                // A changed (e.g. tightened) policy must also clean the content already in the
+                // editor; otherwise markup permitted under the previous allowlist would linger
+                // until the next external Value change. Run the current content through the new
+                // policy and push the cleaned result back through the same sync path as OnValueSet.
+                if (policyChanged)
+                {
+                    await ResanitizeCurrentContentAsync();
+                }
+            }
+        }
+    }
+
+    private BitRichTextEditorSetupOptions BuildSetupOptions() => new()
+    {
+        Debounce = DebounceMs,
+        Policy = BuildPolicyPayload(),
+        HasUpload = OnImageUpload is not null,
+        PlainTextPaste = PasteAsPlainText,
+        MaxLength = MaxLength,
+        ShortcutKeys = BuildOwnedShortcutCombos()
+    };
+
+    // Serializes the setup payload so OnParametersSetAsync can detect whether any bridge-backed
+    // setting changed and avoid redundant BitRichTextEditorUpdateOptions interop calls.
+    private static string SerializeSetupOptions(BitRichTextEditorSetupOptions options)
+        => System.Text.Json.JsonSerializer.Serialize(options);
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
-
-        _dotnetObj = DotNetObjectReference.Create(this);
-        _currentHtml = Value ?? "";
-
-        await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, new()
+        if (firstRender)
         {
-            Debounce = DebounceMs,
-            Policy = BuildPolicyPayload(),
-            HasUpload = OnImageUpload is not null,
-            PlainTextPaste = PasteAsPlainText,
-            MaxLength = MaxLength
-        });
+            _dotnetObj = DotNetObjectReference.Create(this);
 
+            var setupOptions = BuildSetupOptions();
+            await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, setupOptions);
+            _lastSetupSnapshot = SerializeSetupOptions(setupOptions);
+            _lastPolicySnapshot = System.Text.Json.JsonSerializer.Serialize(setupOptions.Policy);
+
+            // Sanitize the initial Value through the bridge so the first content load can't bypass
+            // sanitization. The bridge enforces a secure default allowlist when no SanitizationPolicy
+            // is set, and the custom policy when one is, so sanitize any non-empty HTML either way.
+            var html = Value ?? "";
+            if (string.IsNullOrEmpty(html) is false)
+            {
+                html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
+            }
+            _currentHtml = html;
+
+            if (string.IsNullOrEmpty(_currentHtml) is false)
+            {
+                await _js.BitRichTextEditorSetHtml(_editorRef, _currentHtml);
+            }
+
+            // Sanitization may have changed the markup; push the cleaned HTML back through the
+            // binding so @bind-Value cannot retain unsafe content that was stripped for rendering.
+            if ((Value ?? "") != html)
+            {
+                await AssignValue(html);
+                NotifyEditContextChanged();
+            }
+
+            _initialized = true;
+        }
+
+        // Wire (or re-wire) the toolbar roving tabindex whenever the toolbar becomes visible.
+        // The JS side is idempotent per element, and resetting the flag when the toolbar is
+        // hidden lets a later ShowToolbar=true (a fresh element) initialize again.
         if (ShowToolbar)
         {
-            await _js.BitRichTextEditorEnableToolbarRoving(_toolbarRef);
+            if (_toolbarRovingEnabled is false)
+            {
+                _toolbarRovingEnabled = true;
+                await _js.BitRichTextEditorEnableToolbarRoving(_toolbarRef);
+            }
         }
-
-        if (string.IsNullOrEmpty(_currentHtml) is false)
+        else
         {
-            await _js.BitRichTextEditorSetHtml(_editorRef, _currentHtml);
+            _toolbarRovingEnabled = false;
         }
-
-        _initialized = true;
     }
 
     private async ValueTask OnValueSet()
     {
         if (_initialized is false) return;
-        if (_inSourceView) return;
         if ((Value ?? "") == _currentHtml) return; // originated from the editor
 
         var html = Value ?? "";
-        if (SanitizationPolicy is not null && string.IsNullOrEmpty(html) is false)
+        // Sanitize any non-empty HTML through the bridge regardless of SanitizationPolicy: the
+        // bridge applies its secure default allowlist when no custom policy is set and the custom
+        // policy when one is, so an updated Value can never bypass sanitization.
+        if (string.IsNullOrEmpty(html) is false)
         {
             html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
         }
         _currentHtml = html;
-        await _js.BitRichTextEditorSetHtml(_editorRef, html);
+
+        // While source view is open the WYSIWYG surface is detached from the live value, so don't
+        // push into the editor element. Instead reflect the external change into the raw-HTML
+        // textarea (and the cached _currentHtml above) so leaving source view starts from the
+        // latest parent Value rather than the stale content captured when source view was entered.
+        if (_inSourceView)
+        {
+            _sourceText = html;
+            StateHasChanged();
+        }
+        else
+        {
+            await _js.BitRichTextEditorSetHtml(_editorRef, html);
+        }
+
+        // Keep the bound model in sync with the sanitized/rendered content: if the policy
+        // stripped anything, write the cleaned HTML back so @bind-Value never holds the
+        // unsafe original. The guard above (Value == _currentHtml) short-circuits the
+        // re-entrant OnValueSet that this assignment triggers.
+        if ((Value ?? "") != html)
+        {
+            await AssignValue(html);
+            NotifyEditContextChanged();
+        }
+    }
+
+
+
+    // Re-runs the editor's current content through the bridge under the now-active policy and
+    // synchronizes the cleaned result across _currentHtml, the source-view text, the editor DOM,
+    // and the bound Value, mirroring OnValueSet's sync path so a policy change leaves no stale
+    // markup behind. Invoked from OnParametersSetAsync when the policy actually changes.
+    private async Task ResanitizeCurrentContentAsync()
+    {
+        var html = _currentHtml ?? "";
+        if (string.IsNullOrEmpty(html)) return;
+
+        var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
+        if (sanitized == _currentHtml) return;
+
+        _currentHtml = sanitized;
+
+        if (_inSourceView)
+        {
+            _sourceText = sanitized;
+            StateHasChanged();
+        }
+        else
+        {
+            await _js.BitRichTextEditorSetHtml(_editorRef, sanitized);
+        }
+
+        if ((Value ?? "") != sanitized)
+        {
+            await AssignValue(sanitized);
+            NotifyEditContextChanged();
+        }
     }
 
 

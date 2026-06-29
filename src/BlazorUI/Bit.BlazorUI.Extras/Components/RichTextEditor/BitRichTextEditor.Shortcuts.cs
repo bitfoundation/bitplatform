@@ -29,13 +29,28 @@ public partial class BitRichTextEditor
     [JSInvokable("OnShortcut")]
     public async Task<bool> _OnShortcut(string key, bool ctrl, bool shift, bool alt)
     {
-        if (ReadOnly) return false;
+        // Source view (and ReadOnly) disable command execution: ExecAsync no-ops when
+        // ControlsDisabled, so report the shortcut as unhandled instead of suppressing the
+        // browser default for a command that will not run.
+        if (ControlsDisabled) return false;
 
         var combo = BuildComboKey(key, ctrl, shift, alt);
         string? command = null;
-        if (KeyboardShortcuts is not null && KeyboardShortcuts.TryGetValue(combo, out var custom))
-            command = custom;                                   // custom wins
-        else if (DefaultShortcuts.TryGetValue(combo, out var def))
+        // Custom shortcut keys are advertised to the JS bridge lowercased (see
+        // BuildOwnedShortcutCombos), so probe the user-supplied map case-insensitively to keep
+        // matching consistent regardless of the casing used in the KeyboardShortcuts keys.
+        if (KeyboardShortcuts is not null)
+        {
+            foreach (var (k, v) in KeyboardShortcuts)
+            {
+                if (string.Equals(k, combo, StringComparison.OrdinalIgnoreCase))
+                {
+                    command = v;                                // custom wins
+                    break;
+                }
+            }
+        }
+        if (command is null && DefaultShortcuts.TryGetValue(combo, out var def))
             command = def;
 
         if (command is null) return false;
@@ -69,4 +84,33 @@ public partial class BitRichTextEditor
     };
 
     private static bool IsKnownCommand(string command) => KnownCommands.Contains(command);
+
+    /// <summary>
+    /// The set of owned key combos (built-in defaults merged with any custom shortcuts),
+    /// sent to the JS bridge so it can suppress the browser default synchronously - before
+    /// the async OnShortcut callback - for combos that overlap native browser behavior.
+    /// </summary>
+    private string[] BuildOwnedShortcutCombos()
+    {
+        var combos = new HashSet<string>(DefaultShortcuts.Keys, StringComparer.OrdinalIgnoreCase);
+        if (KeyboardShortcuts is not null)
+        {
+            // Custom shortcuts win over the built-in defaults (see _OnShortcut). Only advertise a
+            // combo as owned when its effective command can actually be executed; if a custom
+            // override maps a key (including one that shadows a default) to an unknown command,
+            // drop it so the bridge does not suppress an otherwise-handled browser shortcut that
+            // _OnShortcut would later reject.
+            foreach (var (key, command) in KeyboardShortcuts)
+            {
+                if (IsKnownCommand(command))
+                    combos.Add(key);
+                else
+                    combos.Remove(key);
+            }
+        }
+        // Sort into a stable order so SerializeSetupOptions() produces a deterministic snapshot;
+        // the underlying HashSet has no guaranteed iteration order, which would otherwise let the
+        // same logical shortcuts serialize differently and retrigger BitRichTextEditorUpdateOptions.
+        return combos.Select(c => c.ToLowerInvariant()).OrderBy(c => c, StringComparer.Ordinal).ToArray();
+    }
 }

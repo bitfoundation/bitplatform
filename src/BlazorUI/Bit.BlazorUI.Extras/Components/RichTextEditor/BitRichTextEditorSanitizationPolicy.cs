@@ -19,8 +19,17 @@ public sealed class BitRichTextEditorSanitizationPolicy
     /// <summary>Whether <c>data:</c> image URIs are permitted in image sources.</summary>
     public bool AllowDataImageUris { get; init; } = true;
 
-    /// <summary>A secure default policy covering the editor's standard formatting output.</summary>
-    public static BitRichTextEditorSanitizationPolicy Default { get; } = new()
+    /// <summary>
+    /// A secure default policy covering the editor's standard formatting output. Returns a
+    /// fresh instance on each access so callers can mutate it without affecting other editors.
+    /// </summary>
+    /// <remarks>
+    /// iframe is intentionally excluded: the general sanitize pass does not host-restrict iframe
+    /// sources (only the media-insert path enforces the YouTube/Vimeo host allowlist), so allowing
+    /// iframe here would permit arbitrary embeds. Media embeds are therefore opt-in - add the
+    /// iframe tag and its attributes to a custom policy if such embeds must round-trip.
+    /// </remarks>
+    public static BitRichTextEditorSanitizationPolicy Default => new()
     {
         AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -31,7 +40,7 @@ public sealed class BitRichTextEditorSanitizationPolicy
             "blockquote", "pre", "code",
             "a", "img", "hr",
             "table", "thead", "tbody", "tr", "th", "td",
-            "audio", "video", "iframe", "source"
+            "audio", "video", "source"
         },
         AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -42,12 +51,11 @@ public sealed class BitRichTextEditorSanitizationPolicy
             ["th"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "colspan", "rowspan" },
             ["audio"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "controls" },
             ["video"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "controls", "width", "height" },
-            ["iframe"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "width", "height", "allow", "allowfullscreen", "frameborder" },
             ["source"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "type" }
         },
         AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "http", "https", "mailto", "tel", "data"
+            "http", "https", "mailto", "tel"
         }
     };
 }
