@@ -232,6 +232,7 @@
 .bit-rte-edt {
     padding: spacing(1.7) spacing(2);
     outline: none;
+
     // Scroll wide content (notably wide tables) on both axes instead of clipping it, while
     // keeping the existing vertical scrolling behavior of the editing surface.
     overflow: auto;

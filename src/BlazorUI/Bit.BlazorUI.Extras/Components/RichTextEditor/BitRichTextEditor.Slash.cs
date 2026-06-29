@@ -46,7 +46,9 @@ public partial class BitRichTextEditor
 
     private async Task ApplySlashAsync(string command)
     {
-        if (ReadOnly) return;
+        // Gate on ControlsDisabled (ReadOnly || _inSourceView) so the slash command cannot mutate
+        // the WYSIWYG DOM while source view is controlling the visible content.
+        if (ControlsDisabled) return;
         _showSlash = false;
         _slashFilter = "";
         await _js.BitRichTextEditorApplySlashCommand(_editorRef, command);

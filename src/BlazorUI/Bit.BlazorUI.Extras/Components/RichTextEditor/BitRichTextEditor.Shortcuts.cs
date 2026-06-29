@@ -108,6 +108,9 @@ public partial class BitRichTextEditor
                     combos.Remove(key);
             }
         }
-        return combos.Select(c => c.ToLowerInvariant()).ToArray();
+        // Sort into a stable order so SerializeSetupOptions() produces a deterministic snapshot;
+        // the underlying HashSet has no guaranteed iteration order, which would otherwise let the
+        // same logical shortcuts serialize differently and retrigger BitRichTextEditorUpdateOptions.
+        return combos.Select(c => c.ToLowerInvariant()).OrderBy(c => c, StringComparer.Ordinal).ToArray();
     }
 }

@@ -97,17 +97,17 @@
         <div class="bit-rte-err" role="alert">@_inlineError</div>
     }
 
-    @if (_showSlash && ReadOnly is false)
+    @if (_showSlash && ControlsDisabled is false)
     {
         <div class="bit-rte-slash">
             <input type="text" class="bit-rte-inp" aria-label="@Label("filter-commands", "Filter commands")"
                    placeholder="@Label("filter-commands", "Filter commands…")"
                    @bind="_slashFilter" @bind:event="oninput"
                    @onkeydown="@(e => { if (e.Key == "Escape") CloseSlash(); })" />
-            <div class="bit-rte-slash-list" role="menu" aria-label="@Label("filter-commands", "Filter commands")">
+            <div class="bit-rte-slash-list" aria-label="@Label("filter-commands", "Filter commands")">
                 @foreach (var c in FilteredSlash())
                 {
-                    <button type="button" class="bit-rte-slash-item" role="menuitem"
+                    <button type="button" class="bit-rte-slash-item"
                             @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
                 }
             </div>

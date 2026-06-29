@@ -42,6 +42,8 @@ public partial class BitRichTextEditor
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }
+        // The input is valid, so clear any stale "too long" message before running the search.
+        ClearInlineError();
         var count = await _js.BitRichTextEditorFind(_editorRef, _findTerm, _findCaseSensitive);
         // Use full localized templates per case so translators control word order and
         // pluralization rather than the hard-coded "{count} {match/matches}" composition.
@@ -75,6 +77,8 @@ public partial class BitRichTextEditor
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }
+        // The input is valid, so clear any stale "too long" message before replacing.
+        ClearInlineError();
         var n = await _js.BitRichTextEditorReplaceAll(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
         _findCount = string.Format(Label("replaced-count", "{0} replaced"), n);
     }

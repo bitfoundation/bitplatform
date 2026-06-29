@@ -467,8 +467,7 @@ public partial class BitRichTextEditorDemo
 
 <BitRichTextEditor @bind-Value=""bindingHtml"" Placeholder=""Edit me..."" />
 
-<pre>@bindingHtml</pre>
-<div>@((MarkupString)(bindingHtml ?? """"))</div>";
+<pre>@bindingHtml</pre>";
     private readonly string example4CsharpCode = @"
 private string? bindingHtml = ""<p>The bound value is just a <strong>string</strong> you own.</p>"";";
 
@@ -616,7 +615,7 @@ public class FormModel : System.ComponentModel.DataAnnotations.IValidatableObjec
     [System.ComponentModel.DataAnnotations.Required(ErrorMessage = ""The body is required."")]
     public string? Body { get; set; }
 
-    public IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(System.ComponentModel.DataAnnotations.ValidationContext validationContext)
+    public System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(System.ComponentModel.DataAnnotations.ValidationContext validationContext)
     {
         // Body is HTML, so validate the normalized visible text: strip tags, decode entities,
         // and trim. Markup with no visible text passes [Required] (the raw HTML is non-empty),

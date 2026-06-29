@@ -42,6 +42,8 @@ public partial class BitRichTextEditor
         else
             await _js.BitRichTextEditorCreateLink(_editorRef, url);
 
+        // The link applied successfully, so clear any stale "invalid url" message.
+        ClearInlineError();
         _showLinkInput = false;
         _linkUrl = "";
     }
@@ -50,6 +52,7 @@ public partial class BitRichTextEditor
     {
         if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "unlink", null);
+        ClearInlineError();
         _showLinkInput = false;
         _linkUrl = "";
     }

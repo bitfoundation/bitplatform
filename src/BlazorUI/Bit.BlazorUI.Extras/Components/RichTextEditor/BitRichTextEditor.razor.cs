@@ -297,6 +297,7 @@ public partial class BitRichTextEditor : BitComponentBase
             if ((Value ?? "") != html)
             {
                 await AssignValue(html);
+                NotifyEditContextChanged();
             }
 
             _initialized = true;
@@ -355,6 +356,7 @@ public partial class BitRichTextEditor : BitComponentBase
         if ((Value ?? "") != html)
         {
             await AssignValue(html);
+            NotifyEditContextChanged();
         }
     }
 

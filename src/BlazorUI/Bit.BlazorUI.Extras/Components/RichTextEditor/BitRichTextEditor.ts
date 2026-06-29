@@ -373,13 +373,13 @@ namespace BitBlazorUI {
                     el.replaceWith(...Array.from(el.childNodes)); return;
                 }
                 // When the active policy supplies an attribute contract, merge its per-tag and
-                // global ('*') allowlists so the media path defers to the policy too. This stops
-                // media tags (e.g. iframe) from retaining hard-coded attributes the policy never
-                // allowed; with no policy attribute map the media allowlist alone applies.
-                const policyAttrs = (policy && policy.allowedAttributes) || null;
-                const policyAllowed: string[] | null = policyAttrs
-                    ? [...(policyAttrs[tag] || []), ...(policyAttrs['*'] || [])]
-                    : null;
+                // global ('*') allowlists so the media path defers to the policy too. Mirror
+                // sanitize()'s deny-by-default semantics: a missing allowedAttributes map is
+                // treated as an empty allowlist (deny all) rather than falling back to the
+                // hard-coded media allowlist, so a policy that enables media only via allowedTags
+                // cannot smuggle hard-coded attributes the policy never permitted.
+                const policyAttrs = (policy && policy.allowedAttributes) || {};
+                const policyAllowed: string[] = [...(policyAttrs[tag] || []), ...(policyAttrs['*'] || [])];
                 for (const attr of Array.from(el.attributes)) {
                     const name = attr.name.toLowerCase();
                     if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
@@ -388,9 +388,9 @@ namespace BitBlazorUI {
                     const allowed = allowedAttrs[tag];
                     const permitted = allowed ? allowed.has(name) : globalAttrs.has(name);
                     // An attribute must clear both the media allowlist and the active policy's
-                    // attribute contract (when present) so only attributes explicitly permitted
-                    // by the active sanitization policy survive.
-                    if (!permitted || (policyAllowed && !policyAllowed.includes(name))) {
+                    // attribute contract so only attributes explicitly permitted by the active
+                    // sanitization policy survive.
+                    if (!permitted || !policyAllowed.includes(name)) {
                         el.removeAttribute(attr.name); continue;
                     }
                     if (name === 'src') {
@@ -449,39 +449,69 @@ namespace BitBlazorUI {
             // Restore the editor selection so the operation targets the cell the user last
             // selected in the editor, not a selection left in the toolbar.
             RichTextEditor.restoreSelection(editor);
-            const cell = RichTextEditor.cellAtSelection(editor);
+            const cell = RichTextEditor.cellAtSelection(editor) as HTMLTableCellElement | null;
             if (!cell) return;
             const row = cell.parentElement as HTMLTableRowElement;
-            const table = cell.closest('table');
+            const table = cell.closest('table') as HTMLTableElement | null;
             if (!table || !row) return;
-            const colIndex = Array.from(row.children).indexOf(cell);
 
             switch (op) {
                 case 'addRow': {
+                    // Use the logical width (accounting for colspans) so the inserted row spans
+                    // the full table even when the current row contains merged cells.
+                    const { colCount } = RichTextEditor.buildTableGrid(table);
                     const nr = document.createElement('tr');
-                    for (let i = 0; i < row.children.length; i++) {
+                    for (let i = 0; i < colCount; i++) {
                         const td = document.createElement('td'); td.innerHTML = '<br>'; nr.appendChild(td);
                     }
                     row.after(nr);
                     break;
                 }
                 case 'addCol': {
-                    for (const tr of Array.from(table.querySelectorAll('tr'))) {
+                    const { rows, grid } = RichTextEditor.buildTableGrid(table);
+                    const targetCol = RichTextEditor.logicalColumnOf(grid, cell);
+                    if (targetCol < 0) break;
+                    const insertCol = targetCol + 1;
+                    const widened = new Set<HTMLTableCellElement>();
+                    for (let r = 0; r < rows.length; r++) {
+                        const before = grid[r][targetCol] || null;
+                        const at = grid[r][insertCol] || null;
+                        // A single cell whose colspan straddles the insertion boundary is widened
+                        // once instead of receiving a new neighbor.
+                        if (before && before === at) {
+                            if (!widened.has(before)) { widened.add(before); before.colSpan = (before.colSpan || 1) + 1; }
+                            continue;
+                        }
                         const td = document.createElement('td'); td.innerHTML = '<br>';
-                        const ref = tr.children[colIndex];
-                        if (ref) ref.after(td); else tr.appendChild(td);
+                        if (at && at.parentElement === rows[r]) at.before(td);
+                        else if (before && before.parentElement === rows[r]) before.after(td);
+                        else rows[r].appendChild(td);
                     }
                     break;
                 }
                 case 'delRow': {
-                    const rows = table.querySelectorAll('tr');
+                    const rows = Array.from(table.querySelectorAll('tr'));
                     if (rows.length <= 1) { table.remove(); } else { row.remove(); }
                     break;
                 }
                 case 'delCol': {
-                    const firstRow = table.querySelector('tr');
-                    if (firstRow && firstRow.children.length <= 1) { table.remove(); }
-                    else { for (const tr of Array.from(table.querySelectorAll('tr'))) { const c = tr.children[colIndex]; if (c) c.remove(); } }
+                    const { rows, grid, colCount } = RichTextEditor.buildTableGrid(table);
+                    // A table with a single logical column collapses to nothing once that column
+                    // is removed, so drop the whole table. Counting logical columns (not DOM
+                    // children) keeps this correct when cells are merged.
+                    if (colCount <= 1) { table.remove(); break; }
+                    const targetCol = RichTextEditor.logicalColumnOf(grid, cell);
+                    if (targetCol < 0) break;
+                    const seen = new Set<HTMLTableCellElement>();
+                    for (let r = 0; r < rows.length; r++) {
+                        const c = grid[r][targetCol];
+                        if (!c || seen.has(c)) continue;
+                        seen.add(c);
+                        const cs = c.colSpan || 1;
+                        // Shrink a cell that spans the column; remove a cell that occupies it alone.
+                        if (cs > 1) c.colSpan = cs - 1;
+                        else c.remove();
+                    }
                     break;
                 }
                 case 'merge': {
@@ -490,6 +520,40 @@ namespace BitBlazorUI {
                 }
             }
             RichTextEditor.afterChange(editor);
+        }
+
+        // Builds a logical row x column model of the table that accounts for rowspan/colspan, so
+        // column operations target the correct cells even when cells are merged. grid[r][c] holds
+        // the cell occupying that logical position (the same cell instance repeats across every
+        // column/row it spans). colCount is the widest logical row.
+        private static buildTableGrid(table: HTMLTableElement): { rows: HTMLTableRowElement[], grid: (HTMLTableCellElement | null)[][], colCount: number } {
+            const rows = Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[];
+            const grid: (HTMLTableCellElement | null)[][] = rows.map(() => []);
+            for (let r = 0; r < rows.length; r++) {
+                let col = 0;
+                for (const child of Array.from(rows[r].children)) {
+                    const c = child as HTMLTableCellElement;
+                    if (c.tagName !== 'TD' && c.tagName !== 'TH') continue;
+                    while (grid[r][col]) col++;
+                    const colspan = Math.max(1, parseInt(c.getAttribute('colspan') || '1') || 1);
+                    const rowspan = Math.max(1, parseInt(c.getAttribute('rowspan') || '1') || 1);
+                    for (let dr = 0; dr < rowspan && r + dr < rows.length; dr++) {
+                        for (let dc = 0; dc < colspan; dc++) grid[r + dr][col + dc] = c;
+                    }
+                    col += colspan;
+                }
+            }
+            const colCount = grid.reduce((max, gr) => Math.max(max, gr.length), 0);
+            return { rows, grid, colCount };
+        }
+
+        // Returns the first logical column index occupied by the given cell, or -1 if not found.
+        private static logicalColumnOf(grid: (HTMLTableCellElement | null)[][], cell: HTMLTableCellElement): number {
+            for (let r = 0; r < grid.length; r++) {
+                const idx = grid[r].indexOf(cell);
+                if (idx !== -1) return idx;
+            }
+            return -1;
         }
 
         // ---- find & replace ----
