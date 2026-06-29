@@ -6,6 +6,8 @@ namespace Bit.BlazorUI;
 public partial class BitPivot : BitComponentBase
 {
     private bool _jsSetup;
+    private bool _setupRtl;
+    private bool _setupVertical;
     private bool _isMenuOpen;
     private bool _slideAtEnd;
     private bool _slideAtStart = true;
@@ -68,21 +70,9 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public bool MountAll { get; set; }
 
     /// <summary>
-    /// Callback for when a pivot header item is clicked.
+    /// The aria-label of the next button in the Slide overflow behavior (default: Next).
     /// </summary>
-    [Parameter] public EventCallback<BitPivotItem> OnItemClick { get; set; }
-
-    /// <summary>
-    /// Callback for when the selected pivot item changes.
-    /// </summary>
-    [Parameter]
-    public EventCallback<BitPivotItem> OnChange { get; set; }
-
-    /// <summary>
-    /// Overflow behavior when there is not enough room to display all of the links/tabs.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitPivotOverflowBehavior? OverflowBehavior { get; set; }
+    [Parameter] public string? NextAriaLabel { get; set; }
 
     /// <summary>
     /// Gets or sets the icon of the next button in the Slide overflow behavior using custom CSS classes for external icon libraries.
@@ -96,9 +86,26 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public string? NextIconName { get; set; }
 
     /// <summary>
-    /// The aria-label of the overflow menu button in the Menu overflow behavior.
+    /// Callback for when the selected pivot item changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<BitPivotItem> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback for when a pivot header item is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<BitPivotItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// The aria-label of the overflow menu button in the Menu overflow behavior (default: More).
     /// </summary>
     [Parameter] public string? OverflowAriaLabel { get; set; }
+
+    /// <summary>
+    /// Overflow behavior when there is not enough room to display all of the links/tabs.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitPivotOverflowBehavior? OverflowBehavior { get; set; }
 
     /// <summary>
     /// Gets or sets the icon of the overflow menu button in the Menu overflow behavior using custom CSS classes for external icon libraries.
@@ -112,6 +119,17 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public string? OverflowIconName { get; set; }
 
     /// <summary>
+    /// Position of the pivot header.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitPivotPosition? Position { get; set; }
+
+    /// <summary>
+    /// The aria-label of the previous button in the Slide overflow behavior (default: Previous).
+    /// </summary>
+    [Parameter] public string? PreviousAriaLabel { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon of the previous button in the Slide overflow behavior using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="PreviousIconName"/> when both are set.
     /// </summary>
@@ -121,12 +139,6 @@ public partial class BitPivot : BitComponentBase
     /// Gets or sets the name of the icon of the previous button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronLeft).
     /// </summary>
     [Parameter] public string? PreviousIconName { get; set; }
-
-    /// <summary>
-    /// Position of the pivot header.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitPivotPosition? Position { get; set; }
 
     /// <summary>
     /// Key of the selected pivot item.
@@ -149,6 +161,8 @@ public partial class BitPivot : BitComponentBase
 
 
     protected override string RootElementClass => "bit-pvt";
+
+    private bool _isVertical => Position is BitPivotPosition.Start or BitPivotPosition.End;
 
     protected override void RegisterCssClasses()
     {
@@ -248,8 +262,10 @@ public partial class BitPivot : BitComponentBase
 
         var behavior = OverflowBehavior ?? BitPivotOverflowBehavior.None;
         var needsJs = behavior is BitPivotOverflowBehavior.Menu or BitPivotOverflowBehavior.Slide;
+        var rtl = Dir is BitDir.Rtl;
+        var vertical = Position is BitPivotPosition.Start or BitPivotPosition.End;
 
-        if (_setupBehavior != behavior)
+        if (_setupBehavior != behavior || (_jsSetup && (_setupRtl != rtl || _setupVertical != vertical)))
         {
             if (_jsSetup)
             {
@@ -276,13 +292,16 @@ public partial class BitPivot : BitComponentBase
                     behavior is BitPivotOverflowBehavior.Menu ? _moreRef : null,
                     behavior is BitPivotOverflowBehavior.Menu,
                     behavior is BitPivotOverflowBehavior.Slide,
-                    Dir is BitDir.Rtl,
+                    rtl,
+                    vertical,
                     _dotnetObj);
 
                 _jsSetup = true;
             }
 
             _setupBehavior = behavior;
+            _setupRtl = rtl;
+            _setupVertical = vertical;
         }
         else if (_jsSetup)
         {

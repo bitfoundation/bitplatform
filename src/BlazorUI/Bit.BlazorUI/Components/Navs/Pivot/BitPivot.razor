@@ -14,10 +14,11 @@
 
             @if (OverflowBehavior is BitPivotOverflowBehavior.Slide)
             {
-                var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? "ChevronLeft");
+                var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? (_isVertical ? "ChevronUp" : "ChevronLeft"));
                 <button type="button"
                         disabled="@(_slideAtStart || _slideHasOverflow is false)"
                         style="@Styles?.SlideButton"
+                        aria-label="@(PreviousAriaLabel ?? "Previous")"
                         @onclick="() => Slide(false)"
                         class="bit-pvt-sbt bit-pvt-spv @Classes?.SlideButton">
                     <i class="@prevIcon?.GetCssClasses()" />
@@ -34,7 +35,7 @@
                             type="button"
                             style="display:none;@Styles?.OverflowButton"
                             aria-haspopup="true"
-                            aria-label="@OverflowAriaLabel"
+                            aria-label="@(OverflowAriaLabel ?? "More")"
                             aria-expanded="@(_isMenuOpen ? "true" : "false")"
                             @onclick="ToggleMenu"
                             class="bit-pvti bit-pvt-mor @Classes?.OverflowButton">
@@ -47,10 +48,11 @@
 
             @if (OverflowBehavior is BitPivotOverflowBehavior.Slide)
             {
-                var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? "ChevronRight");
+                var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (_isVertical ? "ChevronDown" : "ChevronRight"));
                 <button type="button"
                         disabled="@(_slideAtEnd || _slideHasOverflow is false)"
                         style="@Styles?.SlideButton"
+                        aria-label="@(NextAriaLabel ?? "Next")"
                         @onclick="() => Slide(true)"
                         class="bit-pvt-sbt bit-pvt-snx @Classes?.SlideButton">
                     <i class="@nextIcon?.GetCssClasses()" />

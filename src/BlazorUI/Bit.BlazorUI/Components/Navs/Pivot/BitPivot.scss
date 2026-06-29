@@ -79,6 +79,48 @@
         height: unset;
         flex-flow: column;
     }
+
+    .bit-pvt-hwr {
+        flex-flow: column;
+        align-items: stretch;
+    }
+
+    .bit-pvt-hwr > .bit-pvt-hct {
+        min-height: 0;
+    }
+
+    .bit-pvt-sbt {
+        width: 100%;
+        height: spacing(4);
+    }
+
+    &.bit-pvt-scr .bit-pvt-hct {
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 0;
+        padding-inline-end: spacing(0.5);
+
+        &::-webkit-scrollbar {
+            height: auto;
+            width: spacing(0.625);
+        }
+    }
+}
+
+.bit-pvt-sta .bit-pvt-mnc {
+    top: auto;
+    bottom: 0;
+    inset-inline-end: auto;
+    inset-inline-start: 100%;
+    border-radius: 0 spacing(0.25) spacing(0.25) 0;
+}
+
+.bit-pvt-end .bit-pvt-mnc {
+    top: auto;
+    bottom: 0;
+    inset-inline-start: auto;
+    inset-inline-end: 100%;
+    border-radius: spacing(0.25) 0 0 spacing(0.25);
 }
 
 .bit-pvt-lnk {

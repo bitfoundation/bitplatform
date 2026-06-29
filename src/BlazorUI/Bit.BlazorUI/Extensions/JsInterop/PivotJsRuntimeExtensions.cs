@@ -12,9 +12,10 @@ internal static class PivotJsRuntimeExtensions
         bool isMenu,
         bool isSlide,
         bool isRtl,
+        bool isVertical,
         DotNetObjectReference<T> dotnetObj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.setup", id, header, moreButton, isMenu, isSlide, isRtl, dotnetObj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Pivot.setup", id, header, moreButton, isMenu, isSlide, isRtl, isVertical, dotnetObj);
     }
 
     internal static ValueTask BitPivotRefresh(this IJSRuntime jsRuntime, string id)

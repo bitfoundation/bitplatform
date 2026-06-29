@@ -72,6 +72,21 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual(ariaLabel, items[1].GetAttribute("aria-label"));
     }
 
+    [TestMethod, DataRow("More options"), DataRow(null)]
+    public void BitPivotOverflowAriaLabelTest(string? overflowAriaLabel)
+    {
+        var com = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
+            parameters.Add(p => p.OverflowAriaLabel, overflowAriaLabel);
+            parameters.AddChildContent<BitPivotItem>();
+        });
+
+        var overflowButton = com.Find(".bit-pvt-mor");
+
+        Assert.AreEqual(overflowAriaLabel ?? "More", overflowButton.GetAttribute("aria-label"));
+    }
+
     [TestMethod,
          DataRow(BitPivotPosition.Top),
          DataRow(BitPivotPosition.Bottom),

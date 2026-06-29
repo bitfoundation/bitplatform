@@ -9,12 +9,13 @@ namespace BitBlazorUI {
             isMenu: boolean,
             isSlide: boolean,
             isRtl: boolean,
+            isVertical: boolean,
             dotnetObj: DotNetObject) {
             if (!header) return;
 
             Pivot.dispose(id);
 
-            const instance = new PivotInstance(id, header, moreButton, isMenu, isSlide, isRtl, dotnetObj);
+            const instance = new PivotInstance(id, header, moreButton, isMenu, isSlide, isRtl, isVertical, dotnetObj);
             Pivot._instances[id] = instance;
             instance.start();
         }
@@ -46,6 +47,7 @@ namespace BitBlazorUI {
         private isMenu: boolean;
         private isSlide: boolean;
         private isRtl: boolean;
+        private isVertical: boolean;
         private dotnetObj: DotNetObject;
         private observer: ResizeObserver | null = null;
         private scrollHandler: (() => void) | null = null;
@@ -59,6 +61,7 @@ namespace BitBlazorUI {
             isMenu: boolean,
             isSlide: boolean,
             isRtl: boolean,
+            isVertical: boolean,
             dotnetObj: DotNetObject) {
             this.id = id;
             this.header = header;
@@ -66,6 +69,7 @@ namespace BitBlazorUI {
             this.isMenu = isMenu;
             this.isSlide = isSlide;
             this.isRtl = isRtl;
+            this.isVertical = isVertical;
             this.dotnetObj = dotnetObj;
         }
 
@@ -94,8 +98,13 @@ namespace BitBlazorUI {
             return Array.from(this.header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)'));
         }
 
-        private static outerWidth(el: HTMLElement): number {
+        private outerSize(el: HTMLElement): number {
             const style = window.getComputedStyle(el);
+            if (this.isVertical) {
+                const marginTop = parseFloat(style.marginTop) || 0;
+                const marginBottom = parseFloat(style.marginBottom) || 0;
+                return el.offsetHeight + marginTop + marginBottom;
+            }
             const marginLeft = parseFloat(style.marginLeft) || 0;
             const marginRight = parseFloat(style.marginRight) || 0;
             return el.offsetWidth + marginLeft + marginRight;
@@ -109,21 +118,21 @@ namespace BitBlazorUI {
                 items.forEach(it => (it.style.display = ''));
                 if (this.moreButton) this.moreButton.style.display = 'none';
 
-                const containerWidth = this.header.clientWidth;
+                const containerSize = this.isVertical ? this.header.clientHeight : this.header.clientWidth;
 
                 let total = 0;
-                items.forEach(it => (total += PivotInstance.outerWidth(it)));
+                items.forEach(it => (total += this.outerSize(it)));
 
                 let overflowIndexes: number[] = [];
 
-                if (total > containerWidth + 1) {
+                if (total > containerSize + 1) {
                     if (this.moreButton) this.moreButton.style.display = '';
-                    const moreWidth = this.moreButton ? PivotInstance.outerWidth(this.moreButton) : 0;
-                    const available = containerWidth - moreWidth;
+                    const moreSize = this.moreButton ? this.outerSize(this.moreButton) : 0;
+                    const available = containerSize - moreSize;
 
                     let used = 0;
                     items.forEach((it, i) => {
-                        used += PivotInstance.outerWidth(it);
+                        used += this.outerSize(it);
                         if (used > available) {
                             it.style.display = 'none';
                             overflowIndexes.push(i);
@@ -148,20 +157,29 @@ namespace BitBlazorUI {
 
         private updateSlide() {
             try {
-                const scrollLeft = this.header.scrollLeft;
-                const maxScroll = this.header.scrollWidth - this.header.clientWidth;
-                const hasOverflow = maxScroll > 1;
-
                 let atStart: boolean;
                 let atEnd: boolean;
+                let hasOverflow: boolean;
 
-                if (this.isRtl) {
-                    const abs = Math.abs(scrollLeft);
-                    atStart = abs <= 1;
-                    atEnd = abs >= maxScroll - 1;
+                if (this.isVertical) {
+                    const scrollTop = this.header.scrollTop;
+                    const maxScroll = this.header.scrollHeight - this.header.clientHeight;
+                    hasOverflow = maxScroll > 1;
+                    atStart = scrollTop <= 1;
+                    atEnd = scrollTop >= maxScroll - 1;
                 } else {
-                    atStart = scrollLeft <= 1;
-                    atEnd = scrollLeft >= maxScroll - 1;
+                    const scrollLeft = this.header.scrollLeft;
+                    const maxScroll = this.header.scrollWidth - this.header.clientWidth;
+                    hasOverflow = maxScroll > 1;
+
+                    if (this.isRtl) {
+                        const abs = Math.abs(scrollLeft);
+                        atStart = abs <= 1;
+                        atEnd = abs >= maxScroll - 1;
+                    } else {
+                        atStart = scrollLeft <= 1;
+                        atEnd = scrollLeft >= maxScroll - 1;
+                    }
                 }
 
                 const serialized = `${hasOverflow}|${atStart}|${atEnd}`;
@@ -176,10 +194,15 @@ namespace BitBlazorUI {
 
         public slide(forward: boolean) {
             try {
-                const amount = Math.max(this.header.clientWidth * 0.75, 50);
                 const direction = forward ? 1 : -1;
-                const sign = this.isRtl ? -1 : 1;
-                this.header.scrollBy({ left: direction * sign * amount, behavior: 'smooth' });
+                if (this.isVertical) {
+                    const amount = Math.max(this.header.clientHeight * 0.75, 50);
+                    this.header.scrollBy({ top: direction * amount, behavior: 'smooth' });
+                } else {
+                    const amount = Math.max(this.header.clientWidth * 0.75, 50);
+                    const sign = this.isRtl ? -1 : 1;
+                    this.header.scrollBy({ left: direction * sign * amount, behavior: 'smooth' });
+                }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.slide:', e);
             }

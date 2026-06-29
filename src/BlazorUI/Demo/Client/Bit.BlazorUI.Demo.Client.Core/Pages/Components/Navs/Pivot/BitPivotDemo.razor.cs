@@ -70,31 +70,6 @@ public partial class BitPivotDemo
         },
         new()
         {
-            Name = "OnItemClick",
-            Type = "EventCallback<BitPivotItem>",
-            Description = "Callback for when the a pivot item is clicked.",
-            LinkType = LinkType.Link,
-            Href = "#pivot-item",
-        },
-        new()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<BitPivotItem>",
-            Description = "Callback for when the selected pivot item changes.",
-            LinkType = LinkType.Link,
-            Href = "#pivot-item",
-        },
-        new()
-        {
-            Name = "OverflowBehavior",
-            Type = "BitPivotOverflowBehavior?",
-            DefaultValue = "null",
-            Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
-            LinkType = LinkType.Link,
-            Href = "#overflowBehavior-enum",
-        },
-        new()
-        {
             Name = "NextIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -111,10 +86,35 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "OnChange",
+            Type = "EventCallback<BitPivotItem>",
+            Description = "Callback for when the selected pivot item changes.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-item",
+        },
+        new()
+        {
+            Name = "OnItemClick",
+            Type = "EventCallback<BitPivotItem>",
+            Description = "Callback for when the a pivot item is clicked.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-item",
+        },
+        new()
+        {
             Name = "OverflowAriaLabel",
             Type = "string?",
             DefaultValue = "null",
             Description = "The aria-label of the overflow menu button in the Menu overflow behavior.",
+        },
+        new()
+        {
+            Name = "OverflowBehavior",
+            Type = "BitPivotOverflowBehavior?",
+            DefaultValue = "null",
+            Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
+            LinkType = LinkType.Link,
+            Href = "#overflowBehavior-enum",
         },
         new()
         {
@@ -134,6 +134,15 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "Position",
+            Type = "BitPivotPosition",
+            DefaultValue = "BitPivotPosition.Top",
+            Description = "Position of the pivot header.",
+            LinkType = LinkType.Link,
+            Href = "#pivotPosition-enum",
+        },
+        new()
+        {
             Name = "PreviousIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -147,15 +156,6 @@ public partial class BitPivotDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the name of the icon of the previous button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronLeft).",
-        },
-        new()
-        {
-            Name = "Position",
-            Type = "BitPivotPosition",
-            DefaultValue = "BitPivotPosition.Top",
-            Description = "Position of the pivot header.",
-            LinkType = LinkType.Link,
-            Href = "#pivotPosition-enum",
         },
         new()
         {
@@ -1203,6 +1203,79 @@ private BitPivotItem selectedPivotItem;";
 </BitPivot>";
 
     private readonly string example11RazorCode = @"
+<div style=""max-width:450px"">
+    <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Menu"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div style=""max-width:450px"">
+    <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Slide"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div style=""max-width:450px"">
+    <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div>
+    <BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div>
+    <BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div>
+    <BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>";
+
+    private readonly string example12RazorCode = @"
 <BitPivot Color=""BitColor.Secondary"">
     <BitPivotItem HeaderText=""Primary"">
         <h1>Pivot #1: Primary</h1>
@@ -1271,7 +1344,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPivot>
@@ -1329,7 +1402,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -1489,7 +1562,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.Info"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
@@ -1556,35 +1629,5 @@ private BitPivotItem selectedPivotItem;";
         اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
     </BitPivotItem>
 </BitPivot>";
-
-    private readonly string example15RazorCode = @"
-<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Menu"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Slide"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>
-
-<BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
-    <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
-    <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
-</BitPivot>";
 }
+
