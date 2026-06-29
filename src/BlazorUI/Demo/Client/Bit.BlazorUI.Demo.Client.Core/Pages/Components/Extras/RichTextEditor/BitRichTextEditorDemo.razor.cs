@@ -374,11 +374,11 @@ public partial class BitRichTextEditorDemo
 
     private string? slashHtml = "<p>Place the cursor on a new line and type a slash.</p>";
 
-    private string? shortcutHtml = "<p>Press Ctrl/Cmd+B or your custom Ctrl/Cmd+Shift+K.</p>";
+    private string? shortcutHtml = "<p>Press your custom Ctrl/Cmd+Shift+S or Ctrl/Cmd+Shift+L.</p>";
     private readonly Dictionary<string, string> shortcuts = new()
     {
-        ["ctrl+b"] = "bold",
-        ["ctrl+shift+k"] = "createLink",
+        ["ctrl+shift+s"] = "strikeThrough",
+        ["ctrl+shift+l"] = "insertUnorderedList",
     };
 
     private string? emojiHtml = "<p>Add a little ✨ to your text.</p>";
@@ -585,8 +585,8 @@ private readonly BitRichTextEditorSanitizationPolicy sanitizationPolicy = new()
     private readonly string example23CsharpCode = @"
 private readonly Dictionary<string, string> shortcuts = new()
 {
-    [""ctrl+b""] = ""bold"",
-    [""ctrl+shift+k""] = ""createLink"",
+    [""ctrl+shift+s""] = ""strikeThrough"",
+    [""ctrl+shift+l""] = ""insertUnorderedList"",
 };";
 
     private readonly string example24RazorCode = @"

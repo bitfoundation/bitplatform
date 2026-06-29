@@ -294,10 +294,23 @@
                     modifier on all platforms.
                 </div>
                 <br />
+                <div>
+                    The command strings that can be mapped in <b>KeyboardShortcuts</b> are:
+                    <ul>
+                        <li><b>Inline:</b> <code>bold</code>, <code>italic</code>, <code>underline</code>, <code>strikeThrough</code></li>
+                        <li><b>History:</b> <code>undo</code>, <code>redo</code></li>
+                        <li><b>Lists:</b> <code>insertOrderedList</code>, <code>insertUnorderedList</code></li>
+                        <li><b>Alignment:</b> <code>justifyLeft</code>, <code>justifyCenter</code>, <code>justifyRight</code>, <code>justifyFull</code></li>
+                        <li><b>Indentation:</b> <code>indent</code>, <code>outdent</code></li>
+                        <li><b>Script:</b> <code>subscript</code>, <code>superscript</code></li>
+                        <li><b>Other:</b> <code>removeFormat</code>, <code>unlink</code>, <code>insertHorizontalRule</code></li>
+                    </ul>
+                </div>
+                <br />
                 <BitRichTextEditor @bind-Value="shortcutHtml" Height="10rem"
                                    Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
                                    KeyboardShortcuts="shortcuts"
-                                   Placeholder="Ctrl/Cmd+B, Ctrl/Cmd+I, and your custom chords work here..." />
+                                   Placeholder="Ctrl/Cmd+I, and your custom Ctrl/Cmd+Shift+S or Ctrl/Cmd+Shift+L work here..." />
             </DemoExample>
 
             <DemoExample Title="Emoji" RazorCode="@example24RazorCode" Id="example24">
