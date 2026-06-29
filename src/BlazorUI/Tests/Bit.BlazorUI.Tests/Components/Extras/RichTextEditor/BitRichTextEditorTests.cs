@@ -126,7 +126,10 @@ public class BitRichTextEditorTests : BunitTestContext
 
         await component.Instance.ExecuteCommandAsync("bold");
 
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.exec");
+        // Assert the exact forwarded command (Arguments: [editor, command, value]) so a wrong
+        // command string can't slip through - merely verifying the invoke happened wouldn't.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.exec");
+        Assert.AreEqual("bold", invocation.Arguments[1]);
     }
 
     [TestMethod]

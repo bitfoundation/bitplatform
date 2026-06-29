@@ -927,19 +927,28 @@ namespace BitBlazorUI {
                 .filter(c => range.intersectsNode(c));
             if (selected.length < 2) return;
 
-            const rows = Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[];
-
-            // Map each selected cell to its (row, column) position so the merge can span the
-            // full selected rectangle rather than collapsing everything onto a single row.
+            // Resolve each selected cell's position from the logical table grid (which accounts
+            // for existing rowspan/colspan) rather than DOM child order, so merges stay correct
+            // even when the table already contains merged cells. Each cell's extent also includes
+            // its current spans so the merged rectangle fully covers previously merged cells.
+            const { grid } = RichTextEditor.buildTableGrid(table);
             let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
             const info = selected.map(cell => {
-                const tr = cell.parentElement as HTMLTableRowElement;
-                const rowIdx = rows.indexOf(tr);
-                const colIdx = Array.from(tr.children).indexOf(cell);
-                if (rowIdx < minRow) minRow = rowIdx;
-                if (rowIdx > maxRow) maxRow = rowIdx;
-                if (colIdx < minCol) minCol = colIdx;
-                if (colIdx > maxCol) maxCol = colIdx;
+                let rowIdx = -1, colIdx = -1;
+                for (let r = 0; r < grid.length && rowIdx < 0; r++) {
+                    const c = grid[r].indexOf(cell as HTMLTableCellElement);
+                    if (c !== -1) { rowIdx = r; colIdx = c; }
+                }
+                const colspan = Math.max(1, parseInt(cell.getAttribute('colspan') || '1') || 1);
+                const rowspan = Math.max(1, parseInt(cell.getAttribute('rowspan') || '1') || 1);
+                const rowEnd = rowIdx + rowspan - 1;
+                const colEnd = colIdx + colspan - 1;
+                if (rowIdx >= 0) {
+                    if (rowIdx < minRow) minRow = rowIdx;
+                    if (rowEnd > maxRow) maxRow = rowEnd;
+                    if (colIdx < minCol) minCol = colIdx;
+                    if (colEnd > maxCol) maxCol = colEnd;
+                }
                 return { cell, rowIdx, colIdx };
             });
 
@@ -1393,10 +1402,20 @@ namespace BitBlazorUI {
                 }
                 // Harden anchors that survive sanitization with target="_blank": a blank target
                 // gives the opened page access to window.opener unless rel includes noopener.
-                // Set rel="noopener noreferrer" (added after the allowlist loop so it is not
-                // stripped) to sever that access.
+                // Only add rel when the active policy permits it; otherwise drop target="_blank"
+                // rather than smuggling an unlisted rel attribute through (which would violate the
+                // "only listed attributes survive" guarantee).
                 if (tag === 'a' && (el.getAttribute('target') || '').toLowerCase() === '_blank') {
-                    el.setAttribute('rel', 'noopener noreferrer');
+                    const allowedAttributes = (policy && policy.allowedAttributes) || {};
+                    const anchorAllowed = [
+                        ...(allowedAttributes['a'] || []),
+                        ...(allowedAttributes['*'] || [])
+                    ];
+                    if (anchorAllowed.includes('rel')) {
+                        el.setAttribute('rel', 'noopener noreferrer');
+                    } else {
+                        el.removeAttribute('target');
+                    }
                 }
             });
             return tpl.innerHTML;

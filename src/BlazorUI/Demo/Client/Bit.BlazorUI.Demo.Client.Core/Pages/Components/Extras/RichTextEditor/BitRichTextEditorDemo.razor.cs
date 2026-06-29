@@ -681,5 +681,6 @@ private async Task GetEditorHtml()
 
     private readonly string example30RazorCode = @"
 <BitRichTextEditor Styles=""@(new() { Toolbar = ""border-bottom-color: red"", Editor = ""background-color: #fff8e1"" })""
-                   Placeholder=""Custom styles applied to the toolbar and editor."" />";
+                   Classes=""@(new() { Toolbar = ""custom-rte-toolbar"", Editor = ""custom-rte-editor"" })""
+                   Placeholder=""Custom styles and classes applied to the toolbar and editor."" />";
 }
