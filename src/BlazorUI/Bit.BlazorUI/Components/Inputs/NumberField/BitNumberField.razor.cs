@@ -115,11 +115,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? DecrementTitle { get; set; }
 
     /// <summary>
-    /// Initial value of the number field.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
-
-    /// <summary>
     /// A custom function to normalize the raw input string before it gets parsed into the value.
     /// When provided, it takes precedence over <see cref="NormalizeDigits"/> and lets the developer plug in their own
     /// culture-specific or domain-specific transformation (e.g. mapping characters from a particular keyboard layout).
@@ -404,10 +399,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         OnValueChanged += HandleOnValueChanged;
 
-        if (ValueHasBeenSet is false && DefaultValue is not null)
-        {
-            Value = DefaultValue;
-        }
+        SetDefaultValue();
 
         NormalizeValue();
 

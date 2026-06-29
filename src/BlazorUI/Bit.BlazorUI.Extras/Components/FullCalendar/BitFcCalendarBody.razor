@@ -1,0 +1,44 @@
+@namespace Bit.BlazorUI
+@implements IDisposable
+
+<div class="bit-bfc-body" @key="(State.Mode, State.View)">
+    @if (State.Mode == BitFullCalendarMode.Timeline)
+    {
+        switch (State.View)
+        {
+            case BitFullCalendarView.Day:
+                <BitFcTimelineDayView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
+                break;
+            case BitFullCalendarView.Week:
+                <BitFcTimelineWeekView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
+                break;
+            case BitFullCalendarView.Month:
+                <BitFcTimelineMonthView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
+                break;
+            default:
+                <BitFcTimelineWeekView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
+                break;
+        }
+    }
+    else
+    {
+        switch (State.View)
+        {
+            case BitFullCalendarView.Month:
+                <BitFcCalendarMonthView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="MonthEventTemplate" />
+                break;
+            case BitFullCalendarView.Week:
+                <BitFcCalendarWeekView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="WeekEventTemplate" />
+                break;
+            case BitFullCalendarView.Day:
+                <BitFcCalendarDayView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="DayEventTemplate" />
+                break;
+            case BitFullCalendarView.Year:
+                <BitFcCalendarYearView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" />
+                break;
+            case BitFullCalendarView.Agenda:
+                <BitFcAgendaEvents />
+                break;
+        }
+    }
+</div>

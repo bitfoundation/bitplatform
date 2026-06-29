@@ -290,6 +290,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             Country = DefaultCountry;
         }
 
+        SetDefaultValue();
+
         base.OnInitialized();
     }
 

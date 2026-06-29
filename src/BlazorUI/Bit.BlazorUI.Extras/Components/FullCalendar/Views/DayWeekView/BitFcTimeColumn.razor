@@ -1,0 +1,15 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-time-column">
+    @for (int h = 0; h < 24; h++)
+    {
+        var hour = h;
+        <div class="bit-bfc-time-slot-label">
+            @if (hour > 0)
+            {
+                @BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat, State.Culture)
+            }
+        </div>
+    }
+</div>
+

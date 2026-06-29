@@ -504,6 +504,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     protected override void OnInitialized()
     {
+        SetDefaultValue();
+
         OnValueChanged += HandleOnValueChanged;
 
         OnSetParameters();

@@ -1,0 +1,17 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-view-tabs" role="tablist">
+    @foreach (var view in _views)
+    {
+        if (State.Mode == BitFullCalendarMode.Timeline && !_timelineViews.Contains(view))
+            continue;
+
+        <button class="bit-bfc-view-tab @(State.View == view ? "active" : "")"
+                type="button"
+                role="tab"
+                aria-selected="@(State.View == view ? "true" : "false")"
+                @onclick="() => State.SetView(view)">
+            @Texts.GetViewLabel(view)
+        </button>
+    }
+</div>

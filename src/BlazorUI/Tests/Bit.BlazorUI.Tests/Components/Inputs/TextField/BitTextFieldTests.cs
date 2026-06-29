@@ -636,7 +636,7 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(" bit component "),
         DataRow("  bit  "),
     ]
-    public void BitTextFieldTrimmedDefaultValueTest(string value)
+    public void BitTextFieldDefaultValueIsNotTrimmedTest(string value)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
@@ -645,9 +645,10 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var bitTextField = component.Find(".bit-tfl-inp");
-        var trimmedValue = bitTextField.GetAttribute("value");
+        var actualValue = bitTextField.GetAttribute("value");
 
-        Assert.AreEqual(value.Trim(), trimmedValue);
+        // DefaultValue is assigned directly to Value, so the Trim parameter does not apply to it.
+        Assert.AreEqual(value, actualValue);
     }
 
     [TestMethod,

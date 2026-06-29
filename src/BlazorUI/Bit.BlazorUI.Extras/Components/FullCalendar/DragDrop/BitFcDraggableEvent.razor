@@ -1,0 +1,18 @@
+@namespace Bit.BlazorUI
+
+@* Host is a non-button element: ChildContent is free-form and may itself contain interactive
+   content (buttons, links), so wrapping it in a native <button> would produce invalid nested
+   interactive markup. A div with role="button"/tabindex keeps keyboard activation and focus while
+   avoiding that nesting; drag/click handlers are preserved verbatim. *@
+<div role="button"
+     tabindex="0"
+     draggable="true"
+     class="@(_isDragged ? "bit-bfc-dragging" : "") @Class"
+     style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
+     @ondragstart="OnDragStart"
+     @ondragend="OnDragEnd"
+     @onclick="OnClick"
+     @onclick:stopPropagation="true"
+     @onkeydown="OnKeyDown">
+    @ChildContent
+</div>

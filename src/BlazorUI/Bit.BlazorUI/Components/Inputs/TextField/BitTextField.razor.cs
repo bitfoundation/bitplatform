@@ -81,11 +81,6 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public string? ClearButtonIconName { get; set; }
 
     /// <summary>
-    /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.
-    /// </summary>
-    [Parameter] public string? DefaultValue { get; set; }
-
-    /// <summary>
     /// Description displayed below the text field to provide additional details about what text to enter.
     /// </summary>
     [Parameter] public string? Description { get; set; }
@@ -421,10 +416,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         _labelId = $"BitTextField-{UniqueId}-label";
         _descriptionId = $"BitTextField-{UniqueId}-description";
 
-        if (ValueHasBeenSet is false && DefaultValue is not null)
-        {
-            await SetCurrentValueAsStringAsync(DefaultValue, true);
-        }
+        SetDefaultValue();
 
         await base.OnInitializedAsync();
     }

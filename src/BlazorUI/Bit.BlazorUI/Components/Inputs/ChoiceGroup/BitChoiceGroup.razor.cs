@@ -37,11 +37,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Default selected item for ChoiceGroup.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
-
-    /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
     /// </summary>
     [Parameter, ResetClassBuilder]

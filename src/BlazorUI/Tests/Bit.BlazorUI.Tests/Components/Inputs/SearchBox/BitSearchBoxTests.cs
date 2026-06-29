@@ -71,11 +71,26 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow("hello bit"),
+        DataRow("hello world")
+    ]
+    public void BitSearchBoxShouldTakeDefaultValueWhenValueIsNotBound(string defaultValue)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.AreEqual(defaultValue, input.GetAttribute("value"));
+    }
+
+    [TestMethod,
         DataRow("hello world", "hello bit"),
-        DataRow(null, "hello bit"),
         DataRow("hello world", null)
     ]
-    public void BitSearchBoxShouldTakeDefaultValue(string? value, string defaultValue)
+    public void BitSearchBoxShouldIgnoreDefaultValueWhenValueIsBound(string value, string? defaultValue)
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
@@ -84,9 +99,9 @@ public class BitSearchBoxTests : BunitTestContext
         });
 
         var input = component.Find(".bit-srb-inp");
-        var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
 
-        Assert.AreEqual(input.GetAttribute("value"), actualValue);
+        // When Value is bound (controlled mode), DefaultValue is ignored.
+        Assert.AreEqual(value, input.GetAttribute("value"));
     }
 
     [TestMethod,

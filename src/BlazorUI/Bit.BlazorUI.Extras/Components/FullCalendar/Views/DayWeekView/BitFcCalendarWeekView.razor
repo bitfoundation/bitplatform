@@ -1,0 +1,100 @@
+@namespace Bit.BlazorUI
+@inject IJSRuntime JS
+
+@{
+    var weekStart = BitFullCalendarHelpers.StartOfWeek(State.SelectedDate, State.Culture);
+    var weekDays = Enumerable.Range(0, 7).Select(i => weekStart.AddDays(i)).ToArray();
+}
+
+<div class="bit-bfc-week-layout">
+    <div class="bit-bfc-week-mobile-warning">
+        @Texts.WeekMobileWarning
+    </div>
+
+    <BitFcWeekViewMultiDayEventsRow MultiDayEvents="MultiDayEvents" Date="State.SelectedDate" EventTemplate="EventTemplate" />
+
+    <div id="@_timeGridScrollElementId" class="bit-bfc-week-scroll">
+        <div class="bit-bfc-week-header">
+            <div class="bit-bfc-week-header-time"></div>
+            @foreach (var day in weekDays)
+            {
+                var isToday = day.Date == DateTime.Today;
+                <div class="bit-bfc-week-header-day">
+                    <span class="bit-bfc-week-header-day-name">@day.ToString("ddd", State.Culture)</span>
+                    <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(day, State.Culture)</span>
+                </div>
+            }
+        </div>
+
+        <div class="bit-bfc-week-body">
+            <BitFcTimeColumn />
+            <div class="bit-bfc-timegrid-days">
+                @foreach (var day in weekDays)
+                {
+                    var d = day;
+                    // Interval-overlap against the day's half-open window [dayStart, dayEnd) so events
+                    // that span day boundaries are included once, and a 00:00 end (exclusive midnight)
+                    // does not bleed onto the next day.
+                    var dayStart = d.Date;
+                    var dayEnd = d.Date.AddDays(1);
+                    var dayEvents = SingleDayEvents.Where(e =>
+                        e.StartDate < dayEnd && e.EndDate > dayStart).ToList();
+                    var grouped = BitFullCalendarHelpers.GroupEvents(dayEvents);
+
+                    <div class="bit-bfc-week-day-col">
+                        @for (int h = 0; h < 24; h++)
+                        {
+                            var hour = h;
+                            <div class="bit-bfc-hour-row">
+                                @if (h > 0)
+                                {
+                                    <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>
+                                }
+                                <div class="bit-bfc-hour-slot bit-bfc-droppable @GetWeekDropClass(d, hour, 0)"
+                                     role="button"
+                                     tabindex="0"
+                                     aria-label="@HourSlotAriaLabel(d, hour)"
+                                     @ondragenter="() => OnDragEnterSlot(d, hour, 0)"
+                                     @ondragover:preventDefault="true"
+                                     @ondrop="() => OnDrop(d, hour, 0)"
+                                     @onclick="() => OnHourClickAsync(d, hour)"
+                                     @onkeydown="e => OnHourKeyDownAsync(e, d, hour)"></div>
+                                <div class="bit-bfc-hour-row-half bit-bfc-droppable @GetWeekDropClass(d, hour, 30)"
+                                     role="button"
+                                     tabindex="0"
+                                     aria-label="@HourSlotAriaLabel(d, hour, 30)"
+                                     @ondragenter="() => OnDragEnterSlot(d, hour, 30)"
+                                     @ondragover:preventDefault="true"
+                                     @ondrop="() => OnDrop(d, hour, 30)"
+                                     @onclick="() => OnHourClickAsync(d, hour, 30)"
+                                     @onkeydown="e => OnHourKeyDownAsync(e, d, hour, 30)"></div>
+                                <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    @Texts.AddEventHoverHint
+                                </div>
+                            </div>
+                        }
+
+                        <BitFcRenderGroupedEvents GroupedEvents="grouped" Day="d" OnEventSelected="SelectEvent" EventTemplate="EventTemplate" />
+
+                        @if (d.Date == DateTime.Today)
+                        {
+                            <BitFcCalendarTimeline />
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_showAddDialog)
+{
+    <BitFcAddEditEventDialog StartDate="_addDate" StartHour="_addHour" StartMinute="_addMinute" OnClose="() => _showAddDialog = false" />
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+
