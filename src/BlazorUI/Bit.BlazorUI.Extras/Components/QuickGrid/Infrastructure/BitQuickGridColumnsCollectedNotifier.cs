@@ -52,3 +52,15 @@ public class BitQuickGridColumnsCollectedNotifier<TGridItem> : IComponent
         }
     }
 }
+
+/// <summary>
+/// For internal use only. Do not use.
+/// Backward-compatible alias for <see cref="BitQuickGridColumnsCollectedNotifier{TGridItem}"/>, kept so
+/// existing code referencing the old <c>BitDataGridColumnsCollectedNotifier&lt;TGridItem&gt;</c> type keeps
+/// compiling. It inherits the renamed notifier, preserving the same <see cref="IComponent"/> behavior.
+/// </summary>
+/// <typeparam name="TGridItem">For internal use only. Do not use.</typeparam>
+[Obsolete("BitDataGridColumnsCollectedNotifier<TGridItem> has been renamed to BitQuickGridColumnsCollectedNotifier<TGridItem>. Use BitQuickGridColumnsCollectedNotifier<TGridItem> instead.")]
+public class BitDataGridColumnsCollectedNotifier<TGridItem> : BitQuickGridColumnsCollectedNotifier<TGridItem>
+{
+}

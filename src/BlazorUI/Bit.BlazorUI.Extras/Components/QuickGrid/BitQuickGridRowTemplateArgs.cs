@@ -22,3 +22,15 @@ public class BitQuickGridRowTemplateArgs<T>
     /// </summary>
     public T RowItem { get; set; } = default!;
 }
+
+/// <summary>
+/// Backward-compatible alias for <see cref="BitQuickGridRowTemplateArgs{T}"/>, kept so existing code that
+/// stored, returned or accepted the old <c>BitDataGridRowTemplateArgs&lt;T&gt;</c> type keeps compiling. It
+/// inherits the renamed type (so instances are accepted anywhere a <see cref="BitQuickGridRowTemplateArgs{T}"/>
+/// is expected) and preserves the same public API surface.
+/// </summary>
+/// <typeparam name="T">The type of data represented by each row in the grid.</typeparam>
+[Obsolete("BitDataGridRowTemplateArgs<T> has been renamed to BitQuickGridRowTemplateArgs<T>. Use BitQuickGridRowTemplateArgs<T> instead.")]
+public class BitDataGridRowTemplateArgs<T> : BitQuickGridRowTemplateArgs<T>
+{
+}

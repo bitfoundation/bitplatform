@@ -407,8 +407,8 @@ public partial class BitQuickGridDemo : AppComponentBase
                 new()
                 {
                     Name = "OriginalRow",
-                    Type = "RenderFragment?",
-                    DefaultValue = "null",
+                    Type = "RenderFragment",
+                    DefaultValue = "",
                     Description = "A render fragment that produces the original row markup (the default <tr> with all column cells). Render this to include the default row, or omit to replace entirely.",
                 },
                 new()

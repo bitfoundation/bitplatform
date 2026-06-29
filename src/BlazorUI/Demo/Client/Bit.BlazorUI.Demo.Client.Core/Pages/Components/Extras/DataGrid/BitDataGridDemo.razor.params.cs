@@ -5,7 +5,7 @@ public partial class BitDataGridDemo
     private readonly List<ComponentParameter> componentParameters =
     [
         new() { Name = "Items", Type = "IEnumerable<TItem>?", DefaultValue = "null", Description = "The data source bound to the grid for client-side processing." },
-        new() { Name = "OnRead", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Server-side data callback. When set, the grid delegates sort/filter/page to the caller.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
+        new() { Name = "OnRead", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Server-side data callback. When set, the grid delegates sort/filter/page/group to the caller.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
         new() { Name = "OnLoadMore", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Infinite-scrolling data callback. Loads rows in batches and appends the next batch as the user scrolls toward the end.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
         new() { Name = "LoadMoreBatchSize", Type = "int", DefaultValue = "50", Description = "Number of rows fetched per batch in infinite-scrolling mode." },
         new() { Name = "ChildContent", Type = "RenderFragment?", DefaultValue = "null", Description = "Column definitions and other declarative children." },
@@ -205,7 +205,7 @@ public partial class BitDataGridDemo
             Parameters =
             [
                 new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the aggregated column." },
-                new() { Name = "Type", Type = "BitDataGridAggregateType", DefaultValue = "BitDataGridAggregateType.None", Description = "The aggregate function that produced the value.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateType" },
+                new() { Name = "Type", Type = "BitDataGridAggregateType", DefaultValue = "", Description = "The aggregate function that produced the value.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateType" },
                 new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The raw aggregate value." },
                 new() { Name = "FormattedValue", Type = "string", DefaultValue = "string.Empty", Description = "The aggregate value formatted using the column's AggregateFormat/Format." },
             ],

@@ -17,6 +17,14 @@ public sealed class BitDataGridFilterDescriptor
     /// The value to filter by. Its meaning depends on the selected <see cref="Operator"/> and it is
     /// unused for value-less operators such as <see cref="BitDataGridFilterOperator.IsEmpty"/> and
     /// <see cref="BitDataGridFilterOperator.IsNotEmpty"/>.
+    /// <para>
+    /// Server-side note for <c>OnRead</c> consumers: when an <see cref="BitDataGridFilterOperator.Equals"/>
+    /// (or <see cref="BitDataGridFilterOperator.NotEquals"/>) filter targets a <see cref="System.DateTime"/>
+    /// or <see cref="System.DateTimeOffset"/> column, the value is emitted as the selected calendar day at
+    /// midnight (its time-of-day is zero). It is intended as a day-level match against each row's own
+    /// calendar date, not an exact-instant comparison, so a remote consumer should compare on the date
+    /// component (e.g. <c>row.Date == value.Date</c>) rather than the full timestamp.
+    /// </para>
     /// </summary>
     public object? Value { get; set; }
 }
