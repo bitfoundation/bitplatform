@@ -828,6 +828,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             return;
         }
         if (version != _loadVersion) return;
+
+        // Enforce the OnRead (server-mode) contract here, where the data mode is unambiguous, rather
+        // than in the shared BitDataGridReadResult constructor: a single page can never legitimately
+        // hold more rows than the reported grand total, and accepting that would feed paging math an
+        // inconsistent _pageItems/_totalCount pair. The constructor stays lenient so the infinite-
+        // scrolling (OnLoadMore) path can keep returning batches with an unknown (0) total.
+        if (result.Items.Count > result.TotalCount)
+            throw new InvalidOperationException(
+                $"{nameof(OnRead)} returned a page with more items ({result.Items.Count}) than the reported " +
+                $"{nameof(BitDataGridReadResult<TItem>.TotalCount)} ({result.TotalCount}).");
+
         _pageItems = result.Items;
         _view = result.Items;
         _totalCount = result.TotalCount;

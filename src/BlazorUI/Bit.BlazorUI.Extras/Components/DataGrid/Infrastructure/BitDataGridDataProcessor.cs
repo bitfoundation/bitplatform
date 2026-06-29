@@ -65,7 +65,17 @@ public static class BitDataGridDataProcessor
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
     {
         if (groups.Count == 0) return new List<BitDataGridGroup<TItem>>();
-        return BuildGroups(source, groups, columns, 0, string.Empty);
+
+        // Drop stale descriptors that no longer map to a field-backed column up front, mirroring the
+        // filter/sort paths that silently ignore unknown columns. Without this, a single invalid
+        // descriptor would short-circuit BuildGroups and blank the entire grouped view instead of
+        // degrading gracefully to the remaining valid groupings.
+        var valid = groups
+            .Where(g => columns.TryGetValue(g.ColumnId, out var c) && c.Accessor is not null)
+            .ToList();
+        if (valid.Count == 0) return new List<BitDataGridGroup<TItem>>();
+
+        return BuildGroups(source, valid, columns, 0, string.Empty);
     }
 
     private static List<BitDataGridGroup<TItem>> BuildGroups<TItem>(

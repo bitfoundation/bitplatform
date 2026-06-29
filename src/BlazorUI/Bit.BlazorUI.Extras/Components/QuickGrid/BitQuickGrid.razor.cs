@@ -38,6 +38,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // queue a refresh (the very first collection already loads data via ColumnsFirstCollected).
     private bool _columnsCollectedOnce;
     private BitQuickGridColumnBase<TGridItem>? _sortByColumnBeforeCollect;
+    // Captures the first default-sort column (and its direction) discovered during the current
+    // collection pass, so FinishCollectingColumns can adopt it when the previously active sort column
+    // is no longer present after recollection instead of clearing sorting outright.
+    private BitQuickGridColumnBase<TGridItem>? _defaultSortColumnDuringCollect;
+    private BitQuickGridSortDirection? _defaultSortDirectionDuringCollect;
 
     // The associated ES6 module, which uses document-level event listeners
     //private IJSObjectReference? _jsModule;
@@ -283,6 +288,15 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
                 _sortByColumn = column;
                 _sortByAscending = isDefaultSortDirection.Value != BitQuickGridSortDirection.Descending;
             }
+
+            // Remember the first default-sort column collected in this pass even when a (possibly stale)
+            // _sortByColumn is still set. If that prior column turns out to have been dropped, this lets
+            // FinishCollectingColumns switch to the newly declared default instead of clearing sorting.
+            if (isDefaultSortDirection.HasValue && _defaultSortColumnDuringCollect is null)
+            {
+                _defaultSortColumnDuringCollect = column;
+                _defaultSortDirectionDuringCollect = isDefaultSortDirection.Value;
+            }
         }
     }
 
@@ -405,6 +419,8 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     private void StartCollectingColumns()
     {
         _sortByColumnBeforeCollect = _sortByColumn;
+        _defaultSortColumnDuringCollect = null;
+        _defaultSortDirectionDuringCollect = null;
         _columns.Clear();
         _collectingColumns = true;
     }
@@ -415,12 +431,22 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
 
         // The column that drove the last data load may no longer be among the freshly collected
         // columns (it was removed or replaced). Leaving _sortByColumn pointing at a dropped column
-        // desyncs the data query from the header, so drop it and queue a refresh so the grid
-        // re-queries without it. The refresh is run from OnAfterRenderAsync because this runs mid-render.
+        // desyncs the data query from the header, so reconcile it and queue a refresh so the grid
+        // re-queries. The refresh is run from OnAfterRenderAsync because this runs mid-render.
         if (_sortByColumn is not null && _columns.Contains(_sortByColumn) is false)
         {
-            _sortByColumn = null;
-            _sortByAscending = false;
+            if (_defaultSortColumnDuringCollect is not null)
+            {
+                // A newly collected column declares a default sort, so adopt it instead of clearing
+                // sorting; otherwise a dynamic column swap would drop the intended default order.
+                _sortByColumn = _defaultSortColumnDuringCollect;
+                _sortByAscending = _defaultSortDirectionDuringCollect!.Value != BitQuickGridSortDirection.Descending;
+            }
+            else
+            {
+                _sortByColumn = null;
+                _sortByAscending = false;
+            }
             _queueSortReconciliationRefresh = true;
         }
         else if (_columnsCollectedOnce && _sortByColumnBeforeCollect is null && _sortByColumn is not null)

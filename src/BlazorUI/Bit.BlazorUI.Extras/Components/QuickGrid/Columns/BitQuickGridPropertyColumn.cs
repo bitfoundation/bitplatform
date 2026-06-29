@@ -114,3 +114,16 @@ public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBa
     protected internal override void CellContent(RenderTreeBuilder builder, TGridItem item)
         => builder.AddContent(0, _cellTextFunc!(item));
 }
+
+/// <summary>
+/// Backward-compatible alias for <see cref="BitQuickGridPropertyColumn{TGridItem, TProp}"/>, kept so existing
+/// Razor markup that referenced the old <c>BitDataGridPropertyColumn&lt;TGridItem, TProp&gt;</c> component keeps
+/// compiling. It inherits the renamed column, so it behaves identically while remaining discoverable
+/// alongside <see cref="BitQuickGridPropertyColumn{TGridItem, TProp}"/> during the migration window.
+/// </summary>
+/// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
+/// <typeparam name="TProp">The type of the value being displayed in the column's cells.</typeparam>
+[Obsolete("BitDataGridPropertyColumn<TGridItem, TProp> has been renamed to BitQuickGridPropertyColumn<TGridItem, TProp>. Use BitQuickGridPropertyColumn<TGridItem, TProp> instead.")]
+public class BitDataGridPropertyColumn<TGridItem, TProp> : BitQuickGridPropertyColumn<TGridItem, TProp>
+{
+}

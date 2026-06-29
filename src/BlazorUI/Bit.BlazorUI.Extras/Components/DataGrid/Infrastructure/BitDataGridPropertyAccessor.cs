@@ -160,10 +160,19 @@ public sealed class BitDataGridPropertyAccessor<TItem>
                 nullGuard = nullGuard is null ? isNull : Expression.OrElse(nullGuard, isNull);
             }
 
-            var prop = body.Type.GetProperty(segment,
+            // A nullable value-type intermediate (e.g. Money?) exposes the next segment on its underlying
+            // value type, not on Nullable<T> itself, so unwrap via .Value before resolving the property;
+            // otherwise GetProperty would look on Nullable<T> (which only has Value/HasValue) and fail for
+            // a nested path like "Price.Amount" where Price is Money?. The null guard added above already
+            // protects the getter/setter from dereferencing a null nullable here.
+            var owner = Nullable.GetUnderlyingType(body.Type) is not null
+                ? Expression.Property(body, "Value")
+                : body;
+
+            var prop = owner.Type.GetProperty(segment,
                 BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
-                ?? throw new ArgumentException($"Property '{segment}' not found on type '{body.Type.Name}'.");
-            body = Expression.Property(body, prop);
+                ?? throw new ArgumentException($"Property '{segment}' not found on type '{owner.Type.Name}'.");
+            body = Expression.Property(owner, prop);
             lastProp = prop;
         }
 
