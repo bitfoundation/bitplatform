@@ -1,7 +1,4 @@
 {
-    "dependencies": {
-        "dompurify": "3.4.11"
-    },
     "devDependencies": {
         "esbuild": "0.28.1",
         "sass": "1.101.0",
