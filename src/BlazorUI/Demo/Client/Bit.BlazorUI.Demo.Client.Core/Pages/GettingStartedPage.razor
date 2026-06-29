@@ -276,6 +276,80 @@
 
         <br />
 
+        <BitCard>
+            <BitText Typography="BitTypography.H4" Gutter>5. AI/MCP Integration</BitText>
+
+            <br />
+
+            <BitText Gutter>
+                bit BlazorUI now provides full <b>MCP support</b> so AI coding agents (GitHub Copilot, Cursor, Claude, Windsurf, etc.) can discover components, get accurate examples, and follow best practices automatically.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                MCP endpoint:
+            </BitText>
+
+            <BitLink Href="https://blazorui.bitplatform.dev/mcp" Target="_blank">
+                https://blazorui.bitplatform.dev/mcp
+            </BitLink>
+
+            <br /><br />
+
+            <BitText Typography="BitTypography.H6" Gutter>
+                How to configure your AI agent / Copilot instructions
+            </BitText>
+
+            <BitText>
+                Add the following rules to your <b>agents.md</b>, <b>copilot-instructions.md</b>, <b>.cursor/rules</b>, or any equivalent agent configuration file:
+            </BitText>
+
+            <CodeBox Language="markdown">
+### bit BlazorUI
+
+- For all UI-related tasks in this Blazor project, you **MUST** use the bit BlazorUI MCP server.
+- Always start component discovery with the `GetBitBlazorUIComponentsList` tool.
+- For detailed API, parameters, and usage examples, call `GetBitBlazorUIComponentExamples`.
+- Prefer `Bit*` components over plain HTML/CSS or other UI libraries.
+            </CodeBox>
+
+            <br />
+
+            <BitText Gutter>
+                <b>Tip</b>: Many agents (especially Cursor + Claude) will automatically detect and use the MCP server when you add the above instructions.
+
+                <br />
+                <br />
+
+                <b>.vscode/mcp.json</b>
+                <CodeBox Language="json">{
+    "servers": {
+        "bitBlazorUI": {
+            "type": "http",
+            "url": "https://blazorui.bitplatform.dev/mcp"
+        }
+    }
+}</CodeBox>
+
+                <b>mcp.json</b>
+                <CodeBox Language="json">{
+  "mcpServers": {
+    "bitBlazorUI": {
+      "type": "http",
+      "url": "https://blazorui.bitplatform.dev/mcp",
+      "tools": [
+        "*"
+      ]
+    }
+  }
+}</CodeBox>
+            </BitText>
+
+        </BitCard>
+
+        <br />
+
         <FeedbackSection Url="GettingStartedPage.razor" />
     </BitParams>
 </section>

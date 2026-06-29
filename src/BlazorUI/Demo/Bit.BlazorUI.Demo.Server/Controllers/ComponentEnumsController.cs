@@ -17,9 +17,9 @@ public partial class ComponentEnumsController : AppControllerBase
     private static readonly Type[] EnumTypes = [.. ComponentsAssemblies.SelectMany(asm => asm.GetExportedTypes().Where(t => t.IsEnum))];
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetEnumDetails))]
+    [McpServerTool(Name = nameof(GetBitBlazorUIEnumDetails))]
     [Description("Gets the details of a specified Bit.BlazorUI enum including its values and descriptions.")]
-    public async Task<EnumValueDetailsDto[]?> GetEnumDetails(string enumName)
+    public async Task<EnumValueDetailsDto[]?> GetBitBlazorUIEnumDetails(string enumName)
     {
         if (string.IsNullOrWhiteSpace(enumName))
             return null;
