@@ -36,6 +36,8 @@ public partial class BitRichTextEditor
         }
 
         await _js.BitRichTextEditorInsertMedia(_editorRef, html);
+        // The media embedded successfully, so clear any stale validation message.
+        ClearInlineError();
         _showMediaInput = false;
         _mediaUrl = "";
     }

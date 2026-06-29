@@ -59,6 +59,10 @@ public partial class BitRichTextEditor
     private static readonly string[] KnownImageMimeTypes =
         ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
 
+    // Maximum decoded image payload, mirroring the bridge's MAX_IMAGE_BYTES (10 MB). Enforced
+    // before decoding so an oversized base64 string cannot exhaust memory on the server side.
+    private const long MaxImageBytes = 10 * 1024 * 1024;
+
     // data: image URIs are only honored when the active policy permits them (the default policy
     // allows them); a null policy maps to the bridge default which also permits them.
     private bool DataImageUrisAllowed => SanitizationPolicy?.AllowDataImageUris ?? true;
@@ -114,7 +118,22 @@ public partial class BitRichTextEditor
 
         try
         {
+            // Reject oversized payloads from the base64 length before decoding so a malicious or
+            // oversized direct invocation cannot allocate a huge byte[] / exhaust memory. Every 4
+            // base64 chars decode to at most 3 bytes.
+            var estimatedBytes = (long)base64.Length / 4 * 3;
+            if (estimatedBytes > MaxImageBytes)
+            {
+                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+                return null;
+            }
+
             var bytes = Convert.FromBase64String(base64);
+            if (bytes.Length > MaxImageBytes)
+            {
+                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+                return null;
+            }
             var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, contentType, bytes));
             if (string.IsNullOrWhiteSpace(url))
             {

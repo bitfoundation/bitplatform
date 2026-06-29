@@ -61,7 +61,7 @@
             <div class="bit-rte-bar">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("find", "Find")" placeholder="@Label("find", "Find")"
                        @bind="_findTerm" @bind:event="oninput" @bind:after="RunFindAsync" />
-                <input type="text" class="bit-rte-inp" aria-label="@Label("replace", "Replace with")" placeholder="@Label("replace", "Replace with")"
+                <input type="text" class="bit-rte-inp" aria-label="@Label("replace-with", "Replace with")" placeholder="@Label("replace-with", "Replace with")"
                        @bind="_replaceTerm" @bind:event="oninput" />
                 <label class="bit-rte-find-opt"><input type="checkbox" aria-label="@Label("match-case", "Match case")" @bind="_findCaseSensitive" @bind:after="RunFindAsync" /> Aa</label>
                 <span class="bit-rte-find-count">@_findCount</span>

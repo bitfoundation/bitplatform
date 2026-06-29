@@ -604,7 +604,18 @@ namespace BitBlazorUI {
             if (marks.length === 0) return 0;
             const idx = Math.min(Math.max(editor._findIndex ?? 0, 0), marks.length - 1);
             const mark = marks[idx];
-            mark.replaceWith(document.createTextNode(replacement ?? ''));
+            // Budget the replacement against the remaining visible-text capacity so a replace
+            // cannot push textContent past _maxLength. The matched text is removed, so it frees
+            // its own length back into the budget.
+            let repl = replacement ?? '';
+            const max = editor._maxLength;
+            if (max != null) {
+                const current = (editor.textContent || '').length;
+                const markLen = (mark.textContent || '').length;
+                const allowed = Math.max(0, max - (current - markLen));
+                if (repl.length > allowed) repl = repl.slice(0, allowed);
+            }
+            mark.replaceWith(document.createTextNode(repl));
             editor.normalize();
             RichTextEditor.afterChange(editor);
             return RichTextEditor.find(editor, term, caseSensitive);
@@ -616,11 +627,25 @@ namespace BitBlazorUI {
             const flags = caseSensitive ? 'g' : 'gi';
             const rx = new RegExp(RichTextEditor.escapeRegExp(term), flags);
             let count = 0;
+            // Track remaining visible-text capacity so cumulative replacements never exceed
+            // _maxLength. Each match frees its own length (it is removed) and the inserted
+            // replacement consumes from the budget; once exhausted, replacements are trimmed.
+            const max = editor._maxLength;
+            let remaining = max == null ? Infinity : Math.max(0, max - (editor.textContent || '').length);
             const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
             const textNodes: Node[] = [];
             while (walker.nextNode()) textNodes.push(walker.currentNode);
             for (const tn of textNodes) {
-                const replaced = (tn.nodeValue || '').replace(rx, () => { count++; return replacement ?? ''; });
+                const replaced = (tn.nodeValue || '').replace(rx, (matched: string) => {
+                    count++;
+                    let r = replacement ?? '';
+                    if (max != null) {
+                        const allowedLen = matched.length + remaining;
+                        if (r.length > allowedLen) r = r.slice(0, Math.max(0, allowedLen));
+                        remaining += matched.length - r.length;
+                    }
+                    return r;
+                });
                 if (replaced !== tn.nodeValue) tn.nodeValue = replaced;
             }
             RichTextEditor.afterChange(editor);
@@ -1365,6 +1390,13 @@ namespace BitBlazorUI {
                         ...(allowedAttributes['*'] || [])
                     ];
                     if (!allowed.includes(name)) el.removeAttribute(attr.name);
+                }
+                // Harden anchors that survive sanitization with target="_blank": a blank target
+                // gives the opened page access to window.opener unless rel includes noopener.
+                // Set rel="noopener noreferrer" (added after the allowlist loop so it is not
+                // stripped) to sever that access.
+                if (tag === 'a' && (el.getAttribute('target') || '').toLowerCase() === '_blank') {
+                    el.setAttribute('rel', 'noopener noreferrer');
                 }
             });
             return tpl.innerHTML;
