@@ -1,6 +1,6 @@
 ﻿using Microsoft.Net.Http.Headers;
 
-namespace Bit.Bswup.Demo.Server.Startup;
+namespace Bit.Bswup.FullDemo.Server.Startup;
 
 public static class Middlewares
 {

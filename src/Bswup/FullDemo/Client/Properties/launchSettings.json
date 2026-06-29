@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Bit.Bswup.Demo.Client": {
+    "Bit.Bswup.FullDemo.Client": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {

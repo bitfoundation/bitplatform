@@ -11,10 +11,10 @@ else
 }
 #endif
 
-Bit.Bswup.Demo.Server.Startup.Services.Add(builder.Services);
+Bit.Bswup.FullDemo.Server.Startup.Services.Add(builder.Services);
 
 var app = builder.Build();
 
-Bit.Bswup.Demo.Server.Startup.Middlewares.Use(app, builder.Environment);
+Bit.Bswup.FullDemo.Server.Startup.Middlewares.Use(app, builder.Environment);
 
 app.Run();

@@ -1,7 +1,7 @@
 ﻿using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 
-namespace Bit.Bswup.Demo.Server.Startup;
+namespace Bit.Bswup.FullDemo.Server.Startup;
 
 public static class Services
 {
