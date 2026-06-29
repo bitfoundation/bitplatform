@@ -56,8 +56,8 @@ Before implementing any changes, you **MUST** complete the following:
 *   If the user provides a **URL**, you **MUST** use the `fetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   If the user talks about current changes in the codebase, you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands to see the differences.
-*   For UI-related tasks, you **MUST** first ask `DeepWiki`: *"What features does BitPlatform offer to help me complete this task? [USER'S ORIGINAL REQUEST]"*
-*   For anything related to `Bit.BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit project template, use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform`. For component discovery and API details, also use either the `GetComponentExamples` or `GetBitBlazorUIComponentsList` MCP tools.
+*   For UI-related tasks, you **MUST** use the `GetBitBlazorUIComponentsList` tools for component discovery and `GetBitBlazorUIComponentExamples` for API details and examples.
+*   For anything related to `bit Bswup`, `bit Butil`, `bit Besql`, `bit Brouter`, `bit Bmotion` or the bit project template, use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform`.
 *   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
 *   For Keycloak/realm related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `keycloak/keycloak` to find relevant information.
 *   For .NET Aspire tasks (AppHost orchestration, resource configuration, switching Docker resources to Azure equivalents, service discovery, integrations), you **MUST** use the `DeepWiki_ask_question` tool with repository `microsoft/aspire` to find correct implementation patterns - it significantly outperforms Microsoft Learn for code-level questions.
