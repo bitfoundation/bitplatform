@@ -5,6 +5,13 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
 {
     public static readonly BitDataGridValueComparer Instance = new();
 
+    // object.ToString() returns the type's full name for every instance unless the type overrides it,
+    // so using ToString() as a fallback ordering/equality key would collapse unrelated instances of
+    // such a type into one value. Only treat ToString() as meaningful when the runtime type actually
+    // overrides object.ToString().
+    internal static bool HasMeaningfulToString(Type type)
+        => type.GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
+
     public int Compare(object? x, object? y)
     {
         if (ReferenceEquals(x, y)) return 0;
@@ -25,14 +32,21 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         // is a total order and stays transitive across the whole column. Without this, same-type values
         // ordered via CompareTo and cross-type values ordered via string could disagree (e.g. ints 2 and
         // 10 sort numerically, but 2 vs the string "100" sorting by text would place 2 after it, breaking
-        // transitivity and the IComparer<T> contract). Within the same type name we then fall back to a
-        // symmetric, case-insensitive string comparison.
+        // transitivity and the IComparer<T> contract).
         var tx = x.GetType().FullName ?? x.GetType().Name;
         var ty = y.GetType().FullName ?? y.GetType().Name;
         var typeOrder = string.Compare(tx, ty, StringComparison.Ordinal);
         if (typeOrder != 0) return typeOrder;
 
-        return string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
+        // Same type, not IComparable. Only fall back to ToString() when the type provides a meaningful
+        // override; otherwise every instance stringifies to the type name and unrelated rows would be
+        // ranked equal (and collapsed when grouping). For such types order by identity hash instead so
+        // distinct instances stay distinct while preserving a stable, transitive total order.
+        if (HasMeaningfulToString(x.GetType()))
+            return string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(x)
+            .CompareTo(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(y));
     }
 }
 
@@ -49,16 +63,18 @@ internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<objec
 
     // Must stay consistent with Equals: values the comparer treats as equal have to hash alike.
     // Strings compare case-insensitively, so hash them that way. IComparable values fall back to their
-    // own hash code (where CompareTo == 0 implies an equal hash for well-behaved types). Any other
-    // (non-IComparable) value is ranked equal by Compare only when its ToString() matches - the
-    // comparer's final fallback - so hash it on that same canonical string rather than obj.GetHashCode(),
-    // otherwise two values the comparer calls equal could hash differently and break grouping/lookups.
-    // Null hashes to 0.
+    // own hash code (where CompareTo == 0 implies an equal hash for well-behaved types). For any other
+    // (non-IComparable) value the comparer ranks two instances equal only when the type has a meaningful
+    // ToString() override and their text matches; hash on that same canonical string. When ToString()
+    // is not overridden the comparer keeps distinct instances distinct via their identity hash, so hash
+    // on the identity hash too, keeping Equals/GetHashCode consistent. Null hashes to 0.
     public int GetHashCode(object? obj) => obj switch
     {
         null => 0,
         string s => StringComparer.OrdinalIgnoreCase.GetHashCode(s),
         IComparable => obj.GetHashCode(),
-        _ => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ToString() ?? string.Empty)
+        _ => BitDataGridValueComparer.HasMeaningfulToString(obj.GetType())
+                ? StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ToString() ?? string.Empty)
+                : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj)
     };
 }

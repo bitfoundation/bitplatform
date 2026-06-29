@@ -105,6 +105,20 @@ namespace BitBlazorUI {
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
         'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'Escape', 'F2'
     ]);
+    // Controls inside an editor that have their own Enter/Escape semantics and must not have those
+    // keys cancelled by the grid (buttons, selects, textareas, links and contenteditable regions).
+    function isSelfManagedEditKeyControl(el: HTMLElement): boolean {
+        if (el.isContentEditable) return true;
+        switch (el.tagName) {
+            case 'BUTTON':
+            case 'SELECT':
+            case 'TEXTAREA':
+            case 'A':
+                return true;
+            default:
+                return false;
+        }
+    }
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {
         if (cellKeyGuardInstalled || typeof document === 'undefined') return;
@@ -125,6 +139,12 @@ namespace BitBlazorUI {
             // actions but leave caret movement and typing to the input.
             if ((e.key === 'Enter' || e.key === 'Escape') &&
                 target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing')) {
+                // Don't swallow these keys for nested controls that own their keyboard behavior:
+                // a <button> activates on Enter, a <select> opens/commits a choice, a <textarea>
+                // inserts a newline, and a contenteditable region edits text. Suppressing here would
+                // break those controls. Plain editor inputs aren't excluded, so Enter still avoids a
+                // surrounding form submit and Escape still avoids a native input reset for them.
+                if (isSelfManagedEditKeyControl(target)) return;
                 e.preventDefault();
             }
         }, { capture: true });
