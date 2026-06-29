@@ -244,6 +244,7 @@
     line-height: 1.6;
     color: $clr-fg-pri;
     flex: 1;
+
     // Allow this scroll pane to shrink below its content inside the .bit-rte flex column so its
     // own scrollbar engages in fullscreen/constrained layouts instead of inheriting min-height:auto.
     min-height: 0;

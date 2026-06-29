@@ -103,14 +103,22 @@
             <input type="text" class="bit-rte-inp" aria-label="@Label("filter-commands", "Filter commands")"
                    placeholder="@Label("filter-commands", "Filter commands…")"
                    @ref="_slashInputRef"
+                   role="combobox"
+                   aria-expanded="true"
+                   aria-autocomplete="list"
+                   aria-controls="@($"{UniqueId}-slash-list")"
+                   aria-activedescendant="@(FilteredSlash().Any() ? $"{UniqueId}-slash-item-{_slashIndex}" : null)"
                    value="@_slashFilter" @oninput="OnSlashFilterInput"
                    @onkeydown="OnSlashKeyDownAsync" />
-            <div class="bit-rte-slash-list" aria-label="@Label("filter-commands", "Filter commands")">
+            <div class="bit-rte-slash-list" role="listbox" id="@($"{UniqueId}-slash-list")" aria-label="@Label("filter-commands", "Filter commands")">
                 @{ var _slashItemIndex = 0; }
                 @foreach (var c in FilteredSlash())
                 {
                     var _itemIndex = _slashItemIndex++;
-                    <button type="button" class="bit-rte-slash-item@(_itemIndex == _slashIndex ? " bit-rte-slash-item-sel" : null)"
+                    <button type="button" id="@($"{UniqueId}-slash-item-{_itemIndex}")"
+                            role="option"
+                            aria-selected="@((_itemIndex == _slashIndex).ToString().ToLowerInvariant())"
+                            class="bit-rte-slash-item@(_itemIndex == _slashIndex ? " bit-rte-slash-item-sel" : null)"
                             @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
                 }
             </div>
