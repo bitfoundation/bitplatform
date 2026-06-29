@@ -179,6 +179,11 @@
     &:hover {
         background: $clr-bg-sec-hover;
     }
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(0.125);
+    }
 }
 
 .bit-rte-emoji-empty {
@@ -373,5 +378,10 @@
 
     &:hover {
         background: $clr-bg-sec-hover;
+    }
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(0.125);
     }
 }

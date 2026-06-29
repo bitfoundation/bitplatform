@@ -52,7 +52,7 @@ namespace BitBlazorUI {
             const notify = () => {
                 RichTextEditor.updateEmpty(editor);
                 if (editor._dotNetRef)
-                    editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.cleanHtml(editor), RichTextEditor.computeFacts(editor));
+                    editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
             };
             editor._notify = notify;
 
@@ -150,7 +150,7 @@ namespace BitBlazorUI {
         // Content get/set
         // ====================================================================
         public static getHtml(editor: any): string {
-            return editor ? RichTextEditor.cleanHtml(editor) : '';
+            return editor ? RichTextEditor.snapshot(editor) : '';
         }
 
         // Returns the editor's HTML with transient find-highlight markup stripped, so the
@@ -164,6 +164,16 @@ namespace BitBlazorUI {
             });
             clone.normalize();
             return clone.innerHTML;
+        }
+
+        // Outbound snapshot sent to .NET (notify/afterChange) or returned to callers (getHtml):
+        // first strip the transient find-highlight markup, then sanitize against the active policy
+        // (the same enforcement path setHtml/incoming content uses) so persisted Value can never
+        // carry markup that bypasses the sanitization allowlist. Transient-mark cleanup stays
+        // separate from the policy pass so the two concerns remain independent.
+        private static snapshot(editor: any): string {
+            if (!editor) return '';
+            return RichTextEditor.sanitize(editor, RichTextEditor.cleanHtml(editor));
         }
 
         // Undo-safe set: when the surface is focused and already has content, route the
@@ -1306,7 +1316,7 @@ namespace BitBlazorUI {
         private static afterChange(editor: any) {
             RichTextEditor.updateEmpty(editor);
             if (!editor._dotNetRef) return;
-            editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.cleanHtml(editor), RichTextEditor.computeFacts(editor));
+            editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
             RichTextEditor.reportState(editor);
         }
 

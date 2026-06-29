@@ -10,6 +10,7 @@ public partial class BitRichTextEditor : BitComponentBase
     private bool _initialized;
     private string _currentHtml = "";
     private string? _lastSetupSnapshot;
+    private string? _lastPolicySnapshot;
     private bool _toolbarRovingEnabled;
     private ElementReference _editorRef = default!;
     private BitRichTextEditorContentFacts _facts;
@@ -244,8 +245,23 @@ public partial class BitRichTextEditor : BitComponentBase
             var snapshot = SerializeSetupOptions(options);
             if (snapshot != _lastSetupSnapshot)
             {
+                // Detect whether the sanitization policy specifically changed so a tightened
+                // allowlist can be re-applied to the already-loaded content, not just future input.
+                var policySnapshot = System.Text.Json.JsonSerializer.Serialize(options.Policy);
+                var policyChanged = policySnapshot != _lastPolicySnapshot;
+
                 _lastSetupSnapshot = snapshot;
+                _lastPolicySnapshot = policySnapshot;
                 await _js.BitRichTextEditorUpdateOptions(_editorRef, options);
+
+                // A changed (e.g. tightened) policy must also clean the content already in the
+                // editor; otherwise markup permitted under the previous allowlist would linger
+                // until the next external Value change. Run the current content through the new
+                // policy and push the cleaned result back through the same sync path as OnValueSet.
+                if (policyChanged)
+                {
+                    await ResanitizeCurrentContentAsync();
+                }
             }
         }
     }
@@ -276,6 +292,7 @@ public partial class BitRichTextEditor : BitComponentBase
             var setupOptions = BuildSetupOptions();
             await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, setupOptions);
             _lastSetupSnapshot = SerializeSetupOptions(setupOptions);
+            _lastPolicySnapshot = System.Text.Json.JsonSerializer.Serialize(setupOptions.Policy);
 
             // Sanitize the initial Value through the bridge so the first content load can't bypass
             // sanitization. The bridge enforces a secure default allowlist when no SanitizationPolicy
@@ -356,6 +373,39 @@ public partial class BitRichTextEditor : BitComponentBase
         if ((Value ?? "") != html)
         {
             await AssignValue(html);
+            NotifyEditContextChanged();
+        }
+    }
+
+
+
+    // Re-runs the editor's current content through the bridge under the now-active policy and
+    // synchronizes the cleaned result across _currentHtml, the source-view text, the editor DOM,
+    // and the bound Value, mirroring OnValueSet's sync path so a policy change leaves no stale
+    // markup behind. Invoked from OnParametersSetAsync when the policy actually changes.
+    private async Task ResanitizeCurrentContentAsync()
+    {
+        var html = _currentHtml ?? "";
+        if (string.IsNullOrEmpty(html)) return;
+
+        var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
+        if (sanitized == _currentHtml) return;
+
+        _currentHtml = sanitized;
+
+        if (_inSourceView)
+        {
+            _sourceText = sanitized;
+            StateHasChanged();
+        }
+        else
+        {
+            await _js.BitRichTextEditorSetHtml(_editorRef, sanitized);
+        }
+
+        if ((Value ?? "") != sanitized)
+        {
+            await AssignValue(sanitized);
             NotifyEditContextChanged();
         }
     }

@@ -326,7 +326,7 @@
                 <br />
                 <EditForm Model="formModel" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
-                    <BitRichTextEditor Value="formModel.Body" ValueChanged="HandleFormBodyChanged"
+                    <BitRichTextEditor @bind-Value="formModel.Body"
                                        Toolbar="BitRichTextEditorToolbar.All"
                                        ShowCount MaxLength="500" Height="10rem"
                                        Placeholder="Write at least 20 characters..." />

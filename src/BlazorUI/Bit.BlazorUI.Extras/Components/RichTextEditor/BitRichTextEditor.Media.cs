@@ -114,11 +114,20 @@ public partial class BitRichTextEditor
             return null;
         }
 
+        // Validate the client-reported MIME on the shared path before either branch so unsupported
+        // content types can neither be embedded as inline data URLs nor reach OnImageUpload. The
+        // upload callback then acts as an additional guard rather than the first/only check.
+        if (IsKnownImageMimeType(contentType) is false)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+            return null;
+        }
+
         if (OnImageUpload is null)
         {
-            // Inline data URL fallback: validate the client-reported MIME and the policy before
-            // embedding so non-image payloads are not turned into inline data URLs.
-            if (DataImageUrisAllowed is false || IsKnownImageMimeType(contentType) is false)
+            // Inline data URL fallback: also require the policy to permit data: image URIs before
+            // embedding the (already MIME-validated) payload as one.
+            if (DataImageUrisAllowed is false)
             {
                 await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
                 return null;

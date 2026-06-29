@@ -391,13 +391,6 @@ public partial class BitRichTextEditorDemo
     {
         formSubmitted = true;
     }
-    // Any content change after a successful submit clears the success state so the demo status
-    // stays in sync with the (now dirty) form rather than showing a stale "Submitted" message.
-    private void HandleFormBodyChanged(string? value)
-    {
-        formModel.Body = value;
-        formSubmitted = false;
-    }
     public class FormModel : IValidatableObject
     {
         [Required(ErrorMessage = "The body is required.")]
