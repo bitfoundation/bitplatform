@@ -382,17 +382,18 @@ namespace BitBlazorUI {
             });
         }
 
-        public static insertMedia(editor: any, html: string) {
-            if (!editor || !html) return;
+        public static insertMedia(editor: any, html: string): boolean {
+            if (!editor || !html) return false;
             // Route media through a media-specific allowlist so only approved embed markup
             // (iframe/video/audio/source with safe attributes and schemes) reaches the document.
             const safe = RichTextEditor.sanitizeMedia(editor, html);
             if (!safe) {
                 RichTextEditor.reportClientError(editor, 'media-not-allowed', 'That media could not be embedded.');
-                return;
+                return false;
             }
             RichTextEditor.dispatch(editor, 'insertMedia', { html: safe });
             RichTextEditor.afterChange(editor);
+            return true;
         }
 
         // Media-specific allowlist: permits only the embed elements/attributes produced by the

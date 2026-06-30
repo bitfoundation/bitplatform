@@ -87,9 +87,9 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.applyFont", editor, kind, value);
     }
 
-    public static ValueTask BitRichTextEditorInsertMedia(this IJSRuntime jsRuntime, ElementReference editor, string html)
+    public static ValueTask<bool> BitRichTextEditorInsertMedia(this IJSRuntime jsRuntime, ElementReference editor, string html)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertMedia", editor, html);
+        return jsRuntime.Invoke<bool>("BitBlazorUI.RichTextEditor.insertMedia", editor, html);
     }
 
     public static ValueTask BitRichTextEditorInsertText(this IJSRuntime jsRuntime, ElementReference editor, string text)

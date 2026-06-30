@@ -47,7 +47,7 @@ public partial class BitRichTextEditor
         var url = _imageUrl.Trim();
         if (IsAcceptableImageUrl(url) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "That image URL is not valid."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("image-url-invalid", "That image URL is not valid.")));
             return;
         }
         await _js.BitRichTextEditorInsertImageUrl(_editorRef, url);

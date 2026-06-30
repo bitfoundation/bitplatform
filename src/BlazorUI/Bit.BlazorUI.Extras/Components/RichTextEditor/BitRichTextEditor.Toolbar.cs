@@ -140,7 +140,8 @@ public partial class BitRichTextEditor
         catch (Exception ex)
         {
             // Keep host callback internals out of the user-facing error; log them for telemetry.
-            System.Diagnostics.Debug.WriteLine($"BitRichTextEditor toolbar action '{item.Id}' failed: {ex}");
+            // Use Trace (not Debug) so the failure is still recorded in Release builds.
+            System.Diagnostics.Trace.TraceError($"BitRichTextEditor toolbar action '{item.Id}' failed: {ex}");
             await RaiseErrorAsync(new BitRichTextEditorError("custom-action-failed", $"Toolbar action '{item.Id}' failed."));
         }
     }

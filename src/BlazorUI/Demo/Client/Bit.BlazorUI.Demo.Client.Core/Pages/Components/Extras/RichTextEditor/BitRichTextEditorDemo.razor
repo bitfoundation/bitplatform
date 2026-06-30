@@ -355,9 +355,9 @@
 
             <DemoExample Title="Custom toolbar item" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
                 <div>
-                    Add your own buttons with <b>ToolbarConfig.CustomItems</b>. Each item needs an Id and AriaLabel, and an
-                    <b>OnActivate</b> callback that receives the editor instance - so it can call the imperative API. Supply a
-                    Label or an Icon. The custom "Today" button appears at the end of the toolbar below.
+                    Add your own buttons with <b>ToolbarConfig.CustomItems</b>. Each item needs an Id and either an AriaLabel or a
+                    Label, plus an <b>OnActivate</b> callback that receives the editor instance - so it can call the imperative API.
+                    For display, supply a Label or an Icon. The custom "Today" button appears at the end of the toolbar below.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="customHtml"

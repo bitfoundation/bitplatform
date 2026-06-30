@@ -35,7 +35,10 @@ public partial class BitRichTextEditor
             return;
         }
 
-        await _js.BitRichTextEditorInsertMedia(_editorRef, html);
+        // Only tear down the input UI when the insert actually succeeded; on rejection the bridge
+        // raises an error via OnClientError, so leave the panel, url, and any error message intact.
+        var inserted = await _js.BitRichTextEditorInsertMedia(_editorRef, html);
+        if (inserted is false) return;
         // The media embedded successfully, so clear any stale validation message.
         ClearInlineError();
         _showMediaInput = false;
