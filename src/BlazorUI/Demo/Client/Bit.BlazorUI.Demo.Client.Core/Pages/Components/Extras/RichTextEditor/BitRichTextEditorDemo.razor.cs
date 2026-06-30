@@ -663,7 +663,7 @@ private readonly BitRichTextEditorToolbarConfig reorderConfig = new()
 <BitRichTextEditor @ref=""apiEditor"" @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.All"" />
 
 <BitButton OnClick=""FocusEditor"">FocusAsync</BitButton>
-<BitButton OnClick=""@(() => apiEditor.ExecuteCommandAsync(""bold""))"">ExecuteCommand(""bold"")</BitButton>
+<BitButton OnClick='@(() => apiEditor.ExecuteCommandAsync(""bold""))'>ExecuteCommand(""bold"")</BitButton>
 <BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
 
 <pre>@apiResult</pre>";

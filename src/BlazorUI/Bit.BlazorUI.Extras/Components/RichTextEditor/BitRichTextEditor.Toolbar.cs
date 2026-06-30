@@ -92,8 +92,11 @@ public partial class BitRichTextEditor
             if (DefaultGroupOrder.Any(g => string.Equals(g.Id, item.Id, StringComparison.OrdinalIgnoreCase)))
                 throw new ArgumentException($"BitRichTextEditor custom toolbar item Id '{item.Id}' collides with a built-in toolbar group id.", nameof(ToolbarConfig));
 
-            if (string.IsNullOrWhiteSpace(item.AriaLabel))
-                throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' has a blank AriaLabel.", nameof(ToolbarConfig));
+            // RenderCustomItem() resolves the accessible name as AriaLabel ?? Label ?? Id, so a
+            // label-only item is fine; only reject when neither AriaLabel nor Label provides a
+            // meaningful name (the raw Id fallback is not a usable accessible name).
+            if (string.IsNullOrWhiteSpace(item.AriaLabel) && string.IsNullOrWhiteSpace(item.Label))
+                throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' must specify an AriaLabel or a Label.", nameof(ToolbarConfig));
 
             // A custom item must render something visible: require either a Label or an Icon so a
             // bare item (which would otherwise fall back to showing its raw Id) is rejected fast.

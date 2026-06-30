@@ -24,14 +24,14 @@ public partial class BitRichTextEditor
             || Uri.TryCreate(url, UriKind.Absolute, out var uri) is false
             || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "That media URL is not valid."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("media-url-invalid", "That media URL is not valid.")));
             return;
         }
 
         var html = BuildMediaEmbed(uri);
         if (html is null)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("media-not-allowed", "That media type or host is not supported."));
+            await RaiseErrorAsync(new BitRichTextEditorError("media-not-allowed", Label("media-not-allowed", "That media type or host is not supported.")));
             return;
         }
 
