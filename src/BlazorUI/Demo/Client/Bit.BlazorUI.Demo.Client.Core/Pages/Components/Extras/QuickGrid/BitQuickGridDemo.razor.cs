@@ -585,7 +585,7 @@ public partial class BitQuickGridDemo : AppComponentBase
         set
         {
             _virtualSampleNameFilter = value;
-            _ = dataGrid.RefreshDataAsync();
+            _ = dataGrid?.RefreshDataAsync();
         }
     }
 

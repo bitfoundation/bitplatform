@@ -1,9 +1,10 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Describes the data the grid needs from an external/server-side source.
-/// Passed to the grid's <c>OnRead</c> callback so callers can perform their own
-/// sorting, filtering and paging (e.g. against a database).
+/// Describes the data the grid needs from an external source. The same payload is passed to both
+/// the grid's <c>OnRead</c> callback (server-side mode) and its <c>OnLoadMore</c> callback
+/// (infinite-scrolling mode), so callers can perform their own sorting, filtering and paging
+/// (e.g. against a database) in either flow.
 /// </summary>
 public sealed class BitDataGridReadRequest
 {
