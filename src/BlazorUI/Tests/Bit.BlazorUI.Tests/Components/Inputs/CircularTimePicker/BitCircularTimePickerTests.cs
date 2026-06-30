@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -155,5 +156,20 @@ public class BitCircularTimePickerTests : BunitTestContext
         var calloutStyle = callout.GetAttribute("data-test");
 
         Assert.AreEqual("data-value", calloutStyle);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldRespectDefaultValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var defaultValue = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        Assert.AreEqual(defaultValue, component.Instance.Value);
     }
 }

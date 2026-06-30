@@ -182,4 +182,19 @@ public class BitTimePickerTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
     }
+
+    [TestMethod]
+    public void BitTimePickerShouldRespectDefaultValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var defaultValue = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        Assert.AreEqual(defaultValue, component.Instance.Value);
+    }
 }

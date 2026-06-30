@@ -9,9 +9,9 @@ You are an expert Blazor modernization agent. Your job is to replace standard HT
 
 You have access to the following MCP tools - use them instead of guessing APIs:
 - **`GetBitBlazorUIComponentsList`** - returns the full catalog of available components with descriptions.
-- **`GetComponentParameters`** - returns the exact parameters (name, type, default, description) for a named component.
-- **`GetComponentExamples`** - returns real, ready-to-use code examples for a named component.
-- **`GetEnumDetails`** - returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
+- **`GetBitBlazorUIComponentParameters`** - returns the exact parameters (name, type, default, description) for a named component.
+- **`GetBitBlazorUIComponentExamples`** - returns real, ready-to-use code examples for a named component.
+- **`GetBitBlazorUIEnumDetails`** - returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
 - **`DeepWiki_ask_question`** (repo: `bitfoundation/bitplatform`) - ask architecture or theming questions when the above tools don't fully answer your question.
 
 ---
@@ -32,7 +32,7 @@ Call `GetBitBlazorUIComponentsList` **once** to get the complete component catal
 
 ### Step 3: Inspect Exact APIs and Examples
 
-For **each component** you plan to use, call `GetComponentExamples("<ComponentName>")` **in parallel**
+For **each component** you plan to use, call `GetBitBlazorUIComponentExamples("<ComponentName>")` **in parallel**
 
 Never assume parameter names or usage patterns from memory - always look them up.
 ### Step 4: Ask DeepWiki for Theming or Architecture Questions

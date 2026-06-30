@@ -1,9 +1,5 @@
 //+:cnd:noEmit
 
-//#if (signalR == true)
-import DOMPurify from 'dompurify';
-//#endif
-
 export class App {
     // For additional details, see the JsBridge.cs file.
     private static jsBridgeObj: DotNetObject;
@@ -102,11 +98,5 @@ export class App {
             document.cookie.split(';').forEach(c => document.cookie = c.split('=')[0].trim() + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/')
         ]);
     }
-
-    //#if (signalR == true)
-    public static sanitizeHtml(html: string): string {
-        return DOMPurify.sanitize(html);
-    }
-    //#endif
 }
 

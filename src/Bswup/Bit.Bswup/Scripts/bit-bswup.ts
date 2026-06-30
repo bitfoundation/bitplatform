@@ -1,5 +1,5 @@
 var BitBswup = BitBswup || {};
-BitBswup.version = window['bit-bswup version'] = '10.5.0-pre-04';
+BitBswup.version = window['bit-bswup version'] = '10.5.0-pre-05';
 
 // Idempotency guard. bit-bswup.js wires up a DOMContentLoaded handler (and through it
 // the service-worker registration, event listeners, update timers and reload handlers)

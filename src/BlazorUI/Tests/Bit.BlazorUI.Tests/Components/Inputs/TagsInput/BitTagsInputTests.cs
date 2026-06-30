@@ -409,4 +409,20 @@ public class BitTagsInputTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-inv"));
     }
+
+    [TestMethod]
+    public void BitTagsInputShouldRespectDefaultValue()
+    {
+        var defaultValue = new List<string> { "apple", "banana", "cherry" };
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        Assert.IsNotNull(com.Instance.Value);
+        Assert.AreEqual(defaultValue.Count, com.Instance.Value.Count);
+        CollectionAssert.AreEqual(defaultValue, com.Instance.Value.ToList());
+        Assert.AreEqual(defaultValue.Count, com.FindAll(".bit-tgi-tag").Count);
+    }
 }

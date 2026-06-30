@@ -132,7 +132,7 @@ public partial class BitColorPicker : BitComponentBase
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, nameof(HandlePointerUp), nameof(HandlePointerMove));
+        _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, _saturationPickerRef, nameof(HandlePointerUp), nameof(HandlePointerMove));
 
         await SetSaturationPickerThumbPositionAsync();
     }

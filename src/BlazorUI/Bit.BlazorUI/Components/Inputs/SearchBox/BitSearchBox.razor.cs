@@ -71,11 +71,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The default value of the text in the search box, in the case of an uncontrolled component.
-    /// </summary>
-    [Parameter] public string? DefaultValue { get; set; }
-
-    /// <summary>
     /// Whether or not to animate the search box icon on focus.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -356,10 +351,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
         _inputId = $"BitSearchBox-{UniqueId}-input";
 
-        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
-        {
-            await SetCurrentValueAsStringAsync(DefaultValue);
-        }
+        SetDefaultValue();
 
         OnValueChanged += HandleOnValueChanged;
 

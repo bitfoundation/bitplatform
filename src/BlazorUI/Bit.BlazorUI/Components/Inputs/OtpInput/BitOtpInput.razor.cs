@@ -174,6 +174,8 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         _inputFocusStates = new bool[Length];
 
+        SetDefaultValue();
+
         base.OnInitialized();
     }
 

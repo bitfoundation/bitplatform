@@ -40,13 +40,6 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Default selected Value for ChoiceGroup."
-        },
-        new()
-        {
             Name = "Inline",
             Type = "bool",
             DefaultValue = "false",
