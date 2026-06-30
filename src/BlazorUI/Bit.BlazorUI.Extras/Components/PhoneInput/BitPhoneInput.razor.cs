@@ -586,7 +586,21 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        await AssignNumber(e.Value?.ToString());
+        // Parse what the user typed so a full number entered with an international prefix
+        // ('+' or its "00" equivalent) selects the matching country and keeps only the local
+        // digits in the number input. Without such a prefix ParseFullNumber returns the current
+        // country unchanged and the whole input as the local number.
+        var (country, number) = ParseFullNumber(e.Value?.ToString());
+
+        await AssignNumber(number);
+
+        // Only switch the country when parsing actually resolved a different one. AssignCountry
+        // returns false for a one-way controlled Country (set without CountryChanged); in that
+        // case the selection can't change, so OnCountryChange must not fire (see HandleOnCountrySelect).
+        if (country is not null && country.Iso2 != Country?.Iso2 && await AssignCountry(country))
+        {
+            await OnCountryChange.InvokeAsync(country);
+        }
 
         await UpdateValueFromParts();
     }
