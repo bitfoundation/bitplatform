@@ -114,6 +114,8 @@ namespace BitBlazorUI {
     ]);
     // Controls inside an editor that have their own Enter/Escape semantics and must not have those
     // keys cancelled by the grid (buttons, selects, textareas, links and contenteditable regions).
+    // Plain text INPUTs are intentionally excluded so the edit-flow keeps treating Enter as commit and
+    // Escape as cancel for grid-owned editor inputs (see the edit-row branch below).
     function isSelfManagedEditKeyControl(el: HTMLElement): boolean {
         if (el.isContentEditable) return true;
         switch (el.tagName) {
@@ -125,6 +127,15 @@ namespace BitBlazorUI {
             default:
                 return false;
         }
+    }
+    // Controls nested inside a read-only / navigable templated cell that own their own keyboard
+    // behavior and must be excluded from grid key routing. This is the self-managed set plus INPUT:
+    // a plain text input dropped into a custom (non-editing) cell template needs its caret movement,
+    // typing, Enter and F2 to stay with the input rather than triggering cell navigation. The edit-row
+    // Enter/Escape flow deliberately uses isSelfManagedEditKeyControl instead, so a grid-owned editor
+    // input still commits on Enter and cancels on Escape.
+    function isSelfManagedCellKeyControl(el: HTMLElement): boolean {
+        return el.tagName === 'INPUT' || isSelfManagedEditKeyControl(el);
     }
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {
@@ -143,7 +154,7 @@ namespace BitBlazorUI {
             // behavior is preserved because preventDefault is intentionally not called. This is checked
             // before the cell-target branch below, which only matches when the cell itself is focused.
             const ownerCell = target.closest('.bit-dtg-cell') as HTMLElement | null;
-            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedEditKeyControl(target)) {
+            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)) {
                 e.stopPropagation();
                 return;
             }

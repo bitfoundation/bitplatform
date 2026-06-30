@@ -1,5 +1,7 @@
 namespace Bit.BlazorUI;
 
+using System.Runtime.CompilerServices;
+
 /// <summary>Null-safe comparer that orders nulls first and falls back to string comparison.</summary>
 internal sealed class BitDataGridValueComparer : IComparer<object?>
 {
@@ -15,6 +17,19 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         var declaringType = type.GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType;
         return declaringType != typeof(object) && declaringType != typeof(ValueType);
     }
+
+    // Canonical ordering/identity key for reference values that are neither IComparable nor expose a
+    // meaningful ToString() override. RuntimeHelpers.GetHashCode (the previous fallback) can collide:
+    // two distinct instances may share an identity hash, which would make Compare return 0 for unequal
+    // values and disagree with hash-based equality. A per-instance monotonic key, assigned the first
+    // time the comparer sees an object and stable for that object's lifetime, is collision-free, so
+    // ordering and hashing both derive from this same key and stay consistent. The table uses weak
+    // keys, so it never keeps the compared values alive.
+    private static readonly ConditionalWeakTable<object, object> _canonicalKeys = new();
+    private static long _nextCanonicalKey;
+
+    internal static long GetCanonicalKey(object obj)
+        => (long)_canonicalKeys.GetValue(obj, static _ => (object)Interlocked.Increment(ref _nextCanonicalKey));
 
     public int Compare(object? x, object? y)
     {
@@ -44,13 +59,13 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
 
         // Same type, not IComparable. Only fall back to ToString() when the type provides a meaningful
         // override; otherwise every instance stringifies to the type name and unrelated rows would be
-        // ranked equal (and collapsed when grouping). For such types order by identity hash instead so
-        // distinct instances stay distinct while preserving a stable, transitive total order.
+        // ranked equal (and collapsed when grouping). For such types order by the collision-free
+        // canonical key instead, so distinct instances stay distinct while preserving a stable,
+        // transitive total order that GetHashCode mirrors exactly.
         if (HasMeaningfulToString(x.GetType()))
             return string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
 
-        return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(x)
-            .CompareTo(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(y));
+        return GetCanonicalKey(x).CompareTo(GetCanonicalKey(y));
     }
 }
 
@@ -70,8 +85,9 @@ internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<objec
     // own hash code (where CompareTo == 0 implies an equal hash for well-behaved types). For any other
     // (non-IComparable) value the comparer ranks two instances equal only when the type has a meaningful
     // ToString() override and their text matches; hash on that same canonical string. When ToString()
-    // is not overridden the comparer keeps distinct instances distinct via their identity hash, so hash
-    // on the identity hash too, keeping Equals/GetHashCode consistent. Null hashes to 0.
+    // is not overridden the comparer keeps distinct instances distinct via the same collision-free
+    // canonical key it orders them by, so hash on that key too — keeping Equals/GetHashCode consistent
+    // without the identity-hash collisions a raw RuntimeHelpers.GetHashCode could introduce. Null hashes to 0.
     public int GetHashCode(object? obj) => obj switch
     {
         null => 0,
@@ -79,6 +95,6 @@ internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<objec
         IComparable => obj.GetHashCode(),
         _ => BitDataGridValueComparer.HasMeaningfulToString(obj.GetType())
                 ? StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ToString() ?? string.Empty)
-                : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj)
+                : BitDataGridValueComparer.GetCanonicalKey(obj).GetHashCode()
     };
 }

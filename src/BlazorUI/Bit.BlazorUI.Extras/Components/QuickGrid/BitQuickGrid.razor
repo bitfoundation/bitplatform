@@ -21,13 +21,24 @@
             <tbody>
                 @if (Virtualize)
                 {
-                    <Virtualize @ref="@_virtualizeComponent"
-                                ItemSize="@ItemSize"
-                                TItem="(int RowIndex, TGridItem Data)"
-                                SpacerElement="tr"
-                                ItemsProvider="@ProvideVirtualizedItems"
-                                ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
-                                Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                    if (IsLoading && LoadingTemplate is not null)
+                    {
+                        <tr>
+                            <td colspan="100">
+                                @LoadingTemplate
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <Virtualize @ref="@_virtualizeComponent"
+                                    ItemSize="@ItemSize"
+                                    TItem="(int RowIndex, TGridItem Data)"
+                                    SpacerElement="tr"
+                                    ItemsProvider="@ProvideVirtualizedItems"
+                                    ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
+                                    Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                    }
                 }
                 else
                 {
