@@ -13,10 +13,26 @@ public sealed class BitMarkdownViewerInlineProcessor
     private readonly StringBuilder _literal = new();
     private readonly List<Tok> _tokens = new();
 
-    internal BitMarkdownViewerInlineProcessor(BitMarkdownViewerPipeline pipeline) => Pipeline = pipeline;
+    internal BitMarkdownViewerInlineProcessor(BitMarkdownViewerPipeline pipeline)
+        : this(pipeline, BitMarkdownViewerParseOptions.Default, 0)
+    {
+    }
+
+    internal BitMarkdownViewerInlineProcessor(BitMarkdownViewerPipeline pipeline, BitMarkdownViewerParseOptions options, int depth)
+    {
+        Pipeline = pipeline;
+        Options = options;
+        Depth = depth;
+    }
 
     /// <summary>The owning pipeline.</summary>
     public BitMarkdownViewerPipeline Pipeline { get; }
+
+    /// <summary>The safety limits in effect for this parse.</summary>
+    internal BitMarkdownViewerParseOptions Options { get; }
+
+    /// <summary>The current nesting depth of this processor within the document.</summary>
+    internal int Depth { get; }
 
     /// <summary>The text currently being parsed.</summary>
     public string Text { get; private set; } = string.Empty;
@@ -37,7 +53,7 @@ public sealed class BitMarkdownViewerInlineProcessor
     }
 
     /// <summary>Parses inline content in an isolated child processor (e.g. for a link label).</summary>
-    public List<BitMarkdownViewerMarkdownNode> ParseInlines(string text) => new BitMarkdownViewerInlineProcessor(Pipeline).Parse(text);
+    public List<BitMarkdownViewerMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
 
     // -- API used by inline parsers ----------------------------------------
 

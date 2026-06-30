@@ -8,7 +8,9 @@ public sealed partial class BitMarkdownViewerAutolinkInlineParser : BitMarkdownV
     // CommonMark email autolink grammar. Only a token matching this is turned into a
     // mailto link; anything else inside <...> stays plain text.
     [System.Text.RegularExpressions.GeneratedRegex(
-        @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")]
+        @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+        System.Text.RegularExpressions.RegexOptions.None,
+        matchTimeoutMilliseconds: 1000)]
     private static partial System.Text.RegularExpressions.Regex EmailAutolink();
 
     public override bool TryParse(BitMarkdownViewerInlineProcessor state)
@@ -33,7 +35,17 @@ public sealed partial class BitMarkdownViewerAutolinkInlineParser : BitMarkdownV
             }
         }
 
-        if (EmailAutolink().IsMatch(inner))
+        bool isEmail;
+        try
+        {
+            isEmail = EmailAutolink().IsMatch(inner);
+        }
+        catch (System.Text.RegularExpressions.RegexMatchTimeoutException)
+        {
+            // Pathological input: treat as a non-match rather than hang.
+            return false;
+        }
+        if (isEmail)
         {
             Emit(state, "mailto:" + inner, inner, close);
             return true;

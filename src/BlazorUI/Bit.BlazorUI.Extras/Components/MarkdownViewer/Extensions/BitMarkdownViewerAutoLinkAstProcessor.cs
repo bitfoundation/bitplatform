@@ -14,7 +14,8 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
         @"|(?<www>www\.[^\s<]+)" +
         @"|(?<email>[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})" +
         @")",
-        RegexOptions.IgnoreCase)]
+        RegexOptions.IgnoreCase,
+        matchTimeoutMilliseconds: 1000)]
     private static partial Regex LinkPattern();
 
     public override void Process(BitMarkdownViewerDocumentNode document, BitMarkdownViewerPipeline pipeline)
@@ -55,7 +56,17 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
 
     private static List<BitMarkdownViewerMarkdownNode>? Split(string text)
     {
-        var matches = LinkPattern().Matches(text);
+        MatchCollection matches;
+        try
+        {
+            matches = LinkPattern().Matches(text);
+            _ = matches.Count; // Force evaluation so a ReDoS timeout surfaces here.
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            // Pathological input: skip autolinking this run rather than hang.
+            return null;
+        }
         if (matches.Count == 0) return null;
 
         var result = new List<BitMarkdownViewerMarkdownNode>();

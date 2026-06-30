@@ -9,6 +9,7 @@
           SecondaryNames="@(["MdViewer", "MD"])"
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           GitHubExtrasUrl="MarkdownViewer/BitMarkdownViewer.cs"
           GitHubDemoUrl="Extras/MarkdownViewer/BitMarkdownViewerDemo.razor">
     <NotesTemplate>
@@ -51,7 +52,11 @@
                 <div class="mdv-split">
                     <textarea class="mdv-editor" spellcheck="false" aria-label="Markdown editor" @bind="playgroundMarkdown" @bind:event="oninput"></textarea>
                     <div class="mdv-preview">
-                        <BitMarkdownViewer Markdown="@playgroundMarkdown" Pipeline="@playgroundPipeline" />
+                        <BitMarkdownViewer Markdown="@playgroundMarkdown"
+                                           Pipeline="@playgroundPipeline"
+                                           ImageRendering="BitMarkdownViewerImageRendering.SameOrigin"
+                                           StripBidiControlCharacters="true"
+                                           MaxLength="100000" />
                     </div>
                 </div>
             </div>
