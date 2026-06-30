@@ -258,17 +258,28 @@ public static class BitDataGridDataProcessor
                 };
             }
 
+            // Coerce the filter operand to the row value's runtime type once, up front. If it can't be
+            // coerced (e.g. a malformed number/date/Guid typed into the filter box), there is no
+            // meaningful comparison: fail closed rather than letting the comparer order mixed types by a
+            // type-name discriminator, which would otherwise make every row spuriously match an ordering
+            // operator (e.g. "Price < abc"). Only NotEquals stays true, since the values aren't provably
+            // equal.
+            if (!TryCoerceToValueType(value, filter.Value, out var operand))
+            {
+                return filter.Operator is BitDataGridFilterOperator.NotEquals;
+            }
+
             // The date filter editor emits a calendar day at midnight (no time component). Comparing it
             // with strict equality against a DateTime/DateTimeOffset row value that carries a time-of-day
             // would never match, so equality filters on those types are evaluated on the calendar day
             // only (day-range semantics). DateOnly has no time component and keeps its existing behavior.
             if (filter.Operator is BitDataGridFilterOperator.Equals or BitDataGridFilterOperator.NotEquals
-                && TryDateOnlyEquals(value, CoerceToValueType(value, filter.Value), out var sameDay))
+                && TryDateOnlyEquals(value, operand, out var sameDay))
             {
                 return filter.Operator is BitDataGridFilterOperator.Equals ? sameDay : !sameDay;
             }
 
-            var cmp = BitDataGridValueComparer.Instance.Compare(value, CoerceToValueType(value, filter.Value));
+            var cmp = BitDataGridValueComparer.Instance.Compare(value, operand);
             return filter.Operator switch
             {
                 BitDataGridFilterOperator.GreaterThan => cmp > 0,
@@ -323,29 +334,37 @@ public static class BitDataGridDataProcessor
     // DateTimeOffset and enums are not handled by Convert.ChangeType), so a filter value entered as a
     // string is converted to the property's real type the same way edits are — keeping filtering,
     // sorting and editing consistent. Parsing uses the invariant culture to match the ISO/invariant
-    // strings the editors emit. On failure the original value is returned so the comparer can still
-    // fall back to its string-based ordering.
-    private static object? CoerceToValueType(object? sample, object filterValue)
+    // strings the editors emit. Returns false when the operand can't be turned into the target type, so
+    // callers fail the comparison closed instead of comparing mixed types (which the value comparer
+    // would otherwise order by a meaningless type-name discriminator).
+    private static bool TryCoerceToValueType(object? sample, object filterValue, out object? coerced)
     {
-        if (sample is null) return filterValue;
+        coerced = filterValue;
+        if (sample is null) return true;
         var target = Nullable.GetUnderlyingType(sample.GetType()) ?? sample.GetType();
-        if (target.IsInstanceOfType(filterValue)) return filterValue;
+        if (target.IsInstanceOfType(filterValue)) return true;
         try
         {
             if (target.IsEnum)
-                return filterValue is string es ? Enum.Parse(target, es, true) : Enum.ToObject(target, filterValue);
-            if (target == typeof(Guid))
-                return filterValue is Guid g ? g : Guid.Parse(filterValue.ToString()!);
-            if (target == typeof(DateOnly))
-                return filterValue is DateOnly d ? d : DateOnly.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
-            if (target == typeof(TimeOnly))
-                return filterValue is TimeOnly t ? t : TimeOnly.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
-            if (target == typeof(DateTimeOffset))
+                coerced = filterValue is string es ? Enum.Parse(target, es, true) : Enum.ToObject(target, filterValue);
+            else if (target == typeof(Guid))
+                coerced = filterValue is Guid g ? g : Guid.Parse(filterValue.ToString()!);
+            else if (target == typeof(DateOnly))
+                coerced = filterValue is DateOnly d ? d : DateOnly.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
+            else if (target == typeof(TimeOnly))
+                coerced = filterValue is TimeOnly t ? t : TimeOnly.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
+            else if (target == typeof(DateTimeOffset))
                 // DateTimeOffset is not IConvertible, so Convert.ChangeType would throw for it; parse it
                 // explicitly like the property accessor does.
-                return filterValue is DateTimeOffset dto ? dto : DateTimeOffset.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
-            return Convert.ChangeType(filterValue, target, CultureInfo.InvariantCulture);
+                coerced = filterValue is DateTimeOffset dto ? dto : DateTimeOffset.Parse(filterValue.ToString()!, CultureInfo.InvariantCulture);
+            else
+                coerced = Convert.ChangeType(filterValue, target, CultureInfo.InvariantCulture);
+            return true;
         }
-        catch { return filterValue; }
+        catch
+        {
+            coerced = null;
+            return false;
+        }
     }
 }
