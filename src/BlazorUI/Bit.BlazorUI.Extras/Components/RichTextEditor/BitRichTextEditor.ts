@@ -1560,7 +1560,15 @@ namespace BitBlazorUI {
         }
 
         private static escapeAttr(s: string): string {
-            return (s ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Escape ampersands first so that entity-based payloads (e.g. "java&colon;script")
+            // cannot survive validation and later decode back into an active scheme inside the
+            // inserted markup. Escaping & before the other characters also avoids corrupting the
+            // entities this method itself introduces.
+            return (s ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
         }
 
         // Whether the active policy (or the secure default when none is set) permits a given tag.

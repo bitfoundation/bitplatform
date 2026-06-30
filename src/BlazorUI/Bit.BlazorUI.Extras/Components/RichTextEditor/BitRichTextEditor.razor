@@ -78,12 +78,13 @@
                        placeholder="@Label("search", "Search")"
                        @bind="_emojiSearch" @bind:event="oninput" />
                 <div class="bit-rte-emoji-grid">
-                    @foreach (var emo in FilteredEmoji())
+                    @{ var filteredEmoji = FilteredEmoji().ToArray(); }
+                    @foreach (var emo in filteredEmoji)
                     {
                         <button type="button" class="bit-rte-emoji" title="@emo.Name" aria-label="@emo.Name"
                                 @onmousedown:preventDefault="true" @onclick="() => InsertEmojiAsync(emo.Char)">@emo.Char</button>
                     }
-                    @if (FilteredEmoji().Any() is false)
+                    @if (filteredEmoji.Any() is false)
                     {
                         <span class="bit-rte-emoji-empty">@Label("no-matches", "No matches")</span>
                     }
