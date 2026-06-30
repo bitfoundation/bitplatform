@@ -11,7 +11,10 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitDataGridPropertyAccessor<TItem>
 {
-    private static readonly ConcurrentDictionary<string, BitDataGridPropertyAccessor<TItem>> Cache = new();
+    // Build() resolves members with BindingFlags.IgnoreCase, so logically identical paths that differ only
+    // in casing ("Address.City" vs "address.city") map to the same member. Key the cache case-insensitively
+    // so those paths share a single compiled accessor instead of creating duplicate entries.
+    private static readonly ConcurrentDictionary<string, BitDataGridPropertyAccessor<TItem>> Cache = new(StringComparer.OrdinalIgnoreCase);
 
     public string Path { get; }
     public Type PropertyType { get; }

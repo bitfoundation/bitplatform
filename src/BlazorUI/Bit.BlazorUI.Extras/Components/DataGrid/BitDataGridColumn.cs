@@ -214,7 +214,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         _lastAggregateFormat = AggregateFormat;
     }
 
-    public void Dispose() => Grid?.RemoveColumn(this);
+    public void Dispose()
+    {
+        // Only unregister when this column was actually accepted by Grid.AddColumn (_registeredId set).
+        // A duplicate-id column that was skipped never owns a registry entry, so calling RemoveColumn
+        // for it would needlessly probe the grid for a column it never held.
+        if (_registeredId is not null)
+            Grid?.RemoveColumn(this);
+    }
 
     internal object? GetValue(TItem item) => Accessor?.GetValue(item);
 

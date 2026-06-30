@@ -7,10 +7,14 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
 
     // object.ToString() returns the type's full name for every instance unless the type overrides it,
     // so using ToString() as a fallback ordering/equality key would collapse unrelated instances of
-    // such a type into one value. Only treat ToString() as meaningful when the runtime type actually
-    // overrides object.ToString().
+    // such a type into one value. ValueType.ToString() (the default for structs) has the same problem:
+    // it yields the type name unless the struct overrides ToString itself. Only treat ToString() as
+    // meaningful when the runtime type actually overrides it past object/ValueType.
     internal static bool HasMeaningfulToString(Type type)
-        => type.GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
+    {
+        var declaringType = type.GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType;
+        return declaringType != typeof(object) && declaringType != typeof(ValueType);
+    }
 
     public int Compare(object? x, object? y)
     {

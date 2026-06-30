@@ -157,6 +157,9 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
 
     /// <summary>
     /// The custom template to render while loading the new items.
+    /// This applies only to the non-virtualized rendering path; when <see cref="Virtualize"/> is enabled
+    /// the grid uses the <see cref="Virtualize{TItem}"/> placeholder flow for loading rows instead, so
+    /// <see cref="LoadingTemplate"/> is ignored in that mode.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 

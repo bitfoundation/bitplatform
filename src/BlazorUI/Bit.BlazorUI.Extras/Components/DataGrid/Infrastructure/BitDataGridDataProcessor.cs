@@ -110,6 +110,9 @@ public static class BitDataGridDataProcessor
                 // a same-valued key at the same level reuse another column's stale expansion state.
                 var path = $"{parentPath}/{level}:{descriptor.ColumnId}:{keyId}";
                 var isLeaf = level + 1 >= groups.Count;
+                // Build the nested collections up front and assign them through the (read-only) init
+                // members, so the public group shape stays immutable instead of being mutated via AddRange
+                // after construction.
                 var group = new BitDataGridGroup<TItem>
                 {
                     ColumnId = descriptor.ColumnId,
@@ -120,11 +123,10 @@ public static class BitDataGridDataProcessor
                     Count = items.Count,
                     // Only leaf groups retain the row list; parent groups rely on Count/Aggregates/SubGroups
                     // so a row isn't referenced again on every ancestor level.
-                    Items = isLeaf ? items : new List<TItem>()
+                    Items = isLeaf ? items : new List<TItem>(),
+                    SubGroups = isLeaf ? new List<BitDataGridGroup<TItem>>() : BuildGroups(items, groups, columns, level + 1, path),
+                    Aggregates = Aggregate(items, columns.Values)
                 };
-                if (!isLeaf)
-                    group.SubGroups.AddRange(BuildGroups(items, groups, columns, level + 1, path));
-                group.Aggregates.AddRange(Aggregate(items, columns.Values));
                 return group;
             });
 

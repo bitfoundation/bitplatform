@@ -105,6 +105,13 @@ namespace BitBlazorUI {
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
         'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'Escape', 'F2'
     ]);
+    // Keys that should stay with a self-managed control nested inside a cell. Escape is intentionally
+    // excluded so it keeps bubbling to the grid as the universal "cancel edit" affordance, while the
+    // navigation keys, Enter (commit) and F2 (enter edit) are kept with the embedded control.
+    const nestedControlKeys = new Set([
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'F2'
+    ]);
     // Controls inside an editor that have their own Enter/Escape semantics and must not have those
     // keys cancelled by the grid (buttons, selects, textareas, links and contenteditable regions).
     function isSelfManagedEditKeyControl(el: HTMLElement): boolean {
@@ -126,6 +133,20 @@ namespace BitBlazorUI {
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null;
             if (!target) return;
+
+            // A self-managed interactive control (button/select/textarea/link/contenteditable) can be
+            // focused *inside* a navigable or editing cell via a custom cell/edit template. The cell's
+            // @onkeydown handler is wired through Blazor's document-level delegation, so a grid-owned key
+            // pressed on such a descendant would still bubble up to the cell and trigger cell navigation
+            // (Arrow/Home/End/Page/F2) or commit/cancel the edit (Enter/Escape) -- stealing the key from
+            // the embedded control. Stop propagation here so the key stays with the control; its native
+            // behavior is preserved because preventDefault is intentionally not called. This is checked
+            // before the cell-target branch below, which only matches when the cell itself is focused.
+            const ownerCell = target.closest('.bit-dtg-cell') as HTMLElement | null;
+            if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedEditKeyControl(target)) {
+                e.stopPropagation();
+                return;
+            }
 
             // The navigable cell is the focused element itself (a div.bit-dtg-cell with a tabindex).
             // Suppress the grid-owned keys here so arrow/page/home/end never scroll the viewport.

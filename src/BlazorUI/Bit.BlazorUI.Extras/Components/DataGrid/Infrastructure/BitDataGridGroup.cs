@@ -26,13 +26,13 @@ public sealed class BitDataGridGroup<TItem>
     /// nested subgroups, so a row is referenced once per tree rather than on every ancestor level.
     /// Use <see cref="Count"/> and <see cref="Aggregates"/> for parent-group summary data.
     /// </summary>
-    public List<TItem> Items { get; init; } = new();
+    public IReadOnlyList<TItem> Items { get; init; } = Array.Empty<TItem>();
 
     /// <summary>Child groups when this group is further grouped; empty for leaf groups.</summary>
-    public List<BitDataGridGroup<TItem>> SubGroups { get; init; } = new();
+    public IReadOnlyList<BitDataGridGroup<TItem>> SubGroups { get; init; } = Array.Empty<BitDataGridGroup<TItem>>();
 
     /// <summary>Aggregate values computed for this group (e.g. column sums or averages).</summary>
-    public List<BitDataGridAggregateResult> Aggregates { get; init; } = new();
+    public IReadOnlyList<BitDataGridAggregateResult> Aggregates { get; init; } = Array.Empty<BitDataGridAggregateResult>();
 
     public bool HasSubGroups => SubGroups.Count > 0;
 

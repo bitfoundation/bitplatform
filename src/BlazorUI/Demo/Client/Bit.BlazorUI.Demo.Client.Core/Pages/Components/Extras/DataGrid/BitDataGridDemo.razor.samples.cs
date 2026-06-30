@@ -235,8 +235,15 @@ private Product CreateProduct() => new()
     ReleaseDate = DateTime.Today
 };
 private void OnCreate(Product p) { /* called when a new row starts being added */ }
-private void OnSave(Product p) { if (!products.Contains(p)) products.Insert(0, p); }
-private void OnDelete(Product p) => products.Remove(p);" + ProductModelCode + SampleDataCode;
+private void OnSave(Product p)
+{
+    // The grid is keyed by Id (KeyField=""p => p.Id"") and hands back an edited copy, so match on Id
+    // rather than the object reference: update the existing row in place, or insert a brand-new one.
+    var index = products.FindIndex(x => x.Id == p.Id);
+    if (index >= 0) products[index] = p;
+    else products.Insert(0, p);
+}
+private void OnDelete(Product p) => products.RemoveAll(x => x.Id == p.Id);" + ProductModelCode + SampleDataCode;
 
     private readonly string example5RazorCode = @"
 <BitDataGrid TItem=""Product"" Items=""@products"" Height=""500px""
