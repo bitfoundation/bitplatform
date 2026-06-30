@@ -94,6 +94,11 @@ public partial class BitRichTextEditor
 
             if (string.IsNullOrWhiteSpace(item.AriaLabel))
                 throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' has a blank AriaLabel.", nameof(ToolbarConfig));
+
+            // A custom item must render something visible: require either a Label or an Icon so a
+            // bare item (which would otherwise fall back to showing its raw Id) is rejected fast.
+            if (item.Icon is null && string.IsNullOrWhiteSpace(item.Label))
+                throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' must specify a Label or an Icon.", nameof(ToolbarConfig));
         }
     }
 

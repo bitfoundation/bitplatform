@@ -109,6 +109,10 @@ public partial class BitRichTextEditor : BitComponentBase
     public async ValueTask<string> GetHtmlAsync()
     {
         if (_initialized is false) return _currentHtml;
+        // While source view is active the WYSIWYG element is detached/hidden and the raw-HTML
+        // textarea (_sourceText) drives the live content, so reading the DOM would return stale
+        // markup. Return the source buffer instead in that mode.
+        if (_inSourceView) return _sourceText;
         return await _js.BitRichTextEditorGetHtml(_editorRef);
     }
 
@@ -399,7 +403,10 @@ public partial class BitRichTextEditor : BitComponentBase
         if (string.IsNullOrEmpty(html)) return;
 
         var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
-        if (sanitized == _currentHtml) return;
+        // Compare against the live content (html) rather than the cached _currentHtml: if the live
+        // DOM/source already matches the sanitized result no resync is needed, but a stale
+        // _currentHtml must not short-circuit cleanup while the live content still differs.
+        if (sanitized == html) return;
 
         _currentHtml = sanitized;
 
