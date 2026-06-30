@@ -69,13 +69,23 @@ public partial class BitRichTextEditor
     private bool DataImageUrisAllowed => SanitizationPolicy?.AllowDataImageUris ?? true;
 
     private static bool IsKnownImageMimeType(string contentType)
+        => TryNormalizeImageMimeType(contentType, out _);
+
+    // Validates the content type and, on success, exposes the canonical MIME value (parameters
+    // stripped, matched against the known set in its canonical casing) so callers can pass the
+    // normalized value through instead of reusing the raw client-reported content type.
+    private static bool TryNormalizeImageMimeType(string? contentType, out string normalized)
     {
+        normalized = "";
         var mime = contentType?.Trim();
         if (string.IsNullOrEmpty(mime)) return false;
         // Strip any parameters (e.g. "image/png; charset=...") before matching.
         var semicolon = mime.IndexOf(';');
         if (semicolon >= 0) mime = mime[..semicolon].Trim();
-        return KnownImageMimeTypes.Contains(mime, StringComparer.OrdinalIgnoreCase);
+        var match = KnownImageMimeTypes.FirstOrDefault(m => string.Equals(m, mime, StringComparison.OrdinalIgnoreCase));
+        if (match is null) return false;
+        normalized = match;
+        return true;
     }
 
     private bool IsAcceptableImageUrl(string url)
@@ -119,8 +129,10 @@ public partial class BitRichTextEditor
 
         // Validate the client-reported MIME on the shared path before either branch so unsupported
         // content types can neither be embedded as inline data URLs nor reach OnImageUpload. The
-        // upload callback then acts as an additional guard rather than the first/only check.
-        if (IsKnownImageMimeType(contentType) is false)
+        // upload callback then acts as an additional guard rather than the first/only check. The
+        // normalized (parameter-stripped, canonical) MIME is reused by both branches so neither the
+        // inline data URL nor the upload contract carries the raw client-reported content type.
+        if (TryNormalizeImageMimeType(contentType, out var mimeType) is false)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
             return null;
@@ -135,7 +147,7 @@ public partial class BitRichTextEditor
                 await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
                 return null;
             }
-            return $"data:{contentType};base64,{base64}";   // inline data URL fallback
+            return $"data:{mimeType};base64,{base64}";   // inline data URL fallback
         }
 
         try
@@ -146,7 +158,7 @@ public partial class BitRichTextEditor
                 await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
                 return null;
             }
-            var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, contentType, bytes));
+            var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, mimeType, bytes));
             if (string.IsNullOrWhiteSpace(url))
             {
                 await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" did not return a URL."));

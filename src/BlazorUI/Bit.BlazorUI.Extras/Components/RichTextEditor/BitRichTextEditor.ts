@@ -306,6 +306,10 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
                 return;
             }
+            if (!RichTextEditor.isTagAllowed(editor, 'a')) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
+                return;
+            }
             RichTextEditor.dispatch(editor, 'createLink', { value: url });
             RichTextEditor.afterChange(editor);
         }
@@ -314,6 +318,10 @@ namespace BitBlazorUI {
             if (!editor || !url) return;
             if (!RichTextEditor.isAllowedUri(editor, url, false)) {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
+                return;
+            }
+            if (!RichTextEditor.isTagAllowed(editor, 'a')) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
                 return;
             }
             // Restore the editor's saved range first so the link is applied to the editor
@@ -332,6 +340,10 @@ namespace BitBlazorUI {
             if (!editor || !url) return;
             if (!RichTextEditor.isAllowedUri(editor, url, true)) {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That image URL is not allowed.');
+                return;
+            }
+            if (!RichTextEditor.isTagAllowed(editor, 'img')) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'Images are not allowed by the current policy.');
                 return;
             }
             RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="">` });
@@ -434,12 +446,13 @@ namespace BitBlazorUI {
                     if (name === 'src') {
                         const val = (attr.value || '').trim();
                         if (tag === 'iframe') {
-                            // iframe embeds must be HTTPS *and* on the host allowlist; a non-HTTPS
-                            // (or unparseable) URL is dropped so mixed-content/downgrade embeds
-                            // cannot slip through the media path.
+                            // iframe embeds must clear the active URI policy (custom
+                            // allowedUriSchemes included) *and* be HTTPS on the host allowlist; a
+                            // non-HTTPS (or unparseable) URL is dropped so mixed-content/downgrade
+                            // embeds cannot slip through the media path.
                             let host = '', scheme = '';
                             try { const u = new URL(val); host = u.host.toLowerCase(); scheme = u.protocol.toLowerCase(); } catch { host = ''; scheme = ''; }
-                            if (scheme !== 'https:' || !iframeHosts.includes(host)) { el.remove(); return; }
+                            if (scheme !== 'https:' || !iframeHosts.includes(host) || !RichTextEditor.isAllowedUri(editor, val, false)) { el.remove(); return; }
                         } else if (!RichTextEditor.isAllowedUri(editor, val, false)) {
                             el.removeAttribute(attr.name);
                         }
@@ -1548,6 +1561,15 @@ namespace BitBlazorUI {
 
         private static escapeAttr(s: string): string {
             return (s ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Whether the active policy (or the secure default when none is set) permits a given tag.
+        // Command handlers consult this before mutating the live DOM so an insert whose element
+        // the sanitized snapshot would strip (e.g. <img>/<a> under a policy that omits the tag)
+        // never appears to succeed in the editor while being dropped from the persisted Value.
+        private static isTagAllowed(editor: any, tag: string): boolean {
+            const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
+            return !policy || !policy.allowedTags || policy.allowedTags.includes(tag);
         }
 
         // Validates a URL against the active sanitization policy's scheme allowlist (or a
