@@ -2,6 +2,7 @@
 @namespace Bit.BlazorUI
 
 <div class="@RowClass" role="row" style="@RowStyle" @onclick="OnRowClick"
+     aria-selected="@(Grid.SelectionEnabled ? (Selected ? "true" : "false") : null)"
      @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
      @ondrop="() => Grid.DropRowAsync(Item)">
 

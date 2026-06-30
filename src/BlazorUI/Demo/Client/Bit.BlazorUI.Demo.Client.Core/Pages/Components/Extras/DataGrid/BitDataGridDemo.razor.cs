@@ -133,13 +133,19 @@ public partial class BitDataGridDemo : AppComponentBase
 
     private void OnSave(Product p)
     {
-        if (!editProducts.Contains(p)) editProducts.Insert(0, p);
+        // Match by identifier rather than reference so a distinct instance representing the same product
+        // replaces the existing row instead of being inserted as a duplicate.
+        var index = editProducts.FindIndex(x => x.Id == p.Id);
+        if (index >= 0) editProducts[index] = p;
+        else editProducts.Insert(0, p);
         editStatus = $"Saved {p.Name} (#{p.Id}).";
     }
 
     private void OnDelete(Product p)
     {
-        editProducts.Remove(p);
+        // Locate by identifier so deletion still targets the right row when a different instance is passed.
+        var index = editProducts.FindIndex(x => x.Id == p.Id);
+        if (index >= 0) editProducts.RemoveAt(index);
         editStatus = $"Deleted #{p.Id}.";
     }
 

@@ -24,7 +24,7 @@
                     if (IsLoading && LoadingTemplate is not null)
                     {
                         <tr>
-                            <td colspan="100">
+                            <td colspan="@_columns.Count">
                                 @LoadingTemplate
                             </td>
                         </tr>
@@ -45,7 +45,7 @@
                     if (IsLoading && LoadingTemplate is not null)
                     {
                         <tr>
-                            <td colspan="100">
+                            <td colspan="@_columns.Count">
                                 @LoadingTemplate
                             </td>
                         </tr>
