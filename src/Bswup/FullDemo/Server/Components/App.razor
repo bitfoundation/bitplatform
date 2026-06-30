@@ -1,0 +1,51 @@
+@code {
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+}
+
+@{
+    // Honors the Bswup service-worker "no-prerender" escape hatch: when the query string is
+    // present the page is rendered as interactive WebAssembly without a prerendered pass.
+    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    var renderMode = new InteractiveWebAssemblyRenderMode(prerender: !noPrerender);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <title>bit Bswup Full Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="Bit.Bswup.FullDemo.Server.styles.css" />
+    <HeadOutlet @rendermode="@renderMode" />
+</head>
+
+<body style="background:black; color:white">
+
+    <div id="app-container">
+        <Routes @rendermode="@renderMode" />
+    </div>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"></script>
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.js"
+            scope="/"
+            log="none"
+            sw="service-worker.js"
+            handler="bitBswupHandler"
+            blazorScript="_framework/blazor.web.js"></script>
+
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
+    <DemoBswupProgressBar />
+
+    @* <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css">
+    <BswupProgress AutoReload="false"
+                   HideApp="true"
+                   ShowAssets="true"
+                   ShowLogs="false"
+                   AppContainer="#app-container" /> *@
+</body>
+
+</html>
