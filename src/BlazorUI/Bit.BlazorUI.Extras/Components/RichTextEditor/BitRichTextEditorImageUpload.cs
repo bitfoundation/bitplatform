@@ -1,7 +1,7 @@
 namespace Bit.BlazorUI;
 
 /// <summary>An image to be persisted by the host's <c>OnImageUpload</c> delegate.</summary>
-public sealed record BitRichTextEditorImageUpload
+public sealed class BitRichTextEditorImageUpload
 {
     /// <param name="fileName">Original file name, when available.</param>
     /// <param name="contentType">MIME type, e.g. "image/png".</param>

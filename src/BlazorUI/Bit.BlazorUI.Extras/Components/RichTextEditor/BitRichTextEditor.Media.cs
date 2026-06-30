@@ -123,7 +123,8 @@ public partial class BitRichTextEditor
         var estimatedBytes = (long)base64.Length / 4 * 3 - padding;
         if (estimatedBytes > MaxImageBytes)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+            await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
+                string.Format(Label("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
             return null;
         }
 
@@ -134,7 +135,8 @@ public partial class BitRichTextEditor
         // inline data URL nor the upload contract carries the raw client-reported content type.
         if (TryNormalizeImageMimeType(contentType, out var mimeType) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-image",
+                string.Format(Label("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
             return null;
         }
 
@@ -144,7 +146,8 @@ public partial class BitRichTextEditor
             // embedding the (already MIME-validated) payload as one.
             if (DataImageUrisAllowed is false)
             {
-                await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+                await RaiseErrorAsync(new BitRichTextEditorError("invalid-image",
+                    string.Format(Label("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
                 return null;
             }
             return $"data:{mimeType};base64,{base64}";   // inline data URL fallback
@@ -155,13 +158,15 @@ public partial class BitRichTextEditor
             var bytes = Convert.FromBase64String(base64);
             if (bytes.Length > MaxImageBytes)
             {
-                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
+                    string.Format(Label("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
                 return null;
             }
             var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, mimeType, bytes));
             if (string.IsNullOrWhiteSpace(url))
             {
-                await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" did not return a URL."));
+                await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
+                    string.Format(Label("image-upload-no-url", "Upload of \"{0}\" did not return a URL."), fileName)));
                 return null;
             }
             return url;
@@ -170,7 +175,8 @@ public partial class BitRichTextEditor
         {
             // Keep infrastructure details out of the user-facing error; log them instead.
             Debug.WriteLine($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
-            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" failed. Please try again."));
+            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
+                string.Format(Label("image-upload-failed", "Upload of \"{0}\" failed. Please try again."), fileName)));
             return null;
         }
     }

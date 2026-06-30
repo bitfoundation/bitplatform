@@ -78,8 +78,12 @@ namespace BitBlazorUI {
             editor._onSelection = () => {
                 const sel = document.getSelection();
                 if (!sel || sel.rangeCount === 0) return;
-                if (editor.contains(sel.anchorNode)) {
-                    editor._range = sel.getRangeAt(0).cloneRange();
+                const range = sel.getRangeAt(0);
+                // Only store a selection that is fully inside this editor: a range that starts
+                // inside but ends outside (or vice versa) must not be captured, or a later
+                // toolbar action could mutate content beyond the editor.
+                if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
+                    editor._range = range.cloneRange();
                     RichTextEditor.reportState(editor);
                 }
             };
@@ -620,7 +624,11 @@ namespace BitBlazorUI {
         // the cell occupying that logical position (the same cell instance repeats across every
         // column/row it spans). colCount is the widest logical row.
         private static buildTableGrid(table: HTMLTableElement): { rows: HTMLTableRowElement[], grid: (HTMLTableCellElement | null)[][], colCount: number } {
-            const rows = Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[];
+            // Only this table's own rows: querySelectorAll('tr') also descends into nested
+            // tables, so filter to rows whose nearest table is this one to keep nested-table
+            // rows/cells out of the outer grid.
+            const rows = (Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[])
+                .filter(tr => tr.closest('table') === table);
             const grid: (HTMLTableCellElement | null)[][] = rows.map(() => []);
             for (let r = 0; r < rows.length; r++) {
                 let col = 0;
@@ -1017,7 +1025,9 @@ namespace BitBlazorUI {
             if (!sel || sel.rangeCount === 0) return;
             const range = sel.getRangeAt(0);
             const selected = (Array.from(table.querySelectorAll('td,th')) as HTMLElement[])
-                .filter(c => range.intersectsNode(c));
+                // Exclude cells that belong to a nested table so an outer merge never pulls in
+                // descendant cells from a table inside one of these cells.
+                .filter(c => c.closest('table') === table && range.intersectsNode(c));
             if (selected.length < 2) return;
 
             // Resolve each selected cell's position from the logical table grid (which accounts
@@ -1443,6 +1453,10 @@ namespace BitBlazorUI {
         private static restoreSelection(editor: any) {
             const r = editor._range;
             if (!r) return;
+            // Guard against a stored range whose endpoints have drifted outside the editor (e.g.
+            // the DOM changed since capture) so restored toolbar actions only ever operate on a
+            // selection fully contained within this editor.
+            if (!editor.contains(r.startContainer) || !editor.contains(r.endContainer)) return;
             const sel = document.getSelection();
             if (!sel) return;
             sel.removeAllRanges();

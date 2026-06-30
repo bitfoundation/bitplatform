@@ -119,8 +119,12 @@ public partial class BitRichTextEditor
         builder.AddAttribute(5, "class", $"bit-rte-btn {Classes?.Button}");
         builder.AddAttribute(6, "style", Styles?.Button);
         // Icon-only items may omit a visible label; fall back through Label then Id so the
-        // button always exposes a usable accessible name and tooltip.
-        var accessibleName = item.AriaLabel ?? item.Label ?? item.Id;
+        // button always exposes a usable accessible name and tooltip. Treat whitespace-only
+        // AriaLabel/Label as missing (matching ValidateCustomItems) so a blank AriaLabel does
+        // not produce an empty accessible name when a real Label is present.
+        var accessibleName = !string.IsNullOrWhiteSpace(item.AriaLabel) ? item.AriaLabel
+            : !string.IsNullOrWhiteSpace(item.Label) ? item.Label
+            : item.Id;
         builder.AddAttribute(7, "title", accessibleName);
         builder.AddAttribute(8, "aria-label", accessibleName);
         builder.AddAttribute(9, "disabled", ControlsDisabled);
