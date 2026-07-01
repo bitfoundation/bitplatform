@@ -100,6 +100,13 @@ public partial class BitRichTextEditor : BitComponentBase
     /// </summary>
     public async ValueTask FocusAsync()
     {
+        // While source view is active the WYSIWYG surface is detached/hidden and the raw-HTML
+        // textarea drives editing, so route focus there instead of the hidden _editorRef.
+        if (_inSourceView)
+        {
+            await _sourceRef.FocusAsync();
+            return;
+        }
         await _js.BitRichTextEditorFocus(_editorRef);
     }
 

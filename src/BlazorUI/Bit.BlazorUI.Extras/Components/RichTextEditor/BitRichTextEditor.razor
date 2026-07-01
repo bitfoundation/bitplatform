@@ -144,6 +144,7 @@
     @if (_inSourceView)
     {
         <textarea class="bit-rte-src @Classes?.Source" style="min-height:@Height;@Styles?.Source"
+                  @ref="_sourceRef"
                   aria-label="@Label("source-view", "HTML source")"
                   spellcheck="false"
                   readonly="@ReadOnly"

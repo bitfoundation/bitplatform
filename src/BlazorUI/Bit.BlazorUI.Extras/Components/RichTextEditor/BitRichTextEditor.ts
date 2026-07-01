@@ -497,6 +497,15 @@ namespace BitBlazorUI {
 
         public static insertTable(editor: any, rows: number, cols: number) {
             if (!editor) return;
+            // Honor the active sanitization policy before injecting markup: if the policy would
+            // strip the table tags during the sanitize pass that feeds the persisted Value, the
+            // live editor and the saved Value would diverge (table visible, but dropped on save).
+            // Mirror the link/image inserts and block the operation with a client error instead.
+            const requiredTags = ['table', 'tbody', 'tr', 'td'];
+            if (!requiredTags.every(t => RichTextEditor.isTagAllowed(editor, t))) {
+                RichTextEditor.reportClientError(editor, 'table-not-allowed', 'Tables are not allowed by the current policy.');
+                return;
+            }
             let html = '<table class="bit-rte-table"><tbody>';
             for (let r = 0; r < rows; r++) {
                 html += '<tr>';

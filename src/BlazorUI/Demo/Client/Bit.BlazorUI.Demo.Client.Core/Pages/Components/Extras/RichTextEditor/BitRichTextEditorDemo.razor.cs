@@ -241,7 +241,7 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Id", Type = "string", DefaultValue = "", Description = "Unique id used for ordering and lookup." },
                 new() { Name = "Label", Type = "string?", DefaultValue = "null", Description = "Text label shown when no icon is provided." },
                 new() { Name = "Icon", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional icon content." },
-                new() { Name = "AriaLabel", Type = "string", DefaultValue = "", Description = "Non-empty accessible label / tooltip." },
+                new() { Name = "AriaLabel", Type = "string?", DefaultValue = "null", Description = "Optional accessible label / tooltip. When omitted, Label is used as the accessible name." },
                 new() { Name = "OnActivate", Type = "Func<BitRichTextEditor, Task>", DefaultValue = "", Description = "Action invoked when the item is activated; receives the editor instance." },
             ]
         },

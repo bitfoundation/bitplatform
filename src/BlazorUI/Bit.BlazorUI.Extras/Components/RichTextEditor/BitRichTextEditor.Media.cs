@@ -150,6 +150,9 @@ public partial class BitRichTextEditor
                     string.Format(Label("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
                 return null;
             }
+            // Clear any lingering upload error so a successful retry doesn't keep showing the
+            // previous banner.
+            ClearInlineError();
             return $"data:{mimeType};base64,{base64}";   // inline data URL fallback
         }
 
@@ -169,6 +172,9 @@ public partial class BitRichTextEditor
                     string.Format(Label("image-upload-no-url", "Upload of \"{0}\" did not return a URL."), fileName)));
                 return null;
             }
+            // Clear any lingering upload error so a successful retry doesn't keep showing the
+            // previous banner.
+            ClearInlineError();
             return url;
         }
         catch (Exception ex)

@@ -7,6 +7,7 @@ public partial class BitRichTextEditor
 {
     private bool _inSourceView;
     private string _sourceText = "";
+    private ElementReference _sourceRef = default!;
 
     private async Task ToggleSourceViewAsync()
     {
