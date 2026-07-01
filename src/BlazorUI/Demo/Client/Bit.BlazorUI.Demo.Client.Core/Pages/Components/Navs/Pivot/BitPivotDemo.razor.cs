@@ -82,7 +82,7 @@ public partial class BitPivotDemo
             Name = "NextIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon of the next button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronRight).",
+            Description = "Gets or sets the name of the icon of the next button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronRight for horizontal pivots and ChevronDown for vertical pivots).",
         },
         new()
         {
@@ -155,7 +155,7 @@ public partial class BitPivotDemo
             Name = "PreviousIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon of the previous button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronLeft).",
+            Description = "Gets or sets the name of the icon of the previous button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronLeft for horizontal pivots and ChevronUp for vertical pivots).",
         },
         new()
         {
