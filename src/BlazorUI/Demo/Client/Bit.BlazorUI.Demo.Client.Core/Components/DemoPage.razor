@@ -18,7 +18,7 @@ else
                     <BitStack Horizontal>
                         @foreach (var name in SecondaryNames)
                         {
-                            <BitText Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
+                            <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
                         }
                     </BitStack>
                 }
@@ -41,7 +41,7 @@ else
             @if (Notes.HasValue() || NotesTemplate is not null)
             {
                 <section id="notes-section" class="page-section">
-                    <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
                     @if (NotesTemplate is not null)
                     {
                         @NotesTemplate
@@ -56,7 +56,7 @@ else
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
                 <section id="introduction-section" class="page-section">
-                    <BitText Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
                     @if (IntroductionVideoUrl.HasValue())
                     {
                         <div class="video-container">
@@ -81,12 +81,12 @@ else
             }
 
             <section id="usage-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
                 @(ChildContent ?? Examples)
             </section>
 
             <section id="api-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">API</BitText>
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
@@ -125,7 +125,7 @@ else
             </section>
 
             <section id="feedback-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
                 <BitText>
                     You can give us your feedback through our
                     <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
