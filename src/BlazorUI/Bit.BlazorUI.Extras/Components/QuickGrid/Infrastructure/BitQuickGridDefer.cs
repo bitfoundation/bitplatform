@@ -21,3 +21,13 @@ public class BitQuickGridDefer : ComponentBase
         builder.AddContent(0, ChildContent);
     }
 }
+
+/// <summary>
+/// Backward-compatible alias for <see cref="BitQuickGridDefer"/>, kept so existing code that referenced
+/// the old <c>BitDataGridDefer</c> type keeps compiling. It inherits the renamed type, so it behaves
+/// identically during the migration window.
+/// </summary>
+[Obsolete("BitDataGridDefer has been renamed to BitQuickGridDefer. Use BitQuickGridDefer instead.")]
+public class BitDataGridDefer : BitQuickGridDefer
+{
+}

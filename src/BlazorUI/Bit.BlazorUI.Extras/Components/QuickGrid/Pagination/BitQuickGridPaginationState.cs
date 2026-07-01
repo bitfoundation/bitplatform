@@ -74,3 +74,14 @@ public class BitQuickGridPaginationState
         }
     }
 }
+
+/// <summary>
+/// Backward-compatible alias for <see cref="BitQuickGridPaginationState"/>, kept so existing code that
+/// constructed the old <c>BitDataGridPaginationState</c> type keeps compiling. It inherits the renamed
+/// type, so it behaves identically and can still be assigned to a grid's pagination during the
+/// migration window.
+/// </summary>
+[Obsolete("BitDataGridPaginationState has been renamed to BitQuickGridPaginationState. Use BitQuickGridPaginationState instead.")]
+public class BitDataGridPaginationState : BitQuickGridPaginationState
+{
+}

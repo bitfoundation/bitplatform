@@ -383,8 +383,8 @@
     {
         var groupCol = _columnsById.GetValueOrDefault(group.ColumnId);
         var collapsed = IsGroupCollapsed(group);
-        <div class="bit-dtg-group-row" role="row" style="--bit-dtg-group-level:@group.Level;">
-            <div class="bit-dtg-group-cell" role="gridcell" style="padding-inline-start:@(8 + group.Level * 20)px;">
+        <div class="bit-dtg-row bit-dtg-group-row" role="row" style="grid-template-columns:var(--bit-dtg-template);--bit-dtg-group-level:@group.Level;">
+            <div class="bit-dtg-group-cell" role="gridcell" style="grid-column:1 / -1;padding-inline-start:@(8 + group.Level * 20)px;">
                 <button type="button" class="bit-dtg-icon-btn"
                         aria-label="@($"{(collapsed ? "Expand" : "Collapse")} group {groupCol?.DisplayTitle}: {group.KeyText}")"
                         aria-expanded="@(collapsed ? "false" : "true")"

@@ -474,6 +474,14 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         // could wrongly (or never) detect a virtualized/non-virtualized flip.
         _lastRefreshedVirtualize = Virtualize;
 
+        // Snapshot the requested pagination slice up front so both the virtualized and non-virtualized
+        // paths record it. Doing this only in the non-virtualized branch (and relying on
+        // ProvideVirtualizedItems otherwise) leaves the marker stale when Virtualize is on but its child
+        // hasn't requested items yet (e.g. first render / right after toggling virtualization). The next
+        // OnParametersSetAsync would then see ComputePaginationStateHash() != _lastRefreshedPaginationStateHash
+        // and fire a duplicate initial query for the same slice.
+        _lastRefreshedPaginationStateHash = ComputePaginationStateHash();
+
         // Move into a "loading" state, cancelling any earlier-but-still-pending load. Do NOT dispose
         // the previous source here: the load that owns it may still be in flight and holding its token
         // (e.g. registered on it), so disposing now could surface an ObjectDisposedException instead of
@@ -519,7 +527,6 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         else
         {
             // If we're not using Virtualize, we build and execute a request against the items provider directly
-            _lastRefreshedPaginationStateHash = ComputePaginationStateHash();
             var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
             var request = new BitQuickGridItemsProviderRequest<TGridItem>(
                 startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);

@@ -18,6 +18,27 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         return declaringType != typeof(object) && declaringType != typeof(ValueType);
     }
 
+    // The IComparable fast path (CompareTo == 0 ⇒ equal) is only safe for types where a zero comparison
+    // also guarantees an equal GetHashCode, i.e. the BCL scalar/value types whose CompareTo and
+    // GetHashCode are defined consistently. An arbitrary custom IComparable may report CompareTo == 0 for
+    // two instances while their (un-overridden) GetHashCode differ, which would group/sort them as equal
+    // yet hash them apart — an Equals/GetHashCode contract violation. For those types we fall back to the
+    // same normalized projection (meaningful ToString, else the canonical key) that GetHashCode uses, so
+    // comparison and hashing always agree.
+    internal static bool IsTrustedComparable(Type type)
+    {
+        if (type.IsPrimitive || type.IsEnum) return true;
+        return type == typeof(string)
+            || type == typeof(decimal)
+            || type == typeof(DateTime)
+            || type == typeof(DateTimeOffset)
+            || type == typeof(DateOnly)
+            || type == typeof(TimeOnly)
+            || type == typeof(TimeSpan)
+            || type == typeof(Guid)
+            || type == typeof(Version);
+    }
+
     // Canonical ordering/identity key for reference values that are neither IComparable nor expose a
     // meaningful ToString() override. RuntimeHelpers.GetHashCode (the previous fallback) can collide:
     // two distinct instances may share an identity hash, which would make Compare return 0 for unequal
@@ -44,7 +65,10 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         if (x is string sx && y is string sy)
             return string.Compare(sx, sy, StringComparison.OrdinalIgnoreCase);
 
-        if (x is IComparable cx && x.GetType() == y.GetType())
+        // Only take the IComparable shortcut for trusted BCL scalar types, whose CompareTo == 0 also
+        // implies an equal GetHashCode. Custom comparables fall through to the same projection-based
+        // path GetHashCode uses, so comparison and hashing stay consistent (see IsTrustedComparable).
+        if (x is IComparable cx && x.GetType() == y.GetType() && IsTrustedComparable(x.GetType()))
             return cx.CompareTo(y);
 
         // Mixed types: order first by a stable type discriminator (the full type name) so the ordering
@@ -81,18 +105,19 @@ internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<objec
     public new bool Equals(object? x, object? y) => BitDataGridValueComparer.Instance.Compare(x, y) == 0;
 
     // Must stay consistent with Equals: values the comparer treats as equal have to hash alike.
-    // Strings compare case-insensitively, so hash them that way. IComparable values fall back to their
-    // own hash code (where CompareTo == 0 implies an equal hash for well-behaved types). For any other
-    // (non-IComparable) value the comparer ranks two instances equal only when the type has a meaningful
-    // ToString() override and their text matches; hash on that same canonical string. When ToString()
-    // is not overridden the comparer keeps distinct instances distinct via the same collision-free
-    // canonical key it orders them by, so hash on that key too — keeping Equals/GetHashCode consistent
-    // without the identity-hash collisions a raw RuntimeHelpers.GetHashCode could introduce. Null hashes to 0.
+    // Strings compare case-insensitively, so hash them that way. Trusted BCL comparables fall back to
+    // their own hash code (where CompareTo == 0 implies an equal hash). For any other value — including
+    // a custom IComparable that the comparer does NOT shortcut — the comparer ranks two instances equal
+    // only when the type has a meaningful ToString() override and their text matches; hash on that same
+    // canonical string. When ToString() is not overridden the comparer keeps distinct instances distinct
+    // via the same collision-free canonical key it orders them by, so hash on that key too — keeping
+    // Equals/GetHashCode consistent without the identity-hash collisions a raw RuntimeHelpers.GetHashCode
+    // could introduce. Null hashes to 0.
     public int GetHashCode(object? obj) => obj switch
     {
         null => 0,
         string s => StringComparer.OrdinalIgnoreCase.GetHashCode(s),
-        IComparable => obj.GetHashCode(),
+        IComparable when BitDataGridValueComparer.IsTrustedComparable(obj.GetType()) => obj.GetHashCode(),
         _ => BitDataGridValueComparer.HasMeaningfulToString(obj.GetType())
                 ? StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ToString() ?? string.Empty)
                 : BitDataGridValueComparer.GetCanonicalKey(obj).GetHashCode()
