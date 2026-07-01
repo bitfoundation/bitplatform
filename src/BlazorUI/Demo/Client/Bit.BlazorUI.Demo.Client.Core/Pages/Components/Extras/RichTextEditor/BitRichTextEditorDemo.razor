@@ -147,7 +147,7 @@
                     <b>OnError</b> with a stable code such as invalid-url, and the content is left unchanged.
                 </div>
                 <br />
-                <BitRichTextEditor Value="linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="10rem"
+                <BitRichTextEditor Value="@linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="10rem"
                                    Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
                                    OnError='e => linkError = $"{e.Code}: {e.Message}"'
                                    Placeholder="Select text, then add a link..." />

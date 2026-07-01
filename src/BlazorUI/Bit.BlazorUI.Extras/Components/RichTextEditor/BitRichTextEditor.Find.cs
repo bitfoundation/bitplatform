@@ -40,6 +40,7 @@ public partial class BitRichTextEditor
         }
         if (_findTerm.Length > 1000)
         {
+            _findCount = "";
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }
@@ -63,6 +64,7 @@ public partial class BitRichTextEditor
         if (ControlsDisabled || string.IsNullOrEmpty(_findTerm)) return;
         if (_findTerm.Length > 1000)
         {
+            _findCount = "";
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }
@@ -75,6 +77,7 @@ public partial class BitRichTextEditor
         if (ControlsDisabled || string.IsNullOrEmpty(_findTerm)) return;
         if (_findTerm.Length > 1000)
         {
+            _findCount = "";
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }

@@ -242,6 +242,15 @@ namespace BitBlazorUI {
                 if (lt === -1) break;
 
                 let j = lt + 1;
+                // HTML comments (<!-- ... -->) are valid markup: treat them as inert, skip past
+                // the closing '-->', and leave the tag stack untouched. Without this they would be
+                // rejected below because '!' is not a tag-name start character.
+                if (html[j] === '!' && html[j + 1] === '-' && html[j + 2] === '-') {
+                    const end = html.indexOf('-->', j + 3);
+                    if (end === -1) return false; // unterminated comment is malformed
+                    i = end + 3;
+                    continue;
+                }
                 const isClose = html[j] === '/';
                 if (isClose) j++;
 
@@ -363,6 +372,14 @@ namespace BitBlazorUI {
 
         public static applyColor(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
+            // Color commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // If the active policy would strip <span> or the style attribute, snapshot() drops the
+            // formatting on the next sanitize roundtrip, so the live editor and persisted Value
+            // would diverge. Gate on the allowlist and block with a client error instead.
+            if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
+                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'That formatting is not allowed by the current policy.');
+                return;
+            }
             RichTextEditor.dispatch(editor, kind === 'back' ? 'backColor' : 'foreColor', { value });
             RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
@@ -370,6 +387,13 @@ namespace BitBlazorUI {
 
         public static applyFont(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
+            // Font commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // Gate on the same allowlist as applyColor so formatting the sanitized snapshot would
+            // strip is never applied only to be dropped from the persisted Value.
+            if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
+                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'That formatting is not allowed by the current policy.');
+                return;
+            }
             RichTextEditor.dispatch(editor, kind === 'size' ? 'fontSize' : 'fontName', { value });
             RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
@@ -882,9 +906,20 @@ namespace BitBlazorUI {
             RichTextEditor.afterChange(editor);
         }
 
-        // ====================================================================
-        // Engine: the ONLY place document.execCommand is invoked.
-        // ====================================================================
+        // Suppresses the browser default for the slash menu's navigation keys on the filter input
+        // so ArrowUp/ArrowDown don't move the text caret, Enter doesn't submit, and Escape doesn't
+        // clear the field - while the C# @onkeydown handler still runs and normal typing is left
+        // untouched. Bound once per input element (which Blazor recreates each time the menu opens,
+        // so no explicit teardown is needed).
+        public static bindSlashKeys(input: any) {
+            if (!input || input._slashKeysBound) return;
+            input._slashKeysBound = true;
+            input.addEventListener('keydown', (e: KeyboardEvent) => {
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter' || e.key === 'Escape') {
+                    e.preventDefault();
+                }
+            });
+        }
         private static dispatch(editor: any, command: string, args: any): boolean {
             if (!editor) return false;
             try {
@@ -1632,6 +1667,17 @@ namespace BitBlazorUI {
             // Deny-by-default per the allowlist contract: an absent allowedTags is an empty
             // allowlist (deny all), not allow-all, matching sanitize()'s tag filtering.
             return !!(policy && policy.allowedTags && policy.allowedTags.includes(tag));
+        }
+
+        // Whether the active policy permits a given attribute on a tag, merging the tag-specific
+        // and global ('*') attribute allowlists exactly as sanitize() does. Command handlers use
+        // this (alongside isTagAllowed) so formatting whose markup the sanitized snapshot would
+        // strip is never applied to the live DOM only to be dropped from the persisted Value.
+        private static isAttrAllowed(editor: any, tag: string, attr: string): boolean {
+            const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
+            const attrs = (policy && policy.allowedAttributes) || {};
+            const allowed = [...(attrs[tag] || []), ...(attrs['*'] || [])];
+            return allowed.includes(attr);
         }
 
         // Validates a URL against the active sanitization policy's scheme allowlist (or a

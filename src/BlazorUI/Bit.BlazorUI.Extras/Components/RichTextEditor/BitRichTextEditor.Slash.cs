@@ -119,6 +119,9 @@ public partial class BitRichTextEditor
         try
         {
             await _slashInputRef.FocusAsync();
+            // Suppress native browser handling of the menu's navigation keys (Arrow/Enter/Escape)
+            // on this input while leaving normal typing intact.
+            await _js.BitRichTextEditorBindSlashKeys(_slashInputRef);
         }
         catch (JSDisconnectedException) { } // circuit gone; nothing to focus
     }
