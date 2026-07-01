@@ -32,7 +32,7 @@ else
                     }
                     else
                     {
-                        <BitText>@Description</BitText>
+                        <BitText Element="p">@Description</BitText>
                     }
                 </section>
             }
@@ -125,7 +125,7 @@ else
 
             <section id="feedback-section" class="page-section">
                 <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
-                <BitText>
+                <BitText Element="p">
                     You can give us your feedback through our
                     <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
                     by filing a new
@@ -137,7 +137,7 @@ else
                 @if (GitHubDemoUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
                                  Target="_blank">review</BitLink>
@@ -151,7 +151,7 @@ else
                 @if (GitHubUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
                                  Target="_blank">review</BitLink>
@@ -165,7 +165,7 @@ else
                 @if (GitHubExtrasUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
                                  Target="_blank">review</BitLink>
