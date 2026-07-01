@@ -58,7 +58,7 @@
 
         @if (_showFind && ControlsDisabled is false)
         {
-            <div class="bit-rte-bar">
+            <div class="bit-rte-bar" id="@($"{UniqueId}-find-panel")">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("find", "Find")" placeholder="@Label("find", "Find")"
                        @bind="_findTerm" @bind:event="oninput" @bind:after="RunFindAsync" />
                 <input type="text" class="bit-rte-inp" aria-label="@Label("replace-with", "Replace with")" placeholder="@Label("replace-with", "Replace with")"
@@ -73,7 +73,7 @@
 
         @if (_showEmoji && ControlsDisabled is false)
         {
-            <div class="bit-rte-emoji-panel">
+            <div class="bit-rte-emoji-panel" id="@($"{UniqueId}-emoji-panel")">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("search-emoji", "Search emoji")"
                        placeholder="@Label("search", "Search")"
                        @bind="_emojiSearch" @bind:event="oninput" />
@@ -334,12 +334,12 @@
     </div>;
 
     private RenderFragment EmojiGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showEmoji ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("emoji", "Emoji")" aria-label="@Label("emoji-label", "Insert emoji")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showEmoji ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("emoji", "Emoji")" aria-label="@Label("emoji-label", "Insert emoji")" aria-expanded="@(_showEmoji ? "true" : "false")" aria-controls="@($"{UniqueId}-emoji-panel")" disabled="@ControlsDisabled"
                 @onmousedown:preventDefault="true" @onclick="ToggleEmoji">☺</button>
     </div>;
 
     private RenderFragment FindGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("find-replace", "Find & replace")" aria-label="@Label("find-replace-label", "Find and replace")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("find-replace", "Find & replace")" aria-label="@Label("find-replace-label", "Find and replace")" aria-expanded="@(_showFind ? "true" : "false")" aria-controls="@($"{UniqueId}-find-panel")" disabled="@ControlsDisabled"
                 @onmousedown:preventDefault="true" @onclick="ToggleFind">🔍</button>
     </div>;
 
@@ -349,7 +349,7 @@
     </div>;
 
     private RenderFragment FullScreenGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_fullScreen ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("full-screen", "Full screen")" aria-label="@Label("full-screen-label", "Toggle full screen")"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_fullScreen ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("full-screen", "Full screen")" aria-label="@Label("full-screen-label", "Toggle full screen")" aria-pressed="@_fullScreen"
                 @onmousedown:preventDefault="true" @onclick="ToggleFullScreen">⛶</button>
     </div>;
 

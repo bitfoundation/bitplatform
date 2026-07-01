@@ -146,6 +146,21 @@ public partial class BitRichTextEditor : BitComponentBase
         await OnChange.InvokeAsync(html);
     }
 
+    /// <summary>
+    /// Reported by the bridge after a programmatic content set (e.g. a bound Value assignment):
+    /// refreshes the cached content facts so count-dependent UI stays accurate, without treating
+    /// the change as a user edit (no AssignValue / OnChange).
+    /// </summary>
+    [JSInvokable("OnFactsChanged")]
+    public void _OnFactsChanged(BitRichTextEditorContentFacts facts)
+    {
+        _facts = facts;
+        if (ShowCount)
+        {
+            StateHasChanged();
+        }
+    }
+
     [JSInvokable("OnSelectionChanged")]
     public void _OnSelectionChanged(BitRichTextEditorSelectionState state)
     {

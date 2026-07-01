@@ -204,6 +204,11 @@ namespace BitBlazorUI {
                 editor.innerHTML = next;
             }
             RichTextEditor.updateEmpty(editor);
+            // The content changed programmatically (e.g. a bound Value assignment), not via a user
+            // edit: refresh the cached content facts so count-dependent state stays accurate, but
+            // do not route this through the user-change callback (OnContentChanged) or emit an edit.
+            if (editor._dotNetRef)
+                editor._dotNetRef.invokeMethodAsync('OnFactsChanged', RichTextEditor.computeFacts(editor));
         }
 
         public static focus(editor: any) {
@@ -219,7 +224,9 @@ namespace BitBlazorUI {
         // stray angle brackets, unmatched closing tags, or misnested/unclosed elements so
         // malformed markup is rejected before it is committed. Void elements and tags with
         // optional end tags (p, li, td, ...) are handled leniently to match the HTML spec.
-        public static validateHtml(html: string): boolean {
+        // Scoped to the editor instance (like sanitizeHtml) so validation can honor per-editor
+        // options such as the active sanitization policy.
+        public static validateHtml(editor: any, html: string): boolean {
             if (!html) return true;
 
             const voidTags = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
