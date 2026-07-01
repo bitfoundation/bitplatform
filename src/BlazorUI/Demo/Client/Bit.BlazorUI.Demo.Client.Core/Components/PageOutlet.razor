@@ -20,12 +20,19 @@
     <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@@bitplatformhq" />
+    <meta name="twitter:creator" content="@@bitplatformhq" />
     <meta name="twitter:title" content="@PageTitleText" />
     <meta name="twitter:description" content="@MetaDescription" />
     <meta name="twitter:image" content="@ImageUrl" />
     <meta name="twitter:image:alt" content="@PageTitleText" />
 
     <link rel="canonical" href="@CanonicalUrl" />
+
+    @if (BreadcrumbJsonLd is not null)
+    {
+        @((MarkupString)BreadcrumbJsonLd)
+    }
 </HeadContent>
 
 @code {
@@ -58,4 +65,36 @@
     private string MetaDescription => Description.HasValue() ? Description! : DefaultDescription;
 
     private string MetaKeywords => Keywords.HasValue() ? $"{BaseKeywords}, {Keywords}" : BaseKeywords;
+
+    // Emits a BreadcrumbList structured-data block so search engines can render breadcrumb rich results.
+    // The home page (empty Url) has no breadcrumb. Component pages get a "Components" crumb in between.
+    private string? BreadcrumbJsonLd
+    {
+        get
+        {
+            var normalizedUrl = Url?.ToLowerInvariant().Trim('/');
+            if (normalizedUrl.HasValue() is false) return null; // Home page: no breadcrumb.
+
+            var leafName = Title.HasValue() ? Title! : normalizedUrl!;
+
+            var items = new List<(string Name, string Url)>
+            {
+                ("Home", $"{SiteBaseUrl}/")
+            };
+
+            if (normalizedUrl!.StartsWith("components/"))
+            {
+                items.Add(("Components", $"{SiteBaseUrl}/components"));
+            }
+
+            items.Add((leafName, $"{SiteBaseUrl}/{normalizedUrl}"));
+
+            var listElements = string.Join(",", items.Select((item, index) =>
+                $"{{\"@type\":\"ListItem\",\"position\":{index + 1},\"name\":\"{JsonEscape(item.Name)}\",\"item\":\"{JsonEscape(item.Url)}\"}}"));
+
+            return $"<script type=\"application/ld+json\">{{\"@context\":\"https://schema.org\",\"@type\":\"BreadcrumbList\",\"itemListElement\":[{listElements}]}}</script>";
+        }
+    }
+
+    private static string JsonEscape(string value) => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 }

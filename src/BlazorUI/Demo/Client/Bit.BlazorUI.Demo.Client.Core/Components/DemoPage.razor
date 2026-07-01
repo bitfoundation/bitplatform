@@ -11,18 +11,17 @@ else
         <div class="page-container example">
             <BitText Element="h1" Typography="BitTypography.H3" Class="title">
                 @Name
-
-                @if (SecondaryNames?.Length > 0)
-                {
-                    <br />
-                    <BitStack Horizontal>
-                        @foreach (var name in SecondaryNames)
-                        {
-                            <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
-                        }
-                    </BitStack>
-                }
             </BitText>
+
+            @if (SecondaryNames?.Length > 0)
+            {
+                <BitStack Horizontal>
+                    @foreach (var name in SecondaryNames)
+                    {
+                        <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
+                    }
+                </BitStack>
+            }
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {
