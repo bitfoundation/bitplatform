@@ -170,11 +170,11 @@ public partial class AppChatbot
 
         try
         {
-            _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+            var themeChanged = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
                 .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<bool>(SharedAppMessages.CHANGE_THEME, theme, CancellationToken.None);
 
-            return $"Theme changed to {theme} successfully";
+            return themeChanged ? $"Theme changed to {theme} successfully" : $"Theme is already set to {theme}";
         }
         catch (Exception exp)
         {
