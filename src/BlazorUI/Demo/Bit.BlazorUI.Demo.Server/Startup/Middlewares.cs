@@ -173,8 +173,15 @@ public class Middlewares
         var urls = Assembly.Load("Bit.BlazorUI.Demo.Client.Core")
             .ExportedTypes
             .Where(t => typeof(IComponent).IsAssignableFrom(t))
-            .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
-            .Select(r => r.Template)
+            // Use only the first (canonical) route of each page and skip the noindex not-found page,
+            // so the sitemap advertises canonical URLs only and avoids duplicate alias entries.
+            .Select(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>()
+                          .Select(r => r.Template)
+                          .FirstOrDefault())
+            .Where(template => string.IsNullOrWhiteSpace(template) is false
+                            && string.Equals(template, "/not-found", StringComparison.OrdinalIgnoreCase) is false)
+            .Select(template => template!)
+            .Distinct()
             .ToList();
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";

@@ -4,28 +4,47 @@
 
 <HeadContent>
     <meta name="title" content="@Title - bit BlazorUI" />
-    <meta name="description" content="bit BlazorUI components are native, easy-to-customize, and work seamlessly in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable. - @Description" />
-    <meta name="keywords" content="Blazor UI, Blazor components, Blazor WebAssembly UI, Blazor Server UI, Blazor Hybrid UI, .NET UI components, C# UI library, open source Blazor controls, Blazor toolkit, high performance Blazor, responsive Blazor components, Blazor PWA UI, BlazorUI documentation, Blazor WASM UI, Blazor SSR components, Blazor native UI, Bit BlazorUI, @Keywords" />
+    <meta name="description" content="@MetaDescription" />
+    <meta name="keywords" content="@MetaKeywords" />
 
-    <meta property="og:url" content="https://blazorui.bitplatform.dev/@Url" />
+    <meta property="og:url" content="@CanonicalUrl" />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="bit BlazorUI" />
     <meta property="og:title" content="@Title - bit BlazorUI" />
-    <meta property="og:description" content="@Description" />
+    <meta property="og:description" content="@MetaDescription" />
     <meta property="og:image" content="@ImageUrl" />
+    <meta property="og:image:alt" content="@Title - bit BlazorUI" />
 
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@Title - bit BlazorUI" />
-    <meta name="twitter:description" content="@Description" />
+    <meta name="twitter:description" content="@MetaDescription" />
     <meta name="twitter:image" content="@ImageUrl" />
+    <meta name="twitter:image:alt" content="@Title - bit BlazorUI" />
 
-    <link rel="canonical" href="https://blazorui.bitplatform.dev/@Url">
+    <link rel="canonical" href="@CanonicalUrl" />
 </HeadContent>
 
 @code {
+    private const string SiteBaseUrl = "https://blazorui.bitplatform.dev";
+
+    // A concise (<160 chars) fallback used only when a page doesn't provide its own description.
+    private const string DefaultDescription = "Native, easy-to-customize Blazor UI components that work seamlessly across WASM, Server, Hybrid and pre-rendering.";
+
+    private const string BaseKeywords = "Blazor UI, Blazor components, Blazor WebAssembly UI, Blazor Server UI, Blazor Hybrid UI, .NET UI components, C# UI library, open source Blazor controls, Bit BlazorUI";
+
     [Parameter] public string? Url { get; set; }
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? Keywords { get; set; }
     [Parameter] public string? Description { get; set; }
 
-    [Parameter] public string ImageUrl { get; set; } = "https://blazorui.bitplatform.dev/images/og-image.svg";
+    // Raster image for social cards. Crawlers (Facebook, LinkedIn, X, Slack) don't render SVG,
+    // so a PNG/JPG is required here. TODO: replace with a dedicated 1200x630 og-image.png.
+    [Parameter] public string ImageUrl { get; set; } = $"{SiteBaseUrl}/images/bit-logo-blue.png";
+
+    private string CanonicalUrl => $"{SiteBaseUrl}/{Url?.ToLowerInvariant().TrimStart('/')}";
+
+    private string MetaDescription => Description.HasValue() ? Description! : DefaultDescription;
+
+    private string MetaKeywords => Keywords.HasValue() ? $"{BaseKeywords}, {Keywords}" : BaseKeywords;
 }
