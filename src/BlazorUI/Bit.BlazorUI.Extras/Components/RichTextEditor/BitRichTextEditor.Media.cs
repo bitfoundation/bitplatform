@@ -179,8 +179,10 @@ public partial class BitRichTextEditor
         }
         catch (Exception ex)
         {
-            // Keep infrastructure details out of the user-facing error; log them instead.
-            Debug.WriteLine($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
+            // Keep infrastructure details out of the user-facing error; log them instead. Use
+            // Trace (not Debug) so the failure is still recorded in Release builds, matching the
+            // other always-on logging paths in this component (e.g. _OnCommandError).
+            Trace.TraceError($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
             await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
                 string.Format(Label("image-upload-failed", "Upload of \"{0}\" failed. Please try again."), fileName)));
             return null;
