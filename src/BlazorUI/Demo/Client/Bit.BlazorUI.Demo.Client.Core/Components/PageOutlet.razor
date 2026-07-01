@@ -1,9 +1,9 @@
 @inherits AppComponentBase
 
-<PageTitle>@Title - bit BlazorUI</PageTitle>
+<PageTitle>@PageTitleText</PageTitle>
 
 <HeadContent>
-    <meta name="title" content="@Title - bit BlazorUI" />
+    <meta name="title" content="@PageTitleText" />
     <meta name="description" content="@MetaDescription" />
     <meta name="keywords" content="@MetaKeywords" />
 
@@ -11,16 +11,16 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="bit BlazorUI" />
-    <meta property="og:title" content="@Title - bit BlazorUI" />
+    <meta property="og:title" content="@PageTitleText" />
     <meta property="og:description" content="@MetaDescription" />
     <meta property="og:image" content="@ImageUrl" />
-    <meta property="og:image:alt" content="@Title - bit BlazorUI" />
+    <meta property="og:image:alt" content="@PageTitleText" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="@Title - bit BlazorUI" />
+    <meta name="twitter:title" content="@PageTitleText" />
     <meta name="twitter:description" content="@MetaDescription" />
     <meta name="twitter:image" content="@ImageUrl" />
-    <meta name="twitter:image:alt" content="@Title - bit BlazorUI" />
+    <meta name="twitter:image:alt" content="@PageTitleText" />
 
     <link rel="canonical" href="@CanonicalUrl" />
 </HeadContent>
@@ -38,9 +38,18 @@
     [Parameter] public string? Keywords { get; set; }
     [Parameter] public string? Description { get; set; }
 
+    // When set, this is used verbatim as the page/social title instead of the
+    // "{Title} - bit BlazorUI" pattern. Useful for the home page where the
+    // most valuable title slot should hold primary keywords rather than "Home".
+    [Parameter] public string? FullTitle { get; set; }
+
     // Raster image for social cards. Crawlers (Facebook, LinkedIn, X, Slack) don't render SVG,
-    // so a PNG/JPG is required here. TODO: replace with a dedicated 1200x630 og-image.png.
-    [Parameter] public string ImageUrl { get; set; } = $"{SiteBaseUrl}/images/bit-logo-blue.png";
+    // so a PNG/JPG is required here. This asset is shipped by the Core Razor Class Library and
+    // is always served under the _content path regardless of the host project.
+    // TODO: replace with a dedicated 1200x630 og-image.png for richer social cards.
+    [Parameter] public string ImageUrl { get; set; } = $"{SiteBaseUrl}/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png";
+
+    private string PageTitleText => FullTitle.HasValue() ? FullTitle! : $"{Title} - bit BlazorUI";
 
     private string CanonicalUrl => $"{SiteBaseUrl}/{Url?.ToLowerInvariant().TrimStart('/')}";
 

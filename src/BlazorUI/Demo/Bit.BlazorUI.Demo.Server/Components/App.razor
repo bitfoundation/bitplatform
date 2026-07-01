@@ -13,7 +13,7 @@
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color" content="#0072c6" />
+    <meta name="theme-color" content="#fff" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <title>bit BlazorUI</title>
@@ -23,6 +23,49 @@
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
         (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
     </Script>
+
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@graph": [
+            {
+                "@@type": "Organization",
+                "@@id": "https://blazorui.bitplatform.dev/#organization",
+                "name": "bit platform",
+                "url": "https://bitplatform.dev",
+                "logo": "https://blazorui.bitplatform.dev/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png",
+                "sameAs": [
+                    "https://github.com/bitfoundation/bitplatform"
+                ]
+            },
+            {
+                "@@type": "WebSite",
+                "@@id": "https://blazorui.bitplatform.dev/#website",
+                "url": "https://blazorui.bitplatform.dev/",
+                "name": "bit BlazorUI",
+                "description": "Native, easy-to-customize, open-source Blazor UI components that work seamlessly across WebAssembly, Server, Hybrid (MAUI) and pre-rendering.",
+                "publisher": { "@@id": "https://blazorui.bitplatform.dev/#organization" },
+                "inLanguage": "en-US"
+            },
+            {
+                "@@type": "SoftwareApplication",
+                "name": "bit BlazorUI",
+                "applicationCategory": "DeveloperApplication",
+                "operatingSystem": "Cross-platform",
+                "url": "https://blazorui.bitplatform.dev/",
+                "downloadUrl": "https://www.nuget.org/packages/Bit.BlazorUI/",
+                "softwareRequirements": ".NET 8.0+",
+                "description": "An open-source set of 80+ native Blazor UI components for WebAssembly, Server, Hybrid (MAUI) and pre-rendering.",
+                "author": { "@@id": "https://blazorui.bitplatform.dev/#organization" },
+                "offers": {
+                    "@@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                }
+            }
+        ]
+    }
+    </script>
 
     <HeadOutlet @rendermode=renderMode />
 
