@@ -16,7 +16,9 @@
     <meta name="theme-color" content="#0d1117" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <title>bit BlazorUI</title>
+    <!-- No static <title> here: the per-page title is emitted through <HeadOutlet> (PageOutlet's <PageTitle>),
+         with Routes.razor providing the "bit BlazorUI" fallback. A hardcoded <title> would produce a duplicate
+         <title> element in the prerendered HTML. -->
 
     <Script>
         // disable auto-zoom of iOS Safari when focusing an input
