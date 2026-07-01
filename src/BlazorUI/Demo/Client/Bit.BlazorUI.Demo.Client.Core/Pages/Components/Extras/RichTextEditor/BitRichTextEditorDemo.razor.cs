@@ -404,7 +404,7 @@ public partial class BitRichTextEditorDemo
             // base the min-length check on that same normalized text.
             var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "");
             var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-            if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+            if (string.IsNullOrWhiteSpace(Body) is false && text.Length == 0)
             {
                 yield return new ValidationResult("The body is required.", [nameof(Body)]);
             }
@@ -622,7 +622,7 @@ public class FormModel : System.ComponentModel.DataAnnotations.IValidatableObjec
         // so require non-whitespace visible text and base the min-length check on it too.
         var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? """", ""<[^>]+>"", """");
         var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-        if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+        if (string.IsNullOrWhiteSpace(Body) is false && text.Length == 0)
             yield return new System.ComponentModel.DataAnnotations.ValidationResult(""The body is required."", [nameof(Body)]);
         else if (text.Length > 0 && text.Length < 20)
             yield return new System.ComponentModel.DataAnnotations.ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);

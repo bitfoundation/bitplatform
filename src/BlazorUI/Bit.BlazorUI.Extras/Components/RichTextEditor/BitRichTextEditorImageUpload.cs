@@ -9,27 +9,26 @@ public sealed class BitRichTextEditorImageUpload
     public BitRichTextEditorImageUpload(string fileName, string contentType, byte[] content)
     {
         // Enforce the non-nullable contract at runtime: even when a caller bypasses nullable
-        // warnings, a null fileName/contentType must not reach OnImageUpload as an invalid payload.
+        // warnings, a null fileName/contentType/content must not reach OnImageUpload as an
+        // invalid payload. Reject null content the same way as the other required fields rather
+        // than silently converting it to an empty array.
         ArgumentNullException.ThrowIfNull(fileName);
         ArgumentNullException.ThrowIfNull(contentType);
+        ArgumentNullException.ThrowIfNull(content);
         FileName = fileName;
         ContentType = contentType;
         // Defensively copy so the caller's array can't mutate the stored payload after creation.
-        _content = content is null ? [] : (byte[])content.Clone();
+        _content = (byte[])content.Clone();
     }
 
     private readonly byte[] _content;
 
     /// <summary>Original file name, when available.</summary>
-    public string FileName { get; init; }
+    public string FileName { get; }
 
     /// <summary>MIME type, e.g. "image/png".</summary>
-    public string ContentType { get; init; }
+    public string ContentType { get; }
 
     /// <summary>Raw image bytes. Returns a fresh copy so the stored payload stays immutable.</summary>
-    public byte[] Content
-    {
-        get => (byte[])_content.Clone();
-        init => _content = value is null ? [] : (byte[])value.Clone();
-    }
+    public byte[] Content => (byte[])_content.Clone();
 }

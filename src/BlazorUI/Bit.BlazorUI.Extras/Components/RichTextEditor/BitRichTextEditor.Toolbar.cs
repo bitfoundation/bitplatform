@@ -139,6 +139,10 @@ public partial class BitRichTextEditor
     {
         try
         {
+            // Clear any stale banner (e.g. a previous custom-action-failed) before retrying so a
+            // now-succeeding action doesn't leave the old error visible; the catch below still
+            // sets the latest error if this attempt fails.
+            ClearInlineError();
             await item.OnActivate(this);
         }
         catch (Exception ex)

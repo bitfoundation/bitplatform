@@ -184,7 +184,15 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>Reported by the bridge when a formatting command fails; content is unchanged.</summary>
     [JSInvokable("OnCommandError")]
     public Task _OnCommandError(string command, string message)
-        => RaiseErrorAsync(new BitRichTextEditorError("command-failed", $"Command '{command}' failed: {message}"));
+    {
+        // Keep the raw JS bridge detail (browser internals) out of the user-facing message; log
+        // it for diagnostics instead. Use Trace (not Debug) so it is still recorded in Release.
+        System.Diagnostics.Trace.TraceError($"BitRichTextEditor command '{command}' failed: {message}");
+        // Surface a consistent localized message tied to the command-failed key, matching the
+        // other error paths (e.g. custom-action-failed) rather than exposing bridge internals.
+        return RaiseErrorAsync(new BitRichTextEditorError("command-failed",
+            string.Format(Label("command-failed", "Command '{0}' failed."), command)));
+    }
 
 
 

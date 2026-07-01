@@ -430,8 +430,9 @@ namespace BitBlazorUI {
                 if (!allowedTags.has(tag)) { el.replaceWith(...Array.from(el.childNodes)); return; }
                 // Honor the active sanitization policy first: media tags (notably iframe, which
                 // is opt-in) are only permitted when the policy allows them; otherwise setHtml()
-                // would strip them later, leaving inconsistent state.
-                if (policy && policy.allowedTags && !policy.allowedTags.includes(tag)) {
+                // would strip them later, leaving inconsistent state. Deny-by-default: an absent
+                // allowedTags is an empty allowlist (deny all), matching sanitize()/isTagAllowed().
+                if (!policy || !policy.allowedTags || !policy.allowedTags.includes(tag)) {
                     el.replaceWith(...Array.from(el.childNodes)); return;
                 }
                 // When the active policy supplies an attribute contract, merge its per-tag and
@@ -470,6 +471,22 @@ namespace BitBlazorUI {
                         }
                     }
                 }
+            });
+
+            // Source-less embeds would render as blank/broken media and let insertMedia() succeed
+            // with an empty embed. After the attribute loop any surviving src is valid (invalid
+            // ones were stripped/removed above), so drop any embed that no longer carries a src.
+            // Remove src-less <source> first so the video/audio fallback check below is accurate.
+            tpl.content.querySelectorAll('source').forEach((el: Element) => {
+                if (!el.hasAttribute('src')) el.remove();
+            });
+            tpl.content.querySelectorAll('iframe').forEach((el: Element) => {
+                if (!el.hasAttribute('src')) el.remove();
+            });
+            // video/audio may supply their src via a <source> child instead of a src attribute,
+            // so only drop them when they have neither.
+            tpl.content.querySelectorAll('video, audio').forEach((el: Element) => {
+                if (!el.hasAttribute('src') && !el.querySelector('source[src]')) el.remove();
             });
             return tpl.innerHTML;
         }
@@ -1495,7 +1512,11 @@ namespace BitBlazorUI {
 
             tpl.content.querySelectorAll('*').forEach((el: Element) => {
                 const tag = el.tagName.toLowerCase();
-                if (policy && policy.allowedTags && !policy.allowedTags.includes(tag)) {
+                // Deny-by-default per the allowlist contract: a tag survives only when the active
+                // policy explicitly lists it. An absent allowedTags is treated as an empty
+                // allowlist (deny all), not allow-all, so a policy that omits it cannot smuggle
+                // arbitrary tags through. DEFAULT_POLICY always defines allowedTags.
+                if (!policy || !policy.allowedTags || !policy.allowedTags.includes(tag)) {
                     el.replaceWith(...Array.from(el.childNodes));
                     return;
                 }
@@ -1608,7 +1629,9 @@ namespace BitBlazorUI {
         // never appears to succeed in the editor while being dropped from the persisted Value.
         private static isTagAllowed(editor: any, tag: string): boolean {
             const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
-            return !policy || !policy.allowedTags || policy.allowedTags.includes(tag);
+            // Deny-by-default per the allowlist contract: an absent allowedTags is an empty
+            // allowlist (deny all), not allow-all, matching sanitize()'s tag filtering.
+            return !!(policy && policy.allowedTags && policy.allowedTags.includes(tag));
         }
 
         // Validates a URL against the active sanitization policy's scheme allowlist (or a
