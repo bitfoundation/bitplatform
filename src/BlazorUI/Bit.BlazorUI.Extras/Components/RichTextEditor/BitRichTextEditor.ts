@@ -26,7 +26,7 @@ namespace BitBlazorUI {
                 'audio', 'video', 'source'
             ],
             allowedAttributes: {
-                '*': ['style', 'class', 'dir'],
+                '*': ['class', 'dir'],
                 'a': ['href', 'title', 'target', 'rel'],
                 'img': ['src', 'alt', 'width', 'height'],
                 'td': ['colspan', 'rowspan'],
@@ -326,7 +326,7 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
                 return;
             }
-            if (!RichTextEditor.isTagAllowed(editor, 'a')) {
+            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
                 return;
             }
@@ -340,7 +340,7 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
                 return;
             }
-            if (!RichTextEditor.isTagAllowed(editor, 'a')) {
+            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
                 return;
             }
@@ -362,7 +362,7 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That image URL is not allowed.');
                 return;
             }
-            if (!RichTextEditor.isTagAllowed(editor, 'img')) {
+            if (!RichTextEditor.isTagAllowed(editor, 'img') || !RichTextEditor.isAttrAllowed(editor, 'img', 'src')) {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'Images are not allowed by the current policy.');
                 return;
             }
@@ -1712,8 +1712,10 @@ namespace BitBlazorUI {
                 return isImageData;
             }
 
+            // The scheme is already lowercased above; lowercase the policy entries too so the
+            // JS scheme check matches the C# policy's case-insensitive comparison.
             if (policy && Array.isArray(policy.allowedUriSchemes)) {
-                return policy.allowedUriSchemes.includes(scheme);
+                return policy.allowedUriSchemes.some((s: string) => (s || '').toLowerCase() === scheme);
             }
             return ['http', 'https', 'mailto', 'tel'].includes(scheme);
         }

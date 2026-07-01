@@ -115,7 +115,13 @@ public partial class BitRichTextEditor
             var eq = pair.IndexOf('=');
             if (eq <= 0) continue;
             if (pair.AsSpan(0, eq).Equals(key, StringComparison.OrdinalIgnoreCase))
-                return Uri.UnescapeDataString(pair[(eq + 1)..]);
+            {
+                // Malformed percent-encoding throws; treat an invalid encoded value as missing so
+                // ApplyMediaAsync surfaces its existing validation error instead of crashing.
+                try { return Uri.UnescapeDataString(pair[(eq + 1)..]); }
+                catch (UriFormatException) { return null; }
+                catch (ArgumentException) { return null; }
+            }
         }
         return null;
     }

@@ -391,6 +391,13 @@ public partial class BitRichTextEditorDemo
     {
         formSubmitted = true;
     }
+    // Clear the submitted banner whenever the bound content changes so the "submitted" state does
+    // not linger after the user edits the body again.
+    private void HandleFormBodyChanged(string? value)
+    {
+        formModel.Body = value;
+        formSubmitted = false;
+    }
     public class FormModel : IValidatableObject
     {
         [Required(ErrorMessage = "The body is required.")]

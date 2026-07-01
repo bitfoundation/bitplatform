@@ -124,5 +124,6 @@ public partial class BitRichTextEditor
             await _js.BitRichTextEditorBindSlashKeys(_slashInputRef);
         }
         catch (JSDisconnectedException) { } // circuit gone; nothing to focus
+        catch (JSException) { } // interop unavailable; ignore like ToggleFullScreen does
     }
 }
