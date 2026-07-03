@@ -22,4 +22,18 @@ public sealed class BrouterOptions
     /// Defaults to <see cref="BrouterScrollMode.None"/>.
     /// </summary>
     public BrouterScrollMode ScrollBehavior { get; set; } = BrouterScrollMode.None;
+
+    /// <summary>
+    /// Whether route <c>Loader</c> results are persisted across the SSR/prerender -&gt; interactive
+    /// transition using <see cref="Microsoft.AspNetCore.Components.PersistentComponentState"/>, so a
+    /// loader that ran during prerender is not run again (double-fetched) when the component becomes
+    /// interactive. Defaults to <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// Enabling this serializes loader results with reflection-based <c>System.Text.Json</c>, which is
+    /// not trimming/AOT-safe for arbitrary types. Only enable it when your loader data types are
+    /// JSON-serializable and preserved under trimming. Restoration degrades gracefully: if a value can't
+    /// be rehydrated the loader simply runs again, so a serialization mismatch never breaks navigation.
+    /// </remarks>
+    public bool PersistLoaderState { get; set; } = false;
 }

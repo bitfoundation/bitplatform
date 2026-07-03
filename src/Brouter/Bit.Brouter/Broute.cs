@@ -49,6 +49,18 @@ public class Broute : ComponentBase, IDisposable
     /// <summary>Optional metadata. Exposed via the cascading <c>RouteMeta</c> value.</summary>
     [Parameter] public object? Meta { get; set; }
 
+    /// <summary>
+    /// When <c>true</c>, the matched route parameters (and query-string values) are bound to the
+    /// rendered <see cref="Component"/>'s conventional <c>[Parameter]</c> properties <em>by name</em>,
+    /// Blazor-style, in addition to any <c>[BrouterParameter]</c>/<c>[BrouterQuery]</c> annotated
+    /// properties. This is what makes plain <c>@page</c> components (which bind route values to
+    /// <c>[Parameter]</c> properties, and query values via <c>[SupplyParameterFromQuery]</c>) render
+    /// correctly. It is enabled automatically for attribute-discovered routes
+    /// (see <see cref="Brouter.AppAssembly"/> / <see cref="Brouter.AdditionalAssemblies"/>).
+    /// Defaults to <c>false</c> so existing <c>[BrouterParameter]</c>-only components are unaffected.
+    /// </summary>
+    [Parameter] public bool BindComponentParametersByName { get; set; }
+
     /// <summary>Child routes (used for nesting).</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -123,6 +135,17 @@ public class Broute : ComponentBase, IDisposable
 
         IsIndex = Parent is not null && string.IsNullOrEmpty(Path.Trim('/'));
 
+        // Precompute the set of parameter names declared in this route's template. Used only by the
+        // conventional (by-name) component binding path to decide which [Parameter] properties on the
+        // rendered Component correspond to an actual route parameter - so unrelated component parameters
+        // are left untouched rather than forced to their default on every render.
+        var templateParamNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var seg in RouteTemplate.TemplateSegments)
+        {
+            if (seg.IsParameter) templateParamNames.Add(seg.Value);
+        }
+        TemplateParameterNames = templateParamNames;
+
         _renderer = new BrouteRenderer(this);
 
         Brouter.RegisterRoute(this);
@@ -144,6 +167,12 @@ public class Broute : ComponentBase, IDisposable
     /// <summary>True for nested index routes (child routes whose <see cref="Path"/> is empty or contains only slashes).</summary>
     /// <remarks>Cached at construction. See <see cref="Specificity"/>.</remarks>
     internal bool IsIndex { get; private set; }
+
+    /// <summary>
+    /// The parameter names declared in this route's template (case-insensitive). Cached at construction
+    /// and consumed by the conventional by-name component binding (<see cref="BindComponentParametersByName"/>).
+    /// </summary>
+    internal IReadOnlySet<string>? TemplateParameterNames { get; private set; }
 
 
     internal bool Matched { get; set; }

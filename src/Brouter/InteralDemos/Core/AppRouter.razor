@@ -49,7 +49,9 @@
     }
 }
 
-<Brouter NotFound="404">
+@* AppAssembly enables attribute-route discovery: components with @page / [Route] (e.g. DiscoveredPage)
+   are matched alongside the hand-declared routes below, without being listed here. *@
+<Brouter NotFound="404" AppAssembly="@GetType().Assembly">
     <Broute Path="/" RedirectTo="/home" />
 
     <Broute Name="home" Path="/home">

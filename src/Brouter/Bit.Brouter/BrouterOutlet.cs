@@ -62,7 +62,8 @@ public class BrouterOutlet : ComponentBase, IDisposable
                 else if (_matchedChild.Component is not null)
                 {
                     b2.OpenComponent(0, _matchedChild.Component);
-                    BrouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation);
+                    BrouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation,
+                        _matchedChild.BindComponentParametersByName ? _matchedChild.TemplateParameterNames : null);
                     b2.CloseComponent();
                 }
 

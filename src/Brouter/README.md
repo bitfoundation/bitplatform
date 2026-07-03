@@ -72,6 +72,8 @@ builder.Services.AddBitBrouterServices(o =>
 - **Global hooks**: `OnNavigating`, `OnNavigated`, `OnError` (Vue Router style)
 - **Preventive guards** (via `RegisterLocationChangingHandler`): a cancel/redirect stops the URL from ever changing - no address-bar flicker, no corrupted history/back button, and real "unsaved changes" prompts are possible
 - In-flight loader cancellation when navigation is superseded
+- **Attribute-route / `@page` discovery**: scan `AppAssembly` / `AdditionalAssemblies` for `[Route]`-annotated components so routes live colocated with their pages (Razor class libraries and lazy-loaded assemblies included)
+- **Prerender state bridging**: loader results captured during prerender are restored on the interactive pass via `PersistentComponentState`, so loaders don't double-fetch (opt-in)
 - Query string and hash exposed via `BrouterLocation`
 - Configurable case sensitivity and trailing-slash handling
 - Optional scroll-to-top on navigation
@@ -240,6 +242,65 @@ implement a genuine "you have unsaved changes" prompt by cancelling from a guard
     </ChildContent>
 </Broute>
 ```
+
+## Attribute-route / `@page` discovery
+
+Routes don't have to be hand-declared in one tree. Point `Brouter` at your assemblies and it discovers
+components annotated with `[Route]` (which is what `@page` compiles to), matching them alongside any
+hand-declared `<Broute>` children. This keeps route templates colocated with their pages, supports Razor
+class libraries, and works with lazily-loaded assemblies.
+
+```razor
+@* Counter.razor - the route lives next to the page *@
+@page "/counter/{start:int}"
+
+<h1>Count: @Start</h1>
+
+@code {
+    [Parameter] public int Start { get; set; }                       // bound from the {start:int} segment
+    [Parameter, SupplyParameterFromQuery] public string? Tab { get; set; } // bound from ?tab=
+}
+```
+
+```razor
+<Brouter AppAssembly="@typeof(App).Assembly"
+         AdditionalAssemblies="_lazyLoaded">
+    @* Optional: hand-declared routes still work and win ties over discovered ones *@
+    <Broute Path="/" RedirectTo="/home" />
+</Brouter>
+
+@code {
+    // Grow this list (with a re-render) as assemblies load to register their routes at runtime.
+    private readonly List<System.Reflection.Assembly> _lazyLoaded = new();
+}
+```
+
+Discovered routes bind their `[Parameter]` properties by name (Blazor-style) - route segments to plain
+`[Parameter]` properties and query values to `[SupplyParameterFromQuery]` (or `[BrouterQuery]`). To get the
+same by-name binding on a hand-declared route, set `BindComponentParametersByName="true"` on the `<Broute>`.
+
+> Discovery reflects over the given assemblies, so - like the built-in Blazor `Router` - keep your routable
+> components preserved when trimming.
+
+## Prerender state bridging
+
+Under SSR/prerender, a route `Loader` runs on the server to produce the prerendered HTML, then the component
+becomes interactive and its lifecycle runs again. By default the loader would run a second time (double-fetch).
+Enable `PersistLoaderState` to capture each loader result during prerender (via `PersistentComponentState`) and
+restore it on the interactive pass instead of re-fetching:
+
+```csharp
+builder.Services.AddBitBrouterServices(o =>
+{
+    o.PersistLoaderState = true;
+});
+```
+
+Restoration degrades gracefully: if a value can't be rehydrated the loader simply runs again, so a mismatch
+never breaks navigation.
+
+> This serializes loader results with reflection-based `System.Text.Json`, which isn't trimming/AOT-safe for
+> arbitrary types - enable it when your loader data types are JSON-serializable and preserved under trimming.
 
 ## Custom constraints
 

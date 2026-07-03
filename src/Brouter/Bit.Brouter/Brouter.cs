@@ -1,7 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Bit.Brouter;
@@ -33,14 +36,48 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// <summary>Async hook fired when no route matches the current URL.</summary>
     [Parameter] public Func<BrouterLocation, ValueTask>? OnNotFound { get; set; }
 
+    /// <summary>
+    /// The assembly to scan for attribute-routed components (<c>@page</c> / <c>[Route]</c>). Discovered
+    /// routes are matched alongside any hand-declared <see cref="Broute"/> children, so pages can live
+    /// colocated with their route templates instead of being enumerated in one tree. Mirrors
+    /// <c>Router.AppAssembly</c>. When null, no assembly scanning happens.
+    /// </summary>
+    [Parameter] public Assembly? AppAssembly { get; set; }
+
+    /// <summary>
+    /// Additional assemblies to scan for attribute-routed components, e.g. Razor class libraries or
+    /// lazily-loaded assemblies. Add to this collection (with a new instance/re-render) as assemblies are
+    /// loaded to register their routes at runtime. Mirrors <c>Router.AdditionalAssemblies</c>.
+    /// </summary>
+    [Parameter] public IEnumerable<Assembly>? AdditionalAssemblies { get; set; }
+
 
     [Inject] private NavigationManager _navManager { get; set; } = default!;
     [Inject] private INavigationInterception _navInterception { get; set; } = default!;
     [Inject] private BrouterService _brouterService { get; set; } = default!;
+    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
     internal BrouterLocation CurrentLocation { get; private set; } = BrouterLocation.Empty;
     internal BrouterOptions Options => _brouterService.Options;
+
+
+    // Routes discovered by scanning AppAssembly / AdditionalAssemblies for [Route]/@page components.
+    // Rendered as synthetic <Broute> children in BuildRenderTree so they reuse the whole matching /
+    // guard / loader / render pipeline. Recomputed only when the assembly set actually changes.
+    private IReadOnlyList<BrouteScanner.DiscoveredRoute> _discoveredRoutes = [];
+    private Assembly? _lastAppAssembly;
+    private Assembly[]? _lastAdditionalAssemblies;
+    private bool _discoveryComputed;
+
+    // Prerender -> interactive loader-state bridge (see BroutePrerenderState). Only active when
+    // Options.PersistLoaderState is set and a PersistentComponentState is available in the scope.
+    private PersistentComponentState? _persistentState;
+    private PersistingComponentStateSubscription _persistSubscription;
+    private bool _persistSubscribed;
+    // Loader results staged during the current navigation's commit, keyed by their persistence key.
+    // Serialized by the RegisterOnPersisting callback at the end of prerender.
+    private readonly Dictionary<string, object?> _loaderStateToPersist = new(StringComparer.Ordinal);
 
     private readonly List<Broute> _routes = [];
     // Snapshot of _routes refreshed lazily after Register/Unregister. The matching loop
@@ -119,7 +156,26 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         base.OnInitialized();
 
+        // Compute discovered routes here (not only in OnParametersSet): the initial route match runs in
+        // OnInitializedAsync, before OnParametersSet, and the synthetic <Broute> children must already be
+        // present in the first render so they register in time to be matched on the initial navigation.
+        // OnParametersSet still re-checks afterwards to pick up runtime changes to the assembly set.
+        RefreshDiscoveredRoutesIfNeeded();
+
         _brouterService.Attach(this, _navManager);
+
+        // Wire up prerender loader-state persistence once, before the first navigation runs its loaders.
+        // PersistentComponentState is resolved optionally (GetService, not [Inject]) so Brouter still works
+        // in hosts/tests where it isn't registered (e.g. bUnit, plain WASM without prerender).
+        if (Options.PersistLoaderState && _persistSubscribed is false)
+        {
+            _persistentState = _services.GetService<PersistentComponentState>();
+            if (_persistentState is not null)
+            {
+                _persistSubscription = _persistentState.RegisterOnPersisting(PersistLoaderStateAsync);
+                _persistSubscribed = true;
+            }
+        }
 
         _navManager.LocationChanged += NavManagerLocationChanged;
 
@@ -127,6 +183,93 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // BrouterService.Location before the first navigation pipeline runs sees
         // the real URL (not BrouterLocation.Empty).
         CurrentLocation = ComputeLocation();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // Refresh discovered routes whenever the assembly set changes (including the first parameter set,
+        // and when AdditionalAssemblies grows because a lazy-loaded assembly was added). Kept out of the
+        // navigation pipeline so scanning cost is paid on parameter changes, not per navigation.
+        RefreshDiscoveredRoutesIfNeeded();
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Attribute-route discovery is opt-in via AppAssembly/AdditionalAssemblies. The " +
+                        "consumer is responsible for preserving their routable components under trimming, " +
+                        "exactly as the built-in Blazor Router requires.")]
+    private void RefreshDiscoveredRoutesIfNeeded()
+    {
+        // Materialize the enumerable once: it may be a lazily-evaluated sequence, and we both compare and
+        // (potentially) hand it to the scanner.
+        var additional = AdditionalAssemblies as Assembly[] ?? AdditionalAssemblies?.ToArray();
+
+        if (_discoveryComputed &&
+            ReferenceEquals(AppAssembly, _lastAppAssembly) &&
+            SameAssemblies(_lastAdditionalAssemblies, additional))
+        {
+            return;
+        }
+
+        _lastAppAssembly = AppAssembly;
+        _lastAdditionalAssemblies = additional;
+        _discoveryComputed = true;
+
+        _discoveredRoutes = (AppAssembly is null && (additional is null || additional.Length == 0))
+            ? []
+            : BrouteScanner.Discover(AppAssembly, additional);
+    }
+
+    private static bool SameAssemblies(Assembly[]? a, Assembly[]? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        if (a.Length != b.Length) return false;
+        for (int i = 0; i < a.Length; i++)
+        {
+            if (ReferenceEquals(a[i], b[i]) is false) return false;
+        }
+        return true;
+    }
+
+    // Serializes the loader results staged during prerender into PersistentComponentState so the interactive
+    // pass can restore them instead of re-fetching. Registered via RegisterOnPersisting; fires once at the
+    // end of prerender.
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Only reached when the consumer opts into Options.PersistLoaderState and accepts the " +
+                        "reflection-based JSON serialization contract documented on that option.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050",
+        Justification = "See above; PersistLoaderState is opt-in and documents its AOT limitations.")]
+    private Task PersistLoaderStateAsync()
+    {
+        var state = _persistentState;
+        if (state is null) return Task.CompletedTask;
+
+        foreach (var kv in _loaderStateToPersist)
+        {
+            state.PersistAsJson(kv.Key, BroutePrerenderState.Capture(kv.Value));
+        }
+
+        return Task.CompletedTask;
+    }
+
+    // Attempts to restore a loader result persisted during prerender. Returns true (with the restored value,
+    // which may legitimately be null) when the loader should be skipped for this navigation.
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Only reached when the consumer opts into Options.PersistLoaderState; see PersistLoaderStateAsync.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050",
+        Justification = "See above; PersistLoaderState is opt-in and documents its AOT limitations.")]
+    private bool TryRestoreLoaderState(BrouterLocation to, int chainIndex, out object? value)
+    {
+        value = null;
+        var state = _persistentState;
+        if (state is null) return false;
+
+        var key = BroutePrerenderState.MakeKey(to.Path, to.Query, chainIndex);
+        if (state.TryTakeFromJson<PersistedLoaderState>(key, out var persisted) is false) return false;
+
+        return BroutePrerenderState.TryRestore(persisted, out value);
     }
 
     protected override async Task OnInitializedAsync()
@@ -192,6 +335,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2110",
+        Justification = "The Broute.Component backing field requires DynamicallyAccessedMembers.All; the value " +
+                        "assigned here is BrouteScanner.DiscoveredRoute.ComponentType, whose property carries the " +
+                        "same annotation, so the requirement is satisfied.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2111",
+        Justification = "Broute.Component's setter has a DynamicallyAccessedMembers.All parameter and is invoked " +
+                        "via Blazor's reflection-based component parameter binding. DiscoveredRoute.ComponentType " +
+                        "carries the matching annotation, so the members are preserved.")]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         // Sequence numbers are per RenderFragment scope: each lambda passed to
@@ -208,12 +359,34 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
         {
             b.AddContent(0, ChildContent);
+
+            // Emit a synthetic <Broute> for each attribute-discovered route. They register themselves
+            // exactly like hand-declared children (via Broute.OnInitialized) and so participate in the
+            // same specificity-based matching, guards, loaders and rendering. Wrapped in a region so
+            // their sequence numbers live in an isolated space, and keyed by the (template, type) pair
+            // so Blazor keeps instances stable if the discovered set is reordered or grows at runtime.
+            if (_discoveredRoutes.Count > 0)
+            {
+                b.OpenRegion(1);
+                var seq = 0;
+                foreach (var discovered in _discoveredRoutes)
+                {
+                    b.OpenComponent<Broute>(seq++);
+                    b.SetKey(discovered);
+                    b.AddAttribute(seq++, nameof(Broute.Path), discovered.Template);
+                    b.AddAttribute(seq++, nameof(Broute.Component), discovered.ComponentType);
+                    b.AddAttribute(seq++, nameof(Broute.BindComponentParametersByName), true);
+                    b.CloseComponent();
+                }
+                b.CloseRegion();
+            }
+
             // Render the inline fallback when no route matched and either NotFound is unset, or
             // NotFound resolves to the current URL (no redirect happened, so we'd otherwise show nothing).
             if (_noRouteMatched && NotFoundContent is not null &&
                 (string.IsNullOrEmpty(NotFound) || IsSamePath(CurrentLocation.Path, NotFound)))
             {
-                b.AddContent(1, NotFoundContent(CurrentLocation));
+                b.AddContent(2, NotFoundContent(CurrentLocation));
             }
         }));
         builder.CloseComponent();
@@ -495,7 +668,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Compares an already-normalized <paramref name="currentPath"/> (as produced by
-    /// <see cref="ComputeLocation"/>) against an arbitrary target URL/path. Returns true
+    /// <see cref="ComputeLocation()"/>) against an arbitrary target URL/path. Returns true
     /// when their normalized path components are equal.
     /// </summary>
     /// <remarks>
@@ -739,9 +912,23 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
             foreach (var node in matchedChain) node.LoadedData = null;
 
-            foreach (var node in matchedChain)
+            // Discard any loader results staged by a previous navigation: only the latest committed
+            // navigation's data should be persisted at the end of prerender.
+            if (_persistentState is not null) _loaderStateToPersist.Clear();
+
+            for (int chainIndex = 0; chainIndex < matchedChain.Count; chainIndex++)
             {
+                var node = matchedChain[chainIndex];
                 if (node.Loader is null) continue;
+
+                // Prerender bridge: if this loader already ran server-side and its result was persisted,
+                // restore it and skip the fetch. The key is derived from the URL + chain position, which
+                // are identical across the prerender and interactive passes, so restoration lines up.
+                if (TryRestoreLoaderState(to, chainIndex, out var restored))
+                {
+                    node.LoadedData = restored;
+                    continue;
+                }
 
                 object? loaded;
                 try
@@ -772,6 +959,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 if (token.IsCancellationRequested || version != _navVersion) return;
 
                 node.LoadedData = loaded;
+
+                // Stage the result for persistence. It is written to PersistentComponentState only if the
+                // RegisterOnPersisting callback fires (i.e. during prerender); interactive passes stage it
+                // too but simply never get asked to persist.
+                if (_persistentState is not null)
+                {
+                    _loaderStateToPersist[BroutePrerenderState.MakeKey(to.Path, to.Query, chainIndex)] = loaded;
+                }
             }
 
             winner.SetMatched();
@@ -1020,6 +1215,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // Unhook the preventive changing handler so a disposed Brouter can't keep vetoing navigations.
         _locationChangingRegistration?.Dispose();
         _locationChangingRegistration = null;
+        // Unsubscribe the prerender persistence callback so a disposed Brouter isn't asked to persist.
+        if (_persistSubscribed)
+        {
+            _persistSubscription.Dispose();
+            _persistSubscribed = false;
+        }
         // Detach the active CTS and cancel it, but DON'T dispose here. A still-running
         // ProcessNavigationAsync may be observing this CTS via its `token` parameter or
         // about to throw OperationCanceledException through it; disposing now would race
