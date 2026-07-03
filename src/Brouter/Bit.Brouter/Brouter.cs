@@ -82,10 +82,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private readonly List<Broute> _routes = [];
     // Snapshot of _routes refreshed lazily after Register/Unregister. The matching loop
     // iterates this snapshot so we don't allocate a fresh array on every navigation.
-    // Volatile read/write keeps the snapshot publication ordered relative to the dirty
-    // flag (we only ever flip _routesDirty -> true under the same dispatcher that calls
-    // Register/Unregister, but a navigation pipeline awaiting back can re-enter on the
-    // dispatcher and observe a stale snapshot if not for the volatile read/write pair).
+    //
+    // These fields are deliberately plain (not volatile) and accessed without any
+    // synchronization: safety comes entirely from every reader and writer running on the
+    // renderer's single-threaded dispatcher. RegisterRoute/UnregisterRoute are called from
+    // Broute component lifecycle (OnInitialized/Dispose), and GetRoutesSnapshot/SelectWinner/
+    // FindRouteByName run inside the navigation pipeline (ProcessNavigationAsync / the
+    // changing handler) - all on that same dispatcher. There is therefore no cross-thread
+    // publication to order, so no volatile/Interlocked is needed. If any of these were ever
+    // called off-dispatcher this reasoning breaks and the access would need real synchronization.
     private Broute[] _routesSnapshot = [];
     private bool _routesDirty = true;
     internal void RegisterRoute(Broute route)
