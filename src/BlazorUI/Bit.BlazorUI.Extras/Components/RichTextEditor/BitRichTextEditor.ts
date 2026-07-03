@@ -1699,9 +1699,10 @@ namespace BitBlazorUI {
 
             const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(candidate);
             if (!schemeMatch) {
-                // No scheme: relative URL. Reject protocol-relative (//host) and the
-                // backslash network-path form (\host / \\host) that browsers normalize to //.
-                return !candidate.startsWith('//') && !candidate.startsWith('\\');
+                // No scheme: relative URL. Reject protocol-relative (//host), the backslash
+                // network-path forms (\host / \\host), and the mixed "/\" form - all of which
+                // browsers normalize to a protocol-relative //host.
+                return !candidate.startsWith('//') && !candidate.startsWith('\\') && !candidate.startsWith('/\\');
             }
 
             const scheme = schemeMatch[1].toLowerCase();

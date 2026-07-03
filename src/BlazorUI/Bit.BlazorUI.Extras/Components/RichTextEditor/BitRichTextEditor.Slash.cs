@@ -28,7 +28,9 @@ public partial class BitRichTextEditor
     [JSInvokable("OnSlashTrigger")]
     public void _OnSlashTrigger()
     {
-        if (ReadOnly) return;
+        // Gate on ControlsDisabled (ReadOnly || _inSourceView), matching ApplySlashAsync, so the
+        // slash UI is never opened while controls are disabled (e.g. in source-view mode).
+        if (ControlsDisabled) return;
         _slashFilter = "";
         _slashIndex = 0;
         _showSlash = true;
