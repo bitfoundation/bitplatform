@@ -24,12 +24,12 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -51,7 +51,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -64,7 +64,7 @@ jobs:
       run: dotnet publish TodoSample/src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload server api artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: TodoApi
         path: server-api
@@ -77,12 +77,12 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -104,7 +104,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -131,7 +131,7 @@ jobs:
       run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload server web artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: Todo
         path: server-web
@@ -144,12 +144,12 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -161,7 +161,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -193,12 +193,12 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -210,7 +210,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -247,12 +247,12 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -264,7 +264,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -296,12 +296,12 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -323,7 +323,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample\**\appsettings*json'
       env:
@@ -344,7 +344,7 @@ jobs:
           dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: WinTodo
         path: TodoSample\src\Client\TodoSample.Client.Windows\Releases
@@ -356,12 +356,12 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
      
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -377,14 +377,14 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
           fileName: 'TodoSample.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android'
           fileName: 'google-services.json'
@@ -397,7 +397,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -416,7 +416,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -426,7 +426,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'
@@ -441,7 +441,7 @@ jobs:
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net10.0-android
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: android-bundle
         path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net10.0-android/*-Signed.*
@@ -453,12 +453,12 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
      
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -484,7 +484,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -497,13 +497,13 @@ jobs:
       run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v7
+      uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
       with:
         p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v6
+      uses: Apple-Actions/download-provisioning-profiles@c62019de00bb4395ed414e4a17c98f4e279636de # v6.0.0
       with:
         bundle-id: 'com.bitplatform.Todo.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
@@ -514,7 +514,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -524,7 +524,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'
@@ -539,7 +539,7 @@ jobs:
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net10.0-ios
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ios-bundle
         path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa

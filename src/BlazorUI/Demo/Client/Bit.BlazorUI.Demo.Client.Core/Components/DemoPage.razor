@@ -9,20 +9,19 @@ else
 {
     <div class="demo-page">
         <div class="page-container example">
-            <BitText Typography="BitTypography.H3" Class="title">
+            <BitText Element="h1" Typography="BitTypography.H3" Class="title">
                 @Name
-
-                @if (SecondaryNames?.Length > 0)
-                {
-                    <br />
-                    <BitStack Horizontal>
-                        @foreach (var name in SecondaryNames)
-                        {
-                            <BitText Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
-                        }
-                    </BitStack>
-                }
             </BitText>
+
+            @if (SecondaryNames?.Length > 0)
+            {
+                <BitStack Horizontal>
+                    @foreach (var name in SecondaryNames)
+                    {
+                        <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
+                    }
+                </BitStack>
+            }
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {
@@ -33,7 +32,7 @@ else
                     }
                     else
                     {
-                        <BitText>@Description</BitText>
+                        <BitText Element="p">@Description</BitText>
                     }
                 </section>
             }
@@ -41,7 +40,7 @@ else
             @if (Notes.HasValue() || NotesTemplate is not null)
             {
                 <section id="notes-section" class="page-section">
-                    <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
                     @if (NotesTemplate is not null)
                     {
                         @NotesTemplate
@@ -56,7 +55,7 @@ else
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
                 <section id="introduction-section" class="page-section">
-                    <BitText Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
                     @if (IntroductionVideoUrl.HasValue())
                     {
                         <div class="video-container">
@@ -81,12 +80,12 @@ else
             }
 
             <section id="usage-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
                 @(ChildContent ?? Examples)
             </section>
 
             <section id="api-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">API</BitText>
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
@@ -125,8 +124,8 @@ else
             </section>
 
             <section id="feedback-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
-                <BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+                <BitText Element="p">
                     You can give us your feedback through our
                     <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
                     by filing a new
@@ -138,7 +137,7 @@ else
                 @if (GitHubDemoUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
                                  Target="_blank">review</BitLink>
@@ -152,7 +151,7 @@ else
                 @if (GitHubUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
                                  Target="_blank">review</BitLink>
@@ -166,7 +165,7 @@ else
                 @if (GitHubExtrasUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
                                  Target="_blank">review</BitLink>

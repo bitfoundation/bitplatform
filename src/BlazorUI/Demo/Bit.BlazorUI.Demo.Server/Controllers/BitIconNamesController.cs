@@ -12,9 +12,9 @@ public partial class BitIconNamesController : AppControllerBase
     private static string[]? _allIconNames = null;
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetAllBitIconNames))]
+    [McpServerTool(Name = nameof(GetAllBitBlazorUIIconNames))]
     [Description("Gets all available BitIconName constant values.")]
-    public string[] GetAllBitIconNames()
+    public string[] GetAllBitBlazorUIIconNames()
     {
         return _allIconNames ??= [.. typeof(BitIconName)
             .GetFields(BindingFlags.Public | BindingFlags.Static)

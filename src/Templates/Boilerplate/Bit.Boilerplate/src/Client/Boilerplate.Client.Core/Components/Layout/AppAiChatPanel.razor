@@ -54,13 +54,7 @@
                             }
                             else
                             {
-                                <BitMarkdownViewer Markdown="@message.Content" JsMiddlewareIdentifier="App.sanitizeHtml" />
-                                @*
-                                     Unlike RichTextEditor which sanitizes while storing content server-side,
-                                     Markdown sanitization is done client-side while rendering the content that is getting streamed from the server incrementally.
-                                     Even though AiChatbot content comes from the server and LLM, we sanitize to protect against
-                                     XSS attacks (e.g., LLM prompt injection generating malicious markup, etc).
-                                *@
+                                <BitMarkdownViewer Markdown="@message.Content" Pipeline="BitMarkdownViewerPipelines.Advanced" />
                                 @if (message.Successful is false)
                                 {
                                     <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">

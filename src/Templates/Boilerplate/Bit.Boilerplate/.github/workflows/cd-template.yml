@@ -22,10 +22,12 @@ jobs:
     steps:
 
       - name: Checkout source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
@@ -39,7 +41,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -60,7 +62,7 @@ jobs:
       - name: Publish
         run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
       - name: Upload server artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: server-bundle
           path: server
@@ -77,13 +79,13 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: server-bundle
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@5cfb776471c748b351e1ebf5770e208a54ace016 # v2.2.19
         with:
           app-name: ${{ vars.APP_SERVICE_NAME }}
           slot-name: 'production'
@@ -92,7 +94,7 @@ jobs:
 
 #if (cloudflare == true)
       - name: Purge Cloudflare cache
-        uses: jakejarvis/cloudflare-purge-action@v0.3.0
+        uses: jakejarvis/cloudflare-purge-action@eee6dba0236093358f25bb1581bd615dc8b3d8e3 # v0.3.0
         env:
           CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
@@ -105,10 +107,12 @@ jobs:
     steps:
 
       - name: Checkout source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
   
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
@@ -122,7 +126,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src\**\appsettings*json'
         env:
@@ -140,7 +144,7 @@ jobs:
           dotnet vpk pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: win-exe-bundle
           path: src\Client\Boilerplate.Client.Windows\Releases
@@ -152,10 +156,12 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
@@ -164,7 +170,7 @@ jobs:
           node-version: 24
 
       - name: Extract Android signing key
-        uses: timheuer/base64-to-file@v2
+        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
         with:
           fileDir: './src/Client/Boilerplate.Client.Maui/'
           fileName: 'Boilerplate.keystore'
@@ -176,7 +182,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -197,7 +203,7 @@ jobs:
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-android
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/Release/net10.0-android/*-Signed.*
@@ -210,10 +216,12 @@ jobs:
     steps:
 
       - name: Checkout source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
@@ -231,7 +239,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -241,13 +249,13 @@ jobs:
         run: cd src && dotnet workload install maui
 
       - name: Import Code-Signing Certificates
-        uses: apple-actions/import-codesign-certs@v7
+        uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
         with:
           p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
           p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
       - name: Download Apple Provisioning Profiles
-        uses: Apple-Actions/download-provisioning-profiles@v6
+        uses: Apple-Actions/download-provisioning-profiles@c62019de00bb4395ed414e4a17c98f4e279636de # v6.0.0
         with:
           bundle-id: ${{ vars.APP_ID }}
           issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
@@ -263,7 +271,7 @@ jobs:
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-ios
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: iOS-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa

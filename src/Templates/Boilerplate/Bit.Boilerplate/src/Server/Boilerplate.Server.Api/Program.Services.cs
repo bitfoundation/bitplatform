@@ -188,6 +188,7 @@ public static partial class Program
         //#endif
 
         services.AddSingleton<ApiServerExceptionHandler>();
+        services.AddSingleton<SharedExceptionHandler>(sp => sp.GetRequiredService<ApiServerExceptionHandler>());
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ApiServerExceptionHandler>());
         services.AddProblemDetails();
 
@@ -787,10 +788,10 @@ public static partial class Program
         configuration.Bind(appSettings);
 
         var healthChecksBuilder = builder.AddDefaultHealthChecks()
-            .AddDbContextCheck<AppDbContext>(tags: ["live"])
-            .AddHangfire(setup => setup.MinimumAvailableServers = 1, tags: ["live"])
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", tags: ["live"])
-            .AddCheck<TwilioHealthCheck>("sms", tags: ["live"]);
+            .AddDbContextCheck<AppDbContext>()
+            .AddHangfire(setup => setup.MinimumAvailableServers = 1)
+            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages")
+            .AddCheck<TwilioHealthCheck>("sms");
 
         //#if (cloudflare == true)
         // Cloudflare Cache Purge API
@@ -800,7 +801,7 @@ public static partial class Program
             healthChecksBuilder.AddUrlGroup(
                 new Uri($"https://api.cloudflare.com/client/v4/zones/{appSettings.Cloudflare.ZoneId}"),
                 name: "cloudflare",
-                tags: ["ready"],
+                tags: [],
                 configureClient: (_, client) =>
                 {
                     client.Timeout = TimeSpan.FromSeconds(10);
@@ -816,7 +817,7 @@ public static partial class Program
             healthChecksBuilder.AddUrlGroup(
                 new Uri($"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}/.well-known/openid-configuration"),
                 name: "keycloakIdentity",
-                tags: ["ready"],
+                tags: [],
                 configureClient: (_, client) => client.Timeout = TimeSpan.FromSeconds(10));
         }
 

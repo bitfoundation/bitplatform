@@ -13,6 +13,13 @@
       "tools": [
         "*"
       ]
+    },
+    "bitBlazorUI": {
+      "type": "http",
+      "url": "https://blazorui.bitplatform.dev/mcp",
+      "tools": [
+        "*"
+      ]
     }
   }
 }

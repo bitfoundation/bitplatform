@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
-using System.IO.Compression;
 using System.Net;
+using System.IO.Compression;
+using System.Diagnostics.Metrics;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Profiler;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
@@ -155,13 +156,17 @@ public static class WebApplicationBuilderExtensions
     private static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
-        builder.Logging.AddOpenTelemetry(logging =>
+        builder.Logging.AddOpenTelemetry(options =>
         {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
+            options.IncludeScopes = true;
+            options.IncludeFormattedMessage = true;
+            builder.Configuration.Bind("Logging:OpenTelemetry", options);
         });
 
-        builder.AddOpenTelemetryExporters();
+        if (builder.Environment.IsDevelopment() is false)
+        {
+            builder.Logging.AddSampler<AppLoggingSampler>();
+        }
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
@@ -171,39 +176,37 @@ public static class WebApplicationBuilderExtensions
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
 
-                metrics.AddMeter(ActivitySource.Current.Name)
+                metrics.AddMeter(Meter.Current.Name)
                     .AddMeter("Experimental.Microsoft.Extensions.AI");
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName)
+                tracing.AddSource(ActivitySource.Current.Name)
+                    .AddSource("Experimental.Microsoft.Extensions.AI")
                     .AddProcessor<AppOpenTelemetryProcessor>()
-                                .AddAspNetCoreInstrumentation(options =>
-                                {
-                                    // Filter out Blazor static files and health checks requests.
-                                    string[] toBeIgnoredSegments = ["/health",
-                                        "/alive",
-                                        "/_content",
-                                        "/_framework"];
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        // Filter out Blazor static files and health checks requests.
+                        string[] toBeIgnoredSegments = ["/health",
+                            "/alive",
+                            "/_content",
+                            "/_framework"];
 
-                                    options.Filter = context =>
-                                    {
-                                        foreach (var segment in toBeIgnoredSegments)
-                                        {
-                                            if (context.Request.Path.StartsWithSegments(segment, StringComparison.OrdinalIgnoreCase))
-                                                return false;
-                                        }
+                        options.Filter = context =>
+                        {
+                            foreach (var segment in toBeIgnoredSegments)
+                            {
+                                if (context.Request.Path.StartsWithSegments(segment, StringComparison.OrdinalIgnoreCase))
+                                    return false;
+                            }
 
-                                        return true;
-                                    };
-                                })
+                            return true;
+                        };
+                    })
                     .AddHttpClientInstrumentation()
                     .AddFusionCacheInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
-
-                tracing.AddSource(ActivitySource.Current.Name)
-                    .AddSource("Experimental.Microsoft.Extensions.AI");
             })
             .ConfigureResource(resource =>
             {
@@ -219,17 +222,22 @@ public static class WebApplicationBuilderExtensions
                     .AddService(builder.Environment.ApplicationName);
             });
 
+        builder.AddOpenTelemetryExporters();
+
         return builder;
     }
 
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
-        var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
+        var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
+            || string.IsNullOrEmpty(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
 
         if (useOtlpExporter)
         {
-            builder.Services.AddOpenTelemetry().UseOtlpExporter();
+            builder.Services
+                .AddOpenTelemetry()
+                .UseOtlpExporter();
         }
 
         //#if (appInsights == true)

@@ -4,7 +4,10 @@ namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 public static class AppRenderMode
 {
-    public static readonly bool PrerenderEnabled = false;
+    // Prerendering is required for SEO: without it, Blazor WASM returns an empty shell to crawlers and
+    // social scrapers, so per-page titles/descriptions/canonical/OG tags and page content never reach them.
+    // .NET 10 resolves the earlier prerendering issues, so this is enabled to serve fully-formed HTML.
+    public static readonly bool PrerenderEnabled = true;
 
     private static IComponentRenderMode Auto => new InteractiveAutoRenderMode(PrerenderEnabled);
     private static IComponentRenderMode BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(PrerenderEnabled);

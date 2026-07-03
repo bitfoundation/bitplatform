@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
-using OpenTelemetry.Logs;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -62,28 +64,45 @@ public static partial class Program
 
             loggingBuilder.AddOpenTelemetry(options =>
             {
-                options.IncludeFormattedMessage = true;
                 options.IncludeScopes = true;
-
-                //#if (appInsights == true)
-                if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
-                {
-                    options.AddAzureMonitorLogExporter(o =>
-                    {
-                        o.ConnectionString = settings.ApplicationInsights.ConnectionString;
-                    });
-                }
-                //#endif
-
-                var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
-                if (useOtlpExporter)
-                {
-                    options.AddOtlpExporter();
-                }
+                options.IncludeFormattedMessage = true;
+                configuration.Bind("Logging:OpenTelemetry", options);
             });
 
-            loggingBuilder.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
+            loggingBuilder.AddEventLog(options => configuration.Bind("Logging:EventLog", options));
         });
+
+        var openTelemetry = services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics.AddMeter(Meter.Current.Name);
+            })
+            .WithTracing(tracing =>
+            {
+                tracing.AddSource(ActivitySource.Current.Name);
+            })
+            .ConfigureResource(resource =>
+            {
+                resource.AddAttributes([new("service.name", Application.ProductName!)]);
+            });
+
+        var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
+            || string.IsNullOrEmpty(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
+
+        if (useOtlpExporter)
+        {
+            openTelemetry.UseOtlpExporter();
+        }
+
+        //#if (appInsights == true)
+        if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+        {
+            openTelemetry.UseAzureMonitorExporter(options =>
+            {
+                configuration.Bind("ApplicationInsights", options);
+            });
+        }
+        //#endif
 
         services.AddOptions<ClientWindowsSettings>()
             .Bind(configuration)

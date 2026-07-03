@@ -23,9 +23,9 @@ public partial class ComponentDetailsController : AppControllerBase
                                                         .Where(type => typeof(BitComponentBase).IsAssignableFrom(type) && !type.IsAbstract))];
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetComponentParameters))]
+    [McpServerTool(Name = nameof(GetBitBlazorUIComponentParameters))]
     [Description("Gets the parameters of a specified component.")]
-    public async Task<ComponentParameterDetailsDto[]> GetComponentParameters(string componentName)
+    public async Task<ComponentParameterDetailsDto[]> GetBitBlazorUIComponentParameters(string componentName)
     {
         if (string.IsNullOrWhiteSpace(componentName))
             return [];
@@ -73,9 +73,9 @@ public partial class ComponentDetailsController : AppControllerBase
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetComponentExamples))]
+    [McpServerTool(Name = nameof(GetBitBlazorUIComponentExamples))]
     [Description("Gets the examples of a specified component.")]
-    public async Task<string> GetComponentExamples(string componentName)
+    public async Task<string> GetBitBlazorUIComponentExamples(string componentName)
     {
         if (string.IsNullOrWhiteSpace(componentName))
             return "Component name is required.";

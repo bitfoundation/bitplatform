@@ -33,6 +33,18 @@
     }
 }
 
+.bit-pvt-hwr {
+    display: flex;
+    min-width: 0;
+    position: relative;
+    align-items: center;
+}
+
+.bit-pvt-hwr > .bit-pvt-hct {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 .bit-pvt-cct {
     margin: 0;
     padding: 0;
@@ -67,6 +79,48 @@
         height: unset;
         flex-flow: column;
     }
+
+    .bit-pvt-hwr {
+        flex-flow: column;
+        align-items: stretch;
+    }
+
+    .bit-pvt-hwr > .bit-pvt-hct {
+        min-height: 0;
+    }
+
+    .bit-pvt-sbt {
+        width: 100%;
+        height: spacing(4);
+    }
+
+    &.bit-pvt-scr .bit-pvt-hct {
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 0;
+        padding-inline-end: spacing(0.5);
+
+        &::-webkit-scrollbar {
+            height: auto;
+            width: spacing(0.625);
+        }
+    }
+}
+
+.bit-pvt-sta .bit-pvt-mnc {
+    top: auto;
+    bottom: 0;
+    inset-inline-end: auto;
+    inset-inline-start: 100%;
+    border-radius: 0 spacing(0.25) spacing(0.25) 0;
+}
+
+.bit-pvt-end .bit-pvt-mnc {
+    top: auto;
+    bottom: 0;
+    inset-inline-start: auto;
+    inset-inline-end: 100%;
+    border-radius: spacing(0.25) 0 0 spacing(0.25);
 }
 
 .bit-pvt-lnk {
@@ -348,3 +402,120 @@
     --bit-pvt-clr-hover: #{$clr-brd-ter-hover};
     --bit-pvt-clr-text: #{$clr-fg-pri};
 }
+
+// #region Slide overflow behavior
+
+.bit-pvt-sld {
+    .bit-pvt-hct {
+        overflow: hidden;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+}
+
+.bit-pvt-sbt {
+    border: 0;
+    padding: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 0;
+    color: $clr-fg-pri;
+    width: spacing(4);
+    align-items: center;
+    height: spacing(5.5);
+    display: inline-flex;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
+}
+
+// #endregion
+
+// #region Menu overflow behavior
+
+.bit-pvt-mnu {
+    .bit-pvt-hct {
+        overflow: hidden;
+    }
+}
+
+.bit-pvt-mor {
+    flex-shrink: 0;
+    margin-right: 0;
+}
+
+.bit-pvt-ovl {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: transparent;
+}
+
+.bit-pvt-mnc {
+    top: 100%;
+    display: none;
+    overflow: hidden auto;
+    padding: spacing(0.5) 0;
+    min-width: max-content;
+    box-sizing: border-box;
+    position: absolute;
+    inset-inline-end: 0;
+    z-index: $zindex-callout;
+    box-shadow: $box-shadow-callout;
+    border-radius: 0 0 spacing(0.25) spacing(0.25);
+    background-color: $clr-bg-pri;
+}
+
+.bit-pvt-mni {
+    width: 100%;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    text-align: start;
+    gap: spacing(0.5);
+    color: $clr-fg-pri;
+    white-space: nowrap;
+    align-items: center;
+    background-color: transparent;
+    padding: spacing(1) spacing(2);
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &[disabled] {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
+
+    &.bit-pvt-mni-sel {
+        font-weight: 600;
+    }
+}
+
+// #endregion

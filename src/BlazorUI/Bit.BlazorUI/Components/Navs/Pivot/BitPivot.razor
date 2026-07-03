@@ -10,8 +10,98 @@
      dir="@Dir?.ToString().ToLower()">
 
     <CascadingValue Value="this" IsFixed="true">
-        <div style="@Styles?.Header" class="bit-pvt-hct @Classes?.Header" role="tablist">
-            @ChildContent
+        <div style="@Styles?.HeaderContainer" class="bit-pvt-hwr @Classes?.HeaderContainer">
+
+            @if (OverflowBehavior is BitPivotOverflowBehavior.Slide)
+            {
+                var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? (_isVertical ? "ChevronUp" : "ChevronLeft"));
+                <button type="button"
+                        disabled="@(_slideAtStart || _slideHasOverflow is false)"
+                        style="@Styles?.SlideButton"
+                        aria-label="@(PreviousAriaLabel ?? "Previous")"
+                        @onclick="() => Slide(false)"
+                        class="bit-pvt-sbt bit-pvt-spv @Classes?.SlideButton">
+                    <i class="@prevIcon?.GetCssClasses()" />
+                </button>
+            }
+
+            <div @ref="_headerRef" style="@Styles?.Header" class="bit-pvt-hct @Classes?.Header" role="tablist">
+                @ChildContent
+
+                @if (OverflowBehavior is BitPivotOverflowBehavior.Menu)
+                {
+                    var moreIcon = BitIconInfo.From(OverflowIcon, OverflowIconName ?? "More");
+                    <button @ref="_moreRef"
+                            type="button"
+                            style="display:none;@Styles?.OverflowButton"
+                            aria-haspopup="true"
+                            aria-label="@(OverflowAriaLabel ?? "More")"
+                            aria-expanded="@(_isMenuOpen ? "true" : "false")"
+                            @onclick="ToggleMenu"
+                            class="bit-pvti bit-pvt-mor @Classes?.OverflowButton">
+                        <span>
+                            <i class="@moreIcon?.GetCssClasses()" />
+                        </span>
+                    </button>
+                }
+            </div>
+
+            @if (OverflowBehavior is BitPivotOverflowBehavior.Slide)
+            {
+                var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (_isVertical ? "ChevronDown" : "ChevronRight"));
+                <button type="button"
+                        disabled="@(_slideAtEnd || _slideHasOverflow is false)"
+                        style="@Styles?.SlideButton"
+                        aria-label="@(NextAriaLabel ?? "Next")"
+                        @onclick="() => Slide(true)"
+                        class="bit-pvt-sbt bit-pvt-snx @Classes?.SlideButton">
+                    <i class="@nextIcon?.GetCssClasses()" />
+                </button>
+            }
+
+            @if (OverflowBehavior is BitPivotOverflowBehavior.Menu)
+            {
+                <div class="bit-pvt-ovl"
+                     style="display:@(_isMenuOpen ? "block" : "none")"
+                     @onclick="CloseMenu"></div>
+
+                <div style="display:@(_isMenuOpen ? "block" : "none");@Styles?.OverflowCallout"
+                     role="menu"
+                     class="bit-pvt-mnc @Classes?.OverflowCallout">
+                    @foreach (var index in _overflowItemIndexes)
+                    {
+                        var item = (index >= 0 && index < _allItems.Count) ? _allItems[index] : null;
+                        if (item is null) continue;
+
+                        <button type="button"
+                                role="menuitem"
+                                disabled="@(item.IsEnabled is false)"
+                                style="@Styles?.OverflowItem"
+                                @onclick="() => SelectFromMenu(item)"
+                                class="bit-pvt-mni @(item.IsSelected ? "bit-pvt-mni-sel" : null) @Classes?.OverflowItem">
+                            @{
+                                var menuIcon = BitIconInfo.From(item.Icon, item.IconName);
+                            }
+                            @if (menuIcon is not null)
+                            {
+                                <i class="@menuIcon.GetCssClasses()" />
+                            }
+                            @if (item.Header is not null)
+                            {
+                                @item.Header
+                            }
+                            else if (item.HeaderText.HasValue())
+                            {
+                                <span>@item.HeaderText</span>
+                            }
+                            @if (item.ItemCount is not null)
+                            {
+                                <span>(@item.ItemCount)</span>
+                            }
+                        </button>
+                    }
+                </div>
+            }
         </div>
     </CascadingValue>
 

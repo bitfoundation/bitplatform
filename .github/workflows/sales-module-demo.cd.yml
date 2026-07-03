@@ -23,12 +23,12 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -44,7 +44,7 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'SalesModule/**/appsettings*json'
       env:
@@ -75,7 +75,7 @@ jobs:
       run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"  -p:InvariantGlobalization=true
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: SalesModule
         path: server
@@ -88,12 +88,12 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src\global.json
 
@@ -109,7 +109,7 @@ jobs:
         cd ..\..\..\ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
   
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'SalesModule\**\appsettings*json'
       env:
@@ -136,7 +136,7 @@ jobs:
           dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: WinSalesModule
         path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
