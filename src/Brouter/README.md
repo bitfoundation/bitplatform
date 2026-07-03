@@ -70,7 +70,7 @@ builder.Services.AddBitBrouterServices(o =>
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
 - **Global hooks**: `OnNavigating`, `OnNavigated`, `OnError` (Vue Router style)
-- Cancel-then-restore URL semantics (no broken back button after a guard cancels)
+- **Preventive guards** (via `RegisterLocationChangingHandler`): a cancel/redirect stops the URL from ever changing - no address-bar flicker, no corrupted history/back button, and real "unsaved changes" prompts are possible
 - In-flight loader cancellation when navigation is superseded
 - Query string and hash exposed via `BrouterLocation`
 - Configurable case sensitivity and trailing-slash handling
@@ -128,6 +128,11 @@ builder.Services.AddBitBrouterServices(o =>
     }
 }
 ```
+
+Guards (and `OnNavigating`) run inside a `RegisterLocationChangingHandler`, so `ctx.Cancel()` /
+`ctx.Redirect(...)` are **preventive**: the target URL is never committed to history when the
+navigation is blocked. There is no address-bar flicker and no torn back/forward stack, and you can
+implement a genuine "you have unsaved changes" prompt by cancelling from a guard or `OnNavigating`.
 
 ## Data loader
 

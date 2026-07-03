@@ -103,6 +103,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private bool _noRouteMatched;
     private long _navVersion;
 
+    // Registration returned by NavigationManager.RegisterLocationChangingHandler. Disposed on
+    // teardown to unhook the preventive guard/redirect/cancel decision (see OnLocationChanging).
+    private IDisposable? _locationChangingRegistration;
+
+    // Hand-off from the preventive "changing" phase to the "changed" (commit) phase. When the
+    // LocationChanging handler has already run OnNavigating + guards for a target and approved it,
+    // it records the target's absolute URI here so the subsequent LocationChanged commit phase can
+    // skip re-running those side-effecting hooks (they must run exactly once per navigation).
+    // Read-and-cleared by the commit phase; overwritten by each new approved decision.
+    private string? _approvedTargetUri;
+
 
     protected override void OnInitialized()
     {
@@ -138,7 +149,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         await Task.Yield();
 
         // Initial render: the From is Empty (we just mounted), the To is the URL we're at now.
-        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation);
+        // decisionAlreadyMade is false - the LocationChanging handler is not registered yet (and does
+        // not fire for the initial load anyway), so the full pipeline runs the guards here.
+        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation, decisionAlreadyMade: false);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -166,6 +179,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         catch (JSException) { /* JS interop failure; non-fatal */ }
         catch (InvalidOperationException) { /* interop unavailable during prerender */ }
         catch (TaskCanceledException) { /* component disposed mid-call */ }
+
+        // Register the preventive navigation handler now that the runtime is interactive.
+        // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
+        // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
+        // (LocationChangingContext.PreventNavigation) instead of reactively "undoing" a URL change
+        // that already happened. This is what makes guards preventive rather than reactive: no
+        // address-bar flicker, no corrupted history on a cancelled Back, and real "unsaved changes"
+        // prompts become possible. LocationChanged is kept only for the commit phase (loaders +
+        // render). During static prerender this method never runs, so the handler simply isn't
+        // registered there - which is correct, since there is no interactive navigation to guard.
+        _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -216,7 +240,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            // Defense in depth: ComputeLocation is intended to be no-throw (it normalises
+            // Defense in depth: ComputeLocation is intended to be no-throw (it normalizes
             // off-base URLs to an empty-path location), but if a future change ever lets an
             // exception escape, we still surface it through OnError instead of letting it
             // out of the async-void event handler.
@@ -224,9 +248,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             return;
         }
 
+        // Did the preventive "changing" phase already run OnNavigating + guards for this exact
+        // target and approve it? If so, commit without re-running those side-effecting hooks.
+        // Otherwise this is a navigation the changing handler never saw (initial load, forceLoad,
+        // or a nav that raced ahead of interception being enabled) - run the full pipeline, which
+        // still honours guards/OnNavigating, falling back to the reactive URL-restore behavior.
+        var approved = _approvedTargetUri;
+        _approvedTargetUri = null;
+        var decisionAlreadyMade =
+            approved is not null && string.Equals(approved, to.FullUri, StringComparison.Ordinal);
+
         try
         {
-            await InvokeAsync(() => ProcessNavigationAsync(from, to).AsTask());
+            await InvokeAsync(() => ProcessNavigationAsync(from, to, decisionAlreadyMade).AsTask());
         }
         catch (Exception ex)
         {
@@ -236,6 +270,134 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // let it escape async void.
             await SafeInvokeOnError(from, to, ex);
         }
+    }
+
+    /// <summary>
+    /// Preventive navigation decision. Registered via <c>NavigationManager.RegisterLocationChangingHandler</c>
+    /// so it runs BEFORE the URL commits to history. Runs the OnNavigating hooks and route guards for the
+    /// pending target and, if any of them cancels or redirects, calls
+    /// <see cref="LocationChangingContext.PreventNavigation"/> so the navigation never happens - instead of
+    /// letting the URL change and reactively undoing it. When the decision approves, the navigation is
+    /// allowed to commit and the subsequent LocationChanged event runs the commit phase (loaders + render).
+    /// </summary>
+    /// <remarks>
+    /// Only the decision (OnNavigating + guards + redirect/cancel + RedirectTo + NotFound-redirect) lives
+    /// here. Loaders and rendering deliberately stay in the commit phase: they produce and show the new
+    /// view, which is meaningful only once navigation is committed. This mirrors the issue's guidance to
+    /// "keep LocationChanged only for the commit phase".
+    /// </remarks>
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        // Clear any prior approval up front: only an outcome that actually approves THIS navigation
+        // below may set it. This guarantees a decision that ends up cancelled, redirected, superseded
+        // or errored never leaves a stale approval that a later commit could misread as "guards ran".
+        _approvedTargetUri = null;
+
+        BrouterLocation from = CurrentLocation;
+        BrouterLocation to;
+        try
+        {
+            // The URL has NOT committed yet, so resolve the pending target rather than
+            // NavigationManager.Uri (which still holds the current location).
+            to = ComputeLocation(_navManager.ToAbsoluteUri(context.TargetLocation).ToString());
+        }
+        catch (Exception ex) when (ex is ArgumentException or UriFormatException or InvalidOperationException)
+        {
+            // Malformed / off-base target. Let the navigation commit and be handled by the commit
+            // phase (which routes it through NotFound / OnError). Do not block on a parse failure.
+            return;
+        }
+
+        // Supersession here rides on the framework: context.CancellationToken is cancelled when a
+        // newer navigation starts, so guards/hooks that await observe it and bail. We deliberately
+        // do NOT touch _navCts / _navVersion in this phase - that machinery belongs to the commit
+        // phase, and mixing the two would leak or double-cancel token sources.
+        var token = context.CancellationToken;
+        var ctx = new BrouterNavigationContext(from, to, token);
+        var service = _brouterService;
+
+        try
+        {
+            await service.InvokeOnNavigating(ctx);
+            if (token.IsCancellationRequested) return;
+            if (ApplyPreventiveDecision(context, ctx)) return;
+
+            var winnerMatch = SelectWinner(to);
+
+            if (winnerMatch is null)
+            {
+                // No route matched. Fire OnNotFound, then either redirect to the NotFound target
+                // (preventively, so the unmatched URL never appears in the address bar) or allow
+                // the commit phase to render NotFoundContent in place.
+                if (OnNotFound is not null) await OnNotFound(to);
+                if (token.IsCancellationRequested) return;
+
+                if (string.IsNullOrEmpty(NotFound) is false && IsSamePath(to.Path, NotFound) is false)
+                {
+                    context.PreventNavigation();
+                    _navManager.NavigateTo(NotFound);
+                    return;
+                }
+
+                _approvedTargetUri = to.FullUri;
+                return;
+            }
+
+            var winner = winnerMatch.Value.Route;
+            ctx.Route = winner;
+            ctx.Parameters = new BrouteParameters(winnerMatch.Value.Parameters);
+
+            var guardsOk = await winner.InvokeGuardsAsync(ctx);
+            if (token.IsCancellationRequested) return;
+            if (ApplyPreventiveDecision(context, ctx)) return;
+            if (guardsOk is false) return; // superseded (token cancelled inside the guard chain)
+
+            if (winner.RedirectTo is not null)
+            {
+                context.PreventNavigation();
+                _navManager.NavigateTo(winner.RedirectTo);
+                return;
+            }
+
+            // Approved: let the URL commit. The LocationChanged commit phase re-selects this same
+            // winner (matching is pure) and runs its loaders + render, skipping the hooks above.
+            _approvedTargetUri = to.FullUri;
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // The navigation was superseded while a guard/hook was awaiting. The framework has
+            // already cancelled it, so there is nothing to prevent and no error to report.
+        }
+        catch (Exception ex)
+        {
+            // A guard / OnNavigating hook threw. Fail closed: block the navigation rather than
+            // committing into a state whose authorization never completed, and surface the error.
+            context.PreventNavigation();
+            await SafeInvokeOnError(from, to, ex);
+        }
+    }
+
+    /// <summary>
+    /// Translates a cancel/redirect request captured on <paramref name="ctx"/> (by an OnNavigating
+    /// hook or a guard) into a preventive outcome on <paramref name="context"/>. Returns true when the
+    /// navigation has been handled (prevented, and redirected if applicable) and the caller should stop.
+    /// </summary>
+    private bool ApplyPreventiveDecision(LocationChangingContext context, BrouterNavigationContext ctx)
+    {
+        if (ctx.RedirectUrl is not null)
+        {
+            context.PreventNavigation();
+            _navManager.NavigateTo(ctx.RedirectUrl);
+            return true;
+        }
+
+        if (ctx.IsCancelled)
+        {
+            context.PreventNavigation();
+            return true;
+        }
+
+        return false;
     }
 
     private async ValueTask SafeInvokeOnError(BrouterLocation from, BrouterLocation to, Exception ex)
@@ -251,17 +413,24 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// <summary>
     /// Pure: builds a <see cref="BrouterLocation"/> from the current <c>NavigationManager.Uri</c>.
     /// Does not mutate <see cref="CurrentLocation"/>. Never throws: an off-base URL or other
-    /// malformed input is normalised to an empty-path location so the navigation pipeline can
+    /// malformed input is normalized to an empty-path location so the navigation pipeline can
     /// run and surface the issue through NotFound / OnError instead of crashing the handler.
     /// </summary>
-    private BrouterLocation ComputeLocation()
-    {
-        var uri = _navManager.Uri;
+    private BrouterLocation ComputeLocation() => ComputeLocation(_navManager.Uri);
 
+    /// <summary>
+    /// Pure: builds a <see cref="BrouterLocation"/> from an arbitrary absolute URI. Used by the
+    /// LocationChanging handler, where the navigation has not committed yet so we must resolve the
+    /// pending target URL (from <c>LocationChangingContext.TargetLocation</c>) rather than the still
+    /// current <c>NavigationManager.Uri</c>. Shares all normalization with the no-arg overload so a
+    /// location computed during the "changing" phase is identical to the one recomputed after commit.
+    /// </summary>
+    private BrouterLocation ComputeLocation(string uri)
+    {
         // ToBaseRelativePath throws ArgumentException if the current Uri is not within
         // NavigationManager.BaseUri (base href misconfigured, programmatic NavigateTo to an
         // off-base absolute URL, etc.). Don't propagate: that would kill an async-void
-        // handler permanently. Synthesise an empty-path location so the pipeline runs and
+        // handler permanently. Synthesize an empty-path location so the pipeline runs and
         // typically routes through NotFound, which surfaces the issue cleanly.
         string raw;
         try
@@ -317,17 +486,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         return new BrouterLocation(uri, path, rawSegments, query, hash, hasTrailingSlash);
     }
 
-    // Cache the most recently-computed normalisation. NotFound is typically a constant per
+    // Cache the most recently-computed normalization. NotFound is typically a constant per
     // Brouter instance, and BuildRenderTree calls IsSamePath on every render (NotFoundContent
     // fallback check). One-slot cache is enough; on a NotFound parameter change the cached
     // entry is replaced.
     private string? _isSamePathCacheTarget;
-    private string? _isSamePathCacheNormalised;
+    private string? _isSamePathCacheNormalized;
 
     /// <summary>
-    /// Compares an already-normalised <paramref name="currentPath"/> (as produced by
+    /// Compares an already-normalized <paramref name="currentPath"/> (as produced by
     /// <see cref="ComputeLocation"/>) against an arbitrary target URL/path. Returns true
-    /// when their normalised path components are equal.
+    /// when their normalized path components are equal.
     /// </summary>
     /// <remarks>
     /// Used by the NotFound logic to detect the "we're already at the NotFound target"
@@ -345,10 +514,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             || string.Equals(_isSamePathCacheTarget, target, StringComparison.Ordinal))
         {
             // Cache hit: skip the ToAbsoluteUri / ToBaseRelativePath / split work.
-            // _isSamePathCacheNormalised is null only when the previous call returned false
+            // _isSamePathCacheNormalized is null only when the previous call returned false
             // for an off-base/malformed target; replicate that result.
-            if (_isSamePathCacheNormalised is null) return false;
-            targetPath = _isSamePathCacheNormalised;
+            if (_isSamePathCacheNormalized is null) return false;
+            targetPath = _isSamePathCacheNormalized;
         }
         else
         {
@@ -364,7 +533,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             {
                 // Off-base or malformed target: not equal to anything we'd legitimately be at.
                 _isSamePathCacheTarget = target;
-                _isSamePathCacheNormalised = null;
+                _isSamePathCacheNormalized = null;
                 return false;
             }
 
@@ -380,14 +549,23 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             }
 
             _isSamePathCacheTarget = target;
-            _isSamePathCacheNormalised = targetPath;
+            _isSamePathCacheNormalized = targetPath;
         }
 
         var comparison = Options.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
         return string.Equals(currentPath, targetPath, comparison);
     }
 
-    private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to)
+    /// <summary>
+    /// The navigation commit pipeline: publishes the target location, (re)matches the route, runs
+    /// loaders and renders. When <paramref name="decisionAlreadyMade"/> is true the preventive
+    /// <see cref="OnLocationChanging"/> phase has already run the OnNavigating hooks and guards for
+    /// this target and approved it, so those side-effecting steps (and the cancel/redirect handling)
+    /// are skipped here to avoid running them twice. When false - the initial load, a forceLoad, or a
+    /// navigation the changing handler never observed - the full pipeline runs, including guards and
+    /// the reactive URL-restore fallback in <see cref="HandleSideEffects"/>.
+    /// </summary>
+    private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to, bool decisionAlreadyMade)
     {
         // Now that we own the renderer's dispatcher (via InvokeAsync from the LocationChanged
         // handler, or directly from OnAfterRenderAsync for the initial render), publish the
@@ -417,9 +595,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // No ConfigureAwait(false) anywhere in this pipeline: subsequent calls
             // (StateHasChanged, NavigationManager.NavigateTo, route/component state mutations,
             // Outlet rendering) require the Blazor renderer's synchronization context.
-            await service.InvokeOnNavigating(ctx);
-            if (HandleSideEffects(ctx, from)) return;
-            if (token.IsCancellationRequested || version != _navVersion) return;
+            //
+            // OnNavigating (and its cancel/redirect handling) only runs when the preventive changing
+            // phase did NOT already run it. When decisionAlreadyMade is true, OnLocationChanging has
+            // run these hooks and approved the navigation, so re-running them here would double-fire
+            // side effects.
+            if (decisionAlreadyMade is false)
+            {
+                await service.InvokeOnNavigating(ctx);
+                if (HandleSideEffects(ctx, from)) return;
+                if (token.IsCancellationRequested || version != _navVersion) return;
+            }
 
             // Snapshot the route list before any awaits / chain walks below: routes can register
             // or unregister during awaits (component lifecycle on the renderer dispatcher), and
@@ -427,39 +613,45 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // reused across navigations while the registration set is stable - see GetRoutesSnapshot.
             var routesSnapshot = GetRoutesSnapshot();
 
-            // Match routes. Match is pure: it returns a MatchResult and never mutates the route.
+            // Reset the previous match's render flags before selecting the new winner. This lives in
+            // the commit phase (never the preventive changing phase): blanking Matched before the URL
+            // commits could unrender the current route while a guard is still deciding. No render can
+            // interleave between here and the SetMatched below (no StateHasChanged until the end), so
+            // the reset is invisible to the user.
             foreach (var r in routesSnapshot) r.Matched = false;
-            var candidates = new List<MatchResult>();
-            foreach (var r in routesSnapshot)
-            {
-                if (TryMatch(r, to.SegmentsArray, to.HasTrailingSlash, out var result))
-                {
-                    candidates.Add(result);
-                }
-            }
 
-            if (candidates.Count == 0)
+            // Match is pure (SelectWinner never mutates a route), so the same selection runs in both
+            // the changing and commit phases and yields the same winner for a stable route set.
+            var winnerMatch = SelectWinner(to);
+
+            if (winnerMatch is null)
             {
                 _noRouteMatched = true;
-                if (OnNotFound is not null) await OnNotFound(to);
 
-                // The OnNotFound handler may have awaited; if a newer navigation has started or
-                // this one was cancelled in the meantime, abandon the fallback path so we don't
-                // redirect/render on behalf of a superseded navigation.
-                if (token.IsCancellationRequested || version != _navVersion) return;
-
-                if (string.IsNullOrEmpty(NotFound) is false)
+                // OnNotFound + the preventive NotFound redirect already ran in the changing phase
+                // when decisionAlreadyMade is true; only run them here for the full-pipeline path.
+                if (decisionAlreadyMade is false)
                 {
-                    // Avoid a self-redirect loop when the current URL is already the NotFound target
-                    // (and still doesn't match any route). Render the fallback UI instead.
-                    // Compare normalised base-relative paths rather than raw absolute URIs:
-                    // "http://host/x" vs "http://host/x/" or vs "http://host/x?foo=1" would
-                    // otherwise miss the equality check and trigger an infinite redirect loop
-                    // (the NotFound URL keeps not matching, we keep navigating to it).
-                    if (IsSamePath(to.Path, NotFound) is false)
+                    if (OnNotFound is not null) await OnNotFound(to);
+
+                    // The OnNotFound handler may have awaited; if a newer navigation has started or
+                    // this one was cancelled in the meantime, abandon the fallback path so we don't
+                    // redirect/render on behalf of a superseded navigation.
+                    if (token.IsCancellationRequested || version != _navVersion) return;
+
+                    if (string.IsNullOrEmpty(NotFound) is false)
                     {
-                        _navManager.NavigateTo(NotFound);
-                        return;
+                        // Avoid a self-redirect loop when the current URL is already the NotFound target
+                        // (and still doesn't match any route). Render the fallback UI instead.
+                        // Compare normalized base-relative paths rather than raw absolute URIs:
+                        // "http://host/x" vs "http://host/x/" or vs "http://host/x?foo=1" would
+                        // otherwise miss the equality check and trigger an infinite redirect loop
+                        // (the NotFound URL keeps not matching, we keep navigating to it).
+                        if (IsSamePath(to.Path, NotFound) is false)
+                        {
+                            _navManager.NavigateTo(NotFound);
+                            return;
+                        }
                     }
                 }
                 StateHasChanged();
@@ -468,55 +660,40 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
             _noRouteMatched = false;
 
-            // Pick the most specific match. Ties broken by deeper nesting (so an index child
-            // wins over its parent when their full templates are identical), then by index-route
-            // preference, then by declaration order.
-            MatchResult winnerMatch = candidates[0];
-            int winnerIndex = 0;
-            for (int i = 1; i < candidates.Count; i++)
-            {
-                var c = candidates[i];
-                var w = winnerMatch;
-                int cmp = c.Route.Specificity - w.Route.Specificity;
-                if (cmp == 0) cmp = c.Route.Depth - w.Route.Depth;
-                if (cmp == 0) cmp = (c.Route.IsIndex ? 1 : 0) - (w.Route.IsIndex ? 1 : 0);
-                if (cmp > 0)
-                {
-                    winnerMatch = c;
-                    winnerIndex = i;
-                }
-            }
-            // Suppress unused-variable warning while documenting that declaration order is the
-            // final tiebreaker (lower index wins, which is what the loop above naturally yields).
-            _ = winnerIndex;
-
-            var winner = winnerMatch.Route;
+            var winner = winnerMatch.Value.Route;
 
             // Commit the winner's matched parameters / constraints. Until this point Match was
             // pure, so candidates that lost have not had their Parameters/Constraints touched
             // (avoiding a race where a still-rendering, previously-matched route gets blanked).
-            winner.Parameters = winnerMatch.Parameters;
-            winner.ConstraintsByParameter = winnerMatch.ConstraintsByParameter;
+            winner.Parameters = winnerMatch.Value.Parameters;
+            winner.ConstraintsByParameter = winnerMatch.Value.ConstraintsByParameter;
 
             ctx.Route = winner;
             ctx.Parameters = new BrouteParameters(winner.Parameters);
 
-            // Guards run before RedirectTo so a guard can still authorize/cancel/redirect-elsewhere
-            // (e.g. an auth guard on a redirect route, or a parent guard inherited via the chain).
-            // For routes without any guards in the chain, InvokeGuardsAsync is effectively a no-op,
-            // so pure redirect routes still redirect immediately below.
-            var guardsOk = await winner.InvokeGuardsAsync(ctx);
-            if (HandleSideEffects(ctx, from)) return;
-            if (token.IsCancellationRequested || version != _navVersion) return;
-            if (guardsOk is false) return;
-
-            // RedirectTo: once guards pass, redirect instead of running loaders/rendering. This honors
-            // the documented "redirects to the given URL instead of rendering anything" contract even
-            // when Guard is also set.
-            if (winner.RedirectTo is not null)
+            // Guards + RedirectTo run only on the full-pipeline path. When decisionAlreadyMade is
+            // true, the changing phase already ran the guard chain and honoured RedirectTo (a
+            // RedirectTo route would have redirected there, so this commit is only reached for
+            // routes that render).
+            if (decisionAlreadyMade is false)
             {
-                _navManager.NavigateTo(winner.RedirectTo);
-                return;
+                // Guards run before RedirectTo so a guard can still authorize/cancel/redirect-elsewhere
+                // (e.g. an auth guard on a redirect route, or a parent guard inherited via the chain).
+                // For routes without any guards in the chain, InvokeGuardsAsync is effectively a no-op,
+                // so pure redirect routes still redirect immediately below.
+                var guardsOk = await winner.InvokeGuardsAsync(ctx);
+                if (HandleSideEffects(ctx, from)) return;
+                if (token.IsCancellationRequested || version != _navVersion) return;
+                if (guardsOk is false) return;
+
+                // RedirectTo: once guards pass, redirect instead of running loaders/rendering. This honors
+                // the documented "redirects to the given URL instead of rendering anything" contract even
+                // when Guard is also set.
+                if (winner.RedirectTo is not null)
+                {
+                    _navManager.NavigateTo(winner.RedirectTo);
+                    return;
+                }
             }
 
             // Loaders. Walk root -> leaf so parent layouts get their data populated before
@@ -686,6 +863,48 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Matches <paramref name="to"/> against the registered routes and returns the winning
+    /// <see cref="MatchResult"/>, or null when nothing matches. Pure: never mutates a route (in
+    /// particular it does not touch <c>Broute.Matched</c>), so it is safe to call from the preventive
+    /// changing phase (where the current route is still rendered) as well as the commit phase. Both
+    /// phases run identical selection, so an approved changing decision and its commit agree on the winner.
+    /// </summary>
+    private MatchResult? SelectWinner(BrouterLocation to)
+    {
+        var routesSnapshot = GetRoutesSnapshot();
+
+        var candidates = new List<MatchResult>();
+        foreach (var r in routesSnapshot)
+        {
+            if (TryMatch(r, to.SegmentsArray, to.HasTrailingSlash, out var result))
+            {
+                candidates.Add(result);
+            }
+        }
+
+        if (candidates.Count == 0) return null;
+
+        // Pick the most specific match. Ties broken by deeper nesting (so an index child
+        // wins over its parent when their full templates are identical), then by index-route
+        // preference, then by declaration order (the loop keeps the earliest on an exact tie).
+        MatchResult winnerMatch = candidates[0];
+        for (int i = 1; i < candidates.Count; i++)
+        {
+            var c = candidates[i];
+            var w = winnerMatch;
+            int cmp = c.Route.Specificity - w.Route.Specificity;
+            if (cmp == 0) cmp = c.Route.Depth - w.Route.Depth;
+            if (cmp == 0) cmp = (c.Route.IsIndex ? 1 : 0) - (w.Route.IsIndex ? 1 : 0);
+            if (cmp > 0)
+            {
+                winnerMatch = c;
+            }
+        }
+
+        return winnerMatch;
+    }
+
     private bool TryMatch(Broute route, string[] segments, bool hasTrailingSlash, out MatchResult result)
     {
         result = default;
@@ -798,6 +1017,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _disposed = true;
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
+        // Unhook the preventive changing handler so a disposed Brouter can't keep vetoing navigations.
+        _locationChangingRegistration?.Dispose();
+        _locationChangingRegistration = null;
         // Detach the active CTS and cancel it, but DON'T dispose here. A still-running
         // ProcessNavigationAsync may be observing this CTS via its `token` parameter or
         // about to throw OperationCanceledException through it; disposing now would race
