@@ -1227,7 +1227,7 @@ namespace BitBlazorUI {
             if (imageFiles.length > 0) {
                 e.preventDefault();
                 RichTextEditor.placeDropCaret(editor, e);
-                RichTextEditor.handleImageFiles(editor, Array.from<File>(dt.files as any));
+                RichTextEditor.handleImageFiles(editor, imageFiles);
                 return;
             }
 
