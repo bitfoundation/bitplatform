@@ -1161,9 +1161,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // Under Options.IgnoreTrailingSlash == false a URL ending in '/' is distinct from one
         // that doesn't. Templates are always normalized via TemplateParser to drop trailing
         // slashes, so a non-catch-all route can never legitimately require the slash and must
-        // not match a trailing-slash URL. Catch-all is exempt: it absorbs the trailing position
-        // (matching zero or more remaining segments, including the implicit empty one).
-        if (hasTrailingSlash && last.IsCatchAll is false) return false;
+        // not match a trailing-slash URL. Two exceptions absorb the trailing position:
+        //   - Catch-all: it matches zero or more remaining segments, including the implicit
+        //     empty one.
+        //   - An optional final segment left unfilled by the URL: the trailing slash stands in
+        //     for that empty optional value (e.g. "/users/" against "/users/{id?}"). This only
+        //     applies while the optional segment is genuinely unfilled - i.e. the URL is shorter
+        //     than the template. Once the template is fully satisfied a trailing slash is a real
+        //     extra slash ("/users/1/" against "/users/{id?}") and must still be rejected.
+        if (hasTrailingSlash && last.IsCatchAll is false
+            && (last.IsOptional is false || segments.Length >= templateSegments.Count))
+        {
+            return false;
+        }
 
         if (templateSegments.Count != segments.Length)
         {
