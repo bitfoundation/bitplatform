@@ -25,16 +25,143 @@ export function wireConditionalPreventDefault(element) {
     };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Scroll restoration state (only used when BrouterOptions.RestoreScrollPosition is enabled).
+//
+// scrollPositions : absolute-URL -> { x, y } scroll offset the user was at when they left that URL.
+//                   Kept in memory for the page's lifetime; does not survive a full reload.
+// pendingIsPop    : whether the navigation currently being committed is a Back/Forward (history pop).
+//                   Captured from the popstate flag at navigation start (see saveScrollPosition) so it
+//                   is read before any render, then consumed by applyNavigationEffects post-render.
+// popped          : set by the popstate listener the instant the browser fires a Back/Forward, before
+//                   Blazor's async LocationChanged pipeline runs. Drained into pendingIsPop at save time.
+const scrollPositions = new Map();
+let pendingIsPop = false;
+let popped = false;
+let scrollRestorationInited = false;
+// null -> in-memory only; 'session'/'local' -> mirrored to sessionStorage/localStorage so positions
+// survive a full reload. Fixed for the module's lifetime (BrouterOptions are per-scope constants).
+let scrollStorageKind = null;
+
+// The single web-storage slot the whole position map is JSON-serialized into. One slot (rather than
+// one per URL) keeps hydrate/persist trivial and easy to clear.
+const SCROLL_STORAGE_KEY = 'bit-brouter:scrollPositions';
+
+// Resolves the configured Web Storage object, or null when persistence is off or the store is
+// unavailable (private mode, disabled by policy). Accessing window.sessionStorage/localStorage can
+// itself throw, so it's guarded.
+function scrollStore() {
+    try {
+        if (scrollStorageKind === 'session') return window.sessionStorage;
+        if (scrollStorageKind === 'local') return window.localStorage;
+    } catch { /* storage access denied -> behave as in-memory */ }
+    return null;
+}
+
+// Loads any previously-persisted positions into the in-memory map. Best-effort: corrupt or
+// unreadable storage simply leaves the map as-is so restoration degrades to in-memory.
+function hydrateScrollPositions() {
+    const store = scrollStore();
+    if (!store) return;
+    try {
+        const raw = store.getItem(SCROLL_STORAGE_KEY);
+        if (!raw) return;
+        const obj = JSON.parse(raw);
+        if (!obj || typeof obj !== 'object') return;
+        for (const k of Object.keys(obj)) {
+            const v = obj[k];
+            if (v && typeof v.x === 'number' && typeof v.y === 'number') {
+                scrollPositions.set(k, { x: v.x, y: v.y });
+            }
+        }
+    } catch { /* corrupt/unavailable -> keep whatever is already in memory */ }
+}
+
+// Write-through of the in-memory map to the configured store. Best-effort: a quota error or an
+// unavailable store is swallowed so navigation (and in-memory restoration) keep working.
+function persistScrollPositions() {
+    const store = scrollStore();
+    if (!store) return;
+    try {
+        const obj = {};
+        for (const [k, v] of scrollPositions) obj[k] = v;
+        store.setItem(SCROLL_STORAGE_KEY, JSON.stringify(obj));
+    } catch { /* quota exceeded / storage unavailable -> in-memory still holds the positions */ }
+}
+
+// Idempotently arms scroll restoration: records the storage mode, takes over the browser's automatic
+// restoration (so it can't fight ours), starts tracking Back/Forward, and hydrates any persisted
+// positions. Called lazily the first time a restoration-enabled navigation touches the module, so a
+// consumer that never opts in pays nothing and the browser's native restoration is left exactly as it
+// was. `storageKind` is honored on the first call only (options are constant per scope).
+//
+//   storageKind - 'session' | 'local' to persist positions in the matching Web Storage, else in-memory.
+function ensureScrollRestoration(storageKind) {
+    if (scrollRestorationInited) return;
+    scrollRestorationInited = true;
+    scrollStorageKind = (storageKind === 'session' || storageKind === 'local') ? storageKind : null;
+
+    if ('scrollRestoration' in history) {
+        try { history.scrollRestoration = 'manual'; } catch { /* some hosts forbid setting it */ }
+    }
+    // Fires synchronously on a Back/Forward, ahead of Blazor's async LocationChanged handling, so the
+    // flag is already set when the ensuing saveScrollPosition call reads it.
+    window.addEventListener('popstate', () => { popped = true; });
+
+    // Seed the in-memory map from persisted storage so a reload can still restore positions.
+    hydrateScrollPositions();
+}
+
+function currentScroll() {
+    return {
+        x: window.scrollX ?? window.pageXOffset ?? 0,
+        y: window.scrollY ?? window.pageYOffset ?? 0
+    };
+}
+
+// Records the scroll offset of the page being navigated away from, keyed by its absolute URL, so a
+// later Back/Forward to that URL can restore it. Invoked by the C# commit pipeline BEFORE the new
+// route renders, so `currentScroll()` still reflects the outgoing page. Also drains the popstate flag
+// into pendingIsPop here (pre-render) because applyNavigationEffects, which needs the direction, only
+// runs post-render by which point a fresh popstate could have arrived.
+//
+//   key         - the absolute URL of the page being left, or null/empty to skip recording (e.g. initial load).
+//   storageKind - persistence mode, honored on the first call (see ensureScrollRestoration).
+export function saveScrollPosition(key, storageKind) {
+    ensureScrollRestoration(storageKind);
+    pendingIsPop = popped;
+    popped = false;
+    if (key) {
+        scrollPositions.set(key, currentScroll());
+        persistScrollPositions();
+    }
+}
+
 // Applies the post-navigation DOM effects that Blazor's declarative rendering can't express:
-// scrolling a URL fragment into view, moving focus for assistive technologies, and scroll-to-top.
-// Called once per successful navigation, after the matched route has been committed to the DOM.
-// Every step is best-effort: a missing target is silently ignored so navigation never breaks.
+// scrolling a URL fragment into view, restoring a remembered scroll position on Back/Forward,
+// moving focus for assistive technologies, and scroll-to-top. Called once per successful navigation,
+// after the matched route has been committed to the DOM. Every step is best-effort: a missing target
+// is silently ignored so navigation never breaks.
 //
 //   hash          - the URL fragment including its leading '#', or null/empty when the caller
 //                   disabled fragment scrolling or the destination has no fragment.
 //   focusSelector - a CSS selector for the element to focus (accessibility), or null to skip.
-//   scrollToTop   - whether to scroll the window to the top when no fragment claimed the scroll.
-export function applyNavigationEffects(hash, focusSelector, scrollToTop) {
+//   scrollToTop   - whether to scroll the window to the top when no fragment/restore claimed the scroll.
+//   restoreKey    - the destination's absolute URL when scroll restoration is enabled, else null. On a
+//                   Back/Forward to a URL with a remembered position, that position is restored instead
+//                   of applying scrollToTop.
+//   storageKind   - persistence mode ('session'/'local'/null), honored on first arm (see saveScrollPosition).
+export function applyNavigationEffects(hash, focusSelector, scrollToTop, restoreKey, storageKind) {
+    // Consume the direction captured at navigation start. Only meaningful when restoration is on.
+    // ensureScrollRestoration here guarantees the position map is hydrated before the first restore,
+    // even on the initial load where no saveScrollPosition call precedes this one.
+    let isPop = false;
+    if (restoreKey) {
+        ensureScrollRestoration(storageKind);
+        isPop = pendingIsPop;
+        pendingIsPop = false;
+    }
+
     // 1. Fragment scrolling: navigating to /docs#install should land on the #install element,
     //    and (for keyboard/AT users) continue focus from there rather than the top of the page.
     if (hash && hash.length > 1) {
@@ -50,15 +177,30 @@ export function applyNavigationEffects(hash, focusSelector, scrollToTop) {
             focusElement(target);
             return;
         }
-        // Fragment target not found -> fall through to the scroll-to-top / focus defaults.
+        // Fragment target not found -> fall through to the restore / scroll-to-top / focus defaults.
     }
 
-    // 2. Scroll to top (only when no fragment claimed the scroll position above).
+    // 2. Scroll restoration on Back/Forward: return the user to where they left this page. Wins over
+    //    scroll-to-top (that's the "new navigation" behavior). Only acts on a history pop with a
+    //    remembered position; a first visit or a forward push falls through to the defaults below.
+    if (restoreKey && isPop && scrollPositions.has(restoreKey)) {
+        const p = scrollPositions.get(restoreKey);
+        window.scrollTo(p.x, p.y);
+        // Still honor focus so assistive tech announces the page; focusElement preventScroll keeps
+        // the restored position intact.
+        if (focusSelector) {
+            const el = document.querySelector(focusSelector);
+            if (el) focusElement(el);
+        }
+        return;
+    }
+
+    // 3. Scroll to top (only when no fragment/restore claimed the scroll position above).
     if (scrollToTop) {
         window.scrollTo(0, 0);
     }
 
-    // 3. Focus management: move focus to the configured landmark/heading so screen readers
+    // 4. Focus management: move focus to the configured landmark/heading so screen readers
     //    announce the new page instead of leaving focus on the activated link.
     if (focusSelector) {
         const el = document.querySelector(focusSelector);

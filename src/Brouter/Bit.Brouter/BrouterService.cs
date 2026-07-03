@@ -366,9 +366,10 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         var scrollToTop = _options.ScrollBehavior == BrouterScrollMode.ToTop;
         var focusSelector = _options.FocusOnNavigateSelector;
         var hasFocus = string.IsNullOrEmpty(focusSelector) is false;
+        var restore = _options.RestoreScrollPosition;
 
         // Nothing configured for this navigation -> don't even import the JS module.
-        if (scrollToFragment is false && scrollToTop is false && hasFocus is false) return;
+        if (scrollToFragment is false && scrollToTop is false && hasFocus is false && restore is false) return;
 
         // No ConfigureAwait(false): this is awaited from Brouter.OnAfterRenderAsync, so stay on the
         // renderer's synchronization context (required on Blazor Server for interop/state).
@@ -381,13 +382,52 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
                 "applyNavigationEffects",
                 scrollToFragment ? hash : null,
                 hasFocus ? focusSelector : null,
-                scrollToTop);
+                scrollToTop,
+                // On a Back/Forward the JS side restores the position remembered for this URL; the key
+                // is only sent when restoration is enabled so it stays inert (and browser-native
+                // restoration untouched) otherwise.
+                restore ? location.FullUri : null,
+                restore ? ScrollStorageKind : null);
         }
         catch (JSDisconnectedException) { /* circuit disconnected mid-call */ }
         catch (JSException) { /* JS interop failure (e.g. non-browser host) */ }
         catch (InvalidOperationException) { /* JS interop unavailable during pre-render */ }
         catch (TaskCanceledException) { /* component disposed mid-call */ }
     }
+
+    /// <summary>
+    /// Records the scroll position of the page being navigated away from (<paramref name="from"/>) so a
+    /// later Back/Forward to that URL can restore it. Invoked from the commit pipeline BEFORE the new
+    /// route renders, so the JS side reads the outgoing page's scroll offset rather than the new one.
+    /// A no-op unless <see cref="BrouterOptions.RestoreScrollPosition"/> is enabled and there is an
+    /// actual page to leave (skipped on the initial load, where <paramref name="from"/> is empty).
+    /// </summary>
+    internal async ValueTask SaveScrollPositionAsync(BrouterLocation from)
+    {
+        if (_options.RestoreScrollPosition is false) return;
+        if (string.IsNullOrEmpty(from.FullUri)) return;
+
+        try
+        {
+            var module = await GetModuleAsync();
+            if (module is null) return;
+
+            await module.InvokeVoidAsync("saveScrollPosition", from.FullUri, ScrollStorageKind);
+        }
+        catch (JSDisconnectedException) { /* circuit disconnected mid-call */ }
+        catch (JSException) { /* JS interop failure (e.g. non-browser host) */ }
+        catch (InvalidOperationException) { /* JS interop unavailable during pre-render */ }
+        catch (TaskCanceledException) { /* component disposed mid-call */ }
+    }
+
+    // Maps the configured storage mode to the token the JS module understands ('session'/'local'),
+    // or null for in-memory. Kept here so both interop call sites stay in sync.
+    private string? ScrollStorageKind => _options.ScrollPositionStorage switch
+    {
+        BrouterScrollPositionStorage.SessionStorage => "session",
+        BrouterScrollPositionStorage.LocalStorage => "local",
+        _ => null
+    };
 
     private async ValueTask<IJSObjectReference?> GetModuleAsync()
     {

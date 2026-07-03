@@ -107,6 +107,122 @@ public class NavigationEffectsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Restore_scroll_forwards_the_destination_url_as_restore_key()
+    {
+        // With RestoreScrollPosition enabled the destination's absolute URL is forwarded as the
+        // restore key so the JS side can look up (on a Back/Forward) the position saved for it.
+        Services.Configure<BrouterOptions>(o => o.RestoreScrollPosition = true);
+        var module = Context!.JSInterop.SetupModule(ModuleUrl);
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/home");
+
+        var cut = RenderComponent<NavigationEffectsHost>();
+
+        cut.WaitForAssertion(() =>
+        {
+            var invocation = module.Invocations["applyNavigationEffects"].Last();
+            Assert.AreEqual("http://localhost/home", invocation.Arguments[3]);   // restore key = destination URL
+        });
+    }
+
+    [TestMethod]
+    public void Restore_scroll_disabled_sends_null_restore_key_and_never_saves()
+    {
+        // Restoration off: the restore key must be null (so the JS side leaves browser-native
+        // restoration untouched) and no outgoing position is ever saved. ScrollBehavior.ToTop is set
+        // only to force the module to be invoked so we can inspect the forwarded arguments.
+        Services.Configure<BrouterOptions>(o => o.ScrollBehavior = BrouterScrollMode.ToTop);
+        var module = Context!.JSInterop.SetupModule(ModuleUrl);
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/home");
+
+        var cut = RenderComponent<NavigationEffectsHost>();
+
+        cut.WaitForAssertion(() =>
+        {
+            var invocation = module.Invocations["applyNavigationEffects"].Last();
+            Assert.IsNull(invocation.Arguments[3]);                 // no restore key
+        });
+        Assert.AreEqual(0, module.Invocations["saveScrollPosition"].Count);
+    }
+
+    [TestMethod]
+    public void Restore_scroll_forwards_the_configured_storage_kind()
+    {
+        // LocalStorage persistence -> the "local" token is forwarded to both interop entry points so
+        // the JS side mirrors positions into localStorage (and hydrates them on reload).
+        Services.Configure<BrouterOptions>(o =>
+        {
+            o.RestoreScrollPosition = true;
+            o.ScrollPositionStorage = BrouterScrollPositionStorage.LocalStorage;
+        });
+        var module = Context!.JSInterop.SetupModule(ModuleUrl);
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/home");
+
+        var cut = RenderComponent<NavigationEffectsHost>();
+        cut.WaitForAssertion(() =>
+        {
+            var effects = module.Invocations["applyNavigationEffects"].Last();
+            Assert.AreEqual("local", effects.Arguments[4]);         // storage kind on the effects call
+        });
+
+        nav.NavigateTo("http://localhost/docs");
+        cut.WaitForAssertion(() =>
+        {
+            var save = module.Invocations["saveScrollPosition"].Single();
+            Assert.AreEqual("local", save.Arguments[1]);            // storage kind on the save call
+        });
+    }
+
+    [TestMethod]
+    public void Restore_scroll_defaults_to_in_memory_storage()
+    {
+        // Restoration on but storage left at the default -> null storage kind (in-memory only).
+        Services.Configure<BrouterOptions>(o => o.RestoreScrollPosition = true);
+        var module = Context!.JSInterop.SetupModule(ModuleUrl);
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/home");
+
+        var cut = RenderComponent<NavigationEffectsHost>();
+        cut.WaitForAssertion(() =>
+        {
+            var effects = module.Invocations["applyNavigationEffects"].Last();
+            Assert.IsNull(effects.Arguments[4]);                    // no persistence
+        });
+    }
+
+    [TestMethod]
+    public void Restore_scroll_saves_the_outgoing_page_on_navigation_away()
+    {
+        // The scroll position is saved for the page being LEFT, keyed by its URL, and only once there
+        // is a real page to leave: the initial load (from == Empty) saves nothing.
+        Services.Configure<BrouterOptions>(o => o.RestoreScrollPosition = true);
+        var module = Context!.JSInterop.SetupModule(ModuleUrl);
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/home");
+
+        var cut = RenderComponent<NavigationEffectsHost>();
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=home]")));
+
+        // Initial load has no page to leave -> nothing saved yet.
+        Assert.AreEqual(0, module.Invocations["saveScrollPosition"].Count);
+
+        nav.NavigateTo("http://localhost/docs");
+
+        cut.WaitForAssertion(() =>
+        {
+            var save = module.Invocations["saveScrollPosition"].Single();
+            Assert.AreEqual("http://localhost/home", save.Arguments[0]);   // saved the page we left
+        });
+    }
+
+    [TestMethod]
     public void Fragment_takes_precedence_over_scroll_to_top()
     {
         // Both a fragment and ScrollBehavior.ToTop are in play. The service still forwards both

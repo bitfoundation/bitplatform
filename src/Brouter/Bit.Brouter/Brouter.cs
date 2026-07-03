@@ -787,6 +787,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         try
         {
+            // Remember where the page we're leaving was scrolled to, keyed by its URL, so a later
+            // Back/Forward to it can restore the position. Done here - before StateHasChanged renders
+            // the new route - so the JS side reads the OUTGOING page's scroll offset, not the new
+            // one's. Awaited so the read is ordered ahead of the render batch on Blazor Server too.
+            // No-op unless Options.RestoreScrollPosition is enabled and `from` is a real page.
+            await service.SaveScrollPositionAsync(from);
+
             // No ConfigureAwait(false) anywhere in this pipeline: subsequent calls
             // (StateHasChanged, NavigationManager.NavigateTo, route/component state mutations,
             // Outlet rendering) require the Blazor renderer's synchronization context.

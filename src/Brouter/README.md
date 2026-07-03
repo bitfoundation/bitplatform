@@ -78,7 +78,7 @@ builder.Services.AddBitBrouterServices(o =>
 - **Prerender state bridging**: loader results captured during prerender are restored on the interactive pass via `PersistentComponentState`, so loaders don't double-fetch (opt-in)
 - Query string and hash exposed via `BrouterLocation`
 - Configurable case sensitivity and trailing-slash handling
-- **Scroll management**: optional scroll-to-top, plus fragment scrolling (`/docs#install` lands on `#install`)
+- **Scroll management**: optional scroll-to-top, fragment scrolling (`/docs#install` lands on `#install`), and scroll-position restoration on Back/Forward
 - **Focus management** for accessibility: move focus to a selector after navigation so screen readers announce the new page (mirrors Blazor's `FocusOnNavigate`)
 - Multi-target: net8.0, net9.0, net10.0
 
@@ -204,6 +204,18 @@ builder.Services.AddBitBrouterServices(o =>
     // Only acts when the URL carries a fragment. Default: true.
     o.ScrollToFragment = true;
 
+    // Remember each page's scroll position and restore it on Back/Forward, like native browsers
+    // and real SPA routers. A NEW navigation still uses ScrollBehavior (e.g. ToTop); only a
+    // Back/Forward to a previously-visited URL restores where the user left off. Enabling this
+    // takes over the browser's own restoration (history.scrollRestoration = "manual"). Default: false.
+    o.RestoreScrollPosition = true;
+
+    // Where restored positions are stored. Default Memory (lost on a full reload). Use SessionStorage
+    // (recommended: per-tab, auto-cleared on tab close) or LocalStorage (survives restarts, shared
+    // across tabs) to make positions survive a reload. No effect unless RestoreScrollPosition is on;
+    // falls back to in-memory if the store is unavailable (private mode, quota).
+    o.ScrollPositionStorage = BrouterScrollPositionStorage.SessionStorage;
+
     // Move focus to this selector after navigation so assistive technologies announce the new
     // page instead of leaving focus on the activated link - a WCAG-relevant concern for an SPA
     // router, mirroring Blazor's <FocusOnNavigate>. A non-focusable target gets tabindex="-1"
@@ -213,7 +225,8 @@ builder.Services.AddBitBrouterServices(o =>
 ```
 
 Precedence when several apply: a resolved fragment target scrolls (and takes focus) and wins over
-scroll-to-top; otherwise scroll-to-top runs, then `FocusOnNavigateSelector` (if set) receives focus.
+everything; otherwise, on a Back/Forward with a remembered position, that position is restored; otherwise
+scroll-to-top runs. `FocusOnNavigateSelector` (if set) then receives focus.
 
 ## Global hooks
 
