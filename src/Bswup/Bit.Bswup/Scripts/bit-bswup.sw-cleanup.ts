@@ -11,36 +11,35 @@ interface Window extends BitBswupGlobals { }
 
 // Self-destructing "uninstall" service worker. Deploy this in place of the real
 // bit-bswup.sw.js when an app needs to fully back out of Bswup (e.g. switching a site away
-// from offline support, or recovering clients stuck on a broken worker/cache). On install
-// it wipes every Bswup/Blazor cache, immediately takes over all clients, and tells each one
-// to unregister and reload - leaving the app running purely from the network with no SW.
-self.addEventListener('install', (e: any) => e.waitUntil(removeBswup()));
+// from offline support, or recovering clients stuck on a broken worker/cache). It takes over
+// all clients, wipes every Bswup/Blazor cache once in control, and tells each one to
+// unregister and reload - leaving the app running purely from the network with no SW.
 
-// Take over all clients and signal teardown only once this worker has *activated* - not
-// during install. Sending the reload signal at activate time guarantees the cleanup worker
-// is fully in control before any tab is told to unregister/reload, so no client reloads
-// against a half-installed worker.
+// On install, only skipWaiting() so this cleanup worker activates without waiting for existing
+// clients to close. All teardown work (cache purge + client notification) is deferred to the
+// 'activate' handler below, once this worker is actually in control.
+self.addEventListener('install', (e: any) => e.waitUntil(self.skipWaiting()));
+
+// Take over all clients and run teardown only once this worker has *activated* - not during
+// install. Doing the cache purge at activate time (after clients.claim()) guarantees the
+// cleanup worker is fully in control before its caches disappear, so no controlled tab is left
+// using a worker whose caches were already purged.
 self.addEventListener('activate', (e: any) => e.waitUntil(teardownClients()));
 
-// Purges the caches this library (and Blazor) created, then activates immediately. Runs once,
-// at install time. Client teardown signalling happens later, in the activate handler.
-async function removeBswup() {
+// Activate-time teardown: claim every client, purge the caches this library (and Blazor)
+// created, then message each (controlled or not) to unregister itself. The delayed
+// 'WAITING_SKIPPED' nudge is a fallback reload signal for clients that don't act on
+// 'UNREGISTER' fast enough, so no tab is left running against the now-deleted caches. Await the
+// whole chain so the activate event (which waits on this via waitUntil) doesn't resolve before
+// the teardown signalling has actually been dispatched.
+async function teardownClients() {
+    // Claim first so controlled tabs are served by this fetch-less worker (straight from the
+    // network) before their caches vanish, then purge the Bswup/Blazor caches.
+    await self.clients.claim();
+
     const cacheKeys = await caches.keys();
     const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
     await Promise.all(cachePromises);
-
-    // skipWaiting() so this cleanup worker activates without waiting for existing clients to
-    // close. The actual client notification is deferred to the 'activate' event below.
-    await self.skipWaiting();
-}
-
-// Activate-time teardown: claim every client, then message each (controlled or not) to
-// unregister itself. The delayed 'WAITING_SKIPPED' nudge is a fallback reload signal for
-// clients that don't act on 'UNREGISTER' fast enough, so no tab is left running against the
-// now-deleted caches. Await the whole chain so the activate event (which waits on this via
-// waitUntil) doesn't resolve before the teardown signalling has actually been dispatched.
-async function teardownClients() {
-    await self.clients.claim();
     // Only target window clients that belong to this registration's scope. matchAll with
     // includeUncontrolled returns every same-origin client (including those under other
     // scopes / mounted sub-apps and non-window clients like workers); broadcasting
