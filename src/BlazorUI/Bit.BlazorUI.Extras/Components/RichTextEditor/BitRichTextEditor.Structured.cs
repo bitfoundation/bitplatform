@@ -24,18 +24,21 @@ public partial class BitRichTextEditor
             || Uri.TryCreate(url, UriKind.Absolute, out var uri) is false
             || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "That media URL is not valid."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("media-url-invalid", "That media URL is not valid.")));
             return;
         }
 
         var html = BuildMediaEmbed(uri);
         if (html is null)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("media-not-allowed", "That media type or host is not supported."));
+            await RaiseErrorAsync(new BitRichTextEditorError("media-not-allowed", Label("media-not-allowed", "That media type or host is not supported.")));
             return;
         }
 
-        await _js.BitRichTextEditorInsertMedia(_editorRef, html);
+        // Only tear down the input UI when the insert actually succeeded; on rejection the bridge
+        // raises an error via OnClientError, so leave the panel, url, and any error message intact.
+        var inserted = await _js.BitRichTextEditorInsertMedia(_editorRef, html);
+        if (inserted is false) return;
         // The media embedded successfully, so clear any stale validation message.
         ClearInlineError();
         _showMediaInput = false;
@@ -112,7 +115,13 @@ public partial class BitRichTextEditor
             var eq = pair.IndexOf('=');
             if (eq <= 0) continue;
             if (pair.AsSpan(0, eq).Equals(key, StringComparison.OrdinalIgnoreCase))
-                return Uri.UnescapeDataString(pair[(eq + 1)..]);
+            {
+                // Malformed percent-encoding throws; treat an invalid encoded value as missing so
+                // ApplyMediaAsync surfaces its existing validation error instead of crashing.
+                try { return Uri.UnescapeDataString(pair[(eq + 1)..]); }
+                catch (UriFormatException) { return null; }
+                catch (ArgumentException) { return null; }
+            }
         }
         return null;
     }

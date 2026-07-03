@@ -23,6 +23,12 @@ public partial class BitRichTextEditor
         {
             return;
         }
+        catch (JSDisconnectedException)
+        {
+            // The circuit dropped mid-call; leave the state untouched rather than letting the
+            // disconnect escape as an unhandled error.
+            return;
+        }
         _fullScreen = next;
         ClassBuilder.Reset();
         StateHasChanged();

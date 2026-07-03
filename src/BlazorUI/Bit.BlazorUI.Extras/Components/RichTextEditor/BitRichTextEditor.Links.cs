@@ -69,6 +69,9 @@ public partial class BitRichTextEditor
         if (url.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)) return false;
         // Protocol-relative URLs (//example.com) are external; require an explicit scheme.
         if (url.StartsWith("//")) return false;
+        // Backslash-based protocol-relative forms (/\host, \/host, \\host) are normalized by
+        // browsers to //host, so reject any leading backslash before the site-relative check.
+        if (url.StartsWith('\\') || url.StartsWith("/\\")) return false;
         if (url.StartsWith('/') || url.StartsWith('#') || url.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
             || url.StartsWith("tel:", StringComparison.OrdinalIgnoreCase))
             return true;

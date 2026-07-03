@@ -26,7 +26,7 @@ namespace BitBlazorUI {
                 'audio', 'video', 'source'
             ],
             allowedAttributes: {
-                '*': ['style', 'class', 'dir'],
+                '*': ['class', 'dir'],
                 'a': ['href', 'title', 'target', 'rel'],
                 'img': ['src', 'alt', 'width', 'height'],
                 'td': ['colspan', 'rowspan'],
@@ -78,8 +78,12 @@ namespace BitBlazorUI {
             editor._onSelection = () => {
                 const sel = document.getSelection();
                 if (!sel || sel.rangeCount === 0) return;
-                if (editor.contains(sel.anchorNode)) {
-                    editor._range = sel.getRangeAt(0).cloneRange();
+                const range = sel.getRangeAt(0);
+                // Only store a selection that is fully inside this editor: a range that starts
+                // inside but ends outside (or vice versa) must not be captured, or a later
+                // toolbar action could mutate content beyond the editor.
+                if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
+                    editor._range = range.cloneRange();
                     RichTextEditor.reportState(editor);
                 }
             };
@@ -200,6 +204,11 @@ namespace BitBlazorUI {
                 editor.innerHTML = next;
             }
             RichTextEditor.updateEmpty(editor);
+            // The content changed programmatically (e.g. a bound Value assignment), not via a user
+            // edit: refresh the cached content facts so count-dependent state stays accurate, but
+            // do not route this through the user-change callback (OnContentChanged) or emit an edit.
+            if (editor._dotNetRef)
+                editor._dotNetRef.invokeMethodAsync('OnFactsChanged', RichTextEditor.computeFacts(editor));
         }
 
         public static focus(editor: any) {
@@ -215,7 +224,9 @@ namespace BitBlazorUI {
         // stray angle brackets, unmatched closing tags, or misnested/unclosed elements so
         // malformed markup is rejected before it is committed. Void elements and tags with
         // optional end tags (p, li, td, ...) are handled leniently to match the HTML spec.
-        public static validateHtml(html: string): boolean {
+        // Scoped to the editor instance (like sanitizeHtml) so validation can honor per-editor
+        // options such as the active sanitization policy.
+        public static validateHtml(editor: any, html: string): boolean {
             if (!html) return true;
 
             const voidTags = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
@@ -231,6 +242,15 @@ namespace BitBlazorUI {
                 if (lt === -1) break;
 
                 let j = lt + 1;
+                // HTML comments (<!-- ... -->) are valid markup: treat them as inert, skip past
+                // the closing '-->', and leave the tag stack untouched. Without this they would be
+                // rejected below because '!' is not a tag-name start character.
+                if (html[j] === '!' && html[j + 1] === '-' && html[j + 2] === '-') {
+                    const end = html.indexOf('-->', j + 3);
+                    if (end === -1) return false; // unterminated comment is malformed
+                    i = end + 3;
+                    continue;
+                }
                 const isClose = html[j] === '/';
                 if (isClose) j++;
 
@@ -306,6 +326,10 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
                 return;
             }
+            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
+                return;
+            }
             RichTextEditor.dispatch(editor, 'createLink', { value: url });
             RichTextEditor.afterChange(editor);
         }
@@ -314,6 +338,10 @@ namespace BitBlazorUI {
             if (!editor || !url) return;
             if (!RichTextEditor.isAllowedUri(editor, url, false)) {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
+                return;
+            }
+            if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
                 return;
             }
             // Restore the editor's saved range first so the link is applied to the editor
@@ -334,12 +362,24 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That image URL is not allowed.');
                 return;
             }
+            if (!RichTextEditor.isTagAllowed(editor, 'img') || !RichTextEditor.isAttrAllowed(editor, 'img', 'src')) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'Images are not allowed by the current policy.');
+                return;
+            }
             RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="">` });
             RichTextEditor.afterChange(editor);
         }
 
         public static applyColor(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
+            // Color commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // If the active policy would strip <span> or the style attribute, snapshot() drops the
+            // formatting on the next sanitize roundtrip, so the live editor and persisted Value
+            // would diverge. Gate on the allowlist and block with a client error instead.
+            if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
+                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'That formatting is not allowed by the current policy.');
+                return;
+            }
             RichTextEditor.dispatch(editor, kind === 'back' ? 'backColor' : 'foreColor', { value });
             RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
@@ -347,6 +387,13 @@ namespace BitBlazorUI {
 
         public static applyFont(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
+            // Font commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // Gate on the same allowlist as applyColor so formatting the sanitized snapshot would
+            // strip is never applied only to be dropped from the persisted Value.
+            if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
+                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'That formatting is not allowed by the current policy.');
+                return;
+            }
             RichTextEditor.dispatch(editor, kind === 'size' ? 'fontSize' : 'fontName', { value });
             RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
@@ -370,17 +417,18 @@ namespace BitBlazorUI {
             });
         }
 
-        public static insertMedia(editor: any, html: string) {
-            if (!editor || !html) return;
+        public static insertMedia(editor: any, html: string): boolean {
+            if (!editor || !html) return false;
             // Route media through a media-specific allowlist so only approved embed markup
             // (iframe/video/audio/source with safe attributes and schemes) reaches the document.
             const safe = RichTextEditor.sanitizeMedia(editor, html);
             if (!safe) {
                 RichTextEditor.reportClientError(editor, 'media-not-allowed', 'That media could not be embedded.');
-                return;
+                return false;
             }
             RichTextEditor.dispatch(editor, 'insertMedia', { html: safe });
             RichTextEditor.afterChange(editor);
+            return true;
         }
 
         // Media-specific allowlist: permits only the embed elements/attributes produced by the
@@ -406,8 +454,9 @@ namespace BitBlazorUI {
                 if (!allowedTags.has(tag)) { el.replaceWith(...Array.from(el.childNodes)); return; }
                 // Honor the active sanitization policy first: media tags (notably iframe, which
                 // is opt-in) are only permitted when the policy allows them; otherwise setHtml()
-                // would strip them later, leaving inconsistent state.
-                if (policy && policy.allowedTags && !policy.allowedTags.includes(tag)) {
+                // would strip them later, leaving inconsistent state. Deny-by-default: an absent
+                // allowedTags is an empty allowlist (deny all), matching sanitize()/isTagAllowed().
+                if (!policy || !policy.allowedTags || !policy.allowedTags.includes(tag)) {
                     el.replaceWith(...Array.from(el.childNodes)); return;
                 }
                 // When the active policy supplies an attribute contract, merge its per-tag and
@@ -434,17 +483,34 @@ namespace BitBlazorUI {
                     if (name === 'src') {
                         const val = (attr.value || '').trim();
                         if (tag === 'iframe') {
-                            // iframe embeds must be HTTPS *and* on the host allowlist; a non-HTTPS
-                            // (or unparseable) URL is dropped so mixed-content/downgrade embeds
-                            // cannot slip through the media path.
+                            // iframe embeds must clear the active URI policy (custom
+                            // allowedUriSchemes included) *and* be HTTPS on the host allowlist; a
+                            // non-HTTPS (or unparseable) URL is dropped so mixed-content/downgrade
+                            // embeds cannot slip through the media path.
                             let host = '', scheme = '';
                             try { const u = new URL(val); host = u.host.toLowerCase(); scheme = u.protocol.toLowerCase(); } catch { host = ''; scheme = ''; }
-                            if (scheme !== 'https:' || !iframeHosts.includes(host)) { el.remove(); return; }
+                            if (scheme !== 'https:' || !iframeHosts.includes(host) || !RichTextEditor.isAllowedUri(editor, val, false)) { el.remove(); return; }
                         } else if (!RichTextEditor.isAllowedUri(editor, val, false)) {
                             el.removeAttribute(attr.name);
                         }
                     }
                 }
+            });
+
+            // Source-less embeds would render as blank/broken media and let insertMedia() succeed
+            // with an empty embed. After the attribute loop any surviving src is valid (invalid
+            // ones were stripped/removed above), so drop any embed that no longer carries a src.
+            // Remove src-less <source> first so the video/audio fallback check below is accurate.
+            tpl.content.querySelectorAll('source').forEach((el: Element) => {
+                if (!el.hasAttribute('src')) el.remove();
+            });
+            tpl.content.querySelectorAll('iframe').forEach((el: Element) => {
+                if (!el.hasAttribute('src')) el.remove();
+            });
+            // video/audio may supply their src via a <source> child instead of a src attribute,
+            // so only drop them when they have neither.
+            tpl.content.querySelectorAll('video, audio').forEach((el: Element) => {
+                if (!el.hasAttribute('src') && !el.querySelector('source[src]')) el.remove();
             });
             return tpl.innerHTML;
         }
@@ -472,6 +538,15 @@ namespace BitBlazorUI {
 
         public static insertTable(editor: any, rows: number, cols: number) {
             if (!editor) return;
+            // Honor the active sanitization policy before injecting markup: if the policy would
+            // strip the table tags during the sanitize pass that feeds the persisted Value, the
+            // live editor and the saved Value would diverge (table visible, but dropped on save).
+            // Mirror the link/image inserts and block the operation with a client error instead.
+            const requiredTags = ['table', 'tbody', 'tr', 'td'];
+            if (!requiredTags.every(t => RichTextEditor.isTagAllowed(editor, t))) {
+                RichTextEditor.reportClientError(editor, 'table-not-allowed', 'Tables are not allowed by the current policy.');
+                return;
+            }
             let html = '<table class="bit-rte-table"><tbody>';
             for (let r = 0; r < rows; r++) {
                 html += '<tr>';
@@ -606,7 +681,11 @@ namespace BitBlazorUI {
         // the cell occupying that logical position (the same cell instance repeats across every
         // column/row it spans). colCount is the widest logical row.
         private static buildTableGrid(table: HTMLTableElement): { rows: HTMLTableRowElement[], grid: (HTMLTableCellElement | null)[][], colCount: number } {
-            const rows = Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[];
+            // Only this table's own rows: querySelectorAll('tr') also descends into nested
+            // tables, so filter to rows whose nearest table is this one to keep nested-table
+            // rows/cells out of the outer grid.
+            const rows = (Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[])
+                .filter(tr => tr.closest('table') === table);
             const grid: (HTMLTableCellElement | null)[][] = rows.map(() => []);
             for (let r = 0; r < rows.length; r++) {
                 let col = 0;
@@ -827,9 +906,20 @@ namespace BitBlazorUI {
             RichTextEditor.afterChange(editor);
         }
 
-        // ====================================================================
-        // Engine: the ONLY place document.execCommand is invoked.
-        // ====================================================================
+        // Suppresses the browser default for the slash menu's navigation keys on the filter input
+        // so ArrowUp/ArrowDown don't move the text caret, Enter doesn't submit, and Escape doesn't
+        // clear the field - while the C# @onkeydown handler still runs and normal typing is left
+        // untouched. Bound once per input element (which Blazor recreates each time the menu opens,
+        // so no explicit teardown is needed).
+        public static bindSlashKeys(input: any) {
+            if (!input || input._slashKeysBound) return;
+            input._slashKeysBound = true;
+            input.addEventListener('keydown', (e: KeyboardEvent) => {
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter' || e.key === 'Escape') {
+                    e.preventDefault();
+                }
+            });
+        }
         private static dispatch(editor: any, command: string, args: any): boolean {
             if (!editor) return false;
             try {
@@ -1003,7 +1093,9 @@ namespace BitBlazorUI {
             if (!sel || sel.rangeCount === 0) return;
             const range = sel.getRangeAt(0);
             const selected = (Array.from(table.querySelectorAll('td,th')) as HTMLElement[])
-                .filter(c => range.intersectsNode(c));
+                // Exclude cells that belong to a nested table so an outer merge never pulls in
+                // descendant cells from a table inside one of these cells.
+                .filter(c => c.closest('table') === table && range.intersectsNode(c));
             if (selected.length < 2) return;
 
             // Resolve each selected cell's position from the logical table grid (which accounts
@@ -1429,6 +1521,10 @@ namespace BitBlazorUI {
         private static restoreSelection(editor: any) {
             const r = editor._range;
             if (!r) return;
+            // Guard against a stored range whose endpoints have drifted outside the editor (e.g.
+            // the DOM changed since capture) so restored toolbar actions only ever operate on a
+            // selection fully contained within this editor.
+            if (!editor.contains(r.startContainer) || !editor.contains(r.endContainer)) return;
             const sel = document.getSelection();
             if (!sel) return;
             sel.removeAllRanges();
@@ -1451,7 +1547,11 @@ namespace BitBlazorUI {
 
             tpl.content.querySelectorAll('*').forEach((el: Element) => {
                 const tag = el.tagName.toLowerCase();
-                if (policy && policy.allowedTags && !policy.allowedTags.includes(tag)) {
+                // Deny-by-default per the allowlist contract: a tag survives only when the active
+                // policy explicitly lists it. An absent allowedTags is treated as an empty
+                // allowlist (deny all), not allow-all, so a policy that omits it cannot smuggle
+                // arbitrary tags through. DEFAULT_POLICY always defines allowedTags.
+                if (!policy || !policy.allowedTags || !policy.allowedTags.includes(tag)) {
                     el.replaceWith(...Array.from(el.childNodes));
                     return;
                 }
@@ -1547,7 +1647,37 @@ namespace BitBlazorUI {
         }
 
         private static escapeAttr(s: string): string {
-            return (s ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Escape ampersands first so that entity-based payloads (e.g. "java&colon;script")
+            // cannot survive validation and later decode back into an active scheme inside the
+            // inserted markup. Escaping & before the other characters also avoids corrupting the
+            // entities this method itself introduces.
+            return (s ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        // Whether the active policy (or the secure default when none is set) permits a given tag.
+        // Command handlers consult this before mutating the live DOM so an insert whose element
+        // the sanitized snapshot would strip (e.g. <img>/<a> under a policy that omits the tag)
+        // never appears to succeed in the editor while being dropped from the persisted Value.
+        private static isTagAllowed(editor: any, tag: string): boolean {
+            const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
+            // Deny-by-default per the allowlist contract: an absent allowedTags is an empty
+            // allowlist (deny all), not allow-all, matching sanitize()'s tag filtering.
+            return !!(policy && policy.allowedTags && policy.allowedTags.includes(tag));
+        }
+
+        // Whether the active policy permits a given attribute on a tag, merging the tag-specific
+        // and global ('*') attribute allowlists exactly as sanitize() does. Command handlers use
+        // this (alongside isTagAllowed) so formatting whose markup the sanitized snapshot would
+        // strip is never applied to the live DOM only to be dropped from the persisted Value.
+        private static isAttrAllowed(editor: any, tag: string, attr: string): boolean {
+            const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
+            const attrs = (policy && policy.allowedAttributes) || {};
+            const allowed = [...(attrs[tag] || []), ...(attrs['*'] || [])];
+            return allowed.includes(attr);
         }
 
         // Validates a URL against the active sanitization policy's scheme allowlist (or a
@@ -1569,8 +1699,9 @@ namespace BitBlazorUI {
 
             const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(candidate);
             if (!schemeMatch) {
-                // No scheme: relative URL. Reject protocol-relative (//host).
-                return !candidate.startsWith('//');
+                // No scheme: relative URL. Reject protocol-relative (//host) and the
+                // backslash network-path form (\host / \\host) that browsers normalize to //.
+                return !candidate.startsWith('//') && !candidate.startsWith('\\');
             }
 
             const scheme = schemeMatch[1].toLowerCase();
@@ -1581,8 +1712,10 @@ namespace BitBlazorUI {
                 return isImageData;
             }
 
+            // The scheme is already lowercased above; lowercase the policy entries too so the
+            // JS scheme check matches the C# policy's case-insensitive comparison.
             if (policy && Array.isArray(policy.allowedUriSchemes)) {
-                return policy.allowedUriSchemes.includes(scheme);
+                return policy.allowedUriSchemes.some((s: string) => (s || '').toLowerCase() === scheme);
             }
             return ['http', 'https', 'mailto', 'tel'].includes(scheme);
         }

@@ -92,8 +92,16 @@ public partial class BitRichTextEditor
             if (DefaultGroupOrder.Any(g => string.Equals(g.Id, item.Id, StringComparison.OrdinalIgnoreCase)))
                 throw new ArgumentException($"BitRichTextEditor custom toolbar item Id '{item.Id}' collides with a built-in toolbar group id.", nameof(ToolbarConfig));
 
-            if (string.IsNullOrWhiteSpace(item.AriaLabel))
-                throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' has a blank AriaLabel.", nameof(ToolbarConfig));
+            // RenderCustomItem() resolves the accessible name as AriaLabel ?? Label ?? Id, so a
+            // label-only item is fine; only reject when neither AriaLabel nor Label provides a
+            // meaningful name (the raw Id fallback is not a usable accessible name).
+            if (string.IsNullOrWhiteSpace(item.AriaLabel) && string.IsNullOrWhiteSpace(item.Label))
+                throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' must specify an AriaLabel or a Label.", nameof(ToolbarConfig));
+
+            // A custom item must render something visible: require either a Label or an Icon so a
+            // bare item (which would otherwise fall back to showing its raw Id) is rejected fast.
+            if (item.Icon is null && string.IsNullOrWhiteSpace(item.Label))
+                throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' must specify a Label or an Icon.", nameof(ToolbarConfig));
         }
     }
 
@@ -111,8 +119,12 @@ public partial class BitRichTextEditor
         builder.AddAttribute(5, "class", $"bit-rte-btn {Classes?.Button}");
         builder.AddAttribute(6, "style", Styles?.Button);
         // Icon-only items may omit a visible label; fall back through Label then Id so the
-        // button always exposes a usable accessible name and tooltip.
-        var accessibleName = item.AriaLabel ?? item.Label ?? item.Id;
+        // button always exposes a usable accessible name and tooltip. Treat whitespace-only
+        // AriaLabel/Label as missing (matching ValidateCustomItems) so a blank AriaLabel does
+        // not produce an empty accessible name when a real Label is present.
+        var accessibleName = !string.IsNullOrWhiteSpace(item.AriaLabel) ? item.AriaLabel
+            : !string.IsNullOrWhiteSpace(item.Label) ? item.Label
+            : item.Id;
         builder.AddAttribute(7, "title", accessibleName);
         builder.AddAttribute(8, "aria-label", accessibleName);
         builder.AddAttribute(9, "disabled", ControlsDisabled);
@@ -127,13 +139,19 @@ public partial class BitRichTextEditor
     {
         try
         {
+            // Clear any stale banner (e.g. a previous custom-action-failed) before retrying so a
+            // now-succeeding action doesn't leave the old error visible; the catch below still
+            // sets the latest error if this attempt fails.
+            ClearInlineError();
             await item.OnActivate(this);
         }
         catch (Exception ex)
         {
             // Keep host callback internals out of the user-facing error; log them for telemetry.
-            System.Diagnostics.Debug.WriteLine($"BitRichTextEditor toolbar action '{item.Id}' failed: {ex}");
-            await RaiseErrorAsync(new BitRichTextEditorError("custom-action-failed", $"Toolbar action '{item.Id}' failed."));
+            // Use Trace (not Debug) so the failure is still recorded in Release builds.
+            System.Diagnostics.Trace.TraceError($"BitRichTextEditor toolbar action '{item.Id}' failed: {ex}");
+            await RaiseErrorAsync(new BitRichTextEditorError("custom-action-failed",
+                string.Format(Label("custom-action-failed", "Toolbar action '{0}' failed."), item.Id)));
         }
     }
 }

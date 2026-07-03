@@ -100,6 +100,13 @@ public partial class BitRichTextEditor : BitComponentBase
     /// </summary>
     public async ValueTask FocusAsync()
     {
+        // While source view is active the WYSIWYG surface is detached/hidden and the raw-HTML
+        // textarea drives editing, so route focus there instead of the hidden _editorRef.
+        if (_inSourceView)
+        {
+            await _sourceRef.FocusAsync();
+            return;
+        }
         await _js.BitRichTextEditorFocus(_editorRef);
     }
 
@@ -109,6 +116,10 @@ public partial class BitRichTextEditor : BitComponentBase
     public async ValueTask<string> GetHtmlAsync()
     {
         if (_initialized is false) return _currentHtml;
+        // While source view is active the WYSIWYG element is detached/hidden and the raw-HTML
+        // textarea (_sourceText) drives the live content, so reading the DOM would return stale
+        // markup. Return the source buffer instead in that mode.
+        if (_inSourceView) return _sourceText;
         return await _js.BitRichTextEditorGetHtml(_editorRef);
     }
 
@@ -142,6 +153,21 @@ public partial class BitRichTextEditor : BitComponentBase
         await OnChange.InvokeAsync(html);
     }
 
+    /// <summary>
+    /// Reported by the bridge after a programmatic content set (e.g. a bound Value assignment):
+    /// refreshes the cached content facts so count-dependent UI stays accurate, without treating
+    /// the change as a user edit (no AssignValue / OnChange).
+    /// </summary>
+    [JSInvokable("OnFactsChanged")]
+    public void _OnFactsChanged(BitRichTextEditorContentFacts facts)
+    {
+        _facts = facts;
+        if (ShowCount)
+        {
+            StateHasChanged();
+        }
+    }
+
     [JSInvokable("OnSelectionChanged")]
     public void _OnSelectionChanged(BitRichTextEditorSelectionState state)
     {
@@ -158,7 +184,15 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>Reported by the bridge when a formatting command fails; content is unchanged.</summary>
     [JSInvokable("OnCommandError")]
     public Task _OnCommandError(string command, string message)
-        => RaiseErrorAsync(new BitRichTextEditorError("command-failed", $"Command '{command}' failed: {message}"));
+    {
+        // Keep the raw JS bridge detail (browser internals) out of the user-facing message; log
+        // it for diagnostics instead. Use Trace (not Debug) so it is still recorded in Release.
+        System.Diagnostics.Trace.TraceError($"BitRichTextEditor command '{command}' failed: {message}");
+        // Surface a consistent localized message tied to the command-failed key, matching the
+        // other error paths (e.g. custom-action-failed) rather than exposing bridge internals.
+        return RaiseErrorAsync(new BitRichTextEditorError("command-failed",
+            string.Format(Label("command-failed", "Command '{0}' failed."), command)));
+    }
 
 
 
@@ -399,7 +433,10 @@ public partial class BitRichTextEditor : BitComponentBase
         if (string.IsNullOrEmpty(html)) return;
 
         var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
-        if (sanitized == _currentHtml) return;
+        // Compare against the live content (html) rather than the cached _currentHtml: if the live
+        // DOM/source already matches the sanitized result no resync is needed, but a stale
+        // _currentHtml must not short-circuit cleanup while the live content still differs.
+        if (sanitized == html) return;
 
         _currentHtml = sanitized;
 

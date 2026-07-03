@@ -41,6 +41,9 @@ public partial class BitRichTextEditor
     {
         _showEmoji = !_showEmoji;
         _emojiSearch = "";
+        // Clear any stale inline validation message when opening or closing the picker, matching
+        // the other inline tool toggles (e.g. ToggleFind) so old errors don't linger.
+        ClearInlineError();
     }
 
     private IEnumerable<EmojiEntry> FilteredEmoji()

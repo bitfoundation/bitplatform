@@ -12,8 +12,11 @@ public sealed class BitRichTextEditorToolbarItem
     /// <summary>Optional icon content.</summary>
     public RenderFragment? Icon { get; init; }
 
-    /// <summary>Non-empty accessible label / tooltip.</summary>
-    public required string AriaLabel { get; init; }
+    /// <summary>
+    /// Optional accessible label / tooltip. When omitted (or blank), <see cref="Label"/> serves
+    /// as the accessible name; a bare <see cref="Id"/> is never used as the accessible name.
+    /// </summary>
+    public string? AriaLabel { get; init; }
 
     /// <summary>Action invoked when the item is activated; receives the editor instance.</summary>
     public required Func<BitRichTextEditor, Task> OnActivate { get; init; }

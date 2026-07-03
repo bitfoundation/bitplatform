@@ -58,7 +58,7 @@
 
         @if (_showFind && ControlsDisabled is false)
         {
-            <div class="bit-rte-bar">
+            <div class="bit-rte-bar" id="@($"{UniqueId}-find-panel")">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("find", "Find")" placeholder="@Label("find", "Find")"
                        @bind="_findTerm" @bind:event="oninput" @bind:after="RunFindAsync" />
                 <input type="text" class="bit-rte-inp" aria-label="@Label("replace-with", "Replace with")" placeholder="@Label("replace-with", "Replace with")"
@@ -73,17 +73,18 @@
 
         @if (_showEmoji && ControlsDisabled is false)
         {
-            <div class="bit-rte-emoji-panel">
+            <div class="bit-rte-emoji-panel" id="@($"{UniqueId}-emoji-panel")">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("search-emoji", "Search emoji")"
                        placeholder="@Label("search", "Search")"
                        @bind="_emojiSearch" @bind:event="oninput" />
                 <div class="bit-rte-emoji-grid">
-                    @foreach (var emo in FilteredEmoji())
+                    @{ var filteredEmoji = FilteredEmoji().ToArray(); }
+                    @foreach (var emo in filteredEmoji)
                     {
                         <button type="button" class="bit-rte-emoji" title="@emo.Name" aria-label="@emo.Name"
                                 @onmousedown:preventDefault="true" @onclick="() => InsertEmojiAsync(emo.Char)">@emo.Char</button>
                     }
-                    @if (FilteredEmoji().Any() is false)
+                    @if (filteredEmoji.Any() is false)
                     {
                         <span class="bit-rte-emoji-empty">@Label("no-matches", "No matches")</span>
                     }
@@ -103,14 +104,22 @@
             <input type="text" class="bit-rte-inp" aria-label="@Label("filter-commands", "Filter commands")"
                    placeholder="@Label("filter-commands", "Filter commands…")"
                    @ref="_slashInputRef"
+                   role="combobox"
+                   aria-expanded="true"
+                   aria-autocomplete="list"
+                   aria-controls="@($"{UniqueId}-slash-list")"
+                   aria-activedescendant="@(FilteredSlash().Any() ? $"{UniqueId}-slash-item-{_slashIndex}" : null)"
                    value="@_slashFilter" @oninput="OnSlashFilterInput"
                    @onkeydown="OnSlashKeyDownAsync" />
-            <div class="bit-rte-slash-list" aria-label="@Label("filter-commands", "Filter commands")">
+            <div class="bit-rte-slash-list" role="listbox" id="@($"{UniqueId}-slash-list")" aria-label="@Label("filter-commands", "Filter commands")">
                 @{ var _slashItemIndex = 0; }
                 @foreach (var c in FilteredSlash())
                 {
                     var _itemIndex = _slashItemIndex++;
-                    <button type="button" class="bit-rte-slash-item@(_itemIndex == _slashIndex ? " bit-rte-slash-item-sel" : null)"
+                    <button type="button" id="@($"{UniqueId}-slash-item-{_itemIndex}")"
+                            role="option"
+                            aria-selected="@((_itemIndex == _slashIndex).ToString().ToLowerInvariant())"
+                            class="bit-rte-slash-item@(_itemIndex == _slashIndex ? " bit-rte-slash-item-sel" : null)"
                             @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
                 }
             </div>
@@ -135,6 +144,7 @@
     @if (_inSourceView)
     {
         <textarea class="bit-rte-src @Classes?.Source" style="min-height:@Height;@Styles?.Source"
+                  @ref="_sourceRef"
                   aria-label="@Label("source-view", "HTML source")"
                   spellcheck="false"
                   readonly="@ReadOnly"
@@ -325,12 +335,12 @@
     </div>;
 
     private RenderFragment EmojiGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showEmoji ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("emoji", "Emoji")" aria-label="@Label("emoji-label", "Insert emoji")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showEmoji ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("emoji", "Emoji")" aria-label="@Label("emoji-label", "Insert emoji")" aria-expanded="@(_showEmoji ? "true" : "false")" aria-controls="@($"{UniqueId}-emoji-panel")" disabled="@ControlsDisabled"
                 @onmousedown:preventDefault="true" @onclick="ToggleEmoji">☺</button>
     </div>;
 
     private RenderFragment FindGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("find-replace", "Find & replace")" aria-label="@Label("find-replace-label", "Find and replace")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("find-replace", "Find & replace")" aria-label="@Label("find-replace-label", "Find and replace")" aria-expanded="@(_showFind ? "true" : "false")" aria-controls="@($"{UniqueId}-find-panel")" disabled="@ControlsDisabled"
                 @onmousedown:preventDefault="true" @onclick="ToggleFind">🔍</button>
     </div>;
 
@@ -340,7 +350,7 @@
     </div>;
 
     private RenderFragment FullScreenGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_fullScreen ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("full-screen", "Full screen")" aria-label="@Label("full-screen-label", "Toggle full screen")"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_fullScreen ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("full-screen", "Full screen")" aria-label="@Label("full-screen-label", "Toggle full screen")" aria-pressed="@_fullScreen"
                 @onmousedown:preventDefault="true" @onclick="ToggleFullScreen">⛶</button>
     </div>;
 

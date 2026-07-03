@@ -47,7 +47,7 @@ public partial class BitRichTextEditor
         var url = _imageUrl.Trim();
         if (IsAcceptableImageUrl(url) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "That image URL is not valid."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("image-url-invalid", "That image URL is not valid.")));
             return;
         }
         await _js.BitRichTextEditorInsertImageUrl(_editorRef, url);
@@ -69,13 +69,23 @@ public partial class BitRichTextEditor
     private bool DataImageUrisAllowed => SanitizationPolicy?.AllowDataImageUris ?? true;
 
     private static bool IsKnownImageMimeType(string contentType)
+        => TryNormalizeImageMimeType(contentType, out _);
+
+    // Validates the content type and, on success, exposes the canonical MIME value (parameters
+    // stripped, matched against the known set in its canonical casing) so callers can pass the
+    // normalized value through instead of reusing the raw client-reported content type.
+    private static bool TryNormalizeImageMimeType(string? contentType, out string normalized)
     {
+        normalized = "";
         var mime = contentType?.Trim();
         if (string.IsNullOrEmpty(mime)) return false;
         // Strip any parameters (e.g. "image/png; charset=...") before matching.
         var semicolon = mime.IndexOf(';');
         if (semicolon >= 0) mime = mime[..semicolon].Trim();
-        return KnownImageMimeTypes.Contains(mime, StringComparer.OrdinalIgnoreCase);
+        var match = KnownImageMimeTypes.FirstOrDefault(m => string.Equals(m, mime, StringComparison.OrdinalIgnoreCase));
+        if (match is null) return false;
+        normalized = match;
+        return true;
     }
 
     private bool IsAcceptableImageUrl(string url)
@@ -113,16 +123,20 @@ public partial class BitRichTextEditor
         var estimatedBytes = (long)base64.Length / 4 * 3 - padding;
         if (estimatedBytes > MaxImageBytes)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+            await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
+                string.Format(Label("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
             return null;
         }
 
         // Validate the client-reported MIME on the shared path before either branch so unsupported
         // content types can neither be embedded as inline data URLs nor reach OnImageUpload. The
-        // upload callback then acts as an additional guard rather than the first/only check.
-        if (IsKnownImageMimeType(contentType) is false)
+        // upload callback then acts as an additional guard rather than the first/only check. The
+        // normalized (parameter-stripped, canonical) MIME is reused by both branches so neither the
+        // inline data URL nor the upload contract carries the raw client-reported content type.
+        if (TryNormalizeImageMimeType(contentType, out var mimeType) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-image",
+                string.Format(Label("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
             return null;
         }
 
@@ -132,10 +146,14 @@ public partial class BitRichTextEditor
             // embedding the (already MIME-validated) payload as one.
             if (DataImageUrisAllowed is false)
             {
-                await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+                await RaiseErrorAsync(new BitRichTextEditorError("invalid-image",
+                    string.Format(Label("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
                 return null;
             }
-            return $"data:{contentType};base64,{base64}";   // inline data URL fallback
+            // Clear any lingering upload error so a successful retry doesn't keep showing the
+            // previous banner.
+            ClearInlineError();
+            return $"data:{mimeType};base64,{base64}";   // inline data URL fallback
         }
 
         try
@@ -143,22 +161,30 @@ public partial class BitRichTextEditor
             var bytes = Convert.FromBase64String(base64);
             if (bytes.Length > MaxImageBytes)
             {
-                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
+                    string.Format(Label("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
                 return null;
             }
-            var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, contentType, bytes));
+            var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, mimeType, bytes));
             if (string.IsNullOrWhiteSpace(url))
             {
-                await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" did not return a URL."));
+                await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
+                    string.Format(Label("image-upload-no-url", "Upload of \"{0}\" did not return a URL."), fileName)));
                 return null;
             }
+            // Clear any lingering upload error so a successful retry doesn't keep showing the
+            // previous banner.
+            ClearInlineError();
             return url;
         }
         catch (Exception ex)
         {
-            // Keep infrastructure details out of the user-facing error; log them instead.
-            Debug.WriteLine($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
-            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" failed. Please try again."));
+            // Keep infrastructure details out of the user-facing error; log them instead. Use
+            // Trace (not Debug) so the failure is still recorded in Release builds, matching the
+            // other always-on logging paths in this component (e.g. _OnCommandError).
+            Trace.TraceError($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
+            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
+                string.Format(Label("image-upload-failed", "Upload of \"{0}\" failed. Please try again."), fileName)));
             return null;
         }
     }

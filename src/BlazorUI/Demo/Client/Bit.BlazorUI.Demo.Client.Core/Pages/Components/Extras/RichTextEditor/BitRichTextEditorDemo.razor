@@ -3,11 +3,11 @@
 
 <PageOutlet Url="components/RichTextEditor"
             Title="RichTextEditor"
-            Description="richtexteditor component of the bit BlazorUI components" />
+            Description="RichTextEditor is a native WYSIWYG text editor. Component state and the public API live in C#; browser editing operations (contenteditable events, formatting commands, and selection management) are handled in the JS/TypeScript bridge." />
 
 <div>
     <DemoPage Name="RichTextEditor"
-              Description="RichTextEditor is a native WYSIWYG text editor. All of its logic lives in C# with a thin JavaScript bridge for the browser-only concerns (contenteditable events, formatting commands, and selection)."
+              Description="RichTextEditor is a native WYSIWYG text editor. Component state and the public API live in C#; browser editing operations (contenteditable events, formatting commands, and selection management) are handled in the JS/TypeScript bridge."
               Parameters="componentParameters"
               SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
@@ -147,7 +147,7 @@
                     <b>OnError</b> with a stable code such as invalid-url, and the content is left unchanged.
                 </div>
                 <br />
-                <BitRichTextEditor Value="linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="10rem"
+                <BitRichTextEditor Value="@linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="10rem"
                                    Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
                                    OnError='e => linkError = $"{e.Code}: {e.Message}"'
                                    Placeholder="Select text, then add a link..." />
@@ -213,8 +213,9 @@
 
             <DemoExample Title="Media & rules" RazorCode="@example16RazorCode" Id="example16">
                 <div>
-                    The <b>Media</b> group embeds a media URL as the right element - an iframe for YouTube/Vimeo, or a native
-                    video/audio element for direct media links. The <b>Rule</b> group inserts a horizontal divider.
+                    The <b>Media</b> group embeds a direct audio/video URL as a native video/audio element. The <b>Rule</b>
+                    group inserts a horizontal divider. Note: iframe embeds (e.g. YouTube/Vimeo) are not kept by the default
+                    sanitization policy, so supply a custom policy that allows the iframe tag if you need such embeds.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="mediaHtml" Height="14rem"
@@ -339,7 +340,7 @@
                 <br />
                 <EditForm Model="formModel" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
-                    <BitRichTextEditor @bind-Value="formModel.Body"
+                    <BitRichTextEditor Value="formModel.Body" ValueChanged="HandleFormBodyChanged"
                                        Toolbar="BitRichTextEditorToolbar.All"
                                        ShowCount MaxLength="500" Height="10rem"
                                        Placeholder="Write at least 20 characters..." />
@@ -355,9 +356,9 @@
 
             <DemoExample Title="Custom toolbar item" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
                 <div>
-                    Add your own buttons with <b>ToolbarConfig.CustomItems</b>. Each item needs an Id and AriaLabel, and an
-                    <b>OnActivate</b> callback that receives the editor instance - so it can call the imperative API. Supply a
-                    Label or an Icon. The custom "Today" button appears at the end of the toolbar below.
+                    Add your own buttons with <b>ToolbarConfig.CustomItems</b>. Each item needs an Id and either an AriaLabel or a
+                    Label, plus an <b>OnActivate</b> callback that receives the editor instance - so it can call the imperative API.
+                    For display, supply a Label or an Icon. The custom "Today" button appears at the end of the toolbar below.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="customHtml"

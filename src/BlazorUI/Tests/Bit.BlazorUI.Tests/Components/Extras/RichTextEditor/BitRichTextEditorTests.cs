@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -100,9 +101,24 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
         });
 
-        // The inline group renders exactly four buttons (bold, italic, underline, strikethrough)
-        // and no other groups, so the count must be exact to catch extra groups leaking in.
-        Assert.AreEqual(4, component.FindAll(".bit-rte-tlb .bit-rte-btn").Count);
+        // The Inline group must render as a single toolbar group of exactly four toggle buttons -
+        // bold, italic, underline, strikethrough (in that order) - with no other groups or
+        // non-button controls (color/font selectors, url/find inputs) leaking in.
+        Assert.AreEqual(1, component.FindAll(".bit-rte-tlb .bit-rte-grp").Count);
+
+        var buttons = component.FindAll(".bit-rte-tlb .bit-rte-btn");
+        Assert.AreEqual(4, buttons.Count);
+        CollectionAssert.AreEqual(
+            new[] { "Bold", "Italic", "Underline", "Strikethrough" },
+            buttons.Select(b => b.GetAttribute("aria-label")).ToArray());
+        foreach (var button in buttons)
+        {
+            Assert.AreEqual("button", button.GetAttribute("type"));
+        }
+
+        // No selectors, color pickers, or text inputs belong to the inline-only toolbar.
+        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb input").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb select").Count);
     }
 
     [TestMethod]

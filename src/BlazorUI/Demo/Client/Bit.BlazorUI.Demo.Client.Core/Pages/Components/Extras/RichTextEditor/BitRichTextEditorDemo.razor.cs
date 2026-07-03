@@ -241,7 +241,7 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Id", Type = "string", DefaultValue = "", Description = "Unique id used for ordering and lookup." },
                 new() { Name = "Label", Type = "string?", DefaultValue = "null", Description = "Text label shown when no icon is provided." },
                 new() { Name = "Icon", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional icon content." },
-                new() { Name = "AriaLabel", Type = "string", DefaultValue = "", Description = "Non-empty accessible label / tooltip." },
+                new() { Name = "AriaLabel", Type = "string?", DefaultValue = "null", Description = "Optional accessible label / tooltip. When omitted, Label is used as the accessible name." },
                 new() { Name = "OnActivate", Type = "Func<BitRichTextEditor, Task>", DefaultValue = "", Description = "Action invoked when the item is activated; receives the editor instance." },
             ]
         },
@@ -391,6 +391,13 @@ public partial class BitRichTextEditorDemo
     {
         formSubmitted = true;
     }
+    // Clear the submitted banner whenever the bound content changes so the "submitted" state does
+    // not linger after the user edits the body again.
+    private void HandleFormBodyChanged(string? value)
+    {
+        formModel.Body = value;
+        formSubmitted = false;
+    }
     public class FormModel : IValidatableObject
     {
         [Required(ErrorMessage = "The body is required.")]
@@ -404,7 +411,7 @@ public partial class BitRichTextEditorDemo
             // base the min-length check on that same normalized text.
             var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "");
             var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-            if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+            if (string.IsNullOrWhiteSpace(Body) is false && text.Length == 0)
             {
                 yield return new ValidationResult("The body is required.", [nameof(Body)]);
             }
@@ -622,7 +629,7 @@ public class FormModel : System.ComponentModel.DataAnnotations.IValidatableObjec
         // so require non-whitespace visible text and base the min-length check on it too.
         var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? """", ""<[^>]+>"", """");
         var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-        if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+        if (string.IsNullOrWhiteSpace(Body) is false && text.Length == 0)
             yield return new System.ComponentModel.DataAnnotations.ValidationResult(""The body is required."", [nameof(Body)]);
         else if (text.Length > 0 && text.Length < 20)
             yield return new System.ComponentModel.DataAnnotations.ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
@@ -663,7 +670,7 @@ private readonly BitRichTextEditorToolbarConfig reorderConfig = new()
 <BitRichTextEditor @ref=""apiEditor"" @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.All"" />
 
 <BitButton OnClick=""FocusEditor"">FocusAsync</BitButton>
-<BitButton OnClick=""@(() => apiEditor.ExecuteCommandAsync(""bold""))"">ExecuteCommand(""bold"")</BitButton>
+<BitButton OnClick='@(() => apiEditor.ExecuteCommandAsync(""bold""))'>ExecuteCommand(""bold"")</BitButton>
 <BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
 
 <pre>@apiResult</pre>";

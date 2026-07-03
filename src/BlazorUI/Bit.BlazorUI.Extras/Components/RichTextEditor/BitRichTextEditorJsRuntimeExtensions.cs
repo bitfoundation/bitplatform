@@ -47,9 +47,9 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.Invoke<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", editor, html);
     }
 
-    public static ValueTask<bool> BitRichTextEditorValidateHtml(this IJSRuntime jsRuntime, string? html)
+    public static ValueTask<bool> BitRichTextEditorValidateHtml(this IJSRuntime jsRuntime, ElementReference editor, string? html)
     {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.RichTextEditor.validateHtml", html);
+        return jsRuntime.Invoke<bool>("BitBlazorUI.RichTextEditor.validateHtml", editor, html);
     }
 
     public static ValueTask BitRichTextEditorExec(this IJSRuntime jsRuntime, ElementReference editor, string command, string? value)
@@ -87,9 +87,9 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.applyFont", editor, kind, value);
     }
 
-    public static ValueTask BitRichTextEditorInsertMedia(this IJSRuntime jsRuntime, ElementReference editor, string html)
+    public static ValueTask<bool> BitRichTextEditorInsertMedia(this IJSRuntime jsRuntime, ElementReference editor, string html)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.insertMedia", editor, html);
+        return jsRuntime.Invoke<bool>("BitBlazorUI.RichTextEditor.insertMedia", editor, html);
     }
 
     public static ValueTask BitRichTextEditorInsertText(this IJSRuntime jsRuntime, ElementReference editor, string text)
@@ -135,6 +135,11 @@ internal static class BitRichTextEditorJsRuntimeExtensions
     public static ValueTask BitRichTextEditorSetBlockDirection(this IJSRuntime jsRuntime, ElementReference editor, string dir)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.setBlockDirection", editor, dir);
+    }
+
+    public static ValueTask BitRichTextEditorBindSlashKeys(this IJSRuntime jsRuntime, ElementReference input)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.bindSlashKeys", input);
     }
 
     public static ValueTask BitRichTextEditorApplySlashCommand(this IJSRuntime jsRuntime, ElementReference editor, string command)
