@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 namespace Bit.Brouter;
 
 /// <summary>
-/// The root component of Bit.Brouter. Hosts a tree of <see cref="BrouterRoute"/> children and renders
+/// The root component of Bit.Brouter. Hosts a tree of <see cref="Broute"/> children and renders
 /// the matching one for the current URL.
 /// </summary>
 public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
@@ -28,7 +28,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     [Parameter] public RenderFragment<BrouterLocation>? NotFoundContent { get; set; }
 
     /// <summary>Async hook fired whenever a route is successfully matched.</summary>
-    [Parameter] public Func<BrouterRoute, ValueTask>? OnMatch { get; set; }
+    [Parameter] public Func<Broute, ValueTask>? OnMatch { get; set; }
 
     /// <summary>Async hook fired when no route matches the current URL.</summary>
     [Parameter] public Func<BrouterLocation, ValueTask>? OnNotFound { get; set; }
@@ -42,16 +42,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     internal BrouterLocation CurrentLocation { get; private set; } = BrouterLocation.Empty;
     internal BrouterOptions Options => _brouterService.Options;
 
-    private readonly List<BrouterRoute> _routes = [];
+    private readonly List<Broute> _routes = [];
     // Snapshot of _routes refreshed lazily after Register/Unregister. The matching loop
     // iterates this snapshot so we don't allocate a fresh array on every navigation.
     // Volatile read/write keeps the snapshot publication ordered relative to the dirty
     // flag (we only ever flip _routesDirty -> true under the same dispatcher that calls
     // Register/Unregister, but a navigation pipeline awaiting back can re-enter on the
     // dispatcher and observe a stale snapshot if not for the volatile read/write pair).
-    private BrouterRoute[] _routesSnapshot = [];
+    private Broute[] _routesSnapshot = [];
     private bool _routesDirty = true;
-    internal void RegisterRoute(BrouterRoute route)
+    internal void RegisterRoute(Broute route)
     {
         // Enforce the documented uniqueness contract for Route.Name. Comparison matches
         // FindRouteByName (case-insensitive), so name lookups stay unambiguous.
@@ -72,7 +72,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _routes.Add(route);
         _routesDirty = true;
     }
-    internal void UnregisterRoute(BrouterRoute route)
+    internal void UnregisterRoute(Broute route)
     {
         if (_routes.Remove(route)) _routesDirty = true;
     }
@@ -87,7 +87,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// underlying List itself out so a caller can't accidentally mutate the registration
     /// set mid-pipeline.
     /// </remarks>
-    private BrouterRoute[] GetRoutesSnapshot()
+    private Broute[] GetRoutesSnapshot()
     {
         if (_routesDirty is false) return _routesSnapshot;
         var arr = _routes.ToArray();
@@ -96,7 +96,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         return arr;
     }
 
-    internal BrouterRoute? FindRouteByName(string name) =>
+    internal Broute? FindRouteByName(string name) =>
         _routes.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase));
 
     private CancellationTokenSource? _navCts;
@@ -123,7 +123,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         await base.OnInitializedAsync();
 
         // Yield once so ComponentBase performs the initial synchronous render of our
-        // ChildContent. That first render is what causes the declared <BrouterRoute> children to
+        // ChildContent. That first render is what causes the declared <Broute> children to
         // register themselves with us (each one calls RegisterRoute from its own OnInitialized).
         // Until they've registered there is nothing to match against, which is why the initial
         // match cannot run any earlier than this.
@@ -499,7 +499,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             winner.ConstraintsByParameter = winnerMatch.ConstraintsByParameter;
 
             ctx.Route = winner;
-            ctx.Parameters = new BrouterRouteParameters(winner.Parameters);
+            ctx.Parameters = new BrouteParameters(winner.Parameters);
 
             // Guards run before RedirectTo so a guard can still authorize/cancel/redirect-elsewhere
             // (e.g. an auth guard on a redirect route, or a parent guard inherited via the chain).
@@ -529,7 +529,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // Snapshot the chain BEFORE any await: a parent route can be disposed while
             // an await is in-flight (conditional rendering, route tree mutation), and we
             // must not walk a torn `Parent` chain afterwards.
-            var matchedChain = new List<BrouterRoute>();
+            var matchedChain = new List<Broute>();
             for (var node = winner; node is not null; node = node.Parent) matchedChain.Add(node);
             matchedChain.Reverse();
 
@@ -672,11 +672,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// </summary>
     private readonly struct MatchResult
     {
-        public BrouterRoute Route { get; }
+        public Broute Route { get; }
         public Dictionary<string, object?> Parameters { get; }
         public Dictionary<string, string[]> ConstraintsByParameter { get; }
 
-        public MatchResult(BrouterRoute route,
+        public MatchResult(Broute route,
                            Dictionary<string, object?> parameters,
                            Dictionary<string, string[]> constraintsByParameter)
         {
@@ -686,7 +686,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
     }
 
-    private bool TryMatch(BrouterRoute route, string[] segments, bool hasTrailingSlash, out MatchResult result)
+    private bool TryMatch(Broute route, string[] segments, bool hasTrailingSlash, out MatchResult result)
     {
         result = default;
 

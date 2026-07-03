@@ -28,24 +28,24 @@ builder.Services.AddBitBrouterServices(o =>
 
 ```razor
 <Brouter NotFound="404">
-    <BrouterRoute Path="/" RedirectTo="/home" />
+    <Broute Path="/" RedirectTo="/home" />
 
-    <BrouterRoute Name="home" Path="/home">
+    <Broute Name="home" Path="/home">
         <Content><HomePage /></Content>
-    </BrouterRoute>
+    </Broute>
 
-    <BrouterRoute Name="user" Path="/users/{id:int}">
+    <Broute Name="user" Path="/users/{id:int}">
         <Content><UserPage /></Content>
-    </BrouterRoute>
+    </Broute>
 
-    <BrouterRoute Path="/files/{**path}" Component="@typeof(FilesPage)" />
+    <Broute Path="/files/{**path}" Component="@typeof(FilesPage)" />
 
-    <BrouterRoute Path="404">
+    <Broute Path="404">
         <Content>
             <h1 class="text-danger">404</h1>
             <p>Sorry, there's nothing at this address.</p>
         </Content>
-    </BrouterRoute>
+    </Broute>
 </Brouter>
 ```
 
@@ -59,13 +59,13 @@ builder.Services.AddBitBrouterServices(o =>
 - **Catch-all parameter binding**: `{**path}` exposes the remainder
 - Custom constraints via `BrouterConstraints.Register("slug", new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)
-- Nested routes via `BrouterRoute` children or `BrouterOutlet`
+- Nested routes via `Broute` children or `BrouterOutlet`
 - Async `Guard` with cancel/redirect via `BrouterNavigationContext`
 - **Async data `Loader`** exposed via cascading `RouteData`
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
 - `NotFound` URL or inline `NotFoundContent`
-- **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
+- **Type-safe `BrouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
 - **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
@@ -80,16 +80,16 @@ builder.Services.AddBitBrouterServices(o =>
 ## Type-safe parameters
 
 ```razor
-<BrouterRoute Path="/users/{id:int}">
+<Broute Path="/users/{id:int}">
     <Content Context="p">
         <p>User: @p.Get<int>("id")</p>
     </Content>
-</BrouterRoute>
+</Broute>
 ```
 
 ```razor
 @code {
-    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Params { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] BrouteParameters? Params { get; set; }
 
     protected override void OnInitialized()
     {
@@ -101,7 +101,7 @@ builder.Services.AddBitBrouterServices(o =>
 ## Auto-bound parameters
 
 ```razor
-<BrouterRoute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
+<Broute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
 ```
 
 ```razor
@@ -114,9 +114,9 @@ builder.Services.AddBitBrouterServices(o =>
 ## Async guards
 
 ```razor
-<BrouterRoute Path="/admin" Guard="@CheckAdmin">
+<Broute Path="/admin" Guard="@CheckAdmin">
     <Content><AdminPage /></Content>
-</BrouterRoute>
+</Broute>
 
 @code {
     [Inject] AuthService Auth { get; set; } = default!;
@@ -132,11 +132,11 @@ builder.Services.AddBitBrouterServices(o =>
 ## Data loader
 
 ```razor
-<BrouterRoute Path="/users/{id:int}" Loader="@LoadUser">
+<Broute Path="/users/{id:int}" Loader="@LoadUser">
     <Content Context="p">
         <UserDetails />  @* reads cascading RouteData *@
     </Content>
-</BrouterRoute>
+</Broute>
 
 @code {
     [Inject] HttpClient Http { get; set; } = default!;
@@ -216,24 +216,24 @@ builder.Services.AddBitBrouterServices(o =>
 ## Nested routes
 
 ```razor
-<BrouterRoute Path="/users">
-    <BrouterRoute Path="/{id:int}" Component="@typeof(UserPage)" />
-    <BrouterRoute Path="/{id:int}/edit">
+<Broute Path="/users">
+    <Broute Path="/{id:int}" Component="@typeof(UserPage)" />
+    <Broute Path="/{id:int}/edit">
         <Content Context="p">Edit user [@p["id"]]</Content>
-    </BrouterRoute>
-</BrouterRoute>
+    </Broute>
+</Broute>
 ```
 
 ```razor
-<BrouterRoute Path="/dashboard">
+<Broute Path="/dashboard">
     <Content>
         <h1>Dashboard</h1>
         <BrouterOutlet />
     </Content>
     <ChildContent>
-        <BrouterRoute Path="/stats" Component="@typeof(StatsPage)" />
+        <Broute Path="/stats" Component="@typeof(StatsPage)" />
     </ChildContent>
-</BrouterRoute>
+</Broute>
 ```
 
 ## Custom constraints
@@ -248,5 +248,5 @@ BrouterConstraints.Register("slug",
 ```
 
 ```razor
-<BrouterRoute Path="/posts/{slug:slug}" Component="@typeof(PostPage)" />
+<Broute Path="/posts/{slug:slug}" Component="@typeof(PostPage)" />
 ```

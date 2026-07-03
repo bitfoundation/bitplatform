@@ -8,15 +8,15 @@ namespace Bit.Brouter;
 /// A typed view over the matched route parameters. Inspired by <c>useParams</c> in React Router
 /// and Angular's <c>ActivatedRoute.snapshot.params</c>, with type-safe accessors.
 /// </summary>
-public sealed class BrouterRouteParameters
+public sealed class BrouteParameters
 {
     /// <summary>An empty parameters instance.</summary>
-    public static readonly BrouterRouteParameters Empty = new(new Dictionary<string, object?>());
+    public static readonly BrouteParameters Empty = new(new Dictionary<string, object?>());
 
     private readonly Dictionary<string, object?> _values;
     private readonly ReadOnlyDictionary<string, object?> _readOnlyValues;
 
-    internal BrouterRouteParameters(IReadOnlyDictionary<string, object?> values)
+    internal BrouteParameters(IReadOnlyDictionary<string, object?> values)
     {
         _values = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase);
         _readOnlyValues = new ReadOnlyDictionary<string, object?>(_values);

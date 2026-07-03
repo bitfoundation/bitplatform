@@ -3,28 +3,28 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Brouter;
 
-internal class BrouterRouteRenderer
+internal class BrouteRenderer
 {
-    private readonly BrouterRoute _route;
+    private readonly Broute _route;
 
-    // Cache the last merged BrouterRouteParameters and the (inherited, local) reference pair
+    // Cache the last merged BrouteParameters and the (inherited, local) reference pair
     // it was derived from. RenderRoute runs on every render of every route in the matched
-    // chain; each one used to allocate a fresh dictionary + BrouterRouteParameters even when
+    // chain; each one used to allocate a fresh dictionary + BrouteParameters even when
     // nothing changed. Cache hit -> zero allocations on the hot render path. Cache miss
     // (parameters changed because a new match committed fresh dictionaries onto the route
     // and/or the cascading inherited value got a new instance) -> rebuild and store.
-    private BrouterRouteParameters? _cachedRouteParams;
-    private BrouterRouteParameters? _cachedInheritedRef;
+    private BrouteParameters? _cachedRouteParams;
+    private BrouteParameters? _cachedInheritedRef;
     private IReadOnlyDictionary<string, object?>? _cachedLocalRef;
 
-    public BrouterRouteRenderer(BrouterRoute route)
+    public BrouteRenderer(Broute route)
     {
         _route = route;
     }
 
     public void BuildRenderTree(RenderTreeBuilder builder, bool matched)
     {
-        builder.OpenComponent<CascadingValue<BrouterRoute>>(0);
+        builder.OpenComponent<CascadingValue<Broute>>(0);
         builder.AddAttribute(1, "Name", "ParentRoute");
         builder.AddAttribute(2, "Value", _route);
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
@@ -48,13 +48,13 @@ internal class BrouterRouteRenderer
         var inherited = _route.InheritedParameters;
         var local = _route.Parameters;
 
-        // Reuse the previously-built BrouterRouteParameters when neither the inherited
+        // Reuse the previously-built BrouteParameters when neither the inherited
         // cascading instance nor the local match dictionary has been replaced. Both refs
         // get a fresh instance whenever a navigation actually changes the routing state
         // (Brouter.ProcessNavigationAsync commits fresh dictionaries on a match commit, and
         // the cascading inherited reference is reissued by the parent renderer), so this
         // is conservative: equal refs mean nothing user-visible has changed.
-        BrouterRouteParameters routeParams;
+        BrouteParameters routeParams;
         if (_cachedRouteParams is not null
             && ReferenceEquals(_cachedInheritedRef, inherited)
             && ReferenceEquals(_cachedLocalRef, local))
@@ -64,14 +64,14 @@ internal class BrouterRouteRenderer
         else
         {
             var merged = MergeParameters(inherited, local);
-            routeParams = new BrouterRouteParameters(merged);
+            routeParams = new BrouteParameters(merged);
 
             _cachedRouteParams = routeParams;
             _cachedInheritedRef = inherited;
             _cachedLocalRef = local;
         }
 
-        builder.OpenComponent<CascadingValue<BrouterRouteParameters>>(0);
+        builder.OpenComponent<CascadingValue<BrouteParameters>>(0);
         builder.AddAttribute(1, "Name", "RouteParameters");
         builder.AddAttribute(2, "Value", routeParams);
         builder.AddAttribute(3, "IsFixed", false);
@@ -112,7 +112,7 @@ internal class BrouterRouteRenderer
         builder.CloseComponent();
     }
 
-    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location)
+    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouteParameters parameters, BrouterLocation? location)
     {
         // Reflect once per type. Simple, correct, allocates only on first hit per type.
         // Trimming: Component is annotated DynamicallyAccessedMemberTypes.All so its members are preserved.
@@ -251,7 +251,7 @@ internal class BrouterRouteRenderer
         }
         catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException or ArgumentException)
         {
-            // See BrouterRouteParameters.TryGetWeak for the rationale: these are the documented
+            // See BrouteParameters.TryGetWeak for the rationale: these are the documented
             // Convert.ChangeType failure modes. Narrower catch keeps genuine programming bugs
             // (NREs, OOM) visible.
             value = null;
@@ -259,7 +259,7 @@ internal class BrouterRouteRenderer
         }
     }
 
-    private static IReadOnlyDictionary<string, object?> MergeParameters(BrouterRouteParameters? inherited, IReadOnlyDictionary<string, object?>? local)
+    private static IReadOnlyDictionary<string, object?> MergeParameters(BrouteParameters? inherited, IReadOnlyDictionary<string, object?>? local)
     {
         var result = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         if (inherited is not null)

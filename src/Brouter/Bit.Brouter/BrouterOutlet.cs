@@ -8,13 +8,13 @@ namespace Bit.Brouter;
 /// </summary>
 public class BrouterOutlet : ComponentBase, IDisposable
 {
-    [CascadingParameter(Name = "ParentRoute")] internal BrouterRoute? Parent { get; set; }
+    [CascadingParameter(Name = "ParentRoute")] internal Broute? Parent { get; set; }
 
 
-    private BrouterRoute? _matchedChild;
-    private BrouterRouteParameters _parameters = BrouterRouteParameters.Empty;
+    private Broute? _matchedChild;
+    private BrouteParameters _parameters = BrouteParameters.Empty;
 
-    internal void Render(BrouterRoute route, BrouterRouteParameters parameters)
+    internal void Render(Broute route, BrouteParameters parameters)
     {
         _matchedChild = route;
         _parameters = parameters;
@@ -50,7 +50,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
         {
             // Re-establish ParentRoute for any nested routes declared inside the matched child's content,
             // so they can register themselves and recurse correctly.
-            b.OpenComponent<CascadingValue<BrouterRoute>>(0);
+            b.OpenComponent<CascadingValue<Broute>>(0);
             b.AddAttribute(1, "Name", "ParentRoute");
             b.AddAttribute(2, "Value", _matchedChild);
             b.AddAttribute(3, "ChildContent", (RenderFragment)(b2 =>
@@ -62,7 +62,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
                 else if (_matchedChild.Component is not null)
                 {
                     b2.OpenComponent(0, _matchedChild.Component);
-                    BrouterRouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation);
+                    BrouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation);
                     b2.CloseComponent();
                 }
 

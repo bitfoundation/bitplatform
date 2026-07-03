@@ -43,7 +43,7 @@
     [Parameter] public EventCallback<int> CurrentCountChanged { get; set; }
     [Parameter] public Action<int>? ChangeCount { get; set; }
 
-    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Parameters { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] BrouteParameters? Parameters { get; set; }
 
     private int? _appliedInit;
 

@@ -25,10 +25,10 @@ public sealed class BrouterNavigationContext
     public CancellationToken CancellationToken { get; }
 
     /// <summary>The matched route once matching has happened. Null in OnNavigating hooks.</summary>
-    public BrouterRoute? Route { get; internal set; }
+    public Broute? Route { get; internal set; }
 
     /// <summary>Parameters extracted from the matched route. Empty when no match yet.</summary>
-    public BrouterRouteParameters Parameters { get; internal set; } = BrouterRouteParameters.Empty;
+    public BrouteParameters Parameters { get; internal set; } = BrouteParameters.Empty;
 
     /// <summary>True if a guard or hook called <see cref="Cancel"/>.</summary>
     public bool IsCancelled { get; private set; }

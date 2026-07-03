@@ -7,7 +7,7 @@ namespace Bit.Brouter;
 /// <summary>
 /// Declares a single route inside a <see cref="Brouter"/>.
 /// </summary>
-public class BrouterRoute : ComponentBase, IDisposable
+public class Broute : ComponentBase, IDisposable
 {
     /// <summary>
     /// The route path to match. Supports literal segments, parameter segments, constraints and wildcards.
@@ -31,7 +31,7 @@ public class BrouterRoute : ComponentBase, IDisposable
     public Type? Component { get; set; }
 
     /// <summary>A render fragment to render when this route matches. The argument carries the route parameters.</summary>
-    [Parameter] public RenderFragment<BrouterRouteParameters>? Content { get; set; }
+    [Parameter] public RenderFragment<BrouteParameters>? Content { get; set; }
 
     /// <summary>
     /// Async guard. Use <c>ctx.Cancel()</c> or <c>ctx.Redirect("/login")</c> to deny.
@@ -54,20 +54,20 @@ public class BrouterRoute : ComponentBase, IDisposable
 
 
     [CascadingParameter(Name = "Brouter")] internal Brouter? Brouter { get; set; }
-    [CascadingParameter(Name = "ParentRoute")] internal BrouterRoute? Parent { get; set; }
-    [CascadingParameter(Name = "RouteParameters")] internal BrouterRouteParameters? InheritedParameters { get; set; }
+    [CascadingParameter(Name = "ParentRoute")] internal Broute? Parent { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] internal BrouteParameters? InheritedParameters { get; set; }
 
 
     internal string FullTemplate { get; private set; } = string.Empty;
 
 
-    private readonly List<BrouterRoute> _children = [];
-    internal void AddChild(BrouterRoute route) => _children.Add(route);
-    internal void RemoveChild(BrouterRoute route) => _children.Remove(route);
+    private readonly List<Broute> _children = [];
+    internal void AddChild(Broute route) => _children.Add(route);
+    internal void RemoveChild(Broute route) => _children.Remove(route);
 
     internal BrouterOutlet? Outlet { get; set; }
 
-    internal BrouterRouteTemplate? RouteTemplate { get; private set; }
+    internal BrouteTemplate? RouteTemplate { get; private set; }
     // Tightened from IDictionary to IReadOnlyDictionary: callers only ever read these and the
     // pipeline replaces them wholesale on a match commit. Exposing the mutable interface let
     // any internal caller .Add/.Remove/.Clear them mid-render which would be a footgun against
@@ -76,7 +76,7 @@ public class BrouterRoute : ComponentBase, IDisposable
     internal IReadOnlyDictionary<string, string[]> ConstraintsByParameter { get; set; } = new Dictionary<string, string[]>();
     internal object? LoadedData { get; set; }
 
-    private BrouterRouteRenderer? _renderer;
+    private BrouteRenderer? _renderer;
 
     protected override void OnInitialized()
     {
@@ -123,7 +123,7 @@ public class BrouterRoute : ComponentBase, IDisposable
 
         IsIndex = Parent is not null && string.IsNullOrEmpty(Path.Trim('/'));
 
-        _renderer = new BrouterRouteRenderer(this);
+        _renderer = new BrouteRenderer(this);
 
         Brouter.RegisterRoute(this);
         Parent?.AddChild(this);
@@ -166,7 +166,7 @@ public class BrouterRoute : ComponentBase, IDisposable
     internal async ValueTask<bool> InvokeGuardsAsync(BrouterNavigationContext ctx)
     {
         // Walk from root to leaf so parents authorize children, mirroring Angular's hierarchical guards.
-        var chain = new List<BrouterRoute>();
+        var chain = new List<Broute>();
         for (var r = this; r is not null; r = r.Parent) chain.Add(r);
         chain.Reverse();
 
