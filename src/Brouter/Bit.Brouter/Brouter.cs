@@ -144,6 +144,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // teardown to unhook the preventive guard/redirect/cancel decision (see OnLocationChanging).
     private IDisposable? _locationChangingRegistration;
 
+    // Location whose post-navigation DOM effects (fragment/top scroll, focus) are pending. Staged
+    // by ProcessNavigationAsync on a successful commit and consumed by OnAfterRenderAsync after the
+    // matching render lands, so fragment/focus selectors resolve against the new route's DOM. Only
+    // the most recent commit is held; a later navigation overwrites an unconsumed value so we never
+    // apply effects for a page the user has already navigated away from. Staged and consumed on the
+    // renderer dispatcher; accessed via Interlocked.Exchange for a clean read-and-clear (mirrors the
+    // plain-field + Interlocked style used for _navCts rather than the `volatile` keyword).
+    private BrouterLocation? _pendingEffectsLocation;
+
     // Hand-off from the preventive "changing" phase to the "changed" (commit) phase. When the
     // LocationChanging handler has already run OnNavigating + guards for a target and approved it,
     // it records the target's absolute URI here so the subsequent LocationChanged commit phase can
@@ -301,38 +310,51 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
-
-        // Enabling navigation interception genuinely requires an interactive runtime, so it stays
-        // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
-        // this method doesn't run at all - that's fine: the initial match already happened in
-        // OnInitializedAsync, and interception is enabled here once the component goes interactive.
-        //
-        // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
-        // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
-        // interactivity handoff) does not depend on it succeeding right now. Mirror the defensive
-        // style used in BrouterLink and BrouterService.BackAsync so a transient failure here can't
-        // kill navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
-        // attachment naturally on the next user click via NavigationManager fallback paths.
-        try
+        if (firstRender)
         {
-            await _navInterception.EnableNavigationInterceptionAsync();
-        }
-        catch (JSDisconnectedException) { /* circuit disconnected before/during interop */ }
-        catch (JSException) { /* JS interop failure; non-fatal */ }
-        catch (InvalidOperationException) { /* interop unavailable during prerender */ }
-        catch (TaskCanceledException) { /* component disposed mid-call */ }
+            // Enabling navigation interception genuinely requires an interactive runtime, so it stays
+            // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
+            // this method doesn't run at all - that's fine: the initial match already happened in
+            // OnInitializedAsync, and interception is enabled here once the component goes interactive.
+            //
+            // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
+            // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
+            // interactivity handoff) does not depend on it succeeding right now. Mirror the defensive
+            // style used in BrouterLink and BrouterService.BackAsync so a transient failure here can't
+            // kill navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
+            // attachment naturally on the next user click via NavigationManager fallback paths.
+            try
+            {
+                await _navInterception.EnableNavigationInterceptionAsync();
+            }
+            catch (JSDisconnectedException) { /* circuit disconnected before/during interop */ }
+            catch (JSException) { /* JS interop failure; non-fatal */ }
+            catch (InvalidOperationException) { /* interop unavailable during prerender */ }
+            catch (TaskCanceledException) { /* component disposed mid-call */ }
 
-        // Register the preventive navigation handler now that the runtime is interactive.
-        // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
-        // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
-        // (LocationChangingContext.PreventNavigation) instead of reactively "undoing" a URL change
-        // that already happened. This is what makes guards preventive rather than reactive: no
-        // address-bar flicker, no corrupted history on a cancelled Back, and real "unsaved changes"
-        // prompts become possible. LocationChanged is kept only for the commit phase (loaders +
-        // render). During static prerender this method never runs, so the handler simply isn't
-        // registered there - which is correct, since there is no interactive navigation to guard.
-        _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
+            // Register the preventive navigation handler now that the runtime is interactive.
+            // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
+            // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
+            // (LocationChangingContext.PreventNavigation) instead of reactively "undoing" a URL change
+            // that already happened. This is what makes guards preventive rather than reactive: no
+            // address-bar flicker, no corrupted history on a cancelled Back, and real "unsaved changes"
+            // prompts become possible. LocationChanged is kept only for the commit phase (loaders +
+            // render). During static prerender this method never runs, so the handler simply isn't
+            // registered there - which is correct, since there is no interactive navigation to guard.
+            _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
+        }
+
+        // Apply any post-navigation DOM effects (fragment/top scroll, focus) staged by the last
+        // committed navigation. Running here - after the render batch has been applied to the DOM -
+        // is what lets fragment (#section) and focus selectors resolve against the newly rendered
+        // route instead of the previous page. Exchange to null so each staged navigation's effects
+        // run exactly once; a navigation with nothing pending is a no-op. During static prerender
+        // this method never runs, so effects are correctly skipped server-side (no DOM/JS there).
+        var pending = Interlocked.Exchange(ref _pendingEffectsLocation, null);
+        if (pending is not null)
+        {
+            await _brouterService.ApplyNavigationEffectsAsync(pending);
+        }
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2110",
@@ -980,8 +1002,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             await service.InvokeOnNavigated(ctx);
             if (token.IsCancellationRequested || version != _navVersion) return;
 
-            await service.ApplyScrollAsync();
-            if (token.IsCancellationRequested || version != _navVersion) return;
+            // Stage the post-navigation DOM effects (fragment/top scroll, focus). They can't run
+            // here: fragment and focus selectors must resolve against the NEW route's DOM, which
+            // isn't committed until the render triggered below flushes. OnAfterRenderAsync applies
+            // them once that render lands. Only the latest staged location is ever applied, so a
+            // superseded navigation can't scroll/focus on behalf of the page the user left.
+            _pendingEffectsLocation = to;
 
             StateHasChanged();
         }

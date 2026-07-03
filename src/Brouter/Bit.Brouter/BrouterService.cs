@@ -7,12 +7,17 @@ using Microsoft.JSInterop;
 
 namespace Bit.Brouter;
 
-internal sealed class BrouterService : IBrouter
+internal sealed class BrouterService : IBrouter, IAsyncDisposable
 {
     private readonly BrouterOptions _options;
     private readonly IJSRuntime _js;
     private Brouter? _activeBrouter;
     private NavigationManager? _navigationManager;
+
+    // Lazily-imported BitBrouter.js module, used for the post-navigation DOM effects
+    // (fragment/top scroll, focus). Imported on first use and reused for the scope's lifetime;
+    // disposed in DisposeAsync when DI tears the scoped service down.
+    private IJSObjectReference? _module;
 
     public BrouterService(IOptions<BrouterOptions> options, IJSRuntime js)
     {
@@ -347,18 +352,61 @@ internal sealed class BrouterService : IBrouter
     }
 
 
-    internal async ValueTask ApplyScrollAsync()
+    /// <summary>
+    /// Applies the post-navigation DOM effects for <paramref name="location"/>: scrolling a URL
+    /// fragment into view, moving focus for assistive technologies (see
+    /// <see cref="BrouterOptions.FocusOnNavigateSelector"/>), and scroll-to-top. Invoked from
+    /// <c>Brouter.OnAfterRenderAsync</c> once the matched route is committed to the DOM, so fragment
+    /// and focus selectors resolve against the new page content rather than the previous one.
+    /// </summary>
+    internal async ValueTask ApplyNavigationEffectsAsync(BrouterLocation location)
     {
-        if (_options.ScrollBehavior != BrouterScrollMode.ToTop) return;
-        // No ConfigureAwait(false): this is awaited from Brouter.ProcessNavigationAsync, which
-        // calls StateHasChanged() right after. That needs the renderer's synchronization context.
+        var hash = location.Hash;
+        var scrollToFragment = _options.ScrollToFragment && string.IsNullOrEmpty(hash) is false;
+        var scrollToTop = _options.ScrollBehavior == BrouterScrollMode.ToTop;
+        var focusSelector = _options.FocusOnNavigateSelector;
+        var hasFocus = string.IsNullOrEmpty(focusSelector) is false;
+
+        // Nothing configured for this navigation -> don't even import the JS module.
+        if (scrollToFragment is false && scrollToTop is false && hasFocus is false) return;
+
+        // No ConfigureAwait(false): this is awaited from Brouter.OnAfterRenderAsync, so stay on the
+        // renderer's synchronization context (required on Blazor Server for interop/state).
         try
         {
-            await _js.InvokeVoidAsync("window.scrollTo", 0, 0);
+            var module = await GetModuleAsync();
+            if (module is null) return;
+
+            await module.InvokeVoidAsync(
+                "applyNavigationEffects",
+                scrollToFragment ? hash : null,
+                hasFocus ? focusSelector : null,
+                scrollToTop);
         }
         catch (JSDisconnectedException) { /* circuit disconnected mid-call */ }
         catch (JSException) { /* JS interop failure (e.g. non-browser host) */ }
         catch (InvalidOperationException) { /* JS interop unavailable during pre-render */ }
         catch (TaskCanceledException) { /* component disposed mid-call */ }
+    }
+
+    private async ValueTask<IJSObjectReference?> GetModuleAsync()
+    {
+        // Exceptions bubble to ApplyNavigationEffectsAsync's catch block, which handles the
+        // pre-render / disconnected / non-browser cases uniformly.
+        return _module ??= await _js.InvokeAsync<IJSObjectReference>(
+            "import", "./_content/Bit.Brouter/BitBrouter.js");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try { await _module.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+            catch (TaskCanceledException) { }
+            _module = null;
+        }
     }
 }

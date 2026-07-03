@@ -18,9 +18,11 @@ using Bit.Brouter;
 
 builder.Services.AddBitBrouterServices(o =>
 {
-    o.CaseSensitive = false;        // default
-    o.IgnoreTrailingSlash = true;   // default
+    o.CaseSensitive = false;              // default
+    o.IgnoreTrailingSlash = true;         // default
     o.ScrollBehavior = BrouterScrollMode.ToTop;
+    o.ScrollToFragment = true;            // default: /docs#install scrolls #install into view
+    o.FocusOnNavigateSelector = "h1";     // move focus after navigation (accessibility)
 });
 ```
 
@@ -76,7 +78,8 @@ builder.Services.AddBitBrouterServices(o =>
 - **Prerender state bridging**: loader results captured during prerender are restored on the interactive pass via `PersistentComponentState`, so loaders don't double-fetch (opt-in)
 - Query string and hash exposed via `BrouterLocation`
 - Configurable case sensitivity and trailing-slash handling
-- Optional scroll-to-top on navigation
+- **Scroll management**: optional scroll-to-top, plus fragment scrolling (`/docs#install` lands on `#install`)
+- **Focus management** for accessibility: move focus to a selector after navigation so screen readers announce the new page (mirrors Blazor's `FocusOnNavigate`)
 - Multi-target: net8.0, net9.0, net10.0
 
 ## Type-safe parameters
@@ -183,6 +186,34 @@ implement a genuine "you have unsaved changes" prompt by cancelling from a guard
 <BrouterLink Href="/" Match="BrouterLinkMatch.All">Home</BrouterLink>
 <BrouterLink Href="/users" Class="nav-item">Users</BrouterLink>
 ```
+
+## Scroll & focus management
+
+After each successful navigation Brouter runs a few DOM effects, all configured on `BrouterOptions`
+and applied once the matched route is committed to the DOM (so `#fragment` and focus selectors resolve
+against the new page). During static prerender these are skipped - there is no DOM/JS to act on.
+
+```csharp
+builder.Services.AddBitBrouterServices(o =>
+{
+    // Scroll the window to the top on navigation. Default: BrouterScrollMode.None.
+    o.ScrollBehavior = BrouterScrollMode.ToTop;
+
+    // Scroll a URL fragment into view: navigating to /docs#install lands on the #install
+    // element (and moves focus to it). A found fragment target wins over ScrollBehavior.
+    // Only acts when the URL carries a fragment. Default: true.
+    o.ScrollToFragment = true;
+
+    // Move focus to this selector after navigation so assistive technologies announce the new
+    // page instead of leaving focus on the activated link - a WCAG-relevant concern for an SPA
+    // router, mirroring Blazor's <FocusOnNavigate>. A non-focusable target gets tabindex="-1"
+    // so it can receive programmatic focus without joining the Tab order. Default: null (off).
+    o.FocusOnNavigateSelector = "h1";
+});
+```
+
+Precedence when several apply: a resolved fragment target scrolls (and takes focus) and wins over
+scroll-to-top; otherwise scroll-to-top runs, then `FocusOnNavigateSelector` (if set) receives focus.
 
 ## Global hooks
 

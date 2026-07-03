@@ -24,6 +24,27 @@ public sealed class BrouterOptions
     public BrouterScrollMode ScrollBehavior { get; set; } = BrouterScrollMode.None;
 
     /// <summary>
+    /// Whether a URL fragment scrolls its target element into view after a successful navigation
+    /// (e.g. navigating to <c>/docs#install</c> scrolls the <c>#install</c> element into view and
+    /// moves focus to it). When a fragment target is found it takes precedence over
+    /// <see cref="ScrollBehavior"/>. Only acts when the destination URL carries a fragment.
+    /// Defaults to <c>true</c>.
+    /// </summary>
+    public bool ScrollToFragment { get; set; } = true;
+
+    /// <summary>
+    /// A CSS selector for the element to move focus to after each successful navigation, mirroring
+    /// Blazor's <c>FocusOnNavigate</c>. Moving focus lets assistive technologies announce the new page
+    /// instead of leaving focus on the activated link, which is a WCAG-relevant concern for an SPA
+    /// router. A fragment target (see <see cref="ScrollToFragment"/>) takes precedence when present.
+    /// If the selector matches an element that isn't natively focusable, a <c>tabindex="-1"</c> is
+    /// added so it can receive programmatic focus without entering the sequential Tab order.
+    /// Defaults to <c>null</c> (no focus change). Common values are <c>"h1"</c> or a main-content
+    /// landmark selector such as <c>"main"</c>.
+    /// </summary>
+    public string? FocusOnNavigateSelector { get; set; }
+
+    /// <summary>
     /// Whether route <c>Loader</c> results are persisted across the SSR/prerender -&gt; interactive
     /// transition using <see cref="Microsoft.AspNetCore.Components.PersistentComponentState"/>, so a
     /// loader that ran during prerender is not run again (double-fetched) when the component becomes
