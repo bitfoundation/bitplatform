@@ -137,11 +137,17 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         _isActive = Match switch
         {
             BrouterLinkMatch.All => string.Equals(current, target, comparison),
+            // The root "/" prefix-matches every path (everything starts with '/'), so a "home"
+            // link would light up on every page — the classic NavLink footgun. Match the root
+            // exactly even under Prefix, mirroring React Router's NavLink (a link to "/" is only
+            // active at the root). Note both the old `target == "/"` clause AND the `target[^1] ==
+            // '/'` clause below would otherwise force the root to always match.
+            _ when target == "/" => string.Equals(current, target, comparison),
             // Prefix match: when target retains a trailing '/' (Options.IgnoreTrailingSlash == false
             // and the link href ended with '/'), the slash itself enforces the segment boundary,
             // so the explicit boundary check on current[target.Length] is unnecessary in that case.
             _ => current.StartsWith(target, comparison) &&
-                 (current.Length == target.Length || target == "/" || target[^1] == '/' ||
+                 (current.Length == target.Length || target[^1] == '/' ||
                   current[target.Length] == '/' || current[target.Length] == '?' || current[target.Length] == '#')
         };
 

@@ -61,6 +61,42 @@ public class BrouterLinkTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Prefix_match_on_root_href_does_not_activate_on_other_pages()
+    {
+        // The classic NavLink footgun: a "home" link (Href="/") under the default Prefix match
+        // must NOT be active on every page just because every path starts with '/'. The root is
+        // matched exactly even under Prefix (mirrors React Router's NavLink).
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/users");
+
+        var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var anchor = cut.Find("[data-testid=link]");
+            var cls = anchor.GetAttribute("class") ?? "";
+            Assert.IsFalse(cls.Contains("active"), $"expected not active, got class='{cls}'");
+            Assert.IsNull(anchor.GetAttribute("aria-current"));
+        });
+    }
+
+    [TestMethod]
+    public void Prefix_match_on_root_href_activates_at_root()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/");
+
+        var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var anchor = cut.Find("[data-testid=link]");
+            StringAssert.Contains(anchor.GetAttribute("class") ?? "", "active");
+            Assert.AreEqual("page", anchor.GetAttribute("aria-current"));
+        });
+    }
+
+    [TestMethod]
     public void All_match_only_activates_on_exact_equality()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
