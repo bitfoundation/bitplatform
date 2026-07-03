@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddCors();
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 
@@ -38,8 +37,6 @@ else
 }
 
 app.UseHttpsRedirection();
-
-app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
 app.MapStaticAssets();
 app.UseAntiforgery();
