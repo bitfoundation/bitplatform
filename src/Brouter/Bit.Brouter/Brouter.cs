@@ -138,8 +138,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         return arr;
     }
 
-    internal Broute? FindRouteByName(string name) =>
-        _routes.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase));
+    // Reads the snapshot, not the live List: mirrors SelectWinner/ProcessNavigationAsync so name
+    // lookups never touch the mutable registration set mid-pipeline (see GetRoutesSnapshot's remarks).
+    internal Broute? FindRouteByName(string name)
+    {
+        var routesSnapshot = GetRoutesSnapshot();
+        foreach (var r in routesSnapshot)
+        {
+            if (string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase)) return r;
+        }
+        return null;
+    }
 
     private CancellationTokenSource? _navCts;
     private bool _noRouteMatched;
