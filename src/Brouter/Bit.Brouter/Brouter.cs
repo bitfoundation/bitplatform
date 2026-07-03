@@ -138,6 +138,107 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         return arr;
     }
 
+    // First-segment matching index, derived lazily from the route snapshot. Keeps navigation off the
+    // O(routes) full scan: SelectWinner only has to try routes whose first template segment can match
+    // the URL's first segment, plus the (usually small) set of routes that start with a parameter /
+    // wildcard / catch-all / empty template. Rebuilt only when the snapshot reference changes (routes
+    // registered/unregistered) or the case-sensitivity option flips, since the literal buckets key on
+    // it. See GetRouteIndex.
+    private RouteIndex? _routeIndex;
+    private Broute[]? _indexedSnapshot;
+    private bool _indexedCaseSensitive;
+
+    // A route paired with its registration order (index in the snapshot). Order is carried alongside
+    // the route so winner selection can break exact specificity/depth/index ties by earliest
+    // declaration - reproducing the old "keep the first candidate on a tie" behavior even though the
+    // index visits routes bucket-first rather than in pure registration order.
+    private readonly struct RouteEntry
+    {
+        public Broute Route { get; }
+        public int Order { get; }
+        public RouteEntry(Broute route, int order)
+        {
+            Route = route;
+            Order = order;
+        }
+    }
+
+    // The precomputed first-segment index. LiteralBuckets maps a first literal segment (compared with
+    // the same comparer the matcher uses for literals) to the routes that start with it. NonLiteralFirst
+    // holds routes whose first segment isn't a fixed literal (parameter / '*' / '**' / catch-all) or
+    // whose template is empty - all of which can match regardless of the URL's first segment, so they're
+    // always considered.
+    private sealed class RouteIndex
+    {
+        public Dictionary<string, List<RouteEntry>> LiteralBuckets { get; }
+        public List<RouteEntry> NonLiteralFirst { get; }
+        public RouteIndex(Dictionary<string, List<RouteEntry>> literalBuckets, List<RouteEntry> nonLiteralFirst)
+        {
+            LiteralBuckets = literalBuckets;
+            NonLiteralFirst = nonLiteralFirst;
+        }
+    }
+
+    /// <summary>
+    /// Returns the first-segment matching index for the current route snapshot, rebuilding it only
+    /// when the snapshot reference changes (a route registered/unregistered) or the case-sensitivity
+    /// option flips. Shares the snapshot with <see cref="GetRoutesSnapshot"/> so the two never disagree
+    /// about the route set, and runs on the same single dispatcher as every other reader (no locking).
+    /// </summary>
+    private RouteIndex GetRouteIndex()
+    {
+        var snapshot = GetRoutesSnapshot();
+        var caseSensitive = Options.CaseSensitive;
+        if (_routeIndex is not null &&
+            ReferenceEquals(_indexedSnapshot, snapshot) &&
+            _indexedCaseSensitive == caseSensitive)
+        {
+            return _routeIndex;
+        }
+
+        // Literal buckets key on the first segment using the same comparer the matcher applies to
+        // literal segments, so a lookup by the URL's first segment returns exactly the routes whose
+        // first literal would match it.
+        var comparer = caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+        var literalBuckets = new Dictionary<string, List<RouteEntry>>(comparer);
+        var nonLiteralFirst = new List<RouteEntry>();
+
+        for (int i = 0; i < snapshot.Length; i++)
+        {
+            var entry = new RouteEntry(snapshot[i], i);
+            var template = snapshot[i].RouteTemplate;
+
+            // No template (not yet initialized) or an empty template (root/index) can't be bucketed by
+            // a first literal - always consider it. TryMatch still filters it correctly.
+            if (template is null || template.TemplateSegments.Count == 0)
+            {
+                nonLiteralFirst.Add(entry);
+                continue;
+            }
+
+            var first = template.TemplateSegments[0];
+            if (first.IsParameter || first.IsCatchAll || first.IsSingleWildcard)
+            {
+                // Parameter / '*' / '**' / '{**catch}' first segment matches many URL first segments.
+                nonLiteralFirst.Add(entry);
+            }
+            else
+            {
+                if (literalBuckets.TryGetValue(first.Value, out var list) is false)
+                {
+                    list = [];
+                    literalBuckets[first.Value] = list;
+                }
+                list.Add(entry);
+            }
+        }
+
+        _routeIndex = new RouteIndex(literalBuckets, nonLiteralFirst);
+        _indexedSnapshot = snapshot;
+        _indexedCaseSensitive = caseSensitive;
+        return _routeIndex;
+    }
+
     // Reads the snapshot, not the live List: mirrors SelectWinner/ProcessNavigationAsync so name
     // lookups never touch the mutable registration set mid-pipeline (see GetRoutesSnapshot's remarks).
     internal Broute? FindRouteByName(string name)
@@ -1114,37 +1215,59 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// </summary>
     private MatchResult? SelectWinner(BrouterLocation to)
     {
-        var routesSnapshot = GetRoutesSnapshot();
+        var index = GetRouteIndex();
+        var segments = to.SegmentsArray;
 
-        var candidates = new List<MatchResult>();
-        foreach (var r in routesSnapshot)
+        MatchResult best = default;
+        var bestOrder = 0;
+        var haveBest = false;
+
+        // Only routes whose first template segment can match the URL's first segment are viable: the
+        // bucket keyed on that segment, plus every route that doesn't start with a fixed literal.
+        // This is what keeps matching off a full O(routes) scan when routes number in the hundreds.
+        if (segments.Length > 0 &&
+            index.LiteralBuckets.TryGetValue(segments[0], out var literalEntries))
         {
-            if (TryMatch(r, to.SegmentsArray, to.HasTrailingSlash, out var result))
-            {
-                candidates.Add(result);
-            }
+            foreach (var entry in literalEntries)
+                ConsiderCandidate(entry, to, segments, ref best, ref bestOrder, ref haveBest);
         }
 
-        if (candidates.Count == 0) return null;
+        foreach (var entry in index.NonLiteralFirst)
+            ConsiderCandidate(entry, to, segments, ref best, ref bestOrder, ref haveBest);
 
-        // Pick the most specific match. Ties broken by deeper nesting (so an index child
-        // wins over its parent when their full templates are identical), then by index-route
-        // preference, then by declaration order (the loop keeps the earliest on an exact tie).
-        MatchResult winnerMatch = candidates[0];
-        for (int i = 1; i < candidates.Count; i++)
+        return haveBest ? best : null;
+    }
+
+    /// <summary>
+    /// Runs <see cref="TryMatch"/> for one candidate and, on a match, keeps it as the running best when
+    /// it beats the current one. Ranking: most specific wins; ties broken by deeper nesting (so an
+    /// index child wins over its parent when their full templates are identical), then by index-route
+    /// preference, then by earliest registration order. The explicit order tiebreak reproduces the old
+    /// full-scan behavior (which kept the first candidate on a tie) regardless of the order the index
+    /// visits routes in.
+    /// </summary>
+    private void ConsiderCandidate(in RouteEntry entry, BrouterLocation to, string[] segments,
+        ref MatchResult best, ref int bestOrder, ref bool haveBest)
+    {
+        if (TryMatch(entry.Route, segments, to.HasTrailingSlash, out var result) is false) return;
+
+        if (haveBest is false)
         {
-            var c = candidates[i];
-            var w = winnerMatch;
-            int cmp = c.Route.Specificity - w.Route.Specificity;
-            if (cmp == 0) cmp = c.Route.Depth - w.Route.Depth;
-            if (cmp == 0) cmp = (c.Route.IsIndex ? 1 : 0) - (w.Route.IsIndex ? 1 : 0);
-            if (cmp > 0)
-            {
-                winnerMatch = c;
-            }
+            best = result;
+            bestOrder = entry.Order;
+            haveBest = true;
+            return;
         }
 
-        return winnerMatch;
+        int cmp = result.Route.Specificity - best.Route.Specificity;
+        if (cmp == 0) cmp = result.Route.Depth - best.Route.Depth;
+        if (cmp == 0) cmp = (result.Route.IsIndex ? 1 : 0) - (best.Route.IsIndex ? 1 : 0);
+        if (cmp == 0) cmp = bestOrder - entry.Order; // earlier registration wins an otherwise exact tie
+        if (cmp > 0)
+        {
+            best = result;
+            bestOrder = entry.Order;
+        }
     }
 
     private bool TryMatch(Broute route, string[] segments, bool hasTrailingSlash, out MatchResult result)
