@@ -29,7 +29,6 @@
 
     <ItemGroup>
         <PackageReference Include="Bit.Bswup" Version="10.5.0-pre-05" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -46,12 +45,6 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
-        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
-        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
