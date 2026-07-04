@@ -1,0 +1,187 @@
+@page "/butil/speech"
+@inherits AppComponentBase
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.SpeechRecognition speechRecognition
+
+<PageOutlet Url="butil/speech"
+            Title="Speech - Butil"
+            Description="SpeechSynthesis and SpeechRecognition classes of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Speech</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the speech classes of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            The speech features are split across two classes. Inject the ones you need and use them like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.SpeechSynthesis speechSynthesis
+@@inject Bit.Butil.SpeechRecognition speechRecognition
+
+@@code {
+    await speechSynthesis.Speak("Hello from Butil!");
+    await using var rec = await speechRecognition.Start(options, onResult: r => { /* ... */ });
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>SpeechSynthesis</BitText>
+        <div class="section-card-txt">
+            The <b>SpeechSynthesis</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis" target="_blank" rel="noopener noreferrer">SpeechSynthesis API</a>
+            for text-to-speech.
+            <br /><br />
+
+            <b>GetVoices</b>: <br />
+            Returns the list of voices the platform makes available
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@getVoicesExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="GetVoices">GetVoices</BitButton>
+                        <br /><br />
+                        <div>Voices count: @voices.Length</div>
+                        <div>@getVoicesResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Speak</b>: <br />
+            Speaks the configured utterance with an optional voice, rate and pitch
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/speak" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@speakExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="speakText" Label="Text" Multiline Rows="2" Style="max-width: 25rem;" />
+                        <br />
+                        <select @bind="voiceName" aria-label="Voice">
+                            <option value="">Default voice</option>
+                            @foreach (var voice in voices)
+                            {
+                                <option value="@voice.Name">@voice.Name (@voice.Lang)</option>
+                            }
+                        </select>
+                        <br /><br />
+                        <BitButton OnClick="Speak">Speak</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Pause / Resume / Cancel</b>: <br />
+            Pauses the current utterance, resumes a paused utterance, or cancels all pending utterances
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/pause" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@pauseResumeCancelExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="PauseSpeech">Pause</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="ResumeSpeech">Resume</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="CancelSpeech">Cancel</BitButton>
+                        <br /><br />
+                        <div>@speakResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>IsSpeaking</b>: <br />
+            Returns whether the engine is currently speaking (or paused)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/speaking" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@isSpeakingExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="IsSpeaking">IsSpeaking</BitButton>
+                        <br /><br />
+                        <div>Is speaking: @isSpeaking</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>SpeechRecognition</BitText>
+        <div class="section-card-txt">
+            The <b>SpeechRecognition</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition" target="_blank" rel="noopener noreferrer">SpeechRecognition API</a>
+            for speech-to-text (Chromium-based browsers).
+            <br /><br />
+
+            <b>Start</b>: <br />
+            Captures microphone input and reports interim and final transcripts through the onResult callback.
+            The Continuous and InterimResults options control the stream, and onError / onEnd surface errors and completion.
+            Returns an <b>IAsyncDisposable</b> handle that stops recognition when disposed
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/start" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@startExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="StartRecognition" IsEnabled="@(recognizing is false)">Start</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StopRecognition" IsEnabled="@(recognitionHandle is not null)">Stop</BitButton>
+                        <br /><br />
+                        <div>Transcript: @transcript</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Stop</b>: <br />
+            Stops the recognition session early. Disposing the handle returned by <b>Start</b> is equivalent
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/stop" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@stopExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="StopRecognition" IsEnabled="@(recognitionHandle is not null)">Stop</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Files" PrevUrl="/butil/files" Next="Observers" NextUrl="/butil/observers" />

@@ -64,7 +64,7 @@ public static partial class Program
     {
         if (host.Services is IServiceProvider services && error is Exception exp)
         {
-            services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            services.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
             }, displayKind: AppEnvironment.IsDevelopment() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);

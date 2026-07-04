@@ -10,7 +10,7 @@ namespace Boilerplate.Client.Maui.Infrastructure.Services;
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private PubSubService pubSubService;
-    [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler;
 
     public MauiWebAuthnService? WebAuthnService { get; set; }
 

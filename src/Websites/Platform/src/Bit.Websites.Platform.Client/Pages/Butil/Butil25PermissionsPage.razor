@@ -1,0 +1,92 @@
+@page "/butil/permissions"
+@inherits AppComponentBase
+@inject Bit.Butil.Permissions permissions
+
+<PageOutlet Url="butil/permissions"
+            Title="Permissions - Butil"
+            Description="Permissions class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Permissions</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the Permissions class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            To query the browser's permission state you need to inject the Bit.Butil.Permissions class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Permissions permissions
+
+@@code {
+    var state = await permissions.Query("geolocation");
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            <br />
+            <b>IsSupported</b>: <br />
+            Returns whether the Permissions API (navigator.permissions) is available in the current browser
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Permissions" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @isSupportedExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@CheckSupported">IsSupported</BitButton>
+                        <br />
+                        <br />
+                        <div>Is supported: @isSupported</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Query</b>: <br />
+            Returns the current state (granted, denied, prompt or unknown) for a given permission descriptor name, without triggering a prompt
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @queryExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <select @bind="selectedPermission">
+                            @foreach (var name in permissionNames)
+                            {
+                                <option value="@name">@name</option>
+                            }
+                        </select>
+                        <br />
+                        <br />
+                        <BitButton OnClick="@QuerySelected">Query selected</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="@QueryAll">Query all common</BitButton>
+                        <br />
+                        <br />
+                        <div>@queryResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="MediaDevices" PrevUrl="/butil/mediaDevices" Next="Fetch" NextUrl="/butil/fetch" />

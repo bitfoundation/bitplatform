@@ -19,7 +19,7 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private BitExtraServices bitExtraServices = default!;
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 

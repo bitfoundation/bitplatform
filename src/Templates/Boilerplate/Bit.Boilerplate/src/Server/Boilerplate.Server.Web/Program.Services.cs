@@ -106,8 +106,16 @@ public static partial class Program
         var configuration = builder.Configuration;
 
         services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
-        services.AddScoped<IExceptionHandler, WebServerExceptionHandler>();
-        services.AddScoped(sp => (ClientExceptionHandlerBase)sp.GetRequiredService<IExceptionHandler>());
+        services.AddScoped<ClientExceptionHandlerBase, WebServerExceptionHandler>();
+        //#if (api == "Standalone")
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        //#endif
 
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddScoped<HttpClient>(sp =>
