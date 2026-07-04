@@ -229,6 +229,8 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [Fr
     
     Support for Open Telemetry means that all telemetry platforms (Including but not limited to Sentry, Azure Application Insights, Datadog, New Relic etc.) can be used to collect and visualize logs, traces and metrics.
 
+    **Sampling** is enabled to reduce costs: unknown/unhandled exceptions are always captured (100%), while known/transient exceptions, warnings, and info logs are sampled at **5%**. See [`AppOpenTelemetryProcessor.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppOpenTelemetryProcessor.cs) and [`AppLoggingSampler.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppLoggingSampler.cs).
+
 * **Server.Web**
 
     Server.Web uses **OpenTelemetry** for distributed tracing and metrics.
