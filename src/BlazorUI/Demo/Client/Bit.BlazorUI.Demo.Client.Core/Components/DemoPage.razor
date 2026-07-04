@@ -15,12 +15,13 @@ else
 
             @if (SecondaryNames?.Length > 0)
             {
-                <BitStack Horizontal>
+                <BitStack Horizontal AutoHeight>
                     @foreach (var name in SecondaryNames)
                     {
                         <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
                     }
                 </BitStack>
+                <br />
             }
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
