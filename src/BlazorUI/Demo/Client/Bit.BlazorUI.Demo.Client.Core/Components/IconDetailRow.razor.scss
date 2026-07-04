@@ -1,0 +1,26 @@
+.icon-detail-row {
+    display: grid;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    grid-template-columns: 5.5rem 1fr auto;
+    padding: 0.625rem 0;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid var(--bit-clr-brd-sec);
+    }
+}
+
+.icon-detail-row-label {
+    color: var(--bit-clr-fg-sec);
+}
+
+.icon-detail-row-value {
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}

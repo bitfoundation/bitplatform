@@ -1,23 +1,66 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages;
 
 public partial class IconographyPage
 {
-    private List<string> allIcons = default!;
-    private List<string> filteredIcons = default!;
+    private sealed record IconInfo(string FieldName, string Value)
+    {
+        public string ConstantReference => $"BitIconName.{FieldName}";
+
+        public string CssClass => $"bit-icon bit-icon--{Value}";
+
+        public string RazorIconName => $"IconName=\"@BitIconName.{FieldName}\"";
+
+        public string RazorIconInfo => $"Icon=\"@BitIconInfo.Bit(\"{Value}\")\"";
+    }
+
+
+
+    private const double IconPanelSize = 400;
+
+    private static readonly (string Label, BitColor Value)[] previewColors =
+    [
+        ("Primary", BitColor.Primary),
+        ("Secondary", BitColor.Secondary),
+        ("Tertiary", BitColor.Tertiary),
+        ("Info", BitColor.Info),
+        ("Success", BitColor.Success),
+        ("Warning", BitColor.Warning),
+        ("Error", BitColor.Error),
+    ];
+
+    private List<IconInfo> allIcons = default!;
+    private List<IconInfo> filteredIcons = default!;
+    private IconInfo? selectedIcon;
+    private bool isIconPanelOpen;
+    private Dictionary<string, string>? iconGlyphs;
+    private string? copyFeedbackKey;
+
+    private readonly IEnumerable<IBitComponentParams> cascadingParams =
+    [
+        new BitCardParams { Background = BitColorKind.Primary, FullWidth = true, Style = "padding: 1.5rem" },
+        new BitTextParams { Typography = BitTypography.Body1 },
+        new BitTagParams { Color = BitColor.TertiaryBackground },
+    ];
 
 
 
     [AutoInject] private IJSRuntime _js = default!;
 
+    [AutoInject] private HttpClient _http = default!;
+
 
 
     protected override void OnInitialized()
     {
-        allIcons = typeof(BitIconName).GetFields(BindingFlags.Static | BindingFlags.Public)
-                                      .Select(m => m.GetValue(null)?.ToString()!)
-                                      .ToList();
+        allIcons = [.. typeof(BitIconName).GetFields(BindingFlags.Static | BindingFlags.Public)
+            .Select(m => new IconInfo(m.Name, m.GetValue(null)?.ToString() ?? string.Empty))
+            .Where(i => string.IsNullOrEmpty(i.Value) is false)
+            .OrderBy(i => i.Value, StringComparer.OrdinalIgnoreCase)];
+
         HandleClear();
         base.OnInitialized();
     }
@@ -34,11 +77,71 @@ public partial class IconographyPage
         HandleClear();
         if (string.IsNullOrEmpty(text)) return;
 
-        filteredIcons = allIcons.FindAll(icon => string.IsNullOrEmpty(icon) is false && icon.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        filteredIcons = allIcons.FindAll(icon =>
+            icon.Value.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
+            icon.FieldName.Contains(text, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    private async Task CopyToClipboard(string iconName)
+    private async Task OpenIconPanel(IconInfo icon)
     {
-        await _js.CopyToClipboard(iconName);
+        selectedIcon = icon;
+        isIconPanelOpen = true;
+        await EnsureGlyphsLoadedAsync();
+    }
+
+    private void CloseIconPanel()
+    {
+        isIconPanelOpen = false;
+        selectedIcon = null;
+    }
+
+    private Task HandleIconPanelDismissed(MouseEventArgs _)
+    {
+        CloseIconPanel();
+        return Task.CompletedTask;
+    }
+
+    private string? GetGlyphCode(IconInfo icon)
+    {
+        if (iconGlyphs is null) return null;
+
+        if (iconGlyphs.TryGetValue(icon.Value, out var glyph) is false || string.IsNullOrEmpty(glyph)) return null;
+
+       return $"\\{char.ConvertToUtf32(glyph, 0):X4}";
+    }
+
+    private async Task EnsureGlyphsLoadedAsync()
+    {
+        if (iconGlyphs is not null) return;
+
+        try
+        {
+            var css = await _http.GetStringAsync("_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css");
+            iconGlyphs = Regex.Matches(css, @"\.bit-icon--([^:{]+)::before\{content:""([^""]+)""\}")
+                .ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
+        }
+        catch
+        {
+            iconGlyphs = [];
+        }
+    }
+
+    private Task CopyIconName() => CopyToClipboard(selectedIcon!.Value, "name");
+
+    private Task HandleDetailCopy((string Text, string Key) args) => CopyToClipboard(args.Text, args.Key);
+
+    private async Task CopyToClipboard(string text, string feedbackKey)
+    {
+        await _js.CopyToClipboard(text);
+        copyFeedbackKey = feedbackKey;
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        if (copyFeedbackKey == feedbackKey)
+        {
+            copyFeedbackKey = null;
+            StateHasChanged();
+        }
     }
 }

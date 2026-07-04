@@ -1,0 +1,10 @@
+<div class="icon-detail-row">
+    <BitText Typography="BitTypography.Caption1" Class="icon-detail-row-label">@Label</BitText>
+    <code class="icon-detail-row-value">@Value</code>
+    <BitButton IconOnly
+               Size="BitSize.Small"
+               Variant="BitVariant.Text"
+               Title="@(IsCopied ? "Copied" : "Copy")"
+               IconName="@(IsCopied ? BitIconName.Accept : BitIconName.Copy)"
+               OnClick="HandleCopy" />
+</div>
