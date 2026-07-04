@@ -1,0 +1,31 @@
+@using Bit.Brouter
+@implements IDisposable
+@inject IBrouter Brouter
+
+<Brouter>
+    <Broute Path="/a">
+        <Content><div data-testid="a">a</div></Content>
+    </Broute>
+    <Broute Path="/b">
+        <Content><div data-testid="b">b</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    // The navigation type of the most recent completed navigation, recorded from the OnNavigated hook.
+    public BrouterNavigationType? LastType { get; private set; }
+
+    // Every recorded type in order, so a test can assert the whole sequence if it needs to.
+    public List<BrouterNavigationType> Types { get; } = new();
+
+    protected override void OnInitialized() => Brouter.OnNavigated += OnNavigated;
+
+    private ValueTask OnNavigated(BrouterNavigationContext ctx)
+    {
+        LastType = ctx.NavigationType;
+        Types.Add(ctx.NavigationType);
+        return ValueTask.CompletedTask;
+    }
+
+    public void Dispose() => Brouter.OnNavigated -= OnNavigated;
+}

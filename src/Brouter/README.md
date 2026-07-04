@@ -72,6 +72,7 @@ builder.Services.AddBitBrouterServices(o =>
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
 - **Global hooks**: `OnNavigating`, `OnNavigated`, `OnError` (Vue Router style)
+- **Navigation type** on `BrouterNavigationContext.NavigationType`: distinguishes `Push` / `Replace` / `Pop` (Back/Forward) for scroll-restoration and analytics logic
 - **Preventive guards** (via `RegisterLocationChangingHandler`): a cancel/redirect stops the URL from ever changing - no address-bar flicker, no corrupted history/back button, and real "unsaved changes" prompts are possible
 - In-flight loader cancellation when navigation is superseded
 - **Attribute-route / `@page` discovery**: scan `AppAssembly` / `AdditionalAssemblies` for `[Route]`-annotated components so routes live colocated with their pages (Razor class libraries and lazy-loaded assemblies included)
@@ -179,6 +180,32 @@ implement a genuine "you have unsaved changes" prompt by cancelling from a guard
         new Dictionary<string, object?> { ["id"] = 42 });
 }
 ```
+
+## Navigation type (push / replace / pop)
+
+`BrouterNavigationContext.NavigationType` tells guards, loaders and hooks how the current navigation
+was initiated, so logic that treats a Back/Forward differently from a fresh navigation (scroll
+restoration, analytics, "leave animation" direction) can branch on it. It is populated before guards
+run and is available for the whole navigation.
+
+```csharp
+private ValueTask<object?> LoadFeed(BrouterNavigationContext ctx)
+{
+    if (ctx.NavigationType == BrouterNavigationType.Pop)
+        return ValueTask.FromResult<object?>(_cachedFeed); // Back/Forward: reuse, don't refetch
+    ...
+}
+```
+
+- `Push` - a new history entry: an intercepted link click, `brouter.Navigate(...)` /
+  `brouter.NavigateToName(...)` without `replace`, an internal redirect, and the initial page load.
+- `Replace` - the current entry was replaced: `brouter.Navigate(url, replace: true)`, a
+  `<BrouterLink Replace>` click, or the address-bar restore after a cancelled navigation.
+- `Pop` - a history traversal: browser Back/Forward, or `brouter.Back()` / `brouter.Forward()`.
+
+Detection relies on navigation going through Brouter's own primitives (links and `IBrouter`). A raw
+`NavigationManager.NavigateTo` that bypasses `IBrouter` is indistinguishable from a history traversal
+and is reported as `Pop`; route programmatic navigations through `IBrouter` to classify them correctly.
 
 ## Active links
 

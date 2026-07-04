@@ -298,6 +298,21 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // Read-and-cleared by the commit phase; overwritten by each new approved decision.
     private string? _approvedTargetUri;
 
+    // Navigation-type bookkeeping (see BrouterNavigationType). _pendingNavigationType is stamped by
+    // Brouter's own programmatic navigations (BrouterService.Navigate and the internal redirect/restore
+    // calls, all funnelled through NavigateInternal / SetPendingNavigationType) right before they call
+    // NavigationManager.NavigateTo, so the phase that observes the resulting navigation knows it was a
+    // push vs a replace rather than having to guess. It is consumed exactly once - by whichever of the
+    // changing or commit phase runs first for that navigation - so it can never leak into a later one.
+    // A navigation with no pending type is either an intercepted link click (a push) or, when not
+    // intercepted, a history traversal (Back/Forward => pop). Like the other nav-state fields it is only
+    // touched on the renderer's single dispatcher, so it needs no synchronization.
+    private BrouterNavigationType? _pendingNavigationType;
+    // Hand-off of the resolved type from the preventive changing phase to the commit phase, paired with
+    // _approvedTargetUri: set only when the changing phase approves a navigation, read-and-cleared by the
+    // commit phase so it re-uses the exact type the changing phase computed instead of recomputing it.
+    private BrouterNavigationType? _approvedNavigationType;
+
 
     protected override void OnInitialized()
     {
@@ -440,8 +455,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         // Initial render: the From is Empty (we just mounted), the To is the URL we're at now.
         // decisionAlreadyMade is false - the LocationChanging handler is not registered yet (and does
-        // not fire for the initial load anyway), so the full pipeline runs the guards here.
-        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation, decisionAlreadyMade: false);
+        // not fire for the initial load anyway), so the full pipeline runs the guards here. The first
+        // mount is reported as a Push (a fresh navigation), never a Pop.
+        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation, decisionAlreadyMade: false, BrouterNavigationType.Push);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -598,12 +614,21 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // still honours guards/OnNavigating, falling back to the reactive URL-restore behavior.
         var approved = _approvedTargetUri;
         _approvedTargetUri = null;
+        var approvedType = _approvedNavigationType;
+        _approvedNavigationType = null;
         var decisionAlreadyMade =
             approved is not null && string.Equals(approved, to.FullUri, StringComparison.Ordinal);
 
+        // When the changing phase already ran, re-use the type it resolved and stashed alongside the
+        // approval. Otherwise (initial load races, forceLoad, a nav that outran interception) resolve it
+        // here from our pending marker + whether the framework saw an intercepted link click.
+        var navType = decisionAlreadyMade
+            ? (approvedType ?? BrouterNavigationType.Push)
+            : ConsumeNavigationType(isInitial: false, isIntercepted: e.IsNavigationIntercepted);
+
         try
         {
-            await InvokeAsync(() => ProcessNavigationAsync(from, to, decisionAlreadyMade).AsTask());
+            await InvokeAsync(() => ProcessNavigationAsync(from, to, decisionAlreadyMade, navType).AsTask());
         }
         catch (Exception ex)
         {
@@ -635,6 +660,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // below may set it. This guarantees a decision that ends up cancelled, redirected, superseded
         // or errored never leaves a stale approval that a later commit could misread as "guards ran".
         _approvedTargetUri = null;
+        _approvedNavigationType = null;
+
+        // Resolve the navigation type now (before hooks/guards run) so they can read it off the context.
+        // Consuming the pending marker here is what keeps it from leaking into a later navigation.
+        var navType = ConsumeNavigationType(isInitial: false, isIntercepted: context.IsNavigationIntercepted);
 
         BrouterLocation from = CurrentLocation;
         BrouterLocation to;
@@ -656,7 +686,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // do NOT touch _navCts / _navVersion in this phase - that machinery belongs to the commit
         // phase, and mixing the two would leak or double-cancel token sources.
         var token = context.CancellationToken;
-        var ctx = new BrouterNavigationContext(from, to, token);
+        var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType };
         var service = _brouterService;
 
         try
@@ -678,11 +708,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 if (string.IsNullOrEmpty(NotFound) is false && IsSamePath(to.Path, NotFound) is false)
                 {
                     context.PreventNavigation();
-                    _navManager.NavigateTo(NotFound);
+                    NavigateInternal(NotFound);
                     return;
                 }
 
                 _approvedTargetUri = to.FullUri;
+                _approvedNavigationType = navType;
                 return;
             }
 
@@ -698,13 +729,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (winner.RedirectTo is not null)
             {
                 context.PreventNavigation();
-                _navManager.NavigateTo(winner.RedirectTo);
+                NavigateInternal(winner.RedirectTo);
                 return;
             }
 
             // Approved: let the URL commit. The LocationChanged commit phase re-selects this same
             // winner (matching is pure) and runs its loaders + render, skipping the hooks above.
             _approvedTargetUri = to.FullUri;
+            _approvedNavigationType = navType;
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -730,7 +762,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         if (ctx.RedirectUrl is not null)
         {
             context.PreventNavigation();
-            _navManager.NavigateTo(ctx.RedirectUrl);
+            NavigateInternal(ctx.RedirectUrl);
             return true;
         }
 
@@ -742,6 +774,42 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         return false;
     }
+
+    /// <summary>
+    /// Resolves the <see cref="BrouterNavigationType"/> for a navigation and consumes the pending marker.
+    /// A pending type (stamped by <see cref="NavigateInternal"/> / <see cref="SetPendingNavigationType"/>
+    /// for Brouter's own programmatic navigations) wins. Otherwise the first mount and an intercepted link
+    /// click are pushes, and a non-intercepted navigation with no pending marker is a history traversal
+    /// (Back/Forward) - reported as <see cref="BrouterNavigationType.Pop"/>. Consuming the pending marker
+    /// here (exactly once, in whichever phase runs first) is what stops it leaking into a later navigation.
+    /// </summary>
+    private BrouterNavigationType ConsumeNavigationType(bool isInitial, bool isIntercepted)
+    {
+        var pending = _pendingNavigationType;
+        _pendingNavigationType = null;
+        if (pending is not null) return pending.Value;
+        if (isInitial || isIntercepted) return BrouterNavigationType.Push;
+        return BrouterNavigationType.Pop;
+    }
+
+    /// <summary>
+    /// Marks the next navigation this Brouter is about to trigger programmatically as a push or a
+    /// replace, then delegates to <c>NavigationManager.NavigateTo</c>. Used for all of Brouter's own
+    /// internal navigations (redirects, NotFound redirect, cancelled-navigation address-bar restore) so
+    /// the phase that observes the resulting navigation classifies it correctly instead of guessing.
+    /// </summary>
+    private void NavigateInternal(string url, bool replace = false)
+    {
+        _pendingNavigationType = replace ? BrouterNavigationType.Replace : BrouterNavigationType.Push;
+        _navManager.NavigateTo(url, replace: replace);
+    }
+
+    /// <summary>
+    /// Records the type of the next navigation the caller is about to trigger via
+    /// <c>NavigationManager.NavigateTo</c>. Called by <see cref="BrouterService"/> before an
+    /// <see cref="IBrouter.Navigate"/> so the pipeline reports the correct push/replace type.
+    /// </summary>
+    internal void SetPendingNavigationType(BrouterNavigationType type) => _pendingNavigationType = type;
 
     private async ValueTask SafeInvokeOnError(BrouterLocation from, BrouterLocation to, Exception ex)
     {
@@ -908,7 +976,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// navigation the changing handler never observed - the full pipeline runs, including guards and
     /// the reactive URL-restore fallback in <see cref="HandleSideEffects"/>.
     /// </summary>
-    private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to, bool decisionAlreadyMade)
+    private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to, bool decisionAlreadyMade, BrouterNavigationType navType)
     {
         // Now that we own the renderer's dispatcher (via InvokeAsync from the LocationChanged
         // handler, or directly from OnAfterRenderAsync for the initial render), publish the
@@ -930,7 +998,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(from, to, token);
+        var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType };
         var service = _brouterService;
 
         try
@@ -999,7 +1067,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         // (the NotFound URL keeps not matching, we keep navigating to it).
                         if (IsSamePath(to.Path, NotFound) is false)
                         {
-                            _navManager.NavigateTo(NotFound);
+                            NavigateInternal(NotFound);
                             return;
                         }
                     }
@@ -1041,7 +1109,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // when Guard is also set.
                 if (winner.RedirectTo is not null)
                 {
-                    _navManager.NavigateTo(winner.RedirectTo);
+                    NavigateInternal(winner.RedirectTo);
                     return;
                 }
             }
@@ -1201,7 +1269,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         if (ctx.RedirectUrl is not null)
         {
-            _navManager.NavigateTo(ctx.RedirectUrl);
+            NavigateInternal(ctx.RedirectUrl);
             return true;
         }
 
@@ -1211,7 +1279,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (string.IsNullOrEmpty(from.FullUri) is false &&
                 string.Equals(from.FullUri, ctx.To.FullUri, StringComparison.Ordinal) is false)
             {
-                _navManager.NavigateTo(from.FullUri, replace: true);
+                NavigateInternal(from.FullUri, replace: true);
             }
             return true;
         }

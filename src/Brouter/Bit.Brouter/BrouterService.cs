@@ -67,6 +67,12 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
     public void Navigate(string url, bool replace = false, bool forceLoad = false)
     {
         EnsureMounted();
+        // Tell the pipeline this navigation is a push/replace before triggering it, so guards, loaders
+        // and hooks report the right BrouterNavigationType. Skipped for forceLoad: it's a full-page
+        // reload, so no SPA pipeline runs and there is nothing to classify. Back/Forward don't come
+        // through here (they use history.go), so they correctly fall through to Pop detection.
+        if (forceLoad is false)
+            _activeBrouter!.SetPendingNavigationType(replace ? BrouterNavigationType.Replace : BrouterNavigationType.Push);
         _navigationManager!.NavigateTo(url, forceLoad: forceLoad, replace: replace);
     }
 

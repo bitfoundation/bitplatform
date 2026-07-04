@@ -24,6 +24,15 @@ public sealed class BrouterNavigationContext
     /// <summary>Token cancelled when the navigation is superseded by a newer one.</summary>
     public CancellationToken CancellationToken { get; }
 
+    /// <summary>
+    /// How this navigation was initiated - a fresh push, a history-entry replace, or a Back/Forward
+    /// traversal. Lets guards, loaders and hooks distinguish a Back navigation from a new push, which
+    /// scroll-restoration and analytics logic often needs. Populated before guards run, so it is
+    /// available throughout the whole navigation. See <see cref="BrouterNavigationType"/> for the
+    /// detection caveats.
+    /// </summary>
+    public BrouterNavigationType NavigationType { get; internal set; } = BrouterNavigationType.Push;
+
     /// <summary>The matched route once matching has happened. Null in OnNavigating hooks.</summary>
     public Broute? Route { get; internal set; }
 
