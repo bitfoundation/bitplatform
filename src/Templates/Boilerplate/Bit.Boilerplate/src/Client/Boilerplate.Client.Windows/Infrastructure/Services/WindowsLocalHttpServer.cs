@@ -10,7 +10,7 @@ namespace Boilerplate.Client.Windows.Infrastructure.Services;
 public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private PubSubService pubSubService;
-    [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler;
     [AutoInject] private ClientWindowsSettings clientWindowsSettings;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
 
