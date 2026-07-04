@@ -9,7 +9,7 @@ namespace Bit.Brouter;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Each registered <see cref="BrouteConstraint"/> instance is cached and reused across all
+/// Each registered <see cref="BrouterRouteConstraint"/> instance is cached and reused across all
 /// route matches (and across threads). Implementations must therefore be stateless and
 /// thread-safe.
 /// </para>
@@ -23,7 +23,7 @@ namespace Bit.Brouter;
 /// </remarks>
 public static class BrouterConstraints
 {
-    private static readonly ConcurrentDictionary<string, BrouteConstraint> _constraints = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly ConcurrentDictionary<string, BrouterRouteConstraint> _constraints = new(StringComparer.OrdinalIgnoreCase)
     {
         ["int"] = new BrouterTypeRouteConstraint<int>((string s, out int r) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
         ["bool"] = new BrouterTypeRouteConstraint<bool>(bool.TryParse),
@@ -43,7 +43,7 @@ public static class BrouterConstraints
     /// The provided <paramref name="constraint"/> is cached and shared across every route match.
     /// Implementations must be stateless and safe for concurrent use.
     /// </remarks>
-    public static void Register(string name, BrouteConstraint constraint)
+    public static void Register(string name, BrouterRouteConstraint constraint)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(constraint);
@@ -68,6 +68,6 @@ public static class BrouterConstraints
         return removed;
     }
 
-    internal static BrouteConstraint? Create(string name) =>
+    internal static BrouterRouteConstraint? Create(string name) =>
         _constraints.TryGetValue(name, out var constraint) ? constraint : null;
 }

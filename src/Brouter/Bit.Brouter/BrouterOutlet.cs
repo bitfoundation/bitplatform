@@ -12,9 +12,9 @@ public class BrouterOutlet : ComponentBase, IDisposable
 
 
     private Broute? _matchedChild;
-    private BrouteParameters _parameters = BrouteParameters.Empty;
+    private BrouterRouteParameters _parameters = BrouterRouteParameters.Empty;
 
-    internal void Render(Broute route, BrouteParameters parameters)
+    internal void Render(Broute route, BrouterRouteParameters parameters)
     {
         _matchedChild = route;
         _parameters = parameters;
@@ -62,7 +62,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
                 else if (_matchedChild.Component is not null)
                 {
                     b2.OpenComponent(0, _matchedChild.Component);
-                    BrouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation,
+                    BrouterRouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation,
                         _matchedChild.BindComponentParametersByName ? _matchedChild.TemplateParameterNames : null);
                     b2.CloseComponent();
                 }

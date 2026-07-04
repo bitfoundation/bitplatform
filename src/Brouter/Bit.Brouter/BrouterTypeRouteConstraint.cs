@@ -4,7 +4,7 @@ namespace Bit.Brouter;
 /// A route constraint that requires the value to be parseable as a specified type.
 /// </summary>
 /// <typeparam name="T">The type to which the value must be parseable.</typeparam>
-public class BrouterTypeRouteConstraint<T> : BrouteConstraint
+public class BrouterTypeRouteConstraint<T> : BrouterRouteConstraint
 {
     private readonly TryParseDelegate _parser;
 

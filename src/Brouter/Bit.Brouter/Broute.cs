@@ -31,7 +31,7 @@ public class Broute : ComponentBase, IDisposable
     public Type? Component { get; set; }
 
     /// <summary>A render fragment to render when this route matches. The argument carries the route parameters.</summary>
-    [Parameter] public RenderFragment<BrouteParameters>? Content { get; set; }
+    [Parameter] public RenderFragment<BrouterRouteParameters>? Content { get; set; }
 
     /// <summary>
     /// Async guard. Use <c>ctx.Cancel()</c> or <c>ctx.Redirect("/login")</c> to deny.
@@ -67,7 +67,7 @@ public class Broute : ComponentBase, IDisposable
 
     [CascadingParameter(Name = "Brouter")] internal Brouter? Brouter { get; set; }
     [CascadingParameter(Name = "ParentRoute")] internal Broute? Parent { get; set; }
-    [CascadingParameter(Name = "RouteParameters")] internal BrouteParameters? InheritedParameters { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] internal BrouterRouteParameters? InheritedParameters { get; set; }
 
 
     internal string FullTemplate { get; private set; } = string.Empty;
@@ -79,7 +79,7 @@ public class Broute : ComponentBase, IDisposable
 
     internal BrouterOutlet? Outlet { get; set; }
 
-    internal BrouteTemplate? RouteTemplate { get; private set; }
+    internal BrouterRouteTemplate? RouteTemplate { get; private set; }
     // Tightened from IDictionary to IReadOnlyDictionary: callers only ever read these and the
     // pipeline replaces them wholesale on a match commit. Exposing the mutable interface let
     // any internal caller .Add/.Remove/.Clear them mid-render which would be a footgun against
@@ -88,7 +88,7 @@ public class Broute : ComponentBase, IDisposable
     internal IReadOnlyDictionary<string, string[]> ConstraintsByParameter { get; set; } = new Dictionary<string, string[]>();
     internal object? LoadedData { get; set; }
 
-    private BrouteRenderer? _renderer;
+    private BrouterRouteRenderer? _renderer;
 
     protected override void OnInitialized()
     {
@@ -146,7 +146,7 @@ public class Broute : ComponentBase, IDisposable
         }
         TemplateParameterNames = templateParamNames;
 
-        _renderer = new BrouteRenderer(this);
+        _renderer = new BrouterRouteRenderer(this);
 
         Brouter.RegisterRoute(this);
         Parent?.AddChild(this);

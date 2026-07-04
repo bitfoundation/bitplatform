@@ -67,7 +67,7 @@ builder.Services.AddBitBrouterServices(o =>
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
 - `NotFound` URL or inline `NotFoundContent`
-- **Type-safe `BrouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
+- **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
 - **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
@@ -94,7 +94,7 @@ builder.Services.AddBitBrouterServices(o =>
 
 ```razor
 @code {
-    [CascadingParameter(Name = "RouteParameters")] BrouteParameters? Params { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Params { get; set; }
 
     protected override void OnInitialized()
     {

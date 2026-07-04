@@ -1,6 +1,6 @@
 namespace Bit.Brouter;
 
-internal class BrouteTemplate
+internal class BrouterRouteTemplate
 {
     private static readonly char[] _separators = ['/'];
 
@@ -10,7 +10,7 @@ internal class BrouteTemplate
     public string Template { get; }
     public IReadOnlyList<BrouterTemplateSegment> TemplateSegments { get; }
 
-    public BrouteTemplate(string template, BrouterTemplateSegment[] segments)
+    public BrouterRouteTemplate(string template, BrouterTemplateSegment[] segments)
     {
         ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(segments);

@@ -18,7 +18,7 @@ internal class BrouterTemplateSegment
     /// <summary>True for parameters declared with a trailing <c>?</c>, e.g. <c>{id?}</c>.</summary>
     public bool IsOptional { get; }
 
-    public BrouteConstraintBinding[] Constraints { get; }
+    public BrouterRouteConstraintBinding[] Constraints { get; }
 
     public BrouterTemplateSegment(string template, string segment, bool isParameter)
     {
@@ -71,7 +71,7 @@ internal class BrouterTemplateSegment
 
             Value = paramName;
             Constraints = rest.Split(':')
-                              .Select(c => new BrouteConstraintBinding(c, BrouteConstraint.Resolve(template, segment, c)))
+                              .Select(c => new BrouterRouteConstraintBinding(c, BrouterRouteConstraint.Resolve(template, segment, c)))
                               .ToArray();
         }
 

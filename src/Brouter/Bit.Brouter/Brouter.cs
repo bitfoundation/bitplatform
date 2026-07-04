@@ -659,7 +659,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
             var winner = winnerMatch.Value.Route;
             ctx.Route = winner;
-            ctx.Parameters = new BrouteParameters(winnerMatch.Value.Parameters);
+            ctx.Parameters = new BrouterRouteParameters(winnerMatch.Value.Parameters);
 
             var guardsOk = await winner.InvokeGuardsAsync(ctx);
             if (token.IsCancellationRequested) return;
@@ -990,7 +990,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             winner.ConstraintsByParameter = winnerMatch.Value.ConstraintsByParameter;
 
             ctx.Route = winner;
-            ctx.Parameters = new BrouteParameters(winner.Parameters);
+            ctx.Parameters = new BrouterRouteParameters(winner.Parameters);
 
             // Guards + RedirectTo run only on the full-pipeline path. When decisionAlreadyMade is
             // true, the changing phase already ran the guard chain and honoured RedirectTo (a

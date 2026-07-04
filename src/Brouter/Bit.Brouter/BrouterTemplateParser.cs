@@ -15,15 +15,15 @@ internal static class BrouterTemplateParser
     /// <summary>Read-only view of the characters that aren't allowed inside a parameter name.</summary>
     public static ReadOnlySpan<char> InvalidParameterNameCharacters => _invalidParameterNameCharacters;
 
-    internal static BrouteTemplate ParseTemplate(string template)
+    internal static BrouterRouteTemplate ParseTemplate(string template)
     {
-        if (string.IsNullOrEmpty(template)) return new BrouteTemplate("", []);
+        if (string.IsNullOrEmpty(template)) return new BrouterRouteTemplate("", []);
 
         var originalTemplate = template;
         template = template.Trim('/');
 
         // Special case "/".
-        if (template == "") return new BrouteTemplate("/", []);
+        if (template == "") return new BrouterRouteTemplate("/", []);
 
         var segments = template.Split('/');
         var templateSegments = new BrouterTemplateSegment[segments.Length];
@@ -96,7 +96,7 @@ internal static class BrouterTemplateParser
             }
         }
 
-        return new BrouteTemplate(template, templateSegments);
+        return new BrouterRouteTemplate(template, templateSegments);
     }
 
     private static void ValidateParameterName(string template, string segment, string inner)

@@ -28,7 +28,7 @@ public sealed class BrouterNavigationContext
     public Broute? Route { get; internal set; }
 
     /// <summary>Parameters extracted from the matched route. Empty when no match yet.</summary>
-    public BrouteParameters Parameters { get; internal set; } = BrouteParameters.Empty;
+    public BrouterRouteParameters Parameters { get; internal set; } = BrouterRouteParameters.Empty;
 
     /// <summary>True if a guard or hook called <see cref="Cancel"/>.</summary>
     public bool IsCancelled { get; private set; }
