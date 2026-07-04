@@ -48,6 +48,11 @@ public class AppAcceptLanguageRequestCultureProvider : AcceptLanguageHeaderReque
         if (cultureName.Value?.Contains('-') is true)
             return cultureName;
 
+        var exact = supportedCultures.FirstOrDefault(c =>
+            string.Equals(c.Name, cultureName.Value, StringComparison.OrdinalIgnoreCase));
+        if (exact is not null)
+            return new StringSegment(exact.Name);
+
         var matched = supportedCultures.FirstOrDefault(c =>
         {
             var parent = c.Parent;
