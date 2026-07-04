@@ -14,7 +14,7 @@
         .icon-name {
             opacity: 0;
             text-align: center;
-            word-break: break-word;
+            overflow-wrap: anywhere;
         }
 
         &:hover,

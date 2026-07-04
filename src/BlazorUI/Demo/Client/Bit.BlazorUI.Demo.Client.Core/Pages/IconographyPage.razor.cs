@@ -14,7 +14,7 @@ public partial class IconographyPage
 
         public string RazorIconName => $"IconName=\"@BitIconName.{FieldName}\"";
 
-        public string RazorIconInfo => $"Icon=\"@BitIconInfo.Bit(\"{Value}\")\"";
+        public string RazorIconInfo => $"Icon='@BitIconInfo.Bit(\"{Value}\")'";
     }
 
 
@@ -89,16 +89,23 @@ public partial class IconographyPage
         await EnsureGlyphsLoadedAsync();
     }
 
-    private void CloseIconPanel()
+    private async Task CloseIconPanel()
     {
         isIconPanelOpen = false;
-        selectedIcon = null;
+        StateHasChanged();
+
+        await Task.Delay(200);
+
+        if (isIconPanelOpen is false)
+        {
+            selectedIcon = null;
+            StateHasChanged();
+        }
     }
 
     private Task HandleIconPanelDismissed(MouseEventArgs _)
     {
-        CloseIconPanel();
-        return Task.CompletedTask;
+        return CloseIconPanel();
     }
 
     private string? GetGlyphCode(IconInfo icon)
@@ -107,7 +114,7 @@ public partial class IconographyPage
 
         if (iconGlyphs.TryGetValue(icon.Value, out var glyph) is false || string.IsNullOrEmpty(glyph)) return null;
 
-       return $"\\{char.ConvertToUtf32(glyph, 0):X4}";
+        return $"\\{char.ConvertToUtf32(glyph, 0):X4}";
     }
 
     private async Task EnsureGlyphsLoadedAsync()
