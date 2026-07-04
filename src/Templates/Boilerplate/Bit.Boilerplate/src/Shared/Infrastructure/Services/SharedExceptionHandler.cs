@@ -139,11 +139,11 @@ public partial class SharedExceptionHandler
         return data;
     }
 
-    public virtual bool IsTransientException(Exception exp)
+    public virtual bool IsTransientException(Exception? exp)
     {
         return (exp is TimeoutException)
              || (exp is WebException webExp && webExp.WithData("Status", webExp.Status).Status is WebExceptionStatus.ConnectFailure)
-             || (exp.InnerException is not null && IsTransientException(exp.InnerException))
+             || (exp?.InnerException is not null && IsTransientException(exp.InnerException))
              || (exp is HttpIOException httpIOExp && httpIOExp.WithData("HttpRequestError", httpIOExp.HttpRequestError).HttpRequestError is not HttpRequestError.UserAuthenticationError)
              || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsTransientException))
              || (exp is SocketException sockExp && sockExp.WithData("SocketErrorCode", sockExp.SocketErrorCode).SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut)

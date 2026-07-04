@@ -27,7 +27,7 @@ public class AppOpenTelemetryProcessor(IHostEnvironment env) : BaseProcessor<Act
     {
         if (env.IsDevelopment()) return; // In dev env, we want to capture all telemetry for debugging/testing.
 
-        // Processes activities at their completion boundary.
+        // Processes activities at their completion boundary (tail-based sampling).
         // This method ensures that critical or unexpected application failures are 100% recorded,
         // while successfully completed activities and expected known/transient errors 
         // are down-sampled to a 5% execution rate to optimize telemetry storage/costs.
@@ -38,7 +38,7 @@ public class AppOpenTelemetryProcessor(IHostEnvironment env) : BaseProcessor<Act
         // Check if the failure is due to a known or transient exception
         bool isKnownOrTransient = activity.TagObjects.Any(t => (t.Key == "HasKnownException" || t.Key == "HasTransientException") && t.Value?.ToString() is "true");
 
-        // Sample successful activities or expected transient/known error failures at 5% rate
+        // Apply 5% sampling to all activities except unhandled critical errors
         if (isFailed is false || isKnownOrTransient)
         {
             if (ShouldSample(activity) is false)
