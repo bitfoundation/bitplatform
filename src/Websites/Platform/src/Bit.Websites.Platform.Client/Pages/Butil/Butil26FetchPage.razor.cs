@@ -42,11 +42,21 @@ public partial class Butil26FetchPage
         }
     }
 
+    private bool sending;
+
     private async Task SendWithProgress()
     {
+        // Prevent overlapping downloads from racing on the shared cts field.
+        if (sending) return;
+        sending = true;
+
         progressText = null;
+
+        // Cancel and dispose any previous source before replacing it; keep a local
+        // reference so this call only ever disposes/clears its own token source.
+        cts?.Cancel();
         cts?.Dispose();
-        cts = new CancellationTokenSource();
+        var localCts = cts = new CancellationTokenSource();
 
         try
         {
@@ -59,7 +69,7 @@ public partial class Butil26FetchPage
                         : $"Received {p.Loaded} bytes";
                     InvokeAsync(StateHasChanged);
                 },
-                cancellationToken: cts.Token);
+                cancellationToken: localCts.Token);
 
             progressText = response.Aborted ? "Aborted" : $"Complete - {response.Body.Length} bytes";
         }
@@ -69,8 +79,9 @@ public partial class Butil26FetchPage
         }
         finally
         {
-            cts.Dispose();
-            cts = null;
+            if (ReferenceEquals(cts, localCts)) cts = null;
+            localCts.Dispose();
+            sending = false;
         }
     }
 
