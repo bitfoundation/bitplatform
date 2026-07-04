@@ -9,17 +9,19 @@ namespace Bit.Brouter;
 internal static class BrouterRelativeUrl
 {
     /// <summary>
-    /// True when <paramref name="url"/> is a route-relative reference: <c>"."</c>, <c>".."</c>, or a
-    /// path starting with <c>"./"</c> / <c>"../"</c>. Deliberately narrow - a bare segment like
-    /// <c>"sibling"</c> (or a dotted name like <c>".well-known"</c>) is NOT treated as relative and
-    /// keeps its historical base-relative meaning through <c>NavigationManager</c>, so introducing
-    /// relative resolution can't silently change the destination of existing URLs.
+    /// True when <paramref name="url"/> is a route-relative reference: <c>"."</c>, <c>".."</c>, a
+    /// path starting with <c>"./"</c> / <c>"../"</c>, or one of those dot forms followed directly by
+    /// a query or hash (<c>".?tab=2"</c>, <c>"..#top"</c>) - <see cref="Resolve"/> preserves that
+    /// suffix. Deliberately narrow - a bare segment like <c>"sibling"</c> (or a dotted name like
+    /// <c>".well-known"</c>) is NOT treated as relative and keeps its historical base-relative
+    /// meaning through <c>NavigationManager</c>, so introducing relative resolution can't silently
+    /// change the destination of existing URLs.
     /// </summary>
     internal static bool IsRelative(string url)
     {
         if (string.IsNullOrEmpty(url) || url[0] != '.') return false;
-        if (url.Length == 1 || url[1] == '/') return true;          // "." or "./..."
-        if (url[1] == '.') return url.Length == 2 || url[2] == '/'; // ".." or "../..."
+        if (url.Length == 1 || url[1] is '/' or '?' or '#') return true;          // "." or "./..." or ".?..."/".#..."
+        if (url[1] == '.') return url.Length == 2 || url[2] is '/' or '?' or '#'; // ".." or "../..." or "..?..."/"..#..."
         return false;
     }
 

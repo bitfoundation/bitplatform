@@ -81,7 +81,16 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-brouter.js">
+    <!-- The output differs per configuration (Release is minified) but lands in the same file, so the
+         TypeScript inputs alone can't drive the up-to-date check: after a Debug build, a Release build
+         would see wwwroot/bit-brouter.js newer than the sources and skip, shipping unminified JS (and
+         vice versa). A per-configuration stamp in obj/ makes switching configurations invalidate the
+         check; the stale stamp of the other configuration is deleted so switching back rebuilds too. -->
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-brouter.js;obj/bit-brouter-$(Configuration).stamp">
+        <ItemGroup>
+            <_BrouterStaleJsStamps Include="obj\bit-brouter-*.stamp" Exclude="obj\bit-brouter-$(Configuration).stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BrouterStaleJsStamps)" />
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
              An interrupted in-place minify could leave a half-written file that the Outputs check
@@ -89,6 +98,8 @@
              to avoid that. The esbuild "esm" format keeps the exports that the C# side imports as a module. -->
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-brouter.js --minify --format=esm --outfile=wwwroot/bit-brouter.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-brouter.min.js" DestinationFiles="wwwroot/bit-brouter.js" OverwriteReadOnlyFiles="true" />
+        <MakeDir Directories="obj" />
+        <Touch Files="obj/bit-brouter-$(Configuration).stamp" AlwaysCreate="true" />
     </Target>
 
 </Project>

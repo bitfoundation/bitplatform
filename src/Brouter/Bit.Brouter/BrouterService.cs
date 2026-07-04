@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
@@ -11,6 +13,7 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 {
     private readonly BrouterOptions _options;
     private readonly IJSRuntime _js;
+    private readonly ILogger<BrouterService> _logger;
     private Brouter? _activeBrouter;
     private NavigationManager? _navigationManager;
 
@@ -23,7 +26,9 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
     // single interop round-trip instead of racing N imports.
     private Task<IJSObjectReference>? _moduleTask;
 
-    public BrouterService(IOptions<BrouterOptions> options, IJSRuntime js)
+    // The logger is optional (with a null-object fallback) so resolving the service never fails
+    // in a container that has no logging registered.
+    public BrouterService(IOptions<BrouterOptions> options, IJSRuntime js, ILogger<BrouterService>? logger = null)
     {
         // Resolve once: BrouterService is scoped, BrouterOptions is registered as a singleton
         // via AddOptions, so the resolved value is stable for the lifetime of the scope.
@@ -33,6 +38,7 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         // and re-evaluating every active link, which isn't a supported scenario right now.
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _js = js;
+        _logger = logger ?? NullLogger<BrouterService>.Instance;
     }
 
     internal BrouterOptions Options => _options;
@@ -120,15 +126,19 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
     // Brouter's fire-and-forget interop (navigation effects, scroll save, history.go, module dispose):
     // a disconnected circuit, a generic interop failure (e.g. a non-browser host), interop being
     // unavailable during prerender, and the component being disposed mid-call. Centralized so every
-    // JS call site handles the same set identically instead of repeating the catch block.
-    private static async ValueTask SafeJsCallAsync(Func<ValueTask> call)
+    // JS call site handles the same set identically instead of repeating the catch block. Suppressed
+    // failures are logged at Debug so real problems remain diagnosable without becoming fatal.
+    private async ValueTask SafeJsCallAsync(Func<ValueTask> call)
     {
         try { await call(); }
-        catch (JSDisconnectedException) { /* circuit disconnected mid-call */ }
-        catch (JSException) { /* JS interop failure (e.g. non-browser host) */ }
-        catch (InvalidOperationException) { /* JS interop unavailable during pre-render */ }
-        catch (TaskCanceledException) { /* component disposed mid-call */ }
+        catch (JSDisconnectedException ex) { LogSuppressedJsFailure(ex, "circuit disconnected mid-call"); }
+        catch (JSException ex) { LogSuppressedJsFailure(ex, "JS interop failure (e.g. non-browser host)"); }
+        catch (InvalidOperationException ex) { LogSuppressedJsFailure(ex, "JS interop unavailable during pre-render"); }
+        catch (TaskCanceledException ex) { LogSuppressedJsFailure(ex, "component disposed mid-call"); }
     }
+
+    private void LogSuppressedJsFailure(Exception exception, string reason) =>
+        _logger.LogDebug(exception, "Suppressed a non-fatal Brouter JS interop failure ({Reason}).", reason);
 
     public void NavigateToName(string name, IReadOnlyDictionary<string, object?>? parameters = null,
                                string? query = null, bool replace = false)

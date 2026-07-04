@@ -17,6 +17,12 @@ public class RelativeNavigationTests : BunitTestContext
         Assert.IsTrue(BrouterRelativeUrl.IsRelative("../sibling"));
         Assert.IsTrue(BrouterRelativeUrl.IsRelative("../../x"));
 
+        // A query or hash directly after the dot form is still relative (Resolve preserves it).
+        Assert.IsTrue(BrouterRelativeUrl.IsRelative(".?tab=info"));
+        Assert.IsTrue(BrouterRelativeUrl.IsRelative("..?tab=info"));
+        Assert.IsTrue(BrouterRelativeUrl.IsRelative(".#top"));
+        Assert.IsTrue(BrouterRelativeUrl.IsRelative("..#top"));
+
         // Bare and dotted-but-not-relative names keep their base-relative meaning.
         Assert.IsFalse(BrouterRelativeUrl.IsRelative("sibling"));
         Assert.IsFalse(BrouterRelativeUrl.IsRelative("/absolute"));
