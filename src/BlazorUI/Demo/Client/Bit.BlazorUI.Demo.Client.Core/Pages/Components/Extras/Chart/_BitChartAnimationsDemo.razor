@@ -1,0 +1,34 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<div class="controls" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1rem">
+    <label>
+        Duration
+        <input type="range" min="0" max="2000" step="100" @bind="_duration" @bind:event="oninput" />
+        <span>@_duration ms</span>
+    </label>
+    <label>
+        Easing
+        <select @bind="_easing">
+            <option value="ease-out">ease-out</option>
+            <option value="ease-in-out">ease-in-out</option>
+            <option value="cubic-bezier(.34,1.56,.64,1)">spring</option>
+            <option value="linear">linear</option>
+        </select>
+    </label>
+    <label>
+        Stagger
+        <input type="range" min="0" max="120" step="10" @bind="_stagger" @bind:event="oninput" />
+        <span>@_stagger ms/el</span>
+    </label>
+    <BitButton Variant="BitVariant.Outline" OnClick="Randomize">Randomize data</BitButton>
+</div>
+
+<DemoExample Title="Bars" RazorCode="@barsRazorCode" CsharpCode="@barsCsharpCode" Id="animations-bars">
+    <div class="example-desc">Entry and update animations are driven by CSS in the browser: a staggered rise plus smooth value transitions. Tweak the controls above.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="_data" Options="Opts()" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Line draw-on" RazorCode="@lineDrawRazorCode" CsharpCode="@lineDrawCsharpCode" Id="animations-line-draw">
+    <div class="example-desc">The line path animates in (draw-on) and the points follow. Shares the same duration/easing/stagger controls.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="LineData()" Options="Opts()" /></div></div>
+</DemoExample>

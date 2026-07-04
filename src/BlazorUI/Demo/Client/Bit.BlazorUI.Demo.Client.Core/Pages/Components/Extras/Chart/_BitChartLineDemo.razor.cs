@@ -1,261 +1,224 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartLineDemo
 {
-    private const int INITAL_COUNT = 5;
-
-    private BitChart _chart = default!;
-    private BitChartLineConfig _config = default!;
-
-    protected override void OnInitialized()
+    private readonly BitChartOptions _legendBottom = new()
     {
-        _config = new BitChartLineConfig
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    };
+
+    private readonly BitChartOptions _logOptions = new()
+    {
+        Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Logarithmic } }
+    };
+
+    private BitChartData Filled() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
         {
-            Options = new BitChartLineOptions
+            new BitChartDataset { Label = "Visitors", Data = BitChartSampleData.V(120, 190, 160, 250, 220, 300, 280),
+                BorderColor = "#36a2eb", Tension = 0.4, Fill = BitChartFillMode.Origin }
+        }
+    };
+
+    private BitChartData Stepped() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset { Label = "Plan", Data = BitChartSampleData.V(10, 10, 25, 25, 40, 40, 55),
+                BorderColor = "#4bc0c0", Stepped = BitChartSteppedLine.Before }
+        }
+    };
+
+    private BitChartData Dashed() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset { Label = "Forecast", Data = BitChartSampleData.V(30, 42, null, 55, 48, 67, 70),
+                BorderColor = "#9966ff", BorderDash = new() { 6, 4 }, PointStyle = BitChartPointStyle.Star,
+                PointRadius = 6, SpanGaps = true }
+        }
+    };
+
+    private BitChartData Log() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset { Label = "Growth", Data = BitChartSampleData.V(1, 10, 100, 1000, 5000, 20000, 80000),
+                BorderColor = "#ff6384", Tension = 0.2 }
+        }
+    };
+
+    private BitChartData Segmented() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset
             {
-                Responsive = true,
-                Title = new BitChartOptionsTitle
+                Label = "Flow",
+                Data = BitChartSampleData.V(40, 55, 48, 70, 62, 80, 72),
+                BorderColor = "#36a2eb",
+                BorderWidth = 3,
+                Segment = new BitChartLineSegmentStyle
                 {
-                    Display = true,
-                    Text = "BitChart Line Chart"
-                },
-                Tooltips = new BitChartTooltips
-                {
-                    Mode = BitChartInteractionMode.Nearest,
-                    Intersect = true
-                },
-                Hover = new BitChartHover
-                {
-                    Mode = BitChartInteractionMode.Nearest,
-                    Intersect = true
-                },
-                Scales = new BitChartScales
-                {
-                    XAxes =
-                    [
-                        new BitChartCategoryAxis
-                        {
-                            ScaleLabel = new BitChartScaleLabel
-                            {
-                                LabelString = "Month"
-                            },
-                            GridLines = new BitChartGridLines
-                            {
-                                Color = "gray"
-                            }
-                        }
-                    ],
-                    YAxes =
-                    [
-                        new BitChartLinearCartesianAxis
-                        {
-                            ScaleLabel = new BitChartScaleLabel
-                            {
-                                LabelString = "Value"
-                            },
-                            GridLines = new BitChartGridLines
-                            {
-                                Color = "gray"
-                            }
-                        }
-                    ]
+                    BorderColor = ctx => ctx.EndValue < ctx.StartValue ? "#ff6384" : "#2ecc71",
+                    BorderDash = ctx => ctx.StartIndex >= 4 ? new double[] { 6, 4 } : null
                 }
             }
-        };
-
-        IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
-        {
-            Label = "My first dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            Fill = BitChartFillingMode.Disabled
-        };
-
-        IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
-        {
-            Label = "My second dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            Fill = BitChartFillingMode.Disabled
-        };
-
-        _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
-        _config.Data.Datasets.Add(dataset1);
-        _config.Data.Datasets.Add(dataset2);
-    }
-
-
-
-    private readonly string razorCode = @"
-<BitChart Config=""_config"" @ref=""_chart"" />";
-    private readonly string csharpCode = @"
-private const int INITAL_COUNT = 5;
-
-private BitChart _chart = default!;
-private BitChartLineConfig _config = default!;
-
-protected override void OnInitialized()
-{
-    _config = new BitChartLineConfig
-    {
-        Options = new BitChartLineOptions
-        {
-            Responsive = true,
-            Title = new BitChartOptionsTitle
-            {
-                Display = true,
-                Text = ""BitChart Line Chart""
-            },
-            Tooltips = new BitChartTooltips
-            {
-                Mode = BitChartInteractionMode.Nearest,
-                Intersect = true
-            },
-            Hover = new BitChartHover
-            {
-                Mode = BitChartInteractionMode.Nearest,
-                Intersect = true
-            },
-            Scales = new BitChartScales
-            {
-                XAxes =
-                [
-                    new BitChartCategoryAxis
-                    {
-                        ScaleLabel = new BitChartScaleLabel
-                        {
-                            LabelString = ""Month""
-                        },
-                        GridLines = new BitChartGridLines
-                        {
-                            Color = ""gray""
-                        }
-                    }
-                ],
-                YAxes =
-                [
-                    new BitChartLinearCartesianAxis
-                    {
-                        ScaleLabel = new BitChartScaleLabel
-                        {
-                            LabelString = ""Value""
-                        },
-                        GridLines = new BitChartGridLines
-                        {
-                            Color = ""gray""
-                        }
-                    }
-                ]
-            }
         }
     };
 
-    IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    private BitChartData Monotone() => new()
     {
-        Label = ""My first dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        Fill = BitChartFillingMode.Disabled
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset { Label = "Cardinal (tension)", Data = BitChartSampleData.V(10, 12, 60, 62, 30, 32, 70),
+                BorderColor = "#c9cbcf", Tension = 0.5, PointRadius = 3, PointBackgroundColor = "#c9cbcf" },
+            new BitChartDataset { Label = "Monotone", Data = BitChartSampleData.V(10, 12, 60, 62, 30, 32, 70),
+                BorderColor = "#36a2eb", CubicInterpolationMode = BitChartCubicInterpolationMode.Monotone,
+                PointRadius = 3, PointBackgroundColor = "#36a2eb" }
+        }
     };
 
-    IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
-    {
-        Label = ""My second dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        Fill = BitChartFillingMode.Disabled
-    };
 
-    _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
-    _config.Data.Datasets.Add(dataset1);
-    _config.Data.Datasets.Add(dataset2);
-}
-
-public static class BitChartDemoColors
+    private readonly string filledRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Filled()"" Options=""_legendBottom"" />";
+    private readonly string filledCsharpCode = @"
+private readonly BitChartOptions _legendBottom = new()
 {
-    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
-    [
-        Red, Orange, Yellow, Green, Blue, Purple, Grey
-    ]);
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+};
 
-    public static IReadOnlyList<System.Drawing.Color> All => _all.Value;
-
-    public static readonly System.Drawing.Color Red = System.Drawing.Color.FromArgb(255, 99, 132);
-    public static readonly System.Drawing.Color Orange = System.Drawing.Color.FromArgb(255, 159, 64);
-    public static readonly System.Drawing.Color Yellow = System.Drawing.Color.FromArgb(255, 205, 86);
-    public static readonly System.Drawing.Color Green = System.Drawing.Color.FromArgb(75, 192, 192);
-    public static readonly System.Drawing.Color Blue = System.Drawing.Color.FromArgb(54, 162, 235);
-    public static readonly System.Drawing.Color Purple = System.Drawing.Color.FromArgb(153, 102, 255);
-    public static readonly System.Drawing.Color Grey = System.Drawing.Color.FromArgb(201, 203, 207);
-}
-
-public static class BitChartDemoUtils
+private BitChartData Filled() => new()
 {
-    public static readonly Random _rng = new();
-
-    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(
-    [
-        ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
-    ]);
-
-    private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
-
-    public static int RandomScalingFactor()
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
     {
-        lock (_rng)
-        {
-            return RandomScalingFactorThreadUnsafe(0, 100);
-        }
+        new BitChartDataset { Label = ""Visitors"", Data = new() { 120, 190, 160, 250, 220, 300, 280 },
+            BorderColor = ""#36a2eb"", Tension = 0.4, Fill = BitChartFillMode.Origin }
     }
+};";
 
-    public static IEnumerable<int> RandomScalingFactor(int count, int min = 0, int max = 100)
+    private readonly string straightRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""MonthlySales()"" Options=""_legendBottom"" />";
+    private readonly string straightCsharpCode = @"
+private readonly BitChartOptions _legendBottom = new()
+{
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+};
+
+private BitChartData MonthlySales() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
     {
-        int[] factors = new int[count];
-        lock (_rng)
+        new BitChartDataset { Label = ""2025"", Data = new() { 65, 59, 80, 81, 56, 55, 72 },
+            BorderColor = ""#36a2eb"", BackgroundColor = ""#36a2eb"", Tension = 0.4, Fill = BitChartFillMode.None },
+        new BitChartDataset { Label = ""2026"", Data = new() { 28, 48, 40, 60, 86, 92, 78 },
+            BorderColor = ""#ff6384"", BackgroundColor = ""#ff6384"", Tension = 0.4, Fill = BitChartFillMode.None }
+    }
+};";
+
+    private readonly string steppedRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Stepped()"" Options=""_legendBottom"" />";
+    private readonly string steppedCsharpCode = @"
+private readonly BitChartOptions _legendBottom = new()
+{
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+};
+
+private BitChartData Stepped() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        new BitChartDataset { Label = ""Plan"", Data = new() { 10, 10, 25, 25, 40, 40, 55 },
+            BorderColor = ""#4bc0c0"", Stepped = BitChartSteppedLine.Before }
+    }
+};";
+
+    private readonly string dashedRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Dashed()"" Options=""_legendBottom"" />";
+    private readonly string dashedCsharpCode = @"
+private readonly BitChartOptions _legendBottom = new()
+{
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+};
+
+private BitChartData Dashed() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        new BitChartDataset { Label = ""Forecast"", Data = new() { 30, 42, null, 55, 48, 67, 70 },
+            BorderColor = ""#9966ff"", BorderDash = new() { 6, 4 }, PointStyle = BitChartPointStyle.Star,
+            PointRadius = 6, SpanGaps = true }
+    }
+};";
+
+    private readonly string logRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Log()"" Options=""_logOptions"" />";
+    private readonly string logCsharpCode = @"
+private readonly BitChartOptions _logOptions = new()
+{
+    Scales = { [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Logarithmic } }
+};
+
+private BitChartData Log() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        new BitChartDataset { Label = ""Growth"", Data = new() { 1, 10, 100, 1000, 5000, 20000, 80000 },
+            BorderColor = ""#ff6384"", Tension = 0.2 }
+    }
+};";
+
+    private readonly string segmentedRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Segmented()"" Options=""_legendBottom"" />";
+    private readonly string segmentedCsharpCode = @"
+private readonly BitChartOptions _legendBottom = new()
+{
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+};
+
+private BitChartData Segmented() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        new BitChartDataset
         {
-            for (int i = 0; i < count; i++)
+            Label = ""Flow"",
+            Data = new() { 40, 55, 48, 70, 62, 80, 72 },
+            BorderColor = ""#36a2eb"",
+            BorderWidth = 3,
+            Segment = new BitChartLineSegmentStyle
             {
-                factors[i] = RandomScalingFactorThreadUnsafe(min, max);
+                BorderColor = ctx => ctx.EndValue < ctx.StartValue ? ""#ff6384"" : ""#2ecc71"",
+                BorderDash = ctx => ctx.StartIndex >= 4 ? new double[] { 6, 4 } : null
             }
         }
-
-        return factors;
     }
+};";
 
-    public static IEnumerable<DateTime> GetNextDays(int count)
-    {
-        DateTime now = DateTime.Now;
-        DateTime[] factors = new DateTime[count];
-        for (int i = 0; i < factors.Length; i++)
-        {
-            factors[i] = now.AddDays(i);
-        }
-
-        return factors;
-    }
-}
-
-public static class IListExtensions
+    private readonly string monotoneRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Monotone()"" Options=""_legendBottom"" />";
+    private readonly string monotoneCsharpCode = @"
+private readonly BitChartOptions _legendBottom = new()
 {
-    public static void AddRange<T>(this IList<T> list, IEnumerable<T> items)
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+};
+
+private BitChartData Monotone() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
     {
-        if (list == null)
-            throw new ArgumentNullException(nameof(list));
-
-        if (items == null)
-            throw new ArgumentNullException(nameof(items));
-
-        if (list is List<T> asList)
-        {
-            asList.AddRange(items);
-        }
-        else
-        {
-            foreach (T item in items)
-            {
-                list.Add(item);
-            }
-        }
+        new BitChartDataset { Label = ""Cardinal (tension)"", Data = new() { 10, 12, 60, 62, 30, 32, 70 },
+            BorderColor = ""#c9cbcf"", Tension = 0.5, PointRadius = 3, PointBackgroundColor = ""#c9cbcf"" },
+        new BitChartDataset { Label = ""Monotone"", Data = new() { 10, 12, 60, 62, 30, 32, 70 },
+            BorderColor = ""#36a2eb"", CubicInterpolationMode = BitChartCubicInterpolationMode.Monotone,
+            PointRadius = 3, PointBackgroundColor = ""#36a2eb"" }
     }
-}";
+};";
 }

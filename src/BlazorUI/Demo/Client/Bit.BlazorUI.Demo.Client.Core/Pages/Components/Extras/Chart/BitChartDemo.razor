@@ -1,58 +1,61 @@
-﻿@page "/components/chart"
+@page "/components/chart"
 
 <PageOutlet Url="components/chart"
             Title="Chart"
-            Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter." />
+            Description="Native Blazor charting component rendered entirely with SVG (no JavaScript charting engine, no canvas), supporting line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts." />
 
-<div>
-    @if (isLoadingAssemblies)
-    {
-        <LoadingComponent />
-    }
-    else
-    {
-        <DemoPage Name="Chart"
-                  Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
-                  Parameters="componentParameters"
-                  SubClasses="componentSubClasses"
-                  GitHubExtrasUrl="Chart/BitChart.razor"
-                  GitHubDemoUrl="Extras/Chart/BitChartDemo.razor">
-            <NotesTemplate>
-                <BitText>
-                    To use this component, you need to install the
-                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
-                        <BitTag Reversed
-                                Text="Bit.BlazorUI.Extras"
-                                Color="BitColor.SecondaryBackground"
-                                IconName="@BitIconName.NavigateExternalInline" />
-                    </BitLink>
-                    nuget package, as described in the Optional steps of the
-                    <BitLink Href="/getting-started">Getting started</BitLink> page.
-                </BitText>
-            </NotesTemplate>
-            <Examples>
-                <_BitChartBarDemo />
+<DemoPage Name="Chart"
+          Description="A native Blazor charting component rendered entirely with SVG. The API closely mirrors Chart.js: configure it with a BitChartType plus BitChartData and BitChartOptions (or a single BitChartConfig). It supports line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts, with scales, legends, tooltips, annotations, animations, scriptable options and zoom/pan."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubExtrasUrl="Chart/BitChart.razor"
+          GitHubDemoUrl="Extras/Chart/BitChartDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <_BitChartLineDemo />
 
-                <_BitChartHorizontalBarDemo />
+        <_BitChartBarDemo />
 
-                <_BitChartStackedBarDemo />
+        <_BitChartAreaDemo />
 
-                <_BitChartLineDemo />
+        <_BitChartPieDemo />
 
-                <_BitChartPieDemo />
+        <_BitChartPolarDemo />
 
-                <_BitChartDoughnutDemo />
+        <_BitChartRadarDemo />
 
-                <_BitChartPolarAreaDemo />
+        <_BitChartScatterDemo />
 
-                <_BitChartTimeDemo />
+        <_BitChartMixedDemo />
 
-                <_BitChartScatterDemo />
+        <_BitChartMultiAxisDemo />
 
-                <_BitChartBubbleDemo />
+        <_BitChartScalesDemo />
 
-                <_BitChartRadarDemo />
-            </Examples>
-        </DemoPage>
-    }
-</div>
+        <_BitChartTimeDemo />
+
+        <_BitChartLegendDemo />
+
+        <_BitChartTooltipsDemo />
+
+        <_BitChartAnnotationsDemo />
+
+        <_BitChartAnimationsDemo />
+
+        <_BitChartScriptableDemo />
+
+        <_BitChartZoomDemo />
+    </Examples>
+</DemoPage>
