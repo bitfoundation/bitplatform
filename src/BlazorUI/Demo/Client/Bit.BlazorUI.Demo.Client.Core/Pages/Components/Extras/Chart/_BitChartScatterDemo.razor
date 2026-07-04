@@ -2,10 +2,10 @@
 
 <DemoExample Title="Scatter" RazorCode="@scatterRazorCode" CsharpCode="@scatterCsharpCode" Id="scatter-scatter">
     <div class="example-desc">two point clouds on a linear x axis</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Scatter" Data="@ScatterData()" Options="_bottom" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="@ScatterData()" Options="_bottom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Bubble" RazorCode="@bubbleRazorCode" CsharpCode="@bubbleCsharpCode" Id="scatter-bubble">
     <div class="example-desc">radius = magnitude</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bubble" Data="@BubbleData()" Options="_bottom" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bubble" Data="@BubbleData()" Options="_bottom" /></div></div>
 </DemoExample>

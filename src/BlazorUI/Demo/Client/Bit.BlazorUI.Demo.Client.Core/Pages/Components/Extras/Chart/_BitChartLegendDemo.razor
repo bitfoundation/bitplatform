@@ -23,15 +23,15 @@
         <label><input type="checkbox" @bind="_usePointStyle" /> Point style</label>
         <label><input type="checkbox" @bind="_reverse" /> Reverse</label>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="MultiSeries()" Options="Live()" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="MultiSeries()" Options="Live()" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Legend title" RazorCode="@titledRazorCode" CsharpCode="@titledCsharpCode" Id="legend-title">
     <div class="example-desc">a heading above the items</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Point-style markers" RazorCode="@pointStyleRazorCode" CsharpCode="@pointStyleCsharpCode" Id="legend-point-style">
     <div class="example-desc">usePointStyle uses each dataset's marker</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
 </DemoExample>

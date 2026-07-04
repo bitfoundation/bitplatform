@@ -2,6 +2,10 @@
 
 <div class="bc-root @Class" style="@RootStyle">
     @((MarkupString)AnimationStyles)
+    @if (RespectReducedMotion)
+    {
+        @((MarkupString)ReducedMotionStyles)
+    }
 
     @if (_scene.Title is { Position: not BitChartPosition.Bottom } title)
     {

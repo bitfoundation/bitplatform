@@ -80,6 +80,13 @@ public partial class BitChartDemo
         },
         new()
         {
+            Name = "RespectReducedMotion",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "When true, animations are disabled for users who requested reduced motion (prefers-reduced-motion: reduce). Set to false to always animate regardless of the OS setting."
+        },
+        new()
+        {
             Name = "TooltipTemplate",
             Type = "RenderFragment<BitChartTooltipContext>?",
             DefaultValue = "null",

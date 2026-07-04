@@ -24,38 +24,58 @@
         </BitText>
     </NotesTemplate>
     <Examples>
-        <_BitChartLineDemo />
-
-        <_BitChartBarDemo />
-
-        <_BitChartAreaDemo />
-
-        <_BitChartPieDemo />
-
-        <_BitChartPolarDemo />
-
-        <_BitChartRadarDemo />
-
-        <_BitChartScatterDemo />
-
-        <_BitChartMixedDemo />
-
-        <_BitChartMultiAxisDemo />
-
-        <_BitChartScalesDemo />
-
-        <_BitChartTimeDemo />
-
-        <_BitChartLegendDemo />
-
-        <_BitChartTooltipsDemo />
-
-        <_BitChartAnnotationsDemo />
-
-        <_BitChartAnimationsDemo />
-
-        <_BitChartScriptableDemo />
-
-        <_BitChartZoomDemo />
+        <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Line" Key="line">
+                <_BitChartLineDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Bar" Key="bar">
+                <_BitChartBarDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Area" Key="area">
+                <_BitChartAreaDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Pie & Doughnut" Key="pie">
+                <_BitChartPieDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Polar area" Key="polar">
+                <_BitChartPolarDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Radar" Key="radar">
+                <_BitChartRadarDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Scatter & Bubble" Key="scatter">
+                <_BitChartScatterDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Mixed" Key="mixed">
+                <_BitChartMixedDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Multi-axis" Key="multiaxis">
+                <_BitChartMultiAxisDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Scales" Key="scales">
+                <_BitChartScalesDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Time" Key="time">
+                <_BitChartTimeDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Legend" Key="legend">
+                <_BitChartLegendDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Tooltips" Key="tooltips">
+                <_BitChartTooltipsDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Annotations" Key="annotations">
+                <_BitChartAnnotationsDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Animations" Key="animations">
+                <_BitChartAnimationsDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Scriptable" Key="scriptable">
+                <_BitChartScriptableDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Zoom & Pan" Key="zoom">
+                <_BitChartZoomDemo />
+            </BitPivotItem>
+        </BitPivot>
     </Examples>
 </DemoPage>

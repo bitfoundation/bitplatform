@@ -32,6 +32,13 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// <summary>Render a visually-hidden data table for screen readers (default true).</summary>
     [Parameter] public bool GenerateTable { get; set; } = true;
 
+    /// <summary>
+    /// When true (the default), entry/update animations are disabled for users who have requested
+    /// reduced motion (the <c>prefers-reduced-motion: reduce</c> media query). Set to false to always
+    /// animate regardless of the OS setting.
+    /// </summary>
+    [Parameter] public bool RespectReducedMotion { get; set; } = true;
+
     /// <summary>Optional custom tooltip template. When set it replaces the default tooltip body.</summary>
     [Parameter] public RenderFragment<BitChartTooltipContext>? TooltipTemplate { get; set; }
 
@@ -567,7 +574,6 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
                         cx var(--bc-dur,600ms) var(--bc-ease,ease-out), cy var(--bc-dur,600ms) var(--bc-ease,ease-out),
                         r var(--bc-dur,600ms) var(--bc-ease,ease-out), d var(--bc-dur,600ms) var(--bc-ease,ease-out), fill .3s ease;
         }
-        @media (prefers-reduced-motion: reduce) { .bc-animate, .bc-el-anim, .bc-draw, .bc-fade { animation: none; } .bc-transition :is(rect, circle, path, polygon) { transition: none; } }
         .bc-root { display: flex; flex-direction: column; box-sizing: border-box; font-family: Helvetica, Arial, sans-serif; }
         .bc-title, .bc-subtitle { display: flex; width: 100%; padding: 6px 0; text-align: center; }
         .bc-mid { display: flex; flex-direction: row; align-items: stretch; flex: 1 1 auto; min-height: 0; }
@@ -595,6 +601,16 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         .bc-tt-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
         .bc-tt-swatch-svg { flex: 0 0 auto; overflow: visible; }
         .bc-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+        </style>
+        """;
+
+    /// <summary>
+    /// Opt-in reduced-motion overrides. Injected only when <see cref="RespectReducedMotion"/> is true,
+    /// so animations/transitions are disabled for users who requested reduced motion.
+    /// </summary>
+    private const string ReducedMotionStyles = """
+        <style>
+        @media (prefers-reduced-motion: reduce) { .bc-animate, .bc-el-anim, .bc-draw, .bc-fade { animation: none; } .bc-transition :is(rect, circle, path, polygon) { transition: none; } }
         </style>
         """;
 

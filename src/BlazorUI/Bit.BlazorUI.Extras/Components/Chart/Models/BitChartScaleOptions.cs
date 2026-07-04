@@ -33,7 +33,7 @@ public sealed class BitChartScaleOptions
 
     /// <summary>Angle lines configuration (radial scales only).</summary>
     public bool AngleLines { get; set; } = true;
-    public string AngleLineColor { get; set; } = "rgba(0,0,0,0.1)";
+    public string AngleLineColor { get; set; } = "var(--bit-clr-brd-sec, rgba(0,0,0,0.1))";
     public double AngleLineWidth { get; set; } = 1;
     public List<double>? AngleLineDash { get; set; }
     /// <summary>Start angle in degrees for radial scales.</summary>

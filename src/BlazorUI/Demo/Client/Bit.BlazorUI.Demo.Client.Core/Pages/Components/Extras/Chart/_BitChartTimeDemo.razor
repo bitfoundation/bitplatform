@@ -2,10 +2,10 @@
 
 <DemoExample Title="Daily series (auto unit)" RazorCode="@dailyRazorCode" CsharpCode="@dailyCsharpCode" Id="time-daily">
     <div class="example-desc">60 days &rarr; weekly ticks</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_time" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_time" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Forced month unit + custom format" RazorCode="@monthRazorCode" CsharpCode="@monthCsharpCode" Id="time-month">
     <div class="example-desc">BitChartTimeUnit.Month, custom formatter</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_month" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_month" /></div></div>
 </DemoExample>
