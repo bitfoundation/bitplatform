@@ -3,6 +3,25 @@
 public partial class SideRail
 {
     private List<SideRailItem> _items { get; set; } = [];
+    private SideRailItem[] _sideRailItems { get; set; } = [];
+    
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var sideRailItems = await JSRuntime.GetSideRailItems();
+
+        if (ItemsChanged(sideRailItems, _sideRailItems))
+        {
+            _items = [.. sideRailItems, new() { Id = "api-section", Title = "API" }, new() { Id = "feedback-section", Title = "Feedback" }];
+
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+
 
     private async Task ScrollToItem(SideRailItem targetItem)
     {
@@ -11,14 +30,17 @@ public partial class SideRail
         await JSRuntime.ScrollToElement(targetItem.Id);
     }
 
-    protected override async Task OnAfterFirstRenderAsync()
+    private static bool ItemsChanged(SideRailItem[] newItems, SideRailItem[] oldItems)
     {
-        var sideRailItems = await JSRuntime.GetSideRailItems();
+        if(newItems is null || oldItems is null) return false;
 
-        _items = [.. sideRailItems, new() { Id = "api-section", Title = "API" }, new() { Id = "feedback-section", Title = "Feedback" }];
+        if (newItems.Length != oldItems.Length) return true;
 
-        StateHasChanged();
+        for (int i = 0; i < newItems.Length; i++)
+        {
+            if (newItems[i].Id != oldItems[i].Id) return true;
+        }
 
-        await base.OnAfterFirstRenderAsync();
+        return false;
     }
 }

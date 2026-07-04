@@ -1,0 +1,11 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Bar + line" RazorCode="@barLineRazorCode" CsharpCode="@barLineCsharpCode" Id="mixed-bar-line">
+    <div class="example-desc">line drawn on top of bars</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@BarLine()" Options="_bottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Dual axis" RazorCode="@dualAxisRazorCode" CsharpCode="@dualAxisCsharpCode" Id="mixed-dual-axis">
+    <div class="example-desc">revenue (left) vs. margin % (right)</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@DualAxis()" Options="@_dual" /></div></div>
+</DemoExample>

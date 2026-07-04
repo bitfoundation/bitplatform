@@ -1,0 +1,26 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Gradient fill" RazorCode="@gradientRazorCode" CsharpCode="@gradientCsharpCode" Id="area-gradient">
+    <div class="example-desc">vertical gradient under a smooth line</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Gradient()" Options="_noLegend" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Stacked area" RazorCode="@stackedRazorCode" CsharpCode="@stackedCsharpCode" Id="area-stacked">
+    <div class="example-desc">scales.y.stacked, three cumulative series</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Stacked()" Options="@_stacked" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Range (fill between datasets)" RazorCode="@rangeRazorCode" CsharpCode="@rangeCsharpCode" Id="area-range">
+    <div class="example-desc">upper fills down to lower (BitChartFillMode.Dataset)</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Range()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Fill boundaries" RazorCode="@boundariesRazorCode" CsharpCode="@boundariesCsharpCode" Id="area-boundaries">
+    <div class="example-desc">origin, start (top) and end (bottom) baselines</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Boundaries()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Radial gradient" RazorCode="@radialFillRazorCode" CsharpCode="@radialFillCsharpCode" Id="area-radial">
+    <div class="example-desc">center→edge radial fill under the line</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@RadialFill()" Options="_noLegend" /></div></div>
+</DemoExample>
