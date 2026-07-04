@@ -69,16 +69,27 @@ internal static class BroutePrerenderState
         // A persisted null result is still a decision the loader made: honor it and skip re-running.
         if (string.IsNullOrEmpty(state.TypeName) || state.Json is null) return true;
 
-        var type = Type.GetType(state.TypeName, throwOnError: false);
-        if (type is null) return false; // type not available here; fall back to running the loader
-
         try
         {
+            // Type.GetType(throwOnError: false) suppresses TypeLoadException (returns null) but can still
+            // throw for a stale/unloadable persisted name - a malformed assembly-qualified string
+            // (ArgumentException), or a referenced assembly that can't be loaded here
+            // (FileLoadException / FileNotFoundException / BadImageFormatException). Treat all of those,
+            // like a missing type or malformed JSON, as "can't restore" and fall back to running the loader.
+            var type = Type.GetType(state.TypeName, throwOnError: false);
+            if (type is null) return false; // type not available here; fall back to running the loader
+
             value = JsonSerializer.Deserialize(state.Json, type, _options);
             return true;
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException
+            or ArgumentException
+            or System.IO.FileLoadException
+            or System.IO.FileNotFoundException
+            or BadImageFormatException
+            or TypeLoadException)
         {
+            value = null;
             return false;
         }
     }

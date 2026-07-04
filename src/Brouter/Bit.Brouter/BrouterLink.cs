@@ -32,7 +32,13 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
 
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-    /// <summary>The destination URL or path.</summary>
+    /// <summary>
+    /// The destination URL or path. A route-relative path (<c>./x</c>, <c>../x</c>) is resolved
+    /// against the current location using segment math (from <c>/users/42</c>, <c>"./edit"</c>
+    /// points at <c>/users/42/edit</c> and <c>"../7"</c> at <c>/users/7</c>); the anchor's
+    /// rendered <c>href</c> is the resolved absolute path and is re-resolved after every
+    /// navigation. Bare paths without a leading <c>.</c> keep their base-relative meaning.
+    /// </summary>
     [Parameter, EditorRequired] public string Href { get; set; } = "/";
 
     /// <summary>Inner content of the link.</summary>
@@ -57,7 +63,17 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
 
 
     private bool _isActive;
+    // Href with any route-relative prefix ("./", "../") resolved against the current location.
+    // Equals Href verbatim for absolute/base-relative hrefs. This is what gets rendered into
+    // the anchor, navigated to on click, and matched for the active state, so all three always
+    // agree. Recomputed in UpdateActiveState; re-rendered when navigation changes it.
+    private string _resolvedHref = "/";
     private ElementReference _anchor;
+    // Fallback module import owned by THIS link, used only when Brouter isn't the shipped
+    // BrouterService (a custom IBrouter implementation). The normal path shares the scope's
+    // single module via BrouterService.GetModuleAsync, so a page full of Replace links costs
+    // one interop import instead of one per link. Only this fallback is disposed here; the
+    // shared module belongs to the service.
     private IJSObjectReference? _module;
     private IJSObjectReference? _handle;
     private bool _replaceWired;
@@ -89,12 +105,15 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
 
     private ValueTask OnNavigated(BrouterNavigationContext ctx)
     {
-        var was = _isActive;
+        var wasActive = _isActive;
+        var wasHref = _resolvedHref;
         UpdateActiveState();
         // Return the InvokeAsync task wrapped as a ValueTask so any exception thrown by the
         // re-render flows up the OnNavigated invocation chain instead of becoming an unobserved
-        // task. ValueTask.CompletedTask is correct when nothing changed.
-        return _isActive == was
+        // task. ValueTask.CompletedTask is correct when nothing changed. A changed resolved
+        // href (a route-relative Href pointing somewhere new after this navigation) needs a
+        // re-render even when the active flag didn't move, so the DOM href stays current.
+        return _isActive == wasActive && string.Equals(_resolvedHref, wasHref, StringComparison.Ordinal)
             ? ValueTask.CompletedTask
             : new ValueTask(InvokeAsync(StateHasChanged));
     }
@@ -117,9 +136,14 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
             return;
         }
 
-        // Recompute. Target only needs renormalising when Href actually changed.
+        // Recompute. A route-relative Href depends on the current path, so resolve it first;
+        // for absolute/base-relative hrefs this is Href verbatim.
+        var resolvedHref = BrouterRelativeUrl.ResolveIfRelative(current, Href);
+
+        // Target only needs renormalising when the resolved href actually changed (value
+        // comparison, not reference: the resolution may rebuild an equal string).
         string target;
-        if (_cachedTarget is not null && ReferenceEquals(_cachedHref, Href))
+        if (_cachedTarget is not null && string.Equals(_resolvedHref, resolvedHref, StringComparison.Ordinal))
         {
             target = _cachedTarget;
         }
@@ -129,9 +153,10 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
             // Options.IgnoreTrailingSlash is true, so we must mirror that here when normalising
             // the link's Href. Otherwise BrouterLinkMatch.All would never match a current path
             // that legitimately ends in '/' under Options.IgnoreTrailingSlash == false.
-            target = NormalisePath(Href, stripTrailingSlash: Options.IgnoreTrailingSlash);
+            target = NormalisePath(resolvedHref, stripTrailingSlash: Options.IgnoreTrailingSlash);
             _cachedTarget = target;
         }
+        _resolvedHref = resolvedHref;
         var comparison = Options.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
         _isActive = Match switch
@@ -216,7 +241,7 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
                 builder.AddMultipleAttributes(1, AdditionalAttributes.Where(kv => string.Equals(kv.Key, "class", StringComparison.OrdinalIgnoreCase) is false).Select(kv => new KeyValuePair<string, object>(kv.Key, kv.Value)));
             }
         }
-        builder.AddAttribute(2, "href", Href);
+        builder.AddAttribute(2, "href", _resolvedHref);
         if (combinedClass is not null) builder.AddAttribute(3, "class", combinedClass);
         if (_isActive) builder.AddAttribute(4, "aria-current", "page");
 
@@ -254,14 +279,15 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         {
             try
             {
-                _module ??= await JS.InvokeAsync<IJSObjectReference>(
-                    "import", "./_content/Bit.Brouter/BitBrouter.js");
-                _handle = await _module.InvokeAsync<IJSObjectReference>(
+                var module = await GetModuleAsync();
+                _handle = await module.InvokeAsync<IJSObjectReference>(
                     "wireConditionalPreventDefault", _anchor);
                 _replaceWired = true;
             }
             catch (JSDisconnectedException) { /* Circuit disconnected; nothing to wire. */ }
             catch (JSException) { /* JS interop failure; falls back to default link behavior. */ }
+            // InvalidOperationException also covers ObjectDisposedException, thrown when the
+            // shared module is disposed during scope teardown while a link is still wiring.
             catch (InvalidOperationException) { /* JS interop unavailable during pre-render. */ }
             catch (TaskCanceledException) { /* Component disposed mid-call. */ }
         }
@@ -271,6 +297,21 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
             await DisposeJsHandleAsync();
             _replaceWired = false;
         }
+    }
+
+    private ValueTask<IJSObjectReference> GetModuleAsync()
+    {
+        // Prefer the scope-shared module owned by BrouterService: every Replace link on the
+        // page then reuses one import instead of paying an interop round-trip each. The
+        // per-link import only remains for custom IBrouter implementations, where no shared
+        // module exists.
+        if (Brouter is BrouterService service) return service.GetModuleAsync();
+
+        return ImportOwnModuleAsync();
+
+        async ValueTask<IJSObjectReference> ImportOwnModuleAsync() =>
+            _module ??= await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Bit.Brouter/bit-brouter.js");
     }
 
     private void OnClick(MouseEventArgs e)
@@ -289,7 +330,9 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         // built-in interceptor or forcing a full page load.
         if (_replaceWired is false) return;
 
-        Brouter.Navigate(Href, replace: true);
+        // Navigate to the resolved href (identical to Href for non-relative links) so the
+        // click goes exactly where the rendered anchor points.
+        Brouter.Navigate(_resolvedHref, replace: true);
     }
 
     private async ValueTask DisposeJsHandleAsync()

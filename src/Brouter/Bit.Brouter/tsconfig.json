@@ -1,0 +1,24 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "allowJs": true,
+        "target": "ES2019",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "ESNext" ],
+        // bit-brouter.js is consumed by the C# side as an ES module via JS `import(...)`, so unlike
+        // Bit.Butil (which concatenates into a single global-namespace bundle via `outFile`) the
+        // sources are emitted per-file into wwwroot with their `export`s preserved.
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        // Incremental type-safety hardening. Full "strict"/"noImplicitAny" would require typing
+        // every interop script and is deferred; these flags catch real bugs (fallthrough, missing
+        // returns, unreachable code) without forcing a rewrite of the loosely-typed glue.
+        "noImplicitThis": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "alwaysStrict": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/*.ts" ]
+}

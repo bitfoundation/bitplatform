@@ -189,6 +189,74 @@ public class ResolveUrlTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Unmatched_parameters_are_appended_as_query_string()
+    {
+        var brouter = MountWithNamedRoute("user", "/users/{id}");
+
+        var url = brouter.ResolveUrl("user",
+            new Dictionary<string, object?> { ["id"] = 42, ["tab"] = "info", ["page"] = 2 });
+
+        Assert.AreEqual("/users/42?tab=info&page=2", url);
+    }
+
+    [TestMethod]
+    public void Unmatched_parameters_are_appended_after_explicit_query()
+    {
+        var brouter = MountWithNamedRoute("user", "/users/{id}");
+
+        var url = brouter.ResolveUrl("user",
+            new Dictionary<string, object?> { ["id"] = 1, ["tab"] = "info" },
+            query: "sort=asc");
+
+        Assert.AreEqual("/users/1?sort=asc&tab=info", url);
+    }
+
+    [TestMethod]
+    public void Unmatched_parameter_with_null_value_is_skipped()
+    {
+        var brouter = MountWithNamedRoute("user", "/users/{id}");
+
+        var url = brouter.ResolveUrl("user",
+            new Dictionary<string, object?> { ["id"] = 1, ["tab"] = null });
+
+        Assert.AreEqual("/users/1", url);
+    }
+
+    [TestMethod]
+    public void Unmatched_parameter_key_and_value_are_percent_encoded()
+    {
+        var brouter = MountWithNamedRoute("user", "/users/{id}");
+
+        var url = brouter.ResolveUrl("user",
+            new Dictionary<string, object?> { ["id"] = 1, ["full name"] = "john & jane" });
+
+        Assert.AreEqual("/users/1?full%20name=john%20%26%20jane", url);
+    }
+
+    [TestMethod]
+    public void Unmatched_enumerable_parameter_emits_one_pair_per_element()
+    {
+        var brouter = MountWithNamedRoute("user", "/users/{id}");
+
+        var url = brouter.ResolveUrl("user",
+            new Dictionary<string, object?> { ["id"] = 1, ["tag"] = new[] { "a", "b" } });
+
+        Assert.AreEqual("/users/1?tag=a&tag=b", url);
+    }
+
+    [TestMethod]
+    public void Parameter_consumed_by_optional_segment_is_not_duplicated_in_query()
+    {
+        var brouter = MountWithNamedRoute("profile", "/profile/{username?}");
+
+        // The username binds to the optional segment; only the leftover key becomes query.
+        var url = brouter.ResolveUrl("profile",
+            new Dictionary<string, object?> { ["username"] = "saleh", ["tab"] = "posts" });
+
+        Assert.AreEqual("/profile/saleh?tab=posts", url);
+    }
+
+    [TestMethod]
     public void Boolean_is_formatted_as_lowercase()
     {
         var brouter = MountWithNamedRoute("flag", "/flag/{enabled}");

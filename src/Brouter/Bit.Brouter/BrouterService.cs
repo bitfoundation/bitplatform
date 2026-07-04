@@ -14,10 +14,14 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
     private Brouter? _activeBrouter;
     private NavigationManager? _navigationManager;
 
-    // Lazily-imported BitBrouter.js module, used for the post-navigation DOM effects
-    // (fragment/top scroll, focus). Imported on first use and reused for the scope's lifetime;
-    // disposed in DisposeAsync when DI tears the scoped service down.
-    private IJSObjectReference? _module;
+    // Lazily-imported bit-brouter.js module, used for the post-navigation DOM effects
+    // (fragment/top scroll, focus) and shared with every BrouterLink that needs JS wiring
+    // (Replace links). Imported on first use and reused for the scope's lifetime; disposed
+    // in DisposeAsync when DI tears the scoped service down. The pending import Task is
+    // cached (rather than the resolved reference) so concurrent first calls - e.g. a page
+    // full of Replace links wiring up in the same OnAfterRender pass - coalesce into a
+    // single interop round-trip instead of racing N imports.
+    private Task<IJSObjectReference>? _moduleTask;
 
     public BrouterService(IOptions<BrouterOptions> options, IJSRuntime js)
     {
@@ -67,6 +71,10 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
     public void Navigate(string url, bool replace = false, bool forceLoad = false)
     {
         EnsureMounted();
+        // Route-relative URLs ("./edit", "../sibling") resolve against the current location's
+        // path via segment math. Anything else (including bare "sibling") flows through to
+        // NavigationManager unchanged and keeps its base-relative meaning.
+        url = BrouterRelativeUrl.ResolveIfRelative(Location.Path, url);
         // Tell the pipeline this navigation is a push/replace before triggering it, so guards, loaders
         // and hooks report the right BrouterNavigationType. Skipped for forceLoad: it's a full-page
         // reload, so no SPA pipeline runs and there is nothing to classify. Back/Forward don't come
@@ -104,17 +112,22 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         return GoAsync(delta);
     }
 
-    private async ValueTask GoAsync(int delta)
+    private ValueTask GoAsync(int delta) =>
+        // history.go(0) reloads the page; we reject delta == 0 above so we never hit that.
+        SafeJsCallAsync(() => _js.InvokeVoidAsync("history.go", delta));
+
+    // Runs a JS interop call, swallowing the four failures that are expected and non-fatal for
+    // Brouter's fire-and-forget interop (navigation effects, scroll save, history.go, module dispose):
+    // a disconnected circuit, a generic interop failure (e.g. a non-browser host), interop being
+    // unavailable during prerender, and the component being disposed mid-call. Centralized so every
+    // JS call site handles the same set identically instead of repeating the catch block.
+    private static async ValueTask SafeJsCallAsync(Func<ValueTask> call)
     {
-        try
-        {
-            // history.go(0) reloads the page; we reject delta == 0 above so we never hit that.
-            await _js.InvokeVoidAsync("history.go", delta).ConfigureAwait(false);
-        }
-        catch (JSDisconnectedException) { /* Circuit disconnected; nothing to do. */ }
-        catch (JSException) { /* JS interop failure; nothing to do. */ }
-        catch (InvalidOperationException) { /* JS interop not available during pre-render. */ }
-        catch (TaskCanceledException) { /* Component disposed mid-call. */ }
+        try { await call(); }
+        catch (JSDisconnectedException) { /* circuit disconnected mid-call */ }
+        catch (JSException) { /* JS interop failure (e.g. non-browser host) */ }
+        catch (InvalidOperationException) { /* JS interop unavailable during pre-render */ }
+        catch (TaskCanceledException) { /* component disposed mid-call */ }
     }
 
     public void NavigateToName(string name, IReadOnlyDictionary<string, object?>? parameters = null,
@@ -148,6 +161,11 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         var optionalOmitted = false;
         string? omittedOptionalName = null;
 
+        // Names of template parameters, filled in during the segment walk below. Any dictionary
+        // entry whose key isn't in this set is appended as a query-string pair after the path,
+        // rather than being silently dropped (mirrors ASP.NET's LinkGenerator / React Router).
+        var consumedNames = normalizedParams is null ? null : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var segment in route.RouteTemplate.TemplateSegments)
         {
             sb.Append('/');
@@ -162,6 +180,8 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
                 sb.Append(segment.Value);
                 continue;
             }
+
+            consumedNames?.Add(segment.Value);
 
             var hasValue = normalizedParams is not null && normalizedParams.TryGetValue(segment.Value, out var raw) && raw is not null;
             if (hasValue is false)
@@ -263,12 +283,45 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
         if (sb.Length == 0) sb.Append('/');
 
+        var hasQuery = false;
         if (string.IsNullOrEmpty(query) is false)
         {
             sb.Append(query.StartsWith('?') ? query : "?" + query);
+            hasQuery = true;
+        }
+
+        // Dictionary entries that didn't bind to a template parameter become query-string pairs.
+        // Null values are skipped (null already means "absent" for route parameters, so the same
+        // convention applies here); non-string enumerables emit one pair per element ("tag=a&tag=b").
+        if (normalizedParams is not null)
+        {
+            foreach (var (key, value) in normalizedParams)
+            {
+                if (consumedNames!.Contains(key) || value is null) continue;
+
+                if (value is not string && value is System.Collections.IEnumerable items)
+                {
+                    foreach (var item in items)
+                    {
+                        if (item is null) continue;
+                        AppendQueryPair(sb, key, FormatRouteValue(item), ref hasQuery);
+                    }
+                }
+                else
+                {
+                    AppendQueryPair(sb, key, FormatRouteValue(value), ref hasQuery);
+                }
+            }
         }
 
         return sb.ToString();
+    }
+
+    private static void AppendQueryPair(StringBuilder sb, string key, string value, ref bool hasQuery)
+    {
+        sb.Append(hasQuery ? '&' : '?');
+        hasQuery = true;
+        sb.Append(Uri.EscapeDataString(key)).Append('=').Append(Uri.EscapeDataString(value));
     }
 
     private void EnsureMounted()
@@ -379,10 +432,9 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
         // No ConfigureAwait(false): this is awaited from Brouter.OnAfterRenderAsync, so stay on the
         // renderer's synchronization context (required on Blazor Server for interop/state).
-        try
+        await SafeJsCallAsync(async () =>
         {
             var module = await GetModuleAsync();
-            if (module is null) return;
 
             await module.InvokeVoidAsync(
                 "applyNavigationEffects",
@@ -394,11 +446,7 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
                 // restoration untouched) otherwise.
                 restore ? location.FullUri : null,
                 restore ? ScrollStorageKind : null);
-        }
-        catch (JSDisconnectedException) { /* circuit disconnected mid-call */ }
-        catch (JSException) { /* JS interop failure (e.g. non-browser host) */ }
-        catch (InvalidOperationException) { /* JS interop unavailable during pre-render */ }
-        catch (TaskCanceledException) { /* component disposed mid-call */ }
+        });
     }
 
     /// <summary>
@@ -413,17 +461,11 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         if (_options.RestoreScrollPosition is false) return;
         if (string.IsNullOrEmpty(from.FullUri)) return;
 
-        try
+        await SafeJsCallAsync(async () =>
         {
             var module = await GetModuleAsync();
-            if (module is null) return;
-
             await module.InvokeVoidAsync("saveScrollPosition", from.FullUri, ScrollStorageKind);
-        }
-        catch (JSDisconnectedException) { /* circuit disconnected mid-call */ }
-        catch (JSException) { /* JS interop failure (e.g. non-browser host) */ }
-        catch (InvalidOperationException) { /* JS interop unavailable during pre-render */ }
-        catch (TaskCanceledException) { /* component disposed mid-call */ }
+        });
     }
 
     // Maps the configured storage mode to the token the JS module understands ('session'/'local'),
@@ -435,24 +477,42 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         _ => null
     };
 
-    private async ValueTask<IJSObjectReference?> GetModuleAsync()
+    // Internal (not private) so BrouterLink can share the scope's single module instance
+    // instead of each link importing its own copy.
+    internal async ValueTask<IJSObjectReference> GetModuleAsync()
     {
-        // Exceptions bubble to ApplyNavigationEffectsAsync's catch block, which handles the
-        // pre-render / disconnected / non-browser cases uniformly.
-        return _module ??= await _js.InvokeAsync<IJSObjectReference>(
-            "import", "./_content/Bit.Brouter/BitBrouter.js");
+        // Exceptions bubble to the caller's catch block (SafeJsCallAsync here, BrouterLink's
+        // wiring try/catch), which handles the pre-render / disconnected / non-browser cases
+        // uniformly. A failed import must not stay cached: during pre-render interop throws,
+        // and a caller retrying later (once interop is available) should get a fresh attempt
+        // rather than the memoised failure.
+        var task = _moduleTask ??= _js.InvokeAsync<IJSObjectReference>(
+            "import", "./_content/Bit.Brouter/bit-brouter.js").AsTask();
+
+        try
+        {
+            return await task;
+        }
+        catch
+        {
+            if (ReferenceEquals(_moduleTask, task)) _moduleTask = null;
+            throw;
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_module is not null)
+        var task = _moduleTask;
+        _moduleTask = null;
+        if (task is not null)
         {
-            try { await _module.DisposeAsync(); }
-            catch (JSDisconnectedException) { }
-            catch (JSException) { }
-            catch (InvalidOperationException) { }
-            catch (TaskCanceledException) { }
-            _module = null;
+            // If the import itself failed, awaiting it rethrows one of the four expected
+            // interop failures, which SafeJsCallAsync swallows.
+            await SafeJsCallAsync(async () =>
+            {
+                var module = await task;
+                await module.DisposeAsync();
+            });
         }
     }
 }

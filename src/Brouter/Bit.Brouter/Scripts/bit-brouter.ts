@@ -7,10 +7,10 @@
 // this listener installed, Blazor's own onclick handler still fires (and the C# side
 // applies the same modifier checks before performing the replace navigation), but
 // the browser default is left alone for modified clicks.
-export function wireConditionalPreventDefault(element) {
+export function wireConditionalPreventDefault(element: HTMLElement | null) {
     if (!element) return null;
 
-    const handler = (e) => {
+    const handler = (e: MouseEvent) => {
         if (e.defaultPrevented) return;
         if (e.button !== 0) return;
         if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
@@ -35,22 +35,31 @@ export function wireConditionalPreventDefault(element) {
 //                   is read before any render, then consumed by applyNavigationEffects post-render.
 // popped          : set by the popstate listener the instant the browser fires a Back/Forward, before
 //                   Blazor's async LocationChanged pipeline runs. Drained into pendingIsPop at save time.
-const scrollPositions = new Map();
+type ScrollPosition = { x: number, y: number };
+type ScrollStorageKind = 'session' | 'local' | null;
+
+const scrollPositions = new Map<string, ScrollPosition>();
 let pendingIsPop = false;
 let popped = false;
 let scrollRestorationInited = false;
 // null -> in-memory only; 'session'/'local' -> mirrored to sessionStorage/localStorage so positions
 // survive a full reload. Fixed for the module's lifetime (BrouterOptions are per-scope constants).
-let scrollStorageKind = null;
+let scrollStorageKind: ScrollStorageKind = null;
 
 // The single web-storage slot the whole position map is JSON-serialized into. One slot (rather than
 // one per URL) keeps hydrate/persist trivial and easy to clear.
 const SCROLL_STORAGE_KEY = 'bit-brouter:scrollPositions';
 
+// Upper bound on how many URLs' scroll positions we retain. Without a cap, every distinct URL visited
+// in a long-lived session adds an entry forever, growing memory and eventually overflowing Web Storage
+// (which throws QuotaExceededError on persist). A few dozen is plenty for realistic Back/Forward depth;
+// the oldest entries are evicted first (see saveScrollPosition).
+const MAX_SCROLL_POSITIONS = 50;
+
 // Resolves the configured Web Storage object, or null when persistence is off or the store is
 // unavailable (private mode, disabled by policy). Accessing window.sessionStorage/localStorage can
 // itself throw, so it's guarded.
-function scrollStore() {
+function scrollStore(): Storage | null {
     try {
         if (scrollStorageKind === 'session') return window.sessionStorage;
         if (scrollStorageKind === 'local') return window.localStorage;
@@ -83,7 +92,7 @@ function persistScrollPositions() {
     const store = scrollStore();
     if (!store) return;
     try {
-        const obj = {};
+        const obj: Record<string, ScrollPosition> = {};
         for (const [k, v] of scrollPositions) obj[k] = v;
         store.setItem(SCROLL_STORAGE_KEY, JSON.stringify(obj));
     } catch { /* quota exceeded / storage unavailable -> in-memory still holds the positions */ }
@@ -96,7 +105,7 @@ function persistScrollPositions() {
 // was. `storageKind` is honored on the first call only (options are constant per scope).
 //
 //   storageKind - 'session' | 'local' to persist positions in the matching Web Storage, else in-memory.
-function ensureScrollRestoration(storageKind) {
+function ensureScrollRestoration(storageKind: string | null) {
     if (scrollRestorationInited) return;
     scrollRestorationInited = true;
     scrollStorageKind = (storageKind === 'session' || storageKind === 'local') ? storageKind : null;
@@ -112,7 +121,7 @@ function ensureScrollRestoration(storageKind) {
     hydrateScrollPositions();
 }
 
-function currentScroll() {
+function currentScroll(): ScrollPosition {
     return {
         x: window.scrollX ?? window.pageXOffset ?? 0,
         y: window.scrollY ?? window.pageYOffset ?? 0
@@ -127,11 +136,21 @@ function currentScroll() {
 //
 //   key         - the absolute URL of the page being left, or null/empty to skip recording (e.g. initial load).
 //   storageKind - persistence mode, honored on the first call (see ensureScrollRestoration).
-export function saveScrollPosition(key, storageKind) {
+export function saveScrollPosition(key: string | null, storageKind: string | null) {
     ensureScrollRestoration(storageKind);
     pendingIsPop = popped;
     popped = false;
     if (key) {
+        // Bound the cache. Map preserves insertion order, so deleting the first key evicts the oldest
+        // entry. Delete-then-set also re-inserts an updated key at the newest position, so recently
+        // visited URLs survive eviction (oldest-first / LRU-ish) rather than being dropped by age of
+        // first visit.
+        scrollPositions.delete(key);
+        while (scrollPositions.size >= MAX_SCROLL_POSITIONS) {
+            const oldest = scrollPositions.keys().next().value;
+            if (oldest === undefined) break;
+            scrollPositions.delete(oldest);
+        }
         scrollPositions.set(key, currentScroll());
         persistScrollPositions();
     }
@@ -151,7 +170,7 @@ export function saveScrollPosition(key, storageKind) {
 //                   Back/Forward to a URL with a remembered position, that position is restored instead
 //                   of applying scrollToTop.
 //   storageKind   - persistence mode ('session'/'local'/null), honored on first arm (see saveScrollPosition).
-export function applyNavigationEffects(hash, focusSelector, scrollToTop, restoreKey, storageKind) {
+export function applyNavigationEffects(hash: string | null, focusSelector: string | null, scrollToTop: boolean, restoreKey: string | null, storageKind: string | null) {
     // Consume the direction captured at navigation start. Only meaningful when restoration is on.
     // ensureScrollRestoration here guarantees the position map is hydrated before the first restore,
     // even on the initial load where no saveScrollPosition call precedes this one.
@@ -184,12 +203,12 @@ export function applyNavigationEffects(hash, focusSelector, scrollToTop, restore
     //    scroll-to-top (that's the "new navigation" behavior). Only acts on a history pop with a
     //    remembered position; a first visit or a forward push falls through to the defaults below.
     if (restoreKey && isPop && scrollPositions.has(restoreKey)) {
-        const p = scrollPositions.get(restoreKey);
+        const p = scrollPositions.get(restoreKey)!;
         window.scrollTo(p.x, p.y);
         // Still honor focus so assistive tech announces the page; focusElement preventScroll keeps
         // the restored position intact.
         if (focusSelector) {
-            const el = document.querySelector(focusSelector);
+            const el = document.querySelector<HTMLElement>(focusSelector);
             if (el) focusElement(el);
         }
         return;
@@ -203,7 +222,7 @@ export function applyNavigationEffects(hash, focusSelector, scrollToTop, restore
     // 4. Focus management: move focus to the configured landmark/heading so screen readers
     //    announce the new page instead of leaving focus on the activated link.
     if (focusSelector) {
-        const el = document.querySelector(focusSelector);
+        const el = document.querySelector<HTMLElement>(focusSelector);
         if (el) focusElement(el);
     }
 }
@@ -211,7 +230,7 @@ export function applyNavigationEffects(hash, focusSelector, scrollToTop, restore
 // Focuses an element, making it programmatically focusable first if it isn't already. Uses
 // preventScroll so focusing doesn't fight a scroll position already set by the caller (fragment
 // scrollIntoView above, or window.scrollTo(0,0)).
-function focusElement(el) {
+function focusElement(el: HTMLElement) {
     // Non-interactive elements (h1, main, div, ...) have tabIndex -1 and no explicit tabindex;
     // they can't receive programmatic focus until one is added. Use -1 so they're script-focusable
     // but stay out of the sequential Tab order, matching Blazor's FocusOnNavigate behavior.
@@ -223,7 +242,7 @@ function focusElement(el) {
 
 // CSS.escape isn't available in every host (older WebViews); fall back to a minimal escape so the
 // a[name="..."] fragment fallback can't throw on ids containing quotes/backslashes.
-function cssEscape(value) {
+function cssEscape(value: string): string {
     if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value);
     return value.replace(/["\\]/g, '\\$&');
 }

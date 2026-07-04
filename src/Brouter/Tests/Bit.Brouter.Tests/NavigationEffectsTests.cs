@@ -8,7 +8,7 @@ namespace Bit.Brouter.Tests;
 [TestClass]
 public class NavigationEffectsTests : BunitTestContext
 {
-    private const string ModuleUrl = "./_content/Bit.Brouter/BitBrouter.js";
+    private const string ModuleUrl = "./_content/Bit.Brouter/bit-brouter.js";
 
     [TestMethod]
     public void Fragment_navigation_invokes_applyNavigationEffects_with_the_hash()

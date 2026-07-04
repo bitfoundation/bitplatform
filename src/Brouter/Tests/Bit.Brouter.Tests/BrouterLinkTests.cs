@@ -217,9 +217,28 @@ public class BrouterLinkTests : BunitTestContext
         StringAssert.EndsWith(nav.Uri, "/start");
     }
 
+    [TestMethod]
+    public void Multiple_Replace_links_share_a_single_module_import()
+    {
+        SetupReplaceJsModule();
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/start");
+
+        var cut = RenderComponent<MultiReplaceLinkHost>();
+
+        // Wait for all three links to finish wiring before counting imports, so a link that
+        // hasn't imported yet can't make the assertion pass vacuously.
+        var jsInvocations = Context!.JSInterop.Invocations;
+        cut.WaitForState(() => jsInvocations.Count(i => i.Identifier == "wireConditionalPreventDefault") == 3);
+
+        Assert.AreEqual(1, jsInvocations.Count(i => i.Identifier == "import"),
+            "all Replace links should reuse the scope-shared bit-brouter.js module instead of importing per link");
+    }
+
     private void SetupReplaceJsModule()
     {
-        var module = Context!.JSInterop.SetupModule("./_content/Bit.Brouter/BitBrouter.js");
+        var module = Context!.JSInterop.SetupModule("./_content/Bit.Brouter/bit-brouter.js");
         // BrouterLink.OnAfterRenderAsync calls module.InvokeAsync<IJSObjectReference>(
         //   "wireConditionalPreventDefault", _anchor) and stores the returned handle.
         // bunit only allows IJSObjectReference results to be produced via SetupModule, so we

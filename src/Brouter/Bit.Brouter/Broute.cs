@@ -41,12 +41,19 @@ public class Broute : ComponentBase, IDisposable
 
     /// <summary>
     /// Async data loader. Runs after the route matches and guards pass, before render.
-    /// The result is exposed via the cascading <c>RouteData</c> value.
+    /// The result is exposed to the rendered content as an unnamed cascading <see cref="BrouterRouteData"/>
+    /// (matched by type) with typed <c>Get&lt;T&gt;</c>/<c>TryGet&lt;T&gt;</c> accessors.
+    /// In a nested chain, loaders run sequentially root -> leaf by default (each parent's
+    /// loader completes before its child's starts); set <see cref="Brouter.ParallelLoaders"/>
+    /// to run independent loaders concurrently instead.
     /// Inspired by React Router v6's <c>loader</c> and Angular's <c>Resolve</c>.
     /// </summary>
     [Parameter] public Func<BrouterNavigationContext, ValueTask<object?>>? Loader { get; set; }
 
-    /// <summary>Optional metadata. Exposed via the cascading <c>RouteMeta</c> value.</summary>
+    /// <summary>
+    /// Optional metadata. Exposed to the rendered content as an unnamed cascading <see cref="BrouterRouteMeta"/>
+    /// (matched by type) with typed <c>Get&lt;T&gt;</c>/<c>TryGet&lt;T&gt;</c> accessors.
+    /// </summary>
     [Parameter] public object? Meta { get; set; }
 
     /// <summary>
@@ -68,6 +75,12 @@ public class Broute : ComponentBase, IDisposable
     [CascadingParameter(Name = "Brouter")] internal Brouter? Brouter { get; set; }
     [CascadingParameter(Name = "ParentRoute")] internal Broute? Parent { get; set; }
     [CascadingParameter(Name = "RouteParameters")] internal BrouterRouteParameters? InheritedParameters { get; set; }
+    // True for the synthetic Broutes Brouter emits for attribute-discovered (@page) routes; the
+    // discovered region is wrapped in a fixed cascading value (see Brouter.BuildRenderTree).
+    // RegisterRoute's ambiguity check exempts a hand-declared/discovered pair with the same
+    // template - that's the documented "hand-declared routes win ties over discovered ones"
+    // override pattern - and only rejects same-kind duplicates.
+    [CascadingParameter(Name = "IsDiscoveredRoute")] internal bool IsDiscovered { get; set; }
 
 
     internal string FullTemplate { get; private set; } = string.Empty;
@@ -80,6 +93,11 @@ public class Broute : ComponentBase, IDisposable
     internal BrouterOutlet? Outlet { get; set; }
 
     internal BrouterRouteTemplate? RouteTemplate { get; private set; }
+
+    // The canonical-template key this route was registered under in Brouter's ambiguity dictionary
+    // (see Brouter.RegisterRoute). Stored so UnregisterRoute removes exactly the key that was added,
+    // even if Options.CaseSensitive flips between registration and disposal.
+    internal string? TemplateCollisionKey { get; set; }
     // Tightened from IDictionary to IReadOnlyDictionary: callers only ever read these and the
     // pipeline replaces them wholesale on a match commit. Exposing the mutable interface let
     // any internal caller .Add/.Remove/.Clear them mid-render which would be a footgun against
@@ -120,8 +138,9 @@ public class Broute : ComponentBase, IDisposable
         }
 
         // Resolve constraints against this Brouter's DI-container-scoped registry (custom constraints
-        // registered via BrouterOptions.Constraints), falling back to built-ins and the process-wide
-        // registry. Brouter is non-null here (checked above).
+        // registered via BrouterOptions.Constraints), falling back to the built-in constraints only.
+        // See BrouterConstraintRegistry.Create (custom-then-built-in) and BrouterTemplateParser.ParseTemplate.
+        // Brouter is non-null here (checked above).
         RouteTemplate = BrouterTemplateParser.ParseTemplate(FullTemplate, Brouter.Options.Constraints);
 
         // Precompute Specificity / Depth / IsIndex once. These are stable for the lifetime
@@ -188,11 +207,26 @@ public class Broute : ComponentBase, IDisposable
 
     internal void SetMatched()
     {
+        // Mark the whole ancestor chain matched, then issue a single render request at the
+        // topmost node. Re-rendering the top of the chain re-renders every descendant Broute:
+        // a Broute is always declared inside some render region of its parent (that's how the
+        // ParentRoute cascade reaches it), and its render-relevant parameters (Content /
+        // ChildContent fragments, the Component Type) are reference types Blazor's change
+        // detection always treats as maybe-changed, so the subtree diff descends through every
+        // level - the same mechanism the pipeline's final StateHasChanged relies on to unrender
+        // the routes that lost the match. Calling StateHasChanged per ancestor (as this used
+        // to) queued one redundant render request per level of nesting for work the root's
+        // single request already covers.
         Matched = true;
 
-        StateHasChanged();
-
-        Parent?.SetMatched();
+        if (Parent is null)
+        {
+            StateHasChanged();
+        }
+        else
+        {
+            Parent.SetMatched();
+        }
     }
 
     internal async ValueTask<bool> InvokeGuardsAsync(BrouterNavigationContext ctx)

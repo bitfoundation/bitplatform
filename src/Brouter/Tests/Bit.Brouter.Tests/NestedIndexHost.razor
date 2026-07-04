@@ -1,0 +1,15 @@
+@* A parent route with an index child. Their full templates are identical ("docs"), which is the
+   documented nested-index pattern (resolved by the depth/index tiebreaks) and must NOT be
+   rejected as ambiguous at registration. Used by AmbiguousRouteTests. *@
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/docs">
+        <ChildContent>
+            <Broute Path="">
+                <Content><div data-testid="index">index</div></Content>
+            </Broute>
+        </ChildContent>
+        <Content><div data-testid="parent">docs</div></Content>
+    </Broute>
+</Brouter>

@@ -14,7 +14,10 @@ public interface IBrouter
     /// <summary>
     /// Imperatively navigate to a URL.
     /// </summary>
-    /// <param name="url">Destination URL or path.</param>
+    /// <param name="url">Destination URL or path. A route-relative path (<c>./x</c>, <c>../x</c>)
+    /// is resolved against the current location using segment math: from <c>/users/42</c>,
+    /// <c>"./edit"</c> navigates to <c>/users/42/edit</c> and <c>"../7"</c> to <c>/users/7</c>.
+    /// Bare paths without a leading <c>.</c> keep their base-relative meaning.</param>
     /// <param name="replace">If true, replaces the current history entry instead of pushing a new one.
     /// Ignored when <paramref name="forceLoad"/> is true.</param>
     /// <param name="forceLoad">If true, performs a full-page reload. The Brouter pipeline
@@ -60,11 +63,20 @@ public interface IBrouter
             $"This {nameof(IBrouter)} implementation does not support {nameof(ForwardAsync)}. " +
             "Override the method on your custom implementation to enable history navigation.");
 
-    /// <summary>Navigate to a named route, substituting the given parameters into the path.</summary>
+    /// <summary>
+    /// Navigate to a named route, substituting the given parameters into the path.
+    /// Parameters that don't match a template parameter are appended as query-string pairs
+    /// (after <paramref name="query"/>, if provided).
+    /// </summary>
     void NavigateToName(string name, IReadOnlyDictionary<string, object?>? parameters = null,
                         string? query = null, bool replace = false);
 
-    /// <summary>Build a URL for a named route without navigating.</summary>
+    /// <summary>
+    /// Build a URL for a named route without navigating. Parameters that don't match a template
+    /// parameter are appended as query-string pairs (after <paramref name="query"/>, if provided);
+    /// entries with a <see langword="null"/> value are skipped, and non-string enumerable values
+    /// emit one pair per element (e.g. <c>?tag=a&amp;tag=b</c>).
+    /// </summary>
     string ResolveUrl(string name, IReadOnlyDictionary<string, object?>? parameters = null, string? query = null);
 
     /// <summary>Async hook fired before any navigation. Inspect/cancel/redirect via the context.</summary>

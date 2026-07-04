@@ -1,0 +1,22 @@
+@* Renders one of two same-template routes (or neither) depending on Show. Used by
+   AmbiguousRouteTests to verify that disposing a route frees its template for re-registration. *@
+@using Bit.Brouter
+
+<Brouter>
+    @if (Show == "a")
+    {
+        <Broute Path="/dup">
+            <Content><div data-testid="a">a</div></Content>
+        </Broute>
+    }
+    @if (Show == "b")
+    {
+        <Broute Path="/dup">
+            <Content><div data-testid="b">b</div></Content>
+        </Broute>
+    }
+</Brouter>
+
+@code {
+    [Parameter, EditorRequired] public string Show { get; set; } = default!;
+}

@@ -61,9 +61,10 @@ builder.Services.AddBitBrouterServices(o =>
 - **Catch-all parameter binding**: `{**path}` exposes the remainder
 - Custom constraints, scoped per DI container via `o.Constraints.Register("slug", new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)
+- **Ambiguous templates are rejected**: registering two routes that match exactly the same URLs (e.g. a duplicated `@page`, or `/users/{id}` next to `/users/{userId}`) throws instead of silently picking one, mirroring the built-in router's `AmbiguousMatchException`. A hand-declared route may still shadow a discovered `@page` with the same template (see [`@page` discovery](#attribute-route--page-discovery))
 - Nested routes via `Broute` children or `BrouterOutlet`
 - Async `Guard` with cancel/redirect via `BrouterNavigationContext`
-- **Async data `Loader`** exposed via cascading `RouteData`
+- **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
 - `NotFound` URL or inline `NotFoundContent`
@@ -71,6 +72,7 @@ builder.Services.AddBitBrouterServices(o =>
 - **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
+- **Relative navigation**: `./edit` and `../sibling` resolve against the current location (segment math, React Router style) in `Navigate`, guard redirects and `<BrouterLink>`
 - **Global hooks**: `OnNavigating`, `OnNavigated`, `OnError` (Vue Router style)
 - **Navigation type** on `BrouterNavigationContext.NavigationType`: distinguishes `Push` / `Replace` / `Pop` (Back/Forward) for scroll-restoration and analytics logic
 - **Preventive guards** (via `RegisterLocationChangingHandler`): a cancel/redirect stops the URL from ever changing - no address-bar flicker, no corrupted history/back button, and real "unsaved changes" prompts are possible
@@ -145,7 +147,7 @@ implement a genuine "you have unsaved changes" prompt by cancelling from a guard
 ```razor
 <Broute Path="/users/{id:int}" Loader="@LoadUser">
     <Content Context="p">
-        <UserDetails />  @* reads cascading RouteData *@
+        <UserDetails />  @* reads the cascading BrouterRouteData *@
     </Content>
 </Broute>
 
@@ -158,6 +160,43 @@ implement a genuine "you have unsaved changes" prompt by cancelling from a guard
                ctx.CancellationToken);
 }
 ```
+
+The loader result is cascaded as a typed `BrouterRouteData` wrapper (route `Meta` likewise as
+`BrouterRouteMeta`), so consumers get compile-time-safe access instead of casting an `object?`:
+
+```razor
+@* UserDetails.razor *@
+<h1>@(Data?.Get<User>().Name)</h1>
+
+@code {
+    // The cascade is unnamed and matched by the unique wrapper type - no Name string involved.
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+}
+```
+
+`Get<T>()` throws a descriptive exception when the value is absent or of another type;
+`TryGet<T>(out var value)` and `GetOrDefault<T>()` are the non-throwing variants, and the raw
+payload stays available via `Data.Value`.
+
+### Loader ordering in nested routes
+
+When a matched route has ancestors with their own loaders, the loaders run **sequentially,
+root → leaf** by default: a parent's loader completes before its child's starts, mirroring guard
+order. That lets a child loader depend on work its parent's loader already did (e.g. state stashed
+in a scoped service), but it means the total wait is the *sum* of the chain's loader times.
+
+If the chain's loaders are independent (the common case), opt into running them concurrently —
+like React Router — with `ParallelLoaders`:
+
+```razor
+<Brouter ParallelLoaders="true">
+    ...
+</Brouter>
+```
+
+Results are still committed and errors still surfaced in root → leaf order, so render and failure
+behavior are unchanged; only the awaiting overlaps, making the wait as long as the slowest loader
+instead of all of them combined.
 
 ## Programmatic navigation
 
@@ -180,6 +219,21 @@ implement a genuine "you have unsaved changes" prompt by cancelling from a guard
         new Dictionary<string, object?> { ["id"] = 42 });
 }
 ```
+
+### Relative navigation
+
+Paths starting with `./` or `../` resolve against the **current location** using segment math
+(React Router style, not URL directory semantics): from `/users/42`, `Navigate("./edit")` goes to
+`/users/42/edit` and `Navigate("../7")` to `/users/7`. Extra `..` clamp at the root, and any query
+or hash on the relative URL is preserved.
+
+The same resolution applies in guard redirects — `ctx.Redirect("../login")` resolves against the
+path being navigated **to**, so a guard on `/admin/secret` lands on `/admin/login` — and in
+`<BrouterLink Href="../sibling">`, whose rendered `href` is the resolved absolute path and
+re-resolves after every (matched) navigation.
+
+Bare paths without a leading `.` (e.g. `Navigate("sibling")`) are untouched and keep their usual
+base-relative meaning through `NavigationManager`.
 
 ## Navigation type (push / replace / pop)
 
@@ -251,9 +305,10 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
-Precedence when several apply: a resolved fragment target scrolls (and takes focus) and wins over
-everything; otherwise, on a Back/Forward with a remembered position, that position is restored; otherwise
-scroll-to-top runs. `FocusOnNavigateSelector` (if set) then receives focus.
+Precedence when several apply: if a fragment target resolves, it scrolls into view and takes focus, and
+no further scroll or focus handling runs (so `FocusOnNavigateSelector` is not applied on that navigation).
+Otherwise, on a Back/Forward with a remembered position that position is restored, else scroll-to-top runs;
+and only in these non-fragment cases does `FocusOnNavigateSelector` (if set) then receive focus.
 
 ## Global hooks
 
@@ -346,12 +401,50 @@ class libraries, and works with lazily-loaded assemblies.
 }
 ```
 
+A hand-declared `<Broute>` with the exact template of a discovered `@page` shadows it (useful to attach a
+`Guard`/`Loader` to an existing page) - this is the one duplicate-template pairing that isn't rejected as
+ambiguous. Duplicating a template across two `@page` components, or across two hand-declared routes, throws.
+
 Discovered routes bind their `[Parameter]` properties by name (Blazor-style) - route segments to plain
 `[Parameter]` properties and query values to `[SupplyParameterFromQuery]` (or `[BrouterQuery]`). To get the
 same by-name binding on a hand-declared route, set `BindComponentParametersByName="true"` on the `<Broute>`.
 
 > Discovery reflects over the given assemblies, so - like the built-in Blazor `Router` - keep your routable
 > components preserved when trimming.
+
+## Performance & scalability
+
+Brouter is declarative: **every route is a live component instance**. Each hand-declared `<Broute>` - and
+each attribute-discovered route, which Brouter emits as a synthetic `<Broute>` - is a `ComponentBase`
+mounted in the render tree for the lifetime of the `Brouter`, carrying its own renderer, cached
+template/parameter dictionaries and cascading-value subscriptions. This is what powers nested layouts,
+per-route guards/loaders and hierarchical matching, but it differs from the built-in Blazor `Router`,
+which keeps routes as a plain `RouteTable` (data, not components) and instantiates only the *matched*
+component.
+
+Two costs to keep separate:
+
+- **Match cost** (per navigation) is handled: a first-segment index means matching does not do a full
+  `O(routes)` scan on every navigation - only routes whose first template segment can match the URL's
+  first segment (plus the usually-small set of parameter/wildcard/empty-template routes) are considered.
+- **Instantiation cost** (steady state) is *not* reduced by that index. An app with several hundred pages
+  keeps several hundred `Broute` instances alive. Unmatched routes render nothing (their `BuildRenderTree`
+  short-circuits on the match flag), so this is a memory/instance-count cost, not a per-render one.
+
+For typical apps (tens of routes) this is a non-issue. The `Tests/Bit.Brouter.Benchmarks` project
+measures it directly (Brouter vs a RouteTable baseline that instantiates only the matched component).
+Indicative numbers (.NET 10, Release): each live route costs on the order of **3-6 KB** of retained
+managed heap, so **~500 routes** adds roughly **2.5 MB** of memory and **~4 ms** of startup over the
+data-table approach, growing linearly (~5.6 MB / ~8 ms at 1000 routes). Material for a very large
+all-`@page` app; negligible otherwise. Run `dotnet run -c Release` in that project for numbers on your
+own hardware and route counts.
+
+If you have **hundreds of pages** and care about startup/memory:
+
+- **Benchmark at your real route count** (see `Tests/Bit.Brouter.Benchmarks`) before treating Brouter
+  as a drop-in for a very large app.
+- **Split routes across lazily-loaded assemblies** and add them to `AdditionalAssemblies` as they load,
+  so routes for pages the user hasn't reached yet aren't mounted up front.
 
 ## Prerender state bridging
 

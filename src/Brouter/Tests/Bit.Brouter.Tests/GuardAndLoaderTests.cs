@@ -30,6 +30,34 @@ public class GuardAndLoaderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Chain_loaders_run_sequentially_root_to_leaf_by_default()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/parent/child");
+
+        var cut = RenderComponent<SequentialLoadersHost>();
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=done]")), TimeSpan.FromSeconds(3));
+
+        CollectionAssert.AreEqual(
+            new[] { "parent:start", "parent:end", "child:start" },
+            cut.Instance.Events);
+    }
+
+    [TestMethod]
+    public void ParallelLoaders_runs_chain_loaders_concurrently()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/parent/child");
+
+        var cut = RenderComponent<ParallelLoadersHost>();
+
+        // The parent's loader completes only after the child's has started, so rendering
+        // finishing at all proves the two loaders overlapped (sequential execution would
+        // time out inside the parent's loader and never match the route).
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=done]")), TimeSpan.FromSeconds(3));
+    }
+
+    [TestMethod]
     public void Guard_cancel_prevents_navigation_before_the_url_commits()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();

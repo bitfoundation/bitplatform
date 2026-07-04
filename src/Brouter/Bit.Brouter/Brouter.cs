@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
@@ -41,6 +42,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// stays visible until the new route is ready.
     /// </summary>
     [Parameter] public RenderFragment? Navigating { get; set; }
+
+    /// <summary>
+    /// When true, the <see cref="Broute.Loader"/>s of a matched route chain run concurrently
+    /// instead of one at a time. By default loaders run sequentially root -> leaf (mirroring
+    /// guard order), so a child's loader can rely on work its parent's loader completed (e.g.
+    /// state stashed in a scoped service) - but the total wait is the sum of every loader in
+    /// the chain. When the loaders are independent (the common case), enable this to start
+    /// them together so the wait is only as long as the slowest one, like React Router.
+    /// Results are still committed and errors still surfaced in root -> leaf order, so render
+    /// and failure behavior are unchanged; only the awaiting overlaps. Leave this off if any
+    /// child loader depends on its parent's loader having finished.
+    /// </summary>
+    [Parameter] public bool ParallelLoaders { get; set; }
 
     /// <summary>Async hook fired whenever a route is successfully matched.</summary>
     [Parameter] public Func<Broute, ValueTask>? OnMatch { get; set; }
@@ -98,6 +112,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // with _routes: every named route added/removed updates this set on the same single dispatcher,
     // so no synchronization is needed (see the threading note above).
     private readonly HashSet<string> _routeNames = new(StringComparer.OrdinalIgnoreCase);
+    // Canonical-template -> registered holders, for O(1) ambiguity detection in RegisterRoute. Two
+    // routes map to the same key exactly when winner selection could only ever tell them apart by
+    // registration order (see BuildTemplateCollisionKey), which is a silent coin-flip we refuse
+    // instead - mirroring the built-in router's AmbiguousMatchException for duplicate templates.
+    // The one sanctioned cohabitation is a hand-declared route shadowing an attribute-discovered
+    // one (the documented override pattern; the hand-declared route registers first and wins the
+    // order tie), so a key holds at most one route of each kind - the list never exceeds two.
+    // Ordinal comparer: all case normalization is baked into the key itself so a CaseSensitive
+    // flip can't corrupt lookups.
+    private readonly Dictionary<string, List<Broute>> _routesByTemplateKey = new(StringComparer.Ordinal);
     // Snapshot of _routes refreshed lazily after Register/Unregister. The matching loop
     // iterates this snapshot so we don't allocate a fresh array on every navigation.
     //
@@ -113,6 +137,36 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private bool _routesDirty = true;
     internal void RegisterRoute(Broute route)
     {
+        // Reject templates that would be ambiguous with an already-registered route. A hand-declared /
+        // attribute-discovered pair is exempt: that's the documented override pattern (the hand-declared
+        // route wins the order tie), not a duplication bug. This is a pure lookup (nothing is mutated
+        // before a throw), so a rejected route leaves every set untouched.
+        string? templateKey = null;
+        List<Broute>? templateHolders = null;
+        if (route.RouteTemplate is not null)
+        {
+            templateKey = BuildTemplateCollisionKey(route);
+            if (_routesByTemplateKey.TryGetValue(templateKey, out templateHolders))
+            {
+                foreach (var existing in templateHolders)
+                {
+                    if (existing.IsDiscovered != route.IsDiscovered) continue;
+
+                    var existingDescription = existing.Component is null
+                        ? $"'{existing.FullTemplate}'"
+                        : $"'{existing.FullTemplate}' (component '{existing.Component.FullName}')";
+                    throw new InvalidOperationException(
+                        $"The route template '{route.FullTemplate}' is ambiguous with the already registered template " +
+                        $"{existingDescription}: both match exactly the same URLs, so the winner would be decided " +
+                        "by registration order alone. Remove or change one of the routes. Note that parameter names " +
+                        "(and, under case-insensitive matching, letter casing) do not distinguish templates. If you are " +
+                        "swapping two same-template <Broute>s in a single render (e.g. an @if/else), the new one " +
+                        "initializes before the old one is disposed - keep a single <Broute> rendered and vary its " +
+                        "parameters instead.");
+                }
+            }
+        }
+
         // Enforce the documented uniqueness contract for Route.Name. The name set uses the same
         // case-insensitive comparison as FindRouteByName, so name lookups stay unambiguous. Adding to
         // the set is the uniqueness check: a failed Add means an equal name is already registered.
@@ -124,15 +178,87 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 $"A route with the name '{route.Name}' is already registered. Route names must be unique (case-insensitive).");
         }
 
+        if (templateKey is not null)
+        {
+            if (templateHolders is null)
+            {
+                templateHolders = [];
+                _routesByTemplateKey.Add(templateKey, templateHolders);
+            }
+            templateHolders.Add(route);
+            route.TemplateCollisionKey = templateKey;
+        }
         _routes.Add(route);
         _routesDirty = true;
     }
     internal void UnregisterRoute(Broute route)
     {
         if (_routes.Remove(route) is false) return;
-        // Keep the name set in lockstep so the freed name can be re-registered later.
+        // Keep the name and template sets in lockstep so the freed name/template can be re-registered
+        // later. The template key is removed by the exact string it was registered under, not
+        // recomputed, so an Options.CaseSensitive flip in between can't strand a stale entry.
         if (string.IsNullOrEmpty(route.Name) is false) _routeNames.Remove(route.Name);
+        if (route.TemplateCollisionKey is not null)
+        {
+            if (_routesByTemplateKey.TryGetValue(route.TemplateCollisionKey, out var holders))
+            {
+                holders.Remove(route);
+                if (holders.Count == 0) _routesByTemplateKey.Remove(route.TemplateCollisionKey);
+            }
+            route.TemplateCollisionKey = null;
+        }
         _routesDirty = true;
+    }
+
+    /// <summary>
+    /// Builds the canonical identity of a route's matching behavior, used to detect ambiguous
+    /// registrations. Two routes get the same key exactly when <see cref="ConsiderCandidate"/>
+    /// could only ever break a tie between them by registration order: they match the same URLs
+    /// with the same specificity, and share the depth / index-route tiebreak inputs.
+    /// </summary>
+    /// <remarks>
+    /// Deliberate normalizations, matching what <see cref="TryMatch"/> actually distinguishes:
+    /// parameter names are dropped ("/users/{id}" and "/users/{userId}" match identically), the
+    /// literal catch-all "**" and a catch-all parameter "{**rest}" unify (a catch-all's optional
+    /// flag is also irrelevant - it already matches zero segments), literal casing folds when
+    /// matching is case-insensitive, and constraint tokens fold case to mirror the case-insensitive
+    /// constraint registry. Depth and index-ness are part of the key because identical templates at
+    /// different depths (a parent and its index child) are resolved deterministically by the
+    /// documented depth/index tiebreaks - only a full tie is ambiguous. Constraint order is kept:
+    /// the last constraint's conversion wins, so reordered constraints are behaviorally distinct.
+    /// </remarks>
+    private string BuildTemplateCollisionKey(Broute route)
+    {
+        var sb = new StringBuilder();
+        sb.Append(route.Depth).Append(route.IsIndex ? "i|" : "-|");
+
+        var caseSensitive = Options.CaseSensitive;
+        foreach (var seg in route.RouteTemplate!.TemplateSegments)
+        {
+            sb.Append('/');
+            if (seg.IsCatchAll)
+            {
+                sb.Append("**");
+            }
+            else if (seg.IsParameter)
+            {
+                sb.Append('{');
+                for (var i = 0; i < seg.Constraints.Length; i++)
+                {
+                    if (i > 0) sb.Append(':');
+                    sb.Append(seg.Constraints[i].Name.ToLowerInvariant());
+                }
+                if (seg.IsOptional) sb.Append('?');
+                sb.Append('}');
+            }
+            else
+            {
+                // Covers plain literals and the single-segment wildcard "*" (its Value is "*", which
+                // can't collide with a real literal: TemplateParser never produces a literal "*").
+                sb.Append(caseSensitive ? seg.Value : seg.Value.ToLowerInvariant());
+            }
+        }
+        return sb.ToString();
     }
 
     /// <summary>
@@ -541,19 +667,41 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // same specificity-based matching, guards, loaders and rendering. Wrapped in a region so
             // their sequence numbers live in an isolated space, and keyed by the (template, type) pair
             // so Blazor keeps instances stable if the discovered set is reordered or grows at runtime.
+            //
+            // Known trade-off (scalability): unlike the built-in Router - which builds a plain RouteTable
+            // and instantiates only the matched component - every route here (hand-declared and discovered
+            // alike) exists as a permanently-mounted Broute in the render tree, each carrying a
+            // BrouterRouteRenderer, its cached template/parameter dictionaries and cascading-value
+            // subscriptions. An unmatched Broute renders nothing (BuildRenderTree short-circuits on the
+            // Matched flag), so the steady-state cost is memory/instances rather than render work, and the
+            // first-segment index (GetRouteIndex) keeps per-navigation match cost off the full O(routes)
+            // scan - but it does NOT reduce this instantiation cost. Fine for typical apps; for very large
+            // route sets (hundreds of pages) benchmark against the built-in Router and consider splitting
+            // routes across lazily-loaded assemblies. See the README "Performance & scalability" section.
             if (_discoveredRoutes.Count > 0)
             {
                 b.OpenRegion(1);
-                var seq = 0;
-                foreach (var discovered in _discoveredRoutes)
+                // Fixed cascading marker (never changes, so no subscriptions) flagging every Broute in
+                // this region as attribute-discovered. RegisterRoute's ambiguity check uses it to let a
+                // hand-declared route deliberately shadow a discovered one (see Broute.IsDiscovered).
+                b.OpenComponent<CascadingValue<bool>>(0);
+                b.AddAttribute(1, "Name", "IsDiscoveredRoute");
+                b.AddAttribute(2, "Value", true);
+                b.AddAttribute(3, "IsFixed", true);
+                b.AddAttribute(4, "ChildContent", (RenderFragment)(b1 =>
                 {
-                    b.OpenComponent<Broute>(seq++);
-                    b.SetKey(discovered);
-                    b.AddAttribute(seq++, nameof(Broute.Path), discovered.Template);
-                    b.AddAttribute(seq++, nameof(Broute.Component), discovered.ComponentType);
-                    b.AddAttribute(seq++, nameof(Broute.BindComponentParametersByName), true);
-                    b.CloseComponent();
-                }
+                    var seq = 0;
+                    foreach (var discovered in _discoveredRoutes)
+                    {
+                        b1.OpenComponent<Broute>(seq++);
+                        b1.SetKey(discovered);
+                        b1.AddAttribute(seq++, nameof(Broute.Path), discovered.Template);
+                        b1.AddAttribute(seq++, nameof(Broute.Component), discovered.ComponentType);
+                        b1.AddAttribute(seq++, nameof(Broute.BindComponentParametersByName), true);
+                        b1.CloseComponent();
+                    }
+                }));
+                b.CloseComponent();
                 b.CloseRegion();
             }
 
@@ -1161,6 +1309,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // navigation's data should be persisted at the end of prerender.
             if (_persistentState is not null) _loaderStateToPersist.Clear();
 
+            // First pass: restore prerendered results and collect the loaders that still need to
+            // run. The chain index is carried alongside each node because it is part of the
+            // persistence key.
+            List<(Broute Node, int ChainIndex)> pendingLoaders = [];
             for (int chainIndex = 0; chainIndex < matchedChain.Count; chainIndex++)
             {
                 var node = matchedChain[chainIndex];
@@ -1175,45 +1327,139 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                     continue;
                 }
 
-                object? loaded;
-                try
+                pendingLoaders.Add((node, chainIndex));
+            }
+
+            if (pendingLoaders.Count > 0)
+            {
+                // Reveal the pending-navigation UI lazily - only now that a loader is actually about to
+                // run (restored/loaderless navigations never reach here, so they never flash it). The
+                // matched chain's Matched flags were reset to false above and no render has happened yet,
+                // so this StateHasChanged replaces the routed content with the Navigating fragment for the
+                // duration of the await(s), then it's cleared before SetMatched reveals the new route.
+                if (Navigating is not null && _navigating is false)
                 {
-                    loaded = await node.Loader(ctx);
-                }
-                catch (OperationCanceledException) when (token.IsCancellationRequested)
-                {
-                    return;
-                }
-                catch (NavigationException)
-                {
-                    // During static server rendering / prerender, NavigationManager.NavigateTo
-                    // throws NavigationException as the framework's redirect signal (a loader may
-                    // redirect, e.g. an auth gate). It must unwind out of OnInitializedAsync so the
-                    // endpoint can issue the HTTP redirect; swallowing it into OnError would drop
-                    // the redirect entirely. Interactive NavigateTo never throws, so this is inert
-                    // outside SSR.
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    await service.InvokeOnError(ctx, ex);
-                    return;
+                    _navigating = true;
+                    StateHasChanged();
                 }
 
-                if (HandleSideEffects(ctx, from)) return;
-                if (token.IsCancellationRequested || version != _navVersion) return;
-
-                node.LoadedData = loaded;
-
-                // Stage the result for persistence. It is written to PersistentComponentState only if the
-                // RegisterOnPersisting callback fires (i.e. during prerender); interactive passes stage it
-                // too but simply never get asked to persist.
-                if (_persistentState is not null)
+                if (ParallelLoaders && pendingLoaders.Count > 1)
                 {
-                    _loaderStateToPersist[BroutePrerenderState.MakeKey(to.Path, to.Query, chainIndex)] = loaded;
+                    // Opt-in parallel mode: start every pending loader at once and await them all,
+                    // then process results in the same root -> leaf order sequential mode uses, so
+                    // commit and failure semantics are identical - only the awaiting overlaps.
+                    // Each loader's synchronous prefix still executes root -> leaf here (concurrency
+                    // begins at the first await inside a loader).
+                    var loaderTasks = new Task<(object? Result, Exception? Error)>[pendingLoaders.Count];
+                    for (var i = 0; i < pendingLoaders.Count; i++)
+                    {
+                        loaderTasks[i] = RunLoaderAsync(pendingLoaders[i].Node);
+                    }
+
+                    var results = await Task.WhenAll(loaderTasks);
+
+                    async Task<(object? Result, Exception? Error)> RunLoaderAsync(Broute node)
+                    {
+                        try
+                        {
+                            return (await node.Loader!(ctx), null);
+                        }
+                        catch (Exception ex)
+                        {
+                            return (null, ex);
+                        }
+                    }
+
+                    // During static server rendering / prerender, NavigationManager.NavigateTo throws
+                    // NavigationException as the framework's redirect signal (a loader may redirect,
+                    // e.g. an auth gate). It must unwind out of OnInitializedAsync so the endpoint can
+                    // issue the HTTP redirect; swallowing it into OnError would drop the redirect
+                    // entirely. Scan for it before any other error handling so an SSR redirect wins
+                    // over a sibling loader's failure (root-most redirect wins if several threw).
+                    // Interactive NavigateTo never throws, so this is inert outside SSR.
+                    foreach (var (_, error) in results)
+                    {
+                        if (error is NavigationException)
+                        {
+                            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw();
+                        }
+                    }
+
+                    for (var i = 0; i < results.Length; i++)
+                    {
+                        var (node, chainIndex) = pendingLoaders[i];
+                        var (loaded, error) = results[i];
+
+                        if (error is OperationCanceledException && token.IsCancellationRequested) return;
+                        if (error is not null)
+                        {
+                            await service.InvokeOnError(ctx, error);
+                            return;
+                        }
+
+                        if (HandleSideEffects(ctx, from)) return;
+                        if (token.IsCancellationRequested || version != _navVersion) return;
+
+                        node.LoadedData = loaded;
+
+                        // Stage the result for persistence. It is written to PersistentComponentState
+                        // only if the RegisterOnPersisting callback fires (i.e. during prerender);
+                        // interactive passes stage it too but simply never get asked to persist.
+                        if (_persistentState is not null)
+                        {
+                            _loaderStateToPersist[BroutePrerenderState.MakeKey(to.Path, to.Query, chainIndex)] = loaded;
+                        }
+                    }
+                }
+                else
+                {
+                    // Default sequential mode: each loader completes before the next starts, so a
+                    // child's loader can rely on work its parent's loader has already done. The cost
+                    // is that the total wait is the sum of the chain's loader times - opt into
+                    // ParallelLoaders when the loaders are independent.
+                    foreach (var (node, chainIndex) in pendingLoaders)
+                    {
+                        object? loaded;
+                        try
+                        {
+                            loaded = await node.Loader!(ctx);
+                        }
+                        catch (OperationCanceledException) when (token.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                        catch (NavigationException)
+                        {
+                            // SSR redirect signal - must unwind so the endpoint can issue the HTTP
+                            // redirect (see the parallel branch's scan above for the full story).
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            await service.InvokeOnError(ctx, ex);
+                            return;
+                        }
+
+                        if (HandleSideEffects(ctx, from)) return;
+                        if (token.IsCancellationRequested || version != _navVersion) return;
+
+                        node.LoadedData = loaded;
+
+                        // Stage the result for persistence. It is written to PersistentComponentState
+                        // only if the RegisterOnPersisting callback fires (i.e. during prerender);
+                        // interactive passes stage it too but simply never get asked to persist.
+                        if (_persistentState is not null)
+                        {
+                            _loaderStateToPersist[BroutePrerenderState.MakeKey(to.Path, to.Query, chainIndex)] = loaded;
+                        }
+                    }
                 }
             }
 
+            // Loaders are done: hide the pending-navigation UI. SetMatched marks the whole chain and
+            // issues one render request at its topmost route, which renders the now-matched route in
+            // the pending UI's place, so clearing the flag first avoids showing both at once.
+            _navigating = false;
             winner.SetMatched();
 
             if (OnMatch is not null) await OnMatch(winner);
@@ -1251,6 +1497,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
         finally
         {
+            // Safety net for the pending-navigation UI: if this navigation revealed it but bailed before
+            // clearing it above (e.g. a loader threw and we routed to OnError), and we're still the current
+            // navigation, hide it now. Guarded by version so a superseded pipeline can't clear the flag out
+            // from under the newer navigation that may have just turned it on.
+            if (_navigating && version == _navVersion)
+            {
+                _navigating = false;
+                StateHasChanged();
+            }
+
             // Dispose our CTS exactly when it can no longer be observed by any other path:
             //   - It's been superseded (a newer pipeline replaced _navCts), or
             //   - The Brouter has been disposed (Dispose() swapped _navCts out and disposed it).
@@ -1345,7 +1601,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// index child wins over its parent when their full templates are identical), then by index-route
     /// preference, then by earliest registration order. The explicit order tiebreak reproduces the old
     /// full-scan behavior (which kept the first candidate on a tie) regardless of the order the index
-    /// visits routes in.
+    /// visits routes in. Exact-duplicate templates are rejected at registration (see
+    /// <see cref="RegisterRoute"/>), so the order tiebreak only ever arbitrates between distinct
+    /// templates whose match sets merely overlap for this particular URL (e.g. "/a/{x:int}" vs "/a/{x:min(0)}").
     /// </summary>
     private void ConsiderCandidate(in RouteEntry entry, BrouterLocation to, string[] segments,
         ref MatchResult best, ref int bestOrder, ref bool haveBest)

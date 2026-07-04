@@ -17,6 +17,16 @@ internal class BrouterRouteRenderer
     private BrouterRouteParameters? _cachedInheritedRef;
     private IReadOnlyDictionary<string, object?>? _cachedLocalRef;
 
+    // Same idea for the RouteData / RouteMeta wrappers: rebuild only when the underlying
+    // reference changes. Reusing the wrapper instance also keeps CascadingValue's change
+    // detection quiet on renders where the payload didn't change (a fresh wrapper every
+    // render would re-notify every subscriber), matching the old raw-object? behavior
+    // where an unchanged reference meant "no cascade update".
+    private BrouterRouteData? _cachedRouteData;
+    private object? _cachedLoadedDataRef;
+    private BrouterRouteMeta? _cachedRouteMeta;
+    private object? _cachedMetaRef;
+
     public BrouterRouteRenderer(Broute route)
     {
         _route = route;
@@ -71,21 +81,41 @@ internal class BrouterRouteRenderer
             _cachedLocalRef = local;
         }
 
+        // Typed wrappers instead of raw object? cascades: a distinct wrapper type per cascade
+        // means consumers get compile-time-safe access (Get<T>/TryGet<T>) and match by type
+        // alone. The cascades are deliberately unnamed - a named CascadingValue only supplies
+        // consumers that request that exact name, so naming them would break plain
+        // [CascadingParameter] BrouterRouteData properties. The unique wrapper types make a
+        // name redundant for disambiguation.
+        var loadedData = _route.LoadedData;
+        if (_cachedRouteData is null || ReferenceEquals(_cachedLoadedDataRef, loadedData) is false)
+        {
+            _cachedRouteData = loadedData is null ? BrouterRouteData.Empty : new BrouterRouteData(loadedData);
+            _cachedLoadedDataRef = loadedData;
+        }
+
+        var meta = _route.Meta;
+        if (_cachedRouteMeta is null || ReferenceEquals(_cachedMetaRef, meta) is false)
+        {
+            _cachedRouteMeta = meta is null ? BrouterRouteMeta.Empty : new BrouterRouteMeta(meta);
+            _cachedMetaRef = meta;
+        }
+        var routeData = _cachedRouteData;
+        var routeMeta = _cachedRouteMeta;
+
         builder.OpenComponent<CascadingValue<BrouterRouteParameters>>(0);
         builder.AddAttribute(1, "Name", "RouteParameters");
         builder.AddAttribute(2, "Value", routeParams);
         builder.AddAttribute(3, "IsFixed", false);
         builder.AddAttribute(4, "ChildContent", (RenderFragment)(b1 =>
         {
-            b1.OpenComponent<CascadingValue<object?>>(0);
-            b1.AddAttribute(1, "Name", "RouteData");
-            b1.AddAttribute(2, "Value", _route.LoadedData);
-            b1.AddAttribute(3, "ChildContent", (RenderFragment)(b2 =>
+            b1.OpenComponent<CascadingValue<BrouterRouteData>>(0);
+            b1.AddAttribute(1, "Value", routeData);
+            b1.AddAttribute(2, "ChildContent", (RenderFragment)(b2 =>
             {
-                b2.OpenComponent<CascadingValue<object?>>(0);
-                b2.AddAttribute(1, "Name", "RouteMeta");
-                b2.AddAttribute(2, "Value", _route.Meta);
-                b2.AddAttribute(3, "ChildContent", (RenderFragment)(b3 =>
+                b2.OpenComponent<CascadingValue<BrouterRouteMeta>>(0);
+                b2.AddAttribute(1, "Value", routeMeta);
+                b2.AddAttribute(2, "ChildContent", (RenderFragment)(b3 =>
                 {
                     if (_route.Parent?.Outlet is null)
                     {

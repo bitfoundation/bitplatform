@@ -53,7 +53,12 @@ public sealed class BrouterNavigationContext
         RedirectUrl = null;
     }
 
-    /// <summary>Redirect to another URL instead of completing this navigation.</summary>
+    /// <summary>
+    /// Redirect to another URL instead of completing this navigation.
+    /// A route-relative <paramref name="url"/> (<c>./x</c>, <c>../x</c>) is resolved against the
+    /// path of <see cref="To"/> - the location being navigated to - using segment math, so a guard
+    /// on <c>/admin/secret</c> can redirect to <c>"../login"</c> to reach <c>/admin/login</c>.
+    /// </summary>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="url"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is empty or whitespace.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the navigation has already been cancelled
@@ -63,6 +68,6 @@ public sealed class BrouterNavigationContext
         ArgumentException.ThrowIfNullOrWhiteSpace(url);
         if (IsCancelled)
             throw new InvalidOperationException("Cannot set a redirect on a cancelled navigation context. Call Redirect() before Cancel(), or do not cancel.");
-        RedirectUrl = url;
+        RedirectUrl = BrouterRelativeUrl.ResolveIfRelative(To.Path, url);
     }
 }
