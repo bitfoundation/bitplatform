@@ -30,6 +30,18 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// <summary>Inline content to render when no route matches and <see cref="NotFound"/> is null.</summary>
     [Parameter] public RenderFragment<BrouterLocation>? NotFoundContent { get; set; }
 
+    /// <summary>
+    /// Optional "pending navigation" UI, shown while a navigation is awaiting its route
+    /// <see cref="Broute.Loader"/>s. Mirrors the built-in <c>Router.Navigating</c>: when a matched
+    /// route (or one of its ancestors in the matched chain) has a slow loader, this fragment is
+    /// rendered in place of the routed content until the loaders finish, then the matched route is
+    /// revealed. It is shown lazily - only once a loader is actually about to run - so navigations
+    /// with no loaders (or whose loader results were restored from prerender state) never flash it,
+    /// and instant navigations don't flicker. Left null (the default), the previous page simply
+    /// stays visible until the new route is ready.
+    /// </summary>
+    [Parameter] public RenderFragment? Navigating { get; set; }
+
     /// <summary>Async hook fired whenever a route is successfully matched.</summary>
     [Parameter] public Func<Broute, ValueTask>? OnMatch { get; set; }
 
@@ -258,6 +270,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private CancellationTokenSource? _navCts;
     private bool _noRouteMatched;
     private long _navVersion;
+
+    // True only while the current navigation is awaiting a route loader and a Navigating fragment is
+    // set. Drives the pending-navigation UI emitted by BuildRenderTree. Set and cleared exclusively on
+    // the renderer's single-threaded dispatcher inside the navigation pipeline (see the pending-UI
+    // handling in ProcessNavigationAsync), so - like the other plain nav-state fields above - it needs
+    // no synchronization.
+    private bool _navigating;
 
     // Registration returned by NavigationManager.RegisterLocationChangingHandler. Disposed on
     // teardown to unhook the preventive guard/redirect/cancel decision (see OnLocationChanging).
@@ -528,6 +547,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 (string.IsNullOrEmpty(NotFound) || IsSamePath(CurrentLocation.Path, NotFound)))
             {
                 b.AddContent(2, NotFoundContent(CurrentLocation));
+            }
+
+            // Pending-navigation UI. Shown while the current navigation awaits its loaders (see the
+            // pending-UI handling in ProcessNavigationAsync). The declared/discovered <Broute> children
+            // above stay in the tree so they remain registered, but each renders nothing while unmatched
+            // (Matched is reset to false for the duration of the load), so this fragment is what the user
+            // sees until the matched route is revealed - matching the built-in Router.Navigating.
+            if (_navigating && Navigating is not null)
+            {
+                b.AddContent(3, Navigating);
             }
         }));
         builder.CloseComponent();
