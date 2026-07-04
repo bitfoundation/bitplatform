@@ -80,6 +80,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private readonly Dictionary<string, object?> _loaderStateToPersist = new(StringComparer.Ordinal);
 
     private readonly List<Broute> _routes = [];
+    // Names of the currently-registered routes, for O(1) uniqueness enforcement in RegisterRoute
+    // (a linear scan there made startup O(n^2)). Case-insensitive to match FindRouteByName's lookup
+    // comparison, so a name that collides on lookup also collides on registration. Kept in lockstep
+    // with _routes: every named route added/removed updates this set on the same single dispatcher,
+    // so no synchronization is needed (see the threading note above).
+    private readonly HashSet<string> _routeNames = new(StringComparer.OrdinalIgnoreCase);
     // Snapshot of _routes refreshed lazily after Register/Unregister. The matching loop
     // iterates this snapshot so we don't allocate a fresh array on every navigation.
     //
@@ -95,20 +101,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private bool _routesDirty = true;
     internal void RegisterRoute(Broute route)
     {
-        // Enforce the documented uniqueness contract for Route.Name. Comparison matches
-        // FindRouteByName (case-insensitive), so name lookups stay unambiguous.
-        if (string.IsNullOrEmpty(route.Name) is false)
+        // Enforce the documented uniqueness contract for Route.Name. The name set uses the same
+        // case-insensitive comparison as FindRouteByName, so name lookups stay unambiguous. Adding to
+        // the set is the uniqueness check: a failed Add means an equal name is already registered.
+        // O(1) per route, keeping startup registration linear rather than O(n^2).
+        var named = string.IsNullOrEmpty(route.Name) is false;
+        if (named && _routeNames.Add(route.Name!) is false)
         {
-            for (int i = 0; i < _routes.Count; i++)
-            {
-                var existing = _routes[i];
-                if (ReferenceEquals(existing, route)) continue;
-                if (string.Equals(existing.Name, route.Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException(
-                        $"A route with the name '{route.Name}' is already registered. Route names must be unique (case-insensitive).");
-                }
-            }
+            throw new InvalidOperationException(
+                $"A route with the name '{route.Name}' is already registered. Route names must be unique (case-insensitive).");
         }
 
         _routes.Add(route);
@@ -116,7 +117,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     }
     internal void UnregisterRoute(Broute route)
     {
-        if (_routes.Remove(route)) _routesDirty = true;
+        if (_routes.Remove(route) is false) return;
+        // Keep the name set in lockstep so the freed name can be re-registered later.
+        if (string.IsNullOrEmpty(route.Name) is false) _routeNames.Remove(route.Name);
+        _routesDirty = true;
     }
 
     /// <summary>
