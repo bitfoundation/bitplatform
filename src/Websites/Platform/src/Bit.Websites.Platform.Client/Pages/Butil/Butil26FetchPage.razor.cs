@@ -63,10 +63,6 @@ public partial class Butil26FetchPage
 
             progressText = response.Aborted ? "Aborted" : $"Complete - {response.Body.Length} bytes";
         }
-        catch (OperationCanceledException)
-        {
-            progressText = "Cancelled";
-        }
         catch (Exception ex)
         {
             progressText = $"Error: {ex.Message}";
@@ -92,6 +88,9 @@ public partial class Butil26FetchPage
     {
         if (cts is not null)
         {
+            // Cancel first so any in-flight SendWithProgress request aborts the JS fetch
+            // (via BitButil.fetch.abort) instead of being left running after teardown.
+            cts.Cancel();
             cts.Dispose();
             cts = null;
         }

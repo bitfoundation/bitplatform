@@ -201,7 +201,9 @@ public partial class Butil29ObserversPage
     }
 
 
-    private class DemoIdbItem
+    // Public so System.Text.Json can materialize it via its public parameterless
+    // constructor in trimmed/published builds when db.Get<DemoIdbItem> deserializes.
+    public class DemoIdbItem
     {
         public string Id { get; set; } = "";
         public string Value { get; set; } = "";
@@ -263,6 +265,7 @@ public partial class Butil29ObserversPage
 
     private async Task StartResize()
     {
+        await StopResize();
         resizeSub = await target.ObserveResize(js, entries =>
         {
             if (entries.Length > 0)
@@ -278,6 +281,13 @@ public partial class Butil29ObserversPage
     {
         targetWidth += 40;
         await target.SetAttribute(""style"", $""width:{targetWidth}px;height:48px"");
+    }
+
+    private async Task StopResize()
+    {
+        if (resizeSub is null) return;
+        await resizeSub.DisposeAsync();
+        resizeSub = null;
     }
 }";
 
@@ -298,6 +308,7 @@ public partial class Butil29ObserversPage
 
     private async Task StartMutation()
     {
+        await StopMutation();
         mutationSub = await target.ObserveMutations(js, records =>
         {
             if (records.Length > 0)
@@ -311,6 +322,13 @@ public partial class Butil29ObserversPage
     private async Task MutateTarget()
     {
         await target.SetAttribute(""data-butil"", Guid.NewGuid().ToString(""N"")[..8]);
+    }
+
+    private async Task StopMutation()
+    {
+        if (mutationSub is null) return;
+        await mutationSub.DisposeAsync();
+        mutationSub = null;
     }
 }";
 
@@ -348,6 +366,7 @@ public partial class Butil29ObserversPage
 
     private async Task PerfObserver()
     {
+        await StopPerfObserver();
         perfObserverSub = await performance.SubscribeObserver([""mark""], entries =>
         {
             if (entries.Length > 0)
@@ -358,6 +377,13 @@ public partial class Butil29ObserversPage
         }, buffered: false);
 
         await performance.Mark(""butil-demo-observed"");
+    }
+
+    private async Task StopPerfObserver()
+    {
+        if (perfObserverSub is null) return;
+        await perfObserverSub.DisposeAsync();
+        perfObserverSub = null;
     }
 }";
 
@@ -409,6 +435,7 @@ public partial class Butil29ObserversPage
 
     private async Task BroadcastSubscribe()
     {
+        await StopBroadcast();
         broadcastSub = await broadcastChannel.Subscribe(""butil-demo-channel"", msg =>
         {
             broadcastResult = $""received -> {msg}"";
@@ -419,6 +446,13 @@ public partial class Butil29ObserversPage
     private async Task BroadcastPost()
     {
         await broadcastChannel.Post(""butil-demo-channel"", new { text = ""hello from this tab"", at = DateTime.Now });
+    }
+
+    private async Task StopBroadcast()
+    {
+        if (broadcastSub is null) return;
+        await broadcastSub.DisposeAsync();
+        broadcastSub = null;
     }
 }";
 

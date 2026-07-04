@@ -7,6 +7,7 @@ public partial class Butil28SpeechPage
     private SpeechVoice[] voices = [];
     private string? speakText = "Hello from Bit.Butil speech synthesis!";
     private string? voiceName;
+    private string? getVoicesResult;
     private string? speakResult;
     private string? isSpeaking;
 
@@ -27,17 +28,24 @@ public partial class Butil28SpeechPage
     {
         if (await speechSynthesis.IsSupported() is false)
         {
-            speakResult = "Speech synthesis is not supported.";
+            getVoicesResult = "Speech synthesis is not supported.";
             return;
         }
 
         voices = await speechSynthesis.GetVoices();
+        getVoicesResult = $"{voices.Length} voice(s) available.";
         StateHasChanged();
     }
 
     private async Task Speak()
     {
         if (string.IsNullOrWhiteSpace(speakText)) return;
+
+        if (await speechSynthesis.IsSupported() is false)
+        {
+            speakResult = "Speech synthesis is not supported.";
+            return;
+        }
 
         await speechSynthesis.Speak(new SpeechUtterance
         {
@@ -50,24 +58,48 @@ public partial class Butil28SpeechPage
 
     private async Task PauseSpeech()
     {
+        if (await speechSynthesis.IsSupported() is false)
+        {
+            speakResult = "Speech synthesis is not supported.";
+            return;
+        }
+
         await speechSynthesis.Pause();
         speakResult = $"Paused (speaking={await speechSynthesis.IsSpeaking()}).";
     }
 
     private async Task ResumeSpeech()
     {
+        if (await speechSynthesis.IsSupported() is false)
+        {
+            speakResult = "Speech synthesis is not supported.";
+            return;
+        }
+
         await speechSynthesis.Resume();
         speakResult = "Resumed.";
     }
 
     private async Task CancelSpeech()
     {
+        if (await speechSynthesis.IsSupported() is false)
+        {
+            speakResult = "Speech synthesis is not supported.";
+            return;
+        }
+
         await speechSynthesis.Cancel();
         speakResult = "Cancelled.";
     }
 
     private async Task IsSpeaking()
     {
+        if (await speechSynthesis.IsSupported() is false)
+        {
+            isSpeaking = "Speech synthesis is not supported.";
+            return;
+        }
+
         isSpeaking = (await speechSynthesis.IsSpeaking()).ToString();
     }
 
@@ -121,6 +153,9 @@ public partial class Butil28SpeechPage
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        // Stop any active/pending speech so navigating away cancels ongoing utterances.
+        await speechSynthesis.Cancel();
+
         if (recognitionHandle is not null)
             await recognitionHandle.DisposeAsync();
 

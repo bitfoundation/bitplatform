@@ -163,7 +163,7 @@ public partial class Butil22DevicePage
     private async Task NetworkStatus()
     {
         var status = await networkInformation.GetStatus();
-        networkStatus = $""online={status.Online}, type={status.EffectiveType}, downlink={status.Downlink}, rtt={status.Rtt}"";
+        networkStatus = $""online={status.Online}, type={status.EffectiveType ?? status.Type ?? ""n/a""}, downlink={status.Downlink}, rtt={status.Rtt}"";
     }
 }";
 

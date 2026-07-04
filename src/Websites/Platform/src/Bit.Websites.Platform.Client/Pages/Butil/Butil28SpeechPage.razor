@@ -34,13 +34,13 @@
         <BitText Typography="BitTypography.H5" Gutter>SpeechSynthesis</BitText>
         <div class="section-card-txt">
             The <b>SpeechSynthesis</b> class wraps the
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis" target="_blank">SpeechSynthesis API</a>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis" target="_blank" rel="noopener noreferrer">SpeechSynthesis API</a>
             for text-to-speech.
             <br /><br />
 
             <b>GetVoices</b>: <br />
             Returns the list of voices the platform makes available
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices" target="_blank">MDN</a>).
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/getVoices" target="_blank" rel="noopener noreferrer">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
                 <BitPivot>
@@ -52,6 +52,7 @@
                         <BitButton OnClick="GetVoices">GetVoices</BitButton>
                         <br /><br />
                         <div>Voices count: @voices.Length</div>
+                        <div>@getVoicesResult</div>
                         <br />
                     </BitPivotItem>
                 </BitPivot>
@@ -60,7 +61,7 @@
 
             <b>Speak</b>: <br />
             Speaks the configured utterance with an optional voice, rate and pitch
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/speak" target="_blank">MDN</a>).
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/speak" target="_blank" rel="noopener noreferrer">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
                 <BitPivot>
@@ -71,7 +72,7 @@
                         <br />
                         <BitTextField @bind-Value="speakText" Label="Text" Multiline Rows="2" Style="max-width: 25rem;" />
                         <br />
-                        <select @bind="voiceName">
+                        <select @bind="voiceName" aria-label="Voice">
                             <option value="">Default voice</option>
                             @foreach (var voice in voices)
                             {
@@ -88,7 +89,7 @@
 
             <b>Pause / Resume / Cancel</b>: <br />
             Pauses the current utterance, resumes a paused utterance, or cancels all pending utterances
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/pause" target="_blank">MDN</a>).
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/pause" target="_blank" rel="noopener noreferrer">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
                 <BitPivot>
@@ -112,7 +113,7 @@
 
             <b>IsSpeaking</b>: <br />
             Returns whether the engine is currently speaking (or paused)
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/speaking" target="_blank">MDN</a>).
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/speaking" target="_blank" rel="noopener noreferrer">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
                 <BitPivot>
@@ -135,7 +136,7 @@
         <BitText Typography="BitTypography.H5" Gutter>SpeechRecognition</BitText>
         <div class="section-card-txt">
             The <b>SpeechRecognition</b> class wraps the
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition" target="_blank">SpeechRecognition API</a>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition" target="_blank" rel="noopener noreferrer">SpeechRecognition API</a>
             for speech-to-text (Chromium-based browsers).
             <br /><br />
 
@@ -143,7 +144,7 @@
             Captures microphone input and reports interim and final transcripts through the onResult callback.
             The Continuous and InterimResults options control the stream, and onError / onEnd surface errors and completion.
             Returns an <b>IAsyncDisposable</b> handle that stops recognition when disposed
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/start" target="_blank">MDN</a>).
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/start" target="_blank" rel="noopener noreferrer">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
                 <BitPivot>
@@ -165,7 +166,7 @@
 
             <b>Stop</b>: <br />
             Stops the recognition session early. Disposing the handle returned by <b>Start</b> is equivalent
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/stop" target="_blank">MDN</a>).
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/stop" target="_blank" rel="noopener noreferrer">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
                 <BitPivot>

@@ -14,6 +14,7 @@ public partial class Butil24MediaDevicesPage
 
     private ElementReference preview;
     private MediaStreamHandle? stream;
+    private bool startingStream;
 
 
     private async Task IsSupported()
@@ -41,24 +42,36 @@ public partial class Butil24MediaDevicesPage
 
     private async Task StartStream()
     {
-        await StopStream();
+        // Guard against overlapping clicks racing across the GetUserMedia await and
+        // leaking/overwriting the active stream - only one invocation may run at a time.
+        if (startingStream) return;
+        startingStream = true;
 
-        if (!requestAudio && !requestVideo)
+        try
         {
-            streamResult = "Enable at least audio or video.";
-            return;
-        }
+            await StopStream();
 
-        stream = await mediaDevices.GetUserMedia(requestAudio, requestVideo);
-        if (stream is null)
+            if (!requestAudio && !requestVideo)
+            {
+                streamResult = "Enable at least audio or video.";
+                return;
+            }
+
+            stream = await mediaDevices.GetUserMedia(requestAudio, requestVideo);
+            if (stream is null)
+            {
+                streamResult = "GetUserMedia returned null - permission denied or no device available.";
+                return;
+            }
+
+            await stream.AttachTo(preview);
+            enabled = true;
+            streamResult = $"Stream started → {stream.Id}";
+        }
+        finally
         {
-            streamResult = "GetUserMedia returned null - permission denied or no device available.";
-            return;
+            startingStream = false;
         }
-
-        await stream.AttachTo(preview);
-        enabled = true;
-        streamResult = $"Stream started → {stream.Id}";
     }
 
     private async Task ToggleEnabled()

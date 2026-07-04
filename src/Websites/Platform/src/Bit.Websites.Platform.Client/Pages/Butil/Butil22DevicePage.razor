@@ -38,7 +38,7 @@
         <BitText Typography="BitTypography.H5" Gutter>Battery</BitText>
         <div class="section-card-txt">
             The <b>Battery</b> class wraps the
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API" target="_blank">Battery Status API</a>.
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API" target="_blank" rel="noopener noreferrer">Battery Status API</a>.
             <br /><br />
 
             <b>IsSupported</b>: <br />
@@ -62,7 +62,7 @@
 
             <b>GetStatus</b>: <br />
             Returns a snapshot of the battery charging state and level
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/BatteryManager" target="_blank">MDN</a>).
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/BatteryManager" target="_blank" rel="noopener noreferrer">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
                 <BitPivot>
@@ -85,7 +85,7 @@
         <BitText Typography="BitTypography.H5" Gutter>NetworkInformation</BitText>
         <div class="section-card-txt">
             The <b>NetworkInformation</b> class wraps the
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation" target="_blank">Network Information API</a>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation" target="_blank" rel="noopener noreferrer">Network Information API</a>
             plus the always-available <b>navigator.onLine</b> flag.
             <br /><br />
 
@@ -113,7 +113,7 @@
         <BitText Typography="BitTypography.H5" Gutter>WakeLock</BitText>
         <div class="section-card-txt">
             The <b>WakeLock</b> class wraps the
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API" target="_blank">Screen Wake Lock API</a>,
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API" target="_blank" rel="noopener noreferrer">Screen Wake Lock API</a>,
             which prevents the screen from dimming while the app is active.
             <br /><br />
 
@@ -145,7 +145,7 @@
         <BitText Typography="BitTypography.H5" Gutter>IdleDetector</BitText>
         <div class="section-card-txt">
             The <b>IdleDetector</b> class wraps the
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/IdleDetector" target="_blank">Idle Detection API</a>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/IdleDetector" target="_blank" rel="noopener noreferrer">Idle Detection API</a>
             (Chromium-based browsers, requires permission).
             <br /><br />
 
@@ -159,7 +159,7 @@
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
-                        <BitNumberField @bind-Value="idleThreshold" Label="Threshold (seconds, min 60)" Style="max-width: 18.75rem;" />
+                        <BitNumberField @bind-Value="idleThreshold" Min="60" Label="Threshold (seconds, min 60)" Style="max-width: 18.75rem;" />
                         <br />
                         <BitButton OnClick="RequestIdlePermission">RequestPermission</BitButton>
                         &nbsp;

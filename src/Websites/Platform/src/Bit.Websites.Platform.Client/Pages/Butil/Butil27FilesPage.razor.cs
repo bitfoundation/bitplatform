@@ -100,6 +100,15 @@ public partial class Butil27FilesPage
     }
 
 
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        // Ensure any blob URL created via CreateObjectUrl is revoked when the user leaves the page.
+        await RevokeObjectUrlInternal();
+
+        await base.DisposeAsync(disposing);
+    }
+
+
     private readonly string getFileInfosExampleCode =
 @"@inject Bit.Butil.FileReader fileReader
 
@@ -188,6 +197,13 @@ public partial class Butil27FilesPage
     private async Task ReadAsDataUrl()
     {
         var dataUrl = await fileReader.ReadAsDataUrl(fileInput);
+        if (string.IsNullOrEmpty(dataUrl))
+        {
+            fileDataUrl = ""No file selected."";
+            imagePreviewUrl = null;
+            return;
+        }
+
         imagePreviewUrl = dataUrl.StartsWith(""data:image/"", StringComparison.OrdinalIgnoreCase)
             ? dataUrl
             : null;
