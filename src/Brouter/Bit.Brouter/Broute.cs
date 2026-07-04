@@ -119,7 +119,10 @@ public class Broute : ComponentBase, IDisposable
             FullTemplate = $"{Parent.FullTemplate.TrimEnd('/')}/{Path.TrimStart('/')}";
         }
 
-        RouteTemplate = BrouterTemplateParser.ParseTemplate(FullTemplate);
+        // Resolve constraints against this Brouter's DI-container-scoped registry (custom constraints
+        // registered via BrouterOptions.Constraints), falling back to built-ins and the process-wide
+        // registry. Brouter is non-null here (checked above).
+        RouteTemplate = BrouterTemplateParser.ParseTemplate(FullTemplate, Brouter.Options.Constraints);
 
         // Precompute Specificity / Depth / IsIndex once. These are stable for the lifetime
         // of the route (template and parent chain don't change after registration), so the

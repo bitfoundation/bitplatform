@@ -91,4 +91,14 @@ public sealed class BrouterOptions
     /// be rehydrated the loader simply runs again, so a serialization mismatch never breaks navigation.
     /// </remarks>
     public bool PersistLoaderState { get; set; } = false;
+
+    /// <summary>
+    /// Custom route parameter constraints scoped to this DI container. Register at startup so templates
+    /// can use them, e.g. <c>AddBitBrouterServices(o =&gt; o.Constraints.Register("slug", new SlugConstraint()))</c>,
+    /// then <c>{post:slug}</c> in a route. Constraints registered here are visible only to the app/service
+    /// provider that owns these options, so separate apps in one process (and parallel test classes) stay
+    /// isolated. Built-in constraints (<c>int</c>, <c>bool</c>, <c>guid</c>, <c>long</c>, <c>float</c>,
+    /// <c>double</c>, <c>decimal</c>, <c>datetime</c>) are always available and need no registration.
+    /// </summary>
+    public BrouterConstraintRegistry Constraints { get; } = new();
 }

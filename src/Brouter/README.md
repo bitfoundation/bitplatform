@@ -59,7 +59,7 @@ builder.Services.AddBitBrouterServices(o =>
 - Wildcards: `*` (single segment), `**` (catch-all)
 - **Optional parameters**: `{id?}` - must be trailing
 - **Catch-all parameter binding**: `{**path}` exposes the remainder
-- Custom constraints via `BrouterConstraints.Register("slug", new MyConstraint())`
+- Custom constraints, scoped per DI container via `o.Constraints.Register("slug", new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)
 - Nested routes via `Broute` children or `BrouterOutlet`
 - Async `Guard` with cancel/redirect via `BrouterNavigationContext`
@@ -348,15 +348,25 @@ never breaks navigation.
 
 ## Custom constraints
 
+Register custom constraints at startup on `BrouterOptions.Constraints`. They are scoped to the DI
+container that owns the options, so separate apps in one process (and parallel test classes) stay
+isolated.
+
 ```csharp
-BrouterConstraints.Register("slug",
-    new BrouterTypeRouteConstraint<string>((string s, out string r) =>
-    {
-        r = s;
-        return s.Length >= 3 && s.All(c => char.IsLetterOrDigit(c) || c == '-');
-    }));
+builder.Services.AddBitBrouterServices(o =>
+{
+    o.Constraints.Register("slug",
+        new BrouterTypeRouteConstraint<string>((string s, out string r) =>
+        {
+            r = s;
+            return s.Length >= 3 && s.All(c => char.IsLetterOrDigit(c) || c == '-');
+        }));
+});
 ```
 
 ```razor
 <Broute Path="/posts/{slug:slug}" Component="@typeof(PostPage)" />
 ```
+
+> Built-in constraints (`int`, `bool`, `guid`, `long`, `float`, `double`, `decimal`, `datetime`) are
+> always available and need no registration.
