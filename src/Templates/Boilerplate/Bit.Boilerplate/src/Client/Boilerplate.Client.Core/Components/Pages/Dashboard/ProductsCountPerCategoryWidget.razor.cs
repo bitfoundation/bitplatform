@@ -7,18 +7,24 @@ public partial class ProductsCountPerCategoryWidget
     [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
-    private BitChartConfig config = default!;
+    private BitChartBarConfig config = default!;
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
-        config = new BitChartConfig(BitChartType.Bar, new BitChartData(), new BitChartOptions
+        config = new BitChartBarConfig
         {
-            Responsive = true,
-            Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
-            Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Min = 0 } }
-        });
+            Options = new BitChartBarOptions
+            {
+                Scales = new() { YAxes = [new BitChartLinearCartesianAxis() { Ticks = new() { Min = 0 } }] },
+                Responsive = true,
+                Legend = new BitChartLegend()
+                {
+                    Display = false,
+                },
+            }
+        };
 
         await GetData();
     }
@@ -31,11 +37,9 @@ public partial class ProductsCountPerCategoryWidget
         {
             var data = await dashboardController.GetProductsCountPerCategoryStats(CurrentCancellationToken);
 
-            config.Data.Datasets.Add(new BitChartDataset
-            {
-                Data = [.. data.Select(d => (double?)d.ProductCount)],
-                BackgroundColors = [.. data.Select(d => d.CategoryColor ?? string.Empty)]
-            });
+            BitChartBarDataset<int> chartDataSet = [.. data.Select(d => d.ProductCount)];
+            chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
+            config.Data.Datasets.Add(chartDataSet);
             config.Data.Labels.AddRange(data.Select(d => d.CategoryName ?? string.Empty));
         }
         finally

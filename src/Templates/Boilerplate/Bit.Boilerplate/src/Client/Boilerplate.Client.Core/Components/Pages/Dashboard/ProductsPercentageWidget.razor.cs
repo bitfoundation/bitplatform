@@ -7,16 +7,19 @@ public partial class ProductsPercentageWidget
     [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
-    private BitChartConfig config = default!;
+    private BitChartPieConfig config = default!;
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
-        config = new BitChartConfig(BitChartType.Pie, new BitChartData(), new BitChartOptions
+        config = new BitChartPieConfig
         {
-            Responsive = true,
-        });
+            Options = new BitChartPieOptions
+            {
+                Responsive = true,
+            }
+        };
 
         await GetData();
     }
@@ -29,11 +32,9 @@ public partial class ProductsPercentageWidget
         {
             var data = await dashboardController.GetProductsPercentagePerCategoryStats(CurrentCancellationToken);
 
-            config.Data.Datasets.Add(new BitChartDataset
-            {
-                Data = [.. data!.Select(d => (double?)d.ProductPercentage)],
-                BackgroundColors = [.. data.Select(d => d.CategoryColor ?? string.Empty)]
-            });
+            BitChartPieDataset<float> chartDataSet = [.. data!.Select(d => d.ProductPercentage)];
+            chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
+            config.Data.Datasets.Add(chartDataSet);
             config.Data.Labels.AddRange(data.Select(d => d.CategoryName ?? string.Empty));
         }
         finally
