@@ -123,8 +123,11 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         try
         {
             _dotRef ??= DotNetObjectReference.Create(this);
+            // A concrete class is required here (not an anonymous type): the trimmer strips
+            // anonymous type members in release builds, which breaks System.Text.Json
+            // serialization during the JS interop call.
             _zoomHandle = await JS.BitChartRegister(_plotEl, _dotRef,
-                new { wheel = z.Wheel, pan = z.Pan && !z.DragZoom, drag = z.DragZoom });
+                new BitChartZoomPayload { Wheel = z.Wheel, Pan = z.Pan && !z.DragZoom, Drag = z.DragZoom });
         }
         catch
         {
