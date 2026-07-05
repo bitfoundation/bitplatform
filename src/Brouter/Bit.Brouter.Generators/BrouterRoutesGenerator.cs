@@ -19,6 +19,14 @@ namespace Bit.Brouter.Generators;
 [Generator]
 public sealed class BrouterRoutesGenerator : IIncrementalGenerator
 {
+    private static readonly DiagnosticDescriptor _conflictingRouteNames = new(
+        id: "BRT001",
+        title: "Duplicate route template with conflicting names",
+        messageFormat: "The route template \"/{0}\" is declared more than once with different names (\"{1}\" and \"{2}\"); only \"{1}\" gets a URL builder and Names constant",
+        category: "Bit.Brouter.Generators",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var routesPerFile = context.AdditionalTextsProvider
@@ -40,7 +48,7 @@ public sealed class BrouterRoutesGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(routesPerFile.Combine(rootNamespace), static (spc, input) =>
         {
             var (perFile, ns) = input;
-            var source = Emit(perFile, ns);
+            var source = Emit(perFile, ns, spc);
             if (source is not null)
             {
                 spc.AddSource("BrouterRoutes.g.cs", SourceText.From(source, Encoding.UTF8));
@@ -48,7 +56,7 @@ public sealed class BrouterRoutesGenerator : IIncrementalGenerator
         });
     }
 
-    private static string? Emit(ImmutableArray<EquatableArray<RouteModel>> perFile, string ns)
+    private static string? Emit(ImmutableArray<EquatableArray<RouteModel>> perFile, string ns, SourceProductionContext spc)
     {
         // Dedup by canonical template (case-insensitive; parameter names don't distinguish
         // templates at runtime, but for generation the first declaration's names/types win -
@@ -61,6 +69,14 @@ public sealed class BrouterRoutesGenerator : IIncrementalGenerator
             {
                 if (byTemplate.TryGetValue(route.Template, out var existing))
                 {
+                    // Two different explicit names on the same template is a declaration bug the
+                    // first-wins dedup would otherwise hide - surface it instead of guessing.
+                    if (existing.Name is not null && route.Name is not null
+                        && string.Equals(existing.Name, route.Name, StringComparison.Ordinal) is false)
+                    {
+                        spc.ReportDiagnostic(Diagnostic.Create(
+                            _conflictingRouteNames, Location.None, route.Template, existing.Name, route.Name));
+                    }
                     if (existing.Name is null && route.Name is not null) byTemplate[route.Template] = route;
                     continue;
                 }

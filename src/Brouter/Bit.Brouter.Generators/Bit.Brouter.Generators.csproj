@@ -21,6 +21,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- Release tracking for the diagnostics this generator reports (RS2008). -->
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- Pack as an analyzer so `dotnet add package Bit.Brouter.Generators` just works. -->
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>

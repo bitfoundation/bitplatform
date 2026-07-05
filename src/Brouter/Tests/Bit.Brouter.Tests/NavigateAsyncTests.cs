@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -25,12 +25,12 @@ public class NavigateAsyncTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Successful_navigation_resolves_Succeeded()
+    public async Task Successful_navigation_resolves_Succeeded()
     {
         var (cut, brouter) = RenderAtA();
 
         ValueTask<BrouterNavigationOutcome> navigation = default;
-        cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/b"); });
+        await cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/b"); });
         var outcome = Await(cut, navigation);
 
         Assert.AreEqual(BrouterNavigationStatus.Succeeded, outcome.Status);
@@ -39,13 +39,13 @@ public class NavigateAsyncTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Guard_cancel_resolves_Cancelled_and_url_stays()
+    public async Task Guard_cancel_resolves_Cancelled_and_url_stays()
     {
         var (cut, brouter) = RenderAtA();
         var nav = Services.GetRequiredService<FakeNavigationManager>();
 
         ValueTask<BrouterNavigationOutcome> navigation = default;
-        cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/blocked"); });
+        await cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/blocked"); });
         var outcome = Await(cut, navigation);
 
         Assert.AreEqual(BrouterNavigationStatus.Cancelled, outcome.Status);
@@ -53,12 +53,12 @@ public class NavigateAsyncTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Guard_redirect_resolves_Redirected_with_the_target()
+    public async Task Guard_redirect_resolves_Redirected_with_the_target()
     {
         var (cut, brouter) = RenderAtA();
 
         ValueTask<BrouterNavigationOutcome> navigation = default;
-        cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/redirect"); });
+        await cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/redirect"); });
         var outcome = Await(cut, navigation);
 
         Assert.AreEqual(BrouterNavigationStatus.Redirected, outcome.Status);
@@ -67,12 +67,12 @@ public class NavigateAsyncTests : BunitTestContext
     }
 
     [TestMethod]
-    public void RedirectTo_route_resolves_Redirected()
+    public async Task RedirectTo_route_resolves_Redirected()
     {
         var (cut, brouter) = RenderAtA();
 
         ValueTask<BrouterNavigationOutcome> navigation = default;
-        cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/route-redirect"); });
+        await cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/route-redirect"); });
         var outcome = Await(cut, navigation);
 
         Assert.AreEqual(BrouterNavigationStatus.Redirected, outcome.Status);
@@ -81,12 +81,12 @@ public class NavigateAsyncTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Failing_loader_resolves_Failed_with_the_exception()
+    public async Task Failing_loader_resolves_Failed_with_the_exception()
     {
         var (cut, brouter) = RenderAtA();
 
         ValueTask<BrouterNavigationOutcome> navigation = default;
-        cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/fail"); });
+        await cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/fail"); });
         var outcome = Await(cut, navigation);
 
         Assert.AreEqual(BrouterNavigationStatus.Failed, outcome.Status);
@@ -95,29 +95,29 @@ public class NavigateAsyncTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Unmatched_url_resolves_NotFound()
+    public async Task Unmatched_url_resolves_NotFound()
     {
         var (cut, brouter) = RenderAtA();
 
         ValueTask<BrouterNavigationOutcome> navigation = default;
-        cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/nope/nothing/here"); });
+        await cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/nope/nothing/here"); });
         var outcome = Await(cut, navigation);
 
         Assert.AreEqual(BrouterNavigationStatus.NotFound, outcome.Status);
     }
 
     [TestMethod]
-    public void A_newer_navigation_supersedes_an_in_flight_awaiter()
+    public async Task A_newer_navigation_supersedes_an_in_flight_awaiter()
     {
         var (cut, brouter) = RenderAtA();
 
         // First navigation parks inside the /slow loader, genuinely in-flight...
         ValueTask<BrouterNavigationOutcome> first = default;
-        cut.InvokeAsync(() => { first = brouter.NavigateAsync("/slow"); });
+        await cut.InvokeAsync(() => { first = brouter.NavigateAsync("/slow"); });
 
         // ...then a second navigation starts before the first's loader finishes.
         ValueTask<BrouterNavigationOutcome> second = default;
-        cut.InvokeAsync(() => { second = brouter.NavigateAsync("/b"); });
+        await cut.InvokeAsync(() => { second = brouter.NavigateAsync("/b"); });
 
         var firstOutcome = Await(cut, first);
         var secondOutcome = Await(cut, second);

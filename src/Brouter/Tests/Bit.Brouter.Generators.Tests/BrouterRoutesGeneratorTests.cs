@@ -160,6 +160,24 @@ public class BrouterRoutesGeneratorTests
     }
 
     [TestMethod]
+    public void Duplicate_template_with_conflicting_names_reports_a_diagnostic()
+    {
+        var (_, asm, diagnostics) = RunWithDiagnostics(("Routes.razor", """
+            <Brouter>
+                <Broute Name="first" Path="/users/{id:int}" />
+                <Broute Name="second" Path="/users/{id:int}" />
+            </Brouter>
+            """));
+
+        var diagnostic = diagnostics.Single(d => d.Id == "BRT001");
+        StringAssert.Contains(diagnostic.GetMessage(), "first");
+        StringAssert.Contains(diagnostic.GetMessage(), "second");
+        // The first declaration still wins deterministically.
+        Assert.AreEqual("/users/7", Invoke(asm, "First", 7, Type.Missing));
+        Assert.AreEqual("first", NameConstant(asm, "First"));
+    }
+
+    [TestMethod]
     public void A_named_route_owns_its_method_name_over_an_unnamed_lookalike()
     {
         var (_, asm) = Run(("Routes.razor", """

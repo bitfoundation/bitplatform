@@ -53,21 +53,21 @@ public class RevalidateTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Revalidate_with_no_matched_chain_is_a_noop()
+    public async Task Revalidate_with_no_matched_chain_is_a_noop()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
         nav.NavigateTo("http://localhost/nowhere");
         var cut = RenderComponent<RevalidateHost>();
 
         var brouter = Services.GetRequiredService<IBrouter>();
-        cut.InvokeAsync(() => brouter.RevalidateAsync().AsTask());
+        await cut.InvokeAsync(() => brouter.RevalidateAsync().AsTask());
 
         Assert.AreEqual(0, cut.Instance.ParentLoaderRuns);
         Assert.AreEqual(0, cut.Instance.ChildLoaderRuns);
     }
 
     [TestMethod]
-    public void Routes_without_loaders_revalidate_as_a_noop()
+    public async Task Routes_without_loaders_revalidate_as_a_noop()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
         nav.NavigateTo("http://localhost/other");
@@ -75,7 +75,7 @@ public class RevalidateTests : BunitTestContext
         cut.WaitForAssertion(() => cut.Find("[data-testid=other]"));
 
         var brouter = Services.GetRequiredService<IBrouter>();
-        cut.InvokeAsync(() => brouter.RevalidateAsync().AsTask());
+        await cut.InvokeAsync(() => brouter.RevalidateAsync().AsTask());
 
         // Still rendered, nothing exploded, no loader ran.
         Assert.IsNotNull(cut.Find("[data-testid=other]"));

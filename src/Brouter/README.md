@@ -326,7 +326,9 @@ URL (path + query):
 - entries die after `o.LoaderCacheGcTime` (30 min default) and the store is capped at
   `o.MaxLoaderCacheEntries` (50), oldest evicted first.
 
-No `StaleTime` anywhere → no caching, exactly the previous behavior.
+No `StaleTime` anywhere → no *loader* caching, exactly the previous behavior. (Preloading is the
+one exception: a preloaded result stays reusable for `o.PreloadStaleTime` even on routes without a
+`StaleTime` - see below.)
 
 ### Preloading
 

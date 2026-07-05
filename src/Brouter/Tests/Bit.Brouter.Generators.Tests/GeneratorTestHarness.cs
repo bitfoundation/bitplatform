@@ -15,6 +15,13 @@ internal static class GeneratorTestHarness
 {
     public static (string GeneratedSource, Assembly Assembly) Run(params (string Path, string Content)[] razorFiles)
     {
+        var (generated, assembly, _) = RunWithDiagnostics(razorFiles);
+        return (generated, assembly);
+    }
+
+    public static (string GeneratedSource, Assembly Assembly, System.Collections.Immutable.ImmutableArray<Diagnostic> Diagnostics) RunWithDiagnostics(
+        params (string Path, string Content)[] razorFiles)
+    {
         var generator = new BrouterRoutesGenerator().AsSourceGenerator();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators: [generator],
@@ -42,7 +49,7 @@ internal static class GeneratorTestHarness
             throw new InvalidOperationException($"Generated code failed to compile:{Environment.NewLine}{errors}{Environment.NewLine}--- generated source ---{Environment.NewLine}{generated}");
         }
 
-        return (generated, Assembly.Load(ms.ToArray()));
+        return (generated, Assembly.Load(ms.ToArray()), runResult.Results.Single().Diagnostics);
     }
 
     /// <summary>Invokes a generated BrouterRoutes method; omitted optionals via Type.Missing.</summary>

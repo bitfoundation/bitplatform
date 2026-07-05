@@ -17,7 +17,7 @@ namespace Bit.Brouter;
 /// Note that loader results containing live tasks are skipped by <see cref="BrouterOptions.PersistLoaderState"/>
 /// (tasks aren't serializable), so such loaders re-run on the interactive pass - by design.
 /// </remarks>
-public sealed class BrouterAwait<TValue> : ComponentBase
+public sealed class BrouterAwait<TValue> : ComponentBase, IDisposable
 {
     /// <summary>The deferred task to await. A new task reference restarts the pending/resolved cycle.</summary>
     [Parameter, EditorRequired] public Task<TValue>? Task { get; set; }
@@ -37,6 +37,9 @@ public sealed class BrouterAwait<TValue> : ComponentBase
     // The task instance this component is currently observing. Guards against a superseded task
     // (route data refreshed mid-await) applying its completion render over the newer task's state.
     private Task<TValue>? _observed;
+
+    // Set on disposal so an in-flight ObserveAsync resuming afterwards never schedules a render.
+    private bool _disposed;
 
     protected override void OnParametersSet()
     {
@@ -61,10 +64,15 @@ public sealed class BrouterAwait<TValue> : ComponentBase
             // exception so it never surfaces as an unobserved-task crash.
         }
 
-        if (ReferenceEquals(_observed, task))
+        if (_disposed is false && ReferenceEquals(_observed, task))
         {
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

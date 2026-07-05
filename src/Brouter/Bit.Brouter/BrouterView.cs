@@ -36,6 +36,7 @@ public sealed class BrouterView : ComponentBase, IDisposable
     /// <summary>The fragment to render in the same-named parent outlet; receives the route's parameters.</summary>
     [Parameter] public RenderFragment<BrouterRouteParameters>? ChildContent { get; set; }
 
+    private Broute? _registeredRoute;
     private string? _registeredName;
 
     protected override void OnParametersSet()
@@ -49,12 +50,16 @@ public sealed class BrouterView : ComponentBase, IDisposable
                 "BrouterView requires a non-empty Name. The route's main content already renders in the primary (unnamed) outlet via Content/Component.");
 
         // Re-register every parameter pass: a host re-render produces a fresh fragment instance
-        // that the outlet must pick up, and a changed Name must vacate the old slot.
-        if (_registeredName is not null && string.Equals(_registeredName, Name, StringComparison.Ordinal) is false)
+        // that the outlet must pick up, and a changed Name - or a new cascaded Route instance -
+        // must vacate the old slot on the route it was registered with.
+        if (_registeredName is not null &&
+            (ReferenceEquals(_registeredRoute, Route) is false
+             || string.Equals(_registeredName, Name, StringComparison.Ordinal) is false))
         {
-            Route.SetNamedView(_registeredName, null);
+            _registeredRoute?.SetNamedView(_registeredName, null);
         }
         Route.SetNamedView(Name, ChildContent);
+        _registeredRoute = Route;
         _registeredName = Name;
     }
 
@@ -62,7 +67,8 @@ public sealed class BrouterView : ComponentBase, IDisposable
     {
         if (_registeredName is not null)
         {
-            Route?.SetNamedView(_registeredName, null);
+            _registeredRoute?.SetNamedView(_registeredName, null);
+            _registeredRoute = null;
             _registeredName = null;
         }
     }
