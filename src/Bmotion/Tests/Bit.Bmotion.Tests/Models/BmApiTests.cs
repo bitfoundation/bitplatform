@@ -263,4 +263,137 @@ public class BmApiTests
         Assert.AreEqual(BmDragAxis.X, BmDrag.X.Axis);
         Assert.IsTrue(BmDrag.Y.Enabled);
     }
+
+    // ── BmDragConstraints (element-bounds mode) ────────────────────────────────
+
+    [TestMethod]
+    public void DragConstraints_Parent_SetsElementBoundsMode()
+    {
+        var constraints = BmDragConstraints.Parent();
+
+        Assert.IsTrue(constraints.FromParent);
+        Assert.IsNull(constraints.Selector);
+
+        var js = (Dictionary<string, object?>)constraints.ToJsObject();
+        Assert.IsTrue((bool)js["parent"]!);
+        Assert.IsFalse(js.ContainsKey("left"));
+    }
+
+    [TestMethod]
+    public void DragConstraints_Within_CarriesSelector()
+    {
+        var constraints = BmDragConstraints.Within(".drop-zone");
+
+        Assert.AreEqual(".drop-zone", constraints.Selector);
+        Assert.IsFalse(constraints.FromParent);
+
+        var js = (Dictionary<string, object?>)constraints.ToJsObject();
+        Assert.AreEqual(".drop-zone", js["selector"]);
+    }
+
+    [TestMethod]
+    public void DragConstraints_Within_RejectsEmptySelector()
+        => Assert.ThrowsExactly<ArgumentException>(() => BmDragConstraints.Within("  "));
+
+    // ── BmDragElastic ──────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void DragElastic_ImplicitDouble_IsUniform()
+    {
+        BmDragElastic elastic = 0.5;
+
+        Assert.AreEqual(0.5, elastic.Left);
+        Assert.AreEqual(0.5, elastic.Right);
+        Assert.AreEqual(0.5, elastic.Top);
+        Assert.AreEqual(0.5, elastic.Bottom);
+    }
+
+    [TestMethod]
+    public void DragElastic_Edges_UnspecifiedEdgesAreRigid()
+    {
+        var elastic = BmDragElastic.Edges(right: 0.9, bottom: 0.9);
+
+        Assert.AreEqual(0.0, elastic.Left);
+        Assert.AreEqual(0.9, elastic.Right);
+        Assert.AreEqual(0.0, elastic.Top);
+        Assert.AreEqual(0.9, elastic.Bottom);
+    }
+
+    [TestMethod]
+    public void DragElastic_ToJsObject_SanitisesValues()
+    {
+        var elastic = BmDragElastic.Edges(left: double.NaN, right: 5, top: -1, bottom: 0.5);
+
+        var js = elastic.ToJsObject();
+
+        Assert.AreEqual(0.35, js["left"]); // non-finite → default
+        Assert.AreEqual(1.0, js["right"]); // clamped to [0, 1]
+        Assert.AreEqual(0.0, js["top"]);
+        Assert.AreEqual(0.5, js["bottom"]);
+    }
+
+    // ── Per-segment keyframe easing ────────────────────────────────────────────
+
+    [TestMethod]
+    public void Tween_Eases_FlowsIntoConfig()
+    {
+        var tween = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.CircOut]);
+
+        var config = ((BmTransition)tween).ToConfig();
+
+        CollectionAssert.AreEqual(new[] { BmEase.Linear, BmEase.CircOut }, config.Eases);
+    }
+
+    [TestMethod]
+    public void Tween_Eases_ParticipatesInValueEquality()
+    {
+        var a = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.CircOut]);
+        var b = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.CircOut]);
+        var c = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.BackOut]);
+
+        Assert.IsTrue(BmTransition.AreEquivalent(a, b));
+        Assert.IsFalse(BmTransition.AreEquivalent(a, c));
+    }
+
+    // ── Bm.Template (useMotionTemplate) ────────────────────────────────────────
+
+    [TestMethod]
+    public void Template_RecomputesWhenAnyInputChanges()
+    {
+        var blur = Bm.Value(0.0);
+        var bright = Bm.Value(1.0);
+        var filter = Bm.Template(
+            () => $"blur({blur.Value}px) brightness({bright.Value})", blur, bright);
+
+        Assert.AreEqual("blur(0px) brightness(1)", filter.Value);
+
+        blur.SetSync(8);
+        Assert.AreEqual("blur(8px) brightness(1)", filter.Value);
+
+        bright.SetSync(1.5);
+        Assert.AreEqual("blur(8px) brightness(1.5)", filter.Value);
+    }
+
+    [TestMethod]
+    public void Template_DisposeDetachesFromInputs()
+    {
+        var blur = Bm.Value(0.0);
+        var filter = Bm.Template(() => $"blur({blur.Value}px)", blur);
+
+        filter.Dispose();
+        blur.SetSync(10);
+
+        Assert.AreEqual("blur(0px)", filter.Value); // no longer follows the input
+    }
+
+    // ── Filter property ────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void To_Filter_FlowsIntoEngineValuesAndInitialCss()
+    {
+        var props = Bm.To(filter: "blur(4px)");
+
+        Assert.AreEqual("blur(4px)", props.ToJsDictionary()["filter"]);
+        StringAssert.Contains(props.ToCssStyleString(), "filter:blur(4px);");
+    }
 }

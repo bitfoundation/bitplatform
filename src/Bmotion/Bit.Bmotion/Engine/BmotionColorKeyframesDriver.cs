@@ -70,8 +70,9 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         _times = config.Times != null
             ? (double[])config.Times.Clone()
             : Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
-        var globalEase = BmEaseFunctions.Get(config);
-        _eases = Enumerable.Repeat(globalEase, n - 1).ToArray();
+        // Per-segment easing: config.Eases maps entry i onto the segment frames[i] → frames[i+1]
+        // (last entry repeating when shorter); otherwise every segment shares the single easing.
+        _eases = BmEaseFunctions.GetSegmentEases(config, n - 1);
 
         // Parse each frame's color once up-front; Tick() then only interpolates pre-parsed
         // channels instead of running the color regex on every frame (~60 fps).
@@ -120,12 +121,15 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
                     Array.Reverse(_curFrames);
                     Array.Reverse(_curChannels);
                     MirrorTimes(_times);
+                    // Keep each segment paired with its easing when the frame order flips.
+                    Array.Reverse(_eases);
                 }
                 else if (_repeatType == BmRepeatType.Reverse && !_reversed)
                 {
                     Array.Reverse(_curFrames);
                     Array.Reverse(_curChannels);
                     MirrorTimes(_times);
+                    Array.Reverse(_eases);
                     _reversed = true;
                 }
                 return false;

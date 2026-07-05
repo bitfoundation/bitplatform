@@ -36,7 +36,11 @@
 
 <div class="demo-section">
     <h2>CSS Property Animations</h2>
-    <p>Animate any CSS property - colors, border-radius, box-shadow, and more.</p>
+    <p>
+        Animate any CSS property - colors, border-radius, box-shadow, and more. Complex strings
+        like <c>filter</c> interpolate too: every number (and embedded color) inside two values
+        with the same shape animates smoothly.
+    </p>
     <div class="demo-row">
         <div class="demo-card">
             <Bmotion Animate='@(_rounded
@@ -47,9 +51,22 @@
                 <div class="box" />
             </Bmotion>
         </div>
+        <div class="demo-card">
+            <Bmotion Initial='Bm.To(filter: "blur(0px) saturate(1)")'
+                    Animate='@(_dimmed
+                        ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
+                        : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
+                    Transition="Bm.Tween(0.5, BmEase.InOut)"
+                    OnTap="@(() => _dimmed = !_dimmed)">
+                <div class="box" style="display:flex;align-items:center;justify-content:center;">filter</div>
+            </Bmotion>
+        </div>
     </div>
     <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _rounded = !_rounded)">
         Toggle shape
+    </button>
+    <button class="btn-bm" style="margin-top:1rem;margin-left:.5rem" @onclick="@(() => _dimmed = !_dimmed)">
+        Toggle filter
     </button>
 
     <CodeSnippet Code="@_cssCode" />
@@ -58,6 +75,7 @@
 @code {
     private bool _toggled;
     private bool _rounded;
+    private bool _dimmed;
 
     private const string _basicCode = """
         @using Bit.Bmotion
@@ -142,7 +160,7 @@
 
         <div class="demo-section">
             <h2>CSS Property Animations</h2>
-            <p>Animate any CSS property - colors, border-radius, box-shadow, and more.</p>
+            <p>Animate any CSS property - colors, border-radius, box-shadow, filter, and more.</p>
             <div class="demo-row">
                 <div class="demo-card">
                     <Bmotion Animate='@(_rounded
@@ -153,14 +171,23 @@
                         <div class="box" />
                     </Bmotion>
                 </div>
+                <div class="demo-card">
+                    @* Complex strings with the same shape interpolate number-by-number. *@
+                    <Bmotion Initial='Bm.To(filter: "blur(0px) saturate(1)")'
+                            Animate='@(_dimmed
+                                ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
+                                : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
+                            Transition="Bm.Tween(0.5, BmEase.InOut)"
+                            OnTap="@(() => _dimmed = !_dimmed)">
+                        <div class="box" />
+                    </Bmotion>
+                </div>
             </div>
-            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _rounded = !_rounded)">
-                Toggle shape
-            </button>
         </div>
 
         @code {
             private bool _rounded;
+            private bool _dimmed;
         }
         """;
 }

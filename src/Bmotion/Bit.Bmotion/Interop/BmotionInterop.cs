@@ -85,6 +85,18 @@ public sealed class BmotionInterop : IAsyncDisposable
     public async ValueTask ApplyStylesAsync(string elementId, object styles)
         => await (await Module()).InvokeVoidAsync("applyStyles", elementId, styles);
 
+    /// <summary>
+    /// Pops an element out of the layout flow (position: absolute pinned at its current spot)
+    /// for a popLayout exit. <paramref name="currentX"/>/<paramref name="currentY"/> are the
+    /// element's current transform translation, backed out of the measured position.
+    /// </summary>
+    public async ValueTask PopLayoutAsync(string elementId, double currentX, double currentY)
+        => await (await Module()).InvokeVoidAsync("popLayout", elementId, currentX, currentY);
+
+    /// <summary>Restores the inline styles replaced by <see cref="PopLayoutAsync"/> (exit cancelled).</summary>
+    public async ValueTask UnpopLayoutAsync(string elementId)
+        => await (await Module()).InvokeVoidAsync("unpopLayout", elementId);
+
     // ── Element registration ──────────────────────────────────────────────────
 
     /// <summary>Marks the element for the JS bridge; <c>false</c> when no element with the id exists.</summary>
@@ -107,6 +119,13 @@ public sealed class BmotionInterop : IAsyncDisposable
     public async ValueTask AttachEventListenersAsync<T>(
         string elementId, object events, DotNetObjectReference<T> dotnetRef) where T : class
         => await (await Module()).InvokeVoidAsync("attachEventListeners", elementId, events, dotnetRef);
+
+    /// <summary>
+    /// Starts a drag on an element from an external pointer event (see <see cref="BmDragControls"/>).
+    /// No-op when the element has no drag attached.
+    /// </summary>
+    public async ValueTask StartDragAsync(string elementId, long pointerId, double clientX, double clientY)
+        => await (await Module()).InvokeVoidAsync("startDrag", elementId, pointerId, clientX, clientY);
 
     // ── Viewport observation ──────────────────────────────────────────────────
 

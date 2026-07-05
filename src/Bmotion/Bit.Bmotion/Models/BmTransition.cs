@@ -129,6 +129,13 @@ public sealed class BmTween : BmTransition
     /// </summary>
     public double[]? Times { get; set; }
 
+    /// <summary>
+    /// Per-segment easing for keyframe sequences: <c>Eases[i]</c> eases the segment from keyframe
+    /// <c>i</c> to keyframe <c>i+1</c> (one fewer entry than keyframes; the last entry repeats when
+    /// the array is shorter). Overrides <see cref="Ease"/> segment-by-segment when set.
+    /// </summary>
+    public BmEase[]? Eases { get; set; }
+
     private protected override BmotionTransitionConfig CreateConfig() => new()
     {
         Type = BmotionTransitionType.Tween,
@@ -136,13 +143,22 @@ public sealed class BmTween : BmTransition
         Ease = Ease,
         EaseCubicBezier = Bezier,
         Times = Times,
+        Eases = Eases,
     };
 
     internal override bool ValueEquals(BmTransition other)
         => other is BmTween t
            && Duration == t.Duration && Ease == t.Ease
            && ArraysEqual(Bezier, t.Bezier) && ArraysEqual(Times, t.Times)
+           && EasesEqual(Eases, t.Eases)
            && base.ValueEquals(other);
+
+    private static bool EasesEqual(BmEase[]? a, BmEase[]? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        return a.AsSpan().SequenceEqual(b);
+    }
 }
 
 /// <summary>Physics-based spring driven by stiffness, damping and mass - or, more intuitively,

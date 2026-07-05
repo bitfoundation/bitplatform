@@ -71,10 +71,10 @@ public sealed class BmotionPresenceSwitch<TItem> : ComponentBase
         foreach (var entry in _entries.Where(e => !e.Exiting).ToArray())
             BeginExit(entry);
 
-        if (Mode == BmPresenceMode.Sync || _entries.Count == 0)
+        if (Mode != BmPresenceMode.Wait || _entries.Count == 0)
         {
-            // Sync overlaps exit and enter; and when nothing is actually exiting (e.g. the old
-            // subtree had no animatable children) the new item can enter immediately either way.
+            // Sync/PopLayout overlap exit and enter; and when nothing is actually exiting (e.g.
+            // the old subtree had no animatable children) the new item can enter immediately.
             _hasPending = false;
             AddEntry(Item);
         }
@@ -104,6 +104,7 @@ public sealed class BmotionPresenceSwitch<TItem> : ComponentBase
             return;
         }
         entry.Exiting = true;
+        entry.Ctx.PopLayout = Mode == BmPresenceMode.PopLayout;
         entry.Ctx.IsExiting = true;
     }
 

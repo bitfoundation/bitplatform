@@ -21,7 +21,36 @@ internal static class BmEaseFunctions
             double.IsFinite(cb[0]) && double.IsFinite(cb[1]) && double.IsFinite(cb[2]) && double.IsFinite(cb[3]))
             return CubicBezier(cb[0], cb[1], cb[2], cb[3]);
 
-        return config.Ease switch
+        return Get(config.Ease);
+    }
+
+    /// <summary>
+    /// Builds the per-segment easing array for a keyframe sequence with
+    /// <paramref name="segments"/> segments. <c>config.Eases</c> entries map one-to-one onto
+    /// segments (the last entry repeats when the array is shorter); without them every segment
+    /// shares the config's single easing.
+    /// </summary>
+    public static Func<double, double>[] GetSegmentEases(BmotionTransitionConfig config, int segments)
+    {
+        var eases = new Func<double, double>[segments];
+        if (config.Eases is { Length: > 0 } perSegment)
+        {
+            for (int i = 0; i < segments; i++)
+                eases[i] = Get(perSegment[Math.Min(i, perSegment.Length - 1)]);
+        }
+        else
+        {
+            var global = Get(config);
+            for (int i = 0; i < segments; i++)
+                eases[i] = global;
+        }
+        return eases;
+    }
+
+    /// <summary>Returns the easing function for a named preset.</summary>
+    public static Func<double, double> Get(BmEase ease)
+    {
+        return ease switch
         {
             BmEase.Linear    => t => t,
             BmEase.In    => _easeIn,

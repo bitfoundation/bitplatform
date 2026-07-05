@@ -41,6 +41,7 @@ public static class Bm
         BmStringKeyframes? fill = null, BmStringKeyframes? stroke = null,
         BmStringKeyframes? width = null, BmStringKeyframes? height = null,
         BmStringKeyframes? borderRadius = null, BmStringKeyframes? boxShadow = null,
+        BmStringKeyframes? filter = null,
         // ── SVG path drawing ──
         BmKeyframes? pathLength = null, BmKeyframes? pathOffset = null, BmKeyframes? pathSpacing = null,
         // ── Extras ──
@@ -60,6 +61,7 @@ public static class Bm
             Fill = fill, Stroke = stroke,
             Width = width, Height = height,
             BorderRadius = borderRadius, BoxShadow = boxShadow,
+            Filter = filter,
             PathLength = pathLength, PathOffset = pathOffset, PathSpacing = pathSpacing,
             CssVars = cssVars,
             Transition = transition,
@@ -87,13 +89,13 @@ public static class Bm
     public static BmTween Tween(
         double duration = 0.3, BmEase ease = BmEase.Out,
         double delay = 0, BmRepeat? repeat = null,
-        double[]? times = null, double[]? bezier = null,
+        double[]? times = null, double[]? bezier = null, BmEase[]? eases = null,
         double? staggerChildren = null, double? delayChildren = null)
         => new()
         {
             Duration = duration, Ease = ease,
             Delay = delay, Repeat = repeat,
-            Times = times, Bezier = bezier,
+            Times = times, Bezier = bezier, Eases = eases,
             StaggerChildren = staggerChildren, DelayChildren = delayChildren,
         };
 
@@ -113,8 +115,30 @@ public static class Bm
     /// await Motion.AnimateAsync(x, 200, Bm.Spring());
     /// </code>
     /// </summary>
-    public static BmValue<T> Value<T>(T initial) where T : struct
+    public static BmValue<T> Value<T>(T initial)
         => new($"mv_{Guid.NewGuid():N}", initial);
+
+    /// <summary>
+    /// Composes motion values into a CSS string that re-renders whenever any input changes -
+    /// motion.dev's <c>useMotionTemplate</c>. Bind the result to any CSS property via the
+    /// component's <c>StringValues</c> parameter:
+    /// <code>
+    /// var blur = Bm.Value(0.0);
+    /// var filter = Bm.Template(() => $"blur({blur.Value}px)", blur);
+    /// // &lt;Bmotion StringValues='new() { ["filter"] = _filter }'&gt;
+    /// </code>
+    /// </summary>
+    /// <param name="format">Produces the composed string; read the inputs' <c>Value</c> inside.</param>
+    /// <param name="inputs">The motion values that trigger re-evaluation when they change.</param>
+    public static BmValue<string> Template(Func<string> format, params BmValue<double>[] inputs)
+    {
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(inputs);
+        var composed = new BmValue<string>($"mv_{Guid.NewGuid():N}", format());
+        foreach (var input in inputs)
+            composed.AttachUpstream(input.Subscribe(_ => composed.SetSync(format())));
+        return composed;
+    }
 
     /// <summary>A momentum deceleration (used for drag release / fling effects).</summary>
     public static BmInertia Inertia(

@@ -45,6 +45,27 @@
     <CodeSnippet Code="@_colorKeyframesCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Per-segment easing</h2>
+    <p>
+        <c>eases</c> gives each keyframe segment its own curve (one entry per segment; the last
+        repeats when the array is shorter): here the ball launches with an accelerating
+        <c>CircIn</c>, then lands twice with decelerating <c>CircOut</c> / <c>BackOut</c>.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="height:220px;align-items:flex-end;padding-bottom:2.5rem;">
+            <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
+                    Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
+                                         eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
+                <div class="box" style="width:56px;height:56px;border-radius:50%;" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_easesCode" />
+</div>
+
 @code {
     private const string _keyframesCode = """
         @using Bit.Bmotion
@@ -117,6 +138,30 @@
                     </Bmotion>
                 </div>
             </div>
+        </div>
+        """;
+
+    private const string _easesCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem 2rem 2.5rem; height: 220px;
+                display: flex; align-items: flex-end; justify-content: center;
+            }
+            .ball { width: 56px; height: 56px; border-radius: 50%;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        <div class="demo-card">
+            @* One ease per segment: launch, fall, small bounce, settle. *@
+            <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
+                    Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
+                                         eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
+                <div class="ball" />
+            </Bmotion>
         </div>
         """;
 }

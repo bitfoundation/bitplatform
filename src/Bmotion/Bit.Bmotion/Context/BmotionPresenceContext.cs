@@ -10,6 +10,12 @@ internal class BmotionPresenceContext
     /// <summary>True while the children are playing their exit animation.</summary>
     public bool IsExiting { get; internal set; }
 
+    /// <summary>
+    /// When true, exiting children pop out of the layout flow (position: absolute at their
+    /// current spot) before playing their exit, so siblings reflow immediately.
+    /// </summary>
+    public bool PopLayout { get; internal set; }
+
     internal void Register(Bmotion child)
     {
         if (!_children.Contains(child)) _children.Add(child);

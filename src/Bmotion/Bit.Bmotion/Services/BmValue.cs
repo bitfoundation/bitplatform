@@ -1,10 +1,11 @@
 namespace Bit.Bmotion;
 /// <summary>
-/// A reactive numeric value whose changes can be observed and linked to animations.
-/// Analogous to Framer Motion's <c>MotionValue&lt;T&gt;</c>.
+/// A reactive value whose changes can be observed and linked to animations - Framer Motion's
+/// <c>MotionValue&lt;T&gt;</c>. Numeric values track velocity and can be range-mapped; string
+/// values (created via <see cref="Bm.Template"/>) carry composed CSS strings.
 /// Purely C# - no JS synchronisation required.
 /// </summary>
-public class BmValue<T> : IDisposable where T : struct
+public class BmValue<T> : IDisposable
 {
     private readonly string _id;
     private T _value;
@@ -18,8 +19,8 @@ public class BmValue<T> : IDisposable where T : struct
         typeof(float), typeof(double), typeof(decimal),
     };
 
-    /// <summary>Subscription to a parent BmValue when this instance is a derived/transformed value.</summary>
-    private IDisposable? _upstream;
+    /// <summary>Subscriptions to parent BmValues when this instance is a derived/combined value.</summary>
+    private readonly List<IDisposable> _upstreams = new();
 
     // ── Velocity tracking (numeric values only) ───────────────────────────────
     private double _velocityPerSec;
@@ -137,15 +138,15 @@ public class BmValue<T> : IDisposable where T : struct
     /// Create a derived BmValue that applies a transformation function.
     /// Analogous to Framer Motion's <c>useTransform</c>.
     /// </summary>
-    public BmValue<TOut> Transform<TOut>(Func<T, TOut> fn) where TOut : struct
+    public BmValue<TOut> Transform<TOut>(Func<T, TOut> fn)
     {
         ArgumentNullException.ThrowIfNull(fn);
         var derived = new BmValue<TOut>($"{_id}_t", fn(_value));
         // Subscribe weakly: the parent must not keep the derived value alive (that would make the
         // parent→derived link a leak for callers that drop the derived). The derived keeps the
-        // parent alive via _upstream for as long as the caller holds the derived, which is the
+        // parent alive via its upstreams for as long as the caller holds the derived, which is the
         // intended direction. The subscription self-removes once the derived is collected.
-        derived._upstream = SubscribeWeak(derived, fn);
+        derived.AttachUpstream(SubscribeWeak(derived, fn));
         return derived;
     }
 
@@ -187,7 +188,7 @@ public class BmValue<T> : IDisposable where T : struct
         }
 
         var derived = new BmValue<double>($"{_id}_tr", Map(_value));
-        derived._upstream = SubscribeWeak(derived, Map);
+        derived.AttachUpstream(SubscribeWeak(derived, Map));
         return derived;
     }
 
@@ -197,7 +198,6 @@ public class BmValue<T> : IDisposable where T : struct
     /// removes itself the first time it fires after the derived value has been collected.
     /// </summary>
     private IDisposable SubscribeWeak<TOut>(BmValue<TOut> derived, Func<T, TOut> project)
-        where TOut : struct
     {
         var weak = new WeakReference<BmValue<TOut>>(derived);
         IDisposable? sub = null;
@@ -213,14 +213,14 @@ public class BmValue<T> : IDisposable where T : struct
 
     /// <summary>
     /// Attaches an upstream subscription this value depends on (disposed with this value).
-    /// Used by derived values such as spring followers.
+    /// Used by derived values such as spring followers and <see cref="Bm.Template"/> composites.
     /// </summary>
-    internal void AttachUpstream(IDisposable subscription) => _upstream = subscription;
+    internal void AttachUpstream(IDisposable subscription) => _upstreams.Add(subscription);
 
     public void Dispose()
     {
-        _upstream?.Dispose();
-        _upstream = null;
+        foreach (var upstream in _upstreams) upstream.Dispose();
+        _upstreams.Clear();
         _subscribers.Clear();
     }
 

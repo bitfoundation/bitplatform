@@ -25,9 +25,11 @@ builder.Services.AddBitBmotionServices();
 
 The `Bm` facade is the entry point for the whole hot path: `Bm.To(...)` builds animation
 targets (single values or keyframe sequences), `Bm.Spring` / `Bm.Tween` / `Bm.Inertia` build
-transitions, `Bm.Stagger` builds multi-element delay generators, and `Bm.Value` creates
-reactive motion values. Components: `<Bmotion>`, `<BmotionAnimatePresence>`,
-`<BmotionPresenceSwitch>`, `<BmotionLayoutGroup>` and `<BmotionConfig>`. Programmatic
+transitions, `Bm.Stagger` builds multi-element delay generators, `Bm.Value` creates reactive
+motion values, and `Bm.Template` composes them into CSS strings. Components:
+`<Bmotion>`, `<BmotionAnimatePresence>`, `<BmotionPresenceSwitch>`, `<BmotionPresenceGroup>`
+(keyed list presence, with a popLayout mode), `<BmotionReorderGroup>` (drag-to-reorder lists),
+`<BmotionLayoutGroup>` and `<BmotionConfig>`. Programmatic
 animation is available through `BmotionAnimateService` (selector / `ElementReference` based,
 supports sequences and staggers) and `BmotionScrollTracker` (scroll-linked motion values).
 

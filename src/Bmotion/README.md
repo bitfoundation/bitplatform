@@ -17,6 +17,8 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
   - [Bmotion](#bmotion)
   - [BmotionAnimatePresence](#bmotionanimatepresence)
   - [BmotionPresenceSwitch](#bmotionpresenceswitch)
+  - [BmotionPresenceGroup](#bmotionpresencegroup)
+  - [BmotionReorderGroup](#bmotionreordergroup)
   - [BmotionConfig](#bmotionconfig)
 - [Transitions](#transitions)
 - [Keyframes](#keyframes)
@@ -82,7 +84,7 @@ Bm.Current                                        // wildcard keyframe: "the ele
 `Bm.To(...)` returns a `BmProps`; every parameter is optional. Available
 properties: `x, y, z, scale, scaleX, scaleY, rotate, rotateX, rotateY, rotateZ, skewX, skewY,
 perspective, originX, originY, opacity, backgroundColor, color, borderColor, outlineColor,
-fill, stroke, width, height, borderRadius, boxShadow, pathLength, pathOffset, pathSpacing,
+fill, stroke, width, height, borderRadius, boxShadow, filter, pathLength, pathOffset, pathSpacing,
 cssVars, transition`.
 
 > **Security:** string-valued properties are written verbatim into the element's inline style.
@@ -135,7 +137,8 @@ literals, single-quote the attribute: `WhileHover='Bm.To(backgroundColor: "#8a66
 | `State` / `InitialState` | `string?` | Active / initial variant name (razor-literal friendly) |
 | `Custom` | `object?` | Data passed to dynamic variants |
 | `Values` | `Dictionary<string, BmValue<double>>?` | Motion-value bindings (`style={{ x }}` equivalent) |
-| `Drag`, `DragConstraints`, `DragElastic`, `DragMomentum`, `DragSnapToOrigin`, `DragDirectionLock`, `DragTransition` | | See [Drag](#drag) |
+| `StringValues` | `Dictionary<string, BmValue<string>>?` | String motion-value bindings for any CSS property (`useMotionTemplate` equivalent, see [Motion values](#motion-values)) |
+| `Drag`, `DragConstraints`, `DragElastic`, `DragMomentum`, `DragSnapToOrigin`, `DragDirectionLock`, `DragTransition`, `DragHandle`, `DragControls`, `DragListener` | | See [Drag](#drag) |
 | `Layout` | `BmLayout` | Automatic FLIP layout animations (`true` or `BmLayout.Position`) |
 | `LayoutId` | `string?` | Shared-element transitions (see [Layout & shared elements](#layout--shared-elements)) |
 | `Once` / `Viewport` | `bool` / `BmViewport?` | Viewport tracking for `WhileInView` |
@@ -200,7 +203,7 @@ exit animation plays, then are removed.
 | Parameter | Type | Description |
 |---|---|---|
 | `IsPresent` | `bool` | Controls whether the child content is present |
-| `Mode` | `BmPresenceMode` | `Sync` (default) or `Wait` (exit finishes before re-enter) |
+| `Mode` | `BmPresenceMode` | `Sync` (default), `Wait` (exit finishes before re-enter) or `PopLayout` (exiting content pops out of the layout flow so siblings reflow immediately) |
 | `OnExitComplete` | `EventCallback` | Fires when all exit animations finish |
 
 ### BmotionPresenceSwitch
@@ -221,6 +224,56 @@ template of the item):
 ```
 
 `Mode` defaults to `Wait`; `Sync` overlaps exit and enter. `OnExitComplete` fires per exit.
+
+### BmotionPresenceGroup
+
+Keyed **list** presence - motion.dev's `AnimatePresence` around a collection. Render one
+template per item; removed items play their `Exit` before leaving the DOM, added items play
+their enter, and an item re-added mid-exit cancels the exit. Just mutate the list:
+
+```razor
+<BmotionPresenceGroup Items="_messages" ItemKey="m => m.Id" Context="message">
+    <Bmotion Initial="Bm.To(opacity: 0, x: 40)"
+             Animate="Bm.To(opacity: 1, x: 0)"
+             Exit="Bm.To(opacity: 0, scale: 0.9)">
+        <div class="toast">@message.Text</div>
+    </Bmotion>
+</BmotionPresenceGroup>
+
+@code {
+    private List<Message> _messages = [];   // Add/Remove and the animations follow
+}
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `Items` | `IEnumerable<TItem>` | The current items, in render order |
+| `ItemKey` | `Func<TItem, object>?` | Stable identity across renders (defaults to the item itself); keys must be unique |
+| `Mode` | `BmPresenceMode` | `Sync` (default) or `PopLayout` - exiting items pop to `position: absolute` at their spot so siblings reflow immediately (give the container `position: relative`) |
+| `OnExitComplete` | `EventCallback` | Fires each time a removed item finishes exiting |
+
+### BmotionReorderGroup
+
+Drag-to-reorder lists - motion.dev's `Reorder.Group`/`Reorder.Item` in one component. Every
+item is draggable along the list axis, siblings spring out of the way during the drag
+(transform-based preview, no re-renders), and the new order is committed to the bound list on
+release:
+
+```razor
+<BmotionReorderGroup @bind-Items="_tracks" ItemKey="t => t.Id" Context="track">
+    <div class="row">@track.Title</div>
+</BmotionReorderGroup>
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `Items` / `ItemsChanged` | `List<TItem>` | The list being reordered (`@bind-Items` supported) |
+| `ItemKey` | `Func<TItem, object>?` | Stable identity across renders; keys must be unique |
+| `Axis` | `BmDragAxis` | `Y` (vertical, default) or `X` (horizontal); wrapping grids are not supported |
+| `WhileDrag` | `BmTarget?` | Overlay while dragging (default: slight scale-up) |
+| `HandleSelector` | `string?` | CSS selector of a drag grip inside each item; the rest of the row stays clickable |
+| `Transition` | `BmTransition?` | Spring for sibling displacement and the release settle |
+| `OnReorder` | `EventCallback` | Fires after a reorder is committed |
 
 ### BmotionConfig
 
@@ -299,8 +352,15 @@ Every property accepts a single value or a keyframe sequence via collection expr
 ```
 
 - `times: [0, 0.2, 0.5, 1]` on `Bm.Tween` sets custom keyframe offsets.
+- `eases: [BmEase.CircIn, BmEase.CircOut, ...]` gives each keyframe **segment** its own curve
+  (one entry per segment; the last entry repeats when the array is shorter):
+  `Bm.Tween(2, eases: [BmEase.CircOut, BmEase.CircIn, BmEase.BackOut])`.
 - `Bm.Current` inside a sequence is a wildcard for the element's current value:
   `x: [Bm.Current, 100]` continues seamlessly from wherever the element is now.
+- **Complex strings interpolate**: between two values with the same shape, every number and
+  embedded color animates - `filter: "blur(0px) brightness(1)"` → `"blur(8px) brightness(1.4)"`,
+  multi-part `boxShadow`s, matching gradients, mixed-unit strings. Shapes that don't match
+  snap to the target instead.
 
 ## Variants
 
@@ -368,6 +428,50 @@ Motion-style flat parameters:
 </Bmotion>
 ```
 
+Constraints can also be **element bounds** (motion.dev's `dragConstraints={ref}`): the
+container is measured at each drag start, so responsive layout changes just work.
+
+```razor
+<Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+    <div />   @* stays inside its parent element *@
+</Bmotion>
+
+<Bmotion Drag="true" DragConstraints='BmDragConstraints.Within(".drop-zone")'>
+    <div />   @* stays inside the first element matching the selector *@
+</Bmotion>
+```
+
+**Handles and drag controls.** `DragHandle` restricts the drag to a grip inside the element;
+`BmDragControls` (motion.dev's `useDragControls`) starts the drag from any other element -
+pair it with `DragListener="false"` so the controls are the only trigger:
+
+```razor
+<Bmotion Drag="true" DragHandle=".grip">
+    <div class="row"><span class="grip">⠿</span> Only the grip drags</div>
+</Bmotion>
+
+<div class="track" @onpointerdown="e => _controls.StartAsync(e)">
+    <Bmotion Drag="BmDrag.X" DragControls="_controls" DragListener="false"
+             DragConstraints="BmDragConstraints.Parent()">
+        <div class="thumb" />   @* press anywhere on the track to grab the thumb *@
+    </Bmotion>
+</div>
+
+@code {
+    private readonly BmDragControls _controls = new();
+}
+```
+
+**Per-edge elasticity.** `DragElastic` accepts a uniform value or per-edge values
+(unspecified edges are rigid):
+
+```razor
+<Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()"
+         DragElastic="BmDragElastic.Edges(right: 0.9, bottom: 0.9)">
+    <div />
+</Bmotion>
+```
+
 ## Layout & shared elements
 
 `Layout` plays a FLIP animation whenever a re-render moves or resizes the element:
@@ -421,6 +525,10 @@ Wrap independent groups in `<BmotionLayoutGroup Name="sidebar">` to namespace th
     // Stagger across all matched elements
     Task Cascade() => Motion.AnimateAsync(".item", Bm.To(opacity: 1, y: 0),
         Bm.Spring(), stagger: Bm.Stagger(0.08, from: BmStaggerFrom.Center)).AsTask();
+
+    // Animate a raw number (counters, canvas, anything outside the DOM)
+    Task CountUp() => Motion.AnimateAsync(0, 100,
+        v => { _count = (int)v; StateHasChanged(); }, Bm.Tween(1.5));
 }
 ```
 
@@ -465,6 +573,20 @@ re-rendering** (the `style={{ x }}` equivalent):
 
 ```razor
 <Bmotion Values='new() { ["x"] = _x, ["rotate"] = _angle }'>
+    <div />
+</Bmotion>
+```
+
+`Bm.Template` composes motion values into a CSS string (motion.dev's `useMotionTemplate`),
+and `StringValues` binds string values to any CSS property:
+
+```csharp
+var blur = Bm.Value(0.0);
+var filter = Bm.Template(() => $"blur({blur.Value}px)", blur);
+```
+
+```razor
+<Bmotion StringValues='new() { ["filter"] = _filter }'>
     <div />
 </Bmotion>
 ```
@@ -519,6 +641,11 @@ drag, variants & stagger, keyframes, enter/exit transitions, presence switching,
 ---
 
 ## Accessibility
+
+Tap gestures are keyboard-accessible out of the box: when a tappable element has focus,
+<kbd>Enter</kbd> and <kbd>Space</kbd> press and release it exactly like a pointer tap
+(`WhileTap` plays, `OnTapStart`/`OnTap` fire; losing focus mid-press cancels). Give the
+element `tabindex="0"` if it isn't natively focusable.
 
 Bmotion can honour the user's **prefers-reduced-motion** preference, collapsing animations to
 instant state changes. To keep it from ever disabling animations an app didn't opt into, this

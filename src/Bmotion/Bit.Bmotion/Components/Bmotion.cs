@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmotion;
@@ -104,6 +105,19 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public Dictionary<string, BmValue<double>>? Values { get; set; }
 
+    /// <summary>
+    /// Binds string motion values - typically <see cref="Bm.Template"/> composites - to CSS
+    /// properties ("filter", "clipPath", "boxShadow", …), the equivalent of motion.dev's
+    /// <c>useMotionTemplate</c>. Every change is flushed straight to the element on the next
+    /// frame without re-rendering the component:
+    /// <code>
+    /// &lt;Bmotion StringValues='new() { ["filter"] = _filter }'&gt;
+    ///     &lt;div class="box" /&gt;
+    /// &lt;/Bmotion&gt;
+    /// </code>
+    /// </summary>
+    [Parameter] public Dictionary<string, BmValue<string>>? StringValues { get; set; }
+
     // ── Drag ─────────────────────────────────────────────────────────────────
     /// <summary>Enable dragging: <c>Drag="true"</c> (both axes), <c>Drag="BmDrag.X"</c> or <c>Drag="BmDrag.Y"</c>.</summary>
     [Parameter] public BmDrag Drag { get; set; }
@@ -111,8 +125,31 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// <summary>Constraint bounds in px relative to the element's resting position.</summary>
     [Parameter] public BmDragConstraints? DragConstraints { get; set; }
 
-    /// <summary>Elasticity when the drag exceeds constraints (0 = rigid, 1 = fully elastic). Default: 0.35.</summary>
-    [Parameter] public double DragElastic { get; set; } = 0.35;
+    /// <summary>
+    /// Elasticity when the drag exceeds constraints (0 = rigid, 1 = fully elastic).
+    /// Accepts a uniform value (<c>DragElastic="0.5"</c>) or per-edge values via
+    /// <c>BmDragElastic.Edges(right: 0.8, bottom: 0.8)</c>. Default: 0.35 on every edge.
+    /// </summary>
+    [Parameter] public BmDragElastic DragElastic { get; set; } = 0.35;
+
+    /// <summary>
+    /// CSS selector for a drag handle inside the element: the drag only starts when the
+    /// pointer goes down on (or inside) a matching descendant, e.g. <c>DragHandle=".grip"</c>.
+    /// </summary>
+    [Parameter] public string? DragHandle { get; set; }
+
+    /// <summary>
+    /// Starts this element's drag from another element's pointer event - motion.dev's
+    /// <c>useDragControls</c>. Pair with <see cref="DragListener"/> = false to make the
+    /// controls the only trigger.
+    /// </summary>
+    [Parameter] public BmDragControls? DragControls { get; set; }
+
+    /// <summary>
+    /// Whether pressing the element itself starts the drag. Default: true. Set to false when
+    /// the drag should only start via <see cref="DragControls"/>.
+    /// </summary>
+    [Parameter] public bool DragListener { get; set; } = true;
 
     /// <summary>Whether to apply momentum / inertia after release. Default: true.</summary>
     [Parameter] public bool DragMomentum { get; set; } = true;
@@ -375,6 +412,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             _prevAnimate = null;
             _prevInheritedVariant = null;
             PresenceCtx?.Register(this); // re-register in case the context was reset
+            // A popLayout exit pinned the element with position:absolute; put it back in the
+            // layout flow now that the exit is cancelled (no-op when it was never popped).
+            if (_initialized)
+                try { await Interop.UnpopLayoutAsync(_id); } catch { /* cosmetic restore only */ }
         }
 
         // FLIP: snapshot BEFORE re-render
@@ -407,6 +448,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         // Attach gesture listeners + viewport observation through the same reconciliation path used
         // on later updates, so enabling/disabling a gesture after first render is handled uniformly.
+        ReconcileDragControls();
         await ReconcileEventListenersAsync();
         await ReconcileViewportAsync();
 
@@ -466,6 +508,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // Gesture listeners and viewport observation are wired once at init; re-wire them when the
         // set of needed events / viewport options changes so gestures enabled (or disabled) after
         // the first render actually take effect.
+        ReconcileDragControls();
         await ReconcileEventListenersAsync();
         await ReconcileViewportAsync();
 
@@ -517,7 +560,17 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         var exitProps = ResolveProps(Exit);
         if (exitProps != null)
+        {
+            // popLayout: pin the element at its current spot with position:absolute so siblings
+            // reflow immediately, then play the exit on the popped element.
+            if (PresenceCtx is { PopLayout: true })
+            {
+                var (x, y) = Engine.GetCurrentXY(_id);
+                try { await Interop.PopLayoutAsync(_id, x, y); }
+                catch { /* popping is cosmetic; the exit animation must still play */ }
+            }
             await Engine.AnimateToAwaitAsync(_id, exitProps.ToJsDictionary(), BuildEffectiveTransition(exitProps));
+        }
         PresenceCtx?.NotifyExitComplete(this);
     }
 
@@ -717,7 +770,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable] public async Task OnDragMove() => await OnDrag.InvokeAsync();
 
     [JSInvokable]
-    public async Task OnPointerUp_Drag(double velX, double velY)
+    public async Task OnPointerUp_Drag(double velX, double velY,
+        double? boundLeft = null, double? boundRight = null, double? boundTop = null, double? boundBottom = null)
     {
         await Engine.DeactivateGestureLayerAsync(_id, "drag");
 
@@ -730,8 +784,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         }
         else
         {
+            // JS reports the pixel bounds it actually constrained this drag with. Element-bounds
+            // configs (Parent/Within) only exist in resolved form there, so prefer the reported
+            // bounds; fall back to the static parameter when none arrived (e.g. no constraints).
+            var constraints = boundLeft.HasValue || boundRight.HasValue || boundTop.HasValue || boundBottom.HasValue
+                ? new BmDragConstraints { Left = boundLeft, Right = boundRight, Top = boundTop, Bottom = boundBottom }
+                : DragConstraints;
             await Engine.EndDragAsync(
-                _id, velX, velY, DragMomentum, DragConstraints,
+                _id, velX, velY, DragMomentum, constraints,
                 Drag.Axis == BmDragAxis.Both ? null : Drag.Axis.ToString().ToLowerInvariant(),
                 DragTransition?.ToConfig());
         }
@@ -891,14 +951,35 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         {
             d["drag"] = true;
             if (Drag.Axis != BmDragAxis.Both) d["dragAxis"] = Drag.Axis.ToString().ToLowerInvariant();
-            // Reject NaN/±Infinity (Math.Clamp passes NaN straight through), which would otherwise
-            // destabilise the drag elasticity math; fall back to the default when not finite.
-            d["dragElastic"] = double.IsFinite(DragElastic) ? Math.Clamp(DragElastic, 0, 1) : 0.35;
+            // ToJsObject sanitises each edge (finite, clamped to [0, 1]) so the JS elasticity
+            // math never receives NaN/±Infinity.
+            d["dragElastic"] = DragElastic.ToJsObject();
             if (DragConstraints != null) d["dragConstraints"] = DragConstraints.ToJsObject();
             if (DragDirectionLock) d["dragDirectionLock"] = true;
+            if (!string.IsNullOrWhiteSpace(DragHandle)) d["dragHandle"] = DragHandle;
+            if (!DragListener) d["dragListener"] = false;
         }
         return d;
     }
+
+    // ── Drag controls ──────────────────────────────────────────────────────────
+
+    private BmDragControls? _attachedDragControls;
+
+    /// <summary>Keeps the (single) attached <see cref="BmDragControls"/> current with the parameter.</summary>
+    private void ReconcileDragControls()
+    {
+        if (ReferenceEquals(_attachedDragControls, DragControls)) return;
+        _attachedDragControls?.Detach(this);
+        _attachedDragControls = DragControls;
+        _attachedDragControls?.Attach(this);
+    }
+
+    /// <summary>Starts this element's drag from an external pointer event (see <see cref="BmDragControls"/>).</summary>
+    internal ValueTask StartDragAsync(PointerEventArgs e)
+        => _initialized
+            ? Interop.StartDragAsync(_id, e.PointerId, e.ClientX, e.ClientY)
+            : ValueTask.CompletedTask;
 
     /// <summary>
     /// Re-wires the JS gesture listeners when the effective event set changes. Attaching always
@@ -962,29 +1043,42 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     private readonly List<IDisposable> _valueSubscriptions = new();
     private Dictionary<string, BmValue<double>>? _boundValues;
+    private Dictionary<string, BmValue<string>>? _boundStringValues;
 
     /// <summary>
-    /// (Re)subscribes to the bound motion values when the <see cref="Values"/> dictionary
-    /// instance changes. Each change writes straight into the engine (no component re-render);
-    /// the engine's dirty-flag batching flushes it on the next frame.
+    /// (Re)subscribes to the bound motion values when the <see cref="Values"/> or
+    /// <see cref="StringValues"/> dictionary instance changes. Each change writes straight into
+    /// the engine (no component re-render); the engine's dirty-flag batching flushes it on the
+    /// next frame.
     /// </summary>
     private void ReconcileValueBindings()
     {
-        if (ReferenceEquals(_boundValues, Values)) return;
+        if (ReferenceEquals(_boundValues, Values) && ReferenceEquals(_boundStringValues, StringValues))
+            return;
 
         foreach (var subscription in _valueSubscriptions) subscription.Dispose();
         _valueSubscriptions.Clear();
         _boundValues = Values;
-        if (Values == null) return;
+        _boundStringValues = StringValues;
 
-        foreach (var (key, value) in Values)
-        {
-            var propertyKey = key;
-            _valueSubscriptions.Add(value.Subscribe(v =>
-                Engine.SetInstant(_id, new Dictionary<string, object?> { [propertyKey] = v })));
-            // Seed the current value so the element reflects it before the first change.
-            Engine.SetInstant(_id, new Dictionary<string, object?> { [propertyKey] = value.Value });
-        }
+        if (Values != null)
+            foreach (var (key, value) in Values)
+            {
+                var propertyKey = key;
+                _valueSubscriptions.Add(value.Subscribe(v =>
+                    Engine.SetInstant(_id, new Dictionary<string, object?> { [propertyKey] = v })));
+                // Seed the current value so the element reflects it before the first change.
+                Engine.SetInstant(_id, new Dictionary<string, object?> { [propertyKey] = value.Value });
+            }
+
+        if (StringValues != null)
+            foreach (var (key, value) in StringValues)
+            {
+                var propertyKey = key;
+                _valueSubscriptions.Add(value.Subscribe(v =>
+                    Engine.SetInstant(_id, new Dictionary<string, object?> { [propertyKey] = v })));
+                Engine.SetInstant(_id, new Dictionary<string, object?> { [propertyKey] = value.Value });
+            }
     }
 
     /// <summary>Builds a stable, order-independent string signature for an event-flags dictionary.</summary>
@@ -1037,6 +1131,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         foreach (var subscription in _valueSubscriptions) subscription.Dispose();
         _valueSubscriptions.Clear();
+        _attachedDragControls?.Detach(this);
         PresenceCtx?.Unregister(this);
         Engine.UnregisterElement(_id);
         try { await Interop.UnregisterElementAsync(_id); } catch { /* ignore during teardown */ }

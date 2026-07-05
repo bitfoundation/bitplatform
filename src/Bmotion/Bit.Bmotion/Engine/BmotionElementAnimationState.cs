@@ -318,11 +318,19 @@ internal sealed class BmotionElementAnimationState
                 CreateCssDimensionDriver(key, dimStr, perKey);
             else if (TryGetStringArray(value, out string[]? otherFrames) && otherFrames!.Length > 0)
             {
-                // Non-colour string keyframes (e.g. dimension arrays) have no interpolating driver;
-                // snap to the final frame so the value still lands on its destination.
-                StringValues[key] = otherFrames[^1];
-                NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
-                _dirtyProps.Add(key);
+                // Non-colour string keyframes ("100px" → "50%" arrays, filter sequences, …):
+                // animate through per-segment string mixers when every adjacent pair has a
+                // matching shape; otherwise snap to the final frame so the value still lands.
+                if (otherFrames.Length >= 2 && TryCreateStringKeyframesDriver(key, otherFrames, perKey))
+                {
+                    // driver registered by the helper
+                }
+                else
+                {
+                    StringValues[key] = otherFrames[^1];
+                    NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
+                    _dirtyProps.Add(key);
+                }
             }
             else if (TryConvertToDouble(value, out double numeric))
                 CreateNumericDriver(key, numeric, perKey);
@@ -650,6 +658,33 @@ internal sealed class BmotionElementAnimationState
         _activeAnims[key] = new BmotionColorKeyframesDriver(frames, config, v => ApplyString(key, v));
     }
 
+    /// <summary>
+    /// Registers a keyframes driver for generic string frames when every adjacent pair is
+    /// mixable. The numeric keyframes driver runs an index track (0, 1, …, n-1) - inheriting
+    /// times, per-segment eases and repeat behavior - and each in-between index value selects a
+    /// segment mixer and its local progress.
+    /// </summary>
+    private bool TryCreateStringKeyframesDriver(string key, string[] frames, BmotionTransitionConfig config)
+    {
+        var mixes = new Func<double, string>[frames.Length - 1];
+        for (int i = 0; i < frames.Length - 1; i++)
+        {
+            if (BmotionStringMixer.TryCreateMix(frames[i], frames[i + 1]) is not { } mix)
+                return false;
+            mixes[i] = mix;
+        }
+
+        var indexTrack = new double[frames.Length];
+        for (int i = 0; i < frames.Length; i++) indexTrack[i] = i;
+
+        _activeAnims[key] = new BmotionNumericKeyframesDriver(indexTrack, config, v =>
+        {
+            int seg = Math.Clamp((int)Math.Floor(v), 0, mixes.Length - 1);
+            ApplyString(key, mixes[seg](v - seg));
+        });
+        return true;
+    }
+
     // ── Value apply callbacks (mark dirty) ────────────────────────────────────
 
     private void ApplyTransform(string key, double value)
@@ -730,8 +765,7 @@ internal sealed class BmotionElementAnimationState
 
     private void CreateCssDimensionDriver(string key, string toValue, BmotionTransitionConfig config)
     {
-        // If both from and to are the same unit, interpolate numerically.
-        // Otherwise just snap to the new value immediately.
+        // Simple same-unit dimensions ("100px" → "240px") interpolate numerically.
         string fromRaw = StringValues.GetValueOrDefault(key, "");
         if (TryParseCssDimension(toValue, out double toNum, out string toUnit) &&
             TryParseCssDimension(fromRaw, out double fromNum, out string fromUnit) &&
@@ -740,14 +774,31 @@ internal sealed class BmotionElementAnimationState
             _activeAnims[key] = new BmotionTweenDriver(fromNum, toNum, config,
                 v => ApplyString(key, BmotionCssFormat.Num(v) + toUnit));
         }
+        // Complex strings with a matching shape ("blur(0px)" → "blur(8px)", multi-part shadows,
+        // matching gradients) interpolate token-wise via the string mixer, driven by an eased /
+        // sprung progress track.
+        else if (BmotionStringMixer.TryCreateMix(fromRaw, toValue) is { } mix)
+        {
+            _activeAnims[key] = CreateProgressDriver(config, p => ApplyString(key, mix(p)));
+        }
         else
         {
-            // Snap and mark dirty - no interpolation possible across different units.
+            // Snap and mark dirty - no interpolation possible between these shapes.
             StringValues[key] = toValue;
             NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
             _dirtyProps.Add(key);
         }
     }
+
+    /// <summary>
+    /// A 0 → 1 progress driver used to animate mixed (complex string) values: springs keep their
+    /// physics (overshoot flows into the mixer's number extrapolation); everything else tweens.
+    /// Inertia has no meaningful string semantics, so it also falls back to a tween.
+    /// </summary>
+    private IBmotionAnimationDriver CreateProgressDriver(BmotionTransitionConfig config, Action<double> apply)
+        => config.Type == BmotionTransitionType.Spring
+            ? new BmotionSpringDriver(0, 1, config, apply)
+            : new BmotionTweenDriver(0, 1, config, apply);
 
     private static bool TryParseCssDimension(string value, out double number, out string unit)
     {

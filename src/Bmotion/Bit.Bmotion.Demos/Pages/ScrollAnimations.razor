@@ -51,6 +51,25 @@
 </div>
 
 <div class="demo-section">
+    <h2>Motion templates</h2>
+    <p>
+        <strong>Bm.Template</strong> composes motion values into a CSS string
+        (motion.dev's <c>useMotionTemplate</c>) and <c>StringValues</c> binds it to any CSS
+        property. Here scroll progress drives a composed <c>filter</c> - hue and blur together.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion StringValues="_filterValue">
+                <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#6c47ff,#ff4785);" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_templateCode" />
+</div>
+
+<div class="demo-section">
     <h2>whileInView</h2>
     <p>
         Use <strong>WhileInView</strong> to animate when the element enters the viewport.
@@ -81,11 +100,21 @@
     // Created once (not inline in the markup) so re-renders don't re-subscribe the bindings.
     private Dictionary<string, BmValue<double>> _barValues = default!;
     private Dictionary<string, BmValue<double>> _boxValues = default!;
+    private Dictionary<string, BmValue<string>> _filterValue = default!;
 
     protected override void OnInitialized()
     {
         _barValues = new() { ["scaleX"] = Scroll.ProgressYValue };
         _boxValues = new() { ["rotate"] = Scroll.ProgressYValue.Transform([0, 1], [0, 360]) };
+
+        // Compose two derived values into one CSS string (useMotionTemplate).
+        var hue = Scroll.ProgressYValue.Transform([0, 1], [0, 270]);
+        var blur = Scroll.ProgressYValue.Transform([0, 0.5, 1], [0, 4, 0]);
+        _filterValue = new()
+        {
+            ["filter"] = Bm.Template(
+                () => $"hue-rotate({hue.Value:F0}deg) blur({blur.Value:F1}px)", hue, blur),
+        };
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -124,6 +153,36 @@
                 // Scroll progress drives scaleX directly; a Transform-derived value maps 0–1 → 0–360°.
                 _barValues = new() { ["scaleX"] = Scroll.ProgressYValue };
                 _boxValues = new() { ["rotate"] = Scroll.ProgressYValue.Transform([0, 1], [0, 360]) };
+            }
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
+            }
+        }
+        """;
+
+    private const string _templateCode = """
+        @using Bit.Bmotion
+        @inject BmotionScrollTracker Scroll
+
+        <Bmotion StringValues="_filterValue">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private Dictionary<string, BmValue<string>> _filterValue = default!;
+
+            protected override void OnInitialized()
+            {
+                // Compose two derived values into one CSS string (useMotionTemplate).
+                var hue  = Scroll.ProgressYValue.Transform([0, 1], [0, 270]);
+                var blur = Scroll.ProgressYValue.Transform([0, 0.5, 1], [0, 4, 0]);
+                _filterValue = new()
+                {
+                    ["filter"] = Bm.Template(
+                        () => $"hue-rotate({hue.Value:F0}deg) blur({blur.Value:F1}px)", hue, blur),
+                };
             }
 
             protected override async Task OnAfterRenderAsync(bool firstRender)

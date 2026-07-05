@@ -59,6 +59,12 @@ public class BmProps
     public BmStringKeyframes? BorderRadius { get; set; }
     public BmStringKeyframes? BoxShadow { get; set; }
 
+    /// <summary>
+    /// CSS filter, e.g. <c>"blur(8px) brightness(1.2)"</c>. Between values with the same filter
+    /// list shape, each number (and embedded color) interpolates smoothly.
+    /// </summary>
+    public BmStringKeyframes? Filter { get; set; }
+
     // ── SVG path drawing ──────────────────────────────────────────────────────
     /// <summary>
     /// 0 = invisible, 1 = fully drawn. Drives strokeDashoffset.
@@ -118,6 +124,7 @@ public class BmProps
         if (Height is not null) d["height"] = Height.ToEngineValue();
         if (BorderRadius is not null) d["borderRadius"] = BorderRadius.ToEngineValue();
         if (BoxShadow is not null) d["boxShadow"] = BoxShadow.ToEngineValue();
+        if (Filter is not null) d["filter"] = Filter.ToEngineValue();
         if (PathLength is not null) d["pathLength"] = PathLength.ToEngineValue();
         if (PathOffset is not null) d["pathOffset"] = PathOffset.ToEngineValue();
         if (PathSpacing is not null) d["pathSpacing"] = PathSpacing.ToEngineValue();
@@ -198,6 +205,7 @@ public class BmProps
         if (CssStr(Height) is { } h) sb.Append($"height:{h};");
         if (CssStr(BorderRadius) is { } br) sb.Append($"border-radius:{br};");
         if (CssStr(BoxShadow) is { } bs) sb.Append($"box-shadow:{bs};");
+        if (CssStr(Filter) is { } flt) sb.Append($"filter:{flt};");
         if (CssNum(PathLength, out double pl))
         {
             double clamped = Math.Max(0, Math.Min(1, pl));
@@ -280,6 +288,7 @@ public class BmProps
         if (Str(Height) is { } h) d["height"] = h;
         if (Str(BorderRadius) is { } br) d["borderRadius"] = br;
         if (Str(BoxShadow) is { } bs) d["boxShadow"] = bs;
+        if (Str(Filter) is { } flt) d["filter"] = flt;
         if (Num(PathLength, out double pl))
         {
             double clamped = Math.Max(0, Math.Min(1, pl));
@@ -319,7 +328,7 @@ public class BmProps
             Equals(Opacity, o.Opacity) &&
             Equals(BackgroundColor, o.BackgroundColor) && Equals(Color, o.Color) && Equals(BorderColor, o.BorderColor) &&
             Equals(OutlineColor, o.OutlineColor) && Equals(Fill, o.Fill) && Equals(Stroke, o.Stroke) &&
-            Equals(Width, o.Width) && Equals(Height, o.Height) && Equals(BorderRadius, o.BorderRadius) && Equals(BoxShadow, o.BoxShadow) &&
+            Equals(Width, o.Width) && Equals(Height, o.Height) && Equals(BorderRadius, o.BorderRadius) && Equals(BoxShadow, o.BoxShadow) && Equals(Filter, o.Filter) &&
             Equals(PathLength, o.PathLength) && Equals(PathOffset, o.PathOffset) && Equals(PathSpacing, o.PathSpacing);
 
         return values && DictEquals(CssVars, o.CssVars) && BmTransition.AreEquivalent(Transition, o.Transition);

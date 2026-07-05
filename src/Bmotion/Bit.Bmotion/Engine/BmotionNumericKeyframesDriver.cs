@@ -69,13 +69,9 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
             ? (double[])config.Times.Clone()
             : Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
 
-        // Per-segment easing array. Per-segment easing isn't exposed on the transition config yet,
-        // so every segment currently shares the single configured easing function; the array shape
-        // is kept so adding per-segment curves later doesn't change the interpolation code path.
-        _eases = new Func<double, double>[n - 1];
-        var globalEase = BmEaseFunctions.Get(config);
-        for (int i = 0; i < n - 1; i++)
-            _eases[i] = globalEase;
+        // Per-segment easing: config.Eases maps entry i onto the segment frames[i] → frames[i+1]
+        // (last entry repeating when shorter); otherwise every segment shares the single easing.
+        _eases = BmEaseFunctions.GetSegmentEases(config, n - 1);
     }
 
     public bool Tick(double timestamp)
@@ -104,11 +100,14 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
                 {
                     Array.Reverse(_curFrames);
                     MirrorTimes(_times);
+                    // Keep each segment paired with its easing when the frame order flips.
+                    Array.Reverse(_eases);
                 }
                 else if (_repeatType == BmRepeatType.Reverse && !_reversed)
                 {
                     Array.Reverse(_curFrames);
                     MirrorTimes(_times);
+                    Array.Reverse(_eases);
                     _reversed = true;
                 }
                 return false;

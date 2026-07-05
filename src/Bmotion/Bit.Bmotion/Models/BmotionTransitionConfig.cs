@@ -91,6 +91,18 @@ internal sealed class BmotionTransitionConfig
     }
     private double[]? _times;
 
+    /// <summary>
+    /// Per-segment easing presets for keyframe sequences: <c>Eases[i]</c> eases the segment from
+    /// frame <c>i</c> to frame <c>i+1</c>. When shorter than the segment count the last entry
+    /// repeats; when omitted every segment uses <see cref="Ease"/>/<see cref="EaseCubicBezier"/>.
+    /// </summary>
+    public BmEase[]? Eases
+    {
+        get => _eases is null ? null : (BmEase[])_eases.Clone();
+        set => _eases = value is null ? null : (BmEase[])value.Clone();
+    }
+    private BmEase[]? _eases;
+
     private static double[]? ValidateTimes(double[]? value)
     {
         if (value is null) return null;
@@ -205,6 +217,7 @@ internal sealed class BmotionTransitionConfig
         RepeatType = RepeatType,
         RepeatDelay = RepeatDelay,
         Times = _times is null ? null : (double[])_times.Clone(),
+        Eases = _eases is null ? null : (BmEase[])_eases.Clone(),
         Stiffness = Stiffness,
         Damping = Damping,
         Mass = Mass,

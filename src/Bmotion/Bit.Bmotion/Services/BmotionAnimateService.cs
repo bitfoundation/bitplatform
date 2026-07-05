@@ -120,6 +120,21 @@ public sealed class BmotionAnimateService
     }
 
     /// <summary>
+    /// Animates a raw number from <paramref name="from"/> to <paramref name="to"/>, invoking
+    /// <paramref name="onUpdate"/> with every interpolated value - motion.dev's
+    /// <c>animate(0, 100, { onUpdate })</c>. Useful for counters, canvas drawing, or any
+    /// consumer outside the DOM. Without a frame loop (Blazor Server) it settles instantly.
+    /// </summary>
+    public async Task AnimateAsync(double from, double to, Action<double> onUpdate, BmTransition? transition = null)
+    {
+        ArgumentNullException.ThrowIfNull(onUpdate);
+        onUpdate(from);
+        var value = Bm.Value(from);
+        using var subscription = value.Subscribe(onUpdate);
+        await AnimateAsync(value, to, transition);
+    }
+
+    /// <summary>
     /// Creates a derived motion value that spring-follows <paramref name="source"/> -
     /// motion.dev's <c>useSpring</c>. Dispose the returned value to detach it.
     /// </summary>
