@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Bit.Bmotion;
 /// <summary>
 /// Controls for an in-flight programmatic animation started by
-/// <see cref="BmotionAnimateService.AnimateAsync(string,BmotionAnimationProps,BmotionTransitionConfig?)"/>.
+/// <see cref="BmotionAnimateService.AnimateAsync(string,BmProps,BmTransition?,BmStagger?)"/>.
 /// <para>The object is directly awaitable - <c>await controls</c> waits for the animation to complete.</para>
 /// <para>
 /// <see cref="Stop"/> freezes the animation at its current (intermediate) values; <see cref="Complete"/>
@@ -11,7 +11,7 @@ namespace Bit.Bmotion;
 /// safely stop infinite-repeat animations (whose completion task never resolves on its own).
 /// </para>
 /// </summary>
-public sealed class BmotionAnimationControls
+public sealed class BmAnimationControls
 {
     private readonly IReadOnlyList<string> _elementIds;
     private readonly BmotionAnimationEngine _engine;
@@ -19,7 +19,7 @@ public sealed class BmotionAnimationControls
     private readonly Action _release;
     private int _released;
 
-    internal BmotionAnimationControls(
+    internal BmAnimationControls(
         IReadOnlyList<string> elementIds, BmotionAnimationEngine engine, Task completion, Action release)
     {
         _elementIds = elementIds;
@@ -35,6 +35,24 @@ public sealed class BmotionAnimationControls
     {
         if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0)
             _release();
+    }
+
+    /// <summary>Pauses the animation in place (equivalent to <c>Speed = 0</c>).</summary>
+    public void Pause() => SetSpeed(0);
+
+    /// <summary>Resumes a paused animation at normal speed.</summary>
+    public void Play() => SetSpeed(1);
+
+    /// <summary>
+    /// Sets the playback rate: 1 = realtime, 0 = paused, 2 = twice as fast.
+    /// No-op once the animation has settled (stopped, completed, or finished naturally) -
+    /// the elements may already be owned by newer animations.
+    /// </summary>
+    public void SetSpeed(double speed)
+    {
+        if (System.Threading.Volatile.Read(ref _released) != 0) return;
+        foreach (var id in _elementIds)
+            _engine.SetPlaybackRate(id, speed);
     }
 
     /// <summary>
@@ -80,7 +98,7 @@ public sealed class BmotionAnimationControls
     /// <summary>A <see cref="Task"/> that resolves when all animations finish naturally.</summary>
     public Task WhenCompleteAsync() => _completion;
 
-    /// <summary>Makes <see cref="BmotionAnimationControls"/> directly awaitable.</summary>
+    /// <summary>Makes <see cref="BmAnimationControls"/> directly awaitable.</summary>
     public TaskAwaiter GetAwaiter() => _completion.GetAwaiter();
 
     // Invoked by the owning service once the completion task settles, so a natural finish also

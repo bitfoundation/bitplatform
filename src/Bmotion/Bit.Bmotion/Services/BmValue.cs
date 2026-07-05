@@ -4,7 +4,7 @@ namespace Bit.Bmotion;
 /// Analogous to Framer Motion's <c>MotionValue&lt;T&gt;</c>.
 /// Purely C# - no JS synchronisation required.
 /// </summary>
-public class BmotionValue<T> : IDisposable where T : struct
+public class BmValue<T> : IDisposable where T : struct
 {
     private readonly string _id;
     private T _value;
@@ -18,10 +18,14 @@ public class BmotionValue<T> : IDisposable where T : struct
         typeof(float), typeof(double), typeof(decimal),
     };
 
-    /// <summary>Subscription to a parent BmotionValue when this instance is a derived/transformed value.</summary>
+    /// <summary>Subscription to a parent BmValue when this instance is a derived/transformed value.</summary>
     private IDisposable? _upstream;
 
-    internal BmotionValue(string id, T initial)
+    // ── Velocity tracking (numeric values only) ───────────────────────────────
+    private double _velocityPerSec;
+    private long _lastSetMs = -1;
+
+    internal BmValue(string id, T initial)
     {
         _id    = id;
         _value = initial;
@@ -36,11 +40,50 @@ public class BmotionValue<T> : IDisposable where T : struct
     }
 
     /// <summary>
+    /// The value's current velocity in units per second (numeric value types only; always 0
+    /// otherwise). Tracked across <see cref="SetSync"/>/<see cref="SetAsync"/> updates.
+    /// </summary>
+    public double GetVelocity() => _velocityPerSec;
+
+    /// <summary>
+    /// Sets the value and notifies subscribers, but resets velocity to zero - use for
+    /// discontinuous "teleport" updates that shouldn't feed physics (motion.dev's <c>jump</c>).
+    /// </summary>
+    public void Jump(T value)
+    {
+        _velocityPerSec = 0;
+        _lastSetMs = Environment.TickCount64;
+        _value = value;
+        foreach (var sub in _subscribers.ToArray())
+        {
+            try { _ = ObserveAsync(sub(value)); }
+            catch { /* subscriber failures are swallowed to avoid faulting the host */ }
+        }
+    }
+
+    private void TrackVelocity(T oldValue, T newValue)
+    {
+        if (!_numericTypes.Contains(typeof(T))) return;
+        long now = Environment.TickCount64;
+        if (_lastSetMs >= 0)
+        {
+            double dt = (now - _lastSetMs) / 1000.0;
+            // Very stale gaps carry no meaningful velocity; sub-millisecond gaps would explode it.
+            if (dt >= 0.25)
+                _velocityPerSec = 0;
+            else if (dt > 0)
+                _velocityPerSec = (Convert.ToDouble(newValue) - Convert.ToDouble(oldValue)) / dt;
+        }
+        _lastSetMs = now;
+    }
+
+    /// <summary>
     /// Synchronously updates the value and notifies subscribers. Subscriber tasks are
     /// observed (rather than dropped) so their exceptions don't go unobserved.
     /// </summary>
     public void SetSync(T value)
     {
+        TrackVelocity(_value, value);
         _value = value;
         foreach (var sub in _subscribers.ToArray())
         {
@@ -60,6 +103,7 @@ public class BmotionValue<T> : IDisposable where T : struct
     /// <summary>Update the value and notify all subscribers.</summary>
     public async Task SetAsync(T value)
     {
+        TrackVelocity(_value, value);
         _value = value;
         foreach (var sub in _subscribers.ToArray())
         {
@@ -90,13 +134,13 @@ public class BmotionValue<T> : IDisposable where T : struct
     // ── Transforms ────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Create a derived BmotionValue that applies a transformation function.
+    /// Create a derived BmValue that applies a transformation function.
     /// Analogous to Framer Motion's <c>useTransform</c>.
     /// </summary>
-    public BmotionValue<TOut> Transform<TOut>(Func<T, TOut> fn) where TOut : struct
+    public BmValue<TOut> Transform<TOut>(Func<T, TOut> fn) where TOut : struct
     {
         ArgumentNullException.ThrowIfNull(fn);
-        var derived = new BmotionValue<TOut>($"{_id}_t", fn(_value));
+        var derived = new BmValue<TOut>($"{_id}_t", fn(_value));
         // Subscribe weakly: the parent must not keep the derived value alive (that would make the
         // parent→derived link a leak for callers that drop the derived). The derived keeps the
         // parent alive via _upstream for as long as the caller holds the derived, which is the
@@ -108,7 +152,7 @@ public class BmotionValue<T> : IDisposable where T : struct
     /// <summary>
     /// Map from an input range to an output range using linear interpolation.
     /// </summary>
-    public BmotionValue<double> Transform(double[] inputRange, double[] outputRange)
+    public BmValue<double> Transform(double[] inputRange, double[] outputRange)
     {
         ArgumentNullException.ThrowIfNull(inputRange);
         ArgumentNullException.ThrowIfNull(outputRange);
@@ -142,7 +186,7 @@ public class BmotionValue<T> : IDisposable where T : struct
             return x < inRange[0] ? outRange[0] : outRange[^1];
         }
 
-        var derived = new BmotionValue<double>($"{_id}_tr", Map(_value));
+        var derived = new BmValue<double>($"{_id}_tr", Map(_value));
         derived._upstream = SubscribeWeak(derived, Map);
         return derived;
     }
@@ -152,10 +196,10 @@ public class BmotionValue<T> : IDisposable where T : struct
     /// reference, so this (parent) value never keeps the derived one alive. The subscription
     /// removes itself the first time it fires after the derived value has been collected.
     /// </summary>
-    private IDisposable SubscribeWeak<TOut>(BmotionValue<TOut> derived, Func<T, TOut> project)
+    private IDisposable SubscribeWeak<TOut>(BmValue<TOut> derived, Func<T, TOut> project)
         where TOut : struct
     {
-        var weak = new WeakReference<BmotionValue<TOut>>(derived);
+        var weak = new WeakReference<BmValue<TOut>>(derived);
         IDisposable? sub = null;
         sub = Subscribe(async v =>
         {
@@ -166,6 +210,12 @@ public class BmotionValue<T> : IDisposable where T : struct
         });
         return sub;
     }
+
+    /// <summary>
+    /// Attaches an upstream subscription this value depends on (disposed with this value).
+    /// Used by derived values such as spring followers.
+    /// </summary>
+    internal void AttachUpstream(IDisposable subscription) => _upstream = subscription;
 
     public void Dispose()
     {

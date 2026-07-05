@@ -3,7 +3,7 @@ namespace Bit.Bmotion;
 /// <summary>
 /// Cascaded by <see cref="BmotionAnimatePresence"/> to signal exit state to child Bmotion components.
 /// </summary>
-public class BmotionPresenceContext
+internal class BmotionPresenceContext
 {
     private readonly List<Bmotion> _children = new();
 

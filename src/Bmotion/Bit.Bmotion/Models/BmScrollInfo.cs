@@ -1,7 +1,7 @@
 namespace Bit.Bmotion;
 
 /// <summary>Data returned by the <see cref="BmotionScrollTracker"/> on each scroll event.</summary>
-public class BmotionScrollInfo
+public class BmScrollInfo
 {
     /// <summary>Horizontal scroll offset in pixels.</summary>
     public double ScrollX { get; init; }
@@ -26,4 +26,10 @@ public class BmotionScrollInfo
 
     /// <summary>Visible viewport height in pixels (the currently displayed area).</summary>
     public double ClientHeight { get; init; }
+
+    /// <summary>
+    /// Progress (0–1) of the tracked target element between the configured scroll offsets,
+    /// or <c>null</c> when no target is being tracked (see <see cref="BmScrollOptions"/>).
+    /// </summary>
+    public double? TargetProgress { get; init; }
 }

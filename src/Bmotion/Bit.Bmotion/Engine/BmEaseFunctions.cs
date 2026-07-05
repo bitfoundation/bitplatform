@@ -1,10 +1,10 @@
-
+﻿
 namespace Bit.Bmotion;
 /// <summary>
 /// Pure-C# easing functions. Ported from the original JS implementation.
 /// Cached delegates avoid re-allocation for common easing types.
 /// </summary>
-internal static class BmotionEasingFunctions
+internal static class BmEaseFunctions
 {
     // ── Pre-built delegates for common easings ────────────────────────────────
     private static readonly Func<double, double> _easeIn    = CubicBezier(0.42, 0, 1, 1);
@@ -23,19 +23,19 @@ internal static class BmotionEasingFunctions
 
         return config.Ease switch
         {
-            BmotionEasing.Linear    => t => t,
-            BmotionEasing.EaseIn    => _easeIn,
-            BmotionEasing.EaseOut   => _easeOut,
-            BmotionEasing.EaseInOut => _easeInOut,
-            BmotionEasing.CircIn    => t => 1 - Math.Sqrt(1 - t * t),
-            BmotionEasing.CircOut   => t => Math.Sqrt(1 - (t - 1) * (t - 1)),
-            BmotionEasing.CircInOut => t => t < 0.5
+            BmEase.Linear    => t => t,
+            BmEase.In    => _easeIn,
+            BmEase.Out   => _easeOut,
+            BmEase.InOut => _easeInOut,
+            BmEase.CircIn    => t => 1 - Math.Sqrt(1 - t * t),
+            BmEase.CircOut   => t => Math.Sqrt(1 - (t - 1) * (t - 1)),
+            BmEase.CircInOut => t => t < 0.5
                 ? (1 - Math.Sqrt(1 - 4 * t * t)) / 2
                 : (Math.Sqrt(1 - Math.Pow(2 * t - 2, 2)) + 1) / 2,
-            BmotionEasing.BackIn    => _backIn,
-            BmotionEasing.BackOut   => _backOut,
-            BmotionEasing.BackInOut => _backInOut,
-            BmotionEasing.Anticipate => t => t < 0.5
+            BmEase.BackIn    => _backIn,
+            BmEase.BackOut   => _backOut,
+            BmEase.BackInOut => _backInOut,
+            BmEase.Anticipate => t => t < 0.5
                 ? _backIn(t * 2) / 2
                 : _easeOut(t * 2 - 1) / 2 + 0.5,
             _                => _easeOut,
@@ -51,20 +51,20 @@ internal static class BmotionEasingFunctions
             return $"cubic-bezier({BmotionCssFormat.Num(cb[0])},{BmotionCssFormat.Num(cb[1])},{BmotionCssFormat.Num(cb[2])},{BmotionCssFormat.Num(cb[3])})";
         return config.Ease switch
         {
-            BmotionEasing.Linear    => "linear",
-            BmotionEasing.EaseIn    => "ease-in",
-            BmotionEasing.EaseOut   => "ease-out",
-            BmotionEasing.EaseInOut => "ease-in-out",
+            BmEase.Linear    => "linear",
+            BmEase.In    => "ease-in",
+            BmEase.Out   => "ease-out",
+            BmEase.InOut => "ease-in-out",
             // Circ* have no CSS keyword - map to their closest cubic-bezier approximations.
-            BmotionEasing.CircIn    => "cubic-bezier(0.55,0,1,0.45)",
-            BmotionEasing.CircOut   => "cubic-bezier(0,0.55,0.45,1)",
-            BmotionEasing.CircInOut => "cubic-bezier(0.85,0,0.15,1)",
+            BmEase.CircIn    => "cubic-bezier(0.55,0,1,0.45)",
+            BmEase.CircOut   => "cubic-bezier(0,0.55,0.45,1)",
+            BmEase.CircInOut => "cubic-bezier(0.85,0,0.15,1)",
             // Back* map exactly to the cubic-beziers used by Get(...).
-            BmotionEasing.BackIn    => "cubic-bezier(0.31455,-0.37755,0.69245,1.37755)",
-            BmotionEasing.BackOut   => "cubic-bezier(0.33915,0,0.68085,1.4)",
-            BmotionEasing.BackInOut => "cubic-bezier(0.68987,-0.45,0.32,1.45)",
+            BmEase.BackIn    => "cubic-bezier(0.31455,-0.37755,0.69245,1.37755)",
+            BmEase.BackOut   => "cubic-bezier(0.33915,0,0.68085,1.4)",
+            BmEase.BackInOut => "cubic-bezier(0.68987,-0.45,0.32,1.45)",
             // Anticipate has no CSS equivalent; use the backIn curve as the nearest fallback.
-            BmotionEasing.Anticipate => "cubic-bezier(0.31455,-0.37755,0.69245,1.37755)",
+            BmEase.Anticipate => "cubic-bezier(0.31455,-0.37755,0.69245,1.37755)",
             _                => "ease",
         };
     }

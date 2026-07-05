@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Bmotion;
@@ -8,11 +8,14 @@ namespace Bit.Bmotion;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Platform support:</b> Bit.Bmotion runs its animation loop over <b>synchronous</b> JS interop
-/// and is therefore supported on <b>Blazor WebAssembly only</b>. It does <b>not</b> work on Blazor
-/// Server, and it is inert during server-side prerendering (animations start once the WASM runtime
-/// is interactive). Attempting to start the animation loop on a non-WebAssembly host throws
-/// <see cref="PlatformNotSupportedException"/>.
+/// <b>Platform support:</b> on <b>Blazor WebAssembly</b> everything works: compositor-eligible
+/// animations (tweens and zero-velocity springs on transform/opacity) offload to the browser's
+/// Web Animations API, and the C# rAF engine drives the rest over synchronous JS interop.
+/// On <b>Blazor Server</b> the compositor path still works (it needs only async interop), so
+/// enter/exit/hover/tap/variant animations on transform + opacity play normally; features that
+/// require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag,
+/// motion values - degrade to instant state changes. The library is inert during server-side
+/// prerendering (animations start once the circuit/runtime is interactive).
 /// </para>
 /// </remarks>
 public static class BitBmotion
@@ -22,7 +25,8 @@ public static class BitBmotion
     /// Call this in <c>Program.cs</c> before <c>builder.Build()</c>:
     /// <code>builder.Services.AddBitBmotionServices();</code>
     /// <para>
-    /// <b>Blazor WebAssembly only</b> - see the remarks on <see cref="BitBmotion"/> for details.
+    /// Fully supported on Blazor WebAssembly; on Blazor Server, compositor-eligible animations
+    /// play and the rest degrade to instant sets - see the remarks on <see cref="BitBmotion"/>.
     /// </para>
     /// </summary>
     public static IServiceCollection AddBitBmotionServices(this IServiceCollection services)
@@ -41,6 +45,9 @@ public static class BitBmotion
         // C# animation engine - drives all animation math in WebAssembly
         services.AddScoped<BmotionAnimationEngine>();
 
+        // Shared-element (LayoutId) rect registry - one per scope, like the engine
+        services.AddScoped<BmotionLayoutRegistry>();
+
         // Higher-level services
         // BmotionScrollTracker is owned and disposed by the consuming component (like
         // Framer Motion's per-component useScroll), so it must be transient.
@@ -48,7 +55,6 @@ public static class BitBmotion
         // component to unmount, leaving its DotNetObjectReference disposed and
         // causing ObjectDisposedException when another component re-observes.
         services.AddTransient<BmotionScrollTracker>();
-        services.AddTransient<BmotionAnimationController>();
         services.AddScoped<BmotionAnimateService>();
 
         return services;
@@ -58,9 +64,9 @@ public static class BitBmotion
     // across JS interop so the trimmer preserves them. The [DynamicDependency] attributes take
     // effect because this method is reachable from AddBitBmotionServices (an app entry point).
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionBoundingRect))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionScrollInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmScrollInfo))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionXY))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionViewportOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionDragConstraints))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmViewport))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmDragConstraints))]
     private static void PreserveInteropContracts() { }
 }

@@ -4,7 +4,7 @@ namespace Bit.Bmotion;
 /// Cascaded by a parent Bmotion component to propagate the active variant name,
 /// shared variants dictionary, and stagger configuration to descendant Bmotion components.
 /// </summary>
-public class BmotionVariantContext
+internal class BmotionVariantContext
 {
     private int _nextChildIndex;
 
@@ -15,7 +15,7 @@ public class BmotionVariantContext
     public string? InitialVariant { get; internal set; }
 
     /// <summary>Shared variants dictionary from the nearest ancestor that defined variants.</summary>
-    public BmotionMotionVariants? Variants { get; internal set; }
+    public BmVariants? Variants { get; internal set; }
 
     /// <summary>Seconds to stagger each child's animation start.</summary>
     public double StaggerChildren { get; internal set; }

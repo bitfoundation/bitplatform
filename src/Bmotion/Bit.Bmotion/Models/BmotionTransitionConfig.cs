@@ -1,6 +1,10 @@
-namespace Bit.Bmotion;
-/// <summary>Controls how a value transitions from one state to another.</summary>
-public class BmotionTransitionConfig
+﻿namespace Bit.Bmotion;
+/// <summary>
+/// Internal flat transition representation consumed by the animation engine and drivers.
+/// The public API is the <see cref="BmTransition"/> hierarchy, which lowers into this
+/// via <see cref="BmTransition.ToConfig"/>.
+/// </summary>
+internal sealed class BmotionTransitionConfig
 {
     // ── Type ─────────────────────────────────────────────────────────────────
     /// <summary>Animation driver: Tween, Spring, or Inertia. Default: Tween.</summary>
@@ -13,8 +17,8 @@ public class BmotionTransitionConfig
     /// <summary>Delay before animation starts, in seconds. Default: 0.</summary>
     public double Delay { get; set; } = 0;
 
-    /// <summary>Named easing preset. See <see cref="BmotionEasing"/>. Default: EaseOut.</summary>
-    public BmotionEasing Ease { get; set; } = BmotionEasing.EaseOut;
+    /// <summary>Named easing preset. See <see cref="BmEase"/>. Default: Out.</summary>
+    public BmEase Ease { get; set; } = BmEase.Out;
 
     /// <summary>
     /// Custom cubic-bezier as [x1, y1, x2, y2]. Overrides <see cref="Ease"/> when set.
@@ -40,7 +44,7 @@ public class BmotionTransitionConfig
                 nameof(value));
         // The control-point X coordinates must stay within [0, 1] so the bezier's x(t) curve is
         // monotonic. Outside that range x(t) can fold back on itself, and the Newton-Raphson solver
-        // in BmotionEasingFunctions can then converge to the wrong root (a visibly broken easing).
+        // in BmEaseFunctions can then converge to the wrong root (a visibly broken easing).
         if (value[0] is < 0 or > 1 || value[2] is < 0 or > 1)
             throw new ArgumentException(
                 "EaseCubicBezier X coordinates (x1, x2) must be within [0, 1]; only Y may overshoot.",
@@ -65,7 +69,7 @@ public class BmotionTransitionConfig
     internal bool IsInfiniteRepeat => RepeatInfinite || Repeat == int.MaxValue;
 
     /// <summary>How to repeat: Loop, Mirror (ping-pong), or Reverse.</summary>
-    public BmotionRepeatType RepeatType { get; set; } = BmotionRepeatType.Loop;
+    public BmRepeatType RepeatType { get; set; } = BmRepeatType.Loop;
 
     /// <summary>Delay between repetitions, in seconds.</summary>
     public double RepeatDelay { get; set; } = 0;
@@ -264,7 +268,7 @@ public class BmotionTransitionConfig
         };
     }
 
-    public static BmotionTransitionConfig Tween(double duration = 0.3, BmotionEasing ease = BmotionEasing.EaseOut)
+    public static BmotionTransitionConfig Tween(double duration = 0.3, BmEase ease = BmEase.Out)
         => new() { Type = BmotionTransitionType.Tween, Duration = duration, Ease = ease };
 
     public static BmotionTransitionConfig Inertia(double velocity = 0, double timeConstant = 700)

@@ -1,4 +1,4 @@
-@page "/presence"
+﻿@page "/presence"
 
 <div class="demo-section">
     <h2>AnimatePresence</h2>
@@ -11,12 +11,12 @@
     <div class="demo-row">
         <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
             <BmotionAnimatePresence IsPresent="@_visible">
-                <Bmotion Tag="div"
-                        Class="box"
-                        Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
-                        Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
-                        Exit="@(new BmotionAnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
-                        Transition="@BmotionTransitionConfig.Spring(stiffness:220, damping:18)" />
+                <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
+                        Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                        Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
+                        Transition="Bm.Spring(stiffness: 220, damping: 18)">
+                    <div class="box" />
+                </Bmotion>
             </BmotionAnimatePresence>
         </div>
     </div>
@@ -37,16 +37,16 @@
             @foreach (var item in _items)
             {
                 <BmotionAnimatePresence IsPresent="@item.Present" @key="item.Id">
-                    <Bmotion Tag="div"
-                            Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
-                            Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
-                            Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0   })"
-                            Exit="@(new BmotionAnimationProps    { Opacity = 0, X = 30  })"
-                            Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
-                        <span>@item.Label</span>
-                        <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
-                                aria-label="@($"Remove {item.Label}")"
-                                @onclick="@(() => RemoveItem(item.Id))">✕</button>
+                    <Bmotion Initial="Bm.To(opacity: 0, x: -30)"
+                            Animate="Bm.To(opacity: 1, x: 0)"
+                            Exit="Bm.To(opacity: 0, x: 30)"
+                            Transition="Bm.Spring(stiffness: 300, damping: 25)">
+                        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;">
+                            <span>@item.Label</span>
+                            <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                                    aria-label="@($"Remove {item.Label}")"
+                                    @onclick="@(() => RemoveItem(item.Id))">✕</button>
+                        </div>
                     </Bmotion>
                 </BmotionAnimatePresence>
             }
@@ -57,6 +57,57 @@
 
     <CodeSnippet Code="@_listCode" />
 </div>
+
+<div class="demo-section">
+    <h2>Presence Switch</h2>
+    <p>
+        <strong>BmotionPresenceSwitch</strong> animates <em>between</em> items: change
+        <c>Item</c> and the outgoing content plays its <c>Exit</c> before the new one enters
+        (<c>Mode="BmPresenceMode.Wait"</c>, the default) - the classic paging idiom.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="min-height:180px; position:relative; overflow:hidden;">
+            <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+                <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
+                        Animate="Bm.To(opacity: 1, x: 0)"
+                        Exit="Bm.To(opacity: 0, x: -60)"
+                        Transition="Bm.Tween(0.25, BmEase.InOut)">
+                    <div class="box" style="display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">
+                        @pageNumber
+                    </div>
+                </Bmotion>
+            </BmotionPresenceSwitch>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _page++)">Next page</button>
+
+    <CodeSnippet Code="@_switchCode" />
+</div>
+
+@code {
+    private int _page = 1;
+
+    private const string _switchCode = """
+        <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+            <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
+                     Animate="Bm.To(opacity: 1, x: 0)"
+                     Exit="Bm.To(opacity: 0, x: -60)"
+                     Transition="Bm.Tween(0.25, BmEase.InOut)">
+                <div>
+                    Page @pageNumber
+                </div>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+
+        <button @onclick="@(() => _page++)">Next page</button>
+
+        @code {
+            private int _page = 1;
+        }
+        """;
+}
 
 @code {
     private bool _visible = true;
@@ -114,12 +165,12 @@
             <div class="demo-row">
                 <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
                     <BmotionAnimatePresence IsPresent="@_visible">
-                        <Bmotion Tag="div"
-                                Class="box"
-                                Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
-                                Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
-                                Exit="@(new BmotionAnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
-                                Transition="@BmotionTransitionConfig.Spring(stiffness:220, damping:18)" />
+                        <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
+                                Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                                Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
+                                Transition="Bm.Spring(stiffness: 220, damping: 18)">
+                            <div class="box" />
+                        </Bmotion>
                     </BmotionAnimatePresence>
                 </div>
             </div>
@@ -162,16 +213,16 @@
                     @foreach (var item in _items)
                     {
                         <BmotionAnimatePresence IsPresent="@item.Present" @key="item.Id">
-                            <Bmotion Tag="div"
-                                    Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
-                                    Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
-                                    Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0   })"
-                                    Exit="@(new BmotionAnimationProps    { Opacity = 0, X = 30  })"
-                                    Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
-                                <span>@item.Label</span>
-                                <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
-                                        aria-label="@($"Remove {item.Label}")"
-                                        @onclick="@(() => RemoveItem(item.Id))">✕</button>
+                            <Bmotion Initial="Bm.To(opacity: 0, x: -30)"
+                                    Animate="Bm.To(opacity: 1, x: 0)"
+                                    Exit="Bm.To(opacity: 0, x: 30)"
+                                    Transition="Bm.Spring(stiffness: 300, damping: 25)">
+                                <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;">
+                                    <span>@item.Label</span>
+                                    <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                                            aria-label="@($"Remove {item.Label}")"
+                                            @onclick="@(() => RemoveItem(item.Id))">✕</button>
+                                </div>
                             </Bmotion>
                         </BmotionAnimatePresence>
                     }

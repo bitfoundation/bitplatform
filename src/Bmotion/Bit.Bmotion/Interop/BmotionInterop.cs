@@ -87,8 +87,9 @@ public sealed class BmotionInterop : IAsyncDisposable
 
     // ── Element registration ──────────────────────────────────────────────────
 
-    public async ValueTask RegisterElementAsync(string elementId)
-        => await (await Module()).InvokeVoidAsync("registerElement", elementId);
+    /// <summary>Marks the element for the JS bridge; <c>false</c> when no element with the id exists.</summary>
+    public async ValueTask<bool> RegisterElementAsync(string elementId)
+        => await (await Module()).InvokeAsync<bool>("registerElement", elementId);
 
     public async ValueTask UnregisterElementAsync(string elementId)
     {
@@ -117,7 +118,7 @@ public sealed class BmotionInterop : IAsyncDisposable
 
     [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask ObserveViewportWithOptionsAsync<T>(
-        string elementId, DotNetObjectReference<T> dotnetRef, BmotionViewportOptions options) where T : class
+        string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class
         => await (await Module()).InvokeVoidAsync("observeViewport", elementId, dotnetRef, options.ToJsObject());
 
     public async ValueTask UnobserveViewportAsync(string elementId)
@@ -139,12 +140,33 @@ public sealed class BmotionInterop : IAsyncDisposable
         => await (await Module()).InvokeVoidAsync(
             "playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform);
 
+    // ── WAAPI compositor offload ──────────────────────────────────────────────
+
+    /// <summary>Whether the browser supports the <c>linear()</c> easing function (spring offload).</summary>
+    public async ValueTask<bool> SupportsLinearEasingAsync()
+        => await (await Module()).InvokeAsync<bool>("supportsLinearEasing");
+
+    /// <summary>
+    /// Plays a pre-sampled compositor animation via <c>element.animate()</c>. Resolves
+    /// <c>true</c> on natural completion, <c>false</c> when cancelled or failed to start.
+    /// </summary>
+    public async ValueTask<bool> PlayWaapiAnimationAsync(
+        string elementId, int token, object keyframes, object timing)
+        => await (await Module()).InvokeAsync<bool>("playWaapiAnimation", elementId, token, keyframes, timing);
+
+    /// <summary>Cancels one compositor animation; <paramref name="commit"/> snapshots current values inline first.</summary>
+    public async ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit)
+    {
+        if (!_moduleTask.IsValueCreated) return;
+        await (await Module()).InvokeVoidAsync("cancelWaapiAnimation", elementId, token, commit);
+    }
+
     // ── Scroll ────────────────────────────────────────────────────────────────
 
     [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask<string?> ObserveScrollAsync<T>(
-        string? containerId, DotNetObjectReference<T> dotnetRef) where T : class
-        => await (await Module()).InvokeAsync<string?>("observeScroll", containerId, dotnetRef);
+        string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class
+        => await (await Module()).InvokeAsync<string?>("observeScroll", containerId, dotnetRef, options);
 
     public async ValueTask UnobserveScrollAsync(string key)
     {

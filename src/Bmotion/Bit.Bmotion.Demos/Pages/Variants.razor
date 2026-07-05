@@ -5,28 +5,28 @@
 <div class="demo-section">
     <h2>Variants</h2>
     <p>
-        Define named states in a <strong>BmotionMotionVariants</strong> dictionary and reference them
-        by name in <c>Animate</c>, <c>Initial</c>, etc. Children automatically receive the
-        active variant name and can define their own matching entries.
+        Define named states in a <strong>BmVariants</strong> dictionary and select them with the
+        string-friendly <c>State</c> / <c>InitialState</c> parameters. Children automatically
+        receive the active state name and resolve it against their own variants.
     </p>
 
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <Bmotion Tag="ul"
-                    Style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;"
-                    Variants="_containerVariants"
-                    Initial="@_hidden"
-                    Animate="@(_visible ? _visible_ : _hidden)"
-                    Transition="@(new BmotionTransitionConfig { StaggerChildren = 0.08 })">
-                @for (int i = 0; i < 5; i++)
-                {
-                    var idx = i;
-                    <Bmotion Tag="li"
-                            Style="background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;"
-                            Variants="_itemVariants">
-                        Item @(idx + 1)
-                    </Bmotion>
-                }
+            <Bmotion Variants="_containerVariants"
+                    InitialState="hidden"
+                    State='@(_visible ? "visible" : "hidden")'
+                    Transition="Bm.Tween(staggerChildren: 0.08)">
+                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;">
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        var idx = i;
+                        <Bmotion Variants="_itemVariants">
+                            <li style="background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;">
+                                Item @(idx + 1)
+                            </li>
+                        </Bmotion>
+                    }
+                </ul>
             </Bmotion>
         </div>
     </div>
@@ -41,24 +41,24 @@
 <div class="demo-section">
     <h2>Variant Orchestration</h2>
     <p>
-        Use <c>StaggerChildren</c> and <c>DelayChildren</c> in the container's
-        transition to choreograph child animations.
+        Use <c>staggerChildren</c> and <c>delayChildren</c> in the container's
+        transition to choreograph child animations. A variant can also embed its
+        own transition via <c>Bm.To(..., transition: ...)</c>.
     </p>
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Style="display:flex;gap:.5rem;"
-                    Variants="_containerVariants"
-                    Initial="@_hidden"
-                    Animate="@(_visible2 ? _visible_ : _hidden)"
-                    Transition="@(new BmotionTransitionConfig { StaggerChildren = 0.12, DelayChildren = 0.2 })">
-                @for (int i = 0; i < 4; i++)
-                {
-                    <Bmotion Tag="div"
-                            Class="box box-sm"
-                            Style="@($"background:hsl({i*60+200},70%,60%)")"
-                            Variants="_itemVariants" />
-                }
+            <Bmotion Variants="_containerVariants"
+                    InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(staggerChildren: 0.12, delayChildren: 0.2)">
+                <div style="display:flex;gap:.5rem;">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <Bmotion Variants="_itemVariants">
+                            <div class="box box-sm" style="@($"background:hsl({i*60+200},70%,60%)")" />
+                        </Bmotion>
+                    }
+                </div>
             </Bmotion>
         </div>
     </div>
@@ -73,19 +73,17 @@
     private bool _visible = true;
     private bool _visible2 = true;
 
-    // Typed BmotionAnimationTarget fields so implicit conversions work cleanly in Razor attributes
-    private readonly BmotionAnimationTarget _hidden   = "hidden";
-    private readonly BmotionAnimationTarget _visible_ = "visible";
+    private readonly BmVariants _containerVariants = new()
+    {
+        ["hidden"]  = Bm.To(opacity: 0),
+        ["visible"] = Bm.To(opacity: 1),
+    };
 
-    private readonly BmotionMotionVariants _containerVariants = BmotionMotionVariants.Create(
-        ("hidden",  new BmotionAnimationProps { Opacity = 0 }),
-        ("visible", new BmotionAnimationProps { Opacity = 1 })
-    );
-
-    private readonly BmotionMotionVariants _itemVariants = BmotionMotionVariants.Create(
-        ("hidden",  new BmotionAnimationProps { Opacity = 0, X = -30 }),
-        ("visible", new BmotionAnimationProps { Opacity = 1, X = 0  })
-    );
+    private readonly BmVariants _itemVariants = new()
+    {
+        ["hidden"]  = Bm.To(opacity: 0, x: -30),
+        ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
+    };
 
     private const string _variantsCode = """
         @using Bit.Bmotion
@@ -110,21 +108,21 @@
 
             <div class="demo-row">
                 <div class="demo-card" style="flex-direction:column; gap:1rem;">
-                    <Bmotion Tag="ul"
-                            Style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;"
-                            Variants="_containerVariants"
-                            Initial="@_hidden"
-                            Animate="@(_visible ? _visible_ : _hidden)"
-                            Transition="@(new BmotionTransitionConfig { StaggerChildren = 0.08 })">
-                        @for (int i = 0; i < 5; i++)
-                        {
-                            var idx = i;
-                            <Bmotion Tag="li"
-                                    Style="background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;"
-                                    Variants="_itemVariants">
-                                Item @(idx + 1)
-                            </Bmotion>
-                        }
+                    <Bmotion Variants="_containerVariants"
+                            InitialState="hidden"
+                            State='@(_visible ? "visible" : "hidden")'
+                            Transition="Bm.Tween(staggerChildren: 0.08)">
+                        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                var idx = i;
+                                <Bmotion Variants="_itemVariants">
+                                    <li style="background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;">
+                                        Item @(idx + 1)
+                                    </li>
+                                </Bmotion>
+                            }
+                        </ul>
                     </Bmotion>
                 </div>
             </div>
@@ -137,18 +135,17 @@
         @code {
             private bool _visible = true;
 
-            private readonly BmotionAnimationTarget _hidden   = "hidden";
-            private readonly BmotionAnimationTarget _visible_ = "visible";
+            private readonly BmVariants _containerVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0),
+                ["visible"] = Bm.To(opacity: 1),
+            };
 
-            private readonly BmotionMotionVariants _containerVariants = BmotionMotionVariants.Create(
-                ("hidden",  new BmotionAnimationProps { Opacity = 0 }),
-                ("visible", new BmotionAnimationProps { Opacity = 1 })
-            );
-
-            private readonly BmotionMotionVariants _itemVariants = BmotionMotionVariants.Create(
-                ("hidden",  new BmotionAnimationProps { Opacity = 0, X = -30 }),
-                ("visible", new BmotionAnimationProps { Opacity = 1, X = 0  })
-            );
+            private readonly BmVariants _itemVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0, x: -30),
+                ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
+            };
         }
         """;
 
@@ -176,24 +173,23 @@
         <div class="demo-section">
             <h2>Variant Orchestration</h2>
             <p>
-                Use <c>StaggerChildren</c> and <c>DelayChildren</c> in the container's
+                Use <c>staggerChildren</c> and <c>delayChildren</c> in the container's
                 transition to choreograph child animations.
             </p>
             <div class="demo-row">
                 <div class="demo-card">
-                    <Bmotion Tag="div"
-                            Style="display:flex;gap:.5rem;"
-                            Variants="_containerVariants"
-                            Initial="@_hidden"
-                            Animate="@(_visible2 ? _visible_ : _hidden)"
-                            Transition="@(new BmotionTransitionConfig { StaggerChildren = 0.12, DelayChildren = 0.2 })">
-                        @for (int i = 0; i < 4; i++)
-                        {
-                            <Bmotion Tag="div"
-                                    Class="box box-sm"
-                                    Style="@($"background:hsl({i*60+200},70%,60%)")"
-                                    Variants="_itemVariants" />
-                        }
+                    <Bmotion Variants="_containerVariants"
+                            InitialState="hidden"
+                            State='@(_visible2 ? "visible" : "hidden")'
+                            Transition="Bm.Tween(staggerChildren: 0.12, delayChildren: 0.2)">
+                        <div style="display:flex;gap:.5rem;">
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                <Bmotion Variants="_itemVariants">
+                                    <div class="box box-sm" style="@($"background:hsl({i*60+200},70%,60%)")" />
+                                </Bmotion>
+                            }
+                        </div>
                     </Bmotion>
                 </div>
             </div>
@@ -205,18 +201,17 @@
         @code {
             private bool _visible2 = true;
 
-            private readonly BmotionAnimationTarget _hidden   = "hidden";
-            private readonly BmotionAnimationTarget _visible_ = "visible";
+            private readonly BmVariants _containerVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0),
+                ["visible"] = Bm.To(opacity: 1),
+            };
 
-            private readonly BmotionMotionVariants _containerVariants = BmotionMotionVariants.Create(
-                ("hidden",  new BmotionAnimationProps { Opacity = 0 }),
-                ("visible", new BmotionAnimationProps { Opacity = 1 })
-            );
-
-            private readonly BmotionMotionVariants _itemVariants = BmotionMotionVariants.Create(
-                ("hidden",  new BmotionAnimationProps { Opacity = 0, X = -30 }),
-                ("visible", new BmotionAnimationProps { Opacity = 1, X = 0  })
-            );
+            private readonly BmVariants _itemVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0, x: -30),
+                ["visible"] = Bm.To(opacity: 1, x: 0),
+            };
         }
         """;
 }

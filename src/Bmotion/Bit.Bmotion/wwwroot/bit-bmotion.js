@@ -132,6 +132,7 @@ const _eventCleanup = new Map(); // elementId  Array<() => void>
 export function registerElement(elementId) {
     const el = document.getElementById(elementId);
     if (el) el.setAttribute('data-bmid', elementId);
+    return !!el;
 }
 
 // 
@@ -175,6 +176,7 @@ export function unregisterElement(elementId) {
     const el = document.getElementById(elementId);
     if (el) el.removeAttribute('data-bmid');
     _runCleanup(elementId);
+    _cancelWaapiForElement(elementId, false);
     // Detach from every viewport observer (drops membership and evicts empty observers).
     _detachFromObservers(el, elementId);
     _vpRefs.delete(elementId);
@@ -336,6 +338,10 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
 
     const onDown = (e) => {
         if (e.button !== 0 && e.pointerType !== 'touch') return;
+        // A compositor (WAAPI) animation may own the transform; commit its current values inline
+        // and cancel it so the drag takes over seamlessly. C# resolves its own state from the
+        // mirrored plan inside GetCurrentXY below.
+        _cancelWaapiForElement(elementId, true);
         // Retrieve starting transform position from C# state synchronously
         const pos = dotnetRef.invokeMethod('GetCurrentXY');
         startElX = pos ? pos.x : 0;
@@ -401,9 +407,91 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
     });
 }
 
-// 
+//
+// WAAPI compositor offload
+// The C# engine pre-samples eligible curves (tweens, zero-velocity springs on transform/opacity)
+// and hands the browser a ready-made Web Animation, so playback runs off the main thread with
+// no per-frame interop. The engine keeps a mirror "plan" so it can compute current values for
+// interruption without reading the DOM.
+//
+
+const _waapiAnims = new Map(); // elementId → Map<token, Animation>
+
+/** True when the browser supports the linear() easing function (needed for spring offload). */
+export function supportsLinearEasing() {
+    try {
+        return typeof CSS !== 'undefined' &&
+            CSS.supports?.('animation-timing-function', 'linear(0, 1)') === true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Plays a pre-sampled animation via element.animate(). Resolves true when the animation
+ * finishes naturally (styles committed inline), false when it is cancelled or fails to start.
+ * timing.iterations: -1 means Infinity.
+ */
+export function playWaapiAnimation(elementId, token, keyframes, timing) {
+    const el = document.getElementById(elementId);
+    if (!el || typeof el.animate !== 'function') return Promise.resolve(false);
+
+    let anim;
+    try {
+        anim = el.animate(keyframes, {
+            duration: timing.duration,
+            delay: timing.delay ?? 0,
+            easing: timing.easing || 'linear',
+            iterations: timing.iterations < 0 ? Infinity : (timing.iterations ?? 1),
+            direction: timing.direction || 'normal',
+            fill: 'both',
+        });
+    } catch (e) {
+        // Unsupported easing/keyframes on this browser - the C# engine falls back to its rAF path.
+        return Promise.resolve(false);
+    }
+
+    let map = _waapiAnims.get(elementId);
+    if (!map) { map = new Map(); _waapiAnims.set(elementId, map); }
+    map.set(token, anim);
+
+    const cleanup = () => {
+        const m = _waapiAnims.get(elementId);
+        if (m) { m.delete(token); if (m.size === 0) _waapiAnims.delete(elementId); }
+    };
+
+    return anim.finished.then(
+        () => {
+            cleanup();
+            // Persist the final values inline before releasing the effect, so nothing flashes.
+            try { anim.commitStyles(); } catch { /* detached element */ }
+            anim.cancel();
+            return true;
+        },
+        () => { cleanup(); return false; } // cancelled (interrupted) - engine already reseeded state
+    );
+}
+
+/** Cancels one offloaded animation; commit=true snapshots current values inline first. */
+export function cancelWaapiAnimation(elementId, token, commit) {
+    const anim = _waapiAnims.get(elementId)?.get(token);
+    if (!anim) return;
+    if (commit) { try { anim.commitStyles(); } catch { /* detached element */ } }
+    anim.cancel(); // rejects anim.finished → cleanup runs in playWaapiAnimation's handler
+}
+
+function _cancelWaapiForElement(elementId, commit) {
+    const map = _waapiAnims.get(elementId);
+    if (!map) return;
+    for (const anim of [...map.values()]) {
+        if (commit) { try { anim.commitStyles(); } catch { } }
+        anim.cancel();
+    }
+}
+
+//
 // Viewport observation (whileInView)
-// 
+//
 
 // Cache observers keyed by their options signature so we can re-use them. Each entry tracks the
 // element IDs it currently observes so the observer can be disconnected once it falls empty
@@ -510,10 +598,12 @@ export function playWaapiFlip(elementId, dx, dy, sx, sy, durationMs, easingStr, 
 let _scrollKeySeq = 0;
 const _scrollSubs = new Map(); // key  cleanup fn
 
-export function observeScroll(containerId, dotnetRef) {
+export function observeScroll(containerId, dotnetRef, options) {
     const el = containerId ? document.getElementById(containerId) : window;
     if (!el) return null;
     const key = `scroll_${++_scrollKeySeq}`;
+    const targetId = options?.targetId ?? null;
+    const offsets = options?.offsets ?? null; // [[targetFrac, containerFrac], [targetFrac, containerFrac]]
 
     const onScroll = () => {
         let sX, sY, sW, sH, cW, cH;
@@ -529,16 +619,41 @@ export function observeScroll(containerId, dotnetRef) {
         }
         const pX = sW > cW ? sX / (sW - cW) : 0;
         const pY = sH > cH ? sY / (sH - cH) : 0;
+
+        // Target progress: 0 when the target sits at the first configured alignment, 1 at the
+        // second. Both alignment "distances" shift equally per scrolled pixel, so the current
+        // fraction is d0 / (d0 - d1), computed straight from viewport-relative rects.
+        let tp = null;
+        if (targetId && offsets) {
+            const target = document.getElementById(targetId);
+            if (target) {
+                const tr = target.getBoundingClientRect();
+                let cTop, cHeight;
+                if (el === window) { cTop = 0; cHeight = window.innerHeight; }
+                else { cTop = el.getBoundingClientRect().top; cHeight = el.clientHeight; }
+                const d0 = (tr.top + offsets[0][0] * tr.height) - (cTop + offsets[0][1] * cHeight);
+                const d1 = (tr.top + offsets[1][0] * tr.height) - (cTop + offsets[1][1] * cHeight);
+                const span = d0 - d1;
+                tp = span !== 0 ? Math.min(1, Math.max(0, d0 / span)) : 0;
+            }
+        }
+
         dotnetRef.invokeMethodAsync('OnScroll', {
             scrollX: sX, scrollY: sY,
             progressX: pX, progressY: pY,
             scrollWidth: sW, scrollHeight: sH,
             clientWidth: cW, clientHeight: cH,
+            targetProgress: tp,
         });
     };
 
     el.addEventListener('scroll', onScroll, { passive: true });
-    _scrollSubs.set(key, () => el.removeEventListener('scroll', onScroll));
+    // Target rects also change on viewport resize without a scroll event.
+    if (targetId) window.addEventListener('resize', onScroll, { passive: true });
+    _scrollSubs.set(key, () => {
+        el.removeEventListener('scroll', onScroll);
+        if (targetId) window.removeEventListener('resize', onScroll);
+    });
     onScroll(); // fire immediately with current position
     return key;
 }

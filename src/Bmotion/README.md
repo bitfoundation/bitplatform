@@ -1,8 +1,10 @@
-# Bit.Bmotion
+﻿# Bit.Bmotion
 
-A Blazor-native animation library inspired by [Framer Motion](https://www.framer.com/motion/). Springs, gestures, layout animations, variants, and keyframes - **no manual JavaScript wiring required**. All animation math runs in C# via WebAssembly; the slim browser bridge is auto-loaded for you.
+A Blazor-native animation library inspired by [Motion](https://motion.dev) (Framer Motion). Springs, gestures, keyframes, variants, drag, layout (FLIP) animations, shared-element transitions and exit animations - **no manual JavaScript wiring required**. All animation math runs in C#; the slim browser bridge is auto-loaded for you.
 
-> Targets **.NET 8, 9, and 10**
+**Hybrid engine:** compositor-eligible animations (tweens and zero-velocity springs on transform/opacity - i.e. most enter/exit/hover/variant animations) are pre-sampled in C# and handed to the browser's **Web Animations API**, so they play off the main thread with zero per-frame interop. Everything else runs on the C# rAF engine.
+
+> Targets **.NET 8, 9, and 10** · Full support on **Blazor WebAssembly**. On **Blazor Server**, compositor-eligible animations play normally (they need only async interop); features that require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag, motion values - degrade to instant state changes.
 
 ---
 
@@ -10,21 +12,19 @@ A Blazor-native animation library inspired by [Framer Motion](https://www.framer
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [The `Bm` facade](#the-bm-facade)
 - [Components](#components)
   - [Bmotion](#bmotion)
   - [BmotionAnimatePresence](#bmotionanimatepresence)
+  - [BmotionPresenceSwitch](#bmotionpresenceswitch)
   - [BmotionConfig](#bmotionconfig)
-- [Animation Models](#animation-models)
-  - [BmotionAnimationProps](#bmotionanimationprops)
-  - [BmotionTransitionConfig](#bmotiontransitionconfig)
-  - [BmotionMotionVariants](#bmotionmotionvariants)
-  - [BmotionDragOptions](#bmotiondragoptions)
-  - [BmotionViewportOptions](#bmotionviewportoptions)
-- [Services](#services)
-  - [BmotionAnimationController](#bmotionanimationcontroller)
-  - [BmotionAnimateService](#bmotionanimateservice)
-  - [BmotionValue](#bmotionvalue)
-- [Examples](#examples)
+- [Transitions](#transitions)
+- [Keyframes](#keyframes)
+- [Variants](#variants)
+- [Drag](#drag)
+- [Layout & shared elements](#layout--shared-elements)
+- [Programmatic API](#programmatic-api)
+- [Motion values](#motion-values)
 - [Accessibility](#accessibility)
 
 ---
@@ -54,9 +54,9 @@ required.
 ```razor
 @using Bit.Bmotion
 
-<Bmotion Animate='new BmotionAnimationProps { Opacity = 1, Y = 0 }'
-         Initial='new BmotionAnimationProps { Opacity = 0, Y = 20 }'>
-    Hello, Bmotion!
+<Bmotion Initial="Bm.To(opacity: 0, y: 20)"
+         Animate="Bm.To(opacity: 1, y: 0)">
+    <div>Hello, Bmotion!</div>
 </Bmotion>
 ```
 
@@ -64,306 +64,457 @@ That's it - the element fades in and slides up on first render.
 
 ---
 
+## The `Bm` facade
+
+`Bm` is the terse entry point for the whole hot path - it reads like motion.dev inside Razor:
+
+```csharp
+Bm.To(opacity: 1, x: 100, scale: 1.2)            // an animation target
+Bm.To(scale: [1, 1.4, 0.8, 1])                   // keyframes are just another value shape
+Bm.Spring(stiffness: 200, damping: 20)           // physics spring
+Bm.Spring(bounce: 0.4, duration: 0.6)            // intuitive duration-based spring
+Bm.Tween(0.4, BmEase.InOut, repeat: BmRepeat.Mirror())
+Bm.Inertia(velocity: 500)
+Bm.Stagger(0.08, from: BmStaggerFrom.Center)     // delay generator for multi-element animations
+Bm.Current                                        // wildcard keyframe: "the element's current value"
+```
+
+`Bm.To(...)` returns a `BmProps`; every parameter is optional. Available
+properties: `x, y, z, scale, scaleX, scaleY, rotate, rotateX, rotateY, rotateZ, skewX, skewY,
+perspective, originX, originY, opacity, backgroundColor, color, borderColor, outlineColor,
+fill, stroke, width, height, borderRadius, boxShadow, pathLength, pathOffset, pathSpacing,
+cssVars, transition`.
+
+> **Security:** string-valued properties are written verbatim into the element's inline style.
+> They are intended for developer-authored values; binding untrusted end-user input risks CSS
+> injection.
+
+---
+
 ## Components
 
 ### Bmotion
 
-`<Bmotion>` is the core component. It replaces any HTML element and adds animation superpowers.
+`<Bmotion>` is the core component. It wraps the element you author and adds animation
+superpowers: you write the animated element as plain markup inside `<Bmotion>`, and at render
+time Bmotion injects the engine id, the initial inline style, and `pathLength` into the
+**first root HTML element** of the child content - the Blazor equivalent of React's
+`cloneElement`. No context, no attribute splatting.
 
 ```razor
-<Bmotion Tag="section"
-         Class="my-card"
-         Initial='new BmotionAnimationProps { Opacity = 0, Scale = 0.9 }'
-         Animate='new BmotionAnimationProps { Opacity = 1, Scale = 1 }'
-         Exit='new BmotionAnimationProps { Opacity = 0, Scale = 0.9 }'
-         WhileHover='new BmotionAnimationProps { Scale = 1.05 }'
-         WhileTap='new BmotionAnimationProps { Scale = 0.97 }'
-         Transition='new BmotionTransitionConfig { Type = BmotionTransitionType.Spring, Stiffness = 200, Damping = 20 }'>
-    <p>Content</p>
+<Bmotion Initial="Bm.To(opacity: 0, scale: 0.9)"
+         Animate="Bm.To(opacity: 1, scale: 1)"
+         Exit="Bm.To(opacity: 0, scale: 0.9)"
+         WhileHover="Bm.To(scale: 1.05)"
+         WhileTap="Bm.To(scale: 0.97)"
+         Transition="Bm.Spring(stiffness: 200, damping: 20)">
+    <section class="my-card">
+        <p>Content</p>
+    </section>
 </Bmotion>
 ```
+
+Additional root nodes render unchanged; the root that receives the animation must be a plain
+HTML element, not a component.
+
+Plain expressions need no `@()` in non-string attributes. When the expression embeds string
+literals, single-quote the attribute: `WhileHover='Bm.To(backgroundColor: "#8a66ff")'`.
 
 #### Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
-| `Tag` | `string` | HTML element tag (default: `"div"`) |
-| `Class` | `string?` | CSS class attribute |
-| `Style` | `string?` | Inline style attribute |
-| `ChildContent` | `RenderFragment?` | Child content |
-| `Initial` | `BmotionAnimationTarget?` | Starting state (props, variant name, or `false`) |
-| `Animate` | `BmotionAnimationTarget?` | Target state |
-| `Exit` | `BmotionAnimationTarget?` | State to animate to before unmounting (requires `<BmotionAnimatePresence>`) |
-| `WhileHover` | `BmotionAnimationTarget?` | Overlay applied while hovered |
-| `WhileTap` | `BmotionAnimationTarget?` | Overlay applied while tapped/pressed |
-| `WhileFocus` | `BmotionAnimationTarget?` | Overlay applied while focused |
-| `WhileDrag` | `BmotionAnimationTarget?` | Overlay applied while dragging |
-| `WhileInView` | `BmotionAnimationTarget?` | Overlay applied while in viewport |
-| `Transition` | `BmotionTransitionConfig?` | Controls timing/physics of all transitions |
-| `Variants` | `BmotionMotionVariants?` | Named animation states |
-| `Drag` | `bool` | Enable drag gesture |
-| `DragOptions` | `BmotionDragOptions?` | Drag axis, constraints, elasticity |
-| `Layout` | `bool` | Enable automatic FLIP layout animations |
-| `Once` | `bool` | `WhileInView` fires once and never reverses |
-| `Viewport` | `BmotionViewportOptions?` | Advanced viewport tracking options |
-| `AdditionalAttributes` | `Dictionary<string, object>?` | Extra HTML attributes (passed through) |
+| `ChildContent` | `RenderFragment` | The animated element as plain markup; Bmotion automatically injects the engine id, initial inline style, and `pathLength` into the first root HTML element |
+| `Id` | `string?` | Stable element id used as the element's identity; takes precedence over an `id` authored on the element |
+| `Initial` | `BmTarget?` | Starting state (props or `false` to disable the enter animation) |
+| `Animate` | `BmTarget?` | Target state; animates on mount and on every change |
+| `Exit` | `BmTarget?` | State to animate to before unmounting (requires a presence component) |
+| `WhileHover` / `WhileTap` / `WhileFocus` / `WhileDrag` / `WhileInView` | `BmTarget?` | Gesture overlays; automatically revert when the gesture ends |
+| `Transition` | `BmTransition?` | Timing/physics for all of this element's transitions |
+| `Variants` | `BmVariants?` | Named animation states |
+| `State` / `InitialState` | `string?` | Active / initial variant name (razor-literal friendly) |
+| `Custom` | `object?` | Data passed to dynamic variants |
+| `Values` | `Dictionary<string, BmValue<double>>?` | Motion-value bindings (`style={{ x }}` equivalent) |
+| `Drag`, `DragConstraints`, `DragElastic`, `DragMomentum`, `DragSnapToOrigin`, `DragDirectionLock`, `DragTransition` | | See [Drag](#drag) |
+| `Layout` | `BmLayout` | Automatic FLIP layout animations (`true` or `BmLayout.Position`) |
+| `LayoutId` | `string?` | Shared-element transitions (see [Layout & shared elements](#layout--shared-elements)) |
+| `Once` / `Viewport` | `bool` / `BmViewport?` | Viewport tracking for `WhileInView` |
+| `OnUpdate` | `Action<IReadOnlyDictionary<string, string>>?` | Per-frame callback with the CSS flushed this frame (no re-render) |
 
-#### Event Callbacks
+Plain HTML attributes (`class`, `role`, `data-*`, …) go directly on the element you author
+inside the child content. Your own inline `style` just works: the engine's initial style is
+merged **before** your declarations, so anything you write wins conflicts. If you author an
+`id`, it is honored and adopted as the engine id (the `Id` parameter takes precedence over
+both).
+
+```razor
+<Bmotion ...>
+    <div style="border:1px solid #ccc;" />
+</Bmotion>
+```
+
+#### Event callbacks
 
 ```text
 OnHoverStart / OnHoverEnd
 OnTapStart / OnTap / OnTapCancel
 OnFocusStart / OnFocusEnd
-OnPanStart / OnPan / OnPanEnd         (BmotionPanInfo)
+OnPanStart / OnPan / OnPanEnd                  (BmPanInfo)
 OnDragStart / OnDrag / OnDragEnd
-OnAnimationStart / OnAnimationComplete
+OnAnimationStart / OnAnimationComplete         (BmProps? - the resolved target)
 OnViewportEnter / OnViewportLeave
+```
+
+#### Instance methods (via `@ref`)
+
+```razor
+<Bmotion @ref="_box" ...>
+    <div />
+</Bmotion>
+
+@code {
+    private Bmotion _box = default!;
+
+    Task Pulse() => _box.AnimateAsync(Bm.To(scale: 1.2), Bm.Spring(bounce: 0.5)).AsTask();
+    void Freeze() => _box.Pause();          // also: Resume(), SetPlaybackRate(2), Stop(), Set(...)
+}
 ```
 
 ---
 
 ### BmotionAnimatePresence
 
-Wraps conditional content to enable exit animations. Children remain in the DOM while their exit animation plays, then are removed.
+Wraps conditional content to enable exit animations. Children remain in the DOM while their
+exit animation plays, then are removed.
 
 ```razor
-<BmotionAnimatePresence IsPresent="@_show">
-    <Bmotion Initial='new BmotionAnimationProps { Opacity = 0 }'
-             Animate='new BmotionAnimationProps { Opacity = 1 }'
-             Exit='new BmotionAnimationProps { Opacity = 0 }'>
-        I animate in and out!
+<BmotionAnimatePresence IsPresent="@_show" Mode="BmPresenceMode.Wait">
+    <Bmotion Initial="Bm.To(opacity: 0)"
+             Animate="Bm.To(opacity: 1)"
+             Exit="Bm.To(opacity: 0)">
+        <div>I animate in and out!</div>
     </Bmotion>
 </BmotionAnimatePresence>
-
-<button @onclick="() => _show = !_show">Toggle</button>
-
-@code {
-    bool _show = true;
-}
 ```
 
 | Parameter | Type | Description |
 |---|---|---|
-| `IsPresent` | `bool` | Controls whether the child content is present (default: `true`) |
-| `ExitBeforeEnter` | `bool` | Wait for exit animation to finish before entering new content |
-| `ChildContent` | `RenderFragment?` | Content to animate |
+| `IsPresent` | `bool` | Controls whether the child content is present |
+| `Mode` | `BmPresenceMode` | `Sync` (default) or `Wait` (exit finishes before re-enter) |
+| `OnExitComplete` | `EventCallback` | Fires when all exit animations finish |
 
----
+### BmotionPresenceSwitch
+
+Animates **between** items - the paging / toast idiom covered by motion.dev's keyed
+`AnimatePresence`. When `Item` changes, the outgoing subtree plays its `Exit` before the new
+item enters (it keeps rendering the *old* item while exiting, because the content is a
+template of the item):
+
+```razor
+<BmotionPresenceSwitch Item="_page" Context="pageNumber">
+    <Bmotion Initial="Bm.To(opacity: 0, x: 40)"
+             Animate="Bm.To(opacity: 1, x: 0)"
+             Exit="Bm.To(opacity: 0, x: -40)">
+        <div>Page @pageNumber</div>
+    </Bmotion>
+</BmotionPresenceSwitch>
+```
+
+`Mode` defaults to `Wait`; `Sync` overlaps exit and enter. `OnExitComplete` fires per exit.
 
 ### BmotionConfig
 
 Provides global animation defaults to an entire subtree via cascading values.
 
 ```razor
-<BmotionConfig Transition='new BmotionTransitionConfig { Duration = 0.2 }'
-               TransitionSpeed="1.5">
-    <!-- all Bmotion elements inside inherit these defaults -->
+<BmotionConfig Transition="Bm.Tween(0.2)" TransitionSpeed="2">
+    <!-- all Bmotion elements inside inherit these defaults; run twice as fast -->
 </BmotionConfig>
 ```
 
 | Parameter | Type | Description |
 |---|---|---|
-| `Transition` | `BmotionTransitionConfig?` | Global default transition for all descendant `<Bmotion>` elements |
-| `ReduceMotion` | `bool?` | Reduced-motion for this subtree: `null` = respect OS preference, `true` = always reduce, `false` = always animate |
-| `TransitionSpeed` | `double` | Scale factor for all animation durations (default: `1.0`) |
+| `Transition` | `BmTransition?` | Default transition for all descendants |
+| `ReduceMotion` | `bool?` | `null` = respect OS preference, `true` = always reduce, `false` = always animate |
+| `TransitionSpeed` | `double` | Playback rate: `2` = twice as fast, `0.5` = half speed, `0` = instant |
 
 ---
 
-## Animation Models
+## Transitions
 
-### BmotionAnimationProps
-
-Describes the animatable state - the *what* of an animation.
+Three concrete types under the abstract `BmTransition`, each carrying only its own knobs:
 
 ```csharp
-new BmotionAnimationProps
-{
-    // Transform
-    X = 100, Y = -20, Z = 0,
-    Scale = 1.2, ScaleX = 1, ScaleY = 1,
-    Rotate = 45, RotateX = 0, RotateY = 0, RotateZ = 0,
-    SkewX = 10, SkewY = 0,
-    Perspective = 800,
+// Tween (duration + easing)
+Bm.Tween(0.4, BmEase.InOut, delay: 0.1)
 
-    // Visual
-    Opacity = 1,
-    BackgroundColor = "#ff0000",
-    Color = "rgba(0,0,0,0.8)",
-    BorderColor = "#ccc",
-    Width = "200px", Height = "200px",
-    BorderRadius = "8px",
-    BoxShadow = "0 4px 20px rgba(0,0,0,0.2)",
-
-    // SVG
-    Fill = "#0000ff",
-    Stroke = "#ff0000",
-    PathLength = 1,        // 0–1, drives stroke-dashoffset drawing
-
-    // CSS custom properties
-    CssVars = new() { ["--accent"] = "#ff6b6b" },
-
-    // Keyframe arrays (multi-step)
-    Keyframes = new() { ["scale"] = new double[] { 1, 1.4, 0.8, 1 } }
-}
-```
-
-### BmotionTransitionConfig
-
-Controls *how* a value moves between states.
-
-```csharp
-// Tween (duration-based, default)
-new BmotionTransitionConfig
-{
-    Type = BmotionTransitionType.Tween,
-    Duration = 0.4,
-    Delay = 0.1,
-    Ease = BmotionEasing.EaseInOut
-}
-
-// Spring (physics-based)
-new BmotionTransitionConfig
-{
-    Type = BmotionTransitionType.Spring,
-    Stiffness = 200,
-    Damping = 15,
-    Mass = 1,
-    Bounce = 0.4,
-    VisualDuration = 0.5
-}
+// Spring - physics parameters…
+Bm.Spring(stiffness: 200, damping: 15, mass: 1)
+// …or the intuitive duration-based form (visual seconds + bounciness 0-1)
+Bm.Spring(bounce: 0.4, duration: 0.5)
 
 // Inertia (momentum deceleration)
-new BmotionTransitionConfig
+Bm.Inertia(velocity: 500, timeConstant: 700, min: 0, max: 1000)
+```
+
+Repeat via `BmRepeat` (no more `int.MaxValue` sentinel):
+
+```csharp
+Bm.Tween(1.2, repeat: BmRepeat.Forever)          // loop forever
+Bm.Tween(1.2, repeat: BmRepeat.Mirror())         // ping-pong forever
+Bm.Spring(repeat: BmRepeat.Loop(3, delay: 0.3))  // 3×, 300 ms apart
+Bm.Tween(0.5, repeat: 2)                         // implicit int conversion
+```
+
+Per-property overrides and orchestration live on the base type:
+
+```csharp
+new BmTween
 {
-    Type = BmotionTransitionType.Inertia,
-    InertiaVelocity = 500,
-    TimeConstant = 700,
-    Power = 0.8,
-    InertiaMin = 0, InertiaMax = 1000
+    Duration = 0.4,
+    Properties = new() { ["opacity"] = Bm.Tween(0.1) },  // opacity snaps faster
 }
 ```
 
-Shorthand: `BmotionTransitionConfig.Spring(stiffness: 150, damping: 12)`
-
-Repeat: `new BmotionTransitionConfig { Repeat = int.MaxValue, RepeatType = BmotionRepeatType.Mirror }`
-
-### BmotionMotionVariants
+A target can also **embed** its own transition, which wins over the component's `Transition`:
 
 ```csharp
-var variants = BmotionMotionVariants.Create(
-    ("hidden",  new BmotionAnimationProps { Opacity = 0, Y = 20 }),
-    ("visible", new BmotionAnimationProps { Opacity = 1, Y = 0  })
-);
+Bm.To(x: 100, transition: Bm.Spring(bounce: 0.6))
 ```
 
+## Keyframes
+
+Every property accepts a single value or a keyframe sequence via collection expressions:
+
 ```razor
-<Bmotion Variants="variants"
-         Initial="hidden"
-         Animate="visible"
-         Transition='new BmotionTransitionConfig { StaggerChildren = 0.1 }'>
-    <Bmotion>Item 1</Bmotion>
-    <Bmotion>Item 2</Bmotion>
-    <Bmotion>Item 3</Bmotion>
+<Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
+         Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+    <div />
+</Bmotion>
+
+<Bmotion Animate='Bm.To(backgroundColor: ["#6c47ff", "#ff4785", "#6c47ff"])'
+         Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
+    <div />
 </Bmotion>
 ```
 
-### BmotionDragOptions
+- `times: [0, 0.2, 0.5, 1]` on `Bm.Tween` sets custom keyframe offsets.
+- `Bm.Current` inside a sequence is a wildcard for the element's current value:
+  `x: [Bm.Current, 100]` continues seamlessly from wherever the element is now.
 
-```csharp
-new BmotionDragOptions
-{
-    Axis = BmotionDragAxis.X,
-    Constraints = BmotionDragConstraints.Horizontal(-200, 200),
-    Elastic = 0.2,
-    Momentum = true,
-    SnapToOrigin = false,
-    DirectionLock = true
+## Variants
+
+Named states declared once, selected by name - with razor-literal-friendly `State` /
+`InitialState` parameters. The active state propagates to descendants automatically:
+
+```razor
+<Bmotion Variants="_list" InitialState="hidden"
+         State='@(_open ? "visible" : "hidden")'
+         Transition="Bm.Tween(staggerChildren: 0.08, delayChildren: 0.2)">
+    <div>
+        <Bmotion Variants="_item">
+            <div>Item 1</div>
+        </Bmotion>
+        <Bmotion Variants="_item">
+            <div>Item 2</div>
+        </Bmotion>
+    </div>
+</Bmotion>
+
+@code {
+    private readonly BmVariants _list = new()
+    {
+        ["hidden"]  = Bm.To(opacity: 0),
+        ["visible"] = Bm.To(opacity: 1),
+    };
+
+    private readonly BmVariants _item = new()
+    {
+        ["hidden"]  = Bm.To(opacity: 0, x: -30),
+        // a variant can embed its own transition
+        ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300)),
+    };
 }
 ```
 
-### BmotionViewportOptions
+Dynamic variants receive the component's `Custom` parameter:
 
 ```csharp
-new BmotionViewportOptions
+_item.Add("visible", custom => Bm.To(x: 10 * (int)custom!));
+```
+
+```razor
+<Bmotion Variants="_item" Custom="@i">
+    <div />
+</Bmotion>
+```
+
+## Drag
+
+Motion-style flat parameters:
+
+```razor
+<Bmotion Drag="true" DragElastic="0.5">
+    <div />
+</Bmotion>
+
+<Bmotion Drag="BmDrag.X"
+         DragConstraints="BmDragConstraints.Horizontal(-200, 200)"
+         DragMomentum="true"
+         DragSnapToOrigin="false"
+         DragDirectionLock="true"
+         DragTransition="Bm.Spring(stiffness: 400, damping: 35)">
+    <div />
+</Bmotion>
+```
+
+## Layout & shared elements
+
+`Layout` plays a FLIP animation whenever a re-render moves or resizes the element:
+
+```razor
+@* animate position + size *@
+<Bmotion Layout="true" ...>
+    <div />
+</Bmotion>
+
+@* position only - no scale distortion on text *@
+<Bmotion Layout="BmLayout.Position" ...>
+    <div />
+</Bmotion>
+```
+
+`LayoutId` connects elements across mounts: when one element unmounts and another mounts with
+the same id, the new one FLIPs from where the old one was - the tab-underline / card-to-detail
+idiom:
+
+```razor
+@if (tab == _activeTab)
 {
-    Once = true,
-    Margin = "-100px",
-    Amount = "some"   // "some", "all", or 0–1 threshold
+    <Bmotion LayoutId="underline">
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#6c47ff;" />
+    </Bmotion>
 }
 ```
+
+Wrap independent groups in `<BmotionLayoutGroup Name="sidebar">` to namespace their ids.
 
 ---
 
-## Services
+## Programmatic API
 
-### BmotionAnimationController
-
-Programmatic control bound to a specific element by ID.
-
-```razor
-@inject BmotionAnimationController Controller
-@implements IDisposable
-
-<Bmotion id="my-box" ... />
-
-@code {
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender) Controller.BindTo("my-box");
-    }
-
-    async Task Pulse() => await Controller.AnimateAsync(
-        new BmotionAnimationProps { Scale = 1.2 },
-        new BmotionTransitionConfig { Type = BmotionTransitionType.Spring, Bounce = 0.5 });
-
-    // Dispose the controller so the bound element is unregistered from the engine on teardown.
-    public void Dispose() => Controller.Dispose();
-}
-```
-
-### BmotionAnimateService
-
-Animate elements by CSS selector or `ElementReference` without wrapping them in `<Bmotion>`.
+`BmotionAnimateService` (inject as `Motion`) animates elements by CSS selector or
+`ElementReference` - no `<Bmotion>` wrapper needed:
 
 ```razor
 @inject BmotionAnimateService Motion
 
-<div id="target">Animate me</div>
-
 @code {
-    async Task AnimateIt()
+    async Task Animate()
     {
-        var controls = await Motion.AnimateAsync(
-            "#target",
-            new BmotionAnimationProps { X = 100, Opacity = 0.5 },
-            new BmotionTransitionConfig { Duration = 0.6 });
-
-        await controls.WhenCompleteAsync();
+        var controls = await Motion.AnimateAsync("#target", Bm.To(x: 100, opacity: 0.5), Bm.Tween(0.6));
+        controls.Pause();          // playback controls: Pause / Play / SetSpeed / Stop / Complete
+        controls.SetSpeed(2);
+        await controls;            // directly awaitable
     }
+
+    // Stagger across all matched elements
+    Task Cascade() => Motion.AnimateAsync(".item", Bm.To(opacity: 1, y: 0),
+        Bm.Spring(), stagger: Bm.Stagger(0.08, from: BmStaggerFrom.Center)).AsTask();
 }
 ```
 
-### BmotionValue
+### Sequences
 
-A reactive numeric value you can subscribe to and transform.
+Multi-step timelines with motion.dev-style `at` offsets:
 
 ```csharp
-var mv = BmotionValueFactory.Create(0.0);
-mv.Subscribe(v => Console.WriteLine($"value: {v}"));
-await mv.SetAsync(100);
+var seq = new BmSequence()
+    .Add("#box", Bm.To(x: 100), Bm.Tween(0.5))
+    .Add("#box", Bm.To(y: 50), Bm.Tween(0.3), at: "-0.1")   // overlap previous end by 0.1s
+    .Label("burst")
+    .Add(".dot", Bm.To(scale: [1, 1.4, 1]), at: "burst");   // at a named label
 
-BmotionValue<double> mapped = mv.Transform(
-    inputRange:  new[] { 0.0, 1.0 },
-    outputRange: new[] { 0.0, 360.0 });
+var controls = await Motion.RunAsync(seq);
+```
+
+`at` accepts: `"+0.5"` / `"-0.2"` (relative to previous end), `"<"` / `"<0.3"` (previous
+start), `"1.5"` (absolute), or a label name.
+
+---
+
+## Motion values
+
+A reactive value graph, fully composable and bindable to elements:
+
+```csharp
+var x = Bm.Value(0.0);
+x.Subscribe(v => Console.WriteLine(v));
+x.SetSync(100);
+x.GetVelocity();                                  // units/sec
+x.Jump(0);                                        // set without feeding physics
+
+var angle = x.Transform([0, 200], [0, 360]);      // range mapping
+var smooth = Motion.Spring(x, Bm.Spring(stiffness: 120));  // spring follower (useSpring)
+
+await Motion.AnimateAsync(x, 200, Bm.Spring());   // animate the value itself
+```
+
+Bind values straight to element properties - changes flush to the DOM each frame **without
+re-rendering** (the `style={{ x }}` equivalent):
+
+```razor
+<Bmotion Values='new() { ["x"] = _x, ["rotate"] = _angle }'>
+    <div />
+</Bmotion>
+```
+
+`BmotionScrollTracker` exposes scroll positions as motion values, and can track a target
+element's journey through the viewport between configurable offsets (motion.dev's
+`useScroll({ target, offset })`):
+
+```csharp
+await Scroll.ObserveAsync(new BmScrollOptions
+{
+    TargetId = "hero",
+    Offset = ["start end", "end start"],   // 0 when hero enters at the bottom, 1 when it leaves at the top
+}, _ => Task.CompletedTask);
+
+// then compose: Scroll.TargetProgressValue.Transform([0, 1], [0, -120])
+```
+
+Scroll-linked animations compose end-to-end:
+
+```razor
+@inject BmotionScrollTracker Scroll
+
+<Bmotion Values="_bar">
+    <div style="transform-origin:0 50%;" />
+</Bmotion>
+
+@code {
+    private Dictionary<string, BmValue<double>> _bar = default!;
+
+    protected override void OnInitialized()
+        => _bar = new() { ["scaleX"] = Scroll.ProgressYValue };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
+    }
+
+    // BmotionScrollTracker is transient and owned by this component:
+    public ValueTask DisposeAsync() => Scroll.DisposeAsync();
+}
 ```
 
 ---
 
 ## Examples
 
-See the `Demos` samples app for runnable examples of basic animations, gestures,
-springs, drag, variants & stagger, keyframes, enter/exit transitions, layout (FLIP)
-animations, scroll/viewport effects and programmatic control.
+See the `Demos` samples app for runnable examples of basic animations, gestures, springs,
+drag, variants & stagger, keyframes, enter/exit transitions, presence switching, layout
+(FLIP) animations, scroll-linked motion values and programmatic control.
 
 ---
 

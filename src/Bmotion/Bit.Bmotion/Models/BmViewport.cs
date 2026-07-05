@@ -3,7 +3,7 @@ namespace Bit.Bmotion;
 /// Options that control how a <see cref="Bmotion"/> element is tracked within the viewport
 /// for <c>WhileInView</c> and <c>OnViewportEnter</c>/<c>OnViewportLeave</c> animations.
 /// </summary>
-public class BmotionViewportOptions
+public class BmViewport
 {
     /// <summary>
     /// If <c>true</c>, once the element enters the viewport the animation will not

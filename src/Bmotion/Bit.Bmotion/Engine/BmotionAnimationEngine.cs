@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmotion;
@@ -116,7 +116,12 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     {
         if (!_elements.TryGetValue(elementId, out var state))
         {
-            state = new BmotionElementAnimationState();
+            state = new BmotionElementAnimationState
+            {
+                // Without synchronous interop (Blazor Server) there is no rAF loop: animations
+                // either offload to the browser compositor (WAAPI) or collapse to instant sets.
+                ForceInstant = !_interop.IsInProcess,
+            };
             _elements[elementId] = state;
         }
         // Reference-counted: the same element may be owned by a <Bmotion> and one or more
@@ -153,7 +158,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// (which would strand unrelated animated properties when a gesture later deactivates).
     /// </para>
     /// </summary>
-    public async ValueTask AnimateToAsync(
+    internal async ValueTask AnimateToAsync(
         string elementId,
         Dictionary<string, object?> values,
         BmotionTransitionConfig? transition,
@@ -162,11 +167,17 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
         if (setAsBase) state.SetBaseAnimation(values, transition);
+
+        // Fold any compositor animation touching the same properties back into state first,
+        // so whichever path runs next starts from the element's live values.
+        await InterruptWaapiOverlapsAsync(elementId, state, values.Keys);
+
+        var offload = await TryBuildWaapiOffloadAsync(state, values, transition);
+
+        TaskCompletionSource<bool>? tcs = null;
         if (onComplete != null)
         {
-            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            state.AnimateTo(values, transition, tcs);
-            await EnsureLoopRunningAsync();
+            tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             // .Unwrap() so the nested onComplete() Task is observed rather than dropped
             // (keeps the documented fire-and-forget behaviour of this method).
             // The result flag is true only on natural completion; a superseded/cancelled
@@ -176,25 +187,41 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                     TaskScheduler.Default)
                 .Unwrap();
         }
-        else
+
+        if (offload != null)
         {
-            state.AnimateTo(values, transition);
-            await EnsureLoopRunningAsync();
+            // Compositor playback is supervised in the background; this method stays fire-and-forget.
+            _ = SuperviseOffloadAsync(elementId, state, values, transition, offload, tcs);
+            return;
         }
+
+        state.AnimateTo(values, transition, tcs);
+        await EnsureTickingAsync(elementId, state);
     }
 
     /// <summary>Animate to the given values and await animation completion.</summary>
-    public async ValueTask AnimateToAwaitAsync(
+    internal async ValueTask AnimateToAwaitAsync(
         string elementId,
         Dictionary<string, object?> values,
         BmotionTransitionConfig? transition,
         bool setAsBase = false)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
-        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         if (setAsBase) state.SetBaseAnimation(values, transition);
+
+        await InterruptWaapiOverlapsAsync(elementId, state, values.Keys);
+
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var offload = await TryBuildWaapiOffloadAsync(state, values, transition);
+        if (offload != null)
+        {
+            await SuperviseOffloadAsync(elementId, state, values, transition, offload, tcs);
+            await tcs.Task;
+            return;
+        }
+
         state.AnimateTo(values, transition, tcs);
-        await EnsureLoopRunningAsync();
+        await EnsureTickingAsync(elementId, state);
         await tcs.Task;
     }
 
@@ -203,11 +230,16 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     {
         if (_elements.TryGetValue(elementId, out var state))
         {
+            // Fold overlapping compositor animations back into state synchronously from the
+            // mirrored plans; the JS-side cancel is fire-and-forget.
+            var tokens = state.RealizeWaapiPlans(values.Keys);
+            if (tokens != null) CancelWaapiTokens(elementId, tokens, commit: false);
+
             state.SetInstant(values);
             // Kick the loop for a single frame so the change is flushed to the DOM even when
             // the element is otherwise at rest (an instant Set has dirty values but no active
             // animation, so without this it would never be emitted).
-            KickLoop();
+            KickFlush(elementId, state);
         }
     }
 
@@ -233,6 +265,16 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     public bool IsRegistered(string elementId) => _elements.ContainsKey(elementId);
 
     /// <summary>
+    /// Sets (or clears) a per-frame callback invoked with the CSS declarations flushed to the
+    /// element each frame. Used by the <c>Bmotion.OnUpdate</c> parameter.
+    /// </summary>
+    internal void SetOnFrame(string elementId, Action<IReadOnlyDictionary<string, string>>? callback)
+    {
+        if (_elements.TryGetValue(elementId, out var state))
+            state.OnFrame = callback;
+    }
+
+    /// <summary>
     /// Finish all animations on an element immediately, snapping every property to its target
     /// (end) value, then flush the final frame to the DOM.
     /// </summary>
@@ -240,8 +282,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     {
         if (_elements.TryGetValue(elementId, out var state))
         {
+            var tokens = state.CompleteWaapiPlans();
+            if (tokens != null) CancelWaapiTokens(elementId, tokens, commit: false);
             state.CompleteAll();
-            KickLoop();
+            KickFlush(elementId, state);
         }
     }
 
@@ -249,27 +293,53 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     public void Stop(string elementId, string[]? properties)
     {
         if (_elements.TryGetValue(elementId, out var state))
+        {
+            // Freeze compositor animations in place too: realize their current values,
+            // snapshot them inline (commit) and cancel.
+            var keys = properties is { Length: > 0 } ? properties : null;
+            var tokens = state.RealizeWaapiPlans(keys);
+            if (tokens != null)
+            {
+                CancelWaapiTokens(elementId, tokens, commit: true);
+                KickFlush(elementId, state);
+            }
             state.Cancel(properties);
+        }
+    }
+
+    /// <summary>
+    /// Sets the playback rate for an element's animations: 1 = realtime, 0 = paused,
+    /// 2 = twice as fast. Negative and non-finite rates are coerced to 0.
+    /// </summary>
+    public void SetPlaybackRate(string elementId, double rate)
+    {
+        if (_elements.TryGetValue(elementId, out var state))
+            state.PlaybackRate = double.IsFinite(rate) && rate >= 0 ? rate : 0;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Gesture layer management
     // ═══════════════════════════════════════════════════════════════════════════
 
-    public async ValueTask ActivateGestureLayerAsync(
+    internal async ValueTask ActivateGestureLayerAsync(
         string elementId, string gesture,
         Dictionary<string, object?> values, BmotionTransitionConfig? transition)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
+        // Gesture layers animate through the rAF engine; take back any compositor animation
+        // touching the same properties so the layer starts from live values.
+        await InterruptWaapiOverlapsAsync(elementId, state, values.Keys);
         state.ActivateGestureLayer(gesture, values, transition);
-        await EnsureLoopRunningAsync();
+        await EnsureTickingAsync(elementId, state);
     }
 
     public async ValueTask DeactivateGestureLayerAsync(string elementId, string gesture)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
+        // Deactivation animates back toward the base target, which may overlap any plan.
+        await InterruptWaapiOverlapsAsync(elementId, state, null);
         state.DeactivateGestureLayer(gesture);
-        await EnsureLoopRunningAsync();
+        await EnsureTickingAsync(elementId, state);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -290,19 +360,21 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// <summary>Returns the current transform x/y for an element (used at drag start).</summary>
     public (double x, double y) GetCurrentXY(string elementId)
     {
-        return _elements.TryGetValue(elementId, out var state)
-            ? state.GetCurrentXY()
-            : (0, 0);
+        if (!_elements.TryGetValue(elementId, out var state)) return (0, 0);
+        // Drag start: the JS bridge has just committed+cancelled any compositor animations on
+        // this element, so fold their current values (from the mirrored plans) into state.
+        state.RealizeWaapiPlans(null);
+        return state.GetCurrentXY();
     }
 
     /// <summary>
     /// Completes a drag and optionally starts inertia animations.
     /// </summary>
-    public async ValueTask EndDragAsync(
+    internal async ValueTask EndDragAsync(
         string elementId,
         double velX, double velY,
         bool momentum,
-        BmotionDragConstraints? constraints,
+        BmDragConstraints? constraints,
         string? axis,
         BmotionTransitionConfig? snapTransition)
     {
@@ -381,7 +453,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         }
 
         if (state.HasActiveAnimations)
-            await EnsureLoopRunningAsync();
+            await EnsureTickingAsync(elementId, state);
     }
 
     /// <summary>Returns the current CSS transform string for the element (used by FLIP).</summary>
@@ -394,6 +466,372 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// <summary>Returns the <see cref="BmotionElementAnimationState"/> for an element, or null.</summary>
     internal BmotionElementAnimationState? GetState(string elementId)
         => _elements.GetValueOrDefault(elementId);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // WAAPI compositor offload
+    //
+    // Eligible animations (transform/opacity, tween or zero-velocity spring, single-value
+    // targets) are pre-sampled in C# and handed to the browser as a ready-made Web Animation:
+    // playback runs on the compositor with zero per-frame interop, and - because only async
+    // interop is needed - these animations also work on Blazor Server. The engine keeps a
+    // mirrored "plan" (the same sampled curve) so interruptions can compute the element's
+    // current values without reading the DOM.
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    private int _waapiTokenSeq;
+    private bool? _linearEasingSupported;
+
+    private sealed record WaapiOffload(
+        BmotionElementAnimationState.WaapiPlan Plan,
+        object[] Keyframes,
+        Dictionary<string, object?> Timing);
+
+    /// <summary>Whether this environment can run the per-frame rAF loop (Blazor WebAssembly).</summary>
+    internal bool SupportsFrameLoop => _interop.IsInProcess;
+
+    /// <summary>
+    /// rAF-loop start on WebAssembly; on Blazor Server (no sync interop) drives the element's
+    /// zero-duration drivers to completion and flushes the result through async interop instead.
+    /// </summary>
+    private async ValueTask EnsureTickingAsync(string elementId, BmotionElementAnimationState state)
+    {
+        if (_interop.IsInProcess)
+        {
+            await EnsureLoopRunningAsync();
+            return;
+        }
+        await FlushRemoteAsync(elementId, state);
+    }
+
+    private async ValueTask FlushRemoteAsync(string elementId, BmotionElementAnimationState state)
+    {
+        // ForceInstant collapses every driver to zero duration, so a single tick settles and
+        // emits the final values. Copy the reused tick buffer before the async interop call.
+        var updates = state.Tick(Environment.TickCount64);
+        if (updates is { Count: > 0 })
+        {
+            try { await _interop.ApplyStylesAsync(elementId, new Dictionary<string, string>(updates)); }
+            catch { /* element may be gone during teardown */ }
+        }
+    }
+
+    /// <summary>
+    /// Realizes and cancels every compositor animation overlapping <paramref name="keys"/>
+    /// (<c>null</c> = all), so state reflects the element's live values before a new owner
+    /// (animation, gesture, instant set) takes over.
+    /// </summary>
+    private async ValueTask InterruptWaapiOverlapsAsync(
+        string elementId, BmotionElementAnimationState state, IReadOnlyCollection<string>? keys)
+    {
+        if (!state.HasWaapiPlans) return;
+        var tokens = state.RealizeWaapiPlans(keys);
+        if (tokens == null) return;
+        foreach (var token in tokens)
+        {
+            // commit=true snapshots the current values inline before cancelling, so nothing
+            // flashes in the gap before the engine's own write lands.
+            try { await _interop.CancelWaapiAnimationAsync(elementId, token, commit: true); }
+            catch { /* best-effort */ }
+        }
+        await EnsureTickingAsync(elementId, state);
+    }
+
+    private async ValueTask<bool> LinearEasingSupportedAsync()
+    {
+        if (_linearEasingSupported is null)
+        {
+            try { _linearEasingSupported = await _interop.SupportsLinearEasingAsync(); }
+            catch { _linearEasingSupported = false; }
+        }
+        return _linearEasingSupported.Value;
+    }
+
+    /// <summary>
+    /// Builds a compositor offload for the animation when it is eligible, otherwise null
+    /// (the caller then uses the rAF path / instant fallback).
+    /// </summary>
+    private async ValueTask<WaapiOffload?> TryBuildWaapiOffloadAsync(
+        BmotionElementAnimationState state,
+        Dictionary<string, object?> values,
+        BmotionTransitionConfig? transition)
+    {
+        var config = transition ?? new BmotionTransitionConfig();
+
+        // Features the compositor path can't express - stay on the rAF engine.
+        if (config.OnUpdate != null) return null;
+        if (config.Properties is { Count: > 0 }) return null;
+        if (config.RepeatDelay > 0) return null;
+        if (config.RepeatType == BmRepeatType.Reverse && (config.IsInfiniteRepeat || config.Repeat > 0)) return null;
+        if (config.Times != null) return null;
+        if (config.Type == BmotionTransitionType.Inertia) return null;
+        // A spring with initial velocity produces a per-distance curve that a shared normalized
+        // sample table can't represent.
+        if (config.Type == BmotionTransitionType.Spring && config.Velocity != 0) return null;
+        if (config.Type == BmotionTransitionType.Tween && config.Duration <= 0) return null;
+
+        // Every animated property must be a transform component or opacity with a single
+        // finite numeric target.
+        var targets = new Dictionary<string, (double From, double To)>(StringComparer.OrdinalIgnoreCase);
+        bool touchesTransform = false;
+        foreach (var (key, raw) in values)
+        {
+            if (raw == null) continue;
+            bool isTransform = BmotionTransformComposer.IsTransformProp(key);
+            if (!isTransform && !string.Equals(key, "opacity", StringComparison.OrdinalIgnoreCase)) return null;
+
+            double to;
+            switch (raw)
+            {
+                case double d: to = d; break;
+                case int i: to = i; break;
+                case float f: to = f; break;
+                case long l: to = l; break;
+                default: return null; // keyframe arrays / strings stay on the rAF path
+            }
+            if (!double.IsFinite(to)) return null;
+
+            double from = isTransform
+                ? state.Transforms.GetValueOrDefault(key,
+                    key is "scale" or "scaleX" or "scaleY" ? 1.0 : 0.0)
+                : state.NumericValues.GetValueOrDefault(key, 1.0); // opacity defaults to 1
+            targets[key] = (from, to);
+            touchesTransform |= isTransform;
+        }
+        if (targets.Count == 0) return null;
+
+        // transform is a single CSS property: the compositor can't own it while rAF drivers
+        // are animating other transform components on the same element.
+        if (touchesTransform && state.HasActiveTransformDriver()) return null;
+
+        // Sample the curve. Springs need linear() easing support; tweens prefer it but can
+        // fall back to their exact CSS easing.
+        double durationMs;
+        double[] samples;
+        string easing;
+        if (config.Type == BmotionTransitionType.Spring)
+        {
+            if (!await LinearEasingSupportedAsync()) return null;
+            var sampled = SampleSpringProgress(config);
+            if (sampled is null) return null;
+            (samples, durationMs) = sampled.Value;
+            easing = BuildLinearEasing(samples);
+        }
+        else
+        {
+            samples = SampleTweenProgress(config);
+            durationMs = config.Duration * 1000;
+            easing = await LinearEasingSupportedAsync()
+                ? BuildLinearEasing(samples)
+                : BmEaseFunctions.ToCssString(config);
+        }
+
+        // Two keyframes composed from the FULL transform state so untouched components persist,
+        // with identical function order in both frames (required for piecewise interpolation).
+        var fromStyles = new Dictionary<string, object>();
+        var toStyles = new Dictionary<string, object>();
+        if (touchesTransform)
+        {
+            var fromT = new Dictionary<string, double>(state.Transforms, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, (from, _)) in targets)
+                if (BmotionTransformComposer.IsTransformProp(key)) fromT[key] = from;
+            var toT = new Dictionary<string, double>(fromT, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, (_, to)) in targets)
+                if (BmotionTransformComposer.IsTransformProp(key)) toT[key] = to;
+
+            var fromStr = BmotionTransformComposer.Build(fromT);
+            var toStr = BmotionTransformComposer.Build(toT);
+            fromStyles["transform"] = string.IsNullOrEmpty(fromStr) ? "none" : fromStr;
+            toStyles["transform"] = string.IsNullOrEmpty(toStr) ? "none" : toStr;
+        }
+        if (targets.TryGetValue("opacity", out var opacity))
+        {
+            fromStyles["opacity"] = BmotionCssFormat.Num(opacity.From);
+            toStyles["opacity"] = BmotionCssFormat.Num(opacity.To);
+        }
+
+        bool infinite = config.IsInfiniteRepeat;
+        string direction = config.RepeatType == BmRepeatType.Mirror ? "alternate" : "normal";
+        double delayMs = config.Delay * 1000;
+
+        var plan = new BmotionElementAnimationState.WaapiPlan
+        {
+            Token = ++_waapiTokenSeq,
+            StartMs = Environment.TickCount64,
+            DelayMs = delayMs,
+            DurationMs = durationMs,
+            Progress = samples,
+            Values = targets,
+            Iterations = infinite ? -1 : config.Repeat,
+            Mirror = direction == "alternate",
+        };
+
+        var timing = new Dictionary<string, object?>
+        {
+            ["duration"] = durationMs,
+            ["delay"] = delayMs,
+            ["easing"] = easing,
+            ["iterations"] = infinite ? -1 : config.Repeat + 1,
+            ["direction"] = direction,
+        };
+
+        return new WaapiOffload(plan, [fromStyles, toStyles], timing);
+    }
+
+    /// <summary>
+    /// Registers the plan, starts compositor playback, and settles state / the completion
+    /// source when it finishes, is interrupted, or fails to start (falling back to the
+    /// rAF / instant path in that last case).
+    /// </summary>
+    private async Task SuperviseOffloadAsync(
+        string elementId,
+        BmotionElementAnimationState state,
+        Dictionary<string, object?> values,
+        BmotionTransitionConfig? transition,
+        WaapiOffload offload,
+        TaskCompletionSource<bool>? tcs)
+    {
+        state.AddWaapiPlan(offload.Plan);
+
+        bool finished;
+        try { finished = await _interop.PlayWaapiAnimationAsync(elementId, offload.Plan.Token, offload.Keyframes, offload.Timing); }
+        catch { finished = false; }
+
+        if (finished)
+        {
+            state.TryCompleteWaapiPlan(offload.Plan.Token);
+            tcs?.TrySetResult(true);
+            return;
+        }
+
+        // Not finished: either an interruption already realized+removed the plan (a newer owner
+        // has the element), or playback never started (element missing / easing rejected).
+        bool wasStillRegistered = state.TryRealizeWaapiPlan(offload.Plan.Token, out double elapsedMs);
+        if (wasStillRegistered && elapsedMs < 50)
+        {
+            // Playback never started - replay through the regular path so the animation isn't lost.
+            try
+            {
+                state.AnimateTo(values, transition, tcs);
+                await EnsureTickingAsync(elementId, state);
+            }
+            catch
+            {
+                tcs?.TrySetResult(false);
+            }
+            return;
+        }
+
+        tcs?.TrySetResult(false);
+    }
+
+    /// <summary>Fire-and-forget cancellation of compositor animations (used from sync entry points).</summary>
+    private void CancelWaapiTokens(string elementId, List<int> tokens, bool commit)
+    {
+        _ = CancelAsync();
+
+        async Task CancelAsync()
+        {
+            foreach (var token in tokens)
+            {
+                try { await _interop.CancelWaapiAnimationAsync(elementId, token, commit); }
+                catch { /* best-effort */ }
+            }
+        }
+    }
+
+    private static double[] SampleTweenProgress(BmotionTransitionConfig config)
+    {
+        var ease = BmEaseFunctions.Get(config);
+        const int sampleCount = 33;
+        var samples = new double[sampleCount];
+        for (int i = 0; i < sampleCount; i++)
+            samples[i] = ease((double)i / (sampleCount - 1));
+        return samples;
+    }
+
+    /// <summary>
+    /// Simulates the spring on a normalized 0→1 distance (valid for any distance when initial
+    /// velocity is zero - the ODE is linear) and returns the eased-progress samples plus the
+    /// settling duration. Null when the spring doesn't settle within 20 s.
+    /// </summary>
+    private static (double[] Samples, double DurationMs)? SampleSpringProgress(BmotionTransitionConfig config)
+    {
+        var sampling = config.Clone();
+        sampling.Delay = 0;
+        sampling.Repeat = 0;
+        sampling.RepeatInfinite = false;
+        sampling.RepeatDelay = 0;
+
+        double value = 0;
+        BmotionSpringDriver driver;
+        try { driver = new BmotionSpringDriver(0, 1, sampling, v => value = v); }
+        catch { return null; }
+
+        const double stepMs = 1000.0 / 60;
+        const int maxSamples = 20 * 60;
+        var samples = new List<double>(128);
+        double t = 0;
+        bool done = false;
+        for (int i = 0; i < maxSamples && !done; i++)
+        {
+            done = driver.Tick(t);
+            samples.Add(value);
+            t += stepMs;
+        }
+        if (!done || samples.Count < 2) return null;
+        samples[^1] = 1; // land exactly on the target
+        return (samples.ToArray(), (samples.Count - 1) * stepMs);
+    }
+
+    private static string BuildLinearEasing(double[] samples)
+    {
+        var sb = new System.Text.StringBuilder("linear(");
+        for (int i = 0; i < samples.Length; i++)
+        {
+            if (i > 0) sb.Append(", ");
+            sb.Append(Math.Round(samples[i], 4).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        return sb.Append(')').ToString();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Detached value animations (drive BmValue instances - no DOM element)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    private sealed record DetachedAnim(IBmotionAnimationDriver Driver, TaskCompletionSource<bool>? Tcs);
+
+    // Keyed by an owner object (typically the BmValue being driven) so a new animation on
+    // the same value supersedes the previous one, mirroring per-property element animations.
+    private readonly Dictionary<object, DetachedAnim> _detachedAnims = new();
+
+    /// <summary>
+    /// Starts a driver that isn't attached to a DOM element; <paramref name="apply"/> receives
+    /// each interpolated value (typically forwarding into a <see cref="BmValue{T}"/>).
+    /// Supersedes any detached animation already running for <paramref name="key"/>.
+    /// </summary>
+    internal void StartDetached(
+        object key, double from, double to, BmotionTransitionConfig config,
+        Action<double> apply, TaskCompletionSource<bool>? tcs = null)
+    {
+        CancelDetached(key);
+        IBmotionAnimationDriver driver = config.Type switch
+        {
+            BmotionTransitionType.Spring => new BmotionSpringDriver(from, to, config, apply),
+            BmotionTransitionType.Inertia => new BmotionInertiaDriver(from, config, apply),
+            _ => new BmotionTweenDriver(from, to, config, apply),
+        };
+        _detachedAnims[key] = new DetachedAnim(driver, tcs);
+    }
+
+    /// <summary>Cancels the detached animation for <paramref name="key"/>, if any (resolves its task with false).</summary>
+    internal void CancelDetached(object key)
+    {
+        if (_detachedAnims.Remove(key, out var anim))
+        {
+            anim.Driver.Cancel();
+            anim.Tcs?.TrySetResult(false);
+        }
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // rAF loop - ComputeFrame is called synchronously from JS each tick
@@ -413,6 +851,36 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         Dictionary<string, Dictionary<string, string>>? result = null;
         bool anyActive = false;
         List<string>? faulted = null;
+
+        // Detached value animations tick BEFORE the elements: their apply callbacks typically set
+        // BmValues whose subscribers mark element properties dirty, and ticking them first
+        // lets those changes flush to the DOM in this same frame instead of lagging one behind.
+        if (_detachedAnims.Count > 0)
+        {
+            foreach (var (key, anim) in _detachedAnims.ToArray())
+            {
+                // Skip if a re-entrant apply callback replaced or removed this entry already.
+                if (!_detachedAnims.TryGetValue(key, out var current) || !ReferenceEquals(current, anim)) continue;
+                bool done;
+                try
+                {
+                    done = anim.Driver.Tick(timestamp);
+                }
+                catch
+                {
+                    // A faulted detached driver must not take down the rAF tick; drop it.
+                    _detachedAnims.Remove(key);
+                    anim.Tcs?.TrySetResult(false);
+                    continue;
+                }
+                if (done)
+                {
+                    _detachedAnims.Remove(key);
+                    anim.Tcs?.TrySetResult(true);
+                }
+            }
+            if (_detachedAnims.Count > 0) anyActive = true;
+        }
 
         foreach (var (id, state) in _elements)
         {
@@ -543,18 +1011,19 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
-    /// Fire-and-forget loop start that observes (and swallows) any fault. Used by synchronous entry
-    /// points (Set / SetInstant / Complete) so an unsupported-platform throw can't surface as an
+    /// Fire-and-forget flush used by synchronous entry points (Set / SetInstant / Complete):
+    /// kicks the rAF loop on WebAssembly, or drives an instant remote flush on Blazor Server.
+    /// Faults are observed and swallowed so an unsupported-platform throw can't surface as an
     /// unobserved task exception.
     /// </summary>
-    private void KickLoop()
+    private void KickFlush(string elementId, BmotionElementAnimationState state)
     {
-        _ = KickLoopAsync();
+        _ = KickAsync();
 
-        async Task KickLoopAsync()
+        async Task KickAsync()
         {
-            try { await EnsureLoopRunningAsync(); }
-            catch { /* loop start is best-effort here; awaited entry points surface real errors */ }
+            try { await EnsureTickingAsync(elementId, state); }
+            catch { /* flush is best-effort here; awaited entry points surface real errors */ }
         }
     }
 
@@ -568,6 +1037,13 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         foreach (var (_, state) in _elements)
             state.CancelAll();
         _elements.Clear();
+
+        foreach (var (_, anim) in _detachedAnims)
+        {
+            anim.Driver.Cancel();
+            anim.Tcs?.TrySetResult(false);
+        }
+        _detachedAnims.Clear();
 
         // Serialize teardown behind the same gate EnsureLoopRunningAsync/StopLoopInternal use so a
         // disposal can't interleave with an in-flight loop start - otherwise we could dispose
