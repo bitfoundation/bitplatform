@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitRichTextEditor is a native WYSIWYG rich text editor. All component logic lives in C#;
@@ -138,6 +140,11 @@ public partial class BitRichTextEditor : BitComponentBase
 
     // ---- callbacks from JS ----
 
+    // Preserve the callback argument types under trimming: they are only ever produced by the JS
+    // bridge, so nothing in C# statically references their constructors/setters and the trimmer
+    // would otherwise break (facts: constructor parameter names) or silently default (state:
+    // property setters) their deserialization in release builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorContentFacts))]
     [JSInvokable("OnContentChanged")]
     public async Task _OnContentChanged(string html, BitRichTextEditorContentFacts facts)
     {
@@ -158,6 +165,7 @@ public partial class BitRichTextEditor : BitComponentBase
     /// refreshes the cached content facts so count-dependent UI stays accurate, without treating
     /// the change as a user edit (no AssignValue / OnChange).
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorContentFacts))]
     [JSInvokable("OnFactsChanged")]
     public void _OnFactsChanged(BitRichTextEditorContentFacts facts)
     {
@@ -168,6 +176,7 @@ public partial class BitRichTextEditor : BitComponentBase
         }
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorSelectionState))]
     [JSInvokable("OnSelectionChanged")]
     public void _OnSelectionChanged(BitRichTextEditorSelectionState state)
     {
