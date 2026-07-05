@@ -777,6 +777,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         if (DragSnapToOrigin)
         {
+            // End the drag first (momentum off, no constraints) so the engine clears its dragging
+            // state - the same cleanup the non-snap path below gets - before animating back.
+            await Engine.EndDragAsync(_id, velX, velY, momentum: false, constraints: null, axis: null, snapTransition: null);
             var snapT = DragTransition?.ToConfig() ?? new BmotionTransitionConfig
                 { Type = BmotionTransitionType.Spring, Stiffness = 400, Damping = 35 };
             await Engine.AnimateToAsync(_id,

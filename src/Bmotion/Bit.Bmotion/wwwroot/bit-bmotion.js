@@ -237,7 +237,11 @@ export function attachEventListeners(elementId, events, dotnetRef) {
         let keyPressing = false;
         const isTapKey = (e) => e.key === 'Enter' || e.key === ' ';
         const onKeyDown = (e) => {
-            if (!isTapKey(e) || e.repeat || keyPressing) return;
+            if (!isTapKey(e)) return;
+            // Space's default action scrolls the page on non-button elements; suppress it for
+            // every tap-key keydown (including repeats) so a held press can't scroll either.
+            if (e.key === ' ') e.preventDefault();
+            if (e.repeat || keyPressing) return;
             keyPressing = true;
             dotnetRef.invokeMethodAsync('OnPointerDown');
         };

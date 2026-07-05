@@ -76,7 +76,9 @@ public abstract class BmTransition
         if (Delay != other.Delay) return false;
         if (!Nullable.Equals(Repeat, other.Repeat)) return false;
         if (StaggerChildren != other.StaggerChildren || DelayChildren != other.DelayChildren) return false;
-        if (!ReferenceEquals(OnUpdate, other.OnUpdate)) return false;
+        // OnUpdate is deliberately excluded: inline callbacks are recreated on every render and
+        // must not read as a transition change (an animation picks up the freshest delegate when
+        // it actually starts).
         return PropertiesEqual(Properties, other.Properties);
     }
 

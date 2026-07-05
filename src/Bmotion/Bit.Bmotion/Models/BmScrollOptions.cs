@@ -35,7 +35,11 @@ public class BmScrollOptions
     internal object? ToJsObject()
     {
         if (TargetId is null) return null;
-        var offset = Offset is { Length: 2 } ? Offset : ["start end", "end start"];
+        // Surface a malformed Offset early instead of silently substituting the default pair.
+        if (Offset is { Length: not 2 })
+            throw new ArgumentException(
+                $"Scroll Offset must contain exactly 2 entries (progress 0 and 1), got {Offset.Length}.");
+        var offset = Offset ?? ["start end", "end start"];
         return new Dictionary<string, object?>
         {
             ["targetId"] = TargetId,
@@ -58,7 +62,7 @@ public class BmScrollOptions
         "center" => 0.5,
         "end" => 1,
         _ => double.TryParse(edge, System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture, out var v) && double.IsFinite(v)
+                System.Globalization.CultureInfo.InvariantCulture, out var v) && v is >= 0 and <= 1
             ? v
             : throw new ArgumentException(
                 $"Unknown edge '{edge}' in scroll offset '{offset}'. Use start, center, end or a 0-1 number."),

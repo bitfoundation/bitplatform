@@ -190,11 +190,17 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
         if (offload != null)
         {
+            RegisterWaapiPlan(elementId, state, offload.Plan);
             // Compositor playback is supervised in the background; this method stays fire-and-forget.
             _ = SuperviseOffloadAsync(elementId, state, values, transition, offload, tcs);
             return;
         }
 
+        // The awaits above can interleave with a concurrent caller that registered a compositor
+        // plan on the same keys after this call's interrupt pass (see RegisterWaapiPlan, which
+        // closes the same race for the WAAPI branch). Sweep again synchronously so the rAF
+        // drivers started below are the properties' only owner.
+        InterruptWaapiOverlapsSync(elementId, state, values.Keys);
         state.AnimateTo(values, transition, tcs);
         await EnsureTickingAsync(elementId, state);
     }
@@ -215,11 +221,14 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         var offload = await TryBuildWaapiOffloadAsync(state, values, transition);
         if (offload != null)
         {
+            RegisterWaapiPlan(elementId, state, offload.Plan);
             await SuperviseOffloadAsync(elementId, state, values, transition, offload, tcs);
             await tcs.Task;
             return;
         }
 
+        // Same concurrent-plan sweep as AnimateToAsync's rAF branch (see comment there).
+        InterruptWaapiOverlapsSync(elementId, state, values.Keys);
         state.AnimateTo(values, transition, tcs);
         await EnsureTickingAsync(elementId, state);
         await tcs.Task;
@@ -536,6 +545,19 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         await EnsureTickingAsync(elementId, state);
     }
 
+    /// <summary>
+    /// Synchronous variant of <see cref="InterruptWaapiOverlapsAsync"/> for callers that must not
+    /// yield between the sweep and taking ownership of the properties: realizes overlapping plans
+    /// into state inline and cancels them on the JS side fire-and-forget (commit-first, so the
+    /// element holds its current values until the new owner's first write lands).
+    /// </summary>
+    private void InterruptWaapiOverlapsSync(
+        string elementId, BmotionElementAnimationState state, IReadOnlyCollection<string>? keys)
+    {
+        var tokens = state.RealizeWaapiPlans(keys);
+        if (tokens != null) CancelWaapiTokens(elementId, tokens, commit: true);
+    }
+
     private async ValueTask<bool> LinearEasingSupportedAsync()
     {
         if (_linearEasingSupported is null)
@@ -678,9 +700,24 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
-    /// Registers the plan, starts compositor playback, and settles state / the completion
-    /// source when it finishes, is interrupted, or fails to start (falling back to the
-    /// rAF / instant path in that last case).
+    /// Registers a built offload's plan for an element. The AnimateTo* entry points interrupt
+    /// overlapping plans up front, but they then await (offload build, easing probe) before
+    /// registering - so two concurrent callers can both pass that interrupt pass. Sweep and
+    /// cancel any plan that appeared in the meantime synchronously with the registration, so
+    /// two compositor animations never compete for the same properties.
+    /// </summary>
+    private void RegisterWaapiPlan(
+        string elementId, BmotionElementAnimationState state, BmotionElementAnimationState.WaapiPlan plan)
+    {
+        var stale = state.RealizeWaapiPlans(plan.Values.Keys);
+        if (stale != null) CancelWaapiTokens(elementId, stale, commit: false);
+        state.AddWaapiPlan(plan);
+    }
+
+    /// <summary>
+    /// Starts compositor playback for an already-registered plan and settles state / the
+    /// completion source when it finishes, is interrupted, or fails to start (falling back to
+    /// the rAF / instant path in that last case).
     /// </summary>
     private async Task SuperviseOffloadAsync(
         string elementId,
@@ -690,8 +727,6 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         WaapiOffload offload,
         TaskCompletionSource<bool>? tcs)
     {
-        state.AddWaapiPlan(offload.Plan);
-
         bool finished;
         try { finished = await _interop.PlayWaapiAnimationAsync(elementId, offload.Plan.Token, offload.Keyframes, offload.Timing); }
         catch { finished = false; }

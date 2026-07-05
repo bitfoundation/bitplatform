@@ -236,13 +236,16 @@ public class BmApiTests
     // ── BmValue velocity ──────────────────────────────────────────────────
 
     [TestMethod]
-    public async Task Value_TracksVelocity_AndJumpResetsIt()
+    public void Value_TracksVelocity_AndJumpResetsIt()
     {
         var value = Bm.Value(0.0);
+        long nowMs = 1000;
+        value.TimeSource = () => nowMs;
+
         value.SetSync(0);
-        await Task.Delay(30);
+        nowMs += 30;
         value.SetSync(30);
-        Assert.IsTrue(value.GetVelocity() > 0, $"expected positive velocity, got {value.GetVelocity()}");
+        Assert.AreEqual(1000, value.GetVelocity(), 1e-9); // 30 units over 30 ms
 
         value.Jump(0);
         Assert.AreEqual(0, value.GetVelocity());

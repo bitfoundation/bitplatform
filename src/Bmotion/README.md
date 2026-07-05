@@ -179,7 +179,7 @@ OnViewportEnter / OnViewportLeave
     private Bmotion _box = default!;
 
     Task Pulse() => _box.AnimateAsync(Bm.To(scale: 1.2), Bm.Spring(bounce: 0.5)).AsTask();
-    void Freeze() => _box.Pause();          // also: Resume(), SetPlaybackRate(2), Stop(), Set(...)
+    void Freeze() => _box.Pause();          // also: Resume(), SetPlaybackRate(2), Stop(), Set(...), SetAsync(...)
 }
 ```
 
@@ -563,6 +563,7 @@ x.GetVelocity();                                  // units/sec
 x.Jump(0);                                        // set without feeding physics
 
 var angle = x.Transform([0, 200], [0, 360]);      // range mapping
+var label = x.Transform(v => $"{v:0}px");         // arbitrary derivation (useTransform)
 var smooth = Motion.Spring(x, Bm.Spring(stiffness: 120));  // spring follower (useSpring)
 
 await Motion.AnimateAsync(x, 200, Bm.Spring());   // animate the value itself

@@ -18,6 +18,10 @@ public sealed class BmAnimationControls
     private readonly Task _completion;
     private readonly Action _release;
     private int _released;
+    // Serializes the release/claim decision with the engine calls it guards: without it,
+    // SetSpeed could observe _released == 0, lose the CPU, and then touch elements a concurrent
+    // Stop/Complete/natural settlement has already released (and newer animations now own).
+    private readonly object _sync = new();
 
     internal BmAnimationControls(
         IReadOnlyList<string> elementIds, BmotionAnimationEngine engine, Task completion, Action release)
@@ -33,8 +37,11 @@ public sealed class BmAnimationControls
     // finishes) would pin its elements in the engine forever.
     private void ReleaseOnce()
     {
-        if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0)
-            _release();
+        lock (_sync)
+        {
+            if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0)
+                _release();
+        }
     }
 
     /// <summary>Pauses the animation in place (equivalent to <c>Speed = 0</c>).</summary>
@@ -50,9 +57,12 @@ public sealed class BmAnimationControls
     /// </summary>
     public void SetSpeed(double speed)
     {
-        if (System.Threading.Volatile.Read(ref _released) != 0) return;
-        foreach (var id in _elementIds)
-            _engine.SetPlaybackRate(id, speed);
+        lock (_sync)
+        {
+            if (System.Threading.Volatile.Read(ref _released) != 0) return;
+            foreach (var id in _elementIds)
+                _engine.SetPlaybackRate(id, speed);
+        }
     }
 
     /// <summary>
@@ -64,15 +74,18 @@ public sealed class BmAnimationControls
         // Atomically claim ownership: only the caller that flips _released from 0→1 runs the engine
         // side effects. Once released (e.g. a natural finish already settled the completion), the
         // target elements may be owned by newer animations - skip so we don't disturb them.
-        if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
-        try
+        lock (_sync)
         {
-            foreach (var id in _elementIds)
-                _engine.Stop(id, null);
-        }
-        finally
-        {
-            _release();
+            if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
+            try
+            {
+                foreach (var id in _elementIds)
+                    _engine.Stop(id, null);
+            }
+            finally
+            {
+                _release();
+            }
         }
     }
 
@@ -83,15 +96,18 @@ public sealed class BmAnimationControls
     {
         // See Stop(): atomically claim ownership so engine side effects run exactly once and never
         // after a concurrent settlement has handed the elements to newer animations.
-        if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
-        try
+        lock (_sync)
         {
-            foreach (var id in _elementIds)
-                _engine.Complete(id);
-        }
-        finally
-        {
-            _release();
+            if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
+            try
+            {
+                foreach (var id in _elementIds)
+                    _engine.Complete(id);
+            }
+            finally
+            {
+                _release();
+            }
         }
     }
 

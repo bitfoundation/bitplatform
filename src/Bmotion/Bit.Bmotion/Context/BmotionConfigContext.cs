@@ -15,8 +15,9 @@ internal class BmotionConfigContext
     public bool? ReduceMotion { get; set; }
 
     /// <summary>
-    /// Playback rate applied to all animations: 2 = twice as fast, 0.5 = half speed,
-    /// 0 = instant (durations are divided by this rate). Default: 1.
+    /// Playback rate applied to all animations. For rates greater than zero, durations are
+    /// divided by the rate: 2 = twice as fast, 0.5 = half speed. A rate of exactly 0 is
+    /// special-cased to mean instant (animations snap to their target). Default: 1.
     /// <para>
     /// Negative and non-finite (NaN/Infinity) values are coerced to <c>0</c> rather than throwing,
     /// so a bad binding can never crash a render. This matches <see cref="BmotionConfig"/>'s behaviour.

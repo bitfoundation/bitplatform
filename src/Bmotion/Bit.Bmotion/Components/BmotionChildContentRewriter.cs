@@ -319,7 +319,9 @@ internal static class BmotionChildContentRewriter
         }
         sb.Append(markup, cursor, attrRegionEnd - cursor);
 
-        sb.Append(" id=\"").Append(injection.Id).Append('"');
+        // The id can be the consumer-supplied Id parameter - encode it so quotes or other special
+        // characters cannot break out of the attribute.
+        sb.Append(" id=\"").Append(HtmlAttributeEncode(injection.Id)).Append('"');
         // The author's style text is already HTML-encoded (it came from this markup string);
         // encode only the motion part so the merged value stays a valid attribute.
         var motion = injection.MotionStyle is { Length: > 0 } ms ? HtmlAttributeEncode(ms) : null;

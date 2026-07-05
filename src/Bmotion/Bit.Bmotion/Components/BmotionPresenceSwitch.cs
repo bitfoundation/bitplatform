@@ -111,6 +111,10 @@ public sealed class BmotionPresenceSwitch<TItem> : ComponentBase
     private void OnEntryExited(Entry entry)
     {
         if (!entry.Exiting) return; // stale callback from a superseded exit cycle
+        // Clear the flag before removing: Unregister during a child's disposal can raise
+        // AllExitsComplete again for the same entry, and a second callback must not reach the
+        // completion path below twice.
+        entry.Exiting = false;
         _entries.Remove(entry);
 
         if (_hasPending && !_entries.Any(e => e.Exiting))

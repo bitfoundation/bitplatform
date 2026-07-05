@@ -26,6 +26,10 @@ public class BmValue<T> : IDisposable
     private double _velocityPerSec;
     private long _lastSetMs = -1;
 
+    // Millisecond clock behind velocity tracking; injectable so tests can drive the
+    // elapsed-time intervals deterministically instead of sleeping.
+    internal Func<long> TimeSource = static () => Environment.TickCount64;
+
     internal BmValue(string id, T initial)
     {
         _id    = id;
@@ -53,7 +57,7 @@ public class BmValue<T> : IDisposable
     public void Jump(T value)
     {
         _velocityPerSec = 0;
-        _lastSetMs = Environment.TickCount64;
+        _lastSetMs = TimeSource();
         _value = value;
         foreach (var sub in _subscribers.ToArray())
         {
@@ -65,7 +69,7 @@ public class BmValue<T> : IDisposable
     private void TrackVelocity(T oldValue, T newValue)
     {
         if (!_numericTypes.Contains(typeof(T))) return;
-        long now = Environment.TickCount64;
+        long now = TimeSource();
         if (_lastSetMs >= 0)
         {
             double dt = (now - _lastSetMs) / 1000.0;

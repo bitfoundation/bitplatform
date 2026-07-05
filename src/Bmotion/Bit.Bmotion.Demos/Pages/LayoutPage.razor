@@ -39,7 +39,7 @@
     <p>
         Give elements the same <strong>LayoutId</strong> and when one unmounts and another mounts,
         the new one animates (FLIP) from where the old one was - the classic tab-underline idiom.
-        Use <c>Layout="BmLayout.Position"</c> semantics via the transition to avoid scale distortion.
+        Set <c>Layout="BmLayout.Position"</c> to animate position only and avoid scale distortion.
     </p>
 
     <div class="demo-row">
@@ -49,11 +49,14 @@
                 {
                     var t = tab;
                     <div style="position:relative;padding-bottom:6px;cursor:pointer;font-weight:600;color:@(t == _activeTab ? "#fff" : "#888")"
-                         @onclick="@(() => _activeTab = t)">
+                         role="tab" tabindex="0" aria-selected="@(t == _activeTab)"
+                         @onclick="@(() => _activeTab = t)"
+                         @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeTab = t; })">
                         @t
                         @if (t == _activeTab)
                         {
                             <Bmotion LayoutId="tab-underline"
+                                    Layout="BmLayout.Position"
                                     Transition="Bm.Tween(0.3, BmEase.InOut)">
                                 <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:2px;background:linear-gradient(90deg,#6c47ff,#ff4785);" />
                             </Bmotion>
@@ -79,8 +82,10 @@
                 @t
                 @if (t == _activeTab)
                 {
-                    @* Mounts under the newly selected tab and FLIPs from the old tab's position *@
+                    @* Mounts under the newly selected tab and FLIPs from the old tab's position;
+                       Layout="BmLayout.Position" animates position only (no scale distortion) *@
                     <Bmotion LayoutId="tab-underline"
+                             Layout="BmLayout.Position"
                              Transition="Bm.Tween(0.3, BmEase.InOut)">
                         <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#6c47ff;" />
                     </Bmotion>

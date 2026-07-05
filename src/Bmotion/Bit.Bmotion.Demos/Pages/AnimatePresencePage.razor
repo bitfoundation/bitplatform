@@ -121,6 +121,8 @@
     private int _page = 1;
 
     private const string _switchCode = """
+        @using Bit.Bmotion
+
         <BmotionPresenceSwitch Item="_page" Context="pageNumber">
             <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
                      Animate="Bm.To(opacity: 1, x: 0)"

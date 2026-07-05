@@ -156,6 +156,10 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
         _scrollYValue?.SetSync(info.ScrollY);
         if (info.TargetProgress is { } targetProgress)
             _targetProgressValue?.SetSync(targetProgress);
+        else
+            // Keep the motion value consistent with TargetProgressValue's null → 0 convention
+            // instead of leaving a stale last value when tracking reports no target.
+            _targetProgressValue?.SetSync(0);
         if (_onScroll != null)
         {
             // Guard the user callback so a faulting handler can't fault the JS-invokable flow

@@ -275,17 +275,16 @@ internal sealed class BmotionElementAnimationState
         HashSet<string>? driverKeys = completionSource != null ? new HashSet<string>() : null;
         int activeBefore;
 
-        // Blazor Server fallback: no rAF loop exists, so every animation must settle in one
-        // flush tick. Collapse the transition to a zero-duration tween.
-        BmotionTransitionConfig? instant = ForceInstant
-            ? new BmotionTransitionConfig { Type = BmotionTransitionType.Tween, Duration = 0, Delay = 0 }
-            : null;
-
         foreach (var (key, value) in values)
         {
             if (value == null) continue;
-            var perKey = instant
-                ?? transition?.Properties?.GetValueOrDefault(key) ?? transition ?? new BmotionTransitionConfig();
+            var perKey = transition?.Properties?.GetValueOrDefault(key) ?? transition ?? new BmotionTransitionConfig();
+            // Blazor Server fallback: no rAF loop exists, so every animation must settle in one
+            // flush tick. Collapse to a zero-duration tween, but keep the (possibly per-key)
+            // OnUpdate callback so motion-value tracking still observes the snap.
+            if (ForceInstant)
+                perKey = new BmotionTransitionConfig
+                    { Type = BmotionTransitionType.Tween, Duration = 0, Delay = 0, OnUpdate = perKey.OnUpdate };
             // Superseding an in-flight driver for this key interrupts any completion batch that
             // owned it (resolves that batch with false once its remaining keys settle).
             CancelProp(key);
