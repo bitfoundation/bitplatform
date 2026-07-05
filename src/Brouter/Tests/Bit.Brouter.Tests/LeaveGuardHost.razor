@@ -1,0 +1,70 @@
+@* Host for LeaveGuardTests: leave guards at two depths plus a parameterized route, to exercise
+   preventive cancellation, leaf->root ordering, bubbling scope (only deactivated routes fire),
+   and the parameter-change-is-not-a-leave rule. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/a" LeaveGuard="GuardA">
+        <Content><div data-testid="a">a</div></Content>
+    </Broute>
+
+    <Broute Path="/b">
+        <Content><div data-testid="b">b</div></Content>
+    </Broute>
+
+    <Broute Path="/parent" LeaveGuard="GuardParent">
+        <Content>
+            <div data-testid="parent-layout"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/child1" LeaveGuard="GuardChild1">
+                <Content><div data-testid="child1">child1</div></Content>
+            </Broute>
+            <Broute Path="/child2">
+                <Content><div data-testid="child2">child2</div></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    <Broute Path="/users/{id:int}" LeaveGuard="GuardUser">
+        <Content Context="p"><div data-testid="user">user @(p.Get<int>("id"))</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    // While true, GuardA cancels the navigation away from /a.
+    public bool BlockLeavingA { get; set; }
+
+    // When set, GuardA redirects the navigation away from /a to this URL instead.
+    public string? RedirectLeavingATo { get; set; }
+
+    // Every leave-guard firing in order, e.g. "child1", "parent", recorded with ctx.Route's template.
+    public List<string> Fired { get; } = new();
+
+    private ValueTask GuardA(BrouterNavigationContext ctx)
+    {
+        Fired.Add("a");
+        if (RedirectLeavingATo is not null) ctx.Redirect(RedirectLeavingATo);
+        else if (BlockLeavingA) ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask GuardParent(BrouterNavigationContext ctx)
+    {
+        Fired.Add("parent");
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask GuardChild1(BrouterNavigationContext ctx)
+    {
+        Fired.Add("child1");
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask GuardUser(BrouterNavigationContext ctx)
+    {
+        Fired.Add("user");
+        return ValueTask.CompletedTask;
+    }
+}

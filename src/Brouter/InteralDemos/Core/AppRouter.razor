@@ -1,8 +1,10 @@
 ﻿@inject IBrouter brouter
+@inject DemoState demoState
 @implements IDisposable
 
 @code {
     private int _currentCount;
+    private int _dashboardVisits;
 
     private Func<BrouterNavigationContext, ValueTask>? _onNavigatingHandler;
 
@@ -47,11 +49,77 @@
             ctx.Redirect("/403");
         }
     }
+
+    // ===== data-layer demos (see DataPage / DeferredPage / UnstablePage) =====
+
+    // Deliberately slow so the router-level <Navigating> pending UI is visible, and so the
+    // StaleTime cache / link preloading effects are obvious (instant when warm).
+    private async ValueTask<object?> LoadData(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(600, ctx.CancellationToken);
+        return new LoadedInfo(DateTime.Now, ctx.IsRevalidation, ctx.To.GetQuery("page") ?? "1");
+    }
+
+    // Deferred data: only the summary blocks navigation; the details task is returned UNAWAITED
+    // and streams into <BrouterAwait> after the page has revealed.
+    private async ValueTask<object?> LoadDeferred(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(300, ctx.CancellationToken);
+        return new DeferredReport($"Report generated at {DateTime.Now:HH:mm:ss}.", LoadSlowDetailsAsync());
+    }
+
+    private static async Task<string[]> LoadSlowDetailsAsync()
+    {
+        await Task.Delay(1500);
+        return ["42 orders in the last hour", "7 new signups", "0 incidents"];
+    }
+
+    // Error-boundary demo: throws while DemoState.UnstableShouldFail is armed; the route's
+    // ErrorContent renders the failure with a heal-and-retry button.
+    private async ValueTask<object?> LoadUnstable(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(300, ctx.CancellationToken);
+        if (demoState.UnstableShouldFail)
+            throw new InvalidOperationException("The upstream service exploded (simulated).");
+        return $"Fresh data loaded at {DateTime.Now:HH:mm:ss}.";
+    }
+
+    // ===== guards for the new demos =====
+
+    // Leave guard for /editor: while the editor is dirty, cancel preventively - the URL never moves.
+    private ValueTask GuardEditorLeave(BrouterNavigationContext ctx)
+    {
+        if (demoState.IsEditorDirty) ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    // /blocked always cancels - the OutcomesPage uses it to show a Cancelled NavigateAsync result.
+    private ValueTask BlockAlways(BrouterNavigationContext ctx)
+    {
+        ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    // Shared guard on the dashboard's pathless group: one declaration covers every child.
+    private ValueTask CountDashboardVisit(BrouterNavigationContext ctx)
+    {
+        _dashboardVisits++;
+        return ValueTask.CompletedTask;
+    }
+
+    // Lazy route loading hook. This demo has nothing to load lazily, but the wiring shows the
+    // shape: on WebAssembly you would await LazyAssemblyLoader.LoadAssembliesAsync(...) based on
+    // ctx.To.Path and return the assemblies - their @page components are registered within the
+    // SAME navigation, so a deep link into a lazy area just works.
+    private ValueTask<IEnumerable<System.Reflection.Assembly>?> OnNavigate(BrouterNavigationContext ctx)
+        => ValueTask.FromResult<IEnumerable<System.Reflection.Assembly>?>(null);
 }
 
 @* AppAssembly enables attribute-route discovery: components with @page / [Route] (e.g. DiscoveredPage)
-   are matched alongside the hand-declared routes below, without being listed here. *@
-<Brouter NotFound="404" AppAssembly="@GetType().Assembly">
+   are matched alongside the hand-declared routes below, without being listed here.
+   OnNavigateAsync is the lazy route-loading hook (see OnNavigate above). *@
+<Brouter NotFound="404" AppAssembly="@GetType().Assembly" OnNavigateAsync="OnNavigate">
+    <ChildContent>
     <Broute Path="/" RedirectTo="/home" />
 
     <Broute Name="home" Path="/home">
@@ -243,4 +311,122 @@
             </div>
         </Content>
     </Broute>
+
+    @*============================================================================*@
+    @* Data layer: loader + StaleTime cache + revalidation + query updates (DataPage),
+       deferred/streamed data (DeferredPage), error boundary with retry (UnstablePage). *@
+
+    <Broute Name="data" Path="/data" Loader="LoadData" StaleTime="TimeSpan.FromSeconds(30)" Meta="@("Data & caching demo")">
+        <Content><DataPage /></Content>
+    </Broute>
+
+    <Broute Path="/deferred" Loader="LoadDeferred">
+        <Content><DeferredPage /></Content>
+    </Broute>
+
+    <Broute Path="/unstable" Loader="LoadUnstable">
+        <Content><UnstablePage /></Content>
+        <ErrorContent Context="err">
+            <div class="bb-error bb-error-403">
+                <h1>Route failed to load</h1>
+                <p>@err.Exception.Message</p>
+                <button class="btn btn-primary" @onclick="@(async () => { demoState.UnstableShouldFail = false; await err.RetryAsync(); })">
+                    Fix the service &amp; retry
+                </button>
+            </div>
+        </ErrorContent>
+    </Broute>
+
+    @*============================================================================*@
+    @* Navigation control: leave guard (unsaved changes), history entry state,
+       awaited navigation outcomes, and the always-cancelling /blocked target. *@
+
+    <Broute Path="/editor" LeaveGuard="GuardEditorLeave">
+        <Content><EditorPage /></Content>
+    </Broute>
+
+    <Broute Path="/history-state">
+        <Content><HistoryStatePage /></Content>
+    </Broute>
+
+    <Broute Path="/outcomes">
+        <Content><OutcomesPage /></Content>
+    </Broute>
+
+    <Broute Path="/blocked" Guard="BlockAlways">
+        <Content><div>This never renders - the guard always cancels.</div></Content>
+    </Broute>
+
+    @*============================================================================*@
+    @* Keep-alive vs transient: the same stateful component, with and without KeepAlive. *@
+
+    <Broute Path="/sticky" KeepAlive="true">
+        <Content><StickyNotePage KeepAliveDemo="true" /></Content>
+    </Broute>
+
+    <Broute Path="/fleeting">
+        <Content><StickyNotePage KeepAliveDemo="false" /></Content>
+    </Broute>
+
+    @*============================================================================*@
+    @* Named outlets + pathless group: one child route fills two layout regions; the group
+       attaches a shared guard to every dashboard child without adding a URL segment. *@
+
+    <Broute Path="/dashboard">
+        <Content>
+            <div class="bb-intro">
+                <h1>Dashboard (named outlets)</h1>
+                <p class="bb-subtitle">
+                    One child route drives two regions. Entries into this section, counted by the
+                    pathless group's shared guard: <strong>@_dashboardVisits</strong>
+                </p>
+            </div>
+            <nav style="margin-bottom: 1rem; display: flex; gap: .5rem;">
+                <BrouterLink Href="/dashboard/stats" class="btn btn-primary">Stats</BrouterLink>
+                <BrouterLink Href="/dashboard/activity" class="btn btn-primary">Activity</BrouterLink>
+            </nav>
+            <div class="bb-grid">
+                <section class="bb-card">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Main (primary outlet)</h3>
+                    <BrouterOutlet />
+                </section>
+                <section class="bb-card">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Sidebar (named outlet)</h3>
+                    <BrouterOutlet Name="sidebar" />
+                </section>
+            </div>
+        </Content>
+        <ChildContent>
+            <Broute Group Path="" Guard="CountDashboardVisit">
+                <ChildContent>
+                    <Broute Path="/stats">
+                        <Content><p>Stats main content, rendered by the primary outlet.</p></Content>
+                        <ChildContent>
+                            <BrouterView Name="sidebar" Context="p">
+                                <p>Stats filters - a <code>&lt;BrouterView Name="sidebar"&gt;</code> rendered by the same-named outlet.</p>
+                            </BrouterView>
+                        </ChildContent>
+                    </Broute>
+                    <Broute Path="/activity">
+                        <Content><p>Activity main content. This route declares no sidebar view, so the named outlet stays empty.</p></Content>
+                    </Broute>
+                </ChildContent>
+            </Broute>
+        </ChildContent>
+    </Broute>
+    </ChildContent>
+
+    @* Shown while a navigation awaits slow loaders (visible on the first, uncached visit to /data). *@
+    <Navigating>
+        <div class="bb-card"><em>Loading route data…</em></div>
+    </Navigating>
+
+    @* Router-level error boundary: failures on routes without their own ErrorContent land here. *@
+    <ErrorContent Context="err">
+        <div class="bb-error bb-error-403">
+            <h1>Navigation failed</h1>
+            <p>@err.Exception.Message</p>
+            <button class="btn btn-primary" @onclick="@(() => err.RetryAsync())">Retry</button>
+        </div>
+    </ErrorContent>
 </Brouter>

@@ -32,6 +32,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     [Parameter] public RenderFragment<BrouterLocation>? NotFoundContent { get; set; }
 
     /// <summary>
+    /// Router-level error UI: the fallback boundary for commit-phase navigation failures (typically
+    /// a route <see cref="Broute.Loader"/> throwing) when no route in the failed chain declares its
+    /// own <see cref="Broute.ErrorContent"/>. Rendered in place of the routed content with a
+    /// <see cref="BrouterErrorContext"/> (exception, location, <c>RetryAsync()</c>). When neither
+    /// this nor any route boundary exists, failures keep the previous behavior: the old page stays
+    /// visible and only the <see cref="IBrouter.OnError"/> hook observes the error.
+    /// </summary>
+    [Parameter] public RenderFragment<BrouterErrorContext>? ErrorContent { get; set; }
+
+    /// <summary>
     /// Optional "pending navigation" UI, shown while a navigation is awaiting its route
     /// <see cref="Broute.Loader"/>s. Mirrors the built-in <c>Router.Navigating</c>: when a matched
     /// route (or one of its ancestors in the matched chain) has a slow loader, this fragment is
@@ -77,6 +87,20 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// </summary>
     [Parameter] public IEnumerable<Assembly>? AdditionalAssemblies { get; set; }
 
+    /// <summary>
+    /// Async per-navigation hook that runs before route matching, for loading route assemblies on
+    /// demand (the Brouter counterpart of the built-in <c>Router.OnNavigateAsync</c> +
+    /// <c>LazyAssemblyLoader</c> pattern): inspect <c>ctx.To</c>, load what the target needs (e.g.
+    /// <c>LazyAssemblyLoader.LoadAssembliesAsync</c> on WebAssembly), and return the loaded
+    /// assemblies - their <c>@page</c>/<c>[Route]</c> components are scanned and registered
+    /// <em>within the same navigation</em>, so the URL being navigated to can match a page whose
+    /// assembly loaded moments ago. Return null (or already-known assemblies) for no-op. Runs in
+    /// the preventive phase (a slow load keeps the current page visible; combine with
+    /// <see cref="Navigating"/> for pending UI); observe <c>ctx.CancellationToken</c> for
+    /// supersession. A thrown exception fails the navigation closed and surfaces via OnError.
+    /// </summary>
+    [Parameter] public Func<BrouterNavigationContext, ValueTask<IEnumerable<Assembly>?>>? OnNavigateAsync { get; set; }
+
 
     [Inject] private NavigationManager _navManager { get; set; } = default!;
     [Inject] private INavigationInterception _navInterception { get; set; } = default!;
@@ -96,8 +120,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private Assembly[]? _lastAdditionalAssemblies;
     private bool _discoveryComputed;
 
+    // Assemblies handed back by the OnNavigateAsync hook at runtime (lazy loading). Merged into
+    // every discovery scan alongside AppAssembly/AdditionalAssemblies; grows monotonically.
+    private readonly List<Assembly> _runtimeAssemblies = [];
+
     // Prerender -> interactive loader-state bridge (see BroutePrerenderState). Only active when
     // Options.PersistLoaderState is set and a PersistentComponentState is available in the scope.
+    // _loaderStateJsonOptions is non-null only when the consumer supplied a source-generated
+    // resolver (Options.LoaderStateTypeInfoResolver) for trimming/AOT-safe serialization.
+    private System.Text.Json.JsonSerializerOptions? _loaderStateJsonOptions;
     private PersistentComponentState? _persistentState;
     private PersistingComponentStateSubscription _persistSubscription;
     private bool _persistSubscribed;
@@ -143,7 +174,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // before a throw), so a rejected route leaves every set untouched.
         string? templateKey = null;
         List<Broute>? templateHolders = null;
-        if (route.RouteTemplate is not null)
+        // Group routes never match by themselves (GetRouteIndex excludes them), so they can't be
+        // ambiguous with anything - two sibling groups sharing a template is the normal case.
+        if (route.Group is false && route.RouteTemplate is not null)
         {
             templateKey = BuildTemplateCollisionKey(route);
             if (_routesByTemplateKey.TryGetValue(templateKey, out templateHolders))
@@ -194,6 +227,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     internal void UnregisterRoute(Broute route)
     {
         if (_routes.Remove(route) is false) return;
+        // Prune the committed-chain record so leave guards never run against a disposed route
+        // (e.g. a conditionally-rendered <Broute> that was removed while its content was shown).
+        if (Array.IndexOf(_committedChain, route) >= 0)
+        {
+            _committedChain = _committedChain.Where(r => ReferenceEquals(r, route) is false).ToArray();
+        }
         // Keep the name and template sets in lockstep so the freed name/template can be re-registered
         // later. The template key is removed by the exact string it was registered under, not
         // recomputed, so an Options.CaseSensitive flip in between can't strand a stale entry.
@@ -347,6 +386,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         for (int i = 0; i < snapshot.Length; i++)
         {
+            // Pathless grouping routes stay registered (their Matched flag must be reset each
+            // navigation with everyone else's) but never participate in matching: they win or lose
+            // with their children, via the parent chain.
+            if (snapshot[i].Group) continue;
+
             var entry = new RouteEntry(snapshot[i], i);
             var template = snapshot[i].RouteTemplate;
 
@@ -397,6 +441,51 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private bool _noRouteMatched;
     private long _navVersion;
 
+    // The active router-level error boundary state (see RenderNavigationError). Non-null only when a
+    // commit-phase failure bubbled past every route boundary and Brouter.ErrorContent is set; rendered
+    // by BuildRenderTree in place of routed content. Cleared at the start of each navigation.
+    private BrouterErrorContext? _navError;
+
+    // The route chain (root -> leaf) whose content is currently committed to the screen. Consumed by
+    // InvokeLeaveGuardsAsync to determine which routes a pending navigation deactivates. Updated at
+    // every commit outcome: the matched chain on success, the chain down to the boundary on an error
+    // render, and empty on a not-found render. Same single-dispatcher discipline as the other
+    // navigation-state fields above.
+    private Broute[] _committedChain = [];
+
+    // Awaited-navigation bookkeeping (IBrouter.NavigateAsync). At most one navigation outcome is
+    // pending at a time: registering a new one supersedes the old (that IS the Superseded outcome).
+    // Resolution is keyed on the target's absolute URI so a pipeline for some other navigation can
+    // never resolve an awaiter that wasn't asking about it. Same single-dispatcher discipline as
+    // the other navigation-state fields.
+    private TaskCompletionSource<BrouterNavigationOutcome>? _pendingOutcome;
+    private string? _pendingOutcomeUri;
+
+    /// <summary>
+    /// Registers an awaiter for the navigation about to be triggered toward <paramref name="absoluteUri"/>.
+    /// The returned task resolves when the pipeline concludes that navigation (see BrouterNavigationOutcome).
+    /// </summary>
+    internal Task<BrouterNavigationOutcome> RegisterNavigationOutcome(string absoluteUri)
+    {
+        _pendingOutcome?.TrySetResult(BrouterNavigationOutcome.Superseded());
+        // RunContinuationsAsynchronously: resolvers run inside the navigation pipeline on the
+        // renderer dispatcher; awaiter continuations must not run inline there.
+        var tcs = new TaskCompletionSource<BrouterNavigationOutcome>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _pendingOutcome = tcs;
+        _pendingOutcomeUri = absoluteUri;
+        return tcs.Task;
+    }
+
+    // Resolves the pending awaiter when (and only when) it was registered for exactly this target.
+    private void ResolveNavigationOutcome(string targetUri, BrouterNavigationOutcome outcome)
+    {
+        var pending = _pendingOutcome;
+        if (pending is null || string.Equals(_pendingOutcomeUri, targetUri, StringComparison.Ordinal) is false) return;
+        _pendingOutcome = null;
+        _pendingOutcomeUri = null;
+        pending.TrySetResult(outcome);
+    }
+
     // True only while the current navigation is awaiting a route loader and a Navigating fragment is
     // set. Drives the pending-navigation UI emitted by BuildRenderTree. Set and cleared exclusively on
     // the renderer's single-threaded dispatcher inside the navigation pipeline (see the pending-UI
@@ -407,6 +496,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // Registration returned by NavigationManager.RegisterLocationChangingHandler. Disposed on
     // teardown to unhook the preventive guard/redirect/cancel decision (see OnLocationChanging).
     private IDisposable? _locationChangingRegistration;
+
+    // True when the latest committed navigation started a View Transition whose completion is owed
+    // after its render lands. Consumed by OnAfterRenderAsync (see the view-transition handshake in
+    // ProcessNavigationAsync). Same single-dispatcher discipline as the surrounding fields.
+    private bool _pendingViewTransitionCompletion;
 
     // Location whose post-navigation DOM effects (fragment/top scroll, focus) are pending. Staged
     // by ProcessNavigationAsync on a successful commit and consumed by OnAfterRenderAsync after the
@@ -460,12 +554,24 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             _persistentState = _services.GetService<PersistentComponentState>();
             if (_persistentState is not null)
             {
+                if (Options.LoaderStateTypeInfoResolver is not null)
+                {
+                    _loaderStateJsonOptions = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)
+                    {
+                        TypeInfoResolver = Options.LoaderStateTypeInfoResolver,
+                    };
+                }
                 _persistSubscription = _persistentState.RegisterOnPersisting(PersistLoaderStateAsync);
                 _persistSubscribed = true;
             }
         }
 
         _navManager.LocationChanged += NavManagerLocationChanged;
+#if NET10_0_OR_GREATER
+        // .NET 10 not-found contract: app code (or the framework) calls NavigationManager.NotFound()
+        // to signal a missing resource; routers subscribe to OnNotFound and render their fallback.
+        _navManager.OnNotFound += NavManagerOnNotFound;
+#endif
 
         // Establish the initial location synchronously so any code that reads
         // BrouterService.Location before the first navigation pipeline runs sees
@@ -504,9 +610,49 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _lastAdditionalAssemblies = additional;
         _discoveryComputed = true;
 
-        _discoveredRoutes = (AppAssembly is null && (additional is null || additional.Length == 0))
+        // Runtime-loaded assemblies (OnNavigateAsync) join the scan set transparently.
+        var scanSet = additional;
+        if (_runtimeAssemblies.Count > 0)
+        {
+            scanSet = additional is null || additional.Length == 0
+                ? _runtimeAssemblies.ToArray()
+                : additional.Concat(_runtimeAssemblies).Distinct().ToArray();
+        }
+
+        _discoveredRoutes = (AppAssembly is null && (scanSet is null || scanSet.Length == 0))
             ? []
-            : BrouteScanner.Discover(AppAssembly, additional);
+            : BrouteScanner.Discover(AppAssembly, scanSet);
+    }
+
+    /// <summary>
+    /// Runs the <see cref="OnNavigateAsync"/> hook for a pending navigation and, when it returns
+    /// new assemblies, folds them into route discovery and yields one render so the new synthetic
+    /// &lt;Broute&gt;s register - all before matching runs, so the very navigation that triggered
+    /// the load can match a freshly-loaded page.
+    /// </summary>
+    private async ValueTask RunOnNavigateHookAsync(BrouterNavigationContext ctx)
+    {
+        if (OnNavigateAsync is null) return;
+
+        var assemblies = await OnNavigateAsync(ctx);
+        if (assemblies is null) return;
+
+        var added = false;
+        foreach (var assembly in assemblies)
+        {
+            if (assembly is null || _runtimeAssemblies.Contains(assembly)) continue;
+            _runtimeAssemblies.Add(assembly);
+            added = true;
+        }
+        if (added is false) return;
+
+        // Recompute discovery with the grown runtime set, then let the renderer flush once so the
+        // new synthetic <Broute> children run OnInitialized and register - the same yield-to-register
+        // technique the initial mount uses (see OnInitializedAsync).
+        _discoveryComputed = false;
+        RefreshDiscoveredRoutesIfNeeded();
+        StateHasChanged();
+        await Task.Yield();
     }
 
     private static bool SameAssemblies(Assembly[]? a, Assembly[]? b)
@@ -536,7 +682,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         foreach (var kv in _loaderStateToPersist)
         {
-            state.PersistAsJson(kv.Key, BroutePrerenderState.Capture(kv.Value));
+            // A null capture means the value wasn't serializable under the active resolver/options;
+            // skip it so the loader simply re-runs on the interactive pass.
+            var captured = BroutePrerenderState.Capture(kv.Value, _loaderStateJsonOptions);
+            if (captured is not null)
+            {
+                state.PersistAsJson(kv.Key, captured);
+            }
         }
 
         return Task.CompletedTask;
@@ -557,7 +709,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         var key = BroutePrerenderState.MakeKey(to.Path, to.Query, chainIndex);
         if (state.TryTakeFromJson<PersistedLoaderState>(key, out var persisted) is false) return false;
 
-        return BroutePrerenderState.TryRestore(persisted, out value);
+        return BroutePrerenderState.TryRestore(persisted, out value, _loaderStateJsonOptions);
     }
 
     protected override async Task OnInitializedAsync()
@@ -612,6 +764,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             catch (InvalidOperationException) { /* interop unavailable during prerender */ }
             catch (TaskCanceledException) { /* component disposed mid-call */ }
 
+            // Arm the always-on external-navigation confirmation once interactive (the JS side is
+            // idempotent; runtime toggling goes through IBrouter.SetConfirmExternalNavigationAsync).
+            if (Options.ConfirmExternalNavigation)
+            {
+                await _brouterService.SetConfirmExternalNavigationAsync(true);
+            }
+
             // Register the preventive navigation handler now that the runtime is interactive.
             // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
             // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
@@ -634,6 +793,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         if (pending is not null)
         {
             await _brouterService.ApplyNavigationEffectsAsync(pending);
+        }
+
+        // Complete the navigation's View Transition after the effects above, so the incoming
+        // snapshot the browser animates to already reflects the final scroll/focus state.
+        if (_pendingViewTransitionCompletion)
+        {
+            _pendingViewTransitionCompletion = false;
+            await _brouterService.CompleteViewTransitionAsync();
         }
     }
 
@@ -722,6 +889,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             {
                 b.AddContent(3, Navigating);
             }
+
+            // Router-level error boundary. Set only when a commit-phase failure found no route-level
+            // ErrorContent to bubble to (see RenderNavigationError); the matched chain is unmatched at
+            // that point, so this fragment is what the user sees in place of the routed content.
+            if (_navError is not null && ErrorContent is not null)
+            {
+                b.AddContent(4, ErrorContent(_navError));
+            }
         }));
         builder.CloseComponent();
     }
@@ -788,6 +963,90 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
     }
 
+#if NET10_0_OR_GREATER
+    // True while Brouter itself is calling NavigationManager.NotFound() to propagate a router-level
+    // "no route matched" to the framework (so static SSR responds with HTTP 404 instead of a 200
+    // carrying fallback HTML). Our own OnNotFound event handler must no-op for that call: the
+    // pipeline is already rendering the fallback, and reacting again would double-handle it.
+    private bool _raisingFrameworkNotFound;
+
+    /// <summary>
+    /// Whether the component is being rendered by an interactive renderer. Unknown hosts (unit-test
+    /// renderers that don't populate <c>RendererInfo</c>) are treated as interactive, which keeps the
+    /// framework-404 propagation (a static-SSR-only concern) switched off there.
+    /// </summary>
+    private bool IsInteractiveRuntime
+    {
+        get
+        {
+            try { return RendererInfo.IsInteractive; }
+            catch (InvalidOperationException) { return true; }
+        }
+    }
+
+    /// <summary>
+    /// Handles <c>NavigationManager.OnNotFound</c> (.NET 10): application code called
+    /// <c>NavigationManager.NotFound()</c> to report a missing resource (e.g. a page whose entity
+    /// lookup failed). Brouter takes over rendering: it fires its own <see cref="OnNotFound"/> hook,
+    /// then either redirects to <see cref="NotFound"/> or renders <see cref="NotFoundContent"/> in
+    /// place, and signals the framework via <c>NotFoundEventArgs.Path</c> that the rendering is
+    /// handled (mirroring the built-in Router's contract).
+    /// </summary>
+    private void NavManagerOnNotFound(object? sender, NotFoundEventArgs args)
+    {
+        if (_raisingFrameworkNotFound) return;
+
+        // Signal "handled" synchronously (the framework reads args after the event returns). Only
+        // claim it when this Brouter actually has a fallback to show; otherwise leave the args
+        // untouched so the framework's own not-found handling (status codes / re-execution) runs.
+        if (string.IsNullOrEmpty(NotFound) is false)
+        {
+            args.Path = NotFound;
+        }
+        else if (NotFoundContent is not null)
+        {
+            args.Path = CurrentLocation.Path;
+        }
+        else
+        {
+            return;
+        }
+
+        _ = HandleAppNotFoundAsync();
+    }
+
+    // Async continuation of NavManagerOnNotFound, dispatched onto the renderer like the
+    // LocationChanged handler. Exceptions surface through OnError, never out of the event.
+    private async Task HandleAppNotFoundAsync()
+    {
+        var location = CurrentLocation;
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                // Unmatch the currently rendered chain so the fallback replaces the page content -
+                // the URL deliberately stays put (the resource at this URL is what's missing).
+                foreach (var r in GetRoutesSnapshot()) r.Matched = false;
+                _noRouteMatched = true;
+
+                if (OnNotFound is not null) await OnNotFound(location);
+
+                if (string.IsNullOrEmpty(NotFound) is false && IsSamePath(location.Path, NotFound) is false)
+                {
+                    NavigateInternal(NotFound);
+                    return;
+                }
+
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            await SafeInvokeOnError(location, location, ex);
+        }
+    }
+#endif
+
     /// <summary>
     /// Preventive navigation decision. Registered via <c>NavigationManager.RegisterLocationChangingHandler</c>
     /// so it runs BEFORE the URL commits to history. Runs the OnNavigating hooks and route guards for the
@@ -819,8 +1078,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         try
         {
             // The URL has NOT committed yet, so resolve the pending target rather than
-            // NavigationManager.Uri (which still holds the current location).
-            to = ComputeLocation(_navManager.ToAbsoluteUri(context.TargetLocation).ToString());
+            // NavigationManager.Uri (which still holds the current location). The pending entry's
+            // history state likewise comes from the changing context, not the NavigationManager.
+            to = ComputeLocation(_navManager.ToAbsoluteUri(context.TargetLocation).ToString(), context.HistoryEntryState);
         }
         catch (Exception ex) when (ex is ArgumentException or UriFormatException or InvalidOperationException)
         {
@@ -839,6 +1099,21 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         try
         {
+            // Lazy route loading first: the target may live in an assembly that isn't loaded yet,
+            // and everything below (leave-guard staying-set, matching, guards) needs the final
+            // route set to reason correctly.
+            await RunOnNavigateHookAsync(ctx);
+            if (token.IsCancellationRequested) return;
+            if (ApplyPreventiveDecision(context, ctx)) return;
+
+            // Leave guards run first (Vue's beforeRouteLeave / Angular's CanDeactivate ordering):
+            // the routes being deactivated get the first chance to veto, before global hooks and
+            // any enter guards on the target.
+            var leaveOk = await InvokeLeaveGuardsAsync(to, ctx);
+            if (token.IsCancellationRequested) return;
+            if (ApplyPreventiveDecision(context, ctx)) return;
+            if (leaveOk is false) return; // superseded inside the leave chain
+
             await service.InvokeOnNavigating(ctx);
             if (token.IsCancellationRequested) return;
             if (ApplyPreventiveDecision(context, ctx)) return;
@@ -856,6 +1131,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 if (string.IsNullOrEmpty(NotFound) is false && IsSamePath(to.Path, NotFound) is false)
                 {
                     context.PreventNavigation();
+                    ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.NotFound());
                     NavigateInternal(NotFound);
                     return;
                 }
@@ -877,6 +1153,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (winner.RedirectTo is not null)
             {
                 context.PreventNavigation();
+                ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.Redirected(winner.RedirectTo));
                 NavigateInternal(winner.RedirectTo);
                 return;
             }
@@ -896,6 +1173,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // A guard / OnNavigating hook threw. Fail closed: block the navigation rather than
             // committing into a state whose authorization never completed, and surface the error.
             context.PreventNavigation();
+            ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.Failed(ex));
             await SafeInvokeOnError(from, to, ex);
         }
     }
@@ -910,6 +1188,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         if (ctx.RedirectUrl is not null)
         {
             context.PreventNavigation();
+            // Resolve the awaited outcome BEFORE triggering the redirect: the redirect's own
+            // pipeline starts (synchronously on some hosts) and would otherwise supersede the
+            // still-pending awaiter of the navigation we're concluding here.
+            ResolveNavigationOutcome(ctx.To.FullUri, BrouterNavigationOutcome.Redirected(ctx.RedirectUrl));
             NavigateInternal(ctx.RedirectUrl);
             return true;
         }
@@ -917,6 +1199,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         if (ctx.IsCancelled)
         {
             context.PreventNavigation();
+            ResolveNavigationOutcome(ctx.To.FullUri, BrouterNavigationOutcome.Cancelled());
             return true;
         }
 
@@ -970,12 +1253,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Pure: builds a <see cref="BrouterLocation"/> from the current <c>NavigationManager.Uri</c>.
-    /// Does not mutate <see cref="CurrentLocation"/>. Never throws: an off-base URL or other
-    /// malformed input is normalized to an empty-path location so the navigation pipeline can
-    /// run and surface the issue through NotFound / OnError instead of crashing the handler.
+    /// Pure: builds a <see cref="BrouterLocation"/> from the current <c>NavigationManager.Uri</c>
+    /// (and the current entry's <c>HistoryEntryState</c>). Does not mutate
+    /// <see cref="CurrentLocation"/>. Never throws: an off-base URL or other malformed input is
+    /// normalized to an empty-path location so the navigation pipeline can run and surface the
+    /// issue through NotFound / OnError instead of crashing the handler.
     /// </summary>
-    private BrouterLocation ComputeLocation() => ComputeLocation(_navManager.Uri);
+    private BrouterLocation ComputeLocation() => ComputeLocation(_navManager.Uri, _navManager.HistoryEntryState);
 
     /// <summary>
     /// Pure: builds a <see cref="BrouterLocation"/> from an arbitrary absolute URI. Used by the
@@ -983,8 +1267,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// pending target URL (from <c>LocationChangingContext.TargetLocation</c>) rather than the still
     /// current <c>NavigationManager.Uri</c>. Shares all normalization with the no-arg overload so a
     /// location computed during the "changing" phase is identical to the one recomputed after commit.
+    /// <paramref name="historyState"/> is the history-entry state travelling with the navigation
+    /// (from <c>NavigationManager.HistoryEntryState</c> after commit, or
+    /// <c>LocationChangingContext.HistoryEntryState</c> for a pending target).
     /// </summary>
-    private BrouterLocation ComputeLocation(string uri)
+    private BrouterLocation ComputeLocation(string uri, string? historyState = null)
     {
         // ToBaseRelativePath throws ArgumentException if the current Uri is not within
         // NavigationManager.BaseUri (base href misconfigured, programmatic NavigateTo to an
@@ -998,7 +1285,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
         catch (ArgumentException)
         {
-            return new BrouterLocation(uri, "/", [], "", "");
+            return new BrouterLocation(uri, "/", [], "", "", historyState: historyState);
         }
 
         var hashIndex = raw.IndexOf('#');
@@ -1042,7 +1329,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             catch (UriFormatException) { /* keep the raw, still-escaped segment */ }
         }
 
-        return new BrouterLocation(uri, path, rawSegments, query, hash, hasTrailingSlash);
+        return new BrouterLocation(uri, path, rawSegments, query, hash, hasTrailingSlash, historyState);
     }
 
     // Cache the most recently-computed normalization. NotFound is typically a constant per
@@ -1149,6 +1436,29 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType };
         var service = _brouterService;
 
+        // Awaited-navigation bookkeeping: capture the awaiter this pipeline is responsible for (the
+        // one registered for exactly this target), and supersede any pending awaiter for a DIFFERENT
+        // target - a pipeline for another URL starting is precisely what "superseded" means for it.
+        var myOutcome = string.Equals(_pendingOutcomeUri, to.FullUri, StringComparison.Ordinal) ? _pendingOutcome : null;
+        if (myOutcome is null && _pendingOutcome is not null)
+        {
+            var stale = _pendingOutcome;
+            _pendingOutcome = null;
+            _pendingOutcomeUri = null;
+            stale.TrySetResult(BrouterNavigationOutcome.Superseded());
+        }
+
+        // A fresh navigation supersedes any previously rendered error boundary; if it fails too,
+        // RenderNavigationError re-establishes the right one for the new failure.
+        _navError = null;
+
+        // View-transition state for THIS pipeline: started = JS snapshotted the outgoing DOM and
+        // holds an open update promise; staged = the success path scheduled its completion for
+        // OnAfterRenderAsync. The finally block completes a started-but-unstaged transition so a
+        // failed/superseded navigation can never leave the browser holding a frozen snapshot.
+        var viewTransitionStarted = false;
+        var viewTransitionStaged = false;
+
         try
         {
             // Remember where the page we're leaving was scrolled to, keyed by its URL, so a later
@@ -1168,6 +1478,20 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // side effects.
             if (decisionAlreadyMade is false)
             {
+                // Lazy route loading for navigations the preventive phase never saw (notably the
+                // initial load, where a deep link may target a lazily-loaded page).
+                await RunOnNavigateHookAsync(ctx);
+                if (HandleSideEffects(ctx, from)) return;
+                if (token.IsCancellationRequested || version != _navVersion) return;
+
+                // Leave guards for navigations the preventive phase never saw (initial load never has
+                // a committed chain, but a forceLoad-less nav that outran interception does). On this
+                // reactive path a cancel restores the URL via HandleSideEffects instead of preventing it.
+                var leaveOk = await InvokeLeaveGuardsAsync(to, ctx);
+                if (HandleSideEffects(ctx, from)) return;
+                if (token.IsCancellationRequested || version != _navVersion) return;
+                if (leaveOk is false) return;
+
                 await service.InvokeOnNavigating(ctx);
                 if (HandleSideEffects(ctx, from)) return;
                 if (token.IsCancellationRequested || version != _navVersion) return;
@@ -1183,8 +1507,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // the commit phase (never the preventive changing phase): blanking Matched before the URL
             // commits could unrender the current route while a guard is still deciding. No render can
             // interleave between here and the SetMatched below (no StateHasChanged until the end), so
-            // the reset is invisible to the user.
-            foreach (var r in routesSnapshot) r.Matched = false;
+            // the reset is invisible to the user. CurrentError travels with Matched: a route that was
+            // an error boundary for the previous navigation must not re-render stale error UI when a
+            // later navigation matches it again.
+            foreach (var r in routesSnapshot)
+            {
+                r.Matched = false;
+                r.CurrentError = null;
+            }
 
             // Match is pure (SelectWinner never mutates a route), so the same selection runs in both
             // the changing and commit phases and yields the same winner for a stable route set.
@@ -1193,6 +1523,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (winnerMatch is null)
             {
                 _noRouteMatched = true;
+                // Nothing routed is on screen once the fallback renders below; leave guards of the
+                // previous chain already ran for this navigation. Either way this navigation's
+                // awaited outcome is NotFound (resolved before any NotFound redirect fires).
+                _committedChain = [];
+                ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.NotFound());
 
                 // OnNotFound + the preventive NotFound redirect already ran in the changing phase
                 // when decisionAlreadyMade is true; only run them here for the full-pipeline path.
@@ -1220,6 +1555,25 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         }
                     }
                 }
+#if NET10_0_OR_GREATER
+                // During static SSR/prerender an unmatched URL must produce an HTTP 404 response, not
+                // a 200 whose body happens to contain fallback HTML (an SEO/correctness bug).
+                // NavigationManager.NotFound() is the framework's channel for that status code (and it
+                // drives UseStatusCodePagesWithReExecute re-execution when configured). Interactive
+                // renderers show the fallback UI below instead - there is no response status to set.
+                if (decisionAlreadyMade is false && IsInteractiveRuntime is false)
+                {
+                    try
+                    {
+                        _raisingFrameworkNotFound = true;
+                        _navManager.NotFound();
+                    }
+                    finally
+                    {
+                        _raisingFrameworkNotFound = false;
+                    }
+                }
+#endif
                 StateHasChanged();
                 return;
             }
@@ -1257,6 +1611,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // when Guard is also set.
                 if (winner.RedirectTo is not null)
                 {
+                    ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.Redirected(winner.RedirectTo));
                     NavigateInternal(winner.RedirectTo);
                     return;
                 }
@@ -1309,10 +1664,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // navigation's data should be persisted at the end of prerender.
             if (_persistentState is not null) _loaderStateToPersist.Clear();
 
-            // First pass: restore prerendered results and collect the loaders that still need to
-            // run. The chain index is carried alongside each node because it is part of the
-            // persistence key.
+            // First pass: restore prerendered results, consult the stale-while-revalidate cache, and
+            // collect the loaders that still need to run. The chain index is carried alongside each
+            // node because it is part of the persistence key.
             List<(Broute Node, int ChainIndex)> pendingLoaders = [];
+            var staleServed = false;
             for (int chainIndex = 0; chainIndex < matchedChain.Count; chainIndex++)
             {
                 var node = matchedChain[chainIndex];
@@ -1321,10 +1677,35 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // Prerender bridge: if this loader already ran server-side and its result was persisted,
                 // restore it and skip the fetch. The key is derived from the URL + chain position, which
                 // are identical across the prerender and interactive passes, so restoration lines up.
+                // Restored values also seed the cache so a later in-SPA return can reuse them.
                 if (TryRestoreLoaderState(to, chainIndex, out var restored))
                 {
                     node.LoadedData = restored;
+                    CacheLoaderResult(node, to, restored);
                     continue;
+                }
+
+                // SWR cache: a fresh entry skips the loader; a stale one is served immediately with a
+                // background refresh (Options.StaleReloadMode.Background) or treated as a miss
+                // (Blocking). Preload-produced entries are readable even without a configured
+                // StaleTime (see BrouterLoaderCache.TryGet).
+                if (service.LoaderCache.TryGet(
+                        BrouterLoaderCache.MakeKey(node.FullTemplate, to),
+                        EffectiveStaleTime(node), Options.PreloadStaleTime, Options.LoaderCacheGcTime,
+                        out var cached, out var isStale))
+                {
+                    if (isStale is false)
+                    {
+                        node.LoadedData = cached;
+                        continue;
+                    }
+                    if (Options.StaleReloadMode == BrouterStaleReloadMode.Background)
+                    {
+                        node.LoadedData = cached;
+                        staleServed = true;
+                        continue;
+                    }
+                    // Blocking mode: stale counts as a miss - run the loader below.
                 }
 
                 pendingLoaders.Add((node, chainIndex));
@@ -1394,6 +1775,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         if (error is not null)
                         {
                             await service.InvokeOnError(ctx, error);
+                            if (token.IsCancellationRequested || version != _navVersion) return;
+                            RenderNavigationError(node, ctx, error);
                             return;
                         }
 
@@ -1401,6 +1784,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         if (token.IsCancellationRequested || version != _navVersion) return;
 
                         node.LoadedData = loaded;
+                        CacheLoaderResult(node, to, loaded);
 
                         // Stage the result for persistence. It is written to PersistentComponentState
                         // only if the RegisterOnPersisting callback fires (i.e. during prerender);
@@ -1437,6 +1821,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         catch (Exception ex)
                         {
                             await service.InvokeOnError(ctx, ex);
+                            if (token.IsCancellationRequested is false && version == _navVersion)
+                            {
+                                RenderNavigationError(node, ctx, ex);
+                            }
                             return;
                         }
 
@@ -1444,6 +1832,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         if (token.IsCancellationRequested || version != _navVersion) return;
 
                         node.LoadedData = loaded;
+                        CacheLoaderResult(node, to, loaded);
 
                         // Stage the result for persistence. It is written to PersistentComponentState
                         // only if the RegisterOnPersisting callback fires (i.e. during prerender);
@@ -1456,11 +1845,25 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 }
             }
 
+            // View transition: snapshot the outgoing DOM now - after loaders (so the snapshot isn't
+            // held across arbitrary awaits) and immediately before the renders below mutate the page.
+            // The completion (which lets the browser animate to the new state) runs in
+            // OnAfterRenderAsync once the new DOM is committed.
+            if (Options.ViewTransitions)
+            {
+                viewTransitionStarted = await service.BeginViewTransitionAsync();
+                if (token.IsCancellationRequested || version != _navVersion) return;
+            }
+
             // Loaders are done: hide the pending-navigation UI. SetMatched marks the whole chain and
             // issues one render request at its topmost route, which renders the now-matched route in
             // the pending UI's place, so clearing the flag first avoids showing both at once.
             _navigating = false;
             winner.SetMatched();
+
+            // Record what is now on screen so the next navigation's leave guards know which routes
+            // they would deactivate.
+            _committedChain = matchedChain.ToArray();
 
             if (OnMatch is not null) await OnMatch(winner);
             // Each await below can yield long enough for a newer navigation to start. If that
@@ -1479,6 +1882,24 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             _pendingEffectsLocation = to;
 
             StateHasChanged();
+
+            // Hand the open transition to OnAfterRenderAsync: it completes once the render above has
+            // been applied to the DOM, which is exactly when the browser should snapshot the new state.
+            if (viewTransitionStarted)
+            {
+                viewTransitionStaged = true;
+                _pendingViewTransitionCompletion = true;
+            }
+
+            ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.Success());
+
+            // Stale-while-revalidate: some chain node rendered a stale cached result above - kick
+            // off the background refresh now that the (stale) content is committed. Revalidation
+            // re-runs the chain's loaders, updates the cache and re-renders with fresh data.
+            if (staleServed)
+            {
+                _ = RevalidateAsync();
+            }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -1494,6 +1915,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         catch (Exception ex)
         {
             await service.InvokeOnError(ctx, ex);
+            // Route the failure to an error boundary too (guard/OnMatch/hook errors land here; ctx.Route
+            // carries the winner when matching got that far, so bubbling starts at the right depth).
+            // Guarded by version so a superseded pipeline can't paint an error over the newer navigation.
+            if (token.IsCancellationRequested is false && version == _navVersion)
+            {
+                RenderNavigationError(ctx.Route, ctx, ex);
+            }
         }
         finally
         {
@@ -1505,6 +1933,28 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             {
                 _navigating = false;
                 StateHasChanged();
+            }
+
+            // A started transition that never made it to the success staging (loader error, guard
+            // side-effects, supersession) is released immediately: the browser must not sit on the
+            // old-page snapshot waiting for a completion that will never come.
+            if (viewTransitionStarted && viewTransitionStaged is false)
+            {
+                await service.CompleteViewTransitionAsync();
+            }
+
+            // A superseded pipeline resolves its own awaiter (a newer same-target registration was
+            // already resolved by RegisterNavigationOutcome, making this TrySetResult a no-op; the
+            // store is only cleared when it still points at OUR awaiter, so a newer registration is
+            // never clobbered).
+            if (myOutcome is not null && (token.IsCancellationRequested || version != _navVersion))
+            {
+                if (ReferenceEquals(_pendingOutcome, myOutcome))
+                {
+                    _pendingOutcome = null;
+                    _pendingOutcomeUri = null;
+                }
+                myOutcome.TrySetResult(BrouterNavigationOutcome.Superseded());
             }
 
             // Dispose our CTS exactly when it can no longer be observed by any other path:
@@ -1521,16 +1971,360 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>The freshness window this route's loader results cache under, or null for "no caching".</summary>
+    private TimeSpan? EffectiveStaleTime(Broute node) => node.StaleTime ?? Options.DefaultLoaderStaleTime;
+
+    /// <summary>
+    /// Speculatively runs the loaders of the route chain that <paramref name="url"/> would match and
+    /// stores the results in the SWR cache, so an actual navigation there finds warm data (see
+    /// <see cref="BrouterLink.Preload"/>). Guards do NOT run and nothing renders; loaders observe
+    /// <see cref="BrouterNavigationContext.IsPreload"/>. Nodes whose cache entry is still fresh are
+    /// skipped, so repeated hover-triggers don't refetch. Failures are swallowed - a speculative
+    /// fetch failing must neither surface error UI nor fire OnError; the real navigation will run
+    /// the loader again and handle the error through the normal pipeline.
+    /// </summary>
+    internal Task PreloadAsync(string url) => InvokeAsync(() => PreloadCoreAsync(url).AsTask());
+
+    private async ValueTask PreloadCoreAsync(string url)
+    {
+        BrouterLocation to;
+        try
+        {
+            to = ComputeLocation(_navManager.ToAbsoluteUri(url).ToString());
+        }
+        catch (Exception ex) when (ex is ArgumentException or UriFormatException or InvalidOperationException)
+        {
+            return; // malformed target; the real navigation will surface it properly
+        }
+
+        var match = SelectWinner(to);
+        if (match is null) return;
+
+        var chain = new List<Broute>();
+        for (var node = match.Value.Route; node is not null; node = node.Parent) chain.Add(node);
+        chain.Reverse();
+
+        var ctx = new BrouterNavigationContext(CurrentLocation, to, CancellationToken.None)
+        {
+            NavigationType = BrouterNavigationType.Push,
+            IsPreload = true,
+            Route = match.Value.Route,
+            Parameters = new BrouterRouteParameters(match.Value.Parameters),
+        };
+
+        foreach (var node in chain)
+        {
+            if (node.Loader is null) continue;
+
+            var key = BrouterLoaderCache.MakeKey(node.FullTemplate, to);
+            // A still-fresh entry (from a previous preload or a committed navigation) needs no work.
+            if (_brouterService.LoaderCache.TryGet(
+                    key, EffectiveStaleTime(node) ?? Options.PreloadStaleTime,
+                    Options.PreloadStaleTime, Options.LoaderCacheGcTime,
+                    out _, out var isStale) && isStale is false)
+            {
+                continue;
+            }
+
+            object? loaded;
+            try
+            {
+                loaded = await node.Loader(ctx);
+            }
+            catch
+            {
+                // Speculative fetch failed; the real navigation will re-run and report it.
+                continue;
+            }
+
+            CacheLoaderResult(node, to, loaded, fromPreload: true);
+        }
+    }
+
+    /// <summary>
+    /// Stores a loader result in the SWR cache. Navigation/revalidation results are only stored for
+    /// routes that participate in caching (an effective StaleTime); preload results always store,
+    /// marked so lookups judge them against <see cref="BrouterOptions.PreloadStaleTime"/>.
+    /// </summary>
+    private void CacheLoaderResult(Broute node, BrouterLocation to, object? value, bool fromPreload = false)
+    {
+        if (fromPreload is false && EffectiveStaleTime(node) is null) return;
+        _brouterService.LoaderCache.Set(
+            BrouterLoaderCache.MakeKey(node.FullTemplate, to), value, Options.MaxLoaderCacheEntries, fromPreload);
+    }
+
+    /// <summary>
+    /// Runs the <see cref="Broute.LeaveGuard"/>s of every currently committed route that the pending
+    /// navigation to <paramref name="to"/> would deactivate, leaf -> root (children veto before their
+    /// parents, mirroring Angular's CanDeactivate order). A route that stays matched under the new
+    /// URL - same route instance in both chains, e.g. only a parameter or a descendant changed - is
+    /// not "left" and its guard does not fire. Returns false when a guard cancelled/redirected (the
+    /// decision is on <paramref name="ctx"/> for the caller to apply) or the navigation was
+    /// superseded; true to continue the pipeline.
+    /// </summary>
+    private async ValueTask<bool> InvokeLeaveGuardsAsync(BrouterLocation to, BrouterNavigationContext ctx)
+    {
+        var committed = _committedChain;
+        if (committed.Length == 0) return true;
+
+        var anyLeaveGuard = false;
+        foreach (var node in committed)
+        {
+            if (node.LeaveGuard is not null) { anyLeaveGuard = true; break; }
+        }
+        if (anyLeaveGuard is false) return true;
+
+        // Which committed routes survive the new URL? Match it (SelectWinner is pure, so this is
+        // safe pre-commit) and collect the new chain; committed routes present in it are updated,
+        // not left. A null match means everything is being left.
+        HashSet<Broute>? staying = null;
+        if (SelectWinner(to) is { } newMatch)
+        {
+            staying = [];
+            for (var node = newMatch.Route; node is not null; node = node.Parent) staying.Add(node);
+        }
+
+        for (var i = committed.Length - 1; i >= 0; i--)
+        {
+            var node = committed[i];
+            if (node.LeaveGuard is null) continue;
+            if (staying is not null && staying.Contains(node)) continue;
+
+            if (ctx.CancellationToken.IsCancellationRequested) return false;
+            // Expose the route being left for the duration of its own guard call only.
+            ctx.Route = node;
+            try
+            {
+                await node.LeaveGuard(ctx);
+            }
+            finally
+            {
+                ctx.Route = null;
+            }
+            if (ctx.CancellationToken.IsCancellationRequested) return false;
+            if (ctx.IsCancelled || ctx.RedirectUrl is not null) return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Routes a commit-phase navigation failure to the nearest error boundary: walking leaf -> root
+    /// from <paramref name="origin"/> (the failed route, when known), the first route with an
+    /// <see cref="Broute.ErrorContent"/> renders it in place of its content - ancestor layouts above
+    /// the boundary keep rendering. With no route boundary in the chain, the router-level
+    /// <see cref="ErrorContent"/> renders instead. With neither, this is a no-op and the previous
+    /// page simply stays visible (the pre-boundary behavior). The <see cref="IBrouter.OnError"/>
+    /// hook has already fired by the time this runs - boundaries are UI, not observability.
+    /// </summary>
+    private void RenderNavigationError(Broute? origin, BrouterNavigationContext ctx, Exception ex)
+    {
+        ResolveNavigationOutcome(ctx.To.FullUri, BrouterNavigationOutcome.Failed(ex));
+
+        var errorContext = new BrouterErrorContext(ex, ctx.To, this);
+
+        for (var node = origin; node is not null; node = node.Parent)
+        {
+            if (node.ErrorContent is not null)
+            {
+                node.CurrentError = errorContext;
+                // SetMatched marks node + ancestors and issues the render; node's renderer emits
+                // ErrorContent instead of Content/Component while CurrentError is set. Descendants
+                // of the boundary stay unmatched (the winner was never SetMatched on this path).
+                node.SetMatched();
+
+                // The boundary and its ancestors are what's on screen now; record them so a later
+                // navigation still runs their leave guards.
+                var chain = new List<Broute>();
+                for (var n = node; n is not null; n = n.Parent) chain.Add(n);
+                chain.Reverse();
+                _committedChain = chain.ToArray();
+                return;
+            }
+        }
+
+        if (ErrorContent is not null)
+        {
+            _navError = errorContext;
+            _committedChain = [];
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Re-runs the full navigation pipeline (guards, loaders, render) for the current URL. Exposed
+    /// to error boundaries via <see cref="BrouterErrorContext.RetryAsync"/>. Runs as a fresh
+    /// full-pipeline pass - guards deliberately re-run, since a retried navigation must re-establish
+    /// the same authorization a first attempt would.
+    /// </summary>
+    internal Task RetryNavigationAsync()
+    {
+        var to = ComputeLocation();
+        // Replace, not Push: the retry re-processes the entry the user is already on.
+        return InvokeAsync(() => ProcessNavigationAsync(CurrentLocation, to, decisionAlreadyMade: false, BrouterNavigationType.Replace).AsTask());
+    }
+
+    /// <summary>
+    /// Re-runs the loaders of the currently committed route chain and re-renders with the fresh
+    /// data - the router-level primitive for "a mutation happened, refresh what's on screen"
+    /// (React Router's revalidation / SvelteKit's invalidateAll). Not a navigation: the URL is
+    /// unchanged, guards and OnNavigating/OnNavigated do not run, and the current content stays
+    /// visible while loaders work (stale-while-revalidate, no pending-UI flash). Participates in
+    /// the navigation supersession machinery, so a real navigation starting mid-revalidate cancels
+    /// it (and vice versa an in-flight navigation's loaders are superseded by the revalidate).
+    /// Loader failures route to error boundaries and OnError exactly like navigation loads.
+    /// </summary>
+    internal Task RevalidateAsync() => InvokeAsync(() => RevalidateCoreAsync().AsTask());
+
+    private async ValueTask RevalidateCoreAsync()
+    {
+        var chain = _committedChain;
+        if (chain.Length == 0) return;
+
+        var anyLoader = false;
+        foreach (var node in chain)
+        {
+            if (node.Loader is not null) { anyLoader = true; break; }
+        }
+        if (anyLoader is false) return;
+
+        var to = CurrentLocation;
+        var leaf = chain[^1];
+
+        // Same supersession discipline as ProcessNavigationAsync: bumping the version and swapping
+        // the CTS makes this revalidate cancel an in-flight navigation's awaits, and makes any
+        // navigation that starts later cancel this revalidate.
+        var version = Interlocked.Increment(ref _navVersion);
+        var newCts = new CancellationTokenSource();
+        var oldCts = Interlocked.Exchange(ref _navCts, newCts);
+        oldCts?.Cancel();
+        var token = newCts.Token;
+
+        var ctx = new BrouterNavigationContext(to, to, token)
+        {
+            // The history entry is untouched; Replace is the closest classification and
+            // IsRevalidation is the authoritative signal for loader logic.
+            NavigationType = BrouterNavigationType.Replace,
+            IsRevalidation = true,
+            Route = leaf,
+            Parameters = new BrouterRouteParameters(leaf.Parameters),
+        };
+        var service = _brouterService;
+
+        try
+        {
+            // Collect the loaders up front; results commit only after each completes so the screen
+            // keeps showing the previous data until fresh data is actually available.
+            List<Broute> pendingLoaders = [];
+            foreach (var node in chain)
+            {
+                if (node.Loader is not null) pendingLoaders.Add(node);
+            }
+
+            if (ParallelLoaders && pendingLoaders.Count > 1)
+            {
+                var loaderTasks = new Task<(object? Result, Exception? Error)>[pendingLoaders.Count];
+                for (var i = 0; i < loaderTasks.Length; i++)
+                {
+                    loaderTasks[i] = RunLoaderAsync(pendingLoaders[i]);
+                }
+
+                var results = await Task.WhenAll(loaderTasks);
+
+                async Task<(object? Result, Exception? Error)> RunLoaderAsync(Broute node)
+                {
+                    try { return (await node.Loader!(ctx), null); }
+                    catch (Exception ex) { return (null, ex); }
+                }
+
+                for (var i = 0; i < results.Length; i++)
+                {
+                    var (loaded, error) = results[i];
+                    if (error is OperationCanceledException && token.IsCancellationRequested) return;
+                    if (error is not null)
+                    {
+                        await service.InvokeOnError(ctx, error);
+                        if (token.IsCancellationRequested is false && version == _navVersion)
+                        {
+                            RenderNavigationError(pendingLoaders[i], ctx, error);
+                        }
+                        return;
+                    }
+                    if (token.IsCancellationRequested || version != _navVersion) return;
+                    pendingLoaders[i].LoadedData = loaded;
+                    CacheLoaderResult(pendingLoaders[i], to, loaded);
+                }
+            }
+            else
+            {
+                foreach (var node in pendingLoaders)
+                {
+                    object? loaded;
+                    try
+                    {
+                        loaded = await node.Loader!(ctx);
+                    }
+                    catch (OperationCanceledException) when (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        await service.InvokeOnError(ctx, ex);
+                        if (token.IsCancellationRequested is false && version == _navVersion)
+                        {
+                            RenderNavigationError(node, ctx, ex);
+                        }
+                        return;
+                    }
+
+                    if (token.IsCancellationRequested || version != _navVersion) return;
+                    node.LoadedData = loaded;
+                    CacheLoaderResult(node, to, loaded);
+                }
+            }
+
+            // Fresh LoadedData references make the renderers rebuild their BrouterRouteData wrappers,
+            // which re-notifies every cascading subscriber; one render request at the leaf covers the
+            // whole chain (see SetMatched).
+            leaf.SetMatched();
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // superseded by a navigation; nothing to do
+        }
+        catch (Exception ex)
+        {
+            await service.InvokeOnError(ctx, ex);
+            if (token.IsCancellationRequested is false && version == _navVersion)
+            {
+                RenderNavigationError(leaf, ctx, ex);
+            }
+        }
+        finally
+        {
+            // Same CTS ownership rule as ProcessNavigationAsync's finally.
+            if (ReferenceEquals(Volatile.Read(ref _navCts), newCts) is false)
+            {
+                newCts.Dispose();
+            }
+        }
+    }
+
     private bool HandleSideEffects(BrouterNavigationContext ctx, BrouterLocation from)
     {
         if (ctx.RedirectUrl is not null)
         {
+            // Resolve before NavigateInternal for the same reason as ApplyPreventiveDecision: the
+            // redirect's pipeline must not observe (and supersede) the awaiter we're concluding.
+            ResolveNavigationOutcome(ctx.To.FullUri, BrouterNavigationOutcome.Redirected(ctx.RedirectUrl));
             NavigateInternal(ctx.RedirectUrl);
             return true;
         }
 
         if (ctx.IsCancelled)
         {
+            ResolveNavigationOutcome(ctx.To.FullUri, BrouterNavigationOutcome.Cancelled());
             // Restore the address bar. If From is empty (initial render), we leave the URL alone.
             if (string.IsNullOrEmpty(from.FullUri) is false &&
                 string.Equals(from.FullUri, ctx.To.FullUri, StringComparison.Ordinal) is false)
@@ -1751,6 +2545,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _disposed = true;
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
+#if NET10_0_OR_GREATER
+        _navManager.OnNotFound -= NavManagerOnNotFound;
+#endif
         // Unhook the preventive changing handler so a disposed Brouter can't keep vetoing navigations.
         _locationChangingRegistration?.Dispose();
         _locationChangingRegistration = null;
@@ -1769,6 +2566,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // paths reach disposal, the second call is a no-op.
         var cts = Interlocked.Exchange(ref _navCts, null);
         cts?.Cancel();
+        // Never leave a NavigateAsync caller hanging on a disposed router.
+        var pendingOutcome = _pendingOutcome;
+        _pendingOutcome = null;
+        _pendingOutcomeUri = null;
+        pendingOutcome?.TrySetResult(BrouterNavigationOutcome.Superseded());
         _brouterService.Detach(this);
     }
 

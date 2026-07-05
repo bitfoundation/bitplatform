@@ -43,6 +43,13 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
     internal BrouterOptions Options => _options;
 
+    // The scoped stale-while-revalidate store for loader results (see Broute.StaleTime and link
+    // preloading). Lives on the service rather than the Brouter component so it survives router
+    // re-mounts within the scope.
+    internal BrouterLoaderCache LoaderCache { get; } = new();
+
+    public void ClearLoaderCache() => LoaderCache.Clear();
+
     internal void Attach(Brouter brouter, NavigationManager navManager)
     {
         // Only one <Brouter/> may be mounted per scope. Two competing instances would race
@@ -74,20 +81,58 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
     public BrouterLocation Location => _activeBrouter?.CurrentLocation ?? BrouterLocation.Empty;
 
-    public void Navigate(string url, bool replace = false, bool forceLoad = false)
+    public void Navigate(string url, bool replace = false, bool forceLoad = false, string? historyState = null)
     {
         EnsureMounted();
         // Route-relative URLs ("./edit", "../sibling") resolve against the current location's
         // path via segment math. Anything else (including bare "sibling") flows through to
         // NavigationManager unchanged and keeps its base-relative meaning.
         url = BrouterRelativeUrl.ResolveIfRelative(Location.Path, url);
+        NavigateCore(url, replace, forceLoad, historyState);
+    }
+
+    public ValueTask<BrouterNavigationOutcome> NavigateAsync(string url, bool replace = false, string? historyState = null)
+    {
+        EnsureMounted();
+        url = BrouterRelativeUrl.ResolveIfRelative(Location.Path, url);
+
+        // Register the awaiter under the exact absolute URI the pipeline will observe as its
+        // target, BEFORE triggering the navigation (on some hosts NavigateTo runs the changing
+        // handler synchronously, so registering afterwards would miss the whole navigation).
+        var absoluteUri = _navigationManager!.ToAbsoluteUri(url).ToString();
+        var outcome = _activeBrouter!.RegisterNavigationOutcome(absoluteUri);
+
+        NavigateCore(url, replace, forceLoad: false, historyState);
+        return new ValueTask<BrouterNavigationOutcome>(outcome);
+    }
+
+    // Shared trigger for Navigate/NavigateAsync: stamps the navigation type and dispatches to the
+    // right NavigateTo overload. `url` is already relative-resolved by the caller.
+    private void NavigateCore(string url, bool replace, bool forceLoad, string? historyState)
+    {
         // Tell the pipeline this navigation is a push/replace before triggering it, so guards, loaders
         // and hooks report the right BrouterNavigationType. Skipped for forceLoad: it's a full-page
         // reload, so no SPA pipeline runs and there is nothing to classify. Back/Forward don't come
         // through here (they use history.go), so they correctly fall through to Pop detection.
         if (forceLoad is false)
             _activeBrouter!.SetPendingNavigationType(replace ? BrouterNavigationType.Replace : BrouterNavigationType.Push);
-        _navigationManager!.NavigateTo(url, forceLoad: forceLoad, replace: replace);
+
+        if (historyState is null)
+        {
+            _navigationManager!.NavigateTo(url, forceLoad: forceLoad, replace: replace);
+        }
+        else
+        {
+            // The options overload is the only NavigateTo that carries HistoryEntryState. Only taken
+            // when state was actually supplied, so the common stateless path keeps its exact
+            // pre-existing NavigationManager behavior.
+            _navigationManager!.NavigateTo(url, new NavigationOptions
+            {
+                ForceLoad = forceLoad,
+                ReplaceHistoryEntry = replace,
+                HistoryEntryState = historyState,
+            });
+        }
     }
 
     public void Back()
@@ -118,6 +163,72 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         return GoAsync(delta);
     }
 
+    public ValueTask RevalidateAsync()
+    {
+        EnsureMounted();
+        return new ValueTask(_activeBrouter!.RevalidateAsync());
+    }
+
+    public ValueTask PreloadAsync(string url)
+    {
+        EnsureMounted();
+        url = BrouterRelativeUrl.ResolveIfRelative(Location.Path, url);
+        return new ValueTask(_activeBrouter!.PreloadAsync(url));
+    }
+
+    public void NavigateWithQuery(Action<BrouterQueryBuilder> mutate, bool replace = true)
+    {
+        ArgumentNullException.ThrowIfNull(mutate);
+        EnsureMounted();
+
+        var location = Location;
+        var builder = new BrouterQueryBuilder(location);
+        mutate(builder);
+
+        Navigate(location.Path + builder.ToQueryString() + location.Hash, replace: replace);
+    }
+
+    /// <summary>
+    /// Starts a View Transition capturing the current (outgoing) DOM, returning true only when a
+    /// transition is actually running and will need <see cref="CompleteViewTransitionAsync"/> after
+    /// the new route's render lands. False on unsupported browsers, during prerender, disconnected
+    /// circuits, or when <see cref="BrouterOptions.ViewTransitions"/> is off - the pipeline then
+    /// skips the completion round-trip entirely.
+    /// </summary>
+    internal async ValueTask<bool> BeginViewTransitionAsync()
+    {
+        if (_options.ViewTransitions is false) return false;
+
+        try
+        {
+            var module = await GetModuleAsync();
+            return await module.InvokeAsync<bool>("beginViewTransition");
+        }
+        catch (JSDisconnectedException ex) { LogSuppressedJsFailure(ex, "circuit disconnected mid-call"); }
+        catch (JSException ex) { LogSuppressedJsFailure(ex, "JS interop failure (e.g. non-browser host)"); }
+        catch (InvalidOperationException ex) { LogSuppressedJsFailure(ex, "JS interop unavailable during pre-render"); }
+        catch (TaskCanceledException ex) { LogSuppressedJsFailure(ex, "component disposed mid-call"); }
+        return false;
+    }
+
+    /// <summary>Resolves the pending View Transition's update promise so the browser animates to the new DOM.</summary>
+    internal ValueTask CompleteViewTransitionAsync() =>
+        SafeJsCallAsync(async () =>
+        {
+            var module = await GetModuleAsync();
+            await module.InvokeVoidAsync("completeViewTransition");
+        });
+
+    public ValueTask SetConfirmExternalNavigationAsync(bool enabled) =>
+        // Best-effort like the other fire-and-forget interop: during prerender or on a disconnected
+        // circuit there is no browser to arm, and the interactive pass re-arms via BrouterOptions
+        // when the always-on option is used.
+        SafeJsCallAsync(async () =>
+        {
+            var module = await GetModuleAsync();
+            await module.InvokeVoidAsync("setConfirmExternalNavigation", enabled);
+        });
+
     private ValueTask GoAsync(int delta) =>
         // history.go(0) reloads the page; we reject delta == 0 above so we never hit that.
         SafeJsCallAsync(() => _js.InvokeVoidAsync("history.go", delta));
@@ -141,10 +252,10 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         _logger.LogDebug(exception, "Suppressed a non-fatal Brouter JS interop failure ({Reason}).", reason);
 
     public void NavigateToName(string name, IReadOnlyDictionary<string, object?>? parameters = null,
-                               string? query = null, bool replace = false)
+                               string? query = null, bool replace = false, string? historyState = null)
     {
         var url = ResolveUrl(name, parameters, query);
-        Navigate(url, replace: replace);
+        Navigate(url, replace: replace, historyState: historyState);
     }
 
     public string ResolveUrl(string name, IReadOnlyDictionary<string, object?>? parameters = null, string? query = null)
@@ -340,7 +451,9 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
             throw new InvalidOperationException("No Brouter is currently mounted.");
     }
 
-    private static string FormatRouteValue(object? value)
+    // Internal (not private): BrouterQueryBuilder formats query values with the identical rules so
+    // ResolveUrl-emitted and builder-emitted parameters always round-trip the same way.
+    internal static string FormatRouteValue(object? value)
     {
         if (value is null) return string.Empty;
 

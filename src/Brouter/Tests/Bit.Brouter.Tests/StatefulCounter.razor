@@ -1,0 +1,9 @@
+@* A component with internal state, for asserting whether navigation recreated it (count resets)
+   or kept it alive (count survives). *@
+
+<div data-testid="stateful">count:@_count</div>
+<button data-testid="inc" @onclick="@(() => _count++)">+</button>
+
+@code {
+    private int _count;
+}

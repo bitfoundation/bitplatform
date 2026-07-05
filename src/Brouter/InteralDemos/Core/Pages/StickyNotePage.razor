@@ -1,0 +1,34 @@
+@* A deliberately stateful page used by the keep-alive demo: the /sticky route mounts it with
+   KeepAlive (state survives navigating away), /fleeting without (state resets). *@
+
+<div class="bb-intro">
+    <h1>@Title</h1>
+    <p class="bb-subtitle">@Description</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Component state</h3>
+    <p>Clicks this instance has seen: <strong>@_clicks</strong></p>
+    <button class="btn btn-primary" @onclick="@(() => _clicks++)">Click me</button>
+    <div style="margin-top: .75rem;">
+        <textarea rows="3" style="width: 100%;" @bind="_note" placeholder="Scratch note - lives in this component instance…"></textarea>
+    </div>
+    <p class="bb-card-desc">
+        Click a few times, type a note, navigate to Home and come back.
+        @(KeepAliveDemo
+            ? "This route is KeepAlive: the component stayed mounted (hidden), so everything survives."
+            : "This route is NOT KeepAlive: the component was disposed and recreated - everything resets.")
+    </p>
+</div>
+
+@code {
+    [Parameter] public bool KeepAliveDemo { get; set; }
+
+    private int _clicks;
+    private string _note = string.Empty;
+
+    private string Title => KeepAliveDemo ? "Keep-alive route" : "Transient route (control)";
+    private string Description => KeepAliveDemo
+        ? "Declared with KeepAlive: navigating away hides it instead of disposing it."
+        : "The default behavior: unmatched content unmounts.";
+}

@@ -61,6 +61,28 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public bool Replace { get; set; }
 
+    /// <summary>
+    /// When (if ever) this link preloads its destination's loader data into the router's cache so
+    /// the actual navigation finds warm data: on interaction <see cref="BrouterLinkPreload.Intent"/>
+    /// (hover/touch/focus, debounced by <see cref="BrouterOptions.PreloadDelay"/>), when scrolled
+    /// <see cref="BrouterLinkPreload.Viewport"/> into view, or at <see cref="BrouterLinkPreload.Render"/>
+    /// time. Null (the default) falls back to <see cref="BrouterOptions.DefaultLinkPreload"/>.
+    /// Preloads run loaders only - no guards, no rendering; see
+    /// <see cref="BrouterNavigationContext.IsPreload"/>.
+    /// </summary>
+    [Parameter] public BrouterLinkPreload? Preload { get; set; }
+
+    /// <summary>
+    /// Optional application state to attach to the destination's history entry when this link is
+    /// clicked (see <see cref="IBrouter.Navigate"/>). Read it back on
+    /// <see cref="BrouterLocation.HistoryState"/> after the navigation - including when the user
+    /// later returns to the entry via Back/Forward. Setting this makes the link intercept
+    /// unmodified left-clicks the same way <see cref="Replace"/> does (an href-driven navigation
+    /// cannot carry history state); modified clicks keep their native browser behavior, in which
+    /// case the state is not attached (a new tab is a fresh history stack anyway).
+    /// </summary>
+    [Parameter] public string? HistoryState { get; set; }
+
 
     private bool _isActive;
     // Href with any route-relative prefix ("./", "../") resolved against the current location.
@@ -76,7 +98,24 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
     // shared module belongs to the service.
     private IJSObjectReference? _module;
     private IJSObjectReference? _handle;
-    private bool _replaceWired;
+    private bool _interceptWired;
+
+    // Replace and HistoryState both require Brouter (not href-driven NavigationInterception) to
+    // perform the navigation, so both use the same conditional-preventDefault click interception.
+    private bool NeedsClickInterception => Replace || HistoryState is not null;
+
+    private BrouterLinkPreload EffectivePreload => Preload ?? Options.DefaultLinkPreload;
+
+    // Intent/Viewport need DOM listeners; Render fires straight from OnAfterRenderAsync.
+    private bool NeedsPreloadWiring =>
+        EffectivePreload is BrouterLinkPreload.Intent or BrouterLinkPreload.Viewport;
+
+    // JS handle for the preload trigger wiring (separate from the click-interception handle) and
+    // the .NET reference its callbacks target.
+    private IJSObjectReference? _preloadHandle;
+    private DotNetObjectReference<BrouterLink>? _selfRef;
+    private bool _preloadWired;
+    private bool _renderPreloadFired;
 
     // UpdateActiveState memoisation. UpdateActiveState runs on every render of every link
     // (OnParametersSet) and on every successful navigation (OnNavigated). For pages with many
@@ -245,9 +284,9 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         if (combinedClass is not null) builder.AddAttribute(3, "class", combinedClass);
         if (_isActive) builder.AddAttribute(4, "aria-current", "page");
 
-        // For Replace=false we rely on Blazor's NavigationInterception (same as Microsoft's
-        // NavLink) to drive navigation off the anchor's href.
-        // For Replace=true we hook our own click handler in C# AND wire a JS capture-phase
+        // Without Replace/HistoryState we rely on Blazor's NavigationInterception (same as
+        // Microsoft's NavLink) to drive navigation off the anchor's href.
+        // For Replace/HistoryState we hook our own click handler in C# AND wire a JS capture-phase
         // listener (see OnAfterRenderAsync) that conditionally calls preventDefault only for
         // unmodified primary clicks. That way, modified clicks (Ctrl/Cmd+click, Shift+click)
         // keep their native "open in new tab" / "open in new window" behavior; only plain
@@ -259,9 +298,12 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         // disconnect, or interop failure), letting the click bubble means NavigationInterception
         // can still pick it up and perform an SPA push navigation as a graceful fallback,
         // instead of falling all the way through to a full page load.
-        if (Replace)
+        if (NeedsClickInterception)
         {
             builder.AddAttribute(5, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, OnClick));
+        }
+        if (NeedsClickInterception || NeedsPreloadWiring)
+        {
             builder.AddElementReferenceCapture(6, capturedRef => _anchor = capturedRef);
         }
 
@@ -275,14 +317,14 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         // to stay on the renderer's SynchronizationContext so subsequent JS interop calls and
         // any state changes/StateHasChanged remain marshaled correctly (especially on Blazor
         // Server, where leaving the renderer context can break interop/state updates).
-        if (Replace && _replaceWired is false)
+        if (NeedsClickInterception && _interceptWired is false)
         {
             try
             {
                 var module = await GetModuleAsync();
                 _handle = await module.InvokeAsync<IJSObjectReference>(
                     "wireConditionalPreventDefault", _anchor);
-                _replaceWired = true;
+                _interceptWired = true;
             }
             catch (JSDisconnectedException) { /* Circuit disconnected; nothing to wire. */ }
             catch (JSException) { /* JS interop failure; falls back to default link behavior. */ }
@@ -291,13 +333,44 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
             catch (InvalidOperationException) { /* JS interop unavailable during pre-render. */ }
             catch (TaskCanceledException) { /* Component disposed mid-call. */ }
         }
-        else if (Replace is false && _replaceWired)
+        else if (NeedsClickInterception is false && _interceptWired)
         {
-            // Replace switched off after wiring; tear the JS handler down.
+            // Replace/HistoryState switched off after wiring; tear the JS handler down.
             await DisposeJsHandleAsync();
-            _replaceWired = false;
+            _interceptWired = false;
+        }
+
+        // Preload wiring, independent of the click-interception handle above.
+        switch (EffectivePreload)
+        {
+            case BrouterLinkPreload.Render when _renderPreloadFired is false:
+                _renderPreloadFired = true;
+                // Fire-and-forget: preloading is speculative and must never block rendering.
+                _ = Brouter.PreloadAsync(_resolvedHref).AsTask();
+                break;
+
+            case BrouterLinkPreload.Intent or BrouterLinkPreload.Viewport when _preloadWired is false:
+                try
+                {
+                    var module = await GetModuleAsync();
+                    _selfRef ??= DotNetObjectReference.Create(this);
+                    _preloadHandle = await module.InvokeAsync<IJSObjectReference>(
+                        "wirePreload", _anchor,
+                        EffectivePreload == BrouterLinkPreload.Intent ? "intent" : "viewport",
+                        Options.PreloadDelay.TotalMilliseconds, _selfRef);
+                    _preloadWired = true;
+                }
+                catch (JSDisconnectedException) { /* circuit disconnected; nothing to wire */ }
+                catch (JSException) { /* JS interop failure; preloading degrades to nothing */ }
+                catch (InvalidOperationException) { /* interop unavailable during pre-render */ }
+                catch (TaskCanceledException) { /* component disposed mid-call */ }
+                break;
         }
     }
+
+    /// <summary>JS-invoked when the wired preload trigger (intent/viewport) fires.</summary>
+    [JSInvokable]
+    public Task OnPreloadTriggered() => Brouter.PreloadAsync(_resolvedHref).AsTask();
 
     private ValueTask<IJSObjectReference> GetModuleAsync()
     {
@@ -321,18 +394,18 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         // browser opens the link natively, and we should not also push a replace navigation.
         if (e.Button != 0 || e.CtrlKey || e.ShiftKey || e.AltKey || e.MetaKey) return;
 
-        // Only issue the replace navigation when our JS preventDefault handler is installed.
+        // Only issue our own navigation when the JS preventDefault handler is installed.
         // Otherwise Blazor's NavigationInterception will pick the click up as a regular push
         // navigation (we no longer stopPropagation, so the document-level interceptor still
         // sees the event), and adding our own NavigateTo here would result in double-navigation
         // (two LocationChanged events / two ProcessNavigationAsync passes for one click).
-        // Degrading to a push when wiring failed is the safer fallback than racing with the
-        // built-in interceptor or forcing a full page load.
-        if (_replaceWired is false) return;
+        // Degrading to a plain, state-less push when wiring failed is the safer fallback than
+        // racing with the built-in interceptor or forcing a full page load.
+        if (_interceptWired is false) return;
 
         // Navigate to the resolved href (identical to Href for non-relative links) so the
         // click goes exactly where the rendered anchor points.
-        Brouter.Navigate(_resolvedHref, replace: true);
+        Brouter.Navigate(_resolvedHref, replace: Replace, historyState: HistoryState);
     }
 
     private async ValueTask DisposeJsHandleAsync()
@@ -360,6 +433,25 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         Brouter.OnNavigated -= OnNavigated;
 
         await DisposeJsHandleAsync();
+
+        if (_preloadHandle is not null)
+        {
+            try { await _preloadHandle.InvokeVoidAsync("dispose"); }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+            catch (TaskCanceledException) { }
+
+            try { await _preloadHandle.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+            catch (TaskCanceledException) { }
+
+            _preloadHandle = null;
+        }
+        _selfRef?.Dispose();
+        _selfRef = null;
 
         if (_module is not null)
         {

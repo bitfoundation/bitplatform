@@ -14,10 +14,11 @@ public sealed class BrouterLocation
     private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>> _queryParams;
     private readonly string[] _segments;
 
-    internal BrouterLocation(string fullUri, string path, string[] segments, string query, string hash, bool hasTrailingSlash = false)
+    internal BrouterLocation(string fullUri, string path, string[] segments, string query, string hash, bool hasTrailingSlash = false, string? historyState = null)
     {
         FullUri = fullUri;
         Path = path;
+        HistoryState = historyState;
         if (segments is null || segments.Length == 0)
         {
             _segments = [];
@@ -60,6 +61,17 @@ public sealed class BrouterLocation
 
     /// <summary>The fragment part including the leading '#'. Empty when absent.</summary>
     public string Hash { get; }
+
+    /// <summary>
+    /// The application state attached to this location's history entry, or null when the entry
+    /// carries no state. Set by navigating with a <c>historyState</c> argument (see
+    /// <see cref="IBrouter.Navigate"/> or <see cref="BrouterLink.HistoryState"/>); read back here
+    /// after the navigation commits - including on a later Back/Forward to this entry, where the
+    /// browser restores the stored value. Mirrors <c>NavigationManager.HistoryEntryState</c>
+    /// (backed by <c>history.state</c>), so the value survives history traversals but not a full
+    /// page reload on all browsers. Store a serialized payload (e.g. JSON) for structured data.
+    /// </summary>
+    public string? HistoryState { get; }
 
     /// <summary>Parsed query parameters. Multiple values per key are supported.</summary>
     public IReadOnlyDictionary<string, IReadOnlyList<string>> QueryParams => _queryParams.Value;

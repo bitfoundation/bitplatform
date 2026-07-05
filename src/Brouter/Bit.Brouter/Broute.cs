@@ -16,6 +16,17 @@ public class Broute : ComponentBase, IDisposable
     /// </summary>
     [Parameter, EditorRequired] public string Path { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Marks this as a pathless <em>grouping</em> route: it contributes no URL segments and never
+    /// matches by itself, existing purely to attach shared behavior - a <see cref="Guard"/>,
+    /// <see cref="LeaveGuard"/>, <see cref="Loader"/>, <see cref="ErrorContent"/> or a layout
+    /// <see cref="Content"/> (with a <see cref="BrouterOutlet"/>) - to the routes declared in its
+    /// <see cref="ChildContent"/>. Children inherit the surrounding path as if the group weren't
+    /// there. Mirrors SvelteKit's <c>(group)</c> directories and TanStack Router's pathless layout
+    /// routes. A group must not declare a <see cref="Path"/>.
+    /// </summary>
+    [Parameter] public bool Group { get; set; }
+
     /// <summary>Optional unique name for this route. Used by <see cref="IBrouter.NavigateToName"/> and <see cref="IBrouter.ResolveUrl"/>.</summary>
     [Parameter] public string? Name { get; set; }
 
@@ -40,6 +51,17 @@ public class Broute : ComponentBase, IDisposable
     [Parameter] public Func<BrouterNavigationContext, ValueTask>? Guard { get; set; }
 
     /// <summary>
+    /// Async leave guard: runs when a navigation would deactivate this route (it is part of the
+    /// currently rendered chain but not of the new one), before <c>OnNavigating</c> and any enter
+    /// <see cref="Guard"/>s, leaf to root. <c>ctx.Cancel()</c> / <c>ctx.Redirect(...)</c> are
+    /// preventive - the URL never changes on a cancelled leave, enabling real "unsaved changes"
+    /// prompts per route. A navigation that keeps this route matched (e.g. only a parameter or a
+    /// descendant changed) does not fire it. During the leave call, <c>ctx.Route</c> is the route
+    /// being left. Inspired by Vue Router's <c>beforeRouteLeave</c> and Angular's <c>CanDeactivate</c>.
+    /// </summary>
+    [Parameter] public Func<BrouterNavigationContext, ValueTask>? LeaveGuard { get; set; }
+
+    /// <summary>
     /// Async data loader. Runs after the route matches and guards pass, before render.
     /// The result is exposed to the rendered content as an unnamed cascading <see cref="BrouterRouteData"/>
     /// (matched by type) with typed <c>Get&lt;T&gt;</c>/<c>TryGet&lt;T&gt;</c> accessors.
@@ -55,6 +77,41 @@ public class Broute : ComponentBase, IDisposable
     /// (matched by type) with typed <c>Get&lt;T&gt;</c>/<c>TryGet&lt;T&gt;</c> accessors.
     /// </summary>
     [Parameter] public object? Meta { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, this route's rendered content is kept mounted (hidden) after the user
+    /// navigates away, so returning to it restores the exact component state - scroll inside
+    /// widgets, form input, expanded panels - instead of recreating the component. The Angular
+    /// <c>RouteReuseStrategy</c> / Vue <c>KeepAlive</c> idea, scoped per route. The preserved
+    /// content lives inside a <c>&lt;div hidden&gt;</c> wrapper while inactive, so it costs memory
+    /// and (hidden) DOM for as long as its hosting layout stays mounted; state survives sibling
+    /// navigations under the same layout, not the layout's own unmount. Opt-in per route.
+    /// </summary>
+    [Parameter] public bool KeepAlive { get; set; }
+
+    /// <summary>
+    /// Freshness window for this route's <see cref="Loader"/> result, enabling the router's
+    /// stale-while-revalidate cache: a navigation (or Back/Forward) to a URL whose cached result is
+    /// younger than this skips the loader entirely; an older-but-not-garbage-collected result is
+    /// served per <see cref="BrouterOptions.StaleReloadMode"/> (rendered immediately with a
+    /// background refresh by default). Null (the default) falls back to
+    /// <see cref="BrouterOptions.DefaultLoaderStaleTime"/>, which itself defaults to no caching.
+    /// Cache entries key on the full URL (path + query), so different parameters cache separately.
+    /// Inspired by TanStack Router's <c>staleTime</c>.
+    /// </summary>
+    [Parameter] public TimeSpan? StaleTime { get; set; }
+
+    /// <summary>
+    /// Error UI for this route. When a commit-phase failure occurs (typically a <see cref="Loader"/>
+    /// in the matched chain throwing), the nearest <c>ErrorContent</c> - walking from the failed
+    /// route up through its ancestors - renders in place of the routed content, while ancestor
+    /// layouts above the boundary keep rendering normally. The fragment receives a
+    /// <see cref="BrouterErrorContext"/> with the exception, the location, and a
+    /// <c>RetryAsync()</c> that re-runs the navigation. When no route in the chain declares one,
+    /// the failure bubbles to <see cref="Brouter.ErrorContent"/>. The global
+    /// <see cref="IBrouter.OnError"/> hook fires either way.
+    /// </summary>
+    [Parameter] public RenderFragment<BrouterErrorContext>? ErrorContent { get; set; }
 
     /// <summary>
     /// When <c>true</c>, the matched route parameters (and query-string values) are bound to the
@@ -90,7 +147,64 @@ public class Broute : ComponentBase, IDisposable
     internal void AddChild(Broute route) => _children.Add(route);
     internal void RemoveChild(Broute route) => _children.Remove(route);
 
-    internal BrouterOutlet? Outlet { get; set; }
+    // The <BrouterOutlet>s declared inside this route's Content, keyed by outlet name ("" is the
+    // primary outlet, which hosts the matched child's Content/Component; named outlets host the
+    // child's <BrouterView Name=...> fragments). Same single-dispatcher discipline as everything
+    // else on this type.
+    internal Dictionary<string, BrouterOutlet> Outlets { get; } = new(StringComparer.Ordinal);
+
+    internal bool HasPrimaryOutlet => Outlets.ContainsKey(string.Empty);
+
+    internal void RegisterOutlet(string name, BrouterOutlet outlet) => Outlets[name] = outlet;
+
+    internal void UnregisterOutlet(string name, BrouterOutlet outlet)
+    {
+        // Only detach when the slot still points at this instance; a newer outlet (recreated on
+        // re-render) may already have taken the name over.
+        if (Outlets.TryGetValue(name, out var existing) && ReferenceEquals(existing, outlet))
+        {
+            Outlets.Remove(name);
+        }
+    }
+
+    /// <summary>
+    /// Hands the matched child (and its merged parameters) to every outlet this route hosts:
+    /// the primary outlet renders the child's content, named outlets render the child's
+    /// corresponding <see cref="BrouterView"/> fragments. Called from the child's renderer on
+    /// every render pass, mirroring the old single-outlet Render call.
+    /// </summary>
+    internal void SetOutletChild(Broute child, BrouterRouteParameters parameters)
+    {
+        foreach (var outlet in Outlets.Values)
+        {
+            outlet.Render(child, parameters);
+        }
+    }
+
+    // Named view fragments declared by <BrouterView> children of this route, rendered by the
+    // parent's same-named outlets when this route is matched (Vue named-views style). Null until
+    // the first view registers.
+    internal Dictionary<string, RenderFragment<BrouterRouteParameters>>? NamedViews { get; private set; }
+
+    internal void SetNamedView(string name, RenderFragment<BrouterRouteParameters>? fragment)
+    {
+        if (fragment is null)
+        {
+            NamedViews?.Remove(name);
+        }
+        else
+        {
+            (NamedViews ??= new Dictionary<string, RenderFragment<BrouterRouteParameters>>(StringComparer.Ordinal))[name] = fragment;
+        }
+
+        // The fragments render inside the PARENT's outlets; nudge them so view content updated by
+        // a host re-render (a new fragment instance) actually reaches the screen.
+        if (Parent is null) return;
+        foreach (var outlet in Parent.Outlets.Values)
+        {
+            outlet.Refresh();
+        }
+    }
 
     internal BrouterRouteTemplate? RouteTemplate { get; private set; }
 
@@ -106,6 +220,12 @@ public class Broute : ComponentBase, IDisposable
     internal IReadOnlyDictionary<string, string[]> ConstraintsByParameter { get; set; } = new Dictionary<string, string[]>();
     internal object? LoadedData { get; set; }
 
+    // Set by Brouter.RenderNavigationError when this route is the nearest error boundary for a
+    // failed navigation; the renderer then emits ErrorContent instead of Content/Component.
+    // Only ever set on routes whose ErrorContent is non-null; cleared at the start of every
+    // navigation alongside Matched.
+    internal BrouterErrorContext? CurrentError { get; set; }
+
     private BrouterRouteRenderer? _renderer;
 
     protected override void OnInitialized()
@@ -115,9 +235,15 @@ public class Broute : ComponentBase, IDisposable
         if (Brouter is null)
             throw new InvalidOperationException("A Route must be nested inside a Brouter.");
 
-        if (Parent is null && string.IsNullOrWhiteSpace(Path))
+        if (Group && string.IsNullOrWhiteSpace(Path) is false)
+            throw new InvalidOperationException(
+                "A Group route must not declare a Path: it contributes no URL segments. " +
+                "Put the path on its child routes (or remove Group).");
+
+        if (Group is false && Parent is null && string.IsNullOrWhiteSpace(Path))
             throw new InvalidOperationException("A root-level Route must have a non-empty Path. " +
-                "Only nested (child) routes may use an empty path to act as an index route.");
+                "Only nested (child) routes may use an empty path to act as an index route, and " +
+                "pathless grouping requires the Group flag.");
 
         // Compute and parse the template (and build the renderer) before registering with the
         // Brouter or attaching to the Parent. If parsing throws we don't want this Route to be
@@ -151,11 +277,17 @@ public class Broute : ComponentBase, IDisposable
         foreach (var seg in RouteTemplate.TemplateSegments) specificity += seg.Specificity;
         Specificity = specificity;
 
+        // Group ancestors are invisible in the URL, so they must be invisible to the depth
+        // tiebreak too - otherwise wrapping a route in a group would silently change how it
+        // wins/loses ties against an identically-templated sibling.
         var depth = 0;
-        for (var p = Parent; p is not null; p = p.Parent) depth++;
+        for (var p = Parent; p is not null; p = p.Parent)
+        {
+            if (p.Group is false) depth++;
+        }
         Depth = depth;
 
-        IsIndex = Parent is not null && string.IsNullOrEmpty(Path.Trim('/'));
+        IsIndex = Group is false && Parent is not null && string.IsNullOrEmpty(Path.Trim('/'));
 
         // Precompute the set of parameter names declared in this route's template. Used only by the
         // conventional (by-name) component binding path to decide which [Parameter] properties on the
@@ -199,6 +331,10 @@ public class Broute : ComponentBase, IDisposable
 
     internal bool Matched { get; set; }
 
+    // True once this route has been matched at least once; with KeepAlive it gates "there is
+    // content worth keeping mounted while unmatched".
+    internal bool HasEverMatched { get; private set; }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         base.BuildRenderTree(builder);
@@ -207,6 +343,7 @@ public class Broute : ComponentBase, IDisposable
 
     internal void SetMatched()
     {
+        HasEverMatched = true;
         // Mark the whole ancestor chain matched, then issue a single render request at the
         // topmost node. Re-rendering the top of the chain re-renders every descendant Broute:
         // a Broute is always declared inside some render region of its parent (that's how the
@@ -266,6 +403,16 @@ public class Broute : ComponentBase, IDisposable
 
         Brouter?.UnregisterRoute(this);
         Parent?.RemoveChild(this);
+
+        // Drop any kept-alive render entry the parent's outlets hold for this route, so a disposed
+        // (conditionally removed) route can't linger as hidden content.
+        if (Parent is not null)
+        {
+            foreach (var outlet in Parent.Outlets.Values)
+            {
+                outlet.ForgetChild(this);
+            }
+        }
     }
 
     private bool _disposed;

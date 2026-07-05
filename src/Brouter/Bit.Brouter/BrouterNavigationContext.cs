@@ -33,6 +33,22 @@ public sealed class BrouterNavigationContext
     /// </summary>
     public BrouterNavigationType NavigationType { get; internal set; } = BrouterNavigationType.Push;
 
+    /// <summary>
+    /// True when this context belongs to a revalidation (<see cref="IBrouter.RevalidateAsync"/>)
+    /// rather than a navigation: the URL did not change, guards did not re-run, and only the
+    /// matched chain's loaders are executing again. Lets a shared loader distinguish "the user
+    /// navigated here" from "the app asked for fresh data after a mutation".
+    /// </summary>
+    public bool IsRevalidation { get; internal set; }
+
+    /// <summary>
+    /// True when this context belongs to a speculative preload (<see cref="IBrouter.PreloadAsync"/> /
+    /// <see cref="BrouterLink.Preload"/>) rather than a real navigation: no guards ran, nothing will
+    /// render, and the loader result only warms the cache. Loaders with side effects beyond fetching
+    /// (analytics, "viewed" markers) should skip them when this is set.
+    /// </summary>
+    public bool IsPreload { get; internal set; }
+
     /// <summary>The matched route once matching has happened. Null in OnNavigating hooks.</summary>
     public Broute? Route { get; internal set; }
 
@@ -68,6 +84,33 @@ public sealed class BrouterNavigationContext
         ArgumentException.ThrowIfNullOrWhiteSpace(url);
         if (IsCancelled)
             throw new InvalidOperationException("Cannot set a redirect on a cancelled navigation context. Call Redirect() before Cancel(), or do not cancel.");
-        RedirectUrl = BrouterRelativeUrl.ResolveIfRelative(To.Path, url);
+
+        var resolved = BrouterRelativeUrl.ResolveIfRelative(To.Path, url);
+
+        // A redirect to the exact location this navigation is already heading to is "continue",
+        // not a redirect. Honoring it would cancel this navigation and start an identical one,
+        // whose guards run again and redirect again - an infinite navigation loop. Treating it
+        // as a no-op makes guards like "always send anonymous users to /login" safe to write
+        // without a "unless we're already going to /login" clause.
+        if (IsCurrentTarget(resolved)) return;
+
+        RedirectUrl = resolved;
+    }
+
+    /// <summary>
+    /// Whether <paramref name="resolved"/> denotes the same location this navigation is heading to.
+    /// Compared against both the absolute URI and the base-relative path+query+hash forms, since a
+    /// redirect may be expressed either way.
+    /// </summary>
+    private bool IsCurrentTarget(string resolved)
+    {
+        if (string.Equals(resolved, To.FullUri, StringComparison.OrdinalIgnoreCase)) return true;
+
+        var pathQueryHash = To.Path + To.Query + To.Hash;
+        if (string.Equals(resolved, pathQueryHash, StringComparison.OrdinalIgnoreCase)) return true;
+
+        // Base-relative form without the leading slash ("users/1" vs "/users/1").
+        return resolved.Length > 0 && resolved[0] != '/' &&
+               string.Equals("/" + resolved, pathQueryHash, StringComparison.OrdinalIgnoreCase);
     }
 }

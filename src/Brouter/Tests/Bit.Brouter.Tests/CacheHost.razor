@@ -1,0 +1,44 @@
+@* Host for LoaderCacheTests: a cached route whose loader counts runs and returns an incrementing
+   payload, an uncached route for preload tests, a plain /other route to navigate away to, and a
+   Render-mode preloading link. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/cached" Loader="CachedLoader" StaleTime="@StaleTime">
+        <Content><CachedView /></Content>
+    </Broute>
+    <Broute Path="/uncached" Loader="UncachedLoader">
+        <Content><CachedView /></Content>
+    </Broute>
+    <Broute Path="/other">
+        <Content><div data-testid="other">other</div></Content>
+    </Broute>
+</Brouter>
+
+@if (ShowRenderPreloadLink)
+{
+    <BrouterLink Href="/uncached" Preload="BrouterLinkPreload.Render" data-testid="preload-link">go</BrouterLink>
+}
+
+@code {
+    [Parameter] public TimeSpan? StaleTime { get; set; }
+    [Parameter] public bool ShowRenderPreloadLink { get; set; }
+
+    public int CachedLoaderRuns { get; private set; }
+    public int UncachedLoaderRuns { get; private set; }
+    public bool? LastWasPreload { get; private set; }
+
+    private ValueTask<object?> CachedLoader(BrouterNavigationContext ctx)
+    {
+        CachedLoaderRuns++;
+        return ValueTask.FromResult<object?>($"cached-{CachedLoaderRuns}");
+    }
+
+    private ValueTask<object?> UncachedLoader(BrouterNavigationContext ctx)
+    {
+        UncachedLoaderRuns++;
+        LastWasPreload = ctx.IsPreload;
+        return ValueTask.FromResult<object?>($"uncached-{UncachedLoaderRuns}");
+    }
+}

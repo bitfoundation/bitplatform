@@ -73,6 +73,45 @@ public class DiscoveryAndPersistenceTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Prerender_state_round_trips_with_a_source_generated_resolver()
+    {
+        var options = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)
+        {
+            TypeInfoResolver = PersistenceTestJsonContext.Default,
+        };
+
+        var dto = new SampleDto { Name = "aot", Count = 7 };
+        var captured = BroutePrerenderState.Capture(dto, options);
+
+        Assert.IsNotNull(captured);
+        Assert.IsTrue(BroutePrerenderState.TryRestore(captured, out var value, options));
+        var typed = value as SampleDto;
+        Assert.IsNotNull(typed);
+        Assert.AreEqual("aot", typed!.Name);
+        Assert.AreEqual(7, typed.Count);
+    }
+
+    [TestMethod]
+    public void Capture_of_a_type_the_resolver_does_not_cover_returns_null_instead_of_throwing()
+    {
+        var options = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)
+        {
+            TypeInfoResolver = PersistenceTestJsonContext.Default,
+        };
+
+        // Uri isn't registered on the context: capture must degrade to "don't persist" (null),
+        // never break prerender.
+        var captured = BroutePrerenderState.Capture(new UncoveredDto(), options);
+
+        Assert.IsNull(captured);
+    }
+
+    public sealed class UncoveredDto
+    {
+        public int X { get; set; }
+    }
+
+    [TestMethod]
     public void Prerender_key_is_stable_for_the_same_url_and_chain_position()
     {
         var a = BroutePrerenderState.MakeKey("/users/42", "?tab=1", 2);

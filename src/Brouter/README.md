@@ -26,6 +26,11 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
+A runnable tour of every feature below lives in [`InteralDemos`](InteralDemos/) - run the
+[Server](InteralDemos/Server/) project (`dotnet run`) and click through the home page cards; the
+same shared demo pages also run under [WASM](InteralDemos/Wasm/) and [Auto](InteralDemos/Auto/)
+render modes.
+
 ## Quick start
 
 ```razor
@@ -64,9 +69,29 @@ builder.Services.AddBitBrouterServices(o =>
 - **Ambiguous templates are rejected**: registering two routes that match exactly the same URLs (e.g. a duplicated `@page`, or `/users/{id}` next to `/users/{userId}`) throws instead of silently picking one, mirroring the built-in router's `AmbiguousMatchException`. A hand-declared route may still shadow a discovered `@page` with the same template (see [`@page` discovery](#attribute-route--page-discovery))
 - Nested routes via `Broute` children or `BrouterOutlet`
 - Async `Guard` with cancel/redirect via `BrouterNavigationContext`
+- **Per-route `LeaveGuard`** (Angular `CanDeactivate` / Vue `beforeRouteLeave` style): runs preventively, leaf → root, only for routes the navigation actually deactivates - real per-route "unsaved changes" prompts
+- **External-navigation confirmation**: `o.ConfirmExternalNavigation` (always-on) or `brouter.SetConfirmExternalNavigationAsync(...)` (runtime toggle) arms the browser's `beforeunload` dialog for tab-close/reload/external links
+- **Per-route error boundaries**: `ErrorContent` on a `Broute` (nearest boundary wins, bubbling leaf → root) or on the `Brouter` (root fallback), with typed `BrouterErrorContext` carrying the exception and a `RetryAsync()`
+- **Awaitable navigation**: `NavigateAsync` resolves with how the navigation actually ended - `Succeeded` / `Cancelled` / `Redirected` / `NotFound` / `Failed` / `Superseded` (Vue Router navigation-failures style)
+- **History entry state**: attach a state string to a navigation (`Navigate(url, historyState: ...)`, `<BrouterLink HistoryState>`), read it back on `BrouterLocation.HistoryState` - survives Back/Forward
+- **View Transitions API**: `o.ViewTransitions = true` wraps each navigation's re-render in `document.startViewTransition` for animated page changes (`view-transition-name` CSS just works); inert on unsupported browsers
+- **.NET 10 `NotFound()` interop**: `NavigationManager.NotFound()` routes through Brouter's not-found handling, and an unmatched URL during static SSR sets a real HTTP 404
+- **Revalidation**: `brouter.RevalidateAsync()` re-runs the matched chain's loaders after a mutation - no guards, no URL change, current content stays while fresh data loads
+- **Loader caching (stale-while-revalidate)**: per-route `StaleTime` (or a global default) caches loader results per URL - fresh hits skip the loader (instant Back/Forward), stale hits render immediately and refresh in the background (TanStack Router style); `GcTime`, entry cap, `Blocking` mode and `ClearLoaderCache()` included
+- **Link preloading**: `<BrouterLink Preload="Intent">` (hover/touch/focus with debounce), `Viewport` (IntersectionObserver) or `Render` warm the loader cache before the click; programmatic `brouter.PreloadAsync(url)`; guards never run on preloads (`ctx.IsPreload`)
+- **Deferred (streamed) data**: return unawaited `Task<T>`s inside the loader result and render them with `<BrouterAwait>` (`Pending`/`Resolved`/`Error`) - critical data blocks navigation, slow data streams in (React Router `<Await>` style)
+- **AOT-safe prerender persistence**: plug a source-generated `JsonSerializerContext` into `o.LoaderStateTypeInfoResolver` to make `PersistLoaderState` trimming/AOT-safe
+- **Pathless group routes**: `<Broute Group>` attaches a shared guard/loader/layout/error boundary to its children without adding URL segments (SvelteKit `(group)` / TanStack pathless-layout style)
+- **Lazy route loading**: `Brouter OnNavigateAsync` loads route assemblies on demand (e.g. `LazyAssemblyLoader` on WASM) and the *same* navigation matches the freshly-loaded page
+- **Functional query updates**: `brouter.NavigateWithQuery(q => q.Set("page", 2))` updates one parameter and preserves the rest (typed values, multi-value support, replace-by-default)
+- **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
+- **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
+- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style)
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
+- **Pending navigation UI**: a `Navigating` fragment shown while a navigation awaits slow loaders - revealed lazily so loader-less (or cache-hit) navigations never flash it (mirrors the built-in `Router.Navigating`)
+- Router-level hooks: `OnMatch` (a route matched) and `OnNotFound` (nothing matched), alongside the global `IBrouter` events
 - `NotFound` URL or inline `NotFoundContent`
 - **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
 - **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
@@ -142,6 +167,64 @@ Guards (and `OnNavigating`) run inside a `RegisterLocationChangingHandler`, so `
 navigation is blocked. There is no address-bar flicker and no torn back/forward stack, and you can
 implement a genuine "you have unsaved changes" prompt by cancelling from a guard or `OnNavigating`.
 
+A redirect to the URL the navigation is already heading to is treated as "continue", so guards like
+"always send anonymous users to `/login`" can't create redirect loops.
+
+## Leave guards (unsaved changes)
+
+`LeaveGuard` is the per-route counterpart for *leaving*: it runs - preventively, before
+`OnNavigating` and any enter guards - when a navigation would deactivate the route (it is part of
+the currently rendered chain but not the new one), leaf → root. A navigation that keeps the route
+matched (a parameter change, or moving between its children) does not fire it.
+
+```razor
+<Broute Path="/editor" LeaveGuard="@ConfirmLeave">
+    <Content><EditorPage /></Content>
+</Broute>
+
+@code {
+    private ValueTask ConfirmLeave(BrouterNavigationContext ctx)
+    {
+        if (_isDirty) ctx.Cancel();   // URL never changes; no flicker, no broken Back
+        return ValueTask.CompletedTask;
+    }
+}
+```
+
+Leaving the SPA entirely (tab close, reload, external link) can't run C# - for that, arm the
+browser's generic confirmation dialog: `o.ConfirmExternalNavigation = true` at startup, or toggle it
+at runtime with `brouter.SetConfirmExternalNavigationAsync(isDirty)` from a dirty-form tracker.
+(Browser rules: the dialog needs prior user interaction and its text is not customizable.)
+
+## Error boundaries
+
+When a commit-phase failure happens (typically a `Loader` throwing), the **nearest `ErrorContent`**
+- walking from the failed route up through its ancestors, then to the `Brouter` itself - renders in
+place of the routed content. Layouts above the boundary keep rendering; the global `OnError` hook
+still fires either way.
+
+```razor
+<Brouter>
+    <ChildContent>
+        <Broute Path="/users/{id:int}" Loader="@LoadUser">
+            <Content Context="p"><UserDetails /></Content>
+            <ErrorContent Context="err">
+                <p>Couldn't load this user: @err.Exception.Message</p>
+                <button @onclick="@(() => err.RetryAsync())">Try again</button>
+            </ErrorContent>
+        </Broute>
+    </ChildContent>
+    <ErrorContent Context="err">
+        <h1>Something went wrong</h1>
+        <button @onclick="@(() => err.RetryAsync())">Retry</button>
+    </ErrorContent>
+</Brouter>
+```
+
+`RetryAsync()` re-runs the full navigation (guards included) for the current URL; success replaces
+the error UI with the routed content. With no boundary declared anywhere, behavior is unchanged:
+the previous page stays visible and `OnError` observes the failure.
+
 ## Data loader
 
 ```razor
@@ -198,6 +281,92 @@ Results are still committed and errors still surfaced in root → leaf order, so
 behavior are unchanged; only the awaiting overlaps, making the wait as long as the slowest loader
 instead of all of them combined.
 
+### Pending navigation UI
+
+```razor
+<Brouter>
+    <ChildContent>
+        <Broute Path="/reports" Loader="@LoadReports">...</Broute>
+    </ChildContent>
+    <Navigating>
+        <div class="spinner">Loading…</div>
+    </Navigating>
+</Brouter>
+```
+
+While a navigation is awaiting its route loaders, the `Navigating` fragment renders in place of the
+routed content - the counterpart of the built-in `Router.Navigating`. It is revealed *lazily*, only
+once a loader is actually about to run: navigations with no loaders, cache hits, and
+prerender-restored loads never flash it. Left unset, the previous page simply stays visible until
+the new route is ready.
+
+### Revalidation (refresh after a mutation)
+
+```csharp
+await Http.PostAsJsonAsync("/api/todos", newTodo);
+await brouter.RevalidateAsync();   // re-runs the matched chain's loaders, re-renders fresh data
+```
+
+Not a navigation: the URL stays, guards and `OnNavigating`/`OnNavigated` don't run, and the current
+content remains visible while loaders work. Loaders can branch on `ctx.IsRevalidation`. For data on
+*other* pages, `brouter.ClearLoaderCache()` drops every cached loader result instead.
+
+### Loader caching (stale-while-revalidate)
+
+```razor
+<Broute Path="/feed" Loader="@LoadFeed" StaleTime="@TimeSpan.FromMinutes(1)">...</Broute>
+```
+
+With a `StaleTime` (per-route, or `o.DefaultLoaderStaleTime` globally), loader results cache per
+URL (path + query):
+
+- **fresh** hit (younger than `StaleTime`) → the loader is skipped entirely - Back/Forward becomes instant;
+- **stale** hit → by default (`o.StaleReloadMode = Background`) the cached data renders immediately
+  and a background revalidation refreshes it (classic SWR); `Blocking` treats stale as a miss;
+- entries die after `o.LoaderCacheGcTime` (30 min default) and the store is capped at
+  `o.MaxLoaderCacheEntries` (50), oldest evicted first.
+
+No `StaleTime` anywhere → no caching, exactly the previous behavior.
+
+### Preloading
+
+```razor
+<BrouterLink Href="/users/42" Preload="BrouterLinkPreload.Intent">Saleh</BrouterLink>
+```
+
+`Intent` runs the destination's loaders into the cache on hover/touch/focus (debounced by
+`o.PreloadDelay`, 50 ms); `Viewport` fires once when the link scrolls into view; `Render` fires
+immediately; `o.DefaultLinkPreload` sets an app-wide default. Programmatic:
+`await brouter.PreloadAsync("/users/42")`. Preloads run **loaders only** - no guards, no rendering -
+and a preloaded result younger than `o.PreloadStaleTime` (30 s) is used by the real navigation even
+on routes with no `StaleTime`. Keep preloaded loaders side-effect-free (`ctx.IsPreload` is set).
+
+### Deferred (streamed) data
+
+Let the critical part block navigation and stream the slow part in afterwards:
+
+```csharp
+private async ValueTask<object?> LoadPost(BrouterNavigationContext ctx)
+{
+    var post = await Http.GetFromJsonAsync<Post>($"/api/posts/{ctx.Parameters["id"]}", ctx.CancellationToken);
+    var comments = Http.GetFromJsonAsync<Comment[]>($"/api/posts/{ctx.Parameters["id"]}/comments"); // NOT awaited
+    return new PostData(post!, comments!);
+}
+```
+
+```razor
+<h1>@(Data!.Get<PostData>().Post.Title)</h1>
+
+<BrouterAwait Task="@(Data!.Get<PostData>().Comments)">
+    <Pending><p>Loading comments…</p></Pending>
+    <Resolved Context="comments">@foreach (var c in comments) { <p>@c.Text</p> }</Resolved>
+    <Error Context="ex"><p>Comments unavailable: @ex.Message</p></Error>
+</BrouterAwait>
+```
+
+Loader results containing live tasks are skipped by `PersistLoaderState` (tasks aren't
+serializable), so such loaders simply re-run on the interactive pass.
+
 ## Programmatic navigation
 
 ```razor
@@ -219,6 +388,39 @@ instead of all of them combined.
         new Dictionary<string, object?> { ["id"] = 42 });
 }
 ```
+
+### Awaitable navigation
+
+`NavigateAsync` resolves with how the navigation actually concluded, mirroring Vue Router's
+navigation failures - no more assuming a `Navigate` call landed:
+
+```csharp
+var outcome = await brouter.NavigateAsync("/admin");
+switch (outcome.Status)
+{
+    case BrouterNavigationStatus.Succeeded:  /* committed + rendered */          break;
+    case BrouterNavigationStatus.Cancelled:  /* a guard said no */               break;
+    case BrouterNavigationStatus.Redirected: /* see outcome.RedirectedTo */      break;
+    case BrouterNavigationStatus.NotFound:   /* no route matched */              break;
+    case BrouterNavigationStatus.Failed:     /* see outcome.Exception */         break;
+    case BrouterNavigationStatus.Superseded: /* a newer navigation overtook it */ break;
+}
+```
+
+### History entry state
+
+Attach application state to the destination's history entry and read it back after the navigation -
+including when the user returns to the entry via Back/Forward (`history.state` semantics):
+
+```csharp
+brouter.Navigate("/results", historyState: "search=blazor;page=3");
+// later, e.g. in a loader or OnNavigated:
+var state = brouter.Location.HistoryState; // also on ctx.To.HistoryState
+```
+
+`<BrouterLink Href="/results" HistoryState="...">` does the same for link clicks (the link
+intercepts unmodified left-clicks the way `Replace` links do, since an href-driven navigation
+can't carry state). Serialize structured payloads (e.g. JSON) yourself.
 
 ### Relative navigation
 
@@ -310,6 +512,39 @@ no further scroll or focus handling runs (so `FocusOnNavigateSelector` is not ap
 Otherwise, on a Back/Forward with a remembered position that position is restored, else scroll-to-top runs;
 and only in these non-fragment cases does `FocusOnNavigateSelector` (if set) then receive focus.
 
+## View transitions
+
+Enable the browser's View Transitions API to animate between pages - a cross-fade by default,
+per-element morphs via standard CSS:
+
+```csharp
+builder.Services.AddBitBrouterServices(o =>
+{
+    o.ViewTransitions = true;
+});
+```
+
+```css
+/* Same view-transition-name on both pages => the element morphs between them. */
+.post-title { view-transition-name: post-title; }
+```
+
+Brouter splits the transition around Blazor's async render: the outgoing page is snapshotted right
+before the new route renders, and the transition completes once the new DOM (including scroll/focus
+effects) has landed. On browsers without `document.startViewTransition`, during prerender, and in
+non-browser hosts the whole thing is inert - navigation behaves exactly as with the option off.
+
+## Not found handling (.NET 10)
+
+On net10.0, Brouter participates in the framework's not-found contract:
+
+- Application code calling `NavigationManager.NotFound()` (e.g. a page whose entity lookup failed)
+  flows through Brouter: the `OnNotFound` hook fires, then the `NotFound` URL redirect or inline
+  `NotFoundContent` renders - the URL stays put, mirroring the built-in router.
+- When Brouter itself matches nothing during **static SSR**, it calls `NavigationManager.NotFound()`
+  so the response carries a real **HTTP 404** (and drives `UseStatusCodePagesWithReExecute` when
+  configured) instead of a 200 with fallback HTML.
+
 ## Global hooks
 
 ```razor
@@ -346,6 +581,10 @@ and only in these non-fragment cases does `FocusOnNavigateSelector` (if set) the
 }
 ```
 
+Besides the `IBrouter` events, the `Brouter` component itself takes two async hooks:
+`OnMatch` (fired with the winning `Broute` whenever a route matches) and `OnNotFound` (fired with
+the `BrouterLocation` when nothing matches, before the `NotFound` redirect/fallback applies).
+
 ## Nested routes
 
 ```razor
@@ -368,6 +607,134 @@ and only in these non-fragment cases does `FocusOnNavigateSelector` (if set) the
     </ChildContent>
 </Broute>
 ```
+
+### Pathless group routes
+
+Share behavior across routes without inventing a URL segment:
+
+```razor
+<Broute Group Path="" Guard="@RequireAdmin" Loader="@LoadAdminShell">
+    <Content>
+        <AdminShell><BrouterOutlet /></AdminShell>
+    </Content>
+    <ChildContent>
+        <Broute Path="/dashboard" Component="@typeof(DashboardPage)" />
+        <Broute Path="/audit" Component="@typeof(AuditPage)" />
+    </ChildContent>
+</Broute>
+```
+
+`/dashboard` and `/audit` match exactly as written - the group is invisible in the URL, in
+specificity and in depth tiebreaks - but its guard, loader, layout and `ErrorContent` apply to both
+children. Sibling groups coexist freely (they never register as matchable templates).
+
+### Lazy route loading
+
+```razor
+<Brouter OnNavigateAsync="@LoadRouteAssemblies" Navigating="@LoadingUi">...</Brouter>
+
+@code {
+    [Inject] LazyAssemblyLoader Lazy { get; set; } = default!;
+
+    private async ValueTask<IEnumerable<Assembly>?> LoadRouteAssemblies(BrouterNavigationContext ctx)
+    {
+        if (ctx.To.Path.StartsWith("/reports"))
+            return await Lazy.LoadAssembliesAsync(["Reports.wasm"]);
+        return null;
+    }
+}
+```
+
+The hook runs before matching on every navigation (initial deep links included). Returned
+assemblies are scanned for `@page`/`[Route]` components and registered *within the same
+navigation*, so the URL that triggered the load lands on the freshly-loaded page - no
+grow-a-list-and-re-render dance.
+
+### Functional query updates
+
+```csharp
+// From /q?filter=red&sort=name&page=1:
+brouter.NavigateWithQuery(q => q.Set("page", 2));          // -> /q?filter=red&sort=name&page=2
+brouter.NavigateWithQuery(q => q.Remove("filter"));         // untouched params always survive
+brouter.NavigateWithQuery(q => q.SetAll("tag", ["a", "b"])); // -> ?tag=a&tag=b
+```
+
+Values are formatted invariantly (same rules as `ResolveUrl`), null removes a parameter, and the
+navigation replaces the history entry by default (query-as-UI-state); pass `replace: false` to push.
+
+## Typed routes (source generator)
+
+Add the `Bit.Brouter.Generators` package and every route declared in your `.razor` files - `@page`
+directives, `@attribute [Route(...)]`, and literal (nested) `<Broute Path="...">` trees - gets a
+compile-time-safe URL builder on a generated `BrouterRoutes` class in your root namespace:
+
+```razor
+@* declared somewhere: <Broute Name="counter" Path="/counter/{init:int}" />
+                       <Broute Path="/profile/{username?}" />
+                       @page "/files/{**path}" *@
+
+<BrouterLink Href="@BrouterRoutes.Counter(1234)">Counter</BrouterLink>
+
+@code {
+    void Go() => brouter.Navigate(BrouterRoutes.ProfileByUsername("saleh", query: "tab=posts"));
+    string FileUrl() => BrouterRoutes.Files("docs/readme.md");
+    void ByName() => brouter.NavigateToName(BrouterRoutes.Names.Counter,
+                         new Dictionary<string, object?> { ["init"] = 5 });
+}
+```
+
+- Constraints become parameter types (`{init:int}` → `int init`, `{id:guid}` → `Guid id`; the last
+  constraint wins, matching the matcher), optionals become optional arguments, catch-alls become
+  path strings split and escaped per segment.
+- Methods are named from the route's `Name` when present (named routes always own their identifier)
+  or from the template's literals + `By{Param}` suffixes; every method takes a trailing
+  `string? query = null`.
+- Values are escaped and formatted with the router's exact invariant rules, so a generated URL
+  always round-trips through its own template.
+- Skipped by design: dynamic paths (`Path="@expr"`) and their subtrees, `RedirectTo` routes,
+  literal-wildcard templates (`/*/x`), and `Group` routes (their children generate normally).
+
+## Named outlets
+
+One route can fill several regions of its parent's layout. The parent declares outlets; each child
+route provides its main content plus optional named `BrouterView` fragments:
+
+```razor
+<Broute Path="/dashboard">
+    <Content>
+        <main><BrouterOutlet /></main>                @* primary: the child's Content/Component *@
+        <aside><BrouterOutlet Name="sidebar" /></aside> @* named: the child's matching BrouterView *@
+    </Content>
+    <ChildContent>
+        <Broute Path="/stats">
+            <Content><StatsPage /></Content>
+            <ChildContent>
+                <BrouterView Name="sidebar" Context="p"><StatsFilters /></BrouterView>
+            </ChildContent>
+        </Broute>
+        <Broute Path="/settings" Component="@typeof(SettingsPage)" />  @* no view -> sidebar renders empty *@
+    </ChildContent>
+</Broute>
+```
+
+Named views receive the route's parameters (the `Context`) and see its data/meta cascades. Unlike
+Angular's secondary outlets there is no URL serialization - the named regions always follow the
+primary match, which is the common layout case.
+
+## Keep-alive routes
+
+```razor
+<Broute Path="/search" KeepAlive="true">
+    <Content><SearchPage /></Content>  @* filters, scroll, half-typed input survive navigation *@
+</Broute>
+```
+
+When the user navigates away, the rendered component stays mounted inside a hidden wrapper instead
+of being disposed; navigating back flips it visible again with all its state intact - including
+through a parent's `BrouterOutlet` when switching between sibling routes. The cost is memory and
+hidden DOM for as long as the hosting layout stays mounted (state does not survive the layout's own
+unmount, or a full reload). Opt-in per route; combine with `StaleTime` for instant, fully-warm
+Back navigation.
 
 ## Attribute-route / `@page` discovery
 
@@ -465,6 +832,22 @@ never breaks navigation.
 
 > This serializes loader results with reflection-based `System.Text.Json`, which isn't trimming/AOT-safe for
 > arbitrary types - enable it when your loader data types are JSON-serializable and preserved under trimming.
+> For full trimming/AOT safety, supply a source-generated context:
+>
+> ```csharp
+> [JsonSerializable(typeof(User))]
+> [JsonSerializable(typeof(Post))]
+> partial class AppJsonContext : JsonSerializerContext { }
+>
+> builder.Services.AddBitBrouterServices(o =>
+> {
+>     o.PersistLoaderState = true;
+>     o.LoaderStateTypeInfoResolver = AppJsonContext.Default;
+> });
+> ```
+>
+> Types the resolver doesn't cover degrade gracefully: their results aren't persisted and the loader
+> simply re-runs on the interactive pass.
 
 ## Custom constraints
 

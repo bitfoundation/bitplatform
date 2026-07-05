@@ -93,6 +93,90 @@ public sealed class BrouterOptions
     public bool PersistLoaderState { get; set; } = false;
 
     /// <summary>
+    /// Default freshness window for loader results when a <see cref="Broute"/> doesn't set its own
+    /// <see cref="Broute.StaleTime"/>. Null (the default) means loaders don't cache at all - every
+    /// navigation re-runs them, exactly the pre-caching behavior. See <see cref="Broute.StaleTime"/>
+    /// for the stale-while-revalidate semantics.
+    /// </summary>
+    public TimeSpan? DefaultLoaderStaleTime { get; set; }
+
+    /// <summary>
+    /// How long a cached loader result may live at all. Entries older than this are dropped on
+    /// lookup regardless of staleness handling, bounding how outdated a stale-while-revalidate
+    /// render can ever be. Defaults to 30 minutes (TanStack Router's <c>gcTime</c> default).
+    /// </summary>
+    public TimeSpan LoaderCacheGcTime { get; set; } = TimeSpan.FromMinutes(30);
+
+    /// <summary>
+    /// Upper bound on cached loader results; the oldest-written entries are evicted first.
+    /// Defaults to 50 (mirrors the scroll-position store's cap).
+    /// </summary>
+    public int MaxLoaderCacheEntries { get; set; } = 50;
+
+    /// <summary>
+    /// How a stale (but not yet garbage-collected) cached loader result is served.
+    /// <see cref="BrouterStaleReloadMode.Background"/> (default) renders the cached data immediately
+    /// and refreshes it in the background - classic stale-while-revalidate;
+    /// <see cref="BrouterStaleReloadMode.Blocking"/> treats stale as a miss and waits for the loader.
+    /// </summary>
+    public BrouterStaleReloadMode StaleReloadMode { get; set; } = BrouterStaleReloadMode.Background;
+
+    /// <summary>
+    /// Default preload behavior for every <see cref="BrouterLink"/> that doesn't set its own
+    /// <see cref="BrouterLink.Preload"/>. Defaults to <see cref="BrouterLinkPreload.None"/>.
+    /// </summary>
+    public BrouterLinkPreload DefaultLinkPreload { get; set; } = BrouterLinkPreload.None;
+
+    /// <summary>
+    /// Debounce for <see cref="BrouterLinkPreload.Intent"/> preloading: the pointer must rest on the
+    /// link this long before the preload fires, so merely brushing past links doesn't fetch.
+    /// Defaults to 50 ms (TanStack Router's <c>defaultPreloadDelay</c>).
+    /// </summary>
+    public TimeSpan PreloadDelay { get; set; } = TimeSpan.FromMilliseconds(50);
+
+    /// <summary>
+    /// Freshness window for cache entries produced by link preloading (<see cref="BrouterLink.Preload"/> /
+    /// <see cref="IBrouter.PreloadAsync"/>) on routes that don't otherwise cache (no
+    /// <see cref="Broute.StaleTime"/>). A preloaded result younger than this is used instead of
+    /// re-running the loader when the user actually navigates. Defaults to 30 seconds (TanStack
+    /// Router's <c>preloadStaleTime</c> default).
+    /// </summary>
+    public TimeSpan PreloadStaleTime { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Optional <see cref="System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver"/> used to
+    /// serialize loader results for <see cref="PersistLoaderState"/>. Supply a source-generated
+    /// <c>JsonSerializerContext</c> covering your loader data types to make the prerender state
+    /// bridge fully trimming/AOT-safe; when <c>null</c> (the default) reflection-based
+    /// <c>System.Text.Json</c> is used. Types the resolver can't handle degrade gracefully: their
+    /// results simply aren't persisted, so the loader re-runs on the interactive pass.
+    /// </summary>
+    public System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver? LoaderStateTypeInfoResolver { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, each successful navigation's re-render is wrapped in the browser's View
+    /// Transitions API (<c>document.startViewTransition</c>), giving an animated cross-fade between
+    /// the outgoing and incoming pages by default and enabling per-element morph animations via the
+    /// standard <c>view-transition-name</c> CSS property - no Blazor-specific animation code needed.
+    /// Mirrors Angular's <c>withViewTransitions</c> and React Router's <c>viewTransition</c>.
+    /// Gracefully inert on browsers without the API, during prerender, and in non-browser hosts.
+    /// Defaults to <c>false</c>.
+    /// </summary>
+    public bool ViewTransitions { get; set; } = false;
+
+    /// <summary>
+    /// When <c>true</c>, leaving the SPA entirely - closing the tab, a full page reload, or following
+    /// a link to another document - triggers the browser's generic "leave site?" confirmation dialog
+    /// (a <c>beforeunload</c> handler), armed once the router becomes interactive. Complements
+    /// <see cref="Broute.LeaveGuard"/>, which covers in-SPA navigations with full custom logic.
+    /// Browser rules apply: the dialog only appears after the user has interacted with the page, and
+    /// its text cannot be customized. For dynamic control (e.g. only while a form is dirty), leave
+    /// this <c>false</c> and toggle <see cref="IBrouter.SetConfirmExternalNavigationAsync"/> at
+    /// runtime instead. Defaults to <c>false</c>.
+    /// </summary>
+    public bool ConfirmExternalNavigation { get; set; } = false;
+
+    /// <summary>
     /// Custom route parameter constraints scoped to this DI container. Register at startup so templates
     /// can use them, e.g. <c>AddBitBrouterServices(o =&gt; o.Constraints.Register("slug", new SlugConstraint()))</c>,
     /// then <c>{post:slug}</c> in a route. Constraints registered here are visible only to the app/service

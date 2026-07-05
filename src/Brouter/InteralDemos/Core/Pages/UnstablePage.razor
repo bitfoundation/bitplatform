@@ -1,0 +1,32 @@
+@* Demos: the success side of the error-boundary route. Its loader (see AppRouter) throws while
+   DemoState.UnstableShouldFail is set; the route's ErrorContent renders the failure with a
+   fix-and-retry button. This page re-arms the failure so the boundary can be seen again. *@
+
+@inject IBrouter brouter
+@inject DemoState State
+
+<div class="bb-intro">
+    <h1>Unstable route - loaded fine</h1>
+    <p class="bb-subtitle">You're seeing the route's <code>Content</code>; last load succeeded.</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Data</h3>
+    <p>@(Data?.GetOrDefault<string>())</p>
+    <button class="btn btn-primary" @onclick="BreakItAgain">Break the loader and reload</button>
+    <p class="bb-card-desc">
+        The loader will throw again; the nearest <code>ErrorContent</code> - declared on this route -
+        replaces this content, with a retry button that heals it. The global <code>OnError</code> hook
+        fires either way.
+    </p>
+</div>
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+
+    private Task BreakItAgain()
+    {
+        State.UnstableShouldFail = true;
+        return brouter.RevalidateAsync().AsTask();
+    }
+}

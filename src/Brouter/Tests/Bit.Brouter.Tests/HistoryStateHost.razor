@@ -1,0 +1,39 @@
+@* Hosts a Brouter with two routes plus a state-carrying BrouterLink so HistoryStateTests can
+   exercise IBrouter.Navigate(historyState:) and BrouterLink.HistoryState against the real
+   navigation pipeline (including what guards/hooks observe on ctx.To). *@
+
+@using Bit.Brouter
+@implements IDisposable
+@inject IBrouter Brouter
+
+<Brouter>
+    <Broute Path="/a">
+        <Content><div data-testid="a">a</div></Content>
+    </Broute>
+    <Broute Path="/b">
+        <Content><div data-testid="b">b</div></Content>
+    </Broute>
+</Brouter>
+
+<BrouterLink Href="/b" HistoryState="@LinkState" Replace="@LinkReplace" data-testid="state-link">go b</BrouterLink>
+
+@code {
+    [Parameter] public string? LinkState { get; set; }
+    [Parameter] public bool LinkReplace { get; set; }
+
+    // History state observed on ctx.To by the OnNavigated hook for the most recent navigation.
+    // Distinguishes "hook not fired" (unset) from a genuinely null state via HookFired.
+    public string? LastHookState { get; private set; }
+    public bool HookFired { get; private set; }
+
+    protected override void OnInitialized() => Brouter.OnNavigated += OnNavigated;
+
+    private ValueTask OnNavigated(BrouterNavigationContext ctx)
+    {
+        HookFired = true;
+        LastHookState = ctx.To.HistoryState;
+        return ValueTask.CompletedTask;
+    }
+
+    public void Dispose() => Brouter.OnNavigated -= OnNavigated;
+}

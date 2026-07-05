@@ -1,0 +1,7 @@
+@* Renders the cascaded loader data so RevalidateTests can observe data refreshes in the DOM. *@
+
+<div data-testid="child-data">@(Data?.GetOrDefault<string>())</div>
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+}

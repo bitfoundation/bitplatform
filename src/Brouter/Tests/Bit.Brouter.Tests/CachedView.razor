@@ -1,0 +1,7 @@
+@* Renders the cascaded loader payload for LoaderCacheTests assertions. *@
+
+<div data-testid="payload">@(Data?.GetOrDefault<string>())</div>
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+}

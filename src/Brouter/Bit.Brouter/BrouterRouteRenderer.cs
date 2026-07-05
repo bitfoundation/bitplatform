@@ -40,20 +40,22 @@ internal class BrouterRouteRenderer
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
         {
             b.AddContent(0, _route.ChildContent);
-            if (matched)
+            // A KeepAlive route that has been shown at least once keeps rendering while unmatched -
+            // hidden - so its component state survives until it matches again.
+            if (matched || (_route.KeepAlive && _route.HasEverMatched))
             {
                 // RenderRoute restarts its own sequence numbers from 0; wrap it in a region
                 // so its frames live in an independent sequence-number space and don't collide
                 // with the AddContent above.
                 b.OpenRegion(1);
-                RenderRoute(b);
+                RenderRoute(b, matched);
                 b.CloseRegion();
             }
         }));
         builder.CloseComponent();
     }
 
-    private void RenderRoute(RenderTreeBuilder builder)
+    private void RenderRoute(RenderTreeBuilder builder, bool matched)
     {
         var inherited = _route.InheritedParameters;
         var local = _route.Parameters;
@@ -117,23 +119,48 @@ internal class BrouterRouteRenderer
                 b2.AddAttribute(1, "Value", routeMeta);
                 b2.AddAttribute(2, "ChildContent", (RenderFragment)(b3 =>
                 {
-                    if (_route.Parent?.Outlet is null)
+                    // Resolve the outlet host: normally the immediate parent, but pathless Group
+                    // ancestors are invisible to layout just as they are to the URL - a group that
+                    // hosts no outlets of its own passes its children through to ITS parent's
+                    // outlets. The walk stops at the first ancestor with outlets (a group CAN host
+                    // its own via a layout Content) or at the first non-group ancestor either way.
+                    Broute? outletHost = null;
+                    for (var p = _route.Parent; p is not null; p = p.Parent)
                     {
-                        if (_route.Content is not null)
+                        if (p.Outlets.Count > 0)
                         {
-                            b3.AddContent(0, _route.Content(routeParams));
+                            outletHost = p;
+                            break;
                         }
-                        else if (_route.Component is not null)
-                        {
-                            b3.OpenComponent(0, _route.Component);
-                            ApplyTypedParameters(b3, _route.Component, routeParams, _route.Brouter?.CurrentLocation,
-                                _route.BindComponentParametersByName ? _route.TemplateParameterNames : null);
-                            b3.CloseComponent();
-                        }
+                        if (p.Group is false) break; // non-group ancestor without outlets: render inline
                     }
-                    else
+
+                    // Hand the matched child to the host's outlets (the primary outlet renders its
+                    // content/error UI, named outlets its BrouterView fragments). Only a *matched*
+                    // route may claim the outlets - a hidden KeepAlive pass must not hijack them.
+                    if (matched && outletHost is not null)
                     {
-                        _route.Parent.Outlet.Render(_route, routeParams);
+                        outletHost.SetOutletChild(_route, routeParams);
+                    }
+
+                    // Without a primary outlet on the host, the content renders inline right here.
+                    if (outletHost is null || outletHost.HasPrimaryOutlet is false)
+                    {
+                        if (_route.KeepAlive)
+                        {
+                            // The stable wrapper element is what preserves the component subtree
+                            // across matched <-> hidden flips; only its hidden attribute toggles.
+                            b3.OpenElement(0, "div");
+                            if (matched is false) b3.AddAttribute(1, "hidden", true);
+                            b3.OpenRegion(2);
+                            EmitContent(b3, routeParams);
+                            b3.CloseRegion();
+                            b3.CloseElement();
+                        }
+                        else
+                        {
+                            EmitContent(b3, routeParams);
+                        }
                     }
                 }));
                 b2.CloseComponent();
@@ -141,6 +168,30 @@ internal class BrouterRouteRenderer
             b1.CloseComponent();
         }));
         builder.CloseComponent();
+    }
+
+    // The route's error-boundary/content/component trio for inline (non-outlet) rendering.
+    // Same sequence number across the mutually-exclusive branches is fine - only one renders
+    // per pass and they diff cleanly across renders.
+    private void EmitContent(RenderTreeBuilder b3, BrouterRouteParameters routeParams)
+    {
+        // Active error boundary: the error UI replaces this route's content while the
+        // surrounding cascades (parameters/data/meta) stay available to the fragment.
+        if (_route.CurrentError is not null && _route.ErrorContent is not null)
+        {
+            b3.AddContent(0, _route.ErrorContent(_route.CurrentError));
+        }
+        else if (_route.Content is not null)
+        {
+            b3.AddContent(0, _route.Content(routeParams));
+        }
+        else if (_route.Component is not null)
+        {
+            b3.OpenComponent(0, _route.Component);
+            ApplyTypedParameters(b3, _route.Component, routeParams, _route.Brouter?.CurrentLocation,
+                _route.BindComponentParametersByName ? _route.TemplateParameterNames : null);
+            b3.CloseComponent();
+        }
     }
 
     internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location, IReadOnlySet<string>? conventionalTemplateParameters = null)

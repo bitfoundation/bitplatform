@@ -39,19 +39,34 @@ internal static class BroutePrerenderState
     internal static string MakeKey(string path, string query, int chainIndex) =>
         $"Bit.Brouter|{path}|{query}|{chainIndex}";
 
-    /// <summary>Captures a loader result into its persistable form.</summary>
+    /// <summary>
+    /// Captures a loader result into its persistable form using <paramref name="serializerOptions"/>
+    /// (a source-generated-resolver-backed instance for AOT-safety, see
+    /// <see cref="BrouterOptions.LoaderStateTypeInfoResolver"/>) or the reflection-based defaults.
+    /// Returns <c>null</c> when the value can't be serialized (e.g. the supplied resolver doesn't
+    /// cover its type) - the caller then skips persisting it and the loader simply re-runs on the
+    /// interactive pass, so an unserializable type never breaks prerender.
+    /// </summary>
     [RequiresUnreferencedCode("Serializes an arbitrary loader result via System.Text.Json reflection.")]
     [RequiresDynamicCode("Serializes an arbitrary loader result via System.Text.Json reflection.")]
-    internal static PersistedLoaderState Capture(object? value)
+    internal static PersistedLoaderState? Capture(object? value, JsonSerializerOptions? serializerOptions = null)
     {
         if (value is null) return new PersistedLoaderState { TypeName = null, Json = null };
 
         var type = value.GetType();
-        return new PersistedLoaderState
+        try
         {
-            TypeName = type.AssemblyQualifiedName,
-            Json = JsonSerializer.Serialize(value, type, _options),
-        };
+            return new PersistedLoaderState
+            {
+                TypeName = type.AssemblyQualifiedName,
+                Json = JsonSerializer.Serialize(value, type, serializerOptions ?? _options),
+            };
+        }
+        catch (Exception ex) when (ex is NotSupportedException or InvalidOperationException or JsonException)
+        {
+            // Unserializable under the active resolver/options: skip persistence for this entry.
+            return null;
+        }
     }
 
     /// <summary>
@@ -61,7 +76,7 @@ internal static class BroutePrerenderState
     /// </summary>
     [RequiresUnreferencedCode("Deserializes a loader result into its runtime type via System.Text.Json reflection.")]
     [RequiresDynamicCode("Deserializes a loader result into its runtime type via System.Text.Json reflection.")]
-    internal static bool TryRestore(PersistedLoaderState? state, out object? value)
+    internal static bool TryRestore(PersistedLoaderState? state, out object? value, JsonSerializerOptions? serializerOptions = null)
     {
         value = null;
         if (state is null) return false;
@@ -79,11 +94,13 @@ internal static class BroutePrerenderState
             var type = Type.GetType(state.TypeName, throwOnError: false);
             if (type is null) return false; // type not available here; fall back to running the loader
 
-            value = JsonSerializer.Deserialize(state.Json, type, _options);
+            value = JsonSerializer.Deserialize(state.Json, type, serializerOptions ?? _options);
             return true;
         }
         catch (Exception ex) when (ex is JsonException
             or ArgumentException
+            or NotSupportedException
+            or InvalidOperationException
             or System.IO.FileLoadException
             or System.IO.FileNotFoundException
             or BadImageFormatException

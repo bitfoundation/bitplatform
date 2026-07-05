@@ -26,6 +26,139 @@ export function wireConditionalPreventDefault(element: HTMLElement | null) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Link preloading (BrouterLink.Preload). Wires the DOM triggers for the two JS-driven modes and
+// calls back into the BrouterLink instance, which resolves the target route and runs its loaders
+// into the cache. 'intent' fires on pointer hover / touchstart / keyboard focus after a small
+// debounce (leaving cancels a pending fire); 'viewport' fires once when the link first becomes
+// visible. Repeated fires are cheap: the C# side short-circuits on a still-fresh cache entry.
+
+export function wirePreload(element: HTMLElement | null, mode: string, delayMs: number, dotnetRef: any) {
+    if (!element || !dotnetRef) return null;
+
+    const trigger = () => { try { dotnetRef.invokeMethodAsync('OnPreloadTriggered'); } catch { /* disposed */ } };
+
+    if (mode === 'intent') {
+        let timer: number | null = null;
+        const arm = () => {
+            if (timer !== null) return;
+            timer = window.setTimeout(() => { timer = null; trigger(); }, delayMs);
+        };
+        const disarm = () => {
+            if (timer !== null) { window.clearTimeout(timer); timer = null; }
+        };
+        element.addEventListener('pointerenter', arm);
+        element.addEventListener('pointerleave', disarm);
+        element.addEventListener('touchstart', arm, { passive: true });
+        element.addEventListener('focus', arm);
+        element.addEventListener('blur', disarm);
+        return {
+            dispose: () => {
+                disarm();
+                element.removeEventListener('pointerenter', arm);
+                element.removeEventListener('pointerleave', disarm);
+                element.removeEventListener('touchstart', arm);
+                element.removeEventListener('focus', arm);
+                element.removeEventListener('blur', disarm);
+            }
+        };
+    }
+
+    if (mode === 'viewport') {
+        if (typeof IntersectionObserver !== 'function') return null;
+        const observer = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    observer.disconnect();
+                    trigger();
+                    break;
+                }
+            }
+        });
+        observer.observe(element);
+        return { dispose: () => observer.disconnect() };
+    }
+
+    return null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// View Transitions API integration (BrouterOptions.ViewTransitions).
+//
+// Blazor renders asynchronously, so the classic synchronous startViewTransition(update) shape
+// doesn't fit: the DOM mutation happens whenever the render batch lands, not inside a callback we
+// control. The handshake is therefore split: beginViewTransition() is called by the C# pipeline
+// right BEFORE it triggers the new route's render - startViewTransition snapshots the old page and
+// receives an update promise we hold open - and completeViewTransition() is called from
+// OnAfterRenderAsync once the new DOM is committed, resolving that promise so the browser
+// snapshots the new state and runs the crossfade (customizable per-element with the standard
+// view-transition-name CSS). If C# never completes (a crash path), the browser's own transition
+// timeout aborts it - the page does not hang.
+
+let activeViewTransitionResolve: (() => void) | null = null;
+
+// Returns true when a transition was actually started (API present); false lets the C# side skip
+// the completion round-trip entirely on unsupported browsers.
+export function beginViewTransition(): boolean {
+    const doc = document as any;
+    if (typeof doc.startViewTransition !== 'function') return false;
+
+    // A still-open previous transition (its navigation was superseded mid-flight) must be released
+    // first: the browser skips/settles it and lets the new one start cleanly.
+    if (activeViewTransitionResolve) {
+        activeViewTransitionResolve();
+        activeViewTransitionResolve = null;
+    }
+
+    try {
+        doc.startViewTransition(() => new Promise<void>(resolve => {
+            activeViewTransitionResolve = resolve;
+        }));
+        return true;
+    } catch {
+        // Defensive: a host with a broken/partial implementation must not break navigation.
+        activeViewTransitionResolve = null;
+        return false;
+    }
+}
+
+// Resolves the pending transition's update promise; the browser then animates old -> new.
+// Idempotent: completing with no pending transition is a no-op.
+export function completeViewTransition() {
+    if (activeViewTransitionResolve) {
+        activeViewTransitionResolve();
+        activeViewTransitionResolve = null;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// External-navigation confirmation (BrouterOptions.ConfirmExternalNavigation /
+// IBrouter.SetConfirmExternalNavigationAsync). While armed, leaving the SPA entirely - closing the
+// tab, a full reload, or following a link to another origin/document - triggers the browser's
+// generic "unsaved changes" dialog. Browsers only honor beforeunload after a user interaction with
+// the page (sticky activation), and the dialog text is not customizable; both are platform rules.
+// In-SPA navigations are unaffected (use leave guards / OnNavigating for those).
+
+let confirmExternalArmed = false;
+
+const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+    e.preventDefault();
+    // Chrome (and pre-standard browsers) require returnValue to be set for the dialog to appear.
+    e.returnValue = '';
+};
+
+// Arms/disarms the beforeunload confirmation. Idempotent in both directions so C# callers can
+// toggle freely (e.g. a dirty-form tracker flipping it on and off).
+export function setConfirmExternalNavigation(enabled: boolean) {
+    if (enabled && !confirmExternalArmed) {
+        window.addEventListener('beforeunload', beforeUnloadHandler);
+        confirmExternalArmed = true;
+    } else if (!enabled && confirmExternalArmed) {
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
+        confirmExternalArmed = false;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
 // Scroll restoration state (only used when BrouterOptions.RestoreScrollPosition is enabled).
 //
 // scrollPositions : absolute-URL -> { x, y } scroll offset the user was at when they left that URL.

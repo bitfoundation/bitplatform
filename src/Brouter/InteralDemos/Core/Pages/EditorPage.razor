@@ -1,0 +1,62 @@
+@* Demos: per-route LeaveGuard (declared on the /editor route in AppRouter, reading DemoState) and
+   runtime external-navigation confirmation. Type something, then try to navigate away: the leave
+   guard cancels preventively - the URL never changes. Discard to leave. *@
+
+@inject IBrouter brouter
+@inject DemoState State
+
+<div class="bb-intro">
+    <h1>Leave guard (unsaved changes)</h1>
+    <p class="bb-subtitle">A dirty editor blocks in-SPA navigation via <code>LeaveGuard</code>; tab-close/reload via <code>beforeunload</code>.</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title">
+        <span class="bb-dot @(State.IsEditorDirty ? "bb-dot-danger" : "bb-dot-success")"></span>
+        Draft @(State.IsEditorDirty ? "(unsaved changes - navigation is blocked)" : "(clean)")
+    </h3>
+    <textarea rows="4" style="width: 100%;" @oninput="OnInput" value="@_draft" placeholder="Type here to make the page dirty…"></textarea>
+    <div style="margin-top: .5rem;">
+        <button class="btn btn-primary" @onclick="Discard" disabled="@(State.IsEditorDirty is false)">Discard changes</button>
+    </div>
+    <p class="bb-card-desc">
+        While dirty, every navigation away is cancelled <em>preventively</em>: no address-bar flicker,
+        no broken Back button. A navigation between this route's own parameters wouldn't fire the
+        guard - only actually leaving does.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> External navigation</h3>
+    <label>
+        <input type="checkbox" checked="@_confirmExternal" @onchange="ToggleExternal" />
+        Also confirm tab close / reload / external links (browser dialog)
+    </label>
+    <p class="bb-card-desc">
+        Toggles <code>SetConfirmExternalNavigationAsync</code> at runtime - the pattern a dirty-form
+        tracker uses. (Browsers only show the dialog after you've interacted with the page.)
+    </p>
+</div>
+
+@code {
+    private string _draft = string.Empty;
+    private bool _confirmExternal;
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _draft = e.Value?.ToString() ?? string.Empty;
+        State.IsEditorDirty = _draft.Length > 0;
+    }
+
+    private void Discard()
+    {
+        _draft = string.Empty;
+        State.IsEditorDirty = false;
+    }
+
+    private async Task ToggleExternal(ChangeEventArgs e)
+    {
+        _confirmExternal = e.Value is true;
+        await brouter.SetConfirmExternalNavigationAsync(_confirmExternal);
+    }
+}
