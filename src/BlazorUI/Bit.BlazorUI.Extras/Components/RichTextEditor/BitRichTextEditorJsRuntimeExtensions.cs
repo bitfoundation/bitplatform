@@ -1,7 +1,14 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class BitRichTextEditorJsRuntimeExtensions
 {
+    // The setup payload types are only ever constructed (never read) from C#, so without these
+    // hints the trimmer strips their property getters and the reflection-based interop
+    // serialization silently sends empty objects to the bridge in trimmed (release) builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorSetupOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorPolicyPayload))]
     public static ValueTask BitRichTextEditorSetup(this IJSRuntime jsRuntime,
                                                         ElementReference editor,
                                                         DotNetObjectReference<BitRichTextEditor>? dotnetObj,
@@ -10,6 +17,8 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.initialize", editor, dotnetObj, options);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorSetupOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorPolicyPayload))]
     public static ValueTask BitRichTextEditorUpdateOptions(this IJSRuntime jsRuntime,
                                                            ElementReference editor,
                                                            BitRichTextEditorSetupOptions options)

@@ -13,6 +13,10 @@ public partial class SideRail
 
         if (ItemsChanged(sideRailItems, _sideRailItems))
         {
+            // Persist the snapshot the change-check compares against; otherwise ItemsChanged stays
+            // true forever and the StateHasChanged below schedules an endless render loop (which in
+            // WASM runs entirely in microtasks and freezes the browser tab).
+            _sideRailItems = sideRailItems;
             _items = [.. sideRailItems, new() { Id = "api-section", Title = "API" }, new() { Id = "feedback-section", Title = "Feedback" }];
 
             StateHasChanged();
