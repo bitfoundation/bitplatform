@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System.Xml.Linq;
 using System.Reflection;
-using System.Xml.Linq;
+using System.ComponentModel;
 using Bit.BlazorUI.Demo.Client.Core.Shared;
-using Microsoft.AspNetCore.Components.Web;
 using ModelContextProtocol.Server;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
@@ -92,7 +92,7 @@ public partial class McpController : AppControllerBase
             return renderedComponent.ToHtmlString();
         });
 
-        return Content(body.ToLlmFriendlyHtml(), "text/markdown");
+        return Content(HtmlToLLMTextService.ToLlmFriendlyHtml(body), "text/markdown");
     }
 
     [HttpGet]

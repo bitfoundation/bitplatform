@@ -1,8 +1,8 @@
-﻿using System.Net;
+﻿using HtmlAgilityPack;
+using System.Net;
 using System.Text.RegularExpressions;
-using HtmlAgilityPack;
 
-namespace System;
+namespace Bit.BlazorUI.Demo.Server.Services;
 
 public static partial class HtmlToLLMTextService
 {
