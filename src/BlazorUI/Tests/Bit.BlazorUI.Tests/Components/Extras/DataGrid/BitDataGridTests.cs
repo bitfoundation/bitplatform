@@ -502,7 +502,8 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.PageSize, 2);
         });
 
-        Assert.AreEqual("5", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
+        // 5 data rows + 1 header row: aria-rowcount spans the whole grid, headers included.
+        Assert.AreEqual("6", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
         Assert.AreEqual("2", component.Find(".bit-dtg-table").GetAttribute("aria-colcount"));
         Assert.AreEqual("1", component.Find(".bit-dtg-header-row").GetAttribute("aria-rowindex"));
 
@@ -514,6 +515,35 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("5", rows[1].GetAttribute("aria-rowindex"));
         Assert.AreEqual("1", rows[0].QuerySelectorAll(".bit-dtg-cell")[0].GetAttribute("aria-colindex"));
         Assert.AreEqual("2", rows[0].QuerySelectorAll(".bit-dtg-cell")[1].GetAttribute("aria-colindex"));
+    }
+
+    [TestMethod]
+    public void AriaRowIndicesStaySequentialWithGroupHeaderAndFilterRows()
+    {
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.Filterable, true);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+                builder.AddComponentParameter(1, "Field", "Name");
+                builder.AddComponentParameter(2, "Group", "Info");
+                builder.CloseComponent();
+                builder.OpenComponent<BitDataGridColumn<TestRow>>(3);
+                builder.AddComponentParameter(4, "Field", "Price");
+                builder.AddComponentParameter(5, "Group", "Info");
+                builder.CloseComponent();
+            }));
+        });
+
+        // 3 header rows (group header, header, filter) + 5 data rows, indexed as one sequence.
+        Assert.AreEqual("8", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
+        Assert.AreEqual("1", component.Find(".bit-dtg-group-header-row").GetAttribute("aria-rowindex"));
+        Assert.AreEqual("2", component.Find(".bit-dtg-header-row").GetAttribute("aria-rowindex"));
+        Assert.AreEqual("3", component.Find(".bit-dtg-filter-row").GetAttribute("aria-rowindex"));
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-message-row)");
+        Assert.AreEqual("4", rows[0].GetAttribute("aria-rowindex"));
     }
 
     [TestMethod]

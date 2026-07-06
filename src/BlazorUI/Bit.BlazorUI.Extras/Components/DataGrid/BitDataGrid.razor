@@ -69,14 +69,14 @@
 
     @* ------------------------------------------------------- Grid viewport *@
     <div class="bit-dtg-viewport" style="@ViewportStyle" @ref="_infiniteViewport">
-        <div class="bit-dtg-table" role="grid" aria-rowcount="@(IsInfiniteMode ? -1 : TotalCount)" aria-colcount="@TotalColumnSpan" style="--bit-dtg-template:@BuildGridTemplate();">
+        <div class="bit-dtg-table" role="grid" aria-rowcount="@(IsInfiniteMode ? -1 : TotalCount + HeaderRowCount)" aria-colcount="@TotalColumnSpan" style="--bit-dtg-template:@BuildGridTemplate();">
 
             @if (ShowHeader)
             {
                 <div class="bit-dtg-header" role="rowgroup">
                     @if (HasColumnGroups)
                     {
-                        <div class="bit-dtg-row bit-dtg-group-header-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        <div class="bit-dtg-row bit-dtg-group-header-row" role="row" aria-rowindex="1" style="grid-template-columns:var(--bit-dtg-template);">
                             @if (HasReorderColumn)
                             {
                                 <div class="bit-dtg-hcell bit-dtg-sticky" style="@ReorderStickyStyle" role="columnheader"></div>
@@ -102,7 +102,7 @@
                             }
                         </div>
                     }
-                    <div class="bit-dtg-row bit-dtg-header-row" role="row" aria-rowindex="1" style="grid-template-columns:var(--bit-dtg-template);">
+                    <div class="bit-dtg-row bit-dtg-header-row" role="row" aria-rowindex="@(HasColumnGroups ? 2 : 1)" style="grid-template-columns:var(--bit-dtg-template);">
                         @{ var headerColIndex = 0; }
                         @if (HasReorderColumn)
                         {
@@ -127,7 +127,7 @@
                         {
                             if (slot.Column is null)
                             {
-                                <div class="bit-dtg-hcell" role="columnheader" aria-hidden="true"></div>
+                                @PlaceholderCell("bit-dtg-hcell", "columnheader")
                                 continue;
                             }
                             var column = slot.Column;
@@ -209,9 +209,10 @@
                         }
                     </div>
 
-                    @if (!IsTreeMode && (Filterable || VisibleColumns.Any(ColumnFilterable)))
+                    @if (HasFilterRow)
                     {
-                        <div class="bit-dtg-row bit-dtg-filter-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        @* The filter row is always the last header row, so its aria-rowindex is HeaderRowCount. *@
+                        <div class="bit-dtg-row bit-dtg-filter-row" role="row" aria-rowindex="@HeaderRowCount" style="grid-template-columns:var(--bit-dtg-template);">
                             @if (HasReorderColumn)
                             {
                                 <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@ReorderStickyStyle"></div>
@@ -228,7 +229,7 @@
                             {
                                 if (slot.Column is null)
                                 {
-                                    <div class="bit-dtg-hcell" role="columnheader" aria-hidden="true"></div>
+                                    @PlaceholderCell("bit-dtg-hcell", "columnheader")
                                     continue;
                                 }
                                 var column = slot.Column;
@@ -405,7 +406,7 @@
                         {
                             if (slot.Column is null)
                             {
-                                <div class="bit-dtg-cell" role="gridcell" aria-hidden="true"></div>
+                                @PlaceholderCell("bit-dtg-cell", "gridcell")
                                 continue;
                             }
                             var column = slot.Column;
@@ -453,6 +454,12 @@
     private ICollection<TItem> VirtualRows => _pageItems as ICollection<TItem> ?? _pageItems.ToList();
     // The accumulated infinite-scroll batches as the collection Virtualize requires.
     private ICollection<TItem> InfiniteVirtualRows => _infiniteItems;
+
+    // The hidden placeholder cell rendered for a column-virtualization spacer slot (slot.Column is null).
+    private static RenderFragment PlaceholderCell(string cssClass, string role) => __builder =>
+    {
+        <div class="@cssClass" role="@role" aria-hidden="true"></div>
+    };
 
     private RenderFragment RenderGroupList(IReadOnlyList<BitDataGridGroup<TItem>> groups) => __builder =>
     {

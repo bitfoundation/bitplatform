@@ -2556,12 +2556,19 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _rowIndexByKey = map;
     }
 
-    /// <summary>The 1-based aria-rowindex for a data row (accounting for the header row), or null when
+    /// <summary>Whether the filter editor row renders below the header row.</summary>
+    internal bool HasFilterRow => !IsTreeMode && (Filterable || VisibleColumns.Any(ColumnFilterable));
+
+    /// <summary>The number of rows the header rowgroup renders (group-header, header and filter rows),
+    /// so aria-rowindex forms one consistent sequence across header and data rows.</summary>
+    internal int HeaderRowCount => ShowHeader ? (HasColumnGroups ? 1 : 0) + 1 + (HasFilterRow ? 1 : 0) : 0;
+
+    /// <summary>The 1-based aria-rowindex for a data row (accounting for all header rows), or null when
     /// unknown — a null renders no attribute.</summary>
     internal int? AriaRowIndex(TItem item)
     {
         if (_rowIndexByKey is null || !_rowIndexByKey.TryGetValue(GetKey(item), out var index)) return null;
-        return index + (ShowHeader ? 2 : 1);
+        return index + 1 + HeaderRowCount;
     }
 
     /// <summary>The row's absolute 0-based dataset position (its data-ri attribute), or null when
