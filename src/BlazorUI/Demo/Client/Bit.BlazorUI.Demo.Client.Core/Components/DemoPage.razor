@@ -4,26 +4,26 @@
 
 @if (RenderForMcpClient)
 {
-    @($"# {Name}")
+    @($"\n# {Name}\n")
 
     @if (SecondaryNames?.Length > 0)
     {
-        @($"**Also known as:** {string.Join(", ", SecondaryNames!)}")
+        @($"**Also known as:** {string.Join(", ", SecondaryNames!)}\n")
     }
 
     @if (Description.HasValue())
     {
-        @($"## Description\n{Description}")
+        @($"## Description\n{Description}\n")
     }
 
     @if (Notes.HasValue())
     {
-        @($"## Notes\n{Notes}")
+        @($"## Notes\n{Notes}\n")
     }
 
     @if (Introduction.HasValue())
     {
-        @($"## Introduction\n{Introduction}")
+        @($"## Introduction\n{Introduction}\n")
     }
 
     var publicMembers = PublicMembers;
@@ -56,28 +56,28 @@
         enums.AddRange(_componentBaseSubEnums);
     }
 
-    @("## Parameters")
-    @("| Name | Type | Default Value | Description |")
-    @("| :--- | :--- | :------------ | :---------- |")
+    @("## Parameters\n")
+    @("| Name | Type | Default Value | Description |\n")
+    @("| :--- | :--- | :------------ | :---------- |\n")
     @foreach (var param in parameters)
     {
         @($"| {param.Name} | `{param.Type}` | {param.DefaultValue} | {param.Description} |\n")
     }
 
-    @("## Public Members")
-    @("| Name | Type | Default Value | Description |")
-    @("| :--- | :--- | :------------ | :---------- |")
+    @("## Public Members\n")
+    @("| Name | Type | Default Value | Description |\n")
+    @("| :--- | :--- | :------------ | :---------- |\n")
     @foreach (var member in publicMembers)
     {
         @($"| {member.Name} | `{member.Type}` | {member.DefaultValue} | {member.Description} |\n")
     }
 
-    @("## Enums")
+    @("## Enums\n")
     @foreach (var subEnum in enums)
     {
-        @($"### {subEnum.Name} Enum\n\n")
-        @("| Name | Value | Description |")
-        @("| :--- | :--- | :---------- |")
+        @($"### {subEnum.Name} Enum\n")
+        @("| Name | Value | Description |\n")
+        @("| :--- | :--- | :---------- |\n")
         @foreach (var item in subEnum.Items)
         {
             @($"| {item.Name} | {item.Value} | {item.Description} |\n")
@@ -85,13 +85,13 @@
         @("\n")
     }
 
-    @("## Sub Classes")
+    @("## Sub Classes\n")
     @foreach (var subClass in SubClasses)
     {
         @($"### {subClass.Title} Properties\n")
-        @($"{subClass.Description}\n\n")
-        @("| Name | Type | Default Value | Description |")
-        @("| :--- | :--- | :------------ | :---------- |")
+        @($"{subClass.Description}\n")
+        @("| Name | Type | Default Value | Description |\n")
+        @("| :--- | :--- | :------------ | :---------- |\n")
         @foreach (var subParam in subClass.Parameters)
         {
             @($"| {subParam.Name} | `{subParam.Type}` | {subParam.DefaultValue} | {subParam.Description} |\n")
@@ -99,7 +99,7 @@
         @("\n")
     }
 
-    @("## Examples")
+    @("## Examples\n")
     @(ChildContent ?? Examples)
 }
 else

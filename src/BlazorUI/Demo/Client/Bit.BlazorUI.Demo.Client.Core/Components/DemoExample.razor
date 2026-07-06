@@ -2,7 +2,17 @@
 
 @if (RenderForMcpClient)
 {
-    @((MarkupString)($"**{Title}**: {RazorCode}{CsharpCode}"))
+    if (PreventRenderForMcpClient is false)
+    {
+        @((MarkupString)($@"\n**{Title}**:
+```razor
+{RazorCode}
+```
+```csharp
+{CsharpCode}
+```")
+        )
+    }
 }
 else
 {

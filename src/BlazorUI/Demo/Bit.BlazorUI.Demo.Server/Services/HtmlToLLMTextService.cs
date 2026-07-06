@@ -14,8 +14,10 @@ public static partial class HtmlToLLMTextService
         // 1. Unescape Unicode right away so HtmlAgilityPack parses the right characters
         rawHtml = Regex.Unescape(rawHtml);
 
-        var doc = new HtmlDocument();
-        doc.OptionOutputOriginalCase = true;
+        var doc = new HtmlDocument
+        {
+            OptionOutputOriginalCase = true
+        };
         doc.LoadHtml(rawHtml);
 
         // 2. Loop over all remaining elements to clean attributes
@@ -44,15 +46,6 @@ public static partial class HtmlToLLMTextService
         // 3. Decode HTML entities natively
         string friendlyHtml = WebUtility.HtmlDecode(cleanedHtml);
 
-        // 4. Clean up excessive whitespace/newlines to tighten token usage
-        friendlyHtml = NewlinesPattern().Replace(friendlyHtml, "\n");
-        friendlyHtml = MultiSpacePattern().Replace(friendlyHtml, " ");
-
         return friendlyHtml.Trim();
     }
-
-    [GeneratedRegex(@"[\r\n\t]+")]
-    private static partial Regex NewlinesPattern();
-    [GeneratedRegex(@"[ ]{2,}")]
-    private static partial Regex MultiSpacePattern();
 }

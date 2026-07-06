@@ -2,7 +2,7 @@
 
 public partial class BitNavBarDemo
 {
-    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+    [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
     private readonly List<ComponentParameter> componentParameters =
     [
