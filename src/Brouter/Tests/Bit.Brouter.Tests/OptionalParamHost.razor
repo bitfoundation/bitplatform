@@ -1,7 +1,7 @@
 @using Bit.Brouter
 
 <Brouter>
-    <BrouterRoute Path="/users/{id?}">
+    <Broute Path="/users/{id?}">
         <Content Context="ctx"><div data-testid="out">@(ctx["id"] ?? "(none)")</div></Content>
-    </BrouterRoute>
+    </Broute>
 </Brouter>

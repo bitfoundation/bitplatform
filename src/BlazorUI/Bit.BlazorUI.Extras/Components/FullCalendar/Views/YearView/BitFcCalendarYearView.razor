@@ -1,0 +1,148 @@
+@namespace Bit.BlazorUI
+
+@{
+    var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
+    var cal = State.Culture.Calendar;
+    var dtf = State.Culture.DateTimeFormat;
+    // Capture the era of the anchor date and pass it explicitly into every calendar call below so
+    // the year range stays correct for era-based calendars (e.g. JapaneseCalendar) where the same
+    // year number repeats across eras and the default (current) era would resolve the wrong dates.
+    int era = cal.GetEra(State.SelectedDate);
+    int culturalYear = cal.GetYear(State.SelectedDate);
+    // Era-based calendars (e.g. JapaneseCalendar) can have partial years where the era begins or
+    // ends mid-year, so the nominal month 1 (or the last month) may not exist in that era year.
+    // Build the visible month list from only the months that can actually be materialized for this
+    // era/year instead of assuming a full span anchored at month 1, which would throw.
+    var months = new List<DateTime>();
+    var monthsInYear = cal.GetMonthsInYear(culturalYear, era);
+    for (int m = 1; m <= monthsInYear; m++)
+    {
+        // Day 1 may not exist in a partial era month (the era can begin mid-month), so probe for
+        // the first day that actually materializes instead of assuming day 1 and dropping the whole
+        // month. Only skip a month when no day in it is valid for this era/year.
+        int daysInM;
+        try
+        {
+            daysInM = cal.GetDaysInMonth(culturalYear, m, era);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            continue;
+        }
+
+        DateTime? firstValid = null;
+        for (int d = 1; d <= daysInM; d++)
+        {
+            try
+            {
+                firstValid = cal.ToDateTime(culturalYear, m, d, 0, 0, 0, 0, era);
+                break;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // This day does not exist in the selected partial era month; try the next one.
+            }
+        }
+
+        if (firstValid.HasValue)
+            months.Add(firstValid.Value);
+    }
+    var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
+
+    // Pre-compute a date -> events lookup once instead of scanning every event for every cell
+    // (the year grid has ~500 cells, so the per-cell Where was O(cells * events)).
+    // Derive the lookup range from the actual first/last visible months rather than the nominal
+    // year boundaries, so partial era years (where month 1 or the last month may not exist) don't
+    // produce invalid dates.
+    var yearStartDate = months.Count > 0 ? months[0].Date : State.SelectedDate.Date;
+    DateTime yearEndDate;
+    if (months.Count > 0)
+    {
+        var lastMonth = months[^1];
+        var lastMonthNum = cal.GetMonth(lastMonth);
+        var lastMonthYear = cal.GetYear(lastMonth);
+        yearEndDate = cal.ToDateTime(lastMonthYear, lastMonthNum, cal.GetDaysInMonth(lastMonthYear, lastMonthNum, era), 0, 0, 0, 0, era);
+    }
+    else
+    {
+        yearEndDate = State.SelectedDate.Date;
+    }
+    var lookupStart = yearStartDate.AddDays(-7);
+    var lookupEnd = yearEndDate.AddDays(7);
+    var eventsByDay = new Dictionary<DateTime, List<BitFullCalendarEvent>>();
+    foreach (var ev in allEvents)
+    {
+        var from = ev.StartDate.Date < lookupStart ? lookupStart : ev.StartDate.Date;
+        // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with the
+        // rest of the calendar, so an event ending at midnight isn't indexed onto the next day.
+        var endInclusive = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
+        var to = endInclusive > lookupEnd ? lookupEnd : endInclusive;
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            if (!eventsByDay.TryGetValue(d, out var list))
+            {
+                list = [];
+                eventsByDay[d] = list;
+            }
+            list.Add(ev);
+        }
+    }
+}
+
+<div class="bit-bfc-year">
+    @foreach (var monthDate in months)
+    {
+        var cells = BitFullCalendarHelpers.GetCalendarCells(monthDate, State.Culture);
+        var monthIndex = cal.GetMonth(monthDate);
+        var monthName = dtf.GetMonthName(monthIndex);
+        <div class="bit-bfc-year-month">
+            <button type="button" class="bit-bfc-year-month-title" @onclick="() => GoToMonth(monthDate)">
+                @monthName
+            </button>
+            <div class="bit-bfc-year-weekdays">
+                @foreach (var wd in yearWeekDayHeaders)
+                {
+                    <div class="bit-bfc-year-weekday">@(wd.Length > 2 ? wd[..2] : wd)</div>
+                }
+            </div>
+            <div class="bit-bfc-year-days">
+                @foreach (var cell in cells)
+                {
+                    var cellCulturalMonth = cal.GetMonth(cell.Date);
+                    var isCurrentMonth = cellCulturalMonth == monthIndex
+                        && cal.GetYear(cell.Date) == culturalYear;
+                    var isToday = cell.Date.Date == DateTime.Today;
+                    var dayEvents = eventsByDay.TryGetValue(cell.Date.Date, out var evs) ? evs : [];
+                    var hasEvents = isCurrentMonth && dayEvents.Count > 0;
+
+                    @if (hasEvents)
+                    {
+                        <button type="button" class="bit-bfc-year-day has-events"
+                                style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
+                                aria-label="@cell.Date.ToString("D", State.Culture)"
+                                @onclick="() => ShowEventsForDay(cell.Date, dayEvents)">
+                            <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
+                            <span class="bit-bfc-year-day-bullets">
+                                @foreach (var ev in dayEvents.Take(3))
+                                {
+                                    <BitFcEventBullet Color="ev.Color" />
+                                }
+                            </span>
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "")">
+                            <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@if (_showEventList)
+{
+    <BitFcEventListDialog Date="_eventListDate" Events="_eventListEvents" OnClose="() => _showEventList = false" />
+}

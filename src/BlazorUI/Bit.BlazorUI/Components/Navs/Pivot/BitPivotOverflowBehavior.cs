@@ -15,5 +15,10 @@ public enum BitPivotOverflowBehavior
     /// <summary>
     /// Display a scroll bar below of the tabs for moving between them
     /// </summary>
-    Scroll
+    Scroll,
+
+    /// <summary>
+    /// Display next and previous buttons to slide through the tabs that don't fit
+    /// </summary>
+    Slide
 }

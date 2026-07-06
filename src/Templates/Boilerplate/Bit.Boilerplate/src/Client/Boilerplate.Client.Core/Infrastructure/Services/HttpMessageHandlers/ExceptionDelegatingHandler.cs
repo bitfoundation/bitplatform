@@ -70,7 +70,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             catch (Exception exp) when (exceptionHandler.IsTransientException(exp) || (exp is HttpRequestException && serverCommunicationSuccess is false))
             {
                 serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
-                throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
+                throw new TransientException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
             }
             finally
             {

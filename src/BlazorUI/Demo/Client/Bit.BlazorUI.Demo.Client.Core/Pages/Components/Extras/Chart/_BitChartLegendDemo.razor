@@ -1,0 +1,37 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Interactive legend controls" RazorCode="@liveRazorCode" CsharpCode="@liveCsharpCode" Id="legend-live">
+    <div class="example-desc">Position, alignment, a legend title, point-style markers and reversed order. Click any item to toggle its dataset &mdash; the chart recomputes instantly.</div>
+    <div class="controls">
+        <label>
+            Position
+            <select @bind="_position">
+                <option value="@BitChartPosition.Top">Top</option>
+                <option value="@BitChartPosition.Bottom">Bottom</option>
+                <option value="@BitChartPosition.Left">Left</option>
+                <option value="@BitChartPosition.Right">Right</option>
+            </select>
+        </label>
+        <label>
+            Align
+            <select @bind="_align">
+                <option value="@BitChartAlign.Start">Start</option>
+                <option value="@BitChartAlign.Center">Center</option>
+                <option value="@BitChartAlign.End">End</option>
+            </select>
+        </label>
+        <label><input type="checkbox" @bind="_usePointStyle" /> Point style</label>
+        <label><input type="checkbox" @bind="_reverse" /> Reverse</label>
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="MultiSeries()" Options="Live()" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Legend title" RazorCode="@titledRazorCode" CsharpCode="@titledCsharpCode" Id="legend-title">
+    <div class="example-desc">a heading above the items</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Point-style markers" RazorCode="@pointStyleRazorCode" CsharpCode="@pointStyleCsharpCode" Id="legend-point-style">
+    <div class="example-desc">usePointStyle uses each dataset's marker</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
+</DemoExample>

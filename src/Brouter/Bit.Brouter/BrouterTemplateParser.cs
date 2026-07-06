@@ -15,7 +15,7 @@ internal static class BrouterTemplateParser
     /// <summary>Read-only view of the characters that aren't allowed inside a parameter name.</summary>
     public static ReadOnlySpan<char> InvalidParameterNameCharacters => _invalidParameterNameCharacters;
 
-    internal static BrouterRouteTemplate ParseTemplate(string template)
+    internal static BrouterRouteTemplate ParseTemplate(string template, BrouterConstraintRegistry? constraints = null)
     {
         if (string.IsNullOrEmpty(template)) return new BrouterRouteTemplate("", []);
 
@@ -54,7 +54,7 @@ internal static class BrouterTemplateParser
                 // Validate parameter name characters: skip '*' (catch-all prefix), ':' (constraint separator), '?' (optional suffix).
                 ValidateParameterName(originalTemplate, segment, inner);
 
-                templateSegments[i] = new BrouterTemplateSegment(originalTemplate, inner, isParameter: true);
+                templateSegments[i] = new BrouterTemplateSegment(originalTemplate, inner, isParameter: true, constraints);
             }
         }
 

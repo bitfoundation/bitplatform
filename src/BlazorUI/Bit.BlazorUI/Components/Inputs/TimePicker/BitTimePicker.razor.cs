@@ -412,6 +412,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         _calloutId = $"BitTimePicker-{UniqueId}-callout";
         _overlayId = $"BitTimePicker-{UniqueId}-overlay";
 
+        SetDefaultValue();
+
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
 

@@ -821,7 +821,7 @@ If you want to share the JWT with other backend services (e.g., microservices), 
 
 **Highly Recommended**: To see all these features in action and understand the complete identity system, watch this **15-minute video tutorial**:
 
-### 📺 [Watch: Comprehensive Identity System Walkthrough](https://youtu.be/0ySKLPJm-fw)
+### 📺 [Watch: Comprehensive Identity System Walkthrough](https://youtu.be/-3viBEtJHLo)
 
 **This video demonstrates**:
 - User registration and email/phone confirmation

@@ -1,282 +1,124 @@
 ﻿@page "/location"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Location location
 
-<PageTitle>Location Samples</PageTitle>
+<PageTitle>Butil - Location Samples</PageTitle>
 
-<h1>Location</h1>
+<PageHeader Category="Navigation"
+            Title="Location"
+            Lead="Read and manipulate every part of the current URL - protocol, host, path, query and hash - and trigger navigation, assignment, replacement or a reload."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Location" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.Location location
 
-@@code {
-    ...
-    await location.Reload();
-    ...
-}
+var href = await location.GetHref();
+await location.SetHash("#section-2");
+await location.Reload();
 </pre>
 
-<br />
-<hr />
+<p class="muted" style="margin-top:1rem">⚠️ Setting Href, Host, Pathname, Assign or Replace will navigate away from this page.</p>
 
-<h3>Open the DevTools' console and click on buttons</h3>
+<div class="stack" style="margin-top:1rem">
+    <DemoCard Title="URL parts" Api="Get* / Set*"
+              Description="Read or change individual pieces of the URL. Get is safe; Set updates the address bar and may navigate.">
+        @foreach (var part in Parts)
+        {
+            <div class="inline-field" style="margin-bottom:.6rem">
+                <input @bind="part.Value" placeholder="@($"new {part.Name}")" />
+                <button @onclick="() => part.Set(part.Value)">Set @part.Name</button>
+                <button class="secondary" @onclick="() => part.Get()">Get @part.Name</button>
+            </div>
+        }
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Origin" Api="GetOrigin"
+              Description="The read-only origin (scheme + host + port) of the current URL.">
+        <button @onclick=GetOrigin>GetOrigin</button>
+    </DemoCard>
 
-<input @bind="newHref" />
-<br />
-<br />
-<button @onclick=SetHref>SetHref</button>
-&nbsp;
-<button @onclick=GetHref>GetHref</button>
+    <DemoCard Title="Navigate" Api="Assign / Replace / Reload"
+              Description="Assign loads a new URL (keeping history); Replace loads without a history entry; Reload re-fetches the current page.">
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind="newAssign" placeholder="URL to assign" />
+            <button @onclick=SetAssign>Assign</button>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind="newReplace" placeholder="URL to replace with" />
+            <button @onclick=SetReplace>Replace</button>
+        </div>
+        <button class="danger" @onclick="@(() => location.Reload())">Reload</button>
+    </DemoCard>
+</div>
 
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newProtocol" />
-<br />
-<br />
-<button @onclick=SetProtocol>SetProtocol</button>
-&nbsp;
-<button @onclick=GetProtocol>GetProtocol</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newHost" />
-<br />
-<br />
-<button @onclick=SetHost>SetHost</button>
-&nbsp;
-<button @onclick=GetHost>GetHost</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newHostName" />
-<br />
-<br />
-<button @onclick=SetHostName>SetHostName</button>
-&nbsp;
-<button @onclick=GetHostName>GetHostName</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newPort" />
-<br />
-<br />
-<button @onclick=SetPort>SetPort</button>
-&nbsp;
-<button @onclick=GetPort>GetPort</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newPathName" />
-<br />
-<br />
-<button @onclick=SetPathName>SetPathName</button>
-&nbsp;
-<button @onclick=GetPathName>GetPathName</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newSearch" />
-<br />
-<br />
-<button @onclick=SetSearch>SetSearch</button>
-&nbsp;
-<button @onclick=GetSearch>GetSearch</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newHash" />
-<br />
-<br />
-<button @onclick=SetHash>SetHash</button>
-&nbsp;
-<button @onclick=GetHash>GetHash</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick=GetOrigin>GetOrigin</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newAssign" />
-<br />
-<br />
-<button @onclick=SetAssign>Assign</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind="newReplace" />
-<br />
-<br />
-<button @onclick=SetReplace>Replace</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => location.Reload())">Reload</button>
-
-<br />
-<br />
-
+<DemoConsole @ref="output" Title="location output" />
 
 @code {
-    private string newHref;
-
-    private string newProtocol;
-
-    private string newHost;
-
-    private string newHostName;
-
-    private string newPort;
-
-    private string newPathName;
-
-    private string newSearch;
-
-    private string newHash;
+    private DemoConsole output = default!;
 
     private string newAssign;
-
     private string newReplace;
 
+    private List<UrlPart> Parts = default!;
 
-    private async Task SetHref()
+    protected override void OnInitialized()
     {
-        await location.SetHref(newHref);
-        await console.Log("location.href =", newHref);
+        Parts =
+        [
+            new("href",     v => location.SetHref(v),     () => location.GetHref(),     v => Log("href", v)),
+            new("protocol", v => location.SetProtocol(v), () => location.GetProtocol(), v => Log("protocol", v)),
+            new("host",     v => location.SetHost(v),     () => location.GetHost(),     v => Log("host", v)),
+            new("hostname", v => location.SetHostname(v), () => location.GetHostname(), v => Log("hostname", v)),
+            new("port",     v => location.SetPort(v),     () => location.GetPort(),     v => Log("port", v)),
+            new("pathname", v => location.SetPathname(v), () => location.GetPathname(), v => Log("pathname", v)),
+            new("search",   v => location.SetSearch(v),   () => location.GetSearch(),   v => Log("search", v)),
+            new("hash",     v => location.SetHash(v),     () => location.GetHash(),     v => Log("hash", v)),
+        ];
     }
 
-    private async Task GetHref()
-    {
-        await console.Log("location.href =", await location.GetHref());
-    }
-
-    private async Task SetProtocol()
-    {
-        await location.SetProtocol(newProtocol);
-        await console.Log("location.protocol =", newProtocol);
-    }
-
-    private async Task GetProtocol()
-    {
-        await console.Log("location.protocol =", await location.GetProtocol());
-    }
-
-    private async Task SetHost()
-    {
-        await location.SetHost(newHost);
-        await console.Log("location.host =", newHost);
-    }
-
-    private async Task GetHost()
-    {
-        await console.Log("location.host =", await location.GetHost());
-    }
-
-    private async Task SetHostName()
-    {
-        await location.SetHostname(newHostName);
-        await console.Log("location.hostname =", newHostName);
-    }
-
-    private async Task GetHostName()
-    {
-        await console.Log("location.hostname =", await location.GetHostname());
-    }
-
-    private async Task SetPort()
-    {
-        await location.SetPort(newPort);
-        await console.Log("location.port =", newPort);
-    }
-
-    private async Task GetPort()
-    {
-        await console.Log("location.port =", await location.GetPort());
-    }
-
-    private async Task SetPathName()
-    {
-        await location.SetPathname(newPathName);
-        await console.Log("location.pathname =", newPathName);
-    }
-
-    private async Task GetPathName()
-    {
-        await console.Log("location.pathname =", await location.GetPathname());
-    }
-
-    private async Task SetSearch()
-    {
-        await location.SetSearch(newSearch);
-        await console.Log("location.search =", newSearch);
-    }
-
-    private async Task GetSearch()
-    {
-        await console.Log("location.search =", await location.GetSearch());
-    }
-
-    private async Task SetHash()
-    {
-        await location.SetHash(newHash);
-        await console.Log("location.hash =", newHash);
-    }
-
-    private async Task GetHash()
-    {
-        await console.Log("location.hash =", await location.GetHash());
-    }
+    private Task Log(string name, string value) => output.Success($"location.{name} →", value);
 
     private async Task GetOrigin()
     {
-        await console.Log("location.origin =", await location.GetOrigin());
+        await output.Success("location.origin →", await location.GetOrigin());
     }
 
     private async Task SetAssign()
     {
         await location.Assign(newAssign);
-        await console.Log("location.assign =", newAssign);
+        await output.Log("Assign →", newAssign);
     }
 
     private async Task SetReplace()
     {
         await location.Replace(newReplace);
-        await console.Log("location.replace =", newReplace);
+        await output.Log("Replace →", newReplace);
+    }
+
+    private class UrlPart
+    {
+        public string Name { get; }
+        public string Value { get; set; } = "";
+        private readonly Func<string, Task> _set;
+        private readonly Func<Task<string>> _get;
+        private readonly Func<string, Task> _log;
+
+        public UrlPart(string name, Func<string, Task> set, Func<Task<string>> get, Func<string, Task> log)
+        {
+            Name = name;
+            _set = set;
+            _get = get;
+            _log = log;
+        }
+
+        public async Task Set(string value)
+        {
+            await _set(value);
+            await _log(value);
+        }
+
+        public async Task Get()
+        {
+            await _log(await _get());
+        }
     }
 }

@@ -44,9 +44,9 @@
                             </BitPivotItem>
 
                             <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]">
-                                <BitTextField @bind-Value="signUpModel.PhoneNumber"
-                                              AutoFocus TabIndex="1"
-                                              Type="BitInputType.Tel"
+                                <BitPhoneInput @bind-Value="signUpModel.PhoneNumber"
+                                               AutoFocus TabIndex="1" FullWidth
+                                              DefaultCountry="@BitCountries.Current"
                                               Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                                 <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />

@@ -2,7 +2,7 @@
 
 <PageOutlet Url="components/modal"
             Title="Modal"
-            Description="modal component of the bit BlazorUI components" />
+            Description="Modals are temporary pop-ups that take focus from the page or app and require people to interact with them." />
 
 <DemoPage Name="Modal"
           Description="Modals are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a modal should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
@@ -210,7 +210,9 @@
 
         <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>Use BitModal in right-to-left (RTL).</div><br />
-            <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>
+            <div dir="rtl">
+                <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>
+            </div>
             <BitModal Dir="BitDir.Rtl" @bind-IsOpen="isOpenRtl">
                 <div class="modal-header">
                     <span class="modal-header-text">لورم ایپسوم</span>

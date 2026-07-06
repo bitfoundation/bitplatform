@@ -1,7 +1,69 @@
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
 ::deep {
-    .advanced {
-        img {
-            max-width: 100%;
+    .mdv-playground {
+        width: 100%;
+    }
+
+    .mdv-toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .mdv-label {
+        font-weight: 600;
+    }
+
+    .mdv-spacer {
+        flex: 1 1 auto;
+    }
+
+    .mdv-hint {
+        font-size: 0.85em;
+        opacity: 0.75;
+        margin-bottom: 12px;
+    }
+
+    .mdv-split {
+        display: flex;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .mdv-editor {
+        flex: 1 1 50%;
+        min-width: 0;
+        height: 500px;
+        padding: 12px;
+        border: 1px solid $bit-color-border-secondary;
+        border-radius: 4px;
+        background: transparent;
+        color: inherit;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        resize: none;
+        overflow: auto;
+        box-sizing: border-box;
+    }
+
+    .mdv-preview {
+        flex: 1 1 50%;
+        min-width: 0;
+        height: 500px;
+        overflow: auto;
+        padding: 12px;
+        border: 1px solid $bit-color-border-secondary;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 800px) {
+        .mdv-split {
+            flex-direction: column;
         }
     }
 }

@@ -1,0 +1,148 @@
+﻿@namespace Bit.BlazorUI
+@inject IJSRuntime JS
+
+@*
+  Timeline mode - Day view.
+  Resources × 24 one-hour columns covering the selected date.
+*@
+
+@{
+    const int hourWidth = BitFullCalendarHelpers.TimelineHourWidthPx;
+    const int laneHeight = 44;
+    const int laneGap = 4;
+    const int rowPadding = 4;
+    const int minRowHeight = 60;
+
+    var resources = State.Resources;
+    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
+    var grouped = BitFullCalendarHelpers.GroupEventsByResourceForDay(
+        Events, State.SelectedDate, resourceIds, _unassignedKey);
+
+    int LaneCountFor(string key) =>
+        grouped.TryGetValue(key, out var lanes) && lanes.Count > 0 ? lanes.Count : 1;
+
+    int RowHeight(int laneCount)
+    {
+        var content = (laneCount * laneHeight) + (Math.Max(0, laneCount - 1) * laneGap) + (rowPadding * 2);
+        return Math.Max(minRowHeight, content);
+    }
+
+    var hasUnassigned = (grouped.TryGetValue(_unassignedKey, out var u) && u.Count > 0) || resourceIds.Count == 0;
+    var unassignedLaneCount = hasUnassigned ? LaneCountFor(_unassignedKey) : 1;
+    var scrollHour = State.StartOfDayHour;
+}
+
+<BitFcTimelineLayout ColumnCount="24"
+                ColumnWidthPx="hourWidth"
+                ScrollContainerId="@_scrollContainerId"
+                HasUnassignedRow="hasUnassigned"
+                RowHeightFor="r => RowHeight(LaneCountFor(r.Id))"
+                UnassignedRowHeight="RowHeight(unassignedLaneCount)">
+
+    <HeaderContent>
+        <div class="bit-bfc-tl-time-row bit-bfc-tl-time-row-slots">
+            @for (var h = 0; h < 24; h++)
+            {
+                var hour = h;
+                var isScrollTarget = hour == scrollHour;
+                <div class="bit-bfc-tl-time-cell" style="width:@(hourWidth)px;" data-bit-bfc-tl-scroll-target="@(isScrollTarget ? "true" : null)">
+                    <span class="bit-bfc-tl-time-cell-label">@BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat, State.Culture)</span>
+                </div>
+            }
+        </div>
+    </HeaderContent>
+
+    <RowContent Context="resource">
+        @{ var rowKey = resource.Id; var rowLabel = resource.Title; }
+        @* Drop targets *@
+        @for (var h = 0; h < 24; h++)
+        {
+            var hour = h;
+            var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
+            var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
+            <div class="bit-bfc-tl-cell"
+                 style="inset-inline-start:@(hour * hourWidth)px;width:@(hourWidth)px;">
+                <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
+                     style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
+                     role="button"
+                     tabindex="0"
+                     aria-label="@SlotAriaLabel(rowLabel, hour, 0)"
+                     @ondragenter="() => OnDragEnter(rowKey, hour, 0)"
+                     @ondragover:preventDefault="true"
+                     @ondrop="() => OnDrop(rowKey, hour, 0)"
+                     @onclick="() => OnSlotClickAsync(rowKey, hour, 0)"
+                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, hour, 0)"></div>
+                <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
+                     role="button"
+                     tabindex="0"
+                     aria-label="@SlotAriaLabel(rowLabel, hour, 30)"
+                     @ondragenter="() => OnDragEnter(rowKey, hour, 30)"
+                     @ondragover:preventDefault="true"
+                     @ondrop="() => OnDrop(rowKey, hour, 30)"
+                     @onclick="() => OnSlotClickAsync(rowKey, hour, 30)"
+                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, hour, 30)"></div>
+                <div class="bit-bfc-cell-add-hint" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    @Texts.AddEventHoverHint
+                </div>
+            </div>
+        }
+
+        @* Events *@
+        @if (grouped.TryGetValue(rowKey, out var lanes))
+        {
+            @RenderLanes(lanes)
+        }
+    </RowContent>
+
+    <UnassignedRowContent>
+        @{ var rowKey = _unassignedKey; var rowLabel = Texts.NoResourceLabel; }
+        @for (var h = 0; h < 24; h++)
+        {
+            var hour = h;
+            var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
+            var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
+            <div class="bit-bfc-tl-cell"
+                 style="inset-inline-start:@(hour * hourWidth)px;width:@(hourWidth)px;">
+                <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
+                     style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
+                     role="button"
+                     tabindex="0"
+                     aria-label="@SlotAriaLabel(rowLabel, hour, 0)"
+                     @ondragenter="() => OnDragEnter(rowKey, hour, 0)"
+                     @ondragover:preventDefault="true"
+                     @ondrop="() => OnDrop(rowKey, hour, 0)"
+                     @onclick="() => OnSlotClickAsync(rowKey, hour, 0)"
+                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, hour, 0)"></div>
+                <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
+                     role="button"
+                     tabindex="0"
+                     aria-label="@SlotAriaLabel(rowLabel, hour, 30)"
+                     @ondragenter="() => OnDragEnter(rowKey, hour, 30)"
+                     @ondragover:preventDefault="true"
+                     @ondrop="() => OnDrop(rowKey, hour, 30)"
+                     @onclick="() => OnSlotClickAsync(rowKey, hour, 30)"
+                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, hour, 30)"></div>
+                <div class="bit-bfc-cell-add-hint" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    @Texts.AddEventHoverHint
+                </div>
+            </div>
+        }
+        @if (hasUnassigned && grouped.TryGetValue(_unassignedKey, out var unassignedLanes))
+        {
+            @RenderLanes(unassignedLanes)
+        }
+    </UnassignedRowContent>
+</BitFcTimelineLayout>
+
+@if (_showAddDialog)
+{
+    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" StartMinute="_addStartMinute" Resource="_addResourceId" OnClose="() => _showAddDialog = false" />
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+

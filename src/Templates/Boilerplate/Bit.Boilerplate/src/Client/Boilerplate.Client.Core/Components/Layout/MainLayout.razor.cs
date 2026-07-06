@@ -7,7 +7,7 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MainLayout : IAsyncDisposable
 {
-    private static readonly BitModalParameters ModalParameters = new() { Classes = new() { Root = "modal" } };
+    private static readonly BitProModalParameters ModalParameters = new() { Classes = new() { Root = "modal" } };
 
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
@@ -19,7 +19,7 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private BitExtraServices bitExtraServices = default!;
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 

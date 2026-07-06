@@ -15,6 +15,11 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <summary>
     /// Checks that the WebAuthentication api is available on the client or not.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsAvailable()
         => await js.Invoke<bool>("BitButil.webAuthn.isAvailable");
 
@@ -25,6 +30,11 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<JsonElement> CreateCredential(object options)
         => await js.Invoke<JsonElement>("BitButil.webAuthn.createCredential", options);
 
@@ -34,6 +44,11 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<JsonElement> CreateCredential(JsonElement options)
         => await js.Invoke<JsonElement>("BitButil.webAuthn.createCredential", options);
 
@@ -52,6 +67,11 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<JsonElement> GetCredential(object options)
         => await js.Invoke<JsonElement>("BitButil.webAuthn.getCredential", options);
 
@@ -60,6 +80,11 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get">https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<JsonElement> GetCredential(JsonElement options)
         => await js.Invoke<JsonElement>("BitButil.webAuthn.getCredential", options);
 

@@ -1,0 +1,26 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Title &amp; footer callbacks" RazorCode="@footerRazorCode" CsharpCode="@footerCsharpCode" Id="tooltips-footer">
+    <div class="example-desc"><p class="desc">hover a group: custom title + summed footer</p></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_footer" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Currency labels" RazorCode="@currencyRazorCode" CsharpCode="@currencyCsharpCode" Id="tooltips-currency">
+    <div class="example-desc"><p class="desc">label callback formats each row as currency</p></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="TwoSeries()" Options="_currency" /></div></div>
+</DemoExample>
+
+<DemoExample Title="After-body note" RazorCode="@afterBodyRazorCode" CsharpCode="@afterBodyCsharpCode" Id="tooltips-after-body">
+    <div class="example-desc"><p class="desc">extra context appended below the values</p></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="TwoSeries()" Options="_afterBody" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Styled box" RazorCode="@styledRazorCode" CsharpCode="@styledCsharpCode" Id="tooltips-styled">
+    <div class="example-desc"><p class="desc">light theme, border, centered text</p></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_styled" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Point-style swatches" RazorCode="@pointStyleRazorCode" CsharpCode="@pointStyleCsharpCode" Id="tooltips-point-style">
+    <div class="example-desc"><p class="desc">usePointStyle draws the marker in the tooltip</p></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
+</DemoExample>

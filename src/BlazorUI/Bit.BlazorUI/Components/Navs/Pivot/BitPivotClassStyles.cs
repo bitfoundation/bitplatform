@@ -13,6 +13,31 @@ public class BitPivotClassStyles
     public string? Header { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the header container (wrapper) of the BitPivot.
+    /// </summary>
+    public string? HeaderContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the slide (next/previous) buttons of the BitPivot in the Slide overflow behavior.
+    /// </summary>
+    public string? SlideButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the overflow menu button of the BitPivot in the Menu overflow behavior.
+    /// </summary>
+    public string? OverflowButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the overflow menu (callout) of the BitPivot in the Menu overflow behavior.
+    /// </summary>
+    public string? OverflowCallout { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the overflow menu item of the BitPivot in the Menu overflow behavior.
+    /// </summary>
+    public string? OverflowItem { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the items body of the BitPivot.
     /// </summary>
     public string? Body { get; set; }

@@ -1,75 +1,63 @@
 ﻿@page "/clipboard"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Clipboard clipboard
 
-<PageTitle>Clipboard Samples</PageTitle>
+<PageTitle>Butil - Clipboard Samples</PageTitle>
 
-<h1>Clipboard</h1>
+<PageHeader Category="Storage & State"
+            Title="Clipboard"
+            Lead="Read from and write to the operating system clipboard - both plain text and rich data items - directly from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API" />
 
-<pre style="font-family:Consolas">
+<pre>
 @@inject Bit.Butil.Clipboard clipboard
 
-@@code {
-    ...
-    await clipboard.WriteText("new clipboard text");
-    ...
-}
+await clipboard.WriteText("new clipboard text");
+var text = await clipboard.ReadText();
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Write & read text" Api="WriteText / ReadText"
+              Description="Copy a string to the clipboard, then read it back. The browser may ask for clipboard permission the first time.">
+        <div class="field">
+            <span class="field-label">Text to copy</span>
+            <input @bind=@newClipText placeholder="Type something to copy..." />
+        </div>
+        <div class="controls">
+            <button @onclick="WriteText">Write text</button>
+            <button class="secondary" @onclick="ReadText">Read text</button>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking on buttons</h3>
+    <DemoCard Title="Write & read rich items" Api="Write / Read"
+              Description="Write a typed ClipboardItem (here a text/plain blob) and read all items currently on the clipboard.">
+        <div class="field">
+            <span class="field-label">Item content</span>
+            <input @bind=@newText placeholder="Content for the clipboard item..." />
+        </div>
+        <div class="controls">
+            <button @onclick="Write">Write item</button>
+            <button class="secondary" @onclick="Read">Read items</button>
+        </div>
+    </DemoCard>
+</div>
 
-<hr />
-<br />
-
-<button @onclick="ReadText">Read text</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind=@newClipText />
-<br />
-<br />
-<button @onclick="WriteText">Write text</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="Read">Read</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind=@newText />
-<br />
-<br />
-<button @onclick="Write">Write</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="clipboard output" />
 
 @code {
+    private DemoConsole output = default!;
     private string newClipText;
     private string newText;
 
     private async Task ReadText()
     {
         var text = await clipboard.ReadText();
-        await console.Log("Clipboard.ReadText =", $"\"{text}\"");
+        await output.Success("ReadText →", $"\"{text}\"");
     }
 
     private async Task WriteText()
     {
         await clipboard.WriteText(newClipText ?? string.Empty);
-        await console.Log("Clipboard.WriteText =", $"\"{newClipText}\"");
+        await output.Log("WriteText →", $"\"{newClipText}\"");
     }
 
     private async Task Read()
@@ -77,15 +65,15 @@
         var items = await clipboard.Read();
         foreach (var item in items)
         {
-            await console.Log("Clipboard.Read=", $"\"{item.MimeType}\",", System.Text.Encoding.UTF8.GetString(item.Data));
+            await output.Success("Read →", $"\"{item.MimeType}\":", System.Text.Encoding.UTF8.GetString(item.Data));
         }
     }
 
     public async Task Write()
     {
-        var data = System.Text.Encoding.UTF8.GetBytes(newText);
+        var data = System.Text.Encoding.UTF8.GetBytes(newText ?? string.Empty);
         var item = new ClipboardItem() { MimeType = "text/plain", Data = data };
         await clipboard.Write([item]);
-        await console.Log("Clipboard.Write=", $"\"{item.MimeType}\",", System.Text.Encoding.UTF8.GetString(item.Data));
+        await output.Log("Write →", $"\"{item.MimeType}\":", System.Text.Encoding.UTF8.GetString(item.Data));
     }
 }

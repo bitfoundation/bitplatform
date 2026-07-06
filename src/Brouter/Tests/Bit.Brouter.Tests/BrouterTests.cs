@@ -59,4 +59,26 @@ public class BrouterTests : BunitTestContext
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=u]")));
     }
+
+    [TestMethod]
+    public void Trailing_slash_fills_the_empty_optional_final_segment_under_strict_matching()
+    {
+        // With IgnoreTrailingSlash = false, "/users/" is distinct from "/users". The trailing
+        // slash legitimately stands in for the empty value of the unfilled optional final
+        // segment of "/users/{id?}", so it must still match (with the optional value absent).
+        Services.Configure<BrouterOptions>(o => o.IgnoreTrailingSlash = false);
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/users/");
+
+        var cut = RenderComponent<OptionalParamHost>();
+
+        cut.WaitForAssertion(() => Assert.AreEqual("(none)", cut.Find("[data-testid=out]").TextContent));
+
+        // A trailing slash after a fully-satisfied template is a real extra slash and must NOT
+        // match under strict trailing-slash handling.
+        nav.NavigateTo("http://localhost/users/42/");
+
+        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=out]").Count));
+    }
 }

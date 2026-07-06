@@ -1,0 +1,14 @@
+@* Shows the bound {id} route parameter alongside internal counter state, for asserting how
+   keep-alive behaves when the same route matches different parameter values. *@
+
+@using Bit.Brouter
+
+<div data-testid="kp">id:@Id count:@_count</div>
+<button data-testid="kpinc" @onclick="@(() => _count++)">+</button>
+
+@code {
+    [CascadingParameter(Name = "RouteParameters")] public BrouterRouteParameters? Params { get; set; }
+
+    private int Id => Params?.GetOrDefault<int>("id") ?? 0;
+    private int _count;
+}

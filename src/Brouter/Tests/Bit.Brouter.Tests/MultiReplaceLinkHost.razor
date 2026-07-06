@@ -1,0 +1,14 @@
+@* Hosts several Replace links at once so BrouterLinkTests can assert that they share the
+   scope's single bit-brouter.js module import instead of paying one interop import each. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/*">
+        <Content><div data-testid="content">page</div></Content>
+    </Broute>
+</Brouter>
+
+<BrouterLink Href="/a" Replace="true">a</BrouterLink>
+<BrouterLink Href="/b" Replace="true">b</BrouterLink>
+<BrouterLink Href="/c" Replace="true">c</BrouterLink>

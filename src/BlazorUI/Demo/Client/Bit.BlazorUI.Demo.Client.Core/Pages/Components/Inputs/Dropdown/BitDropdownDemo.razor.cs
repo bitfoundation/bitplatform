@@ -139,13 +139,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The default value that will be initially used to set selected item if the Value parameter is not set.",
-        },
-        new()
-        {
             Name = "DefaultValues",
             Type = "IEnumerable<string?>?",
             DefaultValue = "null",

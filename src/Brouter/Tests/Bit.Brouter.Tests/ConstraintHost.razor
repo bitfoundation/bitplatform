@@ -1,0 +1,8 @@
+@* Route using a custom "slug" constraint registered via BrouterOptions.Constraints. *@
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/posts/{name:slug}">
+        <Content Context="ctx"><div data-testid="post">@ctx["name"]</div></Content>
+    </Broute>
+</Brouter>

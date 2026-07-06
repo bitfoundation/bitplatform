@@ -1,0 +1,166 @@
+@page "/device"
+@implements IAsyncDisposable
+@inject Bit.Butil.Battery battery
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.WakeLock wakeLock
+@inject Bit.Butil.IdleDetector idleDetector
+
+<PageTitle>Butil - Device Sensors Samples</PageTitle>
+
+<PageHeader Category="Browser & Device"
+            Title="Device Sensors"
+            Lead="Battery level, network connection quality, screen wake lock and user idle detection - hardware and connectivity signals from the browser."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API" />
+
+<pre>
+@@inject Bit.Butil.Battery battery
+@@inject Bit.Butil.NetworkInformation networkInformation
+@@inject Bit.Butil.WakeLock wakeLock
+@@inject Bit.Butil.IdleDetector idleDetector
+
+var level = await battery.GetStatus();
+var net   = await networkInformation.GetStatus();
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Battery" Api="IsSupported / GetStatus"
+              Description="Charging state and level. Unsupported browsers return a stub.">
+        <div class="controls">
+            <button @onclick="BatterySupported">IsSupported</button>
+            <button @onclick="BatteryStatus">GetStatus</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Network" Api="GetStatus"
+              Description="Online flag, effective connection type, downlink and RTT estimates.">
+        <button @onclick="NetworkStatus">GetStatus</button>
+    </DemoCard>
+
+    <DemoCard Title="Wake lock" Api="Request / Release / RequestPersistent"
+              Description="Prevent the screen from dimming while the demo runs (mobile / supported desktops).">
+        <div class="controls">
+            <button @onclick="AcquireWakeLock">Request</button>
+            <button class="secondary" @onclick="ReleaseWakeLock">Release</button>
+            <button @onclick="AcquirePersistentWakeLock">RequestPersistent</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Idle detector" Api="RequestPermission / Start"
+              Description="Watch user and screen idle state (Chromium, requires permission).">
+        <div class="field">
+            <span class="field-label">Threshold (seconds, min 60)</span>
+            <input type="number" min="60" @bind="_idleThreshold" />
+        </div>
+        <div class="controls">
+            <button @onclick="RequestIdlePermission">RequestPermission</button>
+            <button @onclick="StartIdleWatch">Start</button>
+            <button class="danger" @onclick="StopIdleWatch">Stop</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="device output" />
+
+@code {
+    private DemoConsole output = default!;
+    private int _idleThreshold = 60;
+    private ButilSubscription? _idleSub;
+    private IAsyncDisposable? _persistentWakeLock;
+
+    private async Task BatterySupported()
+    {
+        await output.Success("Battery.IsSupported →", await battery.IsSupported());
+    }
+
+    private async Task BatteryStatus()
+    {
+        var status = await battery.GetStatus();
+        await output.Success("Battery →",
+            $"level={status.Level:P0}, charging={status.Charging}");
+    }
+
+    private async Task NetworkStatus()
+    {
+        var status = await networkInformation.GetStatus();
+        await output.Success("Network →",
+            $"online={status.Online}, type={status.EffectiveType ?? status.Type ?? "n/a"}, downlink={status.Downlink}, rtt={status.Rtt}");
+    }
+
+    private async Task AcquireWakeLock()
+    {
+        if (!await wakeLock.IsSupported())
+        {
+            await output.Warn("Wake lock is not supported.");
+            return;
+        }
+
+        var ok = await wakeLock.Request();
+        await output.Log(ok ? "Wake lock acquired." : "Wake lock request failed.");
+    }
+
+    private async Task ReleaseWakeLock()
+    {
+        await wakeLock.Release();
+        await output.Log("Wake lock released.");
+    }
+
+    private async Task AcquirePersistentWakeLock()
+    {
+        if (!await wakeLock.IsSupported())
+        {
+            await output.Warn("Wake lock is not supported.");
+            return;
+        }
+
+        if (_persistentWakeLock is not null)
+            await _persistentWakeLock.DisposeAsync();
+
+        _persistentWakeLock = await wakeLock.RequestPersistent();
+        await output.Log("Persistent wake lock started (auto re-acquire on visibility).");
+    }
+
+    private async Task RequestIdlePermission()
+    {
+        if (!await idleDetector.IsSupported())
+        {
+            await output.Warn("IdleDetector is not supported.");
+            return;
+        }
+
+        var state = await idleDetector.RequestPermission();
+        await output.Success("RequestPermission →", state);
+    }
+
+    private async Task StartIdleWatch()
+    {
+        await StopIdleWatch();
+
+        if (!await idleDetector.IsSupported())
+        {
+            await output.Warn("IdleDetector is not supported.");
+            return;
+        }
+
+        _idleSub = await idleDetector.Start(_idleThreshold, state =>
+            _ = output.Log($"Idle → user={state.UserState}, screen={state.ScreenState}"));
+
+        await output.Log("Idle watch started.");
+    }
+
+    private async Task StopIdleWatch()
+    {
+        if (_idleSub is null) return;
+        await _idleSub.DisposeAsync();
+        _idleSub = null;
+        await output.Log("Idle watch stopped.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_idleSub is not null)
+            await _idleSub.DisposeAsync();
+        if (_persistentWakeLock is not null)
+            await _persistentWakeLock.DisposeAsync();
+        await wakeLock.DisposeAsync();
+    }
+}

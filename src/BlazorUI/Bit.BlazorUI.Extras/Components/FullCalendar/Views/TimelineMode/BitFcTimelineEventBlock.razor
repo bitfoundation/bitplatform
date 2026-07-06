@@ -1,0 +1,96 @@
+@namespace Bit.BlazorUI
+@inject IJSRuntime JS
+@implements IDisposable
+
+@{
+    var displayStart = _previewStart ?? Event.StartDate;
+    var displayEnd = _previewEnd ?? Event.EndDate;
+
+    var isDotVariant = State.BadgeVariant == BitFullCalendarBadgeVariant.Dot;
+    var colorClass = isDotVariant ? "dot-variant" : "bit-bfc-color";
+    var colorStyleVar = ColorScheme.GetColorStyle(Event.Color);
+    var passThrough = State.IsDragging && State.DraggedEvent?.Id != Event.Id;
+
+    // While resizing we override the absolute placement of the anchor so the live preview
+    // tracks the snapped value instead of the original event time.
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var widthOverride = "";
+    var translateXPx = 0.0;
+    if (_isResizing && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
+    {
+        var newSpanPx = ToPx(displayEnd - displayStart);
+        if (newSpanPx < 12) newSpanPx = 12;
+        widthOverride = $"width:{newSpanPx.ToString("F2", inv)}px;";
+        if (string.Equals(_resizeDirection, "start", StringComparison.Ordinal))
+            translateXPx = ToPx(displayStart - _resizeBaseEvent.StartDate);
+    }
+
+    var resizeClasses = "";
+    if (_isResizing)
+    {
+        resizeClasses = "bit-bfc-timeline-event-resizing";
+        if (_resizeDirection is "start" or "end")
+            resizeClasses += $" bit-bfc-resize-dir-{_resizeDirection}";
+    }
+
+    var blockStyle = $"{colorStyleVar}{widthOverride}transform:translateX({translateXPx.ToString("F2", inv)}px);";
+    var canResize = PixelsPerMinute > 0;
+}
+
+<div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses"
+     style="@blockStyle"
+     role="button"
+     tabindex="0"
+     draggable="true"
+     title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture)"
+     @ondragstart="OnDragStart"
+     @ondragend="OnDragEnd"
+     @onclick="OnClick"
+     @onkeydown="OnKeyDown"
+     @onkeydown:stopPropagation="true"
+     @onclick:stopPropagation="true">
+
+    @if (canResize)
+    {
+        <div id="@_startHandleId"
+             class="bit-bfc-resize-handle-h bit-bfc-resize-handle-start"
+             @onpointerdown="NoOpResize"
+             @onpointerdown:preventDefault="true"
+             @onpointerdown:stopPropagation="true"></div>
+    }
+
+    @if (EventTemplate != null)
+    {
+        @EventTemplate(Event)
+    }
+    else
+    {
+        <div class="bit-bfc-timeline-event-row">
+            @if (isDotVariant)
+            {
+                <BitFcEventBullet Color="Event.Color" />
+            }
+            <span class="bit-bfc-timeline-event-title">@Event.Title</span>
+        </div>
+        <div class="bit-bfc-timeline-event-time">
+            @BitFullCalendarHelpers.FormatTime(displayStart, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)
+        </div>
+    }
+
+    @if (canResize)
+    {
+        <div id="@_endHandleId"
+             class="bit-bfc-resize-handle-h bit-bfc-resize-handle-end"
+             @onpointerdown="NoOpResize"
+             @onpointerdown:preventDefault="true"
+             @onpointerdown:stopPropagation="true"></div>
+    }
+
+    @if (_isResizing)
+    {
+        <div class="bit-bfc-resize-preview" role="status" aria-live="polite" aria-label="@Texts.ResizePreviewAriaLabel">
+            <svg class="bit-bfc-resize-preview-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="bit-bfc-resize-preview-time">@FormatPreview(displayStart, displayEnd)</span>
+        </div>
+    }
+</div>

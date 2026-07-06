@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <!-- Roslyn source generator: the assembly ships as an analyzer, not a lib reference. -->
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <!-- netstandard2.0 has no nullable annotations in the BCL; keep nullable on for our own code
+             but don't warn about the BCL's unannotated surface. -->
+        <NoWarn>$(NoWarn);nullable</NoWarn>
+        <IsAotCompatible>false</IsAotCompatible>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 4.8 keeps the generator loadable by every SDK/IDE Roslyn from .NET 8 tooling onwards. -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Release tracking for the diagnostics this generator reports (RS2008). -->
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Pack as an analyzer so `dotnet add package Bit.Brouter.Generators` just works. -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bit.Brouter.Generators.Tests" PublicKey="00240000048000009400000006020000002400005253413100040000010001008D726FE8F1BED8CA2A003848640C872C6A5F2191C81EDA677B249A6E34BD9134EBA9FF7251582A5020CB3EEE83A61E7034CE712F5873D60F7C3C61F48592B256C560D7B3384E9889E4F81E4D406BC2B639915A4062D60751193AE66028D7BD4B9A3BF0823F1E38ABE5EADC3CD9615C6FF811974A9F6F89297DC2A722BF23D0BB" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,19 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-filter-row">
+    <select class="bit-bfc-filter-select" @onchange="HandleColorChange" value="@SelectedColorValue" aria-label="@Texts.FilterByColorAriaLabel">
+        <option value="">@Texts.AllColorsOption</option>
+        @foreach (var opt in ColorScheme.Options)
+        {
+            <option value="@opt.Id">@opt.Title</option>
+        }
+    </select>
+
+    <select class="bit-bfc-filter-select bit-bfc-filter-select-person" @onchange="HandleAttendeeChange" value="@(State.SelectedAttendeeKey ?? "")" aria-label="@Texts.FilterByPersonAriaLabel">
+        <option value="">@Texts.AllPeopleOption</option>
+        @foreach (var (key, name) in State.GetAttendeesInCurrentView(Texts.UnnamedAttendee))
+        {
+            <option value="@key">@name</option>
+        }
+    </select>
+</div>

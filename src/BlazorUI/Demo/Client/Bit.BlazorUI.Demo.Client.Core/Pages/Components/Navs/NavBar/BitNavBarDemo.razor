@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/navbar"
             Title="NavBar"
-            Description="navbar component of the bit BlazorUI components" />
+            Description="A tab panel that provides navigation links to the main areas of an app." />
 
 <div>
     <DemoPage Name="NavBar"
@@ -25,7 +25,7 @@
             </BitText>
         </NotesTemplate>
         <Examples>
-            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
+            <BitPivot Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
                 <BitPivotItem HeaderText="Item">
                     <_BitNavBarItemDemo />
                 </BitPivotItem>

@@ -16,14 +16,13 @@
 
 <section class="page-container">
     <BitParams Parameters="_cascadingParams">
-
-        <BitText Typography="BitTypography.H3">Theming</BitText>
+        <BitText Element="h1" Typography="BitTypography.H3">Theming</BitText>
 
         <br />
 
-        <BitText Typography="BitTypography.H6">
-            bit BlazorUI ships a complete design-token system built on CSS custom properties, plus a small surface of C# and JavaScript APIs to drive it at runtime.
-            Pick a packaged Fluent preset, override individual tokens for your brand, or compose multi-tenant themes that respect OS settings, user preferences, and accessibility hints.
+        <BitText Element="p" Typography="BitTypography.H6">
+            Using bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
+            the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
             <br /><br />
             The default theme is based on the Microsoft Fluent design system. Light and dark variants are bundled, and the entire token set is overridable so you can tailor color, motion, density, typography, and layout to match your product.
         </BitText>
@@ -31,7 +30,7 @@
         <br /><br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">At a glance</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">At a glance</BitText>
 
             <br />
 
@@ -59,7 +58,7 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Quick setup</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Quick setup</BitText>
 
             <br />
 
@@ -91,7 +90,7 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">HTML attributes</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">HTML attributes</BitText>
 
             <br />
 
@@ -143,7 +142,7 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Design tokens (CSS variables)</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Design tokens (CSS variables)</BitText>
 
             <br />
 
@@ -253,7 +252,7 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Presets</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Presets</BitText>
 
             <br />
 
@@ -304,12 +303,13 @@ BitAccentColorPresets.Green;   // #107C10
 BitAccentColorPresets.Orange;  // #CA5010
 BitAccentColorPresets.Teal;    // #038387
 BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
+
         </BitCard>
 
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">BitThemeManager</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">BitThemeManager</BitText>
 
             <br />
 
@@ -400,7 +400,7 @@ await BitThemeManager.ApplyBitThemeAsync(new BitTheme
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">BitThemeProvider</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">BitThemeProvider</BitText>
 
             <br />
 
@@ -536,7 +536,7 @@ public void Dispose()
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Reduce theme flash (BitThemeSsr)</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Reduce theme flash (BitThemeSsr)</BitText>
 
             <br />
 
@@ -589,7 +589,7 @@ public void Dispose()
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">SSR cookie convention</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">SSR cookie convention</BitText>
 
             <br />
 
@@ -615,7 +615,7 @@ var preference = Context.Request.Cookies[BitThemeCookie.PreferenceCookieName] ??
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Color derivation &amp; contrast</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Color derivation &amp; contrast</BitText>
 
             <br />
 
@@ -658,7 +658,7 @@ bool passesLarge  = BitThemeColorContrast.MeetsWcagAaLargeText(ratio);  // true<
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Theme utilities</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Theme utilities</BitText>
 
             <br />
 
@@ -692,7 +692,7 @@ BitTheme restored = BitThemeSerialization.Deserialize(json);</CodeBox>
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Density, layout, &amp; RTL</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Density, layout, &amp; RTL</BitText>
 
             <br />
 
@@ -754,7 +754,7 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Motion &amp; accessibility</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Motion &amp; accessibility</BitText>
 
             <br />
 
@@ -795,7 +795,7 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">External CSS bundles</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">External CSS bundles</BitText>
 
             <br />
 
@@ -823,7 +823,7 @@ await ThemeLoader.DetachStylesheetAsync("tenant-theme");</CodeBox>
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">CSS in C# (BitCss)</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">CSS in C# (BitCss)</BitText>
 
             <br />
 
@@ -854,8 +854,8 @@ await ThemeLoader.DetachStylesheetAsync("tenant-theme");</CodeBox>
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">JavaScript API</BitText>
-
+            <BitText Element="h2" Typography="BitTypography.H4">JavaScript API</BitText>
+            
             <br />
 
             <BitText>
@@ -935,7 +935,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">End-to-end recipe</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">End-to-end recipe</BitText>
 
             <br />
 
@@ -1021,7 +1021,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">API quick reference</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">API quick reference</BitText>
 
             <br />
 

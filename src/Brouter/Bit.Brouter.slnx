@@ -22,6 +22,9 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
+    <Project Path="Tests/Bit.Brouter.Generators.Tests/Bit.Brouter.Generators.Tests.csproj" />
+    <Project Path="Tests/Bit.Brouter.Benchmarks/Bit.Brouter.Benchmarks.csproj" />
   </Folder>
   <Project Path="Bit.Brouter/Bit.Brouter.csproj" />
+  <Project Path="Bit.Brouter.Generators/Bit.Brouter.Generators.csproj" />
 </Solution>

@@ -18,10 +18,12 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
         
@@ -35,7 +37,7 @@ jobs:
       run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: BitServices
         path: server

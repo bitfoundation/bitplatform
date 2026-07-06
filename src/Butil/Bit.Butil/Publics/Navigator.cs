@@ -16,6 +16,11 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetDeviceMemory()
         => await js.Invoke<float>("BitButil.navigator.deviceMemory");
 
@@ -24,6 +29,11 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetHardwareConcurrency()
         => await js.Invoke<ushort>("BitButil.navigator.hardwareConcurrency");
 
@@ -49,6 +59,11 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/maxTouchPoints">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/maxTouchPoints</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<byte> GetMaxTouchPoints()
         => await js.Invoke<byte>("BitButil.navigator.maxTouchPoints");
 
@@ -57,6 +72,11 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsOnLine()
         => await js.Invoke<bool>("BitButil.navigator.onLine");
 
@@ -65,6 +85,11 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/pdfViewerEnabled">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/pdfViewerEnabled</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsPdfViewerEnabled()
         => await js.Invoke<bool>("BitButil.navigator.pdfViewerEnabled");
 
@@ -81,6 +106,11 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/webdriver">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/webdriver</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsWebDriver()
         => await js.Invoke<bool>("BitButil.navigator.webdriver");
 
@@ -89,8 +119,26 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> CanShare()
         => await js.Invoke<bool>("BitButil.navigator.canShare");
+
+    /// <summary>
+    /// Returns true if the data passed would be shareable by Navigator.share().
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare</see>
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> CanShare(ShareData data)
+        => await js.Invoke<bool>("BitButil.navigator.canShare", data);
 
     /// <summary>
     /// Clears a badge on the current app's icon and returns a Promise that resolves with undefined.
@@ -105,16 +153,24 @@ public class Navigator(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon</see>
     /// </summary>
-    public async Task<bool> SendBeacon()
-        => await js.Invoke<bool>("BitButil.navigator.sendBeacon");
+    /// <param name="url">The URL that will receive the data.</param>
+    /// <param name="data">An optional payload (string, Blob, BufferSource, or FormData-shaped object) to send.</param>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> SendBeacon(string url, object? data = null)
+        => await js.Invoke<bool>("BitButil.navigator.sendBeacon", url, data);
 
     /// <summary>
     /// Sets a badge on the icon associated with this app and returns a Promise that resolves with undefined.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/setAppBadge">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/setAppBadge</see>
     /// </summary>
-    public async Task SetAppBadge()
-        => await js.InvokeVoid("BitButil.navigator.setAppBadge");
+    /// <param name="contents">A non-negative integer to display, or null/0 to show a generic dot badge.</param>
+    public async Task SetAppBadge(int? contents = null)
+        => await js.InvokeVoid("BitButil.navigator.setAppBadge", contents);
 
     /// <summary>
     /// Invokes the native sharing mechanism of the current platform.
@@ -125,10 +181,35 @@ public class Navigator(IJSRuntime js)
         => await js.InvokeVoid("BitButil.navigator.share", data);
 
     /// <summary>
+    /// Web Share Level 2: shares one or more files alongside optional title/text/url.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share">Navigator.share()</see>
+    /// </summary>
+    /// <returns>True when the share completes (or no files were rejected). False when the
+    /// runtime can't share the supplied set, e.g. file shares aren't allowed.</returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    [System.Diagnostics.CodeAnalysis.DynamicDependency(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All, typeof(ShareFile))]
+    [System.Diagnostics.CodeAnalysis.DynamicDependency(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All, typeof(ShareData))]
+    public async Task<bool> ShareFiles(string? title, ShareFile[] files, string? text = null, string? url = null)
+    {
+        if (files is null || files.Length == 0) return false;
+        return await js.Invoke<bool>("BitButil.navigator.shareFiles", title, text, url, files);
+    }
+
+    /// <summary>
     /// Causes vibration on devices with support for it. Does nothing if vibration support isn't available.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> Vibrate(int[] pattern)
         => await js.Invoke<bool>("BitButil.navigator.vibrate", pattern);
 }

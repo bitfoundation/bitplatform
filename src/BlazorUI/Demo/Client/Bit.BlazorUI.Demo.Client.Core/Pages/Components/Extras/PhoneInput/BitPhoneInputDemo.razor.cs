@@ -6,6 +6,13 @@ public partial class BitPhoneInputDemo
     [
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the number input is auto focused on first render.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitPhoneInputClassStyles?",
             DefaultValue = "null",
@@ -48,6 +55,13 @@ public partial class BitPhoneInputDemo
             Description = "The default selected country to be initially used when the Country parameter is not set.",
             LinkType = LinkType.Link,
             Href = "#country",
+        },
+        new()
+        {
+            Name = "DebounceTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The debounce time in milliseconds for the number input (applied when Immediate is enabled).",
         },
         new()
         {
@@ -114,6 +128,13 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "Number",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The local phone number (the digits in the input box, without the country dialing code). (two-way bound)",
+        },
+        new()
+        {
             Name = "OnCountryChange",
             Type = "EventCallback<BitCountry?>",
             DefaultValue = "",
@@ -148,6 +169,13 @@ public partial class BitPhoneInputDemo
             Description = "Custom CSS styles for different parts of the BitPhoneInput.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "ThrottleTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The throttle time in milliseconds for the number input (applied when Immediate is enabled).",
         },
     ];
 
@@ -211,9 +239,13 @@ public partial class BitPhoneInputDemo
 
 
 
+    private string? bindingValue;
     private string? bindingNumber;
     private BitCountry? bindingCountry;
     private BitCountry? changedCountry;
+    private string? immediateNumber;
+    private string? debouncedNumber;
+    private string? throttledNumber;
     private readonly List<BitCountry> customCountries =
     [
         BitCountries.UnitedStates,
@@ -229,17 +261,7 @@ public partial class BitPhoneInputDemo
 <BitPhoneInput DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Enter your number"" />";
 
     private readonly string example2RazorCode = @"
-<BitPhoneInput @bind-Value=""bindingNumber""
-               @bind-Country=""bindingCountry""
-               DefaultCountry=""BitCountries.Germany""
-               Placeholder=""Enter your number"" />
-
-<div>Number: @bindingNumber</div>
-<div>Country: @bindingCountry?.Name</div>
-<div>Full number: +@bindingCountry?.Code@bindingNumber</div>";
-    private readonly string example2CsharpCode = @"
-private string? bindingNumber;
-private BitCountry? bindingCountry;";
+<BitPhoneInput AutoFocus DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Enter your number"" />";
 
     private readonly string example3RazorCode = @"
 <BitPhoneInput Label=""Phone number""
@@ -267,30 +289,74 @@ private readonly List<BitCountry> customCountries =
 <BitPhoneInput FullWidth DefaultCountry=""BitCountries.Italy"" Placeholder=""Enter your number"" />";
 
     private readonly string example7RazorCode = @"
-<BitPhoneInput IsEnabled=""false"" DefaultCountry=""BitCountries.Spain"" Value=""1234567"" />
+<BitPhoneInput Immediate
+               DefaultCountry=""BitCountries.UnitedStates""
+               Placeholder=""Enter your number""
+               @bind-Value=""immediateNumber"" />
+<div>Value: [@immediateNumber]</div>
 
-<BitPhoneInput ReadOnly DefaultCountry=""BitCountries.Spain"" Value=""1234567"" />";
-    private readonly string example7CsharpCode = @"";
+<BitPhoneInput Immediate
+               DebounceTime=""500""
+               DefaultCountry=""BitCountries.UnitedStates""
+               Placeholder=""Enter your number""
+               @bind-Value=""debouncedNumber"" />
+<div>Value: [@debouncedNumber]</div>
+
+<BitPhoneInput Immediate
+               ThrottleTime=""500""
+               DefaultCountry=""BitCountries.UnitedStates""
+               Placeholder=""Enter your number""
+               @bind-Value=""throttledNumber"" />
+<div>Value: [@throttledNumber]</div>";
+    private readonly string example7CsharpCode = @"
+private string? immediateNumber;
+private string? debouncedNumber;
+private string? throttledNumber;";
 
     private readonly string example8RazorCode = @"
+<BitPhoneInput @bind-Value=""bindingValue""
+               @bind-Number=""bindingNumber""
+               @bind-Country=""bindingCountry""
+               Immediate
+               DebounceTime=""500""
+               DefaultCountry=""BitCountries.Germany""
+               Placeholder=""Enter your number"" />
+
+<BitTextField @bind-Value=""bindingValue"" Immediate DebounceTime=""500"" Placeholder=""Full phone number"" />
+
+<div>Value (full number): @bindingValue</div>
+<div>Number (local): @bindingNumber</div>
+<div>Country: @bindingCountry?.Name</div>";
+    private readonly string example8CsharpCode = @"
+private string? bindingValue;
+private string? bindingNumber;
+private BitCountry? bindingCountry;";
+
+    private readonly string example9RazorCode = @"
+<BitPhoneInput IsEnabled=""false"" DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />
+
+<BitPhoneInput ReadOnly DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />";
+    private readonly string example9CsharpCode = @"";
+
+    private readonly string example10RazorCode = @"
 <BitPhoneInput DefaultCountry=""BitCountries.UnitedStates""
                OnCountryChange=""c => changedCountry = c""
                Placeholder=""Enter your number"" />
 
 <div>Selected country: @changedCountry?.Name</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private BitCountry? changedCountry;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitPhoneInput DefaultCountry=""BitCountries.Netherlands""
                Placeholder=""Enter your number""
                Style=""width: 300px;""
                Class=""custom-class""
                Styles=""@(new() { FieldGroup = ""border-color: blueviolet;"" })""
                Classes=""@(new() { Input = ""custom-input"" })"" />";
-    private readonly string example9CsharpCode = @"";
+    private readonly string example11CsharpCode = @"";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <div dir=""rtl"">
     <BitPhoneInput Dir=""BitDir.Rtl"" DefaultCountry=""BitCountries.Iran"" Placeholder=""شماره خود را وارد کنید"" />
 </div>";

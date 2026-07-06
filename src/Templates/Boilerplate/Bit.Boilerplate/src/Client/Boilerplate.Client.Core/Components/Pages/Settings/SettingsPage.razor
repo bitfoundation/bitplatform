@@ -9,40 +9,31 @@
 
 <section>
     <BitStack Class="stack">
-        <Accordion @bind-Value="@openedAccordion"
-                   Name="@PageUrls.SettingsSections.Profile"
-                   Title="@Localizer[nameof(AppStrings.ProfileTitle)]"
-                   Subtitle="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
-            <ProfileSection Loading="isLoading" />
-        </Accordion>
+        <BitAccordionList TItem="BitAccordionListOption" DefaultExpandedKey="@Section" Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
 
-        <Accordion @bind-Value="@openedAccordion"
-                   Name="@PageUrls.SettingsSections.Account"
-                   Title="@Localizer[nameof(AppStrings.AccountTitle)]"
-                   Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
-            <AccountSection />
-        </Accordion>
+            <BitAccordionListOption Key="@PageUrls.SettingsSections.Profile" Title="@Localizer[nameof(AppStrings.ProfileTitle)]" Description="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
+                <ProfileSection Loading="isLoading" />
+            </BitAccordionListOption>
 
-        <Accordion @bind-Value="@openedAccordion"
-                   Name="@PageUrls.SettingsSections.Tfa"
-                   Title="@Localizer[nameof(AppStrings.TfaTitle)]"
-                   Subtitle="@Localizer[nameof(AppStrings.TfaSubtitle)]">
-            <TwoFactorSection />
-        </Accordion>
+            <BitAccordionListOption Key="@PageUrls.SettingsSections.Account" Title="@Localizer[nameof(AppStrings.AccountTitle)]" Description="@Localizer[nameof(AppStrings.AccountSubtitle)]">
+                <AccountSection />
+            </BitAccordionListOption>
 
-        <Accordion @bind-Value="@openedAccordion"
-                   Name="@PageUrls.SettingsSections.Sessions"
-                   Title="@Localizer[nameof(AppStrings.SessionsTitle)]"
-                   Subtitle="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
-            <SessionsSection />
-        </Accordion>
-        @*#if (ads == true)*@
-        <Accordion @bind-Value="@openedAccordion"
-                   Name="@PageUrls.SettingsSections.UpgradeAccount"
-                   Title="@Localizer[nameof(AppStrings.UpgradeTitle)]"
-                   Subtitle="@Localizer[nameof(AppStrings.UpgradeSubtitle)]">
-            <UpgradeAccountSection />
-        </Accordion>
-        @*#endif*@
+            <BitAccordionListOption Key="@PageUrls.SettingsSections.Tfa" Title="@Localizer[nameof(AppStrings.TfaTitle)]" Description="@Localizer[nameof(AppStrings.TfaSubtitle)]">
+                <TwoFactorSection />
+            </BitAccordionListOption>
+
+            <BitAccordionListOption Key="@PageUrls.SettingsSections.Sessions" Title="@Localizer[nameof(AppStrings.SessionsTitle)]" Description="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
+                <SessionsSection />
+            </BitAccordionListOption>
+
+            @*#if (ads == true)*@
+            <BitAccordionListOption Key="@PageUrls.SettingsSections.UpgradeAccount" Title="@Localizer[nameof(AppStrings.UpgradeTitle)]" Description="@Localizer[nameof(AppStrings.UpgradeSubtitle)]">
+                <UpgradeAccountSection />
+            </BitAccordionListOption>
+            @*#endif*@
+
+        </BitAccordionList>
     </BitStack>
+
 </section>

@@ -1,0 +1,31 @@
+@page "/components/promodalservice"
+
+<PageOutlet Url="components/promodalservice"
+            Title="ProModalService"
+            Description="BitProModalService is a service to globally handle BitProModals with any content." />
+
+<DemoPage Name="ProModalService"
+          Description="BitProModalService is a service to globally handle BitProModals with any content."
+          Parameters="componentParameters"
+          GitHubExtrasUrl="ProModal/BitProModalService.cs"
+          GitHubDemoUrl="Extras/ProModalService/BitProModalServiceDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>Show a BitProModal with a header and close button using the BitProModalService:</div><br />
+            <BitButton OnClick="ShowModal">Show</BitButton>
+        </DemoExample>
+    </Examples>
+</DemoPage>

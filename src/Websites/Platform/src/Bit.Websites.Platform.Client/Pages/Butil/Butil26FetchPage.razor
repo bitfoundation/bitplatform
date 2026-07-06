@@ -1,0 +1,85 @@
+@page "/butil/fetch"
+@inherits AppComponentBase
+@inject Bit.Butil.Fetch fetch
+
+<PageOutlet Url="butil/fetch"
+            Title="Fetch - Butil"
+            Description="Fetch class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Fetch</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the Fetch class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            The <b>Fetch</b> class wraps the browser's
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank" rel="noopener noreferrer">Fetch API</a>
+            with progress reporting and an abortable handle. Prefer <b>HttpClient</b> for normal API calls;
+            reach for this when you need progress for big downloads or fetch-only semantics. Inject it and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Fetch fetch
+
+@@code {
+    var response = await fetch.Send(new FetchRequest { Url = "https://..." },
+        onProgress: p => { /* bytes received */ });
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            <b>Send</b>: <br />
+            Sends the request and returns the full <b>FetchResponse</b> (status, headers and body bytes).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@sendGetExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="url" Label="URL" Style="max-width: 25rem;" />
+                        <br />
+                        <BitButton OnClick="SendGet">Send GET</BitButton>
+                        <br /><br />
+                        <div>@sendGetStatus</div>
+                        @if (sendGetBody is not null)
+                        {
+                            <pre style="margin-top:1rem;white-space:pre-wrap;word-break:break-all">@sendGetBody</pre>
+                        }
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Send with progress and cancellation</b>: <br />
+            Pass an <b>onProgress</b> callback to watch bytes arrive, and a <b>CancellationToken</b> to abort mid-flight.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@sendProgressExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="SendWithProgress">Download with progress</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="AbortRequest">Abort</BitButton>
+                        <br /><br />
+                        <div>@progressText</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Permissions" PrevUrl="/butil/permissions" Next="Files" NextUrl="/butil/files" />

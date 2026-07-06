@@ -13,10 +13,10 @@
                         <BitTextField Value="@PhoneNumber" ReadOnly NoValidate />
                     }
 
-                    <BitTextField @bind-Value="sendModel.PhoneNumber"
-                                  Type="BitInputType.Tel"
-                                  Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
-                                  Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
+                    <BitPhoneInput @bind-Value="sendModel.PhoneNumber"
+                                   DefaultCountry="@BitCountries.Current" FullWidth
+                                   Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
+                                   Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
 
                     <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
@@ -47,11 +47,11 @@
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>
-                    <BitTextField @bind-Value="changeModel.PhoneNumber"
-                                  IsEnabled="isPhoneNumberUnavailable"
-                                  Type="BitInputType.Tel"
-                                  Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                  Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                    <BitPhoneInput @bind-Value="changeModel.PhoneNumber"
+                                   IsEnabled="isPhoneNumberUnavailable"
+                                   DefaultCountry="@BitCountries.Current" FullWidth
+                                   Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                   Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
 
                     <BitOtpInput @bind-Value="changeModel.Token"

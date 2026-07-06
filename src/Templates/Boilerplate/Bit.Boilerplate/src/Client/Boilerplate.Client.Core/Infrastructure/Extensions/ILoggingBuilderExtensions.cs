@@ -23,19 +23,10 @@ public static class ILoggingBuilderExtensions
 
         if (!AppPlatform.IsBrowser) // Browser has its own WebAssemblyConsoleLoggerProvider.
         {
-            loggingBuilder.AddConsole(options => configuration.GetRequiredSection("Logging:Console").Bind(options)); // Device Log / logcat
+            loggingBuilder.AddConsole(options => configuration.Bind("Logging:Console", options)); // Device Log / logcat
         }
 
         loggingBuilder.AddDiagnosticLogger();
-
-        //#if (sentry == true)
-        loggingBuilder.AddSentry(options =>
-        {
-            options.Debug = AppEnvironment.IsDevelopment();
-            options.Environment = AppEnvironment.Current;
-            configuration.GetRequiredSection("Logging:Sentry").Bind(options);
-        });
-        //#endif
 
         return loggingBuilder;
     }

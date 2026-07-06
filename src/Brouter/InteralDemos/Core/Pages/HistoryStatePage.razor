@@ -1,0 +1,36 @@
+@* Demos: history entry state. Each push attaches a payload to its history entry; Back/Forward
+   restore the entry's own payload via BrouterLocation.HistoryState. *@
+
+@inject IBrouter brouter
+
+<div class="bb-intro">
+    <h1>History entry state</h1>
+    <p class="bb-subtitle">Attach state to a history entry, read it back - it survives Back/Forward.</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Current entry's state</h3>
+    <p>
+        <code>brouter.Location.HistoryState</code> =
+        <strong>@(brouter.Location.HistoryState ?? "(null)")</strong>
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Push entries with state</h3>
+    <button class="btn btn-primary" @onclick="PushStamped">Push this URL with a timestamp state</button>
+    <BrouterLink Href="/history-state" HistoryState="from-a-link" class="btn btn-primary">Link with HistoryState</BrouterLink>
+    <div style="margin-top: .5rem;">
+        <button class="btn btn-primary" @onclick="brouter.Back">← Back</button>
+        <button class="btn btn-primary" @onclick="brouter.Forward">Forward →</button>
+    </div>
+    <p class="bb-card-desc">
+        Push a few stamped entries, then walk Back/Forward: each entry restores <em>its own</em>
+        state - the browser stores it on <code>history.state</code>. Serialize JSON for structured payloads.
+    </p>
+</div>
+
+@code {
+    private void PushStamped() =>
+        brouter.Navigate("/history-state", historyState: $"pushed at {DateTime.Now:HH:mm:ss}");
+}

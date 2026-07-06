@@ -1,15 +1,15 @@
 @page "/components/datagrid"
 @page "/components/data-grid"
 @inherits AppComponentBase
-@using Demo.Shared.Dtos.DataGridDemo
 
 <PageOutlet Url="components/datagrid"
             Title="DataGrid"
-            Description="datagrid component of the bit BlazorUI components" />
+            Description="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort and filter the content." />
 
 <DemoPage Name="DataGrid"
-          Description="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical."
+          Description="BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort and filter the content. Use a data-grid when information density is critical."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="DataGrid/BitDataGrid.razor"
@@ -28,171 +28,494 @@
         </BitText>
     </NotesTemplate>
     <Examples>
-        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <BitDataGrid Items="@FilteredItems1" Pagination="@pagination1" ResizableColumns>
-                <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
-                    <ColumnOptions>
-                        <BitSearchBox @bind-Value="typicalSampleNameFilter1"
-                                      FixedIcon
-                                      Immediate DebounceTime="300"
-                                      Placeholder="Search..."
-                                      InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
-                    </ColumnOptions>
-                </BitDataGridPropertyColumn>
-                <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
-                <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
-                <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
-                <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
-            </BitDataGrid>
-            <BitDataGridPaginator Value="@pagination1" />
-        </DemoExample>
 
-        <DemoExample Title="Customized" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div class="custom-grid">
-                <div class="container">
-                    <BitDataGrid Items="@FilteredItems2" Pagination="@pagination2" ResizableColumns>
-                        <BitDataGridPropertyColumn Property="@(c => c.Name)" IsDefaultSort="BitDataGridSortDirection.Ascending" Sortable="true" Class="wide">
-                            <ColumnOptions>
-                                <BitSearchBox @bind-Value="typicalSampleNameFilter2"
-                                              FixedIcon
-                                              Immediate DebounceTime="300"
-                                              Placeholder="Search on Name"
-                                              InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
-                            </ColumnOptions>
-                        </BitDataGridPropertyColumn>
-                        <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
-                            <img class="flag" src="https://flagsapi.com/@(context.Code)/shiny/32.png" loading="lazy" alt="@(context.Code)" />
-                        </BitDataGridTemplateColumn>
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
-                        <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Center">
-                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit" Title="Edit" />
-                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Delete" Title="Delete" />
-                        </BitDataGridTemplateColumn>
-                    </BitDataGrid>
-                </div>
-                <BitDataGridPaginator Value="@pagination2" SummaryFormat="@(v => $"Total: {v.TotalItemCount}")">
-                    <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
-                </BitDataGridPaginator>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Virtualize" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div class="grid">
-                <BitDataGrid @ref="dataGrid" ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize>
-                    <BitDataGridPropertyColumn Property="@(c => c.EventId)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.State)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.City)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.RecallingFirm)" Title="Company" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Status)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.ReportDate)" Title="Report Date" Sortable="true" />
-                </BitDataGrid>
-            </div>
-            <div class="search-panel">
-                <BitSearchBox @bind-Value="VirtualSampleNameFilter"
-                              Immediate DebounceTime="300"
-                              Placeholder="Search..." />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="OData" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div class="grid">
-                <BitDataGrid @ref="productsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="(p => p.Id)" TGridItem="ProductDto" Virtualize>
-                    <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
-                    <BitDataGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
-                    <BitDataGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
-                </BitDataGrid>
-            </div>
-            <div class="search-panel">
-                <BitSearchBox @bind-Value="ODataSampleNameFilter"
-                              Immediate DebounceTime="300"
-                              Placeholder="Search on Name" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="LoadingTemplate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-            <div class="grid">
-                <BitDataGrid @ref="productsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="(p => p.Id)" TGridItem="ProductDto" Pagination="pagination3">
-                    <Columns>
-                        <BitDataGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending" />
-                        <BitDataGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
-                        <BitDataGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
-                    </Columns>
-                    <LoadingTemplate>
-                        <BitStack Alignment="BitAlignment.Center" Style="height:185px">
-                            <b>Loading items...</b>
-                            <BitOrbitingDotsLoading Size="BitSize.Large" />
-                        </BitStack>
-                    </LoadingTemplate>
-                </BitDataGrid>
-            </div>
-            <BitDataGridPaginator Value="@pagination3" SummaryFormat="@(v => $"Total: {v.TotalItemCount?.ToString("N0")}")">
-                <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
-            </BitDataGridPaginator>
-        </DemoExample>
-
-        <DemoExample Title="Responsive" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Basic &amp; sorting" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                The BitDataGrid does not have the Responsive feature built-in, 
-                but you can achieve some level of responsiveness like what we did in this sample:
+                Bind a collection, declare columns, and you get sorting out of the box.
+                Click a header to sort ascending → descending → unsorted.
+                Hold Ctrl (or ⌘) and click additional headers for multi-column sorting.
             </div>
-            
             <br />
-            
-            <div class="responsive-grid">
-                <BitDataGrid Items="@allCountries" Pagination="@pagination6">
-                    <BitDataGridPropertyColumn Property="@(c => c.Name)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" />
-                    <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" />
-                </BitDataGrid>
-                <BitDataGridPaginator Value="@pagination6" />
-            </div>
+            <BitDataGrid TItem="Product" Items="@basicProducts" Height="430px" MultiSort="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="RowTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-            <div>See the RowTemplate parameter in action:</div>
-            
-            <br />
-
-            <div class="row-template-grid">
-                <BitDataGrid Items="@allCountries" Pagination="@pagination7">
-                    <Columns>
-                        <BitDataGridTemplateColumn Class="row-template-expand-col">
-                            <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
-                                       IconName="@(expandedRowTemplateCodes.Contains(context.Code) ? BitIconName.ChevronDown : BitIconName.ChevronRight)"
-                                       OnClick="@(() => ToggleRowRendererExpand(context.Code))" />
-                        </BitDataGridTemplateColumn>
-                        <BitDataGridPropertyColumn Property="@(c => c.Name)" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" />
-                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" />
-                    </Columns>
-                    <RowTemplate Context="args">
-                        @args.OriginalRow
-                        @if (expandedRowTemplateCodes.Contains(args.RowItem.Code))
-                        {
-                            <tr>
-                                <td colspan="6">
-                                    <div class="row-template-detail">
-                                        <strong>Additional data:</strong> 
-                                        Code: [@args.RowItem.Code] - 
-                                        Gold: [@args.RowItem.Medals.Gold], 
-                                        Silver: [@args.RowItem.Medals.Silver], 
-                                        Bronze: [@args.RowItem.Medals.Bronze] 
-                                        (Total: @args.RowItem.Medals.Total)
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </RowTemplate>
-                </BitDataGrid>
-                <BitDataGridPaginator Value="@pagination7" />
+        <DemoExample Title="Filtering &amp; paging" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A quick-filter row sits under the header; the pager controls page size and navigation.
+                Typed filters are used for numeric, date, boolean and enum columns (like Price, Stock and Category),
+                while text columns (like Name and Supplier) use case-insensitive text filtering.
             </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@filterProducts" Height="430px"
+                         Filterable="true" Pageable="true" PageSize="10"
+                         PagerPosition="BitDataGridPagerPosition.Bottom"
+                         ShowToolbar="true" ShowCsvExport="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Supplier" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Selection" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Single or multiple selection with a select-all header checkbox and two-way binding.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton Variant="@(selectionMode == BitDataGridSelectionMode.Single ? BitVariant.Fill : BitVariant.Outline)"
+                           OnClick="SelectSingleMode">Single</BitButton>
+                <BitButton Variant="@(selectionMode == BitDataGridSelectionMode.Multiple ? BitVariant.Fill : BitVariant.Outline)"
+                           OnClick="() => selectionMode = BitDataGridSelectionMode.Multiple">Multiple</BitButton>
+                <BitText>@selectedProducts.Count selected</BitText>
+            </BitStack>
+            <br />
+            <BitDataGrid TItem="Product" Items="@selectionProducts" Height="420px"
+                         SelectionMode="selectionMode" @bind-SelectedItems="selectedProducts" Pageable="true" PageSize="10">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Inline editing" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Add, edit, save, cancel and delete rows with type-aware editors (text, number, checkbox, date, enum).
+                Use <code>EditTemplate</code> on a column to supply your own editor.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@editProducts" Height="460px"
+                         Editable="true" NewItemFactory="CreateProduct"
+                         OnRowSave="OnSave" OnRowDelete="OnDelete" OnRowCreate="OnCreate"
+                         ShowToolbar="true" Pageable="true" PageSize="10" KeyField="p => p.Id">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="200px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
+                <BitDataGridColumn TItem="Product" Field="Discontinued" Title="Discontinued" Align="BitDataGridColumnAlign.Center" />
+            </BitDataGrid>
+            <br />
+            <BitText>@editStatus</BitText>
+        </DemoExample>
+
+        <DemoExample Title="Grouping &amp; aggregates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                Click the ⊞ button in a groupable column header to group by it (click again to ungroup).
+                Each group is collapsible and shows its own aggregates; the footer shows grand totals.
+                Group by both Category and Supplier to see multi-level grouping.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@groupProducts" Height="500px"
+                         Groupable="true" ShowFooter="true" Sortable="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Groupable="false" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="200px" Groupable="false" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Supplier" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right"
+                                   Aggregate="BitDataGridAggregateType.Sum" Groupable="false" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right"
+                                   Aggregate="BitDataGridAggregateType.Average" AggregateFormat="N0" Groupable="false" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right"
+                                   Aggregate="BitDataGridAggregateType.Max" Groupable="false" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Templates &amp; detail rows" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Customize any cell, header or footer, and expand rows to reveal detail content.
+                Click the ▸ toggle on the left of a row to expand its detail panel.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@templateProducts" Height="470px" Sortable="true" ShowFooter="true">
+                <DetailTemplate Context="p">
+                    <BitStack Horizontal Wrap Gap="2rem">
+                        <div><strong>Supplier</strong><br />@p.Supplier</div>
+                        <div><strong>Released</strong><br />@p.ReleaseDate.ToString("D")</div>
+                        <div><strong>Inventory value</strong><br />@((p.Price * p.Stock).ToString("C2"))</div>
+                        <div><strong>Status</strong><br />@(p.Discontinued ? "Discontinued" : "Active")</div>
+                    </BitStack>
+                </DetailTemplate>
+                <ChildContent>
+                    <BitDataGridColumn TItem="Product" Field="Name" Width="220px">
+                        <HeaderTemplate>📦 Product</HeaderTemplate>
+                    </BitDataGridColumn>
+                    <BitDataGridColumn TItem="Product" Field="Category" />
+                    <BitDataGridColumn TItem="Product" Field="Rating" Title="Rating">
+                        <Template Context="p">
+                            <span title="@p.Rating">
+                                @for (var i = 0; i < 5; i++)
+                                {
+                                    <span style="color:@(i < Math.Round(p.Rating, MidpointRounding.AwayFromZero) ? "#f5a623" : "#ccc")">★</span>
+                                }
+                            </span>
+                        </Template>
+                    </BitDataGridColumn>
+                    <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right"
+                                       Aggregate="BitDataGridAggregateType.Sum">
+                        <FooterTemplate Context="agg">
+                            <span>Total: @agg.FormattedValue</span>
+                        </FooterTemplate>
+                    </BitDataGridColumn>
+                    <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right">
+                        <Template Context="p">
+                            <BitTag Text="@(p.Stock == 0 ? "Out of stock" : $"{p.Stock} in stock")"
+                                    Color="@(p.Stock == 0 ? BitColor.Error : BitColor.Success)" />
+                        </Template>
+                    </BitDataGridColumn>
+                </ChildContent>
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Resize, reorder &amp; freeze columns" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Drag column edges to resize, drag headers to reorder, and pin columns in place.
+                The ID and Name columns are frozen, staying visible while you scroll horizontally.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@columnsProducts" Height="430px"
+                         Resizable="true" Reorderable="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="80px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" Frozen="true" />
+                <BitDataGridColumn TItem="Product" Field="Category" Width="160px" />
+                <BitDataGridColumn TItem="Product" Field="Supplier" Width="200px" />
+                <BitDataGridColumn TItem="Product" Field="Price" Width="160px" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Width="140px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Width="140px" Format="N1" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="ReleaseDate" Title="Released" Width="160px" Format="yyyy-MM-dd" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Column header groups" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                Set <code>Group</code> on consecutive columns to render them under a single spanning header cell.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@columnGroupsProducts" Height="460px" Sortable="true" Bordered="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="200px" Group="Identity" />
+                <BitDataGridColumn TItem="Product" Field="Category" Group="Identity" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" Group="Commercials" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" Group="Commercials" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" Group="Quality" />
+                <BitDataGridColumn TItem="Product" Field="Supplier" Group="Quality" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Column spanning" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                Provide a <code>ColSpan</code> function on a column to let a single cell span several columns based on its row.
+                Discontinued rows span the Name cell over Category; premium rows span Price over Stock.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@spanningProducts" Height="460px" Bordered="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" ColSpan="NameSpan">
+                    <Template Context="p">
+                        @if (p.Discontinued)
+                        {
+                            <span class="span-banner">⚠ @p.Name — discontinued (no further details)</span>
+                        }
+                        else
+                        {
+                            @p.Name
+                        }
+                    </Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" ColSpan="PriceSpan">
+                    <Template Context="p">
+                        @if (p.Price > 800)
+                        {
+                            <span class="span-banner">★ Premium: @p.Price.ToString("C2") · @p.Stock in stock</span>
+                        }
+                        else
+                        {
+                            @p.Price.ToString("C2")
+                        }
+                    </Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Virtualization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                Render very large datasets smoothly — only visible rows hit the DOM.
+                Virtualization requires a fixed <code>Height</code> and <code>RowHeight</code>.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton OnClick="() => virtualProducts = SampleData.Generate(1_000)">1k rows</BitButton>
+                <BitButton OnClick="() => virtualProducts = SampleData.Generate(10_000)">10k rows</BitButton>
+                <BitButton OnClick="() => virtualProducts = SampleData.Generate(100_000)">100k rows</BitButton>
+                <BitText>@virtualProducts.Count.ToString("N0") rows</BitText>
+            </BitStack>
+            <br />
+            <BitDataGrid TItem="Product" Items="@virtualProducts" Height="520px"
+                         Virtualize="true" RowHeight="36" Sortable="true" Filterable="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="240px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Supplier" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Server-side data" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                Set the <code>OnRead</code> callback to take over sorting/filtering/paging (e.g. against a database).
+                This example simulates a backend with a small delay.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" OnRead="LoadServerData" Height="430px"
+                         Pageable="true" PageSize="10" Sortable="true" Filterable="true" Loading="serverLoading">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Supplier" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+            <br />
+            <BitText>@serverLastRequest</BitText>
+        </DemoExample>
+
+        <DemoExample Title="Infinite scrolling" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                Set <code>OnLoadMore</code> instead of binding <code>Items</code>. The grid appends the next batch
+                automatically as the user scrolls toward the end — with no total count or paging UI. A fixed
+                <code>Height</code> is required.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" OnLoadMore="LoadMore" LoadMoreBatchSize="40"
+                         Height="520px" RowHeight="40" Sortable="true">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="240px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Supplier" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+            <br />
+            <BitText>@infiniteLog</BitText>
+        </DemoExample>
+
+        <DemoExample Title="Tree view (hierarchical rows)" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                Set the <code>ChildrenSelector</code> parameter to a function that returns each item's direct children.
+                The grid then treats <code>Items</code> as the root nodes and renders expand/collapse toggles with indentation.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap>
+                <BitButton OnClick="ExpandAll">Expand all</BitButton>
+                <BitButton OnClick="CollapseAll">Collapse all</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid TItem="FileNode" Items="@fileRoots" Height="460px" Sortable="true"
+                         ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true"
+                         KeyField="n => n.Id" @ref="treeGrid">
+                <BitDataGridColumn TItem="FileNode" Field="Name" Title="Name" Width="320px" />
+                <BitDataGridColumn TItem="FileNode" Field="Kind" Title="Type" Width="120px" />
+                <BitDataGridColumn TItem="FileNode" Field="Size" Title="Size (bytes)" Format="N0" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="FileNode" Field="Modified" Format="yyyy-MM-dd" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Master detail" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                The <code>DetailTemplate</code> can render anything — including another <code>BitDataGrid</code>.
+                Each supplier expands to show a nested, sortable grid of the products it provides.
+            </div>
+            <br />
+            <BitDataGrid TItem="SupplierModel" Items="@suppliers" Height="520px" Sortable="true">
+                <DetailTemplate Context="supplier">
+                    <BitStack Horizontal Wrap Gap="2rem">
+                        <div><strong>Products:</strong> @supplier.Products.Count</div>
+                        <div><strong>Total stock:</strong> @supplier.Products.Sum(p => p.Stock).ToString("N0")</div>
+                        <div><strong>Avg price:</strong> @supplier.Products.Average(p => p.Price).ToString("C2")</div>
+                        <div><strong>Active:</strong> @supplier.Products.Count(p => !p.Discontinued)</div>
+                    </BitStack>
+                    <br />
+                    <BitDataGrid TItem="Product" Items="supplier.Products" Sortable="true" Bordered="true" Striped="true">
+                        <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                        <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                        <BitDataGridColumn TItem="Product" Field="Category" />
+                        <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                        <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                    </BitDataGrid>
+                </DetailTemplate>
+                <ChildContent>
+                    <BitDataGridColumn TItem="SupplierModel" Field="Name" Title="Supplier" Width="260px" />
+                    <BitDataGridColumn TItem="SupplierModel" Field="ProductCount" Title="Products" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn TItem="SupplierModel" Field="TotalStock" Title="Total stock" Format="N0" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn TItem="SupplierModel" Field="AveragePrice" Title="Avg price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                </ChildContent>
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Row reordering" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                Set <code>RowReorderable="true"</code> to show a drag handle on each row. Grab the ⠿ handle and drop it
+                onto another row. The grid reorders the bound list in place and raises <code>OnRowReorder</code>.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@reorderProducts" Height="460px"
+                         RowReorderable="true" OnRowReorder="OnReorder" Sortable="false">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+            <br />
+            <BitText>@reorderLog</BitText>
+        </DemoExample>
+
+        <DemoExample Title="Cell events &amp; context menu" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                The grid raises <code>OnCellClick</code>, <code>OnCellDoubleClick</code> and <code>OnCellContextMenu</code>
+                with the row, column and the underlying mouse event.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@cellEventsProducts" Height="420px"
+                         OnCellClick="OnCellClick"
+                         OnCellDoubleClick="OnCellDoubleClick"
+                         OnCellContextMenu="OnCellContextMenu">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+            <br />
+            <BitText>@cellEventStatus</BitText>
+        </DemoExample>
+
+        <DemoExample Title="Keyboard cell navigation" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                Set <code>CellNavigation="true"</code> to enable a roving tab stop. Use arrow keys, Home/End,
+                Ctrl+Home/End, PageUp/PageDown to move, and Enter/F2 to edit (Esc to cancel).
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@cellNavProducts" Height="460px"
+                         CellNavigation="true" Sortable="true" Editable="true" OnRowSave="_ => {}">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Variable row height" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                Pass <code>RowHeightSelector</code> a function that returns the desired height (in pixels) for a given row.
+                Here premium products (price over $500) get a taller row.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@variableHeightProducts" Height="480px" Sortable="true"
+                         RowHeightSelector="RowHeight">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="260px">
+                    <Template Context="p">
+                        <div>
+                            <div><strong>@p.Name</strong></div>
+                            @if (p.Price > 500)
+                            {
+                                <div class="muted">Premium · @p.Supplier · released @p.ReleaseDate.ToString("MMM yyyy")</div>
+                            }
+                        </div>
+                    </Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Empty state" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                Supply an <code>EmptyTemplate</code> to customize the placeholder shown when there is no data,
+                or rely on the built-in "No records to display" message.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap>
+                <BitButton OnClick="() => emptyHasData = false">Clear data</BitButton>
+                <BitButton OnClick="() => emptyHasData = true">Load data</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid TItem="Product" Items="@EmptyCurrent" Height="320px" Sortable="true">
+                <EmptyTemplate>
+                    <BitStack HorizontalAlign="BitAlignment.Center">
+                        <div style="font-size:2rem">📭</div>
+                        <BitText Typography="BitTypography.H6">Nothing here yet</BitText>
+                        <BitText>Try loading the sample data to populate the grid.</BitText>
+                        <BitButton OnClick="() => emptyHasData = true">Load sample data</BitButton>
+                    </BitStack>
+                </EmptyTemplate>
+                <ChildContent>
+                    <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn TItem="Product" Field="Name" Width="240px" />
+                    <BitDataGridColumn TItem="Product" Field="Category" />
+                    <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                </ChildContent>
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Borders &amp; Striping" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                Toggle column/row borders and alternate-row striping using the <code>Bordered</code> and <code>Striped</code> parameters.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton OnClick="() => bordered = !bordered">Borders: @(bordered ? "on" : "off")</BitButton>
+                <BitButton OnClick="() => striped = !striped">Striping: @(striped ? "on" : "off")</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid TItem="Product" Items="@borderStripeProducts" Height="420px"
+                         Bordered="bordered" Striped="striped"
+                         Sortable="true" Pageable="true" PageSize="8">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
+                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" />
+                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+            <div>
+                Render the grid in a right-to-left layout by setting the <code>Direction</code> parameter to <code>BitDir.Rtl</code>.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@rtlProducts" Height="420px"
+                         Direction="BitDir.Rtl"
+                         Sortable="true" Pageable="true" PageSize="8">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
+                <BitDataGridColumn TItem="Product" Field="Name" Title="نام" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" Title="دسته‌بندی">
+                    <Template Context="product">@CategoryFa(product.Category)</Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn TItem="Product" Field="Price" Title="قیمت" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Title="موجودی" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
         </DemoExample>
 
     </Examples>
 </DemoPage>
+

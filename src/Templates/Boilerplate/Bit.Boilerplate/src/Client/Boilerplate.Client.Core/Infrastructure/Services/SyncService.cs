@@ -11,7 +11,7 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 public partial class SyncService : IAsyncDisposable
 {
     [AutoInject] private SnackBarService snackBarService = default!;
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IDbContextFactory<AppOfflineDbContext> dbContextFactory = default!;
@@ -80,7 +80,7 @@ public partial class SyncService : IAsyncDisposable
             if (pushResult.CompletedOperations > 0)
                 snackBarService.Success(localizer[nameof(AppStrings.SyncPushSuccess), pushResult.CompletedOperations]);
         }
-        catch (ServerConnectionException)
+        catch (TransientException)
         {
             // Simply ignore connection exceptions during sync
         }

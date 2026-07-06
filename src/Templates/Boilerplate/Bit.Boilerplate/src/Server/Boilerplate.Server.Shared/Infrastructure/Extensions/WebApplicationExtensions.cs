@@ -3,8 +3,10 @@ using Boilerplate.Server.Shared;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -12,30 +14,35 @@ public static class WebApplicationExtensions
 {
     public static WebApplication MapAppHealthChecks(this WebApplication app)
     {
-        // Adding health checks endpoints to applications in non-development environments has security implications.
-        // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
+        var healthChecks = app.MapGroup("");
+
+        healthChecks
+            .CacheOutput("HealthChecks");
+
+        // All health checks must pass for app to be
+        // considered ready to accept traffic after starting
+        healthChecks.MapHealthChecks("/health", new()
+        {
+            Predicate = _ => true
+        });
+
+        // Only health checks tagged with the "live" tag
+        // must pass for app to be considered alive
+        healthChecks.MapHealthChecks("/alive", new()
+        {
+            Predicate = static res => res.Tags.Contains("live")
+        });
+
         if (app.Environment.IsDevelopment())
         {
-            var healthChecks = app.MapGroup("");
-
-            healthChecks
-                .CacheOutput("HealthChecks");
-
-            // All health checks must pass for app to be
-            // considered ready to accept traffic after starting
-            healthChecks.MapHealthChecks("/health");
-
-            // Only health checks tagged with the "live" tag
-            // must pass for app to be considered alive
-            healthChecks.MapHealthChecks("/alive", new()
-            {
-                Predicate = static r => r.Tags.Contains("live")
-            });
-
+            // This endpoint returns more details and must be protected by authentication and authorization in production
+            // Replace outer `IsDevelopment` check with a more robust check for production readiness before exposing this endpoint publicly
             healthChecks.MapHealthChecks("/healthz", new HealthCheckOptions
             {
                 Predicate = _ => true,
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                AllowCachingResponses = true,
+                // The following `IsDevelopment` check must remain in place to avoid exposing sensitive information in production
+                ResponseWriter = app.Environment.IsDevelopment() ? UIResponseWriter.WriteHealthCheckUIResponse : UIResponseWriter.WriteHealthCheckUIResponseNoExceptionDetails
             });
         }
 
@@ -76,6 +83,8 @@ public static class WebApplicationExtensions
                 ApplyCurrentCultureToResponseHeaders = true
             };
             options.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name);
+            options.RequestCultureProviders.Remove(options.RequestCultureProviders.OfType<AcceptLanguageHeaderRequestCultureProvider>().Single());
+            options.RequestCultureProviders.Add(new AppAcceptLanguageRequestCultureProvider { Options = options });
             options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
             app.UseRequestLocalization(options);
         }

@@ -1,0 +1,192 @@
+@page "/layout"
+
+<h1>Layout Animations</h1>
+
+<div class="demo-section">
+    <h2>Layout Animations (FLIP)</h2>
+    <p>
+        Add <strong>Layout="true"</strong> to any Bmotion element. Whenever the component
+        re-renders and changes position or size, a FLIP animation plays automatically.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:1rem;align-items:stretch;">
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:@(_justifyContent);">
+                @foreach (var item in _items)
+                {
+                    <Bmotion @key="@item.Label"
+                            Layout="true"
+                            Transition="Bm.Spring(stiffness: 500, damping: 35)">
+                        <div style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")">
+                            @item.Label
+                        </div>
+                    </Bmotion>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
+        <button class="btn-bm" @onclick="ToggleLayout">Toggle justify (@_justifyContent)</button>
+    </div>
+
+    <CodeSnippet Code="@_layoutCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Shared-Element Transitions (LayoutId)</h2>
+    <p>
+        Give elements the same <strong>LayoutId</strong> and when one unmounts and another mounts,
+        the new one animates (FLIP) from where the old one was - the classic tab-underline idiom.
+        Set <c>Layout="BmLayout.Position"</c> to animate position only and avoid scale distortion.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="align-items:flex-start;">
+            <div style="display:flex;gap:1.5rem;">
+                @foreach (var tab in _tabs)
+                {
+                    var t = tab;
+                    <div style="position:relative;padding-bottom:6px;cursor:pointer;font-weight:600;color:@(t == _activeTab ? "#fff" : "#888")"
+                         role="tab" tabindex="0" aria-selected="@(t == _activeTab)"
+                         @onclick="@(() => _activeTab = t)"
+                         @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeTab = t; })">
+                        @t
+                        @if (t == _activeTab)
+                        {
+                            <Bmotion LayoutId="tab-underline"
+                                    Layout="BmLayout.Position"
+                                    Transition="Bm.Tween(0.3, BmEase.InOut)">
+                                <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:2px;background:linear-gradient(90deg,#6c47ff,#ff4785);" />
+                            </Bmotion>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_layoutIdCode" />
+</div>
+
+@code {
+    private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
+    private string _activeTab = "Home";
+
+    private const string _layoutIdCode = """
+        @foreach (var tab in _tabs)
+        {
+            var t = tab;
+            <div style="position:relative;cursor:pointer" @onclick="@(() => _activeTab = t)">
+                @t
+                @if (t == _activeTab)
+                {
+                    @* Mounts under the newly selected tab and FLIPs from the old tab's position;
+                       Layout="BmLayout.Position" animates position only (no scale distortion) *@
+                    <Bmotion LayoutId="tab-underline"
+                             Layout="BmLayout.Position"
+                             Transition="Bm.Tween(0.3, BmEase.InOut)">
+                        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#6c47ff;" />
+                    </Bmotion>
+                }
+            </div>
+        }
+
+        @* Reuse the same id in independent groups by namespacing it: *@
+        <BmotionLayoutGroup Name="sidebar">
+            ... <Bmotion LayoutId="tab-underline"><div /></Bmotion> ...
+        </BmotionLayoutGroup>
+        """;
+}
+
+@code {
+    private string _justifyContent = "flex-start";
+
+    private record ColoredItem(string Label, string Color);
+
+    private List<ColoredItem> _items = [
+        new("A", "#6c47ff"),
+        new("B", "#ff4785"),
+        new("C", "#00c3ff"),
+        new("D", "#ffd447"),
+        new("E", "#44ff90"),
+    ];
+
+    void Shuffle() => _items = [.._items.OrderBy(_ => Random.Shared.Next())];
+
+    void ToggleLayout() => _justifyContent = _justifyContent switch
+    {
+        "flex-start" => "center",
+        "center"     => "flex-end",
+        _            => "flex-start"
+    };
+
+    private const string _layoutCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .btn-bm {
+                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Layout Animations (FLIP)</h2>
+
+            <div class="demo-row">
+                <div class="demo-card" style="flex-direction:column;gap:1rem;align-items:stretch;">
+                    <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:@(_justifyContent);">
+                        @foreach (var item in _items)
+                        {
+                            <Bmotion @key="@item.Label"
+                                    Layout="true"
+                                    Transition="Bm.Spring(stiffness: 500, damping: 35)">
+                                <div style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")">
+                                    @item.Label
+                                </div>
+                            </Bmotion>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+                <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
+                <button class="btn-bm" @onclick="ToggleLayout">Toggle justify (@_justifyContent)</button>
+            </div>
+        </div>
+
+        @code {
+            private string _justifyContent = "flex-start";
+
+            private record ColoredItem(string Label, string Color);
+
+            private List<ColoredItem> _items = [
+                new("A", "#6c47ff"),
+                new("B", "#ff4785"),
+                new("C", "#00c3ff"),
+                new("D", "#ffd447"),
+                new("E", "#44ff90"),
+            ];
+
+            void Shuffle() => _items = [.._items.OrderBy(_ => Random.Shared.Next())];
+
+            void ToggleLayout() => _justifyContent = _justifyContent switch
+            {
+                "flex-start" => "center",
+                "center"     => "flex-end",
+                _            => "flex-start"
+            };
+        }
+        """;
+}

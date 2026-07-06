@@ -1,179 +1,79 @@
 ﻿@page "/navigator"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Navigator navigator
 
-<PageTitle>Navigator Samples</PageTitle>
+<PageTitle>Butil - Navigator Samples</PageTitle>
 
-<h1>Navigator</h1>
+<PageHeader Category="Browser & Device"
+            Title="Navigator"
+            Lead="Query the user agent environment: hardware, languages, connectivity and capabilities - plus actions like sharing, vibrating and app badges."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Navigator" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.Navigator navigator
 
-@@code {
-    ...
-    var userAgent = await navigator.GetUserAgent();
-    ...
-}
+var userAgent = await navigator.GetUserAgent();
+await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitplatform.dev" });
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Device & environment" Api="GetDeviceMemory / GetHardwareConcurrency / ..."
+              Description="Read-only properties describing the device and browser.">
+        <div class="controls">
+            <button @onclick="@GetDeviceMemory">DeviceMemory</button>
+            <button @onclick="@GetHardwareConcurrency">HardwareConcurrency</button>
+            <button @onclick="@GetMaxTouchPoints">MaxTouchPoints</button>
+            <button @onclick="@GetLanguage">Language</button>
+            <button @onclick="@GetLanguages">Languages</button>
+            <button @onclick="@GetUserAgent">UserAgent</button>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking on buttons</h3>
+    <DemoCard Title="Capabilities & status" Api="IsOnLine / IsPdfViewerEnabled / ..."
+              Description="Boolean checks for connectivity and feature support.">
+        <div class="controls">
+            <button @onclick="@GetIsOnLine">IsOnLine</button>
+            <button @onclick="@GetIsPdfViewerEnabled">IsPdfViewerEnabled</button>
+            <button @onclick="@GetIsWebDriver">IsWebDriver</button>
+            <button @onclick="@GetCanShare">CanShare</button>
+        </div>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Share" Api="Share"
+              Description="Invoke the native share sheet (where supported).">
+        <div class="field">
+            <span class="field-label">Title</span>
+            <input @bind-value="titleValue" placeholder="Share title" />
+        </div>
+        <div class="field">
+            <span class="field-label">Text</span>
+            <input @bind-value="textValue" placeholder="Share text" />
+        </div>
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input @bind-value="urlValue" placeholder="https://..." />
+        </div>
+        <button @onclick="Share">Share</button>
+    </DemoCard>
 
+    <DemoCard Title="App badge & beacon" Api="SetAppBadge / ClearAppBadge / SendBeacon"
+              Description="Set or clear the PWA app icon badge and send a fire-and-forget beacon.">
+        <div class="controls">
+            <button @onclick="@SetBadge">SetAppBadge</button>
+            <button class="secondary" @onclick="@ClearBadge">ClearAppBadge</button>
+            <button class="secondary" @onclick="@SendBeacon">SendBeacon</button>
+        </div>
+    </DemoCard>
 
-<button @onclick="@GetDeviceMemory">GetDeviceMemory</button>
-<br />
-<br />
-<div>Device memory is: 2 ^ @deviceMemory</div>
+    <DemoCard Title="Vibrate" Api="Vibrate"
+              Description="Vibrate the device with an SOS pattern (mobile only).">
+        <button @onclick="@Vibrate">Vibrate (SOS)</button>
+    </DemoCard>
+</div>
 
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetHardwareConcurrency">GetHardwareConcurrency</button>
-<br />
-<br />
-<div>Hardware concurrency is: @hardwareConcurrency</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetLanguage">GetLanguage</button>
-<br />
-<br />
-<div>Language: @language</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetLanguages">GetLanguages</button>
-<br />
-<br />
-<div>Languages: @languages</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetMaxTouchPoints">GetMaxTouchPoints</button>
-<br />
-<br />
-<div>Max touch points: @maxTouchPoints</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetIsOnLine">GetIsOnLine</button>
-<br />
-<br />
-<div>Is OnLine: @isOnLine</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetIsPdfViewerEnabled">GetIsPdfViewerEnabled</button>
-<br />
-<br />
-<div>Is Pdf viewer enabled: @isPdfViewerEnabled</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetUserAgent">GetUserAgent</button>
-<br />
-<br />
-<div>User agent: @userAgent</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetIsWebDriver">GetIsWebDriver</button>
-<br />
-<br />
-<div>Is web driver: @isWebDriver</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@GetCanShare">GetCanShare</button>
-<br />
-<br />
-<div>Can share: @canShare</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => navigator.ClearAppBadge())">ClearAppBadge</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => navigator.SendBeacon())">SendBeacon</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => navigator.SetAppBadge())">SetAppBadge</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="textValue" />
-<br />
-<input @bind-value="titleValue" />
-<br />
-<input @bind-value="urlValue" />
-<br />
-<button @onclick="Share">Share</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => navigator.Vibrate(sosPattern))">Vibrate</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="navigator output" />
 
 @code {
-    private string deviceMemory;
-
-    private string hardwareConcurrency;
-
-    private string language;
-
-    private string languages;
-
-    private string maxTouchPoints;
-
-    private string isOnLine;
-
-    private string isPdfViewerEnabled;
-
-    private string userAgent;
-
-    private string isWebDriver;
-
-    private string canShare;
+    private DemoConsole output = default!;
 
     private string textValue;
     private string titleValue;
@@ -181,65 +81,55 @@
 
     private int[] sosPattern = [100, 30, 100, 30, 100, 30, 200, 30, 200, 30, 200, 30, 100, 30, 100, 30, 100];
 
-
     private async Task GetDeviceMemory()
     {
         var result = await navigator.GetDeviceMemory();
-        deviceMemory = result.ToString();
+        await output.Success("DeviceMemory → 2 ^", result);
     }
 
     private async Task GetHardwareConcurrency()
     {
-        var result = await navigator.GetHardwareConcurrency();
-        hardwareConcurrency = result.ToString();
+        await output.Success("HardwareConcurrency →", await navigator.GetHardwareConcurrency());
     }
 
     private async Task GetLanguage()
     {
-        var result = await navigator.GetLanguage();
-        language = result.ToString();
+        await output.Success("Language →", await navigator.GetLanguage());
     }
 
     private async Task GetLanguages()
     {
-        var result = await navigator.GetLanguages();
-        languages = string.Join(",", result);
+        await output.Success("Languages →", string.Join(", ", await navigator.GetLanguages()));
     }
 
     private async Task GetMaxTouchPoints()
     {
-        var result = await navigator.GetMaxTouchPoints();
-        maxTouchPoints = result.ToString();
+        await output.Success("MaxTouchPoints →", await navigator.GetMaxTouchPoints());
     }
 
     private async Task GetIsOnLine()
     {
-        var result = await navigator.IsOnLine();
-        isOnLine = result.ToString();
+        await output.Success("IsOnLine →", await navigator.IsOnLine());
     }
 
     private async Task GetIsPdfViewerEnabled()
     {
-        var result = await navigator.IsPdfViewerEnabled();
-        isPdfViewerEnabled = result.ToString();
+        await output.Success("IsPdfViewerEnabled →", await navigator.IsPdfViewerEnabled());
     }
 
     private async Task GetUserAgent()
     {
-        var result = await navigator.GetUserAgent();
-        userAgent = result.ToString();
+        await output.Success("UserAgent →", await navigator.GetUserAgent());
     }
 
     private async Task GetCanShare()
     {
-        var result = await navigator.CanShare();
-        canShare = result.ToString();
+        await output.Success("CanShare →", await navigator.CanShare());
     }
 
     private async Task GetIsWebDriver()
     {
-        var result = await navigator.IsWebDriver();
-        isWebDriver = result.ToString();
+        await output.Success("IsWebDriver →", await navigator.IsWebDriver());
     }
 
     private async Task Share()
@@ -252,5 +142,32 @@
         };
 
         await navigator.Share(shareData);
+        await output.Log("Share invoked");
+    }
+
+    private async Task SetBadge()
+    {
+        await navigator.SetAppBadge();
+        await output.Log("AppBadge set");
+    }
+
+    private async Task ClearBadge()
+    {
+        await navigator.ClearAppBadge();
+        await output.Log("AppBadge cleared");
+    }
+
+    private async Task SendBeacon()
+    {
+        // sendBeacon issues an HTTP POST. The target must accept POST requests,
+        // so we use a public echo endpoint here (the static demo host has no backend).
+        var queued = await navigator.SendBeacon("https://postman-echo.com/post", "butil-demo-beacon");
+        await output.Success("Beacon queued →", queued);
+    }
+
+    private async Task Vibrate()
+    {
+        await navigator.Vibrate(sosPattern);
+        await output.Log("Vibrate triggered");
     }
 }

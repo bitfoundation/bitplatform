@@ -7,11 +7,16 @@ on:
       - 'main'
     paths:
       - 'src/BlazorUI/**'
+      - 'src/Bmotion/**'
+      - 'src/Brouter/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
       - 'src/CodeAnalyzers/**'
       - 'src/SourceGenerators/**'
       - 'src/Templates/**'
+
+permissions:
+  contents: read
 
 jobs:
   build-publish:
@@ -21,10 +26,12 @@ jobs:
     steps:
 
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
     
@@ -37,7 +44,7 @@ jobs:
         rm src/AssemblyOriginatorKeyFile.snk
 
     - name: Extract strong sign certificate from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './src/'
           fileName: 'AssemblyOriginatorKeyFile.snk'
@@ -117,17 +124,25 @@ jobs:
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
-    - name: Generate CSS/JS files Butil
-      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build Butil
       run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Butil
       run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
-            
+
+    - name: dotnet build Brouter
+      run: dotnet build src/Brouter/Bit.Brouter/Bit.Brouter.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Brouter
+      run: dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output . --configuration Release
+
     - name: dotnet build Besql
       run: dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Besql
       run: dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output . --configuration Release
+
+    - name: dotnet build Bmotion
+      run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmotion
+      run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -149,7 +164,7 @@ jobs:
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: nupkg-files
         path: ./*.nupkg

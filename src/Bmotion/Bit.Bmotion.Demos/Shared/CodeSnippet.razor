@@ -1,0 +1,51 @@
+@inject IJSRuntime JS
+
+@* CodeSnippet renders a toggle button that shows / hides the full source code of a sample,
+   plus a copy-to-clipboard button. *@
+
+<div class="code-snippet">
+    <div class="code-snippet-bar">
+        <button type="button" class="code-toggle" @onclick="Toggle" aria-expanded="@_show.ToString().ToLowerInvariant()">
+            <span class="code-toggle-icon">@(_show ? "▾" : "▸")</span>
+            @(_show ? "Hide code" : "Show code")
+        </button>
+
+        @if (_show)
+        {
+            <button type="button" class="code-copy" @onclick="CopyAsync">
+                @(_copied ? "✓ Copied" : "Copy")
+            </button>
+        }
+    </div>
+
+    @if (_show)
+    {
+        <pre class="code-block"><code>@((MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\n')))</code></pre>
+    }
+</div>
+
+@code {
+    /// <summary>The full, copy/paste-runnable source snippet to display for the sample.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    private bool _show;
+    private bool _copied;
+
+    private void Toggle()
+    {
+        _show = !_show;
+        _copied = false;
+    }
+
+    private async Task CopyAsync()
+    {
+        try
+        {
+            _copied = await JS.InvokeAsync<bool>("bmCopyToClipboard", Code.Trim('\n'));
+        }
+        catch
+        {
+            _copied = false;
+        }
+    }
+}

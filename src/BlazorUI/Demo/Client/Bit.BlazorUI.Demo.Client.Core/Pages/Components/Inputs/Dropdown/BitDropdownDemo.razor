@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/dropdown"
             Title="Dropdown"
-            Description="Dropdown component of the bit BlazorUI components" />
+            Description="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button." />
 
 <div>
     <DemoPage Name="Dropdown"
@@ -38,7 +38,7 @@
             </BitScrollablePane>
         </IntroductionTemplate>
         <Examples>
-            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
+            <BitPivot Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
                 <BitPivotItem HeaderText="Item">
                     <_BitDropdownItemDemo />
                 </BitPivotItem>

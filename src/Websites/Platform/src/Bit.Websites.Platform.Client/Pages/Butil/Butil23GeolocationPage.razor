@@ -1,0 +1,103 @@
+@page "/butil/geolocation"
+@inherits AppComponentBase
+@inject Bit.Butil.Geolocation geolocation
+
+<PageOutlet Url="butil/geolocation"
+            Title="Geolocation - Butil"
+            Description="Geolocation class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Geolocation</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the Geolocation class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            To read the device's position you need to inject the Bit.Butil.Geolocation class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Geolocation geolocation
+
+@@code {
+    var position = await geolocation.GetCurrentPosition();
+    await using var sub = await geolocation.SubscribeWatch(p => { /* ... */ });
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            The <b>Geolocation</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API" target="_blank" rel="noopener noreferrer">Geolocation API</a>
+            (<b>navigator.geolocation</b>).
+            <br /><br />
+
+            <b>IsSupported</b>: <br />
+            Returns whether the Geolocation API (<b>navigator.geolocation</b>) is available in the current browser
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@isSupportedExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="IsSupported">IsSupported</BitButton>
+                        <br /><br />
+                        <div>Is supported: @isSupported</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetCurrentPosition</b>: <br />
+            Returns the device's current position once. The browser prompts for permission on first use
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@getCurrentPositionExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="GetCurrentPosition">GetCurrentPosition</BitButton>
+                        <br /><br />
+                        <div>Current position: @currentPosition</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SubscribeWatch</b>: <br />
+            Subscribes to continuous position updates and returns a <b>ButilSubscription</b> handle. Dispose the handle to stop watching
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@subscribeWatchExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="StartWatch">Start watch</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StopWatch">Stop watch</BitButton>
+                        <br /><br />
+                        <div>Watch: @watchResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Device" PrevUrl="/butil/device" Next="MediaDevices" NextUrl="/butil/mediaDevices" />

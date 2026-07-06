@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/breadcrumb"
             Title="Breadcrumb"
-            Description="breadcrumb component of the bit BlazorUI components" />
+            Description="Breadcrumbs should be used as a navigational aid in your app or site." />
 
 <div>
     <DemoPage Name="Breadcrumb"
@@ -23,7 +23,7 @@
             </BitText>
         </NotesTemplate>
         <Examples>
-            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
+            <BitPivot Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
                 <BitPivotItem HeaderText="Item">
                     <_BitBreadcrumbItemDemo />
                 </BitPivotItem>

@@ -1,120 +1,99 @@
 ﻿@page "/storage"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.LocalStorage localStorage
 @inject Bit.Butil.SessionStorage sessionStorage
 
-<PageTitle>Storage Samples</PageTitle>
+<PageTitle>Butil - Storage Samples</PageTitle>
 
-<h1>Storage</h1>
+<PageHeader Category="Storage & State"
+            Title="Storage"
+            Lead="Persist key/value pairs in the browser. LocalStorage survives restarts; SessionStorage lasts only for the current tab session."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.LocalStorage localStorage
 @@inject Bit.Butil.SessionStorage sessionStorage
 
-@@code {
-    ...
-    await localStorage.SetItem("my-key", "my-value");
-    ...
-    await sessionStorage.SetItem("my-key2", "my-value2");
-    ...
-}
+await localStorage.SetItem("my-key", "my-value");
+await sessionStorage.SetItem("my-key2", "my-value2");
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="LocalStorage" Api="localStorage"
+              Description="Persistent storage that survives browser restarts.">
+        <h5>Write</h5>
+        <div class="field">
+            <span class="field-label">Key</span>
+            <input @bind="setItemKey" placeholder="key" />
+        </div>
+        <div class="field">
+            <span class="field-label">Value</span>
+            <input @bind="setItemValue" placeholder="value" />
+        </div>
+        <button @onclick=SetItem>SetItem</button>
 
-<h3>Open the DevTools' console and click on buttons</h3>
+        <hr />
 
-<hr />
+        <h5>Read</h5>
+        <div class="field">
+            <span class="field-label">Key</span>
+            <input @bind="getItemKey" placeholder="key to read" />
+        </div>
+        <div class="field">
+            <span class="field-label">Key index</span>
+            <input @bind="keyIndex" type="number" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick=GetItem>GetItem</button>
+            <button class="secondary" @onclick="GetKey">GetKey (by index)</button>
+            <button class="secondary" @onclick=GetLength>GetLength</button>
+        </div>
+    </DemoCard>
 
-<h5>LocalStorage</h5>
-<button @onclick=GetLength>GetLength</button>
-<br />
-<br />
-<br />
-<span>key index</span>
-<br />
-<input @bind="keyIndex" type="number" />
-<br />
-<br />
-<button @onclick="GetKey">GetKey</button>
-<br />
-<br />
-<br />
-<span>key</span>
-<br />
-<input @bind="getItemKey" />
-<br />
-<br />
-<button @onclick=GetItem>GetItem</button>
-<br />
-<br />
-<br />
-<span>key</span>
-<br />
-<input @bind="setItemKey" />
-<br />
-<br />
-<span>value</span>
-<br />
-<input @bind="setItemValue" />
-<br />
-<br />
-<button @onclick=SetItem>SetItem</button>
+    <DemoCard Title="SessionStorage" Api="sessionStorage"
+              Description="Storage scoped to the current tab session.">
+        <h5>Write</h5>
+        <div class="field">
+            <span class="field-label">Key</span>
+            <input @bind="setItemKey2" placeholder="key" />
+        </div>
+        <div class="field">
+            <span class="field-label">Value</span>
+            <input @bind="setItemValue2" placeholder="value" />
+        </div>
+        <button @onclick=SetItem2>SetItem</button>
 
-<br />
-<br />
-<hr />
+        <hr />
 
-<h5>SessionStorage</h5>
-<button @onclick=GetLength2>GetLength</button>
-<br />
-<br />
-<br />
-<span>key index</span>
-<br />
-<input @bind="keyIndex2" type="number" />
-<br />
-<br />
-<button @onclick="GetKey2">GetKey</button>   
-<br />
-<br />
-<br />
-<span>key</span>
-<br />
-<input @bind="getItemKey2" />
-<br />
-<br />
-<button @onclick=GetItem2>GetItem</button>
-<br />
-<br />
-<br />
-<span>key</span>
-<br />
-<input @bind="setItemKey2" />
-<br />
-<br />
-<span>value</span>
-<br />
-<input @bind="setItemValue2" />
-<br />
-<br />
-<button @onclick=SetItem2>SetItem</button>
+        <h5>Read</h5>
+        <div class="field">
+            <span class="field-label">Key</span>
+            <input @bind="getItemKey2" placeholder="key to read" />
+        </div>
+        <div class="field">
+            <span class="field-label">Key index</span>
+            <input @bind="keyIndex2" type="number" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick=GetItem2>GetItem</button>
+            <button class="secondary" @onclick="GetKey2">GetKey (by index)</button>
+            <button class="secondary" @onclick=GetLength2>GetLength</button>
+        </div>
+    </DemoCard>
 
-<br />
-<br />
-<hr />
-<br />
+    <DemoCard Title="Clear storage" Api="Clear"
+              Description="Wipe everything from either store.">
+        <div class="controls">
+            <button class="danger" @onclick=ClearLocal>Clear LocalStorage</button>
+            <button class="danger" @onclick=ClearSession>Clear SessionStorage</button>
+        </div>
+    </DemoCard>
+</div>
 
-<button @onclick=@(() => localStorage.Clear())>Clear LocalStorage</button>
-<br />
-<br />
-<button @onclick=@(() => sessionStorage.Clear())>Clear SessionStorage</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="storage output" />
 
 @code {
+    private DemoConsole output = default!;
+
     private int keyIndex;
     private string getItemKey = "";
     private string setItemKey = "";
@@ -123,28 +102,27 @@
     private async Task GetLength()
     {
         var length = await localStorage.GetLength();
-        await console.Log("localStorage.length =", length);
+        await output.Success("localStorage.length →", length);
     }
 
     private async Task GetKey()
     {
         var key = await localStorage.GetKey(keyIndex);
-        await console.Log("localStorage.key =", key);
+        await output.Success($"localStorage.key({keyIndex}) →", key);
     }
 
     private async Task GetItem()
     {
         var value = await localStorage.GetItem(getItemKey);
-        await console.Log($"localStorage.getItem({getItemKey}) =", value);
+        await output.Success($"localStorage.getItem(\"{getItemKey}\") →", value);
     }
 
     private async Task SetItem()
     {
         await localStorage.SetItem(setItemKey, setItemValue);
-        await console.Log($"localStorage.setItem({setItemKey}, {setItemValue})");
+        await output.Log($"localStorage.setItem(\"{setItemKey}\", \"{setItemValue}\")");
     }
 
-    
     private int keyIndex2;
     private string getItemKey2 = "";
     private string setItemKey2 = "";
@@ -153,24 +131,36 @@
     private async Task GetLength2()
     {
         var length = await sessionStorage.GetLength();
-        await console.Log("sessionStorage.length =", length);
+        await output.Success("sessionStorage.length →", length);
     }
 
     private async Task GetKey2()
     {
         var key = await sessionStorage.GetKey(keyIndex2);
-        await console.Log("localStorage.key =", key);
+        await output.Success($"sessionStorage.key({keyIndex2}) →", key);
     }
 
     private async Task GetItem2()
     {
         var value = await sessionStorage.GetItem(getItemKey2);
-        await console.Log($"sessionStorage.getItem({getItemKey2}) =", value);
+        await output.Success($"sessionStorage.getItem(\"{getItemKey2}\") →", value);
     }
 
     private async Task SetItem2()
     {
         await sessionStorage.SetItem(setItemKey2, setItemValue2);
-        await console.Log($"sessionStorage.setItem({setItemKey2}, {setItemValue2})");
+        await output.Log($"sessionStorage.setItem(\"{setItemKey2}\", \"{setItemValue2}\")");
+    }
+
+    private async Task ClearLocal()
+    {
+        await localStorage.Clear();
+        await output.Warn("localStorage cleared");
+    }
+
+    private async Task ClearSession()
+    {
+        await sessionStorage.Clear();
+        await output.Warn("sessionStorage cleared");
     }
 }

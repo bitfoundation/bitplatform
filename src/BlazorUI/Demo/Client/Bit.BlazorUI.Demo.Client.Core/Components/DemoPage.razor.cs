@@ -181,6 +181,13 @@ public partial class DemoPage
     [
         new()
         {
+            Name = "DefaultValue",
+            Type = "TValue?",
+            DefaultValue = "null",
+            Description = "The default value of the input to be used in uncontrolled mode (i.e. when the Value is not bound), typically used alongside the OnChange callback.",
+        },
+        new()
+        {
             Name = "DisplayName",
             Type = "string?",
             DefaultValue = "null",
@@ -306,5 +313,7 @@ public partial class DemoPage
 
 
 
-    private readonly List<string> _notInheritedComponents = ["DataGrid", "Chart", "ModalService", "CascadingValueProvider", "Params"];
+    private readonly List<string> _notInheritedComponents = [
+        "CascadingValueProvider", "Chart", "DataGrid", "ModalService", "Params", "ProModalService"
+    ];
 }

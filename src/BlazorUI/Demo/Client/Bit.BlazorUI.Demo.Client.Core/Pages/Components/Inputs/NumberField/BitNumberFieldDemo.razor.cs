@@ -82,13 +82,6 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "TValue?",
-            DefaultValue = "null",
-            Description = "Initial value of the number field.",
-        },
-        new()
-        {
             Name = "DigitsNormalizer",
             Type = "Func<string?, string?>?",
             DefaultValue = "null",

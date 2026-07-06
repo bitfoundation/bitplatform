@@ -7,6 +7,9 @@ env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
   ConnectionStrings__mssqldb: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
 
+permissions:
+  contents: read
+
 jobs:
 
 # Bit.BlazorUI solution is being built in bit.ci.yml
@@ -17,10 +20,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -45,10 +50,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -99,7 +106,7 @@ jobs:
         WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest"
 
     - name: Upload Test Results on Failure
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: failure() && steps.run-test-postgresql.conclusion == 'failure'
       with:
         name: postgres-tests-artifact
@@ -114,10 +121,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -153,7 +162,7 @@ jobs:
         dotnet ef migrations add Initial --verbose
 
     - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@main
+      uses: potatoqualitee/mssqlsuite@2291d923e83859edd871679c05b379037376761f # v1.12
       with:
         version: 2025
         install: sqlengine
@@ -171,7 +180,7 @@ jobs:
         WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
 
     - name: Upload Test Results on Failure
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: failure() && steps.run-test-mssql.conclusion == 'failure'
       with:
         name: sqlserver-tests-artifact
@@ -186,10 +195,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -252,10 +263,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -290,10 +303,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -380,18 +395,25 @@ jobs:
         dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output ./packages --configuration Release
 
-    - name: Generate CSS/JS files Butil
-      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
-
     - name: Build and pack Butil
       run: |
         dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Brouter
+      run: |
+        dotnet build src/Brouter/Bit.Brouter/Bit.Brouter.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output ./packages --configuration Release
+
     - name: Build and pack Besql
       run: |
         dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bmotion
+      run: |
+        dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
 
     - name: Build and pack CodeAnalyzers
       run: |
@@ -413,7 +435,7 @@ jobs:
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output ./packages --configuration Release
 
     - name: Upload NuGet packages artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: nuget-packages
         path: ./packages/*.nupkg
@@ -427,10 +449,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -455,10 +479,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -477,16 +503,78 @@ jobs:
 
 
 
+  build-brouter-solution:
+    name: Build Brouter solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Brouter solution in Release mode
+      run: dotnet build src/Brouter/Bit.Brouter.slnx -c Release
+
+
+
+  build-bmotion-solution:
+    name: Build Bmotion solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Bmotion solution in Release mode
+      run: dotnet build src/Bmotion/Bit.Bmotion.slnx -c Release
+
+
+
   build-tooling-solutions:
     name: Build tooling solutions
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -507,10 +595,12 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demos/">
+    <Project Path="Bit.Bmotion.Demos/Bit.Bmotion.Demos.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+  </Folder>
+  <Project Path="Bit.Bmotion/Bit.Bmotion.csproj" />
+</Solution>

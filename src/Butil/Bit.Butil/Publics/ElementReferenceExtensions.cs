@@ -18,11 +18,12 @@ namespace Bit.Butil;
 /// </summary>
 public static class ElementReferenceExtensions
 {
-    //[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_JSRuntime")]
-    //extern static IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
-
-    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<JSRuntime>k__BackingField")]
-    extern static ref IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
+    // Bind to the public-surface property getter rather than the compiler-generated
+    // "<JSRuntime>k__BackingField" field. The getter method name (get_JSRuntime) is part of the
+    // type's stable shape and far less likely to change across framework releases than the
+    // synthesized backing-field name, which is an implementation detail.
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_JSRuntime")]
+    extern static IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
 
     private static IJSRuntime GetJSRuntime(ElementReference elementReference)
     {
@@ -68,6 +69,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute">https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<bool> HasAttribute(this ElementReference element, string name)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.hasAttribute", element, name);
 
@@ -76,6 +82,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributes">https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributes</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<bool> HasAttributes(this ElementReference element)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.hasAttributes", element);
 
@@ -84,6 +95,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture">https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<bool> HasPointerCapture(this ElementReference element, int pointerId)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.hasPointerCapture", element, pointerId);
 
@@ -92,6 +108,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/matches">https://developer.mozilla.org/en-US/docs/Web/API/Element/matches</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<bool> Matches(this ElementReference element, string selectors)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.matches", element, selectors);
 
@@ -195,6 +216,13 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute">https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> attribute values are written verbatim and bypass Blazor's encoding.
+    /// Setting event-handler attributes (<c>onclick</c>, ...), navigational attributes with a
+    /// <c>javascript:</c> URL (<c>href</c>, <c>src</c>, <c>formaction</c>), or <c>srcdoc</c> from
+    /// untrusted input is an XSS vector. Validate <paramref name="name"/>/<paramref name="value"/>
+    /// before passing user-supplied data.
+    /// </remarks>
     public static async ValueTask SetAttribute(this ElementReference element, string name, string value)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.setAttribute", element, name, value);
 
@@ -211,6 +239,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute">https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<bool> ToggleAttribute(this ElementReference element, string name, bool? force)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.toggleAttribute", element, name, force);
 
@@ -249,6 +282,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientHeight">https://developer.mozilla.org/en-US/docs/Web/API/Element/clientHeight</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetClientHeight(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.clientHeight", element);
 
@@ -257,6 +295,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft">https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetClientLeft(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.clientLeft", element);
 
@@ -265,6 +308,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop">https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetClientTop(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.clientTop", element);
 
@@ -273,6 +321,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth">https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetClientWidth(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.clientWidth", element);
 
@@ -303,6 +356,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML">https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> this assigns directly to <c>element.innerHTML</c> and therefore bypasses
+    /// Blazor's automatic HTML encoding. Never pass untrusted or user-supplied input - doing so is an
+    /// XSS vector. Sanitize first, or render the content through normal Razor markup instead.
+    /// </remarks>
     public static async ValueTask SetInnerHtml(this ElementReference element, string innerHtml)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.setInnerHTML", element, innerHtml);
 
@@ -319,6 +377,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML">https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> this assigns directly to <c>element.outerHTML</c> and therefore bypasses
+    /// Blazor's automatic HTML encoding. Never pass untrusted or user-supplied input - doing so is an
+    /// XSS vector. Sanitize first, or render the content through normal Razor markup instead.
+    /// </remarks>
     public static async ValueTask SetOuterHtml(this ElementReference element, string outerHtml)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.setOuterHTML", element, outerHtml);
 
@@ -327,6 +390,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetScrollHeight(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.scrollHeight", element);
 
@@ -335,6 +403,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetScrollLeft(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.scrollLeft", element);
 
@@ -343,6 +416,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetScrollTop(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.scrollTop", element);
 
@@ -351,6 +429,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth">https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetScrollWidth(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.scrollWidth", element);
 
@@ -367,6 +450,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/contentEditable">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/contentEditable</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<ContentEditable> GetContentEditable(this ElementReference element)
     {
         var value = await GetJSRuntime(element).Invoke<string>("BitButil.element.getContentEditable", element);
@@ -400,6 +488,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/isContentEditable">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/isContentEditable</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<bool> IsContentEditable(this ElementReference element)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.isContentEditable", element);
 
@@ -408,6 +501,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dir">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dir</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<ElementDir> GetDir(this ElementReference element)
     {
         var value = await GetJSRuntime(element).Invoke<string>("BitButil.element.getDir", element);
@@ -442,6 +540,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/enterKeyHint">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/enterKeyHint</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<EnterKeyHint> GetEnterKeyHint(this ElementReference element)
     {
         var value = await GetJSRuntime(element).Invoke<string>("BitButil.element.getEnterKeyHint", element);
@@ -484,6 +587,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidden">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidden</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<Hidden> GetHidden(this ElementReference element)
     {
         var value = await GetJSRuntime(element).Invoke<object>("BitButil.element.getHidden", element);
@@ -518,6 +626,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inert">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inert</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<bool> GetInert(this ElementReference element)
         => await GetJSRuntime(element).Invoke<bool>("BitButil.element.getInert", element);
     /// <summary>
@@ -550,6 +663,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inputMode">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inputMode</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<InputMode> GetInputMode(this ElementReference element)
     {
         var value = await GetJSRuntime(element).Invoke<string>("BitButil.element.getInputMode", element);
@@ -594,6 +712,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetOffsetHeight(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.offsetHeight", element);
 
@@ -603,6 +726,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetLeft">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetLeft</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetOffsetLeft(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.offsetLeft", element);
 
@@ -612,6 +740,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetOffsetTop(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.offsetTop", element);
 
@@ -620,6 +753,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<float> GetOffsetWidth(this ElementReference element)
         => await GetJSRuntime(element).Invoke<float>("BitButil.element.offsetWidth", element);
 
@@ -628,6 +766,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/tabIndex">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/tabIndex</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public static async ValueTask<int> GetTabIndex(this ElementReference element)
         => await GetJSRuntime(element).Invoke<int>("BitButil.element.getTabIndex", element);
     /// <summary>

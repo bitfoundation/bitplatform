@@ -1,18 +1,21 @@
-﻿<DemoExample Title="Radar Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example1">
-    <div class="example-desc">
-        A radar chart is a way of showing multiple data points and the variation between them.
-        They are often useful for comparing the points of two or more different data sets.
-    </div>
-    <div class="chart-wrapper">
-        <div class="chart-container">
-            <BitChart Config="_config" @ref="_chart" />
-        </div>
-    </div>
-    <div class="buttons-container">
-        <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizeRadarData">Randomize Data</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddRadarDataset">Add Dataset</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveRadarDataset">Remove Dataset</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddRadarData">Add Data</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveRadarData">Remove Data</BitButton>
-    </div>
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Two players" RazorCode="@twoPlayersRazorCode" CsharpCode="@twoPlayersCsharpCode" Id="radar-two-players">
+    <div class="example-desc">filled areas</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="BitChartSampleData.Skills()" Options="_bottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Outline only" RazorCode="@outlineRazorCode" CsharpCode="@outlineCsharpCode" Id="radar-outline">
+    <div class="example-desc">no fill, thicker borders</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="@Outline()" Options="_bottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Circular grid" RazorCode="@circularRazorCode" CsharpCode="@circularCsharpCode" Id="radar-circular">
+    <div class="example-desc">grid.circular + styled point labels &amp; backdrop</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="BitChartSampleData.Skills()" Options="@_circular" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Skipped points" RazorCode="@skipRazorCode" CsharpCode="@skipCsharpCode" Id="radar-skipped">
+    <div class="example-desc">null values are skipped, not zeroed</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="@Skip()" Options="_bottom" /></div></div>
 </DemoExample>

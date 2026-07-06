@@ -1,0 +1,23 @@
+@* Consumes the keep-alive lifecycle context to record activate/deactivate transitions, for
+   asserting that a kept component is signalled when it is hidden and shown again. *@
+
+@using Bit.Brouter
+
+<div data-testid="lifecycle">active:@IsActive deactivations:@_deactivations activations:@_activations</div>
+
+@code {
+    [CascadingParameter] public BrouterKeepAliveContext? KeepAlive { get; set; }
+
+    private bool IsActive => KeepAlive?.IsActive ?? true;
+    private int _deactivations;
+    private int _activations;
+    private bool _wasActive = true;
+
+    protected override void OnParametersSet()
+    {
+        var active = IsActive;
+        if (_wasActive && active is false) _deactivations++;
+        if (_wasActive is false && active) _activations++;
+        _wasActive = active;
+    }
+}

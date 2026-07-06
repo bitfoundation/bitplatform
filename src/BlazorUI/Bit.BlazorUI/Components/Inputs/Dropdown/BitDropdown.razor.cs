@@ -154,11 +154,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public int DebounceTime { get; set; }
 
     /// <summary>
-    /// The default value that will be initially used to set selected item if the Value parameter is not set.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
-
-    /// <summary>
     /// The default values that will be initially used to set selected items in multi select mode if the Values parameter is not set.
     /// </summary>
     [Parameter] public IEnumerable<TValue?>? DefaultValues { get; set; }

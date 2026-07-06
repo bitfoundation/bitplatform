@@ -37,9 +37,8 @@
     [Parameter] public string? Name { get; set; }
     [Parameter] public string? Title { get; set; }
     [Parameter] public bool Reversed { get; set; }
-    [Parameter] public bool? DefaultValue { get; set; }
-    [Parameter] public bool? DefaultIndeterminate { get; set; }
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool DefaultValue { get; set; }
+    [Parameter] public bool? DefaultIndeterminate { get; set; }    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public BitCheckboxTestModel TestModel { get; set; } = new();
 
     public int ClickCounter { get; set; }

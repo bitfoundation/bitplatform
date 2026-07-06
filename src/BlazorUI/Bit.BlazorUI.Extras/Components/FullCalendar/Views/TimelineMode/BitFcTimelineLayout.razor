@@ -1,0 +1,76 @@
+@namespace Bit.BlazorUI
+
+@*
+  Shared scaffolding used by every timeline view.
+
+  Layout (flex rows so the resource gutter can stay pinned across the full horizontal scroll):
+    - header row : flex row that sticks to the top; corner cell sticks to the inline-start
+    - body rows  : flex rows; each starts with the sticky resource cell, followed by the lane area
+
+  Each timeline view renders the time-axis header inside <HeaderContent /> and the lane content
+  for every resource inside <RowContent context="resource" />, while this component handles the
+  layout, sticky positioning, RTL flip, and the unassigned row.
+*@
+
+@{
+    // Resources with empty Ids are treated as "unassigned" by the event grouping logic
+    // (BitFullCalendarEvent.Resource contract), so they must not get their own rows here either.
+    var resources = State.Resources.Where(r => !string.IsNullOrWhiteSpace(r.Id)).ToList();
+    var hasResources = resources.Count > 0;
+    var totalContentWidth = ColumnCount * ColumnWidthPx;
+    var totalGridWidth = ResourceColumnWidthPx + totalContentWidth;
+}
+
+<div class="bit-bfc-tl-layout">
+    @if (!hasResources && !HasUnassignedRow)
+    {
+        <div class="bit-bfc-tl-empty">@Texts.NoResourcesMessage</div>
+    }
+    else
+    {
+        <div id="@ScrollContainerId" class="bit-bfc-tl-scroll">
+            <div class="bit-bfc-tl-grid" style="width:@(totalGridWidth)px;">
+
+                <div class="bit-bfc-tl-header-row" style="width:@(totalGridWidth)px;">
+                    <div class="bit-bfc-tl-corner" style="width:@(ResourceColumnWidthPx)px;">@Texts.ResourceColumnHeader</div>
+                    <div class="bit-bfc-tl-time-header" style="width:@(totalContentWidth)px;">
+                        @HeaderContent
+                    </div>
+                </div>
+
+                @foreach (var resource in resources)
+                {
+                    var res = resource;
+                    var rowHeight = RowHeightFor(res);
+
+                    <div class="bit-bfc-tl-body-row" style="height:@(rowHeight)px;width:@(totalGridWidth)px;">
+                        <div class="bit-bfc-tl-resource-cell" style="width:@(ResourceColumnWidthPx)px;height:@(rowHeight)px;">
+                            <div class="bit-bfc-tl-resource-title">@res.Title</div>
+                            @if (!string.IsNullOrWhiteSpace(res.Subtitle))
+                            {
+                                <div class="bit-bfc-tl-resource-subtitle">@res.Subtitle</div>
+                            }
+                        </div>
+                        <div class="bit-bfc-tl-row" style="height:@(rowHeight)px;width:@(totalContentWidth)px;">
+                            @RowContent(res)
+                        </div>
+                    </div>
+                }
+
+                @if (HasUnassignedRow)
+                {
+                    var unassignedHeight = UnassignedRowHeight;
+
+                    <div class="bit-bfc-tl-body-row" style="height:@(unassignedHeight)px;width:@(totalGridWidth)px;">
+                        <div class="bit-bfc-tl-resource-cell bit-bfc-tl-resource-cell-unassigned" style="width:@(ResourceColumnWidthPx)px;height:@(unassignedHeight)px;">
+                            <div class="bit-bfc-tl-resource-title">@Texts.NoResourceLabel</div>
+                        </div>
+                        <div class="bit-bfc-tl-row" style="height:@(unassignedHeight)px;width:@(totalContentWidth)px;">
+                            @UnassignedRowContent
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

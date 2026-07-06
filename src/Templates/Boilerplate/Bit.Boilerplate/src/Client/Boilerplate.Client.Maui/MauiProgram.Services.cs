@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
 //#endif
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using System.Diagnostics.Metrics;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
@@ -20,8 +23,8 @@ public static partial class MauiProgram
         services.AddTransient<MainPage>();
 
         services.AddScoped<IWebAuthnService, MauiWebAuthnService>();
-        services.AddScoped<IExceptionHandler, MauiExceptionHandler>();
-        services.AddScoped(sp => (ClientExceptionHandlerBase)sp.GetRequiredService<IExceptionHandler>());
+        services.AddScoped<ClientExceptionHandlerBase, MauiExceptionHandler>();
+        services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
 
         services.AddScoped<IAppUpdateService, MauiAppUpdateService>();
         services.AddScoped<IBitDeviceCoordinator, MauiDeviceCoordinator>();
@@ -58,20 +61,43 @@ public static partial class MauiProgram
 
         builder.Logging.AddEventSourceLogger();
 
-        //#if (appInsights == true)
         builder.Logging.AddOpenTelemetry(options =>
         {
-            options.IncludeFormattedMessage = true;
             options.IncludeScopes = true;
-
-            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
-            {
-                options.AddAzureMonitorLogExporter(o =>
-                {
-                    o.ConnectionString = settings.ApplicationInsights.ConnectionString;
-                });
-            }
+            options.IncludeFormattedMessage = true;
+            configuration.Bind("Logging:OpenTelemetry", options);
         });
+
+        var openTelemetry = services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics.AddMeter(Meter.Current.Name);
+            })
+            .WithTracing(tracing =>
+            {
+                tracing.AddSource(ActivitySource.Current.Name);
+            })
+            .ConfigureResource(resource =>
+            {
+                resource.AddAttributes([new("service.name", builder.Environment.ApplicationName)]);
+            });
+
+        var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
+            || string.IsNullOrEmpty(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
+
+        if (useOtlpExporter)
+        {
+            openTelemetry.UseOtlpExporter();
+        }
+
+        //#if (appInsights == true)
+        if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+        {
+            openTelemetry.UseAzureMonitorExporter(options =>
+            {
+                configuration.Bind("ApplicationInsights", options);
+            });
+        }
         //#endif
 
         if (AppPlatform.IsWindows)

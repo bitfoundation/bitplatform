@@ -1,0 +1,21 @@
+<div class="card">
+    <div class="card-title">
+        @Title
+        @if (!string.IsNullOrWhiteSpace(Api))
+        {
+            <span class="badge">@Api</span>
+        }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p class="card-desc">@Description</p>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Api { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

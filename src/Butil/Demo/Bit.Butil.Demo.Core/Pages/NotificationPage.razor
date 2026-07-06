@@ -1,70 +1,69 @@
 ﻿@page "/notification"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Notification notification
 
-<PageTitle>Notification Samples</PageTitle>
+<PageTitle>Butil - Notification Samples</PageTitle>
 
-<h1>Notification</h1>
+<PageHeader Category="Utilities"
+            Title="Notification"
+            Lead="Request permission and show native system notifications from C#. The browser will prompt for permission the first time you show one."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Notification" />
 
-<pre style="font-family:Consolas">
+<pre>
 @@inject Bit.Butil.Notification notification
 
-@@code {
-    ...
-    await notification.Show("title", new() { body: "this is body" });
-    ...
-}
+var permission = await notification.RequestPermission();
+await notification.Show("title", new() { Body = "this is the body" });
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Permission" Api="GetPermission / RequestPermission"
+              Description="Check the current notification permission or prompt the user for it.">
+        <div class="controls">
+            <button @onclick="GetPermission">Get permission</button>
+            <button class="secondary" @onclick="RequestPermission">Request permission</button>
+            <span class="result-pill">Status: <b>@permissionStatus</b></span>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking on buttons</h3>
+    <DemoCard Title="Show a notification" Api="Show"
+              Description="Display a system notification with a title and body.">
+        <div class="field">
+            <span class="field-label">Title</span>
+            <input @bind=@notifTitle placeholder="Notification title" />
+        </div>
+        <div class="field">
+            <span class="field-label">Body</span>
+            <textarea @bind=@notifBody placeholder="Notification body"></textarea>
+        </div>
+        <button @onclick="Show">Show notification</button>
+    </DemoCard>
+</div>
 
-<hr />
-<br />
-
-<button @onclick="GetPermission">Get current permission</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="RequestPermission">Request permission</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind=@notifTitle />
-<br />
-<textarea @bind=@notifBody />
-<br />
-<button @onclick="Show">Show</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="notification output" />
 
 @code {
+    private DemoConsole output = default!;
     private string notifTitle;
     private string notifBody;
+    private string permissionStatus = "unknown";
 
     private async Task GetPermission()
     {
         var permission = await notification.GetPermission();
-        await console.Log("Notification permission:", permission.ToString());
+        permissionStatus = permission.ToString();
+        await output.Success("Notification permission →", permissionStatus);
     }
 
     private async Task RequestPermission()
     {
         var permission = await notification.RequestPermission();
-        await console.Log("Notification permission:", permission.ToString());
+        permissionStatus = permission.ToString();
+        await output.Success("Notification permission →", permissionStatus);
     }
 
     private async Task Show()
     {
         await notification.Show(notifTitle, new() { Body = notifBody });
+        await output.Log("Show →", $"\"{notifTitle}\"");
     }
 }

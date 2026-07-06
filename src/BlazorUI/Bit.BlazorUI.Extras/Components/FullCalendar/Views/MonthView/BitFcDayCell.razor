@@ -1,0 +1,66 @@
+@namespace Bit.BlazorUI
+
+@{
+    var isToday = Cell.Date.Date == DateTime.Today;
+    var cellEvents = BitFullCalendarHelpers.GetMonthCellEvents(Cell.Date, Events, EventPositions);
+}
+
+<div class="bit-bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") bit-bfc-droppable"
+     @ondragover="OnDragOver"
+     @ondragover:preventDefault="true"
+     @ondrop="OnDrop"
+     @onclick="() => OnCellClick()">
+
+    <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
+    <button type="button" class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-month"
+            aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("d", State.Culture)}")"
+            @onclick="() => OnCellClick()"
+            @onclick:stopPropagation="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        @Texts.AddEventHoverHint
+    </button>
+
+    <div class="bit-bfc-month-events">
+        @for (int i = 0; i < 3; i++)
+        {
+            var pos = i;
+            var item = cellEvents.FirstOrDefault(e => e.Position == pos);
+            @if (item.Event != null)
+            {
+                var position = GetBadgePosition(item.Event, Cell.Date);
+                <div class="bit-bfc-month-event-slot">
+                    <BitFcMonthEventBadge Event="item.Event" CellDate="Cell.Date" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                </div>
+            }
+            else
+            {
+                <div class="bit-bfc-month-event-slot"></div>
+            }
+        }
+    </div>
+
+    @{
+        var moreCount = cellEvents.Count - 3;
+    }
+    @if (Cell.CurrentMonth && moreCount > 0)
+    {
+        <button type="button" class="bit-bfc-month-more" @onclick="() => _showEventList = true" @onclick:stopPropagation="true">
+            @string.Format(State.Culture, Texts.MoreEventsFormat, moreCount)
+        </button>
+    }
+</div>
+
+@if (_showEventList)
+{
+    <BitFcEventListDialog Date="Cell.Date" Events="cellEvents.Select(e => e.Event).ToList()" OnClose="() => _showEventList = false" />
+}
+
+@if (_showAddDialog)
+{
+    <BitFcAddEditEventDialog StartDate="_addDraftStart" StartHour="_addDraftStart.Hour" StartMinute="_addDraftStart.Minute" OnClose="() => _showAddDialog = false" />
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}

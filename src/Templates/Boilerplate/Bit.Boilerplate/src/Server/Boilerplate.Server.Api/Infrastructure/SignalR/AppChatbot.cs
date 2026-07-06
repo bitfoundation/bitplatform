@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using System.Text;
 using System.Threading.Channels;
+using Microsoft.Agents.AI;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -21,18 +22,14 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 /// </summary>
 public partial class AppChatbot
 {
-    private IChatClient? chatClient = default!;
+    private AIAgent? supportAgent = default!;
 
-    [AutoInject] private IFusionCache cache = default!;
-    [AutoInject] private AppDbContext dbContext = default!;
-    [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private ApiServerExceptionHandler exceptionHandler = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
     private string? variablesDefault;
-    private string? supportSystemPrompt;
     private string? signalRConnectionId;
     private List<ChatMessage> chatMessages = [];
 
@@ -56,17 +53,6 @@ public partial class AppChatbot
         {
             culture = CultureInfo.GetCultureInfo(request.CultureId.Value);
         }
-
-        supportSystemPrompt = await cache.GetOrSetAsync(
-            $"SystemPrompt_{PromptKind.Support}",
-            async cancel =>
-            {
-                var prompt = await dbContext.SystemPrompts
-                    .FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancel);
-                return prompt?.Markdown ?? throw new ResourceNotFoundException();
-            },
-            options => options.Duration = TimeSpan.FromHours(1),
-            token: cancellationToken);
 
         // The following variables won't change unless SignalR connection restarts and StartChat gets called again, so setting variables once here is sufficient.
         // For example, the user's culture won't change unless they restart the app.
@@ -99,15 +85,10 @@ public partial class AppChatbot
         ClaimsPrincipal? user,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(supportSystemPrompt))
+        if (string.IsNullOrEmpty(variablesDefault))
             throw new InvalidOperationException("Chat session must be started before processing messages. Call Start method first.");
 
-        chatClient ??= serviceProvider.GetRequiredService<IChatClient>();
-
-        var supportAgent = chatClient.AsAIAgent(
-            instructions: supportSystemPrompt,
-            name: "SupportAgent",
-            description: "Provides user support, answers questions, and assists with app features and troubleshooting");
+        supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
 
         StringBuilder assistantResponse = new();
         try
@@ -131,7 +112,7 @@ public partial class AppChatbot
             await foreach (var response in supportAgent.RunStreamingAsync([
                 new (ChatRole.System, variablesPrompt),
                 .. chatMessages,
-                ], options: new Microsoft.Agents.AI.ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
+                ], options: new ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
@@ -169,16 +150,16 @@ public partial class AppChatbot
     /// <summary>
     /// Create chat options with AI tools
     /// </summary>
-    private ChatOptions CreateChatOptions()
+    public List<AIFunction> GetAIFunctions()
     {
-        var tools = new List<AIFunction>
+        var aiFunctions = new List<AIFunction>
         {
             AIFunctionFactory.Create(GetCurrentDateTime),
             AIFunctionFactory.Create(SaveUserEmailAndConversationHistory),
             AIFunctionFactory.Create(NavigateToPage),
             AIFunctionFactory.Create(ShowSignInModal),
-            AIFunctionFactory.Create(SetCulture),
-            AIFunctionFactory.Create(SetTheme),
+            AIFunctionFactory.Create(SetApplicationCulture),
+            AIFunctionFactory.Create(SetApplicationTheme),
             AIFunctionFactory.Create(CheckLastError),
             AIFunctionFactory.Create(ClearAppFiles),
             //#if (module == "Sales")
@@ -188,7 +169,15 @@ public partial class AppChatbot
             //#endif
         };
 
-        var chatOptions = new ChatOptions { Tools = [.. tools] };
+        return aiFunctions;
+    }
+
+    /// <summary>
+    /// Create chat options with AI tools
+    /// </summary>
+    private ChatOptions CreateChatOptions()
+    {
+        var chatOptions = new ChatOptions { };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
         return chatOptions;
     }
@@ -206,51 +195,26 @@ public partial class AppChatbot
         // You could instead generate that list in previous chat completion call:
         // 1: Using "tools" or "functions" feature of the model, that would not consider the latest assistant response.
         // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.
-
-        var followUpAgent = chatClient!.AsAIAgent(
-            instructions: """
-            You are a Follow-Up Suggestion Agent. Your role is to generate natural, contextual follow-up questions or actions for users.
-
-            ANALYSIS PROCESS:
-            1. Review the conversation context carefully
-            2. Identify logical next steps or questions the user might ask
-            3. Ensure suggestions are within the assistant's capabilities
-            4. Make suggestions actionable and user-centric
-
-            RESPONSE FORMAT:
-            Return ONLY a JSON object with:
-            - "FollowUpSuggestions": array of exactly 3 strings
-
-            VALIDATION RULES:
-            - Only suggest follow-up actions/questions that are within the assistant's scope and knowledge
-            - Do not suggest questions that require access to data or functionality that is unavailable or out of scope
-            - Avoid suggesting questions that the assistant would not be able to answer
-            - Written from the user's perspective (never from the assistant)
-            - Direct, natural, clickable actions/questions
-            - Keep each suggestion concise (under 60 characters)
-            """,
-            name: "FollowUpSuggestionAgent",
-            description: "Generates contextual follow-up suggestions to keep conversations flowing naturally");
+        var followUpSuggestionsAgent = serviceProvider.GetRequiredKeyedService<AIAgent>("FollowUpSuggestionsAgent");
 
         chatOptions.ResponseFormat = ChatResponseFormat.Json;
         chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
 
-        var followUpItems = await followUpAgent.RunAsync<AiChatFollowUpList>(
+        var followUpItems = await followUpSuggestionsAgent.RunAsync<AiChatFollowUpList>(
             messages: [
-                new(ChatRole.System, supportSystemPrompt),
+                new (ChatRole.System, variablesDefault),
                 new(ChatRole.User, incomingMessage),
-                new(ChatRole.Assistant, assistantResponse),
-                new(ChatRole.User, "Generate 3 short follow-up suggestions for what I might want to ask or do next.")
+                new(ChatRole.Assistant, assistantResponse)
             ],
             cancellationToken: cancellationToken,
-            options: new Microsoft.Agents.AI.ChatClientAgentRunOptions(chatOptions));
+            options: new ChatClientAgentRunOptions(chatOptions));
 
         return followUpItems.Result ?? new AiChatFollowUpList();
     }
 
     private async Task EnsureSignalRConnectionIdIsPresent()
     {
-        // If the AIFunction tool is getting called by the IChatClient, the signalRConnectionId is already set in the AppChatbot instance using
+        // If the AIFunction tool is getting called by the AIAgent, the signalRConnectionId is already set in the AppChatbot instance using
         // StartChat method, so we can return it directly without querying the database again.
 
         // The SignalRConnectionId gives access to the currently exposed SignalR Client methods (e.g., NavigateToPage, ShowSignInModal)

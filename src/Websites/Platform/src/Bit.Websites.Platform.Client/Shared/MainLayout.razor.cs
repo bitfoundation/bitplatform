@@ -138,6 +138,14 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "VisualViewport", Url = "/butil/visualViewport" },
         new BitNavItem { Text = "ScreenOrientation", Url = "/butil/screenOrientation" },
         new BitNavItem { Text = "UserAgent", Url = "/butil/userAgent" },
+        new BitNavItem { Text = "Device", Url = "/butil/device" },
+        new BitNavItem { Text = "Geolocation", Url = "/butil/geolocation" },
+        new BitNavItem { Text = "MediaDevices", Url = "/butil/mediaDevices" },
+        new BitNavItem { Text = "Permissions", Url = "/butil/permissions" },
+        new BitNavItem { Text = "Fetch", Url = "/butil/fetch" },
+        new BitNavItem { Text = "Files", Url = "/butil/files" },
+        new BitNavItem { Text = "Speech", Url = "/butil/speech" },
+        new BitNavItem { Text = "Observers", Url = "/butil/observers" },
     ];
 
 

@@ -23,11 +23,6 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public BitToggleClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The default value of the toggle when the value parameter has not been assigned.
-    /// </summary>
-    [Parameter] public bool? DefaultValue { get; set; }
-
-    /// <summary>
     /// Renders the toggle in full width of its container while putting space between the label and the knob.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -110,10 +105,7 @@ public partial class BitToggle : BitInputBase<bool>
         _buttonId = $"BitToggle-{UniqueId}-button";
         _stateTextId = $"BitToggle-{UniqueId}-state-text";
 
-        if (ValueHasBeenSet is false && DefaultValue is not null)
-        {
-            Value = DefaultValue.Value;
-        }
+        SetDefaultValue();
 
         SetStateText();
 

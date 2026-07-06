@@ -1,0 +1,83 @@
+@* Host for ErrorContentTests: routes with failing loaders at three boundary depths - a leaf route
+   with its own ErrorContent, a nested child bubbling to its parent's ErrorContent, and a route
+   with no chain boundary that falls back to the router-level ErrorContent. *@
+
+@using Bit.Brouter
+@implements IDisposable
+@inject IBrouter Brouter
+
+<Brouter>
+    <ChildContent>
+        <Broute Path="/ok">
+            <Content><div data-testid="ok">ok</div></Content>
+        </Broute>
+
+        <Broute Path="/fail-leaf" Loader="LeafLoader">
+            <Content><div data-testid="leaf-content">leaf ok</div></Content>
+            <ErrorContent Context="err">
+                <div data-testid="leaf-boundary">@err.Exception.Message</div>
+                <button data-testid="retry" @onclick="@(() => err.RetryAsync())">retry</button>
+            </ErrorContent>
+        </Broute>
+
+        <Broute Path="/parent">
+            <Content>
+                <div data-testid="parent-layout">
+                    <BrouterOutlet />
+                </div>
+            </Content>
+            <ChildContent>
+                <Broute Path="/child" Loader="ChildLoader">
+                    <Content><div data-testid="child-content">child ok</div></Content>
+                </Broute>
+            </ChildContent>
+            <ErrorContent Context="err">
+                <div data-testid="parent-boundary">@err.Exception.Message</div>
+            </ErrorContent>
+        </Broute>
+
+        <Broute Path="/fail-root" Loader="RootFailLoader">
+            <Content><div data-testid="root-content">root ok</div></Content>
+        </Broute>
+    </ChildContent>
+    <ErrorContent Context="err">
+        <div data-testid="root-boundary">@err.Exception.Message</div>
+    </ErrorContent>
+</Brouter>
+
+@code {
+    // Toggled by tests: while true, the leaf loader throws; flipping to false lets a retry succeed.
+    public bool LeafShouldFail { get; set; } = true;
+
+    public int ErrorHookCount { get; private set; }
+    public Exception? LastError { get; private set; }
+
+    private Func<BrouterNavigationContext, Exception?, ValueTask>? _onError;
+
+    protected override void OnInitialized()
+    {
+        _onError = (ctx, ex) =>
+        {
+            ErrorHookCount++;
+            LastError = ex;
+            return ValueTask.CompletedTask;
+        };
+        Brouter.OnError += _onError;
+    }
+
+    private ValueTask<object?> LeafLoader(BrouterNavigationContext ctx)
+        => LeafShouldFail
+            ? throw new InvalidOperationException("leaf loader failed")
+            : ValueTask.FromResult<object?>("leaf data");
+
+    private ValueTask<object?> ChildLoader(BrouterNavigationContext ctx)
+        => throw new InvalidOperationException("child loader failed");
+
+    private ValueTask<object?> RootFailLoader(BrouterNavigationContext ctx)
+        => throw new InvalidOperationException("root loader failed");
+
+    public void Dispose()
+    {
+        if (_onError is not null) Brouter.OnError -= _onError;
+    }
+}

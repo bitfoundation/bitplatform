@@ -1,0 +1,193 @@
+@page "/basic"
+
+<div class="demo-section">
+    <h2>Basic Animations</h2>
+    <p>
+        Use <strong>Initial</strong> to set the starting state and <strong>Animate</strong>
+        for the target. Each property transitions automatically on mount and whenever
+        <c>Animate</c> changes.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion Initial="Bm.To(opacity: 0, x: -60)"
+                    Animate="Bm.To(opacity: 1, x: 0)"
+                    Transition="Bm.Tween(0.6, BmEase.BackOut)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+        <div class="demo-card">
+            <Bmotion Initial="Bm.To(scale: 0)"
+                    Animate='@(_toggled ? Bm.To(scale: 1.3, rotate: 45, backgroundColor: "#ff4785")
+                                        : Bm.To(scale: 1, rotate: 0, backgroundColor: "#6c47ff"))'
+                    Transition="Bm.Tween(0.4)"
+                    OnTap="@(() => _toggled = !_toggled)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _toggled = !_toggled)">
+        Toggle animate
+    </button>
+
+    <CodeSnippet Code="@_basicCode" />
+</div>
+
+<div class="demo-section">
+    <h2>CSS Property Animations</h2>
+    <p>
+        Animate any CSS property - colors, border-radius, box-shadow, and more. Complex strings
+        like <c>filter</c> interpolate too: every number (and embedded color) inside two values
+        with the same shape animates smoothly.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion Animate='@(_rounded
+                        ? Bm.To(borderRadius: "50%", backgroundColor: "#ff4785", scale: 1.1)
+                        : Bm.To(borderRadius: "10px", backgroundColor: "#6c47ff", scale: 1))'
+                    Transition="Bm.Tween(0.5, BmEase.InOut)"
+                    OnTap="@(() => _rounded = !_rounded)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+        <div class="demo-card">
+            <Bmotion Initial='Bm.To(filter: "blur(0px) saturate(1)")'
+                    Animate='@(_dimmed
+                        ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
+                        : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
+                    Transition="Bm.Tween(0.5, BmEase.InOut)"
+                    OnTap="@(() => _dimmed = !_dimmed)">
+                <div class="box" style="display:flex;align-items:center;justify-content:center;">filter</div>
+            </Bmotion>
+        </div>
+    </div>
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _rounded = !_rounded)">
+        Toggle shape
+    </button>
+    <button class="btn-bm" style="margin-top:1rem;margin-left:.5rem" @onclick="@(() => _dimmed = !_dimmed)">
+        Toggle filter
+    </button>
+
+    <CodeSnippet Code="@_cssCode" />
+</div>
+
+@code {
+    private bool _toggled;
+    private bool _rounded;
+    private bool _dimmed;
+
+    private const string _basicCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px; color: #fff; font-weight: 700;
+                background: linear-gradient(135deg, #6c47ff, #ff4785);
+                cursor: pointer; user-select: none;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .btn-bm {
+                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Basic Animations</h2>
+
+            <div class="demo-row">
+                <div class="demo-card">
+                    <Bmotion Initial="Bm.To(opacity: 0, x: -60)"
+                            Animate="Bm.To(opacity: 1, x: 0)"
+                            Transition="Bm.Tween(0.6, BmEase.BackOut)">
+                        <div class="box" />
+                    </Bmotion>
+                </div>
+                <div class="demo-card">
+                    <Bmotion Initial="Bm.To(scale: 0)"
+                            Animate='@(_toggled ? Bm.To(scale: 1.3, rotate: 45, backgroundColor: "#ff4785")
+                                                : Bm.To(scale: 1, rotate: 0, backgroundColor: "#6c47ff"))'
+                            Transition="Bm.Tween(0.4)"
+                            OnTap="@(() => _toggled = !_toggled)">
+                        <div class="box" />
+                    </Bmotion>
+                </div>
+            </div>
+
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _toggled = !_toggled)">
+                Toggle animate
+            </button>
+        </div>
+
+        @code {
+            private bool _toggled;
+        }
+        """;
+
+    private const string _cssCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px; color: #fff; font-weight: 700;
+                background: linear-gradient(135deg, #6c47ff, #ff4785);
+                cursor: pointer; user-select: none;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .btn-bm {
+                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>CSS Property Animations</h2>
+            <p>Animate any CSS property - colors, border-radius, box-shadow, filter, and more.</p>
+            <div class="demo-row">
+                <div class="demo-card">
+                    <Bmotion Animate='@(_rounded
+                                ? Bm.To(borderRadius: "50%", backgroundColor: "#ff4785", scale: 1.1)
+                                : Bm.To(borderRadius: "10px", backgroundColor: "#6c47ff", scale: 1))'
+                            Transition="Bm.Tween(0.5, BmEase.InOut)"
+                            OnTap="@(() => _rounded = !_rounded)">
+                        <div class="box" />
+                    </Bmotion>
+                </div>
+                <div class="demo-card">
+                    @* Complex strings with the same shape interpolate number-by-number. *@
+                    <Bmotion Initial='Bm.To(filter: "blur(0px) saturate(1)")'
+                            Animate='@(_dimmed
+                                ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
+                                : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
+                            Transition="Bm.Tween(0.5, BmEase.InOut)"
+                            OnTap="@(() => _dimmed = !_dimmed)">
+                        <div class="box" />
+                    </Bmotion>
+                </div>
+            </div>
+        </div>
+
+        @code {
+            private bool _rounded;
+            private bool _dimmed;
+        }
+        """;
+}

@@ -1,0 +1,85 @@
+@page "/"
+
+<div class="page-hero">
+    <Bmotion Initial="Bm.To(opacity: 0, y: 30)"
+            Animate="Bm.To(opacity: 1, y: 0)"
+            Transition="Bm.Spring(stiffness: 80, damping: 15)">
+        <h1>
+            Bmotion
+        </h1>
+    </Bmotion>
+
+    <Bmotion Initial="Bm.To(opacity: 0, y: 20)"
+            Animate="Bm.To(opacity: 1, y: 0)"
+            Transition="Bm.Tween(0.6, delay: 0.2)">
+        <p>
+            A Blazor-native animation library inspired by Framer Motion.
+            Springs, gestures, layout animations, variants &mdash; zero external dependencies.
+        </p>
+    </Bmotion>
+
+    <Bmotion Initial="Bm.To(opacity: 0, y: 15)"
+            Animate="Bm.To(opacity: 1, y: 0)"
+            Transition="Bm.Tween(0.5, delay: 0.4)">
+        <div class="badge-list">
+            @foreach (var f in _features)
+            {
+                <span class="badge">@f</span>
+            }
+        </div>
+    </Bmotion>
+</div>
+
+<div class="demo-section">
+    <h2>Quick start</h2>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
+                    Animate="Bm.To(scale: 1, opacity: 1)"
+                    WhileHover="Bm.To(scale: 1.15, rotate: 5)"
+                    WhileTap="Bm.To(scale: 0.9)"
+                    Transition="Bm.Spring(stiffness: 300, damping: 20)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_quickStart" />
+</div>
+
+@code {
+    private readonly string[] _features =
+    [
+        "Spring physics", "Tween", "Inertia", "Keyframes",
+        "Gestures", "Drag", "AnimatePresence", "Variants",
+        "whileInView", "Layout FLIP", "MotionValue", "Scroll tracking",
+        ".NET 8+", "Minimal JS"
+    ];
+
+    private const string _quickStart = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px; cursor: pointer;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+        </style>
+
+        <div class="demo-card">
+            <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
+                    Animate="Bm.To(scale: 1, opacity: 1)"
+                    WhileHover="Bm.To(scale: 1.15, rotate: 5)"
+                    WhileTap="Bm.To(scale: 0.9)"
+                    Transition="Bm.Spring(stiffness: 300, damping: 20)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+        """;
+}

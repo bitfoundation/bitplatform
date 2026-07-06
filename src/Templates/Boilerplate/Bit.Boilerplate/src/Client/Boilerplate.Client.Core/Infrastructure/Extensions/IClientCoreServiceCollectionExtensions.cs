@@ -145,8 +145,8 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
         services.AddBlazorApplicationInsights(options =>
         {
-            configuration.GetRequiredSection("ApplicationInsights").Bind(options);
-        }, loggingOptions: options => configuration.GetRequiredSection("Logging:ApplicationInsightsLoggerProvider").Bind(options));
+            configuration.Bind("ApplicationInsights", options);
+        }, loggingOptions: options => configuration.Bind("Logging:ApplicationInsightsLoggerProvider", options));
         //#endif
 
         services.AddTypedHttpClients(); // See Boilerplate.Shared/Controllers/Readme.md

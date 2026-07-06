@@ -112,4 +112,15 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
         await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
             await InvokeAsync(async () => await HandleOnStringValueChangeAsync(args)));
     }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        _rateLimiter.Reset();
+
+        await base.DisposeAsync(disposing);
+    }
 }

@@ -1,0 +1,40 @@
+@namespace Bit.BlazorUI
+
+@if (_rowCount > 0)
+{
+    <div class="bit-bfc-multiday-row" style="padding-inline-start:60px;">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);column-gap:0;">
+            @foreach (var day in _weekDays)
+            {
+                var d = day;
+                <div style="display:flex;flex-direction:column;gap:1px;">
+                    @for (int row = 0; row < _rowCount; row++)
+                    {
+                        var r = row;
+                        var ev = _cellLookup.GetValueOrDefault((d.Date, r));
+                        if (ev != null)
+                        {
+                            // Normalize a 00:00 end as ending the previous day (exclusive midnight)
+                            // via the shared helper, matching the row-placement logic so the badge on
+                            // the true last day is tagged "last" rather than "middle".
+                            var evEndInclusive = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
+                            var position = ev.StartDate.Date == d.Date ? "first"
+                                : evEndInclusive == d.Date ? "last" : "middle";
+                            <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                        }
+                        else
+                        {
+                            <div style="height:22px;"></div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+

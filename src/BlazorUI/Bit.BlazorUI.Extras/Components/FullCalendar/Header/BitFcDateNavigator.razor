@@ -1,0 +1,13 @@
+@namespace Bit.BlazorUI
+
+<div style="display:flex;align-items:center;gap:4px;">
+    <button type="button" class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm bit-bfc-btn-nav" @onclick="State.NavigatePrevious" title="@Texts.PreviousButtonTitle" aria-label="@Texts.PreviousButtonTitle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="@(State.IsRtl ? "9 18 15 12 9 6" : "15 18 9 12 15 6")"/></svg>
+    </button>
+    <span style="font-size:14px;font-weight:600;min-width:180px;text-align:center;" aria-live="polite" aria-atomic="true">
+        @BitFullCalendarHelpers.RangeText(State.View, State.SelectedDate, State.Culture)
+    </span>
+    <button type="button" class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm bit-bfc-btn-nav" @onclick="State.NavigateNext" title="@Texts.NextButtonTitle" aria-label="@Texts.NextButtonTitle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="@(State.IsRtl ? "15 18 9 12 15 6" : "9 18 15 12 9 6")"/></svg>
+    </button>
+</div>

@@ -1,0 +1,30 @@
+@using Bit.Brouter
+
+@* The parent's loader only completes after the child's loader has STARTED, so this host can
+   only finish rendering when the chain's loaders overlap. Under sequential execution the
+   parent would wait forever (the child never starts), and the WaitAsync timeout would fail
+   the loader instead of hanging the test run. *@
+
+<Brouter ParallelLoaders="true">
+    <Broute Path="/parent" Loader="@LoadParent">
+        <Broute Path="/child" Loader="@LoadChild">
+            <Content><div data-testid="done">done</div></Content>
+        </Broute>
+    </Broute>
+</Brouter>
+
+@code {
+    private readonly TaskCompletionSource _childStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private async ValueTask<object?> LoadParent(BrouterNavigationContext ctx)
+    {
+        await _childStarted.Task.WaitAsync(TimeSpan.FromSeconds(2), ctx.CancellationToken);
+        return "parent";
+    }
+
+    private ValueTask<object?> LoadChild(BrouterNavigationContext ctx)
+    {
+        _childStarted.TrySetResult();
+        return ValueTask.FromResult<object?>("child");
+    }
+}

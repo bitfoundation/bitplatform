@@ -1,0 +1,32 @@
+@* Host for OnNavigateAsyncTests: no AppAssembly is configured, so the @page "/discovered/{id:int}"
+   component in this test assembly is initially unknown; the OnNavigateAsync hook "lazily loads"
+   the assembly when a /discovered URL is targeted. *@
+
+@using Bit.Brouter
+@using System.Reflection
+
+<Brouter OnNavigateAsync="LoadAssemblies">
+    <Broute Path="/home">
+        <Content><div data-testid="home">home</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    public int HookRuns { get; private set; }
+    public List<string> HookPaths { get; } = new();
+
+    private ValueTask<IEnumerable<Assembly>?> LoadAssemblies(BrouterNavigationContext ctx)
+    {
+        HookRuns++;
+        HookPaths.Add(ctx.To.Path);
+
+        // Simulate LazyAssemblyLoader: hand the router the assembly containing the lazily-loaded
+        // pages only when a URL that needs it comes through.
+        if (ctx.To.Path.StartsWith("/discovered", StringComparison.OrdinalIgnoreCase))
+        {
+            return ValueTask.FromResult<IEnumerable<Assembly>?>([typeof(OnNavigateHost).Assembly]);
+        }
+
+        return ValueTask.FromResult<IEnumerable<Assembly>?>(null);
+    }
+}

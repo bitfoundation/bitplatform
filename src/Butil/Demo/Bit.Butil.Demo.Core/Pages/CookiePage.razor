@@ -1,92 +1,153 @@
 ﻿@page "/cookie"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Cookie cookie
+@inject Bit.Butil.CookieStore cookieStore
 
-<PageTitle>Cookie Samples</PageTitle>
+<PageTitle>Butil - Cookie Samples</PageTitle>
 
-<h1>Cookie</h1>
+<PageHeader Category="Storage & State"
+            Title="Cookie"
+            Lead="Read, write and delete document cookies with a strongly-typed ButilCookie model instead of parsing document.cookie by hand."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.Cookie cookie
 
-@@code {
-    ...
-    await cookie.Remove("cookie-name");
-    ...
-}
+await cookie.Set(new ButilCookie { Name = "theme", Value = "dark" });
+var theme = await cookie.Get("theme");
+await cookie.Remove("theme");
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Set a cookie" Api="Set"
+              Description="Create or update a cookie by name and value.">
+        <div class="field">
+            <span class="field-label">Name</span>
+            <input @bind="setCookieName" placeholder="e.g. theme" />
+        </div>
+        <div class="field">
+            <span class="field-label">Value</span>
+            <input @bind="setCookieValue" placeholder="e.g. dark" />
+        </div>
+        <button @onclick=SetCookie>Set cookie</button>
+    </DemoCard>
 
-<h3>Open the DevTools' console and click on buttons</h3>
+    <DemoCard Title="Read cookies" Api="Get / GetAll"
+              Description="Fetch a single cookie by name, or list every cookie on the document.">
+        <div class="field">
+            <span class="field-label">Name</span>
+            <input @bind="getCookieName" placeholder="Cookie name to read" />
+        </div>
+        <div class="controls">
+            <button @onclick=GetCookie>Get cookie</button>
+            <button class="secondary" @onclick=GetAllCookies>Get all cookies</button>
+        </div>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Remove a cookie" Api="Remove"
+              Description="Delete a cookie by name.">
+        <div class="field">
+            <span class="field-label">Name</span>
+            <input @bind="removeCookieName" placeholder="Cookie name to remove" />
+        </div>
+        <button class="danger" @onclick=RemoveCookie>Remove cookie</button>
+    </DemoCard>
 
-<button @onclick=GetAllCookies>GetAllCookies</button>
-<br />
-<br />
-<br />
-<span>Name</span>
-<br/>
-<input @bind="getCookieName" />
-<br />
-<br />
-<button @onclick=GetCookie>GetCookie</button>
-<br />
-<br />
-<br />
-<span>Name</span>
-<br/>
-<input @bind="setCookieName" />
-<br/>
-<span>Value</span>
-<br />
-<input @bind="setCookieValue" />
-<br />
-<br />
-<button @onclick=SetCookie>SetCookie</button>
+    <DemoCard Title="CookieStore (async API)" Api="CookieStore.Get / Set / Delete"
+              Description="Chromium-only modern cookie API with full metadata (domain, path, SameSite, …).">
+        <div class="controls">
+            <button @onclick="CookieStoreSupported">IsSupported</button>
+            <button @onclick="CookieStoreGetAll">GetAll</button>
+        </div>
+        <div class="field" style="margin-top:0.75rem">
+            <span class="field-label">Name</span>
+            <input @bind="_csName" placeholder="butil-demo" />
+        </div>
+        <div class="field">
+            <span class="field-label">Value</span>
+            <input @bind="_csValue" placeholder="cookie-value" />
+        </div>
+        <div class="controls">
+            <button @onclick="CookieStoreSet">Set</button>
+            <button @onclick="CookieStoreGet">Get</button>
+            <button class="danger" @onclick="CookieStoreDelete">Delete</button>
+        </div>
+    </DemoCard>
+</div>
 
-<br />
-<br />
-<hr />
-<br />
-
-<span>Name</span>
-<br/>
-<input @bind="removeCookieName" />
-<br />
-<br />
-<button @onclick=RemoveCookie>RemoveCookie</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="cookie output" />
 
 @code {
+    private DemoConsole output = default!;
     private string getCookieName = "";
     private string setCookieName = "";
     private string setCookieValue = "";
     private string removeCookieName = "";
+    private string _csName = "butil-demo";
+    private string _csValue = "from-cookie-store";
 
     private async Task GetAllCookies()
     {
-        await console.Log("All cookies =", string.Join<ButilCookie>("; ", await cookie.GetAll()));
+        var all = await cookie.GetAll();
+        if (all.Length == 0)
+        {
+            await output.Warn("No cookies found.");
+            return;
+        }
+        await output.Success("All cookies →", string.Join<ButilCookie>("; ", all));
     }
 
     private async Task GetCookie()
     {
-        await console.Log("GetCookie =", await cookie.Get(getCookieName));
+        var result = await cookie.Get(getCookieName);
+        if (result is null)
+        {
+            await output.Warn($"Cookie \"{getCookieName}\" was not found.");
+            return;
+        }
+        await output.Success($"Get(\"{getCookieName}\") →", result);
     }
 
     private async Task SetCookie()
     {
         await cookie.Set(new ButilCookie { Name = setCookieName, Value = setCookieValue });
-        await console.Log("SetCookie =", await cookie.Get(setCookieName));
+        await output.Log($"Set(\"{setCookieName}\") →", await cookie.Get(setCookieName));
     }
 
     private async Task RemoveCookie()
     {
         await cookie.Remove(removeCookieName);
+        await output.Log($"Removed \"{removeCookieName}\".");
+    }
+
+    private async Task CookieStoreSupported()
+    {
+        await output.Success("CookieStore.IsSupported →", await cookieStore.IsSupported());
+    }
+
+    private async Task CookieStoreGetAll()
+    {
+        var all = await cookieStore.GetAll();
+        await output.Success("CookieStore.GetAll →", all.Length == 0 ? "(none)" : all);
+    }
+
+    private async Task CookieStoreSet()
+    {
+        await cookieStore.Set(new CookieStoreItem { Name = _csName, Value = _csValue, SameSite = "lax" });
+        await output.Log($"CookieStore.Set(\"{_csName}\")");
+    }
+
+    private async Task CookieStoreGet()
+    {
+        var item = await cookieStore.Get(_csName);
+        if (item is null)
+            await output.Warn($"CookieStore.Get(\"{_csName}\") → not found");
+        else
+            await output.Success($"CookieStore.Get(\"{_csName}\") →", item);
+    }
+
+    private async Task CookieStoreDelete()
+    {
+        await cookieStore.Delete(_csName);
+        await output.Log($"CookieStore.Delete(\"{_csName}\")");
     }
 }

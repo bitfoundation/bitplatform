@@ -1065,4 +1065,17 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.IsNotEmpty(component.FindAll(".bit-cal-evi"));
     }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectDefaultValue()
+    {
+        var defaultValue = new DateTimeOffset(2020, 1, 15, 0, 0, 0, DateTimeOffset.Now.Offset);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        Assert.AreEqual(defaultValue, component.Instance.Value);
+    }
 }
