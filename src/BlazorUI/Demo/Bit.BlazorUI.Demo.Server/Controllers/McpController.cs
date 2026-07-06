@@ -17,16 +17,16 @@ public partial class McpController : AppControllerBase
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
     private static string[]? _allIconNames = null;
-    private static XDocument? SummariesXmlDocument = null;
-    private static readonly Assembly[] ComponentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly];
-    private static readonly Type[] EnumTypes = [.. ComponentsAssemblies.SelectMany(asm => asm.GetExportedTypes().Where(t => t.IsEnum))];
+    private static XDocument? _summariesXmlDocument = null;
+    private static readonly Assembly[] _componentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly];
+    private static readonly Type[] _enumTypes = [.. _componentsAssemblies.SelectMany(asm => asm.GetExportedTypes().Where(t => t.IsEnum))];
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIComponentsList))]
     [Description("Gets the list of all available components with their details.")]
     public async Task<ComponentListDetailsDto[]> GetBitBlazorUIComponentsList()
     {
-        SummariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
+        _summariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
 
         var components = new List<ComponentListDetailsDto>();
 
@@ -43,12 +43,12 @@ public partial class McpController : AppControllerBase
                 {
                     var name = $"Bit{item.Text}";
 
-                    var xmlProperty = SummariesXmlDocument?.Descendants("member")
+                    var xmlProperty = _summariesXmlDocument?.Descendants("member")
                                             .FirstOrDefault(a => a.Attribute("name")?.Value == $"T:Bit.BlazorUI.{name}");
 
                     if (xmlProperty is null)
                     {
-                        xmlProperty = SummariesXmlDocument?.Descendants("member")
+                        xmlProperty = _summariesXmlDocument?.Descendants("member")
                                                 .FirstOrDefault(a => a.Attribute("name")?.Value.StartsWith($"T:Bit.BlazorUI.{name}`") == true);
                     }
 
@@ -104,9 +104,9 @@ public partial class McpController : AppControllerBase
         if (string.IsNullOrWhiteSpace(enumName))
             return null;
 
-        SummariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
+        _summariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
 
-        var enumType = EnumTypes.FirstOrDefault(t =>
+        var enumType = _enumTypes.FirstOrDefault(t =>
             t.Name.Equals(enumName, StringComparison.OrdinalIgnoreCase));
 
         if (enumType is null)
@@ -114,7 +114,7 @@ public partial class McpController : AppControllerBase
 
         var values = Enum.GetNames(enumType).Select(name =>
         {
-            var fieldXmlMember = SummariesXmlDocument?.Descendants("member")
+            var fieldXmlMember = _summariesXmlDocument?.Descendants("member")
                                     .FirstOrDefault(m => m.Attribute("name")?.Value == $"F:{enumType.FullName}.{name}");
 
             return new EnumValueDetailsDto
@@ -142,7 +142,7 @@ public partial class McpController : AppControllerBase
     private static async Task<XDocument?> LoadSummariesXmlDocumentAsync()
     {
         XDocument? mergedDoc = null;
-        foreach (var asm in ComponentsAssemblies)
+        foreach (var asm in _componentsAssemblies)
         {
             string path = Path.Combine(AppContext.BaseDirectory, $"{asm.GetName().Name}.xml");
             if (!System.IO.File.Exists(path)) continue;
