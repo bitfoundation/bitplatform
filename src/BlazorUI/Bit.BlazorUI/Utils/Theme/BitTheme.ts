@@ -74,6 +74,7 @@ namespace BitBlazorUI {
             Object.assign(Theme._initOptions, options);
 
             let deferPersist = false;
+            let deferPersistCookie = false;
 
             if (Theme._initOptions.onChange) {
                 Theme._onThemeChange = Theme._initOptions.onChange;
@@ -111,7 +112,15 @@ namespace BitBlazorUI {
 
             if (Theme._initOptions.persist) {
                 Theme._persist = true;
-                const persisted = Theme.getPersisted();                if (persisted) {
+            }
+
+            // Restore a previously persisted preference. getPersisted() reads localStorage first and
+            // falls back to the preference cookie, so this also covers a cookie-only setup
+            // (persistCookie without persist) that a pure client-side render (no SSR inline script)
+            // would otherwise ignore — previously this read was gated on persist alone.
+            if (Theme._persist || Theme._persistCookie) {
+                const persisted = Theme.getPersisted();
+                if (persisted) {
                     theme = persisted;
                     // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                     // stop following the OS even when <html bit-theme-system> is present.
@@ -120,10 +129,12 @@ namespace BitBlazorUI {
                     // System mode is enabled but no value has been persisted yet. Avoid writing the
                     // resolved light/dark theme to storage during the initial set() — otherwise the next
                     // init would treat that concrete value as an explicit user choice and stop following
-                    // the OS. Disable persistence for the initial set() and re-enable it afterwards so
+                    // the OS. Disable BOTH stores for the initial set() and re-enable them afterwards so
                     // SYSTEM_THEME remains the effective persisted indicator until the user picks one.
+                    deferPersist = Theme._persist;
+                    deferPersistCookie = Theme._persistCookie;
                     Theme._persist = false;
-                    deferPersist = true;
+                    Theme._persistCookie = false;
                 }
             }
 
@@ -140,6 +151,10 @@ namespace BitBlazorUI {
 
             if (deferPersist) {
                 Theme._persist = true;
+            }
+
+            if (deferPersistCookie) {
+                Theme._persistCookie = true;
             }
         }
 

@@ -55,6 +55,16 @@ public class BitThemeManager : IAsyncDisposable
     /// CSS and stays consistent with <see cref="BitThemeName"/>. A blank name is a no-op.
     /// Returns <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
     /// </summary>
+    /// <remarks>
+    /// This string overload only trims and lower-cases the value; unlike <see cref="BitThemeName.Custom(string)"/>
+    /// it intentionally does NOT enforce the strict <c>[a-z0-9-]</c> / ≤64-char token rule, so arbitrary
+    /// theme names that match your own CSS selectors are accepted. This is safe because the value is
+    /// applied via the client script's <c>setAttribute</c> (an attribute-value sink, not HTML), so it
+    /// cannot inject markup. If you also persist theme names for server-side first paint via
+    /// <see cref="BitThemeSsr.BuildRootThemeAttributes(string?, string?)"/>, prefer names that satisfy the
+    /// stricter token rule (or use <see cref="BitThemeName.Custom(string)"/>): the SSR path rejects
+    /// non-conforming tokens and would treat such a persisted preference as "missing".
+    /// </remarks>
     public async ValueTask<string?> SetThemeAsync(string themeName)
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);

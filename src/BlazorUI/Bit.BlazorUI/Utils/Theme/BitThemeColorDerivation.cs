@@ -11,6 +11,7 @@ public static class BitThemeColorDerivation
     /// <param name="mainHex">Source color in <c>#RGB</c> or <c>#RRGGBB</c> form. Whitespace is trimmed.</param>
     /// <param name="adjustTextForWcagAa">When true, flips the suggested on-color text if its contrast vs <see cref="BitThemeColorVariants.Main"/> fails WCAG AA for normal text.</param>
     /// <remarks>
+    /// <para>
     /// The method is lenient and never throws on bad input: a null/blank <paramref name="mainHex"/>,
     /// or a value that is not a valid hex color, is treated as "nothing to derive from" and the
     /// call is a no-op (the target <paramref name="variants"/> are left untouched). Validation uses
@@ -19,6 +20,16 @@ public static class BitThemeColorDerivation
     /// silently overrode stylesheet defaults with wrong colors and masked the mistake; treating
     /// invalid input as a no-op surfaces it (the role keeps its existing/default colors) without
     /// throwing.
+    /// </para>
+    /// <para>
+    /// The variants are derived by shifting only the HSV <em>value</em> (brightness) of
+    /// <paramref name="mainHex"/> — hue and saturation are preserved. The result is clamped to the
+    /// [0,1] value range, so for an already very bright base color the "light" steps
+    /// (<see cref="BitThemeColorVariants.Light"/> / <c>LightHover</c> / <c>LightActive</c>) can
+    /// saturate at white and collapse to the same hex, and likewise the "dark" steps can converge
+    /// for a near-black base. This is a convenience helper for sparse themes rather than a full
+    /// perceptual palette generator; set the variants explicitly when you need precise tints/shades.
+    /// </para>
     /// </remarks>
     public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex, bool adjustTextForWcagAa = false)
     {

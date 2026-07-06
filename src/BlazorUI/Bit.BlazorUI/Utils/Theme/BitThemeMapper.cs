@@ -8,10 +8,11 @@ internal static class BitThemeMapper
 
         if (bitTheme is null) return result;
 
-        // Normalize so every branch object is non-null. A hand-constructed sparse theme
-        // (e.g. new BitTheme { Color = null } or new BitThemeColors { Primary = null }) is
-        // reachable via the public setters and would otherwise NRE while walking the graph below.
-        BitThemeSerialization.Normalize(bitTheme);
+        // Walk a normalized COPY so a hand-constructed sparse theme (e.g. new BitTheme { Color = null }
+        // or new BitThemeColors { Primary = null }, both reachable via the public setters) can be
+        // traversed without NRE — WITHOUT mutating the caller's instance. (Previously this filled
+        // null branch objects in place on the passed theme as a side effect.)
+        bitTheme = NormalizeToNew(bitTheme);
 
         addCssVar("--bit-clr-pri", bitTheme.Color.Primary.Main);
         addCssVar("--bit-clr-pri-hover", bitTheme.Color.Primary.MainHover);
@@ -489,15 +490,111 @@ internal static class BitThemeMapper
             || value.Contains("*/", StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Returns a copy of <paramref name="src"/> with every branch object non-null, WITHOUT mutating
+    /// the caller's instance. Used by <see cref="MapToCssVariables"/> and <see cref="Merge"/> so a
+    /// hand-constructed sparse theme (null branches, reachable via the public setters) can be walked
+    /// without a <see cref="NullReferenceException"/>.
+    /// </summary>
+    /// <remarks>
+    /// Only the container types that hold <em>sub-objects</em> (<see cref="BitTheme"/>,
+    /// <see cref="BitThemeColors"/>, <see cref="BitThemeTypography"/>, <see cref="BitThemeLayout"/>)
+    /// are freshly allocated. Leaf-holding branch objects (the color/typography/etc. variants, whose
+    /// properties are all immutable <see cref="string"/>s) are shared by reference: callers only ever
+    /// read from the normalized graph here — the merge writes into a separate fresh result — so no
+    /// shared object is mutated and no per-leaf copy is needed. Direct string leaves on the container
+    /// types (e.g. <see cref="BitThemeColors.Required"/>, <see cref="BitThemeTypography.FontFamily"/>,
+    /// <see cref="BitThemeLayout.Direction"/>) are carried across explicitly.
+    /// </remarks>
+    private static BitTheme NormalizeToNew(BitTheme? src)
+    {
+        src ??= new BitTheme();
+
+        return new BitTheme
+        {
+            Color = NormalizeColors(src.Color),
+            BoxShadow = src.BoxShadow ?? new(),
+            Spacing = src.Spacing ?? new(),
+            ZIndex = src.ZIndex ?? new(),
+            Shape = src.Shape ?? new(),
+            Typography = NormalizeTypography(src.Typography),
+            Motion = src.Motion ?? new(),
+            Layout = NormalizeLayout(src.Layout),
+        };
+    }
+
+    private static BitThemeColors NormalizeColors(BitThemeColors? src)
+    {
+        src ??= new BitThemeColors();
+
+        return new BitThemeColors
+        {
+            Primary = src.Primary ?? new(),
+            Secondary = src.Secondary ?? new(),
+            Tertiary = src.Tertiary ?? new(),
+            Info = src.Info ?? new(),
+            Success = src.Success ?? new(),
+            Warning = src.Warning ?? new(),
+            SevereWarning = src.SevereWarning ?? new(),
+            Error = src.Error ?? new(),
+            Foreground = src.Foreground ?? new(),
+            Background = src.Background ?? new(),
+            Border = src.Border ?? new(),
+            Neutral = src.Neutral ?? new(),
+            Required = src.Required,
+        };
+    }
+
+    private static BitThemeTypography NormalizeTypography(BitThemeTypography? src)
+    {
+        src ??= new BitThemeTypography();
+
+        return new BitThemeTypography
+        {
+            FontFamily = src.FontFamily,
+            FontWeight = src.FontWeight,
+            LineHeight = src.LineHeight,
+            GutterSize = src.GutterSize,
+            H1 = src.H1 ?? new(),
+            H2 = src.H2 ?? new(),
+            H3 = src.H3 ?? new(),
+            H4 = src.H4 ?? new(),
+            H5 = src.H5 ?? new(),
+            H6 = src.H6 ?? new(),
+            Subtitle1 = src.Subtitle1 ?? new(),
+            Subtitle2 = src.Subtitle2 ?? new(),
+            Body1 = src.Body1 ?? new(),
+            Body2 = src.Body2 ?? new(),
+            Button = src.Button ?? new(),
+            Caption1 = src.Caption1 ?? new(),
+            Caption2 = src.Caption2 ?? new(),
+            Overline = src.Overline ?? new(),
+            Inherit = src.Inherit ?? new(),
+        };
+    }
+
+    private static BitThemeLayout NormalizeLayout(BitThemeLayout? src)
+    {
+        src ??= new BitThemeLayout();
+
+        return new BitThemeLayout
+        {
+            Direction = src.Direction,
+            DensityScale = src.DensityScale,
+            Breakpoints = src.Breakpoints ?? new(),
+        };
+    }
+
     internal static BitTheme Merge(BitTheme bitTheme, BitTheme other)
     {
         var result = new BitTheme();
 
-        // Normalize both inputs so every branch object is non-null. Hand-constructed sparse themes
-        // (e.g. new BitTheme { Color = null } or new BitThemeColors { Primary = null }) reach this
-        // path via the public setters and would otherwise NRE while walking the graph below.
-        BitThemeSerialization.Normalize(bitTheme);
-        BitThemeSerialization.Normalize(other);
+        // Walk normalized COPIES so hand-constructed sparse themes (e.g. new BitTheme { Color = null }
+        // or new BitThemeColors { Primary = null }, both reachable via the public setters) can be
+        // traversed without NRE — WITHOUT mutating the caller's instances. (Previously this filled
+        // null branch objects in place on both passed themes as a side effect.)
+        bitTheme = NormalizeToNew(bitTheme);
+        other = NormalizeToNew(other);
 
         result.Color.Primary.Main = bitTheme.Color.Primary.Main ?? other.Color.Primary.Main;
         result.Color.Primary.MainHover = bitTheme.Color.Primary.MainHover ?? other.Color.Primary.MainHover;

@@ -24,6 +24,11 @@ public static class BitThemeUtilities
     /// prevents a malicious token from adding extra CSS. A dropped token falls back to the
     /// stylesheet default.
     /// </para>
+    /// <para>
+    /// The passed <paramref name="bitTheme"/> is not mutated: a hand-constructed sparse theme (e.g.
+    /// <c>new BitTheme { Color = null }</c>) is normalized onto an internal copy before mapping, so
+    /// any deliberate <see langword="null"/> branches on the original instance are preserved.
+    /// </para>
     /// </remarks>
     public static IReadOnlyDictionary<string, string> ToCssVariables(BitTheme? bitTheme)
     {
@@ -31,6 +36,12 @@ public static class BitThemeUtilities
     }
 
     /// <summary>Merges two themes: <paramref name="overrides"/> wins; missing values fall back to <paramref name="baseline"/>.</summary>
+    /// <remarks>
+    /// Returns a fresh <see cref="BitTheme"/>; the inputs are neither used as the result nor mutated.
+    /// A hand-constructed sparse input (with <see langword="null"/> branch objects) is normalized
+    /// onto internal copies before merging, so deliberate null branches on the passed instances are
+    /// preserved.
+    /// </remarks>
     public static BitTheme Merge(BitTheme? overrides, BitTheme? baseline)
     {
         return BitThemeMapper.Merge(overrides ?? new BitTheme(), baseline ?? new BitTheme());

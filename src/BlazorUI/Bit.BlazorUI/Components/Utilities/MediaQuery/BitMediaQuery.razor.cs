@@ -72,41 +72,17 @@ public partial class BitMediaQuery : BitComponentBase
 
         if (IsDisposed) return;
 
-        var query = Query ?? GetQuery(ScreenQuery);
+        // A custom Query takes precedence; otherwise defer to the predefined ScreenQuery, whose
+        // media query is built on the JS side from the live --bit-bp-* theme breakpoints so a
+        // customized BitTheme.Layout.Breakpoints is honored (rather than baking fixed px here).
+        var screenQuery = Query is null ? ScreenQuery?.ToString() : null;
+        var effectiveKey = Query ?? screenQuery;
 
-        if (query.HasValue() && query != _query)
+        if (effectiveKey.HasValue() && effectiveKey != _query)
         {
-            _query = query;
-            await _js.BitMediaQuerySetup(_Id, _query, _dotnetObj);
+            _query = effectiveKey;
+            await _js.BitMediaQuerySetup(_Id, Query, screenQuery, _dotnetObj);
         }
-    }
-
-
-
-    private static string GetQuery(BitScreenQuery? query)
-    {
-        return query switch
-        {
-            BitScreenQuery.Xs => "(max-width: 599px)",
-            BitScreenQuery.Sm => "(min-width: 600px) and (max-width: 959px)",
-            BitScreenQuery.Md => "(min-width: 960px) and (max-width: 1279px)",
-            BitScreenQuery.Lg => "(min-width: 1280px) and (max-width: 1919px)",
-            BitScreenQuery.Xl => "(min-width: 1920px) and (max-width: 2559px)",
-            BitScreenQuery.Xxl => "(min-width: 2560px)",
-
-            BitScreenQuery.LtSm => "(max-width: 599px)",
-            BitScreenQuery.LtMd => "(max-width: 959px)",
-            BitScreenQuery.LtLg => "(max-width: 1279px)",
-            BitScreenQuery.LtXl => "(max-width: 1919px)",
-            BitScreenQuery.LtXxl => "(max-width: 2559px)",
-
-            BitScreenQuery.GtXs => "(min-width: 600px)",
-            BitScreenQuery.GtSm => "(min-width: 960px)",
-            BitScreenQuery.GtMd => "(min-width: 1280px)",
-            BitScreenQuery.GtLg => "(min-width: 1920px)",
-            BitScreenQuery.GtXl => "(min-width: 2560px)",
-            _ => string.Empty
-        };
     }
 
 
