@@ -58,7 +58,7 @@ public partial class PubSubService
 
     private void HandleException(Task t)
     {
-        serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!);
+        serviceProvider.GetRequiredService<ClientExceptionHandlerBase>().Handle(t.Exception!);
     }
 
     private class WeakHandler

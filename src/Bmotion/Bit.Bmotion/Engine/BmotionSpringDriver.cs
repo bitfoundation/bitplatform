@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.Bmotion;
 /// <summary>
 /// Semi-implicit Euler spring physics driver for numeric properties.
@@ -21,7 +21,7 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
     private readonly double _maxSubDt;
     private readonly int _repeat;
     private readonly bool _isInfinite;
-    private readonly BmotionRepeatType _repeatType;
+    private readonly BmRepeatType _repeatType;
     private readonly Action<double> _apply;
 
     private double _pos;
@@ -141,9 +141,9 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
                 // repeat then keeps the reversed direction so each later pass replays backwards
                 // (matches BmotionColorTweenDriver / BmotionNumericKeyframesDriver). Loop replays
                 // from the origin without swapping.
-                if (_repeatType == BmotionRepeatType.Mirror)
+                if (_repeatType == BmRepeatType.Mirror)
                     (_from, _target) = (_target, _from);
-                else if (_repeatType == BmotionRepeatType.Reverse && !_reversed)
+                else if (_repeatType == BmRepeatType.Reverse && !_reversed)
                 {
                     (_from, _target) = (_target, _from);
                     _reversed = true;
@@ -171,12 +171,12 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         //  • Reverse plays forward once (ending on the target) then replays reversed for every
         //    later pass (ending on the start), so it ends on the target only with no repeats.
         // Infinite repeats have no natural end, so fall through to the target.
-        if (!_isInfinite && _repeatType == BmotionRepeatType.Mirror)
+        if (!_isInfinite && _repeatType == BmRepeatType.Mirror)
         {
             _apply((_repeat + 1) % 2 == 0 ? _origFrom : _origTarget);
             return;
         }
-        if (!_isInfinite && _repeatType == BmotionRepeatType.Reverse)
+        if (!_isInfinite && _repeatType == BmRepeatType.Reverse)
         {
             _apply(_repeat == 0 ? _origTarget : _origFrom);
             return;

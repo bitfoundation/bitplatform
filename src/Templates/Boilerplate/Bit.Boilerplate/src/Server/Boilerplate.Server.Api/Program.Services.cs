@@ -188,6 +188,7 @@ public static partial class Program
         //#endif
 
         services.AddSingleton<ApiServerExceptionHandler>();
+        services.AddSingleton<SharedExceptionHandler>(sp => sp.GetRequiredService<ApiServerExceptionHandler>());
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ApiServerExceptionHandler>());
         services.AddProblemDetails();
 

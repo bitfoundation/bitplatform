@@ -1,139 +1,600 @@
+/* ============================================================
+   BitDataGrid - styles
+   Theming is driven entirely by the Bit BlazorUI theme system
+   (the global --bit-clr-* / --bit-tpg-* / --bit-shp-* variables),
+   so the grid automatically follows the active theme, including
+   light/dark.
+   ============================================================ */
+
 .bit-dtg {
-    width: 100%;
-    --bit-dtg-col-gap: 1rem;
+    --bit-dtg-cell-pad: 8px 10px;
 
-    th {
-        position: relative;
-    }
-
-    > thead > tr > th {
-        font-weight: normal;
-    }
-
-    &.loading > tbody {
-        opacity: 0.25;
-        transition-delay: 25ms;
-        transition: opacity linear 100ms;
-    }
-
-    > tbody > tr > td {
-        padding: 0.1rem calc(0.4rem + var(--bit-dtg-col-gap)) 0.1rem 0.4rem;
-    }
+    font-family: var(--bit-tpg-font-family);
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--bit-clr-fg-pri);
+    background: var(--bit-clr-bg-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
 }
 
+.bit-dtg *,
+.bit-dtg *::before,
+.bit-dtg *::after {
+    box-sizing: border-box;
+}
 
-.bit-dtg-hct {
+.bit-dtg.bit-dtg-bordered {
+    border: 1px solid var(--bit-clr-brd-ter);
+}
+
+/* ---------------------------------------------------------- Toolbar */
+.bit-dtg-toolbar {
     display: flex;
-    position: relative;
+    justify-content: space-between;
     align-items: center;
-    padding-inline-end: var(--bit-dtg-col-gap);
+    gap: 8px;
+    padding: 8px;
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    flex-wrap: wrap;
 }
 
-.bit-dtg-cop {
-    z-index: 1;
-    padding: 1rem;
-    border: 1px solid;
-    position: absolute;
-    inset-inline-start: 0;
-    border-color: var(--bit-clr-brd-pri);
-    background-color: var(--bit-clr-bg-sec);
-}
-
-.bit-dtg-cob {
-    width: 1.5rem;
-    background: unset;
-
-    &::before {
-        content: "\E712";
-        font-style: normal;
-        font-weight: normal;
-        display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI Extras';
-    }
-}
-
-.bit-dtg-drg {
-    width: 1rem;
-    cursor: ew-resize;
-    position: absolute;
-    inset-block-end: 0;
-    inset-block-start: 0;
-    inset-inline-end: calc(var(--bit-dtg-col-gap)/2 - 0.5rem);
-
-    &::after {
-        content: ' ';
-        position: absolute;
-        inset-block-end: 5px;
-        inset-block-start: 5px;
-        inset-inline-start: 0.5rem;
-        border-color: var(--bit-clr-brd-pri);
-        border-inline-start: 1px solid black;
-    }
-}
-
-.bit-dtg-srt {
-    width: 1rem;
-    height: 1rem;
-    opacity: 0.5;
-    align-self: center;
-    text-align: center;
-}
-
-.bit-dtg-csa .bit-dtg-srt::before,
-.bit-dtg-csd .bit-dtg-srt::before {
-    content: "\E96F";
-    font-style: normal;
-    font-weight: normal;
-    display: inline-block;
-    transform: rotate(90deg);
-    font-family: 'Fabric MDL2 bit BlazorUI Extras';
-}
-
-.bit-dtg-csd .bit-dtg-srt {
-    transform: scaleY(-1) translateY(-2px);
-}
-
-.bit-dtg-ctl {
-    gap: 0.4rem;
-    flex-grow: 1;
+.bit-dtg-toolbar-start,
+.bit-dtg-toolbar-end {
     display: flex;
-    min-width: 0px;
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 0.1rem 0.4rem;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-button.bit-dtg-ctl {
-    border: none;
-    color: inherit;
+.bit-dtg-column-chooser {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px;
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    background: var(--bit-clr-bg-sec);
+}
+
+.bit-dtg-chooser-item {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
     cursor: pointer;
-    background: none;
+}
+
+/* ---------------------------------------------------------- Viewport */
+.bit-dtg-viewport {
+    overflow: auto;
     position: relative;
 }
 
-.bit-dtg-ctt {
+.bit-dtg-table {
+    display: block;
+    min-width: 100%;
+}
+
+/* ---------------------------------------------------------- Rows */
+.bit-dtg-row {
+    display: grid;
+    grid-template-columns: var(--bit-dtg-template);
+    align-items: stretch;
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
+.bit-dtg-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.bit-dtg-header-row,
+.bit-dtg-filter-row {
+    background: var(--bit-clr-bg-sec);
+}
+
+.bit-dtg-filter-row {
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
+.bit-dtg-hcell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--bit-dtg-cell-pad);
+    font-weight: 600;
+    position: relative;
+    background: var(--bit-clr-bg-sec);
+    border-inline-end: 1px solid transparent;
+    user-select: none;
     overflow: hidden;
-    white-space: nowrap;
+}
+
+.bit-dtg-cell {
+    padding: var(--bit-dtg-cell-pad);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+    background: var(--bit-clr-bg-pri);
 }
 
-.bit-dtg-cjc {
+.bit-dtg-bordered .bit-dtg-cell,
+.bit-dtg-bordered .bit-dtg-hcell {
+    border-inline-end: 1px solid var(--bit-clr-brd-ter);
+}
+
+.bit-dtg-center {
+    justify-content: center;
     text-align: center;
+}
 
-    .bit-dtg-ctl {
-        justify-content: center;
+.bit-dtg-right {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+/* Striping & hover */
+.bit-dtg-striped .bit-dtg-body .bit-dtg-row:nth-child(even) .bit-dtg-cell {
+    background: var(--bit-clr-bg-sec);
+}
+
+.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row:hover .bit-dtg-cell {
+    background: var(--bit-clr-bg-pri-hover);
+}
+
+/* Selection & editing must win over both striping and hover (in every row position) */
+.bit-dtg-row.bit-dtg-selected .bit-dtg-cell,
+.bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-selected:nth-child(even) .bit-dtg-cell,
+.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-selected:hover .bit-dtg-cell {
+    color: var(--bit-clr-pri-text);
+    background: var(--bit-clr-pri);
+}
+
+.bit-dtg-row.bit-dtg-editing .bit-dtg-cell,
+.bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-editing:nth-child(even) .bit-dtg-cell,
+.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-editing:hover .bit-dtg-cell {
+    color: var(--bit-clr-fg-pri);
+    background: var(--bit-clr-wrn-light);
+}
+
+/* Sticky / frozen columns */
+.bit-dtg-sticky {
+    position: sticky;
+    z-index: 2;
+}
+
+.bit-dtg-header .bit-dtg-sticky {
+    z-index: 4;
+}
+
+.bit-dtg-rtl .bit-dtg-sticky {
+    right: auto;
+}
+
+.bit-dtg-cell-detail,
+.bit-dtg-cell-select {
+    justify-content: center;
+}
+
+/* ---------------------------------------------------------- Header sorting */
+.bit-dtg-sortable .bit-dtg-htext {
+    cursor: pointer;
+}
+
+.bit-dtg-htext {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    /* Flex items default to min-width:auto, which refuses to shrink below their content size and
+       breaks the ellipsis on long labels in narrow columns; allow shrinking so the text can clip. */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* When the header is sortable it renders as a real <button> for native keyboard
+   activation; strip the default button chrome so it matches the non-sortable span. */
+button.bit-dtg-htext {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
+.bit-dtg-sort-icon {
+    font-size: 10px;
+    color: var(--bit-clr-pri);
+}
+
+.bit-dtg-sort-priority {
+    font-size: 9px;
+    background: var(--bit-clr-pri);
+    color: var(--bit-clr-pri-text);
+    border-radius: 8px;
+    padding: 0 4px;
+    line-height: 14px;
+}
+
+/* Resizer handle */
+.bit-dtg-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 7px;
+    height: 100%;
+    cursor: col-resize;
+    touch-action: none;
+}
+
+.bit-dtg-rtl .bit-dtg-resizer {
+    right: auto;
+    left: 0;
+}
+
+.bit-dtg-resizer:hover {
+    background: var(--bit-clr-pri);
+    opacity: .5;
+}
+
+.bit-dtg-resize-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    cursor: col-resize;
+    touch-action: none;
+}
+
+/* ---------------------------------------------------------- Group rows */
+.bit-dtg-group-row {
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
+.bit-dtg-group-cell {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: var(--bit-dtg-cell-pad);
+    background: var(--bit-clr-bg-ter);
+}
+
+.bit-dtg-group-count {
+    color: var(--bit-clr-fg-sec);
+}
+
+.bit-dtg-group-agg {
+    color: var(--bit-clr-fg-sec);
+    font-size: 12px;
+}
+
+/* Nested groups: subtle indentation shading applied at every level so deeper groups
+   keep the hierarchy cue (the level value drives indentation elsewhere). */
+.bit-dtg-group-row .bit-dtg-group-cell {
+    border-inline-start: 3px solid var(--bit-clr-pri);
+}
+
+/* ----------------------------------------------- Grouped column headers */
+.bit-dtg-group-header-row {
+    background: var(--bit-clr-bg-sec);
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
+.bit-dtg-group-header {
+    font-weight: 700;
+    background: var(--bit-clr-bg-sec);
+    border-inline-end: 1px solid var(--bit-clr-brd-ter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--bit-dtg-cell-pad);
+}
+
+.bit-dtg-group-header-empty {
+    background: transparent;
+    border-inline-end: none;
+}
+
+/* ---------------------------------------------------------- Row reorder */
+.bit-dtg-cell-reorder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-dtg-drag-handle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: grab;
+    color: var(--bit-clr-fg-sec);
+    user-select: none;
+}
+
+.bit-dtg-drag-handle:active {
+    cursor: grabbing;
+}
+
+.bit-dtg-row[draggable="true"] {
+    cursor: grab;
+}
+
+/* ---------------------------------------------------------- Detail rows */
+.bit-dtg-detail-row {
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
+.bit-dtg-detail-content {
+    padding: 12px 16px;
+    background: var(--bit-clr-bg-sec);
+}
+
+/* ---------------------------------------------------------- Tree view */
+.bit-dtg-tree-indent {
+    display: inline-block;
+    flex: 0 0 auto;
+}
+
+.bit-dtg-tree-toggle {
+    flex: 0 0 auto;
+    width: 20px;
+    text-align: center;
+}
+
+.bit-dtg-tree-leaf {
+    display: inline-block;
+    width: 20px;
+    flex: 0 0 auto;
+}
+
+/* ---------------------------------------------------------- Cell navigation */
+/* The focus ring is driven solely by real DOM :focus so exactly one cell can
+   ever be outlined (state and DOM focus are kept in sync via @key + FocusAsync). */
+.bit-dtg-cell[tabindex]:focus {
+    outline: 2px solid var(--bit-clr-pri);
+    outline-offset: -2px;
+    z-index: 1;
+}
+
+.bit-dtg-cell[tabindex]:focus-visible {
+    outline: 2px solid var(--bit-clr-pri);
+    outline-offset: -2px;
+    z-index: 1;
+}
+
+/* A selected cell/row paints its background with the primary color, so a primary-colored focus
+   ring would blend in and make keyboard focus invisible. Switch the ring to the selected
+   foreground color (which is guaranteed to contrast with the selected background) so the focused
+   cell stays clearly visible even while selected. */
+.bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus,
+.bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus-visible {
+    outline-color: var(--bit-clr-pri-text);
+}
+
+/* ---------------------------------------------------------- Footer */
+.bit-dtg-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+}
+
+.bit-dtg-footer-row .bit-dtg-cell {
+    background: var(--bit-clr-bg-sec);
+    font-weight: 600;
+    border-top: 2px solid var(--bit-clr-brd-ter);
+}
+
+/* ---------------------------------------------------------- Empty / loading */
+.bit-dtg-empty,
+.bit-dtg-loading {
+    padding: 32px;
+    text-align: center;
+    color: var(--bit-clr-fg-sec);
+}
+
+.bit-dtg-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--bit-clr-fg-sec);
+    border-top-color: transparent;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .bit-dtg-spinner {
+        animation: bit-dtg-spin .7s linear infinite;
     }
 }
 
-.bit-dtg-cje {
-    text-align: end;
-
-    .bit-dtg-ctl {
-        flex-direction: row-reverse;
+@keyframes bit-dtg-spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 
-.bit-dtg-plh::after {
-    opacity: 0.75;
-    content: '\2026';
+/* ------------------------------------------ Infinite-scroll placeholder */
+.bit-dtg-placeholder-cell {
+    display: flex;
+    align-items: center;
+}
+
+.bit-dtg-skeleton {
+    display: block;
+    width: 60%;
+    height: 10px;
+    border-radius: 6px;
+    background: linear-gradient(90deg,
+            var(--bit-clr-brd-ter) 25%,
+            var(--bit-clr-bg-sec) 37%,
+            var(--bit-clr-brd-ter) 63%);
+    background-size: 400% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .bit-dtg-skeleton {
+        animation: bit-dtg-shimmer 1.2s ease-in-out infinite;
+    }
+}
+
+@keyframes bit-dtg-shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: 0 0;
+    }
+}
+
+.bit-dtg-infinite-end {
+    padding: 14px;
+    text-align: center;
+    color: var(--bit-clr-fg-sec);
+    font-size: 13px;
+}
+
+/* ---------------------------------------------------------- Editors */
+.bit-dtg-editor,
+.bit-dtg-filter-input {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid var(--bit-clr-brd-ter);
+    border-radius: 4px;
+    background: var(--bit-clr-bg-pri);
+    color: var(--bit-clr-fg-pri);
+    font: inherit;
+}
+
+/* The boolean editor reuses .bit-dtg-editor for class consistency, so fully strip the text-input
+   chrome (padding/border/background/sizing) here and restore the platform's native checkbox look
+   instead of leaving it boxed like a text field. Non-boolean editors keep the .bit-dtg-editor styles. */
+.bit-dtg-editor-check {
+    width: auto;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    appearance: auto;
+    -webkit-appearance: checkbox;
+    accent-color: var(--bit-clr-pri);
+    cursor: pointer;
+}
+
+.bit-dtg-filter-input {
+    font-weight: 400;
+}
+
+/* ---------------------------------------------------------- Buttons */
+.bit-dtg-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border: 1px solid var(--bit-clr-brd-ter);
+    border-radius: 6px;
+    background: var(--bit-clr-bg-pri);
+    color: var(--bit-clr-fg-pri);
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.2;
+}
+
+.bit-dtg-btn:hover:not(:disabled) {
+    background: var(--bit-clr-bg-pri-hover);
+}
+
+.bit-dtg-btn:disabled {
+    opacity: .45;
+    cursor: default;
+}
+
+.bit-dtg-btn-primary {
+    background: var(--bit-clr-pri);
+    border-color: var(--bit-clr-pri);
+    color: var(--bit-clr-pri-text);
+}
+
+/* Win over the generic .bit-dtg-btn:hover rule so primary buttons keep their primary treatment on hover */
+.bit-dtg-btn-primary:hover:not(:disabled) {
+    background: var(--bit-clr-pri-hover);
+    border-color: var(--bit-clr-pri-hover);
+    color: var(--bit-clr-pri-text);
+}
+
+.bit-dtg-btn-danger {
+    color: var(--bit-clr-err);
+    border-color: var(--bit-clr-err);
+}
+
+.bit-dtg-cell-command {
+    gap: 6px;
+}
+
+.bit-dtg-icon-btn {
+    background: none;
+    border: none;
+    color: var(--bit-clr-fg-pri);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.bit-dtg-icon-btn:hover {
+    background: var(--bit-clr-bg-pri-hover);
+}
+
+.bit-dtg-group-btn.bit-dtg-active {
+    color: var(--bit-clr-pri);
+}
+
+/* ---------------------------------------------------------- Pager */
+.bit-dtg-pager {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-top: 1px solid var(--bit-clr-brd-ter);
+    flex-wrap: wrap;
+}
+
+.bit-dtg-pager-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--bit-clr-fg-sec);
+}
+
+.bit-dtg-pager-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bit-dtg-pager-current {
+    padding: 0 8px;
+}
+
+.bit-dtg-page-size {
+    padding: 4px 6px;
+    border: 1px solid var(--bit-clr-brd-ter);
+    border-radius: 6px;
+    background: var(--bit-clr-bg-pri);
+    color: var(--bit-clr-fg-pri);
+    font: inherit;
 }

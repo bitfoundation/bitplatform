@@ -61,6 +61,42 @@ public class BrouterLinkTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Prefix_match_on_root_href_does_not_activate_on_other_pages()
+    {
+        // The classic NavLink footgun: a "home" link (Href="/") under the default Prefix match
+        // must NOT be active on every page just because every path starts with '/'. The root is
+        // matched exactly even under Prefix (mirrors React Router's NavLink).
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/users");
+
+        var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var anchor = cut.Find("[data-testid=link]");
+            var cls = anchor.GetAttribute("class") ?? "";
+            Assert.IsFalse(cls.Contains("active"), $"expected not active, got class='{cls}'");
+            Assert.IsNull(anchor.GetAttribute("aria-current"));
+        });
+    }
+
+    [TestMethod]
+    public void Prefix_match_on_root_href_activates_at_root()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/");
+
+        var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var anchor = cut.Find("[data-testid=link]");
+            StringAssert.Contains(anchor.GetAttribute("class") ?? "", "active");
+            Assert.AreEqual("page", anchor.GetAttribute("aria-current"));
+        });
+    }
+
+    [TestMethod]
     public void All_match_only_activates_on_exact_equality()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
@@ -181,9 +217,28 @@ public class BrouterLinkTests : BunitTestContext
         StringAssert.EndsWith(nav.Uri, "/start");
     }
 
+    [TestMethod]
+    public void Multiple_Replace_links_share_a_single_module_import()
+    {
+        SetupReplaceJsModule();
+
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/start");
+
+        var cut = RenderComponent<MultiReplaceLinkHost>();
+
+        // Wait for all three links to finish wiring before counting imports, so a link that
+        // hasn't imported yet can't make the assertion pass vacuously.
+        var jsInvocations = Context!.JSInterop.Invocations;
+        cut.WaitForState(() => jsInvocations.Count(i => i.Identifier == "wireConditionalPreventDefault") == 3);
+
+        Assert.AreEqual(1, jsInvocations.Count(i => i.Identifier == "import"),
+            "all Replace links should reuse the scope-shared bit-brouter.js module instead of importing per link");
+    }
+
     private void SetupReplaceJsModule()
     {
-        var module = Context!.JSInterop.SetupModule("./_content/Bit.Brouter/BitBrouter.js");
+        var module = Context!.JSInterop.SetupModule("./_content/Bit.Brouter/bit-brouter.js");
         // BrouterLink.OnAfterRenderAsync calls module.InvokeAsync<IJSObjectReference>(
         //   "wireConditionalPreventDefault", _anchor) and stores the returned handle.
         // bunit only allows IJSObjectReference results to be produced via SetupModule, so we

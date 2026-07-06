@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.Bmotion.Tests.Models;
 
 [TestClass]
@@ -14,10 +14,10 @@ public class TransitionConfigTests
         Assert.AreEqual(BmotionTransitionType.Tween, config.Type);
         Assert.AreEqual(0.3, config.Duration);
         Assert.AreEqual(0.0, config.Delay);
-        Assert.AreEqual(BmotionEasing.EaseOut, config.Ease);
+        Assert.AreEqual(BmEase.Out, config.Ease);
         Assert.IsNull(config.EaseCubicBezier);
         Assert.AreEqual(0, config.Repeat);
-        Assert.AreEqual(BmotionRepeatType.Loop, config.RepeatType);
+        Assert.AreEqual(BmRepeatType.Loop, config.RepeatType);
         Assert.AreEqual(0.0, config.RepeatDelay);
         Assert.IsNull(config.Times);
 
@@ -52,17 +52,17 @@ public class TransitionConfigTests
 
         Assert.AreEqual(BmotionTransitionType.Tween, config.Type);
         Assert.AreEqual(0.3, config.Duration);
-        Assert.AreEqual(BmotionEasing.EaseOut, config.Ease);
+        Assert.AreEqual(BmEase.Out, config.Ease);
     }
 
     [TestMethod]
     public void Tween_CustomFactory_SetsValues()
     {
-        var config = BmotionTransitionConfig.Tween(0.5, BmotionEasing.EaseIn);
+        var config = BmotionTransitionConfig.Tween(0.5, BmEase.In);
 
         Assert.AreEqual(BmotionTransitionType.Tween, config.Type);
         Assert.AreEqual(0.5, config.Duration);
-        Assert.AreEqual(BmotionEasing.EaseIn, config.Ease);
+        Assert.AreEqual(BmEase.In, config.Ease);
     }
 
     [TestMethod]
@@ -199,10 +199,10 @@ public class TransitionConfigTests
             Type = BmotionTransitionType.Spring,
             Duration = 0.7,
             Delay = 0.2,
-            Ease = BmotionEasing.BackInOut,
+            Ease = BmEase.BackInOut,
             EaseCubicBezier = [0.1, 0.2, 0.3, 0.4],
             Repeat = int.MaxValue,
-            RepeatType = BmotionRepeatType.Mirror,
+            RepeatType = BmRepeatType.Mirror,
             RepeatDelay = 0.15,
             Times = [0, 0.5, 1],
             Stiffness = 321,

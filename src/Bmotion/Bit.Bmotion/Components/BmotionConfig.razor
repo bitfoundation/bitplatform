@@ -10,7 +10,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>Global default transition applied when no per-component transition is set.</summary>
-    [Parameter] public BmotionTransitionConfig? Transition { get; set; }
+    [Parameter] public BmTransition? Transition { get; set; }
 
     /// <summary>
     /// Global reduce-motion override.
@@ -21,8 +21,8 @@
     [Parameter] public bool? ReduceMotion { get; set; }
 
     /// <summary>
-    /// Scale factor applied to all durations in this subtree.
-    /// 0 = instant, 2 = half speed. Default: 1.
+    /// Playback rate applied to all animations in this subtree:
+    /// 2 = twice as fast, 0.5 = half speed, 0 = instant. Default: 1.
     /// </summary>
     [Parameter] public double TransitionSpeed { get; set; } = 1.0;
 
@@ -30,7 +30,7 @@
 
     // Cache the last parameter values so OnParametersSet only swaps in a new context (and triggers
     // a downstream re-render of the cascading value) when one of them actually changes.
-    private BmotionTransitionConfig? _lastTransition;
+    private BmTransition? _lastTransition;
     private bool? _lastReduceMotion;
     private double _lastTransitionSpeed = 1.0;
     private bool _ctxInitialized;

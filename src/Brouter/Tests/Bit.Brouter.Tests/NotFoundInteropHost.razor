@@ -1,0 +1,36 @@
+@* Host for NotFoundInteropTests: a page route, a 404 page route, and inline NotFoundContent, so
+   tests can exercise NavigationManager.NotFound() flowing through Brouter's OnNotFound event
+   handling in both the redirect (NotFoundUrl set) and render-in-place (inline) shapes. Brouter
+   only renders the inline fragment when no NotFound URL redirect applies, so both shapes can
+   coexist here. *@
+
+@using Bit.Brouter
+@inject IBrouter Brouter
+
+<Brouter NotFound="@NotFoundUrl" OnNotFound="@RecordNotFound">
+    <ChildContent>
+        <Broute Path="/a">
+            <Content><div data-testid="a">a</div></Content>
+        </Broute>
+        <Broute Path="/404">
+            <Content><div data-testid="nf-page">404 page</div></Content>
+        </Broute>
+    </ChildContent>
+    <NotFoundContent Context="loc">
+        <div data-testid="nf-inline">inline 404 for @loc.Path</div>
+    </NotFoundContent>
+</Brouter>
+
+@code {
+    [Parameter] public string? NotFoundUrl { get; set; }
+
+    public int NotFoundHookCount { get; private set; }
+    public string? LastNotFoundPath { get; private set; }
+
+    private ValueTask RecordNotFound(BrouterLocation location)
+    {
+        NotFoundHookCount++;
+        LastNotFoundPath = location.Path;
+        return ValueTask.CompletedTask;
+    }
+}

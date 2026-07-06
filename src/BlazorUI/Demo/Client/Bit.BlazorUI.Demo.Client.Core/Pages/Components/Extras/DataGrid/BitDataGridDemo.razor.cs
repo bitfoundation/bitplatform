@@ -1,681 +1,381 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Components;
-using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
+using Bit.BlazorUI.Demo.Client.Core.Components;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
 public partial class BitDataGridDemo : AppComponentBase
 {
-    private readonly List<ComponentParameter> componentParameters =
-    [
-         new()
-         {
-            Name = "ChildContent",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = @"Defines the child components of this instance. 
-                            For example, you may define columns by adding components derived from the BitDataGridColumnBase<TGridItem>.",
-         },
-         new()
-         {
-            Name = "Class",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "An optional CSS class name. If given, this will be included in the class attribute of the rendered table.",
-         },
-         new()
-         {
-            Name = "Columns",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Alias of the ChildContent parameter.",
-         },
-         new()
-         {
-             Name = "ItemKey",
-             Type = "Func<TGridItem, object>",
-             DefaultValue = "x => x!",
-             Description = @"Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
-                             unique identifier, such as a primary key value, for each data item.
-                             This allows the grid to preserve the association between row elements and data items based on their
-                             unique identifiers, even when the TGridItem instances are replaced by new copies (for example, after a new query against the underlying data store).
-                             If not set, the @key will be the TGridItem instance itself.",
-         },
-         new()
-         {
-            Name = "Items",
-            Type = "IQueryable<TGridItem>?",
-            DefaultValue = "null",
-            Description = @"A queryable source of data for the grid.
-                            This could be in-memory data converted to queryable using the
-                            System.Linq.Queryable.AsQueryable(System.Collections.IEnumerable) extension method,
-                            or an EntityFramework DataSet or an IQueryable derived from it.
-                            You should supply either Items or ItemsProvider, but not both.",
-         },
-         new()
-         {
-            Name = "ItemSize",
-            Type = "float",
-            DefaultValue = "50",
-            Description = @"This is applicable only when using Virtualize. It defines an expected height in pixels for
-                            each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
-                            size and to ensure accurate scrolling.",
-         },
-         new()
-         {
-            Name = "ItemsProvider",
-            Type = "BitDataGridItemsProvider<TGridItem>?",
-            DefaultValue = "null",
-            Description = @"A callback that supplies data for the rid.
-                            You should supply either Items or ItemsProvider, but not both.",
-         },
-        new()
-         {
-            Name = "LoadingTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "The custom template to render while loading the new items.",
-         },
-         new()
-         {
-             Name = "Pagination",
-             Type = "BitDataGridPaginationState?",
-             DefaultValue = "null",
-             Description = @"Optionally links this BitDataGrid<TGridItem> instance with a BitDataGridPaginationState model,
-                             causing the grid to fetch and render only the current page of data.
-                             This is normally used in conjunction with a Paginator component or some other UI logic
-                             that displays and updates the supplied BitDataGridPaginationState instance.",
-             LinkType = LinkType.Link,
-             Href = "#pagination-state",
-         },
-         new()
-         {
-            Name = "ResizableColumns",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
-                            manually. Size changes are not persisted.",
-         },
-         new()
-         {
-            Name = "RowClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = @"The CSS class of all rows of the data grid.",
-         },
-         new()
-         {
-            Name = "RowClassSelector",
-            Type = "Func<TGridItem, string>?",
-            DefaultValue = "null",
-            Description = @"The function to generate the CSS class of each row of the data grid.",
-         },
-         new()
-         {
-            Name = "RowStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = @"The CSS style of all rows of the data grid.",
-         },
-         new()
-         {
-            Name = "RowStyleSelector",
-            Type = "Func<TGridItem, string>?",
-            DefaultValue = "null",
-            Description = @"The function to generate the CSS style of each row of the data grid.",
-         },
-         new()
-         {
-            Name = "RowTemplate",
-            Type = "RenderFragment<BitDataGridRowTemplateArgs<TGridItem>>?",
-            DefaultValue = "null",
-            Description = @"Optional template to customize row rendering. Receives BitDataGridRowTemplateArgs with OriginalRow 
-                            set to the default row content; render it to include the original row, or omit to replace entirely.",
-            LinkType = LinkType.Link,
-            Href = "#row-template-args",
-         },
-         new()
-         {
-            Name = "Theme",
-            Type = "string?",
-            DefaultValue = "default",
-            Description = @"A theme name, with default value ""default"". This affects which styling rules match the table.",
-         },
-         new()
-         {
-            Name = "Virtualize",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = @"If true, the grid will be rendered with virtualization. This is normally used in conjunction with
-                            scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
-                            This can greatly improve the performance when scrolling through large data sets.",
-         }
-    ];
+    // example 1 - basic & sorting
+    private readonly List<Product> basicProducts = SampleData.Generate(50);
 
-    private readonly List<ComponentSubClass> componentSubClasses =
-    [
-        new()
-        {
-            Id = "BitDataGridColumnBase",
-            Title = "BitDataGridColumnBase",
-            Description = "BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing ColumnBase he BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
-            Parameters=
-            [
-                new()
-                {
-                    Name = "Title",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Title text for the column. This is rendered automatically if HeaderTemplate is not used.",
-                },
-                new()
-                {
-                    Name = "Class",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "An optional CSS class name. If specified, this is included in the class attribute of table header and body cells for this column.",
-                },
-                new()
-                {
-                    Name = "Align",
-                    Type = "BitDataGridAlign?",
-                    DefaultValue = "null",
-                    Description = "If specified, controls the justification of table header and body cells for this column.",
-                },
-                new()
-                {
-                    Name = "HeaderTemplate",
-                    Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
-                    DefaultValue = "null",
-                    Description = @"An optional template for this column's header cell. If not specified, the default header template
-                                    includes the Title along with any applicable sort indicators and options buttons.",
-                },
-                new()
-                {
-                    Name = "ColumnOptions",
-                    Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
-                    DefaultValue = "null",
-                    Description = @"If specified, indicates that this column has this associated options UI. A button to display this
-                                    UI will be included in the header cell by default.
-                                    If HeaderTemplate is used, it is left up to that template to render any relevant
-                                    ""show options"" UI and invoke the grid's BitDataGrid<TGridItem>.ShowColumnOptions(BitDataGridColumnBase<TGridItem>)).",
-                },
-                new()
-                {
-                    Name = "Sortable",
-                    Type = "bool?",
-                    DefaultValue = "null",
-                    Description = @"Indicates whether the data should be sortable by this column.
-                                    The default value may vary according to the column type (for example, a BitDataGridTemplateColumn<TGridItem>
-                                    is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).",
-                },
-                new()
-                {
-                    Name = "IsDefaultSort",
-                    Type = "BitDataGridSortDirection?",
-                    DefaultValue = "null",
-                    Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
-                },
-                new()
-                {
-                    Name = "PlaceholderTemplate",
-                    Type = "RenderFragment<PlaceholderContext>?",
-                    DefaultValue = "null",
-                    Description = "If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
-                }
-            ],
+    // example 2 - filtering & paging
+    private readonly List<Product> filterProducts = SampleData.Generate(200);
 
-        },
-        new()
-        {
-            Id="BitDataGridPropertyColumn",
-            Title = "BitDataGridPropertyColumn",
-            Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
-            Parameters=
-            [
-                new()
-                {
-                    Name = "Property",
-                    Type = "Expression<Func<TGridItem, TProp>>",
-                    Description = "Defines the value to be displayed in this column's cells.",
-                },
-                new()
-                {
-                    Name = "Format",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Optionally specifies a format string for the value. Using this requires the TProp type to implement IFormattable.",
-                },
-            ],
-        },
-        new()
-        {
-            Id = "BitDataGridTemplateColumn",
-            Title = "BitDataGridTemplateColumn",
-            Description = @"It uses arbitrary Razor fragments to supply contents for its cells. It can't infer the column's title or sort order automatically. also it's possible to add arbitrary Blazor components to your table cells. Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid",
-            Parameters =
-            [
-                 new()
-                 {
-                    Name = "ChildContent",
-                    Type = "RenderFragment<TGridItem>",
-                    Description = @"Specifies the content to be rendered for each row in the table.",
-                 },
-                 new()
-                 {
-                    Name = "SortBy",
-                    Type = "BitDataGridSort<TGridItem>?",
-                    DefaultValue = "null",
-                    Description = "Optionally specifies sorting rules for this column.",
-                 },
-            ],
-        },
-        new()
-         {
-            Id = "BitDataGridPaginator",
-            Title = "BitDataGridPaginator",
-            Description = "A component that provides a user interface for pagination.",
-            Parameters=
-            [
-                new()
-                {
-                    Name = "GoToFirstButtonTitle",
-                    Type = "string",
-                    DefaultValue = "Go to first page",
-                    Description = "The title of the go to first page button.",
-                },
-                new()
-                {
-                    Name = "GoToPrevButtonTitle",
-                    Type = "string",
-                    DefaultValue = "Go to previous page",
-                    Description = "The title of the go to previous page button.",
-                },
-                new()
-                {
-                    Name = "GoToNextButtonTitle",
-                    Type = "string",
-                    DefaultValue = "Go to next page",
-                    Description = "The title of the go to next page button.",
-                },
-                new()
-                {
-                    Name = "GoToLastButtonTitle",
-                    Type = "string",
-                    DefaultValue = "Go to last page",
-                    Description = "The title of the go to last page button.",
-                },
-                new()
-                {
-                    Name = "SummaryFormat",
-                    Type = "Func<BitDataGridPaginationState, string>?",
-                    DefaultValue = "null",
-                    Description = "Optionally supplies a format for rendering the page count summary.",
-                    LinkType = LinkType.Link,
-                    Href = "#pagination-state"
-                },
-                new()
-                {
-                    Name = "SummaryTemplate",
-                    Type = "RenderFragment<BitDataGridPaginationState>?",
-                    DefaultValue = "null",
-                    Description = "Optionally supplies a template for rendering the page count summary.",
-                    LinkType = LinkType.Link,
-                    Href = "#pagination-state"
-                },
-                new()
-                {
-                    Name = "TextFormat",
-                    Type = "Func<BitDataGridPaginationState, string>?",
-                    DefaultValue = "null",
-                    Description = "The optional custom format for the main text of the paginator in the middle of it.",
-                    LinkType = LinkType.Link,
-                    Href = "#pagination-state"
-                },
-                new()
-                {
-                    Name = "TextTemplate",
-                    Type = "RenderFragment<BitDataGridPaginationState>?",
-                    DefaultValue = "null",
-                    Description = "The optional custom template for the main text of the paginator in the middle of it.",
-                    LinkType = LinkType.Link,
-                    Href = "#pagination-state"
-                },
-                new()
-                {
-                    Name = "Value",
-                    Type = "BitDataGridPaginationState",
-                    DefaultValue = "",
-                    Description = "Specifies the associated pagination state. This parameter is required.",
-                    LinkType = LinkType.Link,
-                    Href = "#pagination-state"
-                },
-            ],
+    // example 3 - selection
+    private readonly List<Product> selectionProducts = SampleData.Generate(60);
+    private BitDataGridSelectionMode selectionMode = BitDataGridSelectionMode.Multiple;
+    private IReadOnlyList<Product> selectedProducts = new List<Product>();
 
-        },
-        new()
-         {
-            Id = "pagination-state",
-            Title = "BitDataGridPaginationState",
-            Description = "A component that provides a user interface for pagination.",
-            Parameters=
-            [
-                new()
-                {
-                    Name = "CurrentPageIndex",
-                    Type = "int",
-                    DefaultValue = "0",
-                    Description = "Gets the current zero-based page index.",
-                },
-                new()
-                {
-                    Name = "ItemsPerPage",
-                    Type = "int",
-                    DefaultValue = "10",
-                    Description = "Gets or sets the number of items on each page.",
-                },
-                new()
-                {
-                    Name = "LastPageIndex",
-                    Type = "int?",
-                    DefaultValue = "null",
-                    Description = "Gets the zero-based index of the last page, if known. The value will be null until TotalItemCount is known.",
-                },
-                new()
-                {
-                    Name = "TotalItemCount",
-                    Type = "int?",
-                    DefaultValue = "null",
-                    Description = "Gets the total number of items across all pages, if known. The value will be null until an associated BitDataGrid assigns a value after loading data.",
-                },
-                new()
-                {
-                    Name = "TotalItemCountChanged",
-                    Type = "EventHandler<int?>?",
-                    DefaultValue = "null",
-                    Description = "An event that is raised when the total item count has changed.",
-                },
-            ],
-
-        },
-        new()
-        {
-            Id = "row-template-args",
-            Title = "BitDataGridRowTemplateArgs<TGridItem>",
-            Description = "Arguments passed to the RowTemplate render fragment.",
-            Parameters =
-            [
-                new()
-                {
-                    Name = "OriginalRow",
-                    Type = "RenderFragment?",
-                    DefaultValue = "null",
-                    Description = "A render fragment that produces the original row markup (the default <tr> with all column cells). Render this to include the default row, or omit to replace entirely.",
-                },
-                new()
-                {
-                    Name = "RowIndex",
-                    Type = "int",
-                    DefaultValue = "0",
-                    Description = "The 1-based row index used for accessibility (e.g. aria-rowindex).",
-                },
-                new()
-                {
-                    Name = "RowItem",
-                    Type = "TGridItem",
-                    DefaultValue = "",
-                    Description = "The data item for this row.",
-                },
-            ],
-        },
-    ];
-
-    private readonly List<ComponentSubEnum> componentSubEnums =
-    [
-        new()
-        {
-             Id = "BitDataGridAlign",
-             Name = "BitDataGridAlign",
-             Description = "Describes alignment for a BitDataGrid<TGridItem> column.",
-             Items =
-             [
-                 new()
-                 {
-                      Name = "Left",
-                      Value = "0",
-                      Description = "Justifies the content against the start of the container."
-                 },
-                 new()
-                 {
-                      Name = "Center",
-                      Value = "1",
-                      Description = "Justifies the content at the center of the container."
-                 },
-                 new()
-                 {
-                      Name = "Right",
-                      Value = "2",
-                      Description = "Justifies the content at the end of the container."
-                 },
-
-             ]
-        },
-    ];
-
-
-
-    private static readonly CountryModel[] _countries =
-    [
-        new CountryModel { Code = "AR", Name = "Argentina", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
-        new CountryModel { Code = "AM", Name = "Armenia", Medals = new MedalsModel { Gold = 0, Silver = 2, Bronze = 2 } },
-        new CountryModel { Code = "AU", Name = "Australia", Medals = new MedalsModel { Gold = 17, Silver = 7, Bronze = 22 } },
-        new CountryModel { Code = "AT", Name = "Austria", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 5 } },
-        new CountryModel { Code = "AZ", Name = "Azerbaijan", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 4 } },
-        new CountryModel { Code = "BS", Name = "Bahamas", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
-        new CountryModel { Code = "BH", Name = "Bahrain", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
-        new CountryModel { Code = "BY", Name = "Belarus", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 3 } },
-        new CountryModel { Code = "BE", Name = "Belgium", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 3 } },
-        new CountryModel { Code = "BM", Name = "Bermuda", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
-        new CountryModel { Code = "BW", Name = "Botswana", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "BR", Name = "Brazil", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 8 } },
-        new CountryModel { Code = "BF", Name = "Burkina Faso", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "CA", Name = "Canada", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 11 } },
-        new CountryModel { Code = "TW", Name = "Chinese Taipei", Medals = new MedalsModel { Gold = 2, Silver = 4, Bronze = 6 } },
-        new CountryModel { Code = "CO", Name = "Colombia", Medals = new MedalsModel { Gold = 0, Silver = 4, Bronze = 1 } },
-        new CountryModel { Code = "CI", Name = "Côte d'Ivoire", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "HR", Name = "Croatia", Medals = new MedalsModel { Gold = 3, Silver = 3, Bronze = 2 } },
-        new CountryModel { Code = "CU", Name = "Cuba", Medals = new MedalsModel { Gold = 7, Silver = 3, Bronze = 5 } },
-        new CountryModel { Code = "CZ", Name = "Czech Republic", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 3 } },
-        new CountryModel { Code = "DK", Name = "Denmark", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 4 } },
-        new CountryModel { Code = "DO", Name = "Dominican Republic", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 2 } },
-        new CountryModel { Code = "EC", Name = "Ecuador", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 0 } },
-        new CountryModel { Code = "EE", Name = "Estonia", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "ET", Name = "Ethiopia", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
-        new CountryModel { Code = "FJ", Name = "Fiji", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "FI", Name = "Finland", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 2 } },
-        new CountryModel { Code = "FR", Name = "France", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 11 } },
-        new CountryModel { Code = "GE", Name = "Georgia", Medals = new MedalsModel { Gold = 2, Silver = 5, Bronze = 1 } },
-        new CountryModel { Code = "DE", Name = "Germany", Medals = new MedalsModel { Gold = 10, Silver = 11, Bronze = 16 } },
-        new CountryModel { Code = "GH", Name = "Ghana", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "GB", Name = "Great Britain", Medals = new MedalsModel { Gold = 22, Silver = 21, Bronze = 22 } },
-        new CountryModel { Code = "GR", Name = "Greece", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 1 } },
-        new CountryModel { Code = "GD", Name = "Grenada", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "HK", Name = "Hong Kong, China", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 3 } },
-        new CountryModel { Code = "HU", Name = "Hungary", Medals = new MedalsModel { Gold = 6, Silver = 7, Bronze = 7 } },
-        new CountryModel { Code = "ID", Name = "Indonesia", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 3 } },
-        new CountryModel { Code = "IE", Name = "Ireland", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
-        new CountryModel { Code = "IR", Name = "Iran", Medals = new MedalsModel { Gold = 3, Silver = 2, Bronze = 2 } },
-        new CountryModel { Code = "IL", Name = "Israel", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
-        new CountryModel { Code = "IT", Name = "Italy", Medals = new MedalsModel { Gold = 10, Silver = 10, Bronze = 20 } },
-        new CountryModel { Code = "JM", Name = "Jamaica", Medals = new MedalsModel { Gold = 4, Silver = 1, Bronze = 4 } },
-        new CountryModel { Code = "JO", Name = "Jordan", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
-        new CountryModel { Code = "KZ", Name = "Kazakhstan", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 8 } },
-        new CountryModel { Code = "KE", Name = "Kenya", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 2 } },
-        new CountryModel { Code = "XK", Name = "Kosovo", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
-        new CountryModel { Code = "KW", Name = "Kuwait", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "LV", Name = "Latvia", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "LT", Name = "Lithuania", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
-        new CountryModel { Code = "MY", Name = "Malaysia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
-        new CountryModel { Code = "MX", Name = "Mexico", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 4 } },
-        new CountryModel { Code = "MA", Name = "Morocco", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
-        new CountryModel { Code = "NA", Name = "Namibia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
-        new CountryModel { Code = "NL", Name = "Netherlands", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 14 } },
-        new CountryModel { Code = "NZ", Name = "New Zealand", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 7 } },
-        new CountryModel { Code = "MK", Name = "North Macedonia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
-        new CountryModel { Code = "NO", Name = "Norway", Medals = new MedalsModel { Gold = 4, Silver = 2, Bronze = 2 } },
-        new CountryModel { Code = "PH", Name = "Philippines", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
-        new CountryModel { Code = "PL", Name = "Poland", Medals = new MedalsModel { Gold = 4, Silver = 5, Bronze = 5 } },
-        new CountryModel { Code = "PT", Name = "Portugal", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
-        new CountryModel { Code = "PR", Name = "Puerto Rico", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
-        new CountryModel { Code = "QA", Name = "Qatar", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "KR", Name = "Republic of Korea", Medals = new MedalsModel { Gold = 6, Silver = 4, Bronze = 10 } },
-        new CountryModel { Code = "MD", Name = "Republic of Moldova", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "RO", Name = "Romania", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
-        new CountryModel { Code = "SM", Name = "San Marino", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
-        new CountryModel { Code = "SA", Name = "Saudi Arabia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
-        new CountryModel { Code = "RS", Name = "Serbia", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 5 } },
-        new CountryModel { Code = "SK", Name = "Slovakia", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
-        new CountryModel { Code = "SI", Name = "Slovenia", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 1 } },
-        new CountryModel { Code = "ZA", Name = "South Africa", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 0 } },
-        new CountryModel { Code = "ES", Name = "Spain", Medals = new MedalsModel { Gold = 3, Silver = 8, Bronze = 6 } },
-        new CountryModel { Code = "SE", Name = "Sweden", Medals = new MedalsModel { Gold = 3, Silver = 6, Bronze = 0 } },
-        new CountryModel { Code = "CH", Name = "Switzerland", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 6 } },
-        new CountryModel { Code = "SY", Name = "Syrian Arab Republic", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "TH", Name = "Thailand", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
-        new CountryModel { Code = "TR", Name = "Turkey", Medals = new MedalsModel { Gold = 2, Silver = 2, Bronze = 9 } },
-        new CountryModel { Code = "TM", Name = "Turkmenistan", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
-        new CountryModel { Code = "UA", Name = "Ukraine", Medals = new MedalsModel { Gold = 1, Silver = 6, Bronze = 12 } },
-        new CountryModel { Code = "US", Name = "United States of America", Medals = new MedalsModel { Gold = 39, Silver = 41, Bronze = 33 } },
-        new CountryModel { Code = "UZ", Name = "Uzbekistan", Medals = new MedalsModel { Gold = 3, Silver = 0, Bronze = 2 } },
-        new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
-    ];
-
-
-
-    private IQueryable<CountryModel> allCountries = default!;
-    private BitDataGrid<FoodRecall> dataGrid = default!;
-    private BitDataGrid<ProductDto> productsDataGrid = default!;
-    private BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
-    private BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
-    private BitDataGridPaginationState pagination1 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination2 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination3 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination6 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination7 = new() { ItemsPerPage = 7 };
-
-    private HashSet<string> expandedRowTemplateCodes = [];
-
-    private void ToggleRowRendererExpand(string code)
+    // Switching to Single must drop any extra selections so the bound state (and the "N selected"
+    // label) matches Single semantics; the grid normalizes its internal set but does not push the
+    // trimmed selection back to this controlled binding.
+    private void SelectSingleMode()
     {
-        if (expandedRowTemplateCodes.Remove(code)) return;
-        
-        expandedRowTemplateCodes.Add(code);
-    }
-
-    private IQueryable<CountryModel>? FilteredItems1 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
-    private IQueryable<CountryModel>? FilteredItems2 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter2 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
-
-    string typicalSampleNameFilter1 = string.Empty;
-    string typicalSampleNameFilter2 = string.Empty;
-
-    string _virtualSampleNameFilter = string.Empty;
-    string VirtualSampleNameFilter
-    {
-        get => _virtualSampleNameFilter;
-        set
+        selectionMode = BitDataGridSelectionMode.Single;
+        if (selectedProducts.Count > 1)
         {
-            _virtualSampleNameFilter = value;
-            _ = dataGrid.RefreshDataAsync();
+            selectedProducts = selectedProducts.Take(1).ToList();
         }
     }
 
-    string _odataSampleNameFilter = string.Empty;
+    // example 4 - editing
+    private readonly List<Product> editProducts = SampleData.Generate(25);
+    private int nextId;
+    private string editStatus = "";
 
-    string ODataSampleNameFilter
+    // example 5 - grouping
+    private readonly List<Product> groupProducts = SampleData.Generate(80);
+
+    // example 6 - templates
+    private readonly List<Product> templateProducts = SampleData.Generate(30);
+
+    // example 7 - columns resize/reorder/freeze
+    private readonly List<Product> columnsProducts = SampleData.Generate(40);
+
+    // example 8 - column groups
+    private readonly List<Product> columnGroupsProducts = SampleData.Generate(40);
+
+    // example 9 - column spanning
+    private readonly List<Product> spanningProducts = SampleData.Generate(40);
+
+    // example 10 - virtualization
+    private List<Product> virtualProducts = SampleData.Generate(10_000);
+
+    // example 11 - server-side
+    private readonly List<Product> serverAll = SampleData.Generate(523);
+    private bool serverLoading;
+    private string serverLastRequest = "";
+
+    // example 12 - infinite scrolling
+    // Use a count that is not a multiple of the 40-row batch size so the final batch is short,
+    // letting the grid detect the end without an extra empty fetch.
+    private readonly List<Product> infiniteAll = SampleData.Generate(2_017);
+    private string infiniteLog = "Scroll down to load more…";
+    private int infiniteRequests;
+
+    // example 13 - tree view
+    private readonly List<FileNode> fileRoots = FileSystemData.Build();
+    private BitDataGrid<FileNode>? treeGrid;
+
+    // example 14 - master detail
+    private readonly List<SupplierModel> suppliers = BuildSuppliers();
+
+    // example 15 - row reordering
+    private readonly List<Product> reorderProducts = SampleData.Generate(12);
+    private string? reorderLog;
+
+    // example 16 - cell events
+    private readonly List<Product> cellEventsProducts = SampleData.Generate(40);
+    private string cellEventStatus = "Click, double-click or right-click any cell.";
+
+    // example 17 - cell navigation
+    private readonly List<Product> cellNavProducts = SampleData.Generate(40);
+
+    // example 18 - variable row height
+    private readonly List<Product> variableHeightProducts = SampleData.Generate(40);
+
+    // example 19 - empty state
+    private readonly List<Product> emptyData = SampleData.Generate(25);
+    private readonly List<Product> emptyNone = new();
+    private bool emptyHasData;
+    private List<Product> EmptyCurrent => emptyHasData ? emptyData : emptyNone;
+
+    // example 20 - borders & striping
+    private readonly List<Product> borderStripeProducts = SampleData.Generate(60);
+    private bool bordered = true;
+    private bool striped = true;
+
+    // example 21 - RTL
+    private readonly List<Product> rtlProducts = SampleData.GeneratePersian(60);
+
+    private static string CategoryFa(Category category) => category switch
     {
-        get => _odataSampleNameFilter;
-        set
+        Category.Electronics => "الکترونیک",
+        Category.Books => "کتاب",
+        Category.Clothing => "پوشاک",
+        Category.Home => "خانه",
+        Category.Toys => "اسباب‌بازی",
+        Category.Sports => "ورزش",
+        Category.Grocery => "خواربار",
+        _ => category.ToString()
+    };
+
+
+    protected override Task OnInitAsync()
+    {
+        nextId = editProducts.Max(p => p.Id) + 1;
+        return base.OnInitAsync();
+    }
+
+
+    // ---- editing handlers ----
+    private Product CreateProduct() => new()
+    {
+        Id = nextId++,
+        Name = "New product",
+        Category = Category.Electronics,
+        Price = 0,
+        Stock = 0,
+        Rating = 3,
+        ReleaseDate = DateTime.Today
+    };
+
+    private void OnCreate(Product p) => editStatus = $"Adding new product #{p.Id}…";
+
+    private void OnSave(Product p)
+    {
+        // Match by identifier rather than reference so a distinct instance representing the same product
+        // replaces the existing row instead of being inserted as a duplicate.
+        var index = editProducts.FindIndex(x => x.Id == p.Id);
+        if (index >= 0) editProducts[index] = p;
+        else editProducts.Insert(0, p);
+        editStatus = $"Saved {p.Name} (#{p.Id}).";
+    }
+
+    private void OnDelete(Product p)
+    {
+        // Locate by identifier so deletion still targets the right row when a different instance is passed.
+        var index = editProducts.FindIndex(x => x.Id == p.Id);
+        if (index >= 0) editProducts.RemoveAt(index);
+        editStatus = $"Deleted #{p.Id}.";
+    }
+
+
+    // ---- column spanning helpers ----
+    private int? NameSpan(Product p) => p.Discontinued ? 2 : null;
+    private int? PriceSpan(Product p) => p.Price > 800 ? 2 : null;
+
+
+    // ---- server-side ----
+    private async Task<BitDataGridReadResult<Product>> LoadServerData(BitDataGridReadRequest request)
+    {
+        serverLoading = true;
+        await InvokeAsync(StateHasChanged);
+
+        int total = 0;
+        try
         {
-            _odataSampleNameFilter = value;
-            _ = productsDataGrid.RefreshDataAsync();
+            await Task.Delay(250, request.CancellationToken);
+
+            IEnumerable<Product> query = serverAll;
+
+            foreach (var f in request.Filters)
+            {
+                query = f.ColumnId switch
+                {
+                    // Text columns use the string operators emitted by the grid's text filter editor.
+                    nameof(Product.Name) => query.Where(p => MatchText(p.Name, f)),
+                    nameof(Product.Supplier) => query.Where(p => MatchText(p.Supplier, f)),
+                    // Non-text columns receive a typed value (enum/decimal/int) with a comparison
+                    // operator, so compare against the typed value instead of a substring of ToString().
+                    nameof(Product.Category) => query.Where(p => MatchComparable(p.Category, f)),
+                    nameof(Product.Price) => query.Where(p => MatchComparable(p.Price, f)),
+                    nameof(Product.Stock) => query.Where(p => MatchComparable(p.Stock, f)),
+                    _ => query
+                };
+            }
+
+            IOrderedEnumerable<Product>? ordered = null;
+            foreach (var sort in request.Sorts)
+            {
+                Func<Product, object> key = sort.ColumnId switch
+                {
+                    nameof(Product.Name) => p => p.Name,
+                    nameof(Product.Category) => p => p.Category,
+                    nameof(Product.Supplier) => p => p.Supplier,
+                    nameof(Product.Price) => p => p.Price,
+                    nameof(Product.Stock) => p => p.Stock,
+                    _ => p => p.Id
+                };
+
+                if (ordered is null)
+                {
+                    ordered = sort.Direction == BitDataGridSortDirection.Descending
+                        ? query.OrderByDescending(key)
+                        : query.OrderBy(key);
+                }
+                else
+                {
+                    ordered = sort.Direction == BitDataGridSortDirection.Descending
+                        ? ordered.ThenByDescending(key)
+                        : ordered.ThenBy(key);
+                }
+            }
+            if (ordered is not null) query = ordered;
+
+            var filtered = query.ToList();
+            total = filtered.Count;
+            var items = filtered.Skip(request.Skip).Take(request.Take ?? total).ToList();
+
+            // A superseded request can finish filtering/sorting/paging after a newer one started; bail
+            // out before returning so the grid never receives stale rows for a cancelled load.
+            request.CancellationToken.ThrowIfCancellationRequested();
+
+            return new BitDataGridReadResult<Product>(items, total);
+        }
+        finally
+        {
+            // A superseded request observes a cancelled token; skip writing UI state so a stale load
+            // can't overwrite the fresher request's status. The newer load owns serverLoading.
+            if (!request.CancellationToken.IsCancellationRequested)
+            {
+                serverLastRequest = $"Last request → skip {request.Skip}, take {request.Take}, sorts: {request.Sorts.Count}, filters: {request.Filters.Count}, total: {total}";
+                serverLoading = false;
+                // Ensure the parent re-renders after the load completes, since this runs as a callback.
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
-
-
-    protected override async Task OnInitAsync()
+    // Applies a text-column filter the way the grid's text editor emits it: a string value combined with
+    // one of the string/empty operators. Anything else is treated as "no criteria" so the row matches.
+    private static bool MatchText(string value, BitDataGridFilterDescriptor f)
     {
-        allCountries = _countries.AsQueryable();
+        if (f.Operator is BitDataGridFilterOperator.IsEmpty) return string.IsNullOrEmpty(value);
+        if (f.Operator is BitDataGridFilterOperator.IsNotEmpty) return !string.IsNullOrEmpty(value);
 
-        foodRecallProvider = async req =>
+        var term = f.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(term)) return true;
+
+        return f.Operator switch
         {
-            try
-            {
-                var query = new Dictionary<string, object?>
-                {
-                    { "search", $"recalling_firm:\"{_virtualSampleNameFilter}\"" },
-                    { "skip", req.StartIndex },
-                    { "limit", req.Count }
-                };
-
-                var sort = req.GetSortByProperties().SingleOrDefault();
-
-                if (sort != default)
-                {
-                    var sortByColumnName = sort.PropertyName switch
-                    {
-                        nameof(FoodRecall.ReportDate) => "report_date",
-                        _ => throw new InvalidOperationException()
-                    };
-
-                    query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}");
-                }
-
-                var url = NavigationManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
-
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
-
-                return BitDataGridItemsProviderResult.From(data!.Results!, data!.Meta!.Results!.Total);
-            }
-            catch
-            {
-                return BitDataGridItemsProviderResult.From<FoodRecall>([], 0);
-            }
+            BitDataGridFilterOperator.Contains => value.Contains(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.DoesNotContain => !value.Contains(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.StartsWith => value.StartsWith(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.EndsWith => value.EndsWith(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.Equals => string.Equals(value, term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.NotEquals => !string.Equals(value, term, StringComparison.OrdinalIgnoreCase),
+            _ => true
         };
-
-        productsItemsProvider = async req =>
-        {
-            try
-            {
-                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-
-                var query = new Dictionary<string, object?>()
-                {
-                    { "$top", req.Count ?? 50 },
-                    { "$skip", req.StartIndex }
-                };
-
-                if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
-                {
-                    query.Add("$filter", $"contains(Name,'{_odataSampleNameFilter}')");
-                }
-
-                if (req.GetSortByProperties().Any())
-                {
-                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
-                }
-
-                var url = NavigationManager.GetUriWithQueryParameters("api/Products/GetProducts", query);
-
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
-
-                return BitDataGridItemsProviderResult.From(data!.Items!, data!.TotalCount);
-            }
-            catch
-            {
-                return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
-            }
-        };
-
-        await base.OnInitAsync();
     }
+
+    // Applies a non-text-column filter against the typed value the grid emits (enum/decimal/int) so the
+    // requested equality/range operator is honored instead of a substring match on ToString().
+    private static bool MatchComparable<T>(T value, BitDataGridFilterDescriptor f) where T : IComparable
+    {
+        if (f.Operator is BitDataGridFilterOperator.IsEmpty) return value is null;
+        if (f.Operator is BitDataGridFilterOperator.IsNotEmpty) return value is not null;
+        if (f.Value is null) return true;
+
+        // The grid hands back a value already of the column's type; guard against an unexpected type.
+        if (f.Value is not T typed)
+            return true;
+
+        var cmp = value.CompareTo(typed);
+        return f.Operator switch
+        {
+            BitDataGridFilterOperator.Equals => cmp == 0,
+            BitDataGridFilterOperator.NotEquals => cmp != 0,
+            BitDataGridFilterOperator.GreaterThan => cmp > 0,
+            BitDataGridFilterOperator.GreaterThanOrEqual => cmp >= 0,
+            BitDataGridFilterOperator.LessThan => cmp < 0,
+            BitDataGridFilterOperator.LessThanOrEqual => cmp <= 0,
+            _ => true
+        };
+    }
+
+
+    // ---- infinite scrolling ----
+    private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadRequest request)
+    {
+        await Task.Delay(350, request.CancellationToken);
+
+        IEnumerable<Product> query = infiniteAll;
+
+        IOrderedEnumerable<Product>? ordered = null;
+        foreach (var sort in request.Sorts)
+        {
+            Func<Product, object> key = sort.ColumnId switch
+            {
+                nameof(Product.Name) => p => p.Name,
+                nameof(Product.Category) => p => p.Category,
+                nameof(Product.Supplier) => p => p.Supplier,
+                nameof(Product.Price) => p => p.Price,
+                nameof(Product.Stock) => p => p.Stock,
+                nameof(Product.Rating) => p => p.Rating,
+                _ => p => p.Id
+            };
+
+            if (ordered is null)
+            {
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? query.OrderByDescending(key)
+                    : query.OrderBy(key);
+            }
+            else
+            {
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? ordered.ThenByDescending(key)
+                    : ordered.ThenBy(key);
+            }
+        }
+        if (ordered is not null) query = ordered;
+
+        var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
+
+        // Drop a superseded batch before mutating shared demo state so stale rows aren't logged.
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        infiniteRequests++;
+        var end = request.Skip + batch.Count;
+        infiniteLog = batch.Count == 0
+            ? $"Batch #{infiniteRequests} → no additional rows loaded"
+            : $"Batch #{infiniteRequests} → loaded rows {request.Skip + 1}–{end} ({batch.Count} rows)";
+        await InvokeAsync(StateHasChanged);
+
+        return new BitDataGridReadResult<Product>(batch, 0);
+    }
+
+
+    // ---- tree view ----
+    private async Task ExpandAll() { if (treeGrid is not null) await treeGrid.ExpandAllAsync(); }
+    private async Task CollapseAll() { if (treeGrid is not null) await treeGrid.CollapseAllAsync(); }
+
+
+    // ---- master detail ----
+    private static List<SupplierModel> BuildSuppliers() =>
+        SampleData.Generate(240)
+            .GroupBy(p => p.Supplier)
+            .Select(g => new SupplierModel
+            {
+                Name = g.Key,
+                Products = g.OrderBy(p => p.Name).ToList()
+            })
+            .OrderBy(s => s.Name)
+            .ToList();
+
+
+    // ---- row reordering ----
+    private void OnReorder(BitDataGridRowReorderEventArgs<Product> e)
+    {
+        // FromIndex/ToIndex are null when the bound Items isn't an indexable IList<T>; fall back to "?"
+        // so the log stays readable instead of rendering an empty position.
+        var from = e.FromIndex is int fi ? (fi + 1).ToString() : "?";
+        var to = e.ToIndex is int ti ? (ti + 1).ToString() : "?";
+        reorderLog = $"{e.DraggedItem.Name} moved from #{from} to #{to}";
+    }
+
+
+    // ---- cell events ----
+    private void OnCellClick(BitDataGridCellEventArgs<Product> e)
+        => cellEventStatus = $"Clicked {e.ColumnTitle} = \"{e.Value}\" on {e.Item.Name}";
+
+    private void OnCellDoubleClick(BitDataGridCellEventArgs<Product> e)
+        => cellEventStatus = $"Double-clicked {e.ColumnTitle} on {e.Item.Name}";
+
+    private void OnCellContextMenu(BitDataGridCellEventArgs<Product> e)
+        => cellEventStatus = $"Right-clicked {e.ColumnTitle} on {e.Item.Name} at ({e.Mouse.ClientX}, {e.Mouse.ClientY})";
+
+
+    // ---- variable row height ----
+    private float RowHeight(Product p) => p.Price > 500 ? 64f : 36f;
 }

@@ -1,0 +1,50 @@
+@* Demos: awaitable navigation (NavigateAsync) and the .NET 10 NavigationManager.NotFound() interop.
+   Outcomes are recorded in the scoped DemoState so they're still visible when a navigation left
+   this page and you came Back. *@
+
+@inject IBrouter brouter
+@inject DemoState State
+@inject NavigationManager navManager
+
+<div class="bb-intro">
+    <h1>Awaited navigation outcomes</h1>
+    <p class="bb-subtitle"><code>NavigateAsync</code> tells you how a navigation actually ended.</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Last outcome</h3>
+    <p><strong>@(State.LastOutcome ?? "none yet - try a button below")</strong></p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try one</h3>
+    <ul class="bb-link-list">
+        <li><button class="btn btn-primary" @onclick="@(() => Go("/data"))">→ /data (Succeeded; come Back to read the outcome)</button></li>
+        <li><button class="btn btn-primary" @onclick="@(() => Go("/blocked"))">→ /blocked (guard cancels: Cancelled, you stay here)</button></li>
+        <li><button class="btn btn-primary" @onclick="@(() => Go("/g1"))">→ /g1 (guard may redirect to /403: Redirected)</button></li>
+        <li><button class="btn btn-primary" @onclick="@(() => Go("/no/such/page"))">→ /no/such/page (NotFound, then the 404 redirect)</button></li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> .NET 10 NotFound() interop</h3>
+    <button class="btn btn-primary" @onclick="navManager.NotFound">Call NavigationManager.NotFound()</button>
+    <p class="bb-card-desc">
+        The framework's not-found signal (e.g. "this entity doesn't exist") flows through Brouter:
+        the URL stays put and the router's not-found handling takes over.
+    </p>
+</div>
+
+@code {
+    private async Task Go(string url)
+    {
+        var outcome = await brouter.NavigateAsync(url);
+        State.LastOutcome = outcome.Status switch
+        {
+            BrouterNavigationStatus.Redirected => $"{outcome.Status} → {outcome.RedirectedTo}",
+            BrouterNavigationStatus.Failed => $"{outcome.Status}: {outcome.Exception?.Message}",
+            _ => outcome.Status.ToString(),
+        } + $" (target: {url})";
+        StateHasChanged();
+    }
+}

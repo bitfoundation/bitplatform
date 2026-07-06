@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.Bmotion.Tests.Engine;
 
 [TestClass]
@@ -12,7 +12,7 @@ public class ColorTweenDriverTests
         string? lastValue = null;
         var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear },
             v => lastValue = v);
 
         driver.Tick(0); // t=0 → from color
@@ -26,7 +26,7 @@ public class ColorTweenDriverTests
         string? lastValue = null;
         var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -41,7 +41,7 @@ public class ColorTweenDriverTests
         string? lastValue = null;
         var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -74,7 +74,7 @@ public class ColorTweenDriverTests
         string? lastValue = null;
         var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new BmotionTransitionConfig { Duration = 0.3, Delay = 0.2, Ease = BmotionEasing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Delay = 0.2, Ease = BmEase.Linear },
             v => lastValue = v);
 
         driver.Tick(0);   // seeds startTime = 200
@@ -112,7 +112,7 @@ public class ColorTweenDriverTests
         var log = new List<string>();
         var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear, Repeat = 1 },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmEase.Linear, Repeat = 1 },
             v => log.Add(v));
 
         driver.Tick(0);
@@ -132,9 +132,9 @@ public class ColorTweenDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmotionEasing.Linear,
+                Ease = BmEase.Linear,
                 Repeat = 1,
-                RepeatType = BmotionRepeatType.Mirror,
+                RepeatType = BmRepeatType.Mirror,
             },
             v => lastValue = v);
 
@@ -156,9 +156,9 @@ public class ColorTweenDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmotionEasing.Linear,
+                Ease = BmEase.Linear,
                 Repeat = 1,
-                RepeatType = BmotionRepeatType.Mirror,
+                RepeatType = BmRepeatType.Mirror,
             },
             v => lastValue = v);
 
@@ -177,8 +177,8 @@ public class ColorTweenDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmotionEasing.Linear,
-                RepeatType = BmotionRepeatType.Reverse,
+                Ease = BmEase.Linear,
+                RepeatType = BmRepeatType.Reverse,
             },
             v => lastValue = v);
 
@@ -197,9 +197,9 @@ public class ColorTweenDriverTests
             new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = BmotionEasing.Linear,
+                Ease = BmEase.Linear,
                 Repeat = 1,
-                RepeatType = BmotionRepeatType.Reverse,
+                RepeatType = BmRepeatType.Reverse,
             },
             v => lastValue = v);
 

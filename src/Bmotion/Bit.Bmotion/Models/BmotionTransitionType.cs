@@ -1,7 +1,7 @@
 namespace Bit.Bmotion;
 
 /// <summary>The animation driver (physics or interpolation model) used for a transition.</summary>
-public enum BmotionTransitionType
+internal enum BmotionTransitionType
 {
     /// <summary>Duration- and easing-based interpolation between start and end values.</summary>
     Tween,

@@ -1,4 +1,4 @@
-@page "/scroll"
+﻿@page "/scroll"
 @inject BmotionScrollTracker Scroll
 @implements IAsyncDisposable
 
@@ -26,6 +26,50 @@
 </div>
 
 <div class="demo-section">
+    <h2>Scroll-linked Motion Values</h2>
+    <p>
+        Bind motion values straight to element properties with the <c>Values</c> parameter -
+        changes flush to the DOM every frame <em>without re-rendering the component</em>.
+        Here the scroll progress drives <c>scaleX</c> directly, and a
+        <c>Transform</c>-derived value spins the box a full turn over the page.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:1.25rem;">
+            <div style="background:#111;border-radius:6px;height:8px;overflow:hidden;width:100%">
+                <Bmotion Values="_barValues">
+                    <div style="height:100%;background:linear-gradient(90deg,#6c47ff,#ff4785);transform-origin:0 50%;" />
+                </Bmotion>
+            </div>
+            <Bmotion Values="_boxValues">
+                <div style="width:50px;height:50px;border-radius:8px;background:linear-gradient(135deg,#6c47ff,#ff4785);" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_valuesCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Motion templates</h2>
+    <p>
+        <strong>Bm.Template</strong> composes motion values into a CSS string
+        (motion.dev's <c>useMotionTemplate</c>) and <c>StringValues</c> binds it to any CSS
+        property. Here scroll progress drives a composed <c>filter</c> - hue and blur together.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion StringValues="_filterValue">
+                <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#6c47ff,#ff4785);" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_templateCode" />
+</div>
+
+<div class="demo-section">
     <h2>whileInView</h2>
     <p>
         Use <strong>WhileInView</strong> to animate when the element enters the viewport.
@@ -36,13 +80,13 @@
     {
         var color = i % 2 == 0 ? "#6c47ff" : "#ff4785";
         var idx   = i;
-        <Bmotion Tag="div"
-                Style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")"
-                Initial="@(new BmotionAnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
-                WhileInView="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
-                Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.BackOut })"
+        <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
+                WhileInView="Bm.To(opacity: 1, x: 0)"
+                Transition="Bm.Tween(0.5, BmEase.BackOut)"
                 Once="true">
-            Section @(idx + 1)
+            <div style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")">
+                Section @(idx + 1)
+            </div>
         </Bmotion>
     }
 
@@ -53,11 +97,31 @@
     private double _progressX;
     private double _progressY;
 
+    // Created once (not inline in the markup) so re-renders don't re-subscribe the bindings.
+    private Dictionary<string, BmValue<double>> _barValues = default!;
+    private Dictionary<string, BmValue<double>> _boxValues = default!;
+    private Dictionary<string, BmValue<string>> _filterValue = default!;
+
+    protected override void OnInitialized()
+    {
+        _barValues = new() { ["scaleX"] = Scroll.ProgressYValue };
+        _boxValues = new() { ["rotate"] = Scroll.ProgressYValue.Transform([0, 1], [0, 360]) };
+
+        // Compose two derived values into one CSS string (useMotionTemplate).
+        var hue = Scroll.ProgressYValue.Transform([0, 1], [0, 270]);
+        var blur = Scroll.ProgressYValue.Transform([0, 0.5, 1], [0, 4, 0]);
+        _filterValue = new()
+        {
+            ["filter"] = Bm.Template(
+                () => $"hue-rotate({hue.Value:F0}deg) blur({blur.Value:F1}px)", hue, blur),
+        };
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await Scroll.ObserveAsync(null, info =>
+            await Scroll.ObserveAsync(info =>
             {
                 _progressX = info.ProgressX;
                 _progressY = info.ProgressY;
@@ -67,6 +131,66 @@
     }
 
     public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+
+    private const string _valuesCode = """
+        @inject BmotionScrollTracker Scroll
+
+        <div class="scroll-track">
+            <Bmotion Values="_barValues">
+                <div style="height:100%;transform-origin:0 50%;" />
+            </Bmotion>
+        </div>
+        <Bmotion Values="_boxValues">
+            <div class="box-sm" />
+        </Bmotion>
+
+        @code {
+            private Dictionary<string, BmValue<double>> _barValues = default!;
+            private Dictionary<string, BmValue<double>> _boxValues = default!;
+
+            protected override void OnInitialized()
+            {
+                // Scroll progress drives scaleX directly; a Transform-derived value maps 0–1 → 0–360°.
+                _barValues = new() { ["scaleX"] = Scroll.ProgressYValue };
+                _boxValues = new() { ["rotate"] = Scroll.ProgressYValue.Transform([0, 1], [0, 360]) };
+            }
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
+            }
+        }
+        """;
+
+    private const string _templateCode = """
+        @using Bit.Bmotion
+        @inject BmotionScrollTracker Scroll
+
+        <Bmotion StringValues="_filterValue">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private Dictionary<string, BmValue<string>> _filterValue = default!;
+
+            protected override void OnInitialized()
+            {
+                // Compose two derived values into one CSS string (useMotionTemplate).
+                var hue  = Scroll.ProgressYValue.Transform([0, 1], [0, 270]);
+                var blur = Scroll.ProgressYValue.Transform([0, 0.5, 1], [0, 4, 0]);
+                _filterValue = new()
+                {
+                    ["filter"] = Bm.Template(
+                        () => $"hue-rotate({hue.Value:F0}deg) blur({blur.Value:F1}px)", hue, blur),
+                };
+            }
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
+            }
+        }
+        """;
 
     private const string _scrollTrackCode = """
         @using Bit.Bmotion
@@ -100,7 +224,7 @@
             {
                 if (firstRender)
                 {
-                    await Scroll.ObserveAsync(null, info =>
+                    await Scroll.ObserveAsync(info =>
                     {
                         _progressX = info.ProgressX;
                         _progressY = info.ProgressY;
@@ -128,13 +252,13 @@
             {
                 var color = i % 2 == 0 ? "#6c47ff" : "#ff4785";
                 var idx   = i;
-                <Bmotion Tag="div"
-                        Style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")"
-                        Initial="@(new BmotionAnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
-                        WhileInView="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
-                        Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.BackOut })"
+                <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
+                        WhileInView="Bm.To(opacity: 1, x: 0)"
+                        Transition="Bm.Tween(0.5, BmEase.BackOut)"
                         Once="true">
-                    Section @(idx + 1)
+                    <div style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")">
+                        Section @(idx + 1)
+                    </div>
                 </Bmotion>
             }
         </div>

@@ -3,8 +3,10 @@ using Boilerplate.Server.Shared;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -81,6 +83,8 @@ public static class WebApplicationExtensions
                 ApplyCurrentCultureToResponseHeaders = true
             };
             options.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name);
+            options.RequestCultureProviders.Remove(options.RequestCultureProviders.OfType<AcceptLanguageHeaderRequestCultureProvider>().Single());
+            options.RequestCultureProviders.Add(new AppAcceptLanguageRequestCultureProvider { Options = options });
             options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
             app.UseRequestLocalization(options);
         }

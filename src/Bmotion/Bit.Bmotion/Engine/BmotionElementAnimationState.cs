@@ -70,6 +70,28 @@ internal sealed class BmotionElementAnimationState
 
     public bool HasActiveAnimations => _activeAnims.Count > 0 || _isDragging;
 
+    /// <summary>
+    /// Optional per-frame callback invoked with the CSS declarations flushed this frame
+    /// (the <c>Bmotion.OnUpdate</c> parameter).
+    /// </summary>
+    internal Action<IReadOnlyDictionary<string, string>>? OnFrame;
+
+    // ── Playback clock ────────────────────────────────────────────────────────
+    // Drivers anchor to the timestamps they receive, so pausing / changing speed is implemented
+    // by feeding them a virtual clock that advances at PlaybackRate × real time. Rate 0 = paused
+    // (the clock freezes, drivers hold their current values); rate 2 = twice as fast.
+    private double _clock;
+    private double _lastRealTs = -1;
+
+    /// <summary>Playback rate for this element's animations. 1 = realtime, 0 = paused.</summary>
+    internal double PlaybackRate = 1;
+
+    /// <summary>
+    /// When set (Blazor Server / no synchronous interop), every animation collapses to a
+    /// zero-duration tween so a single flush tick settles the element on its target values.
+    /// </summary>
+    internal bool ForceInstant;
+
     // ═══════════════════════════════════════════════════════════════════════════
     // Tick - called every rAF frame
     // ═══════════════════════════════════════════════════════════════════════════
@@ -83,6 +105,12 @@ internal sealed class BmotionElementAnimationState
 
         if (_isDragging) _transformDirty = true; // drag always refreshes transform
 
+        // Advance the element's virtual playback clock. At rate 1 it tracks the real timestamps
+        // exactly; at rate 0 it freezes (pause); other rates scale elapsed time.
+        if (_lastRealTs < 0) _clock = timestamp;
+        else _clock += (timestamp - _lastRealTs) * PlaybackRate;
+        _lastRealTs = timestamp;
+
         // Advance all drivers. Iterate over a snapshot because driver.Tick can invoke a user
         // OnUpdate callback that re-enters and mutates _activeAnims (e.g. starts/cancels an
         // animation on this same element), which would otherwise corrupt the enumeration.
@@ -94,7 +122,7 @@ internal sealed class BmotionElementAnimationState
             // is still the exact one captured in the snapshot, so a stale driver can't tick and
             // later evict the replacement at the removal step below.
             if (!_activeAnims.TryGetValue(key, out var current) || !ReferenceEquals(current, driver)) continue;
-            if (driver.Tick(timestamp))
+            if (driver.Tick(_clock))
                 (completed ??= new List<string>()).Add(key);
         }
 
@@ -157,6 +185,13 @@ internal sealed class BmotionElementAnimationState
         // kept set while suspended so the pending transform flushes once the FLIP window ends.
         if (!transformSuspended) _transformDirty = false;
         _dirtyProps.Clear();
+
+        if (updates.Count > 0 && OnFrame is { } onFrame)
+        {
+            // Guard the user callback: it runs inside the rAF tick, where an exception would
+            // otherwise evict this element from the engine (see ComputeFrame's fault handling).
+            try { onFrame(updates); } catch { /* user callback failures must not break the loop */ }
+        }
 
         return updates.Count > 0 ? updates : null;
     }
@@ -244,6 +279,12 @@ internal sealed class BmotionElementAnimationState
         {
             if (value == null) continue;
             var perKey = transition?.Properties?.GetValueOrDefault(key) ?? transition ?? new BmotionTransitionConfig();
+            // Blazor Server fallback: no rAF loop exists, so every animation must settle in one
+            // flush tick. Collapse to a zero-duration tween, but keep the (possibly per-key)
+            // OnUpdate callback so motion-value tracking still observes the snap.
+            if (ForceInstant)
+                perKey = new BmotionTransitionConfig
+                    { Type = BmotionTransitionType.Tween, Duration = 0, Delay = 0, OnUpdate = perKey.OnUpdate };
             // Superseding an in-flight driver for this key interrupts any completion batch that
             // owned it (resolves that batch with false once its remaining keys settle).
             CancelProp(key);
@@ -251,11 +292,14 @@ internal sealed class BmotionElementAnimationState
 
             if (TryGetDoubleArray(value, out double[]? doubleFrames))
             {
+                // Bm.Current wildcard frames (NaN) resolve to the element's current value now,
+                // at animation start, so interrupted animations continue from where they are.
+                doubleFrames = ResolveWildcardFrames(key, doubleFrames!);
                 // Keyframe drivers require at least two frames (they build n-1 segments and
                 // divide by n-1 when distributing times). Degenerate arrays would otherwise
                 // throw and (via ComputeFrame) stall the whole loop, so handle them here:
                 //   0 frames -> nothing to do; 1 frame -> snap to that single value.
-                if (doubleFrames!.Length >= 2)
+                if (doubleFrames.Length >= 2)
                     CreateNumericKeyframesDriver(key, doubleFrames, perKey);
                 else if (doubleFrames.Length == 1)
                     CreateNumericDriver(key, doubleFrames[0], perKey);
@@ -273,11 +317,19 @@ internal sealed class BmotionElementAnimationState
                 CreateCssDimensionDriver(key, dimStr, perKey);
             else if (TryGetStringArray(value, out string[]? otherFrames) && otherFrames!.Length > 0)
             {
-                // Non-colour string keyframes (e.g. dimension arrays) have no interpolating driver;
-                // snap to the final frame so the value still lands on its destination.
-                StringValues[key] = otherFrames[^1];
-                NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
-                _dirtyProps.Add(key);
+                // Non-colour string keyframes ("100px" → "50%" arrays, filter sequences, …):
+                // animate through per-segment string mixers when every adjacent pair has a
+                // matching shape; otherwise snap to the final frame so the value still lands.
+                if (otherFrames.Length >= 2 && TryCreateStringKeyframesDriver(key, otherFrames, perKey))
+                {
+                    // driver registered by the helper
+                }
+                else
+                {
+                    StringValues[key] = otherFrames[^1];
+                    NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
+                    _dirtyProps.Add(key);
+                }
             }
             else if (TryConvertToDouble(value, out double numeric))
                 CreateNumericDriver(key, numeric, perKey);
@@ -422,6 +474,28 @@ internal sealed class BmotionElementAnimationState
         foreach (var b in _batches)
             b.Source.TrySetResult(result);
         _batches.Clear();
+    }
+
+    /// <summary>
+    /// Replaces <see cref="Bm.Current"/> wildcard frames (NaN) with the element's current value
+    /// for the property. Returns the original array untouched when no wildcard is present.
+    /// </summary>
+    private double[] ResolveWildcardFrames(string key, double[] frames)
+    {
+        bool hasWildcard = false;
+        foreach (var f in frames)
+            if (double.IsNaN(f)) { hasWildcard = true; break; }
+        if (!hasWildcard) return frames;
+
+        double current = BmotionTransformComposer.IsTransformProp(key)
+            ? Transforms.GetValueOrDefault(key, DefaultTransformValue(key))
+            : NumericValues.GetValueOrDefault(key, DefaultNumericValue(key));
+
+        // Clone: the source array may be caller-owned (or reused by a repeating target).
+        var resolved = (double[])frames.Clone();
+        for (int i = 0; i < resolved.Length; i++)
+            if (double.IsNaN(resolved[i])) resolved[i] = current;
+        return resolved;
     }
 
     private static bool TryConvertToDouble(object value, out double result)
@@ -583,6 +657,33 @@ internal sealed class BmotionElementAnimationState
         _activeAnims[key] = new BmotionColorKeyframesDriver(frames, config, v => ApplyString(key, v));
     }
 
+    /// <summary>
+    /// Registers a keyframes driver for generic string frames when every adjacent pair is
+    /// mixable. The numeric keyframes driver runs an index track (0, 1, …, n-1) - inheriting
+    /// times, per-segment eases and repeat behavior - and each in-between index value selects a
+    /// segment mixer and its local progress.
+    /// </summary>
+    private bool TryCreateStringKeyframesDriver(string key, string[] frames, BmotionTransitionConfig config)
+    {
+        var mixes = new Func<double, string>[frames.Length - 1];
+        for (int i = 0; i < frames.Length - 1; i++)
+        {
+            if (BmotionStringMixer.TryCreateMix(frames[i], frames[i + 1]) is not { } mix)
+                return false;
+            mixes[i] = mix;
+        }
+
+        var indexTrack = new double[frames.Length];
+        for (int i = 0; i < frames.Length; i++) indexTrack[i] = i;
+
+        _activeAnims[key] = new BmotionNumericKeyframesDriver(indexTrack, config, v =>
+        {
+            int seg = Math.Clamp((int)Math.Floor(v), 0, mixes.Length - 1);
+            ApplyString(key, mixes[seg](v - seg));
+        });
+        return true;
+    }
+
     // ── Value apply callbacks (mark dirty) ────────────────────────────────────
 
     private void ApplyTransform(string key, double value)
@@ -663,8 +764,7 @@ internal sealed class BmotionElementAnimationState
 
     private void CreateCssDimensionDriver(string key, string toValue, BmotionTransitionConfig config)
     {
-        // If both from and to are the same unit, interpolate numerically.
-        // Otherwise just snap to the new value immediately.
+        // Simple same-unit dimensions ("100px" → "240px") interpolate numerically.
         string fromRaw = StringValues.GetValueOrDefault(key, "");
         if (TryParseCssDimension(toValue, out double toNum, out string toUnit) &&
             TryParseCssDimension(fromRaw, out double fromNum, out string fromUnit) &&
@@ -673,14 +773,31 @@ internal sealed class BmotionElementAnimationState
             _activeAnims[key] = new BmotionTweenDriver(fromNum, toNum, config,
                 v => ApplyString(key, BmotionCssFormat.Num(v) + toUnit));
         }
+        // Complex strings with a matching shape ("blur(0px)" → "blur(8px)", multi-part shadows,
+        // matching gradients) interpolate token-wise via the string mixer, driven by an eased /
+        // sprung progress track.
+        else if (BmotionStringMixer.TryCreateMix(fromRaw, toValue) is { } mix)
+        {
+            _activeAnims[key] = CreateProgressDriver(config, p => ApplyString(key, mix(p)));
+        }
         else
         {
-            // Snap and mark dirty - no interpolation possible across different units.
+            // Snap and mark dirty - no interpolation possible between these shapes.
             StringValues[key] = toValue;
             NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
             _dirtyProps.Add(key);
         }
     }
+
+    /// <summary>
+    /// A 0 → 1 progress driver used to animate mixed (complex string) values: springs keep their
+    /// physics (overshoot flows into the mixer's number extrapolation); everything else tweens.
+    /// Inertia has no meaningful string semantics, so it also falls back to a tween.
+    /// </summary>
+    private IBmotionAnimationDriver CreateProgressDriver(BmotionTransitionConfig config, Action<double> apply)
+        => config.Type == BmotionTransitionType.Spring
+            ? new BmotionSpringDriver(0, 1, config, apply)
+            : new BmotionTweenDriver(0, 1, config, apply);
 
     private static bool TryParseCssDimension(string value, out double number, out string unit)
     {
@@ -711,4 +828,205 @@ internal sealed class BmotionElementAnimationState
     }
 
     private sealed record GestureLayer(Dictionary<string, object?> Values, BmotionTransitionConfig? Transition);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // WAAPI (compositor) offload bookkeeping
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// A compositor-offloaded animation the browser plays via the Web Animations API.
+    /// The engine keeps this record so it can compute the element's current values (and
+    /// velocity) at any moment WITHOUT reading the DOM - the sample table is the same
+    /// curve the browser is playing.
+    /// </summary>
+    internal sealed class WaapiPlan
+    {
+        public required int Token { get; init; }
+        public required long StartMs { get; init; }         // Environment.TickCount64 at start
+        public required double DelayMs { get; init; }
+        public required double DurationMs { get; init; }    // one iteration
+        public required double[] Progress { get; init; }    // eased progress samples, uniform over DurationMs
+        public required Dictionary<string, (double From, double To)> Values { get; init; }
+        public required int Iterations { get; init; }       // -1 = infinite
+        public required bool Mirror { get; init; }          // alternate direction per iteration
+
+        public bool AnimatesTransform
+        {
+            get
+            {
+                foreach (var key in Values.Keys)
+                    if (BmotionTransformComposer.IsTransformProp(key)) return true;
+                return false;
+            }
+        }
+
+        /// <summary>Eased progress (may exceed [0,1] for springs) and velocity factor at elapsed wall time.</summary>
+        public (double Progress, double VelocityPerMs) SampleAt(long nowMs)
+        {
+            double elapsed = nowMs - StartMs - DelayMs;
+            if (elapsed <= 0) return (Progress[0], 0);
+
+            double cycles = elapsed / Math.Max(DurationMs, 1);
+            if (Iterations >= 0 && cycles >= Iterations + 1)
+                return (EndProgress, 0); // finished
+
+            double local = cycles - Math.Floor(cycles);
+            bool reversed = Mirror && ((long)Math.Floor(cycles) % 2 == 1);
+            if (reversed) local = 1 - local;
+
+            double p = Sample(local);
+            // Central-difference velocity in progress-per-ms (sign flips on mirrored passes).
+            const double eps = 0.001;
+            double v = (Sample(Math.Min(local + eps, 1)) - Sample(Math.Max(local - eps, 0)))
+                       / (2 * eps * Math.Max(DurationMs, 1));
+            if (reversed) v = -v;
+            return (p, v);
+        }
+
+        private double EndProgress => Mirror && Iterations >= 0 && Iterations % 2 == 1 ? Progress[0] : Progress[^1];
+
+        private double Sample(double local)
+        {
+            if (Progress.Length == 1) return Progress[0];
+            double pos = Math.Clamp(local, 0, 1) * (Progress.Length - 1);
+            int i = (int)pos;
+            if (i >= Progress.Length - 1) return Progress[^1];
+            double frac = pos - i;
+            return Progress[i] + (Progress[i + 1] - Progress[i]) * frac;
+        }
+    }
+
+    private readonly List<WaapiPlan> _waapiPlans = new();
+
+    internal bool HasWaapiPlans => _waapiPlans.Count > 0;
+
+    internal void AddWaapiPlan(WaapiPlan plan)
+    {
+        // Starting a compositor animation supersedes any rAF drivers on the same keys.
+        foreach (var key in plan.Values.Keys)
+            CancelProp(key);
+        _waapiPlans.Add(plan);
+    }
+
+    /// <summary>True when any active rAF driver animates a transform component.</summary>
+    internal bool HasActiveTransformDriver()
+    {
+        foreach (var key in _activeAnims.Keys)
+            if (BmotionTransformComposer.IsTransformProp(key)) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Realizes (writes current sampled values into state, marks dirty) and removes every WAAPI
+    /// plan that overlaps <paramref name="keys"/>. Because <c>transform</c> is a single CSS
+    /// property, a plan touching any transform component overlaps a key set touching any other.
+    /// Pass <c>null</c> to realize all plans. Returns the removed plans' tokens (for JS cancel).
+    /// </summary>
+    internal List<int>? RealizeWaapiPlans(IReadOnlyCollection<string>? keys)
+    {
+        if (_waapiPlans.Count == 0) return null;
+
+        bool keysTouchTransform = false;
+        if (keys != null)
+            foreach (var key in keys)
+                if (BmotionTransformComposer.IsTransformProp(key)) { keysTouchTransform = true; break; }
+
+        List<int>? tokens = null;
+        long now = Environment.TickCount64;
+        for (int i = _waapiPlans.Count - 1; i >= 0; i--)
+        {
+            var plan = _waapiPlans[i];
+            bool overlaps = keys == null
+                || (keysTouchTransform && plan.AnimatesTransform)
+                || PlanTouchesAny(plan, keys);
+            if (!overlaps) continue;
+
+            RealizePlanValues(plan, now);
+            _waapiPlans.RemoveAt(i);
+            (tokens ??= new List<int>()).Add(plan.Token);
+        }
+        return tokens;
+
+        static bool PlanTouchesAny(WaapiPlan plan, IReadOnlyCollection<string> keys)
+        {
+            foreach (var key in keys)
+                if (plan.Values.ContainsKey(key)) return true;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Snaps every WAAPI plan to its target values (used by <c>Complete</c>) and removes them.
+    /// Returns the removed plans' tokens (for JS cancellation), or null when none existed.
+    /// </summary>
+    internal List<int>? CompleteWaapiPlans()
+    {
+        if (_waapiPlans.Count == 0) return null;
+        var tokens = new List<int>(_waapiPlans.Count);
+        foreach (var plan in _waapiPlans)
+        {
+            foreach (var (key, (_, to)) in plan.Values)
+                WriteRealizedValue(key, to, markDirty: true);
+            tokens.Add(plan.Token);
+        }
+        _waapiPlans.Clear();
+        return tokens;
+    }
+
+    /// <summary>
+    /// Completes a WAAPI plan that finished naturally: state settles on the target values.
+    /// Returns false when the plan is gone already (superseded by an interruption).
+    /// </summary>
+    internal bool TryCompleteWaapiPlan(int token)
+    {
+        for (int i = 0; i < _waapiPlans.Count; i++)
+        {
+            if (_waapiPlans[i].Token != token) continue;
+            var plan = _waapiPlans[i];
+            _waapiPlans.RemoveAt(i);
+            foreach (var (key, (_, to)) in plan.Values)
+                WriteRealizedValue(key, to, markDirty: false); // commitStyles already wrote the DOM
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>Removes a plan realized at its current values (used when playback failed/cancelled).</summary>
+    internal bool TryRealizeWaapiPlan(int token, out double elapsedMs)
+    {
+        elapsedMs = 0;
+        for (int i = 0; i < _waapiPlans.Count; i++)
+        {
+            if (_waapiPlans[i].Token != token) continue;
+            var plan = _waapiPlans[i];
+            long now = Environment.TickCount64;
+            elapsedMs = now - plan.StartMs;
+            RealizePlanValues(plan, now);
+            _waapiPlans.RemoveAt(i);
+            return true;
+        }
+        return false;
+    }
+
+    private void RealizePlanValues(WaapiPlan plan, long nowMs)
+    {
+        var (progress, _) = plan.SampleAt(nowMs);
+        foreach (var (key, (from, to)) in plan.Values)
+            WriteRealizedValue(key, from + (to - from) * progress, markDirty: true);
+    }
+
+    private void WriteRealizedValue(string key, double value, bool markDirty)
+    {
+        if (BmotionTransformComposer.IsTransformProp(key))
+        {
+            Transforms[key] = value;
+            if (markDirty) _transformDirty = true;
+        }
+        else
+        {
+            NumericValues[key] = value;
+            StringValues.Remove(key);
+            if (markDirty) _dirtyProps.Add(key);
+        }
+    }
 }

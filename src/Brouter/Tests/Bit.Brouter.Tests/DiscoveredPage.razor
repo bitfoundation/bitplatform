@@ -1,0 +1,12 @@
+@page "/discovered/{id:int}"
+@using Microsoft.AspNetCore.Components
+
+<div data-testid="discovered">id:@Id q:@Q</div>
+
+@code {
+    // Conventional Blazor binding: route parameter -> [Parameter] property by name.
+    [Parameter] public int Id { get; set; }
+
+    // Conventional Blazor binding: query value -> [SupplyParameterFromQuery] property.
+    [Parameter, SupplyParameterFromQuery] public string? Q { get; set; }
+}

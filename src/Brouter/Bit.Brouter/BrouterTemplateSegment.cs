@@ -20,7 +20,7 @@ internal class BrouterTemplateSegment
 
     public BrouterRouteConstraintBinding[] Constraints { get; }
 
-    public BrouterTemplateSegment(string template, string segment, bool isParameter)
+    public BrouterTemplateSegment(string template, string segment, bool isParameter, BrouterConstraintRegistry? constraints = null)
     {
         IsParameter = isParameter;
 
@@ -71,7 +71,7 @@ internal class BrouterTemplateSegment
 
             Value = paramName;
             Constraints = rest.Split(':')
-                              .Select(c => new BrouterRouteConstraintBinding(c, BrouterRouteConstraint.Resolve(template, segment, c)))
+                              .Select(c => new BrouterRouteConstraintBinding(c, BrouterRouteConstraint.Resolve(template, segment, c, constraints)))
                               .ToArray();
         }
 

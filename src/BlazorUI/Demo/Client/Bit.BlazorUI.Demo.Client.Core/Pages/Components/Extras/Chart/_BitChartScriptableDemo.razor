@@ -1,0 +1,21 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Color by sign" RazorCode="@bySignRazorCode" CsharpCode="@bySignCsharpCode" Id="scriptable-by-sign">
+    <div class="example-desc">Colors, point radius and point styles can be computed per data element from a context. Here bars turn red when the value is negative.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BySign()" Options="_noLegend" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Color by threshold" RazorCode="@byThresholdRazorCode" CsharpCode="@byThresholdCsharpCode" Id="scriptable-by-threshold">
+    <div class="example-desc">Points above 75 are highlighted with a different color and a larger radius.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="ByThreshold()" Options="_noLegend" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Radius by value" RazorCode="@radiusByValueRazorCode" CsharpCode="@radiusByValueCsharpCode" Id="scriptable-radius-by-value">
+    <div class="example-desc">The point radius scales with the value via <code>PointRadiusFn</code>.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="RadiusByValue()" Options="_noLegend" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Style by parity" RazorCode="@styleByParityRazorCode" CsharpCode="@styleByParityCsharpCode" Id="scriptable-style-by-parity">
+    <div class="example-desc">Alternating point styles chosen per index via <code>PointStyleFn</code>.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="StyleByParity()" Options="_noLegend" /></div></div>
+</DemoExample>

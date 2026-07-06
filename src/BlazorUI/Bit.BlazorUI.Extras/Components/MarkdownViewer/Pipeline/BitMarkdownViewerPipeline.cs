@@ -43,13 +43,16 @@ public sealed class BitMarkdownViewerPipeline
     internal IReadOnlySet<char> DelimiterChars { get; }
 
     /// <summary>Parses Markdown source into an AST, applying all AST processors.</summary>
-    public BitMarkdownViewerDocumentNode Parse(string? markdown)
+    public BitMarkdownViewerDocumentNode Parse(string? markdown) => Parse(markdown, BitMarkdownViewerParseOptions.Default);
+
+    /// <summary>Parses Markdown source into an AST using the supplied safety limits.</summary>
+    internal BitMarkdownViewerDocumentNode Parse(string? markdown, BitMarkdownViewerParseOptions options)
     {
         var document = new BitMarkdownViewerDocumentNode();
         if (string.IsNullOrEmpty(markdown))
             return document;
 
-        document.Children.AddRange(ParseBlocks(SplitLines(markdown)));
+        document.Children.AddRange(ParseBlocks(SplitLines(markdown), options, 0));
 
         foreach (var processor in AstProcessors)
             processor.Process(document, this);
@@ -57,11 +60,28 @@ public sealed class BitMarkdownViewerPipeline
         return document;
     }
 
-    internal List<BitMarkdownViewerMarkdownNode> ParseBlocks(IReadOnlyList<string> lines)
-        => new BitMarkdownViewerBlockProcessor(this, lines).Run();
+    internal List<BitMarkdownViewerMarkdownNode> ParseBlocks(IReadOnlyList<string> lines, BitMarkdownViewerParseOptions options, int depth)
+    {
+        // Depth guard: stop recursing into ever-deeper nested blocks and instead keep
+        // the remaining lines as a single plain-text paragraph. This caps recursion so
+        // hostile input (e.g. ">>>>...") cannot trigger a StackOverflowException.
+        if (depth > options.MaxDepth)
+        {
+            var para = new BitMarkdownViewerParagraphNode();
+            para.Inlines.Add(new BitMarkdownViewerTextNode(string.Join("\n", lines)));
+            return new List<BitMarkdownViewerMarkdownNode> { para };
+        }
 
-    internal List<BitMarkdownViewerMarkdownNode> ParseInlines(string text)
-        => new BitMarkdownViewerInlineProcessor(this).Parse(text);
+        return new BitMarkdownViewerBlockProcessor(this, lines, options, depth).Run();
+    }
+
+    internal List<BitMarkdownViewerMarkdownNode> ParseInlines(string text, BitMarkdownViewerParseOptions options, int depth)
+    {
+        if (depth > options.MaxDepth)
+            return new List<BitMarkdownViewerMarkdownNode> { new BitMarkdownViewerTextNode(text) };
+
+        return new BitMarkdownViewerInlineProcessor(this, options, depth).Parse(text);
+    }
 
     /// <summary>Creates a renderer bound to this pipeline's node renderers.</summary>
     public BitMarkdownViewerMarkdownRenderer CreateRenderer() => new(Renderers);

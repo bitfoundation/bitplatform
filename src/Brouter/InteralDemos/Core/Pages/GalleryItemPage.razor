@@ -1,0 +1,41 @@
+@* Detail page of the View Transitions gallery. The hero re-declares the clicked tile's
+   view-transition-name, completing the shared-element morph (see GalleryPage). *@
+
+@if (Item is null)
+{
+    <div class="bb-empty">
+        <p style="margin: 0 0 .75rem;">No such gallery item.</p>
+        <BrouterLink Href="/gallery" class="btn btn-primary">Back to the gallery</BrouterLink>
+    </div>
+}
+else
+{
+    <div class="bb-gallery-hero" style="@($"background: {Item.Gradient}; view-transition-name: bb-item-{Item.Id};")">
+        <span class="bb-gallery-hero-emoji">@Item.Emoji</span>
+        <h1 class="bb-gallery-hero-name" style="@($"view-transition-name: bb-item-name-{Item.Id};")">@Item.Name</h1>
+    </div>
+
+    <div class="bb-card" style="margin-top: 1rem;">
+        <p style="margin: 0;">@Item.Blurb</p>
+    </div>
+
+    <div class="bb-gallery-nav">
+        <BrouterLink Href="/gallery" class="btn btn-primary">← All items (morphs back)</BrouterLink>
+        @if (Prev is not null)
+        {
+            <BrouterLink Href="@($"/gallery/{Prev.Id}")" class="btn btn-primary">@Prev.Emoji @Prev.Name</BrouterLink>
+        }
+        @if (Next is not null)
+        {
+            <BrouterLink Href="@($"/gallery/{Next.Id}")" class="btn btn-primary">@Next.Emoji @Next.Name</BrouterLink>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, BrouterParameter] public int Id { get; set; }
+
+    private GalleryItem? Item => GalleryCatalog.Find(Id);
+    private GalleryItem? Prev => GalleryCatalog.Find(Id - 1);
+    private GalleryItem? Next => GalleryCatalog.Find(Id + 1);
+}

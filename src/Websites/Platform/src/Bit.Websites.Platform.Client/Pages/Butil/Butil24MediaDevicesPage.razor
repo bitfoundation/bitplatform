@@ -1,0 +1,115 @@
+@page "/butil/mediaDevices"
+@inherits AppComponentBase
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageOutlet Url="butil/mediaDevices"
+            Title="MediaDevices - Butil"
+            Description="MediaDevices class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>MediaDevices</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the MediaDevices class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            Inject the <b>MediaDevices</b> class, enumerate the available cameras and microphones,
+            request a live stream, and attach it to a <b>video</b> element:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.MediaDevices mediaDevices
+
+@@code {
+    var devices = await mediaDevices.EnumerateDevices();
+    var stream  = await mediaDevices.GetUserMedia(audio: true, video: true);
+    await stream.AttachTo(videoElement);
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            The <b>MediaDevices</b> class wraps
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices" target="_blank" rel="noopener noreferrer">navigator.mediaDevices</a>.
+            <br /><br />
+
+            <b>IsSupported</b>: <br />
+            Returns whether <b>navigator.mediaDevices</b> is available in the current browser
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@isSupportedExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="IsSupported">IsSupported</BitButton>
+                        <br /><br />
+                        <div>Is supported: @isSupported</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>EnumerateDevices</b>: <br />
+            Lists all input/output media devices. Labels may be empty until the user has granted
+            permission to a matching input
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/enumerateDevices" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@enumerateDevicesExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="EnumerateDevices">EnumerateDevices</BitButton>
+                        <br /><br />
+                        <div>Devices: @devices</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetUserMedia / AttachTo / SetEnabled</b>: <br />
+            Requests camera and/or microphone access and returns a <b>MediaStreamHandle</b> (or null when
+            the user denies the prompt). Attach the stream to a <b>video</b> element with <b>AttachTo</b>,
+            pause or resume its tracks with <b>SetEnabled</b>, and stop the stream by disposing the handle
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@getUserMediaExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitCheckbox @bind-Value="requestAudio" Label="Audio" />
+                        <BitCheckbox @bind-Value="requestVideo" Label="Video" />
+                        <br />
+                        <BitButton OnClick="StartStream">Start stream</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="ToggleEnabled">Toggle enabled</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StopStream">Stop stream</BitButton>
+                        <br /><br />
+                        <video @ref="preview" autoplay playsinline muted
+                               style="max-width:100%;border-radius:0.5rem;background:#111;min-height:7.5rem"></video>
+                        <br /><br />
+                        <div>@streamResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Geolocation" PrevUrl="/butil/geolocation" Next="Permissions" NextUrl="/butil/permissions" />

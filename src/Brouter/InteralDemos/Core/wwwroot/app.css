@@ -417,3 +417,66 @@ button.btn-outline:hover {
     color: var(--bb-text-muted);
     margin: .5rem 0 1.25rem;
 }
+
+/* ---------- View Transitions (o.ViewTransitions = true) ----------
+
+   No custom ::view-transition rules here on purpose: the animations you see (direction-aware
+   glide on push, mirrored on Back/Forward, quick fade on replace, springy shared-element morphs)
+   are Bit.Brouter's BUILT-IN defaults (o.ViewTransitionDefaultAnimations, on by default).
+   They live in the CSS layer "bit-brouter", so any unlayered ::view-transition-* rule added in
+   this file would override them automatically - e.g.:
+
+       ::view-transition-new(root) { animation: 400ms ease both my-fancy-entrance; }
+*/
+
+/* ---------- View Transitions gallery (GalleryPage / GalleryItemPage) ---------- */
+
+.bb-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.bb-gallery-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--bb-radius);
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.bb-gallery-tile:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .25);
+}
+
+.bb-gallery-emoji { font-size: 2.2rem; }
+.bb-gallery-name { font-weight: 600; }
+
+.bb-gallery-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 260px;
+    border-radius: var(--bb-radius);
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .35);
+}
+
+.bb-gallery-hero-emoji { font-size: 4.5rem; }
+.bb-gallery-hero-name { margin: 0; font-size: 2.2rem; }
+
+.bb-gallery-nav {
+    display: flex;
+    gap: .5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}

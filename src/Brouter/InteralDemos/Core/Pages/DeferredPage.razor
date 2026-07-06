@@ -1,0 +1,42 @@
+@* Demos: deferred (streamed) data with <BrouterAwait>. The route's loader (see AppRouter) awaits
+   only the fast summary; the slow details are returned as an UNAWAITED task, so the page reveals
+   immediately and the details stream in ~1.5s later. *@
+
+<div class="bb-intro">
+    <h1>Deferred data</h1>
+    <p class="bb-subtitle">Critical data blocks navigation; slow data streams in via <code>&lt;BrouterAwait&gt;</code>.</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Summary (from the loader, blocking)</h3>
+    <p>@Report?.Summary</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Details (deferred)</h3>
+    @if (Report is not null)
+    {
+        <BrouterAwait Task="@Report.SlowDetails">
+            <Pending>
+                <p><em>Crunching the slow numbers…</em></p>
+            </Pending>
+            <Resolved Context="details">
+                <ul class="bb-link-list">
+                    @foreach (var line in details)
+                    {
+                        <li>@line</li>
+                    }
+                </ul>
+            </Resolved>
+            <Error Context="ex">
+                <p style="color: var(--bb-danger);">Details unavailable: @ex.Message</p>
+            </Error>
+        </BrouterAwait>
+    }
+</div>
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+
+    private DeferredReport? Report => Data?.GetOrDefault<DeferredReport>();
+}

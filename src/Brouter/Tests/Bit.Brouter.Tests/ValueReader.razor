@@ -1,5 +1,5 @@
-<div data-testid="val">@(Data?.ToString())</div>
+<div data-testid="val">@(Data?.GetOrDefault<string>())</div>
 
 @code {
-    [CascadingParameter(Name = "RouteData")] public object? Data { get; set; }
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
 }

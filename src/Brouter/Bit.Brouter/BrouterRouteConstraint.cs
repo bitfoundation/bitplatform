@@ -2,7 +2,7 @@ namespace Bit.Brouter;
 
 /// <summary>
 /// Base type for parameter constraints. Custom constraints can be registered via
-/// <see cref="BrouterConstraints.Register"/>.
+/// <see cref="BrouterConstraintRegistry.Register"/> (on <see cref="BrouterOptions.Constraints"/>).
 /// </summary>
 /// <remarks>
 /// A single <see cref="BrouterRouteConstraint"/> instance is registered per constraint name and
@@ -15,12 +15,16 @@ public abstract class BrouterRouteConstraint
     public abstract bool TryMatch(string pathSegment, out object? convertedValue);
 
 
-    internal static BrouterRouteConstraint Resolve(string template, string segment, string constraint)
+    internal static BrouterRouteConstraint Resolve(string template, string segment, string constraint, BrouterConstraintRegistry? registry)
     {
         if (string.IsNullOrEmpty(constraint))
             throw new ArgumentException($"Malformed segment '{segment}' in route '{template}' contains an empty constraint.");
 
-        return BrouterConstraints.Create(constraint)
+        // Prefer the per-container registry (custom constraints + built-ins). When no registry is
+        // threaded (e.g. a direct ParseTemplate call in tests), resolve against the shared built-ins.
+        var resolved = registry is not null ? registry.Create(constraint) : BrouterConstraintRegistry.CreateBuiltIn(constraint);
+
+        return resolved
             ?? throw new ArgumentException($"Unsupported constraint '{constraint}' in route '{template}'.");
     }
 }

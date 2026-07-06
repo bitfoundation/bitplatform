@@ -1,0 +1,180 @@
+@page "/butil/device"
+@inherits AppComponentBase
+@inject Bit.Butil.Battery battery
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.WakeLock wakeLock
+@inject Bit.Butil.IdleDetector idleDetector
+
+<PageOutlet Url="butil/device"
+            Title="Device - Butil"
+            Description="Device sensors (Battery, Network, WakeLock, IdleDetector) of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Device</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the device sensor classes of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            The device sensor features are spread across a few classes. Inject the ones you need and use them like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Battery battery
+@@inject Bit.Butil.NetworkInformation networkInformation
+@@inject Bit.Butil.WakeLock wakeLock
+@@inject Bit.Butil.IdleDetector idleDetector
+
+@@code {
+    var status = await battery.GetStatus();
+    var net = await networkInformation.GetStatus();
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Battery</BitText>
+        <div class="section-card-txt">
+            The <b>Battery</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API" target="_blank" rel="noopener noreferrer">Battery Status API</a>.
+            <br /><br />
+
+            <b>IsSupported</b>: <br />
+            Returns whether the Battery Status API is available in the current browser.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@batterySupportedExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="BatterySupported">IsSupported</BitButton>
+                        <br /><br />
+                        <div>Is supported: @batterySupported</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetStatus</b>: <br />
+            Returns a snapshot of the battery charging state and level
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/BatteryManager" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@batteryStatusExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="BatteryStatus">GetStatus</BitButton>
+                        <br /><br />
+                        <div>Battery: @batteryStatus</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>NetworkInformation</BitText>
+        <div class="section-card-txt">
+            The <b>NetworkInformation</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation" target="_blank" rel="noopener noreferrer">Network Information API</a>
+            plus the always-available <b>navigator.onLine</b> flag.
+            <br /><br />
+
+            <b>GetStatus</b>: <br />
+            Returns the online flag, effective connection type, downlink and round-trip-time estimates.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@networkStatusExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="NetworkStatus">GetStatus</BitButton>
+                        <br /><br />
+                        <div>Network: @networkStatus</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>WakeLock</BitText>
+        <div class="section-card-txt">
+            The <b>WakeLock</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API" target="_blank" rel="noopener noreferrer">Screen Wake Lock API</a>,
+            which prevents the screen from dimming while the app is active.
+            <br /><br />
+
+            <b>Request / Release</b>: <br />
+            Acquires or releases a screen wake lock. <b>RequestPersistent</b> keeps the lock re-acquired automatically when the page becomes visible again.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@wakeLockExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="AcquireWakeLock">Request</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="ReleaseWakeLock">Release</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="AcquirePersistentWakeLock">RequestPersistent</BitButton>
+                        <br /><br />
+                        <div>@wakeLockResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>IdleDetector</BitText>
+        <div class="section-card-txt">
+            The <b>IdleDetector</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/IdleDetector" target="_blank" rel="noopener noreferrer">Idle Detection API</a>
+            (Chromium-based browsers, requires permission).
+            <br /><br />
+
+            <b>RequestPermission / Start</b>: <br />
+            Requests the idle-detection permission and starts watching the user/screen idle state until it is stopped.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@idleDetectorExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitNumberField @bind-Value="idleThreshold" Min="60" Label="Threshold (seconds, min 60)" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="RequestIdlePermission">RequestPermission</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StartIdleWatch">Start</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StopIdleWatch">Stop</BitButton>
+                        <br /><br />
+                        <div>Permission: @idlePermission</div>
+                        <div>State: @idleState</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="UserAgent" PrevUrl="/butil/userAgent" Next="Geolocation" NextUrl="/butil/geolocation" />

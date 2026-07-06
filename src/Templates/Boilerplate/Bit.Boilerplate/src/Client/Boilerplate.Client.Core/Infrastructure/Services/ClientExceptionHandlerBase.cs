@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
-public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandler, IExceptionHandler
+public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandler
 {
     [AutoInject] protected readonly PubSubService PubSubService = default!;
     [AutoInject] protected readonly SnackBarService SnackBarService = default!;
@@ -92,4 +92,24 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
             exception is OperationCanceledException ||
             exception is TimeoutException || base.IgnoreException(exception);
     }
+}
+
+public enum ExceptionDisplayKind
+{
+    /// <summary>
+    /// No error message is shown to the user.
+    /// </summary>
+    None,
+    /// <summary>
+    /// Requires the user to acknowledge the error (e.g., by tapping "OK").
+    /// </summary>
+    Interrupting,
+    /// <summary>
+    /// Shows an auto-dismissed message (e.g., a snack bar)
+    /// </summary>
+    NonInterrupting,
+    /// <summary>
+    /// Automatically selects the exception display type based on the exception type. <see cref="ClientExceptionHandlerBase.GetDisplayKind(Exception)"/>
+    /// </summary>
+    Default
 }

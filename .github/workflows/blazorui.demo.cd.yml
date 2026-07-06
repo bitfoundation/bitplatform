@@ -19,17 +19,17 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
        
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
@@ -52,7 +52,7 @@ jobs:
       run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" -o server
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: BlazorUIDemo
         path: server
@@ -65,12 +65,12 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src\global.json
 
@@ -79,7 +79,7 @@ jobs:
         node-version: 24
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\appsettings.json'
       env:
@@ -97,7 +97,7 @@ jobs:
           dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: WinBlazorUIDemo
         path: src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Releases
@@ -109,12 +109,12 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
      
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -123,14 +123,14 @@ jobs:
         node-version: 24
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/'
           fileName: 'BitBlazorUIDemo.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
@@ -149,7 +149,7 @@ jobs:
       run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: android-bundle
         path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.*
@@ -161,12 +161,12 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
      
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
@@ -179,7 +179,7 @@ jobs:
         node-version: 24
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
@@ -189,13 +189,13 @@ jobs:
       run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v7
+      uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
       with:
         p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v6
+      uses: Apple-Actions/download-provisioning-profiles@c62019de00bb4395ed414e4a17c98f4e279636de # v6.0.0
       with:
         bundle-id: 'com.bitplatform.BlazorUI.Demo'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
@@ -209,7 +209,7 @@ jobs:
       run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-ios
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ios-bundle
         path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa

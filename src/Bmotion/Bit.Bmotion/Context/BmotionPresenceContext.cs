@@ -3,12 +3,18 @@ namespace Bit.Bmotion;
 /// <summary>
 /// Cascaded by <see cref="BmotionAnimatePresence"/> to signal exit state to child Bmotion components.
 /// </summary>
-public class BmotionPresenceContext
+internal class BmotionPresenceContext
 {
     private readonly List<Bmotion> _children = new();
 
     /// <summary>True while the children are playing their exit animation.</summary>
     public bool IsExiting { get; internal set; }
+
+    /// <summary>
+    /// When true, exiting children pop out of the layout flow (position: absolute at their
+    /// current spot) before playing their exit, so siblings reflow immediately.
+    /// </summary>
+    public bool PopLayout { get; internal set; }
 
     internal void Register(Bmotion child)
     {

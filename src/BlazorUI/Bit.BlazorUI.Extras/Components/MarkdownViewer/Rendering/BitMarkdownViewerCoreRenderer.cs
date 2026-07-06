@@ -105,6 +105,8 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
                 b.AddAttribute(21, "alt", img.Alt);
                 if (!string.IsNullOrEmpty(img.Title))
                     b.AddAttribute(22, "title", img.Title);
+                // Never leak the (possibly token-bearing) page URL to the image host.
+                b.AddAttribute(28, "referrerpolicy", "no-referrer");
                 b.CloseElement();
                 break;
 

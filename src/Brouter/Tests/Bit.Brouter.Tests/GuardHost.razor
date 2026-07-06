@@ -1,15 +1,15 @@
 @using Bit.Brouter
 
 <Brouter NotFound="/404">
-    <BrouterRoute Path="/secret" Guard="@Deny">
+    <Broute Path="/secret" Guard="@Deny">
         <Content><div data-testid="ok">should not render</div></Content>
-    </BrouterRoute>
-    <BrouterRoute Path="/login">
+    </Broute>
+    <Broute Path="/login">
         <Content><div data-testid="login">login</div></Content>
-    </BrouterRoute>
-    <BrouterRoute Path="/404">
+    </Broute>
+    <Broute Path="/404">
         <Content>404</Content>
-    </BrouterRoute>
+    </Broute>
 </Brouter>
 
 @code {

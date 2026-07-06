@@ -1,30 +1,32 @@
 @page "/"
 
 <div class="page-hero">
-    <Bmotion Tag="h1"
-            Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 30 })"
-            Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0 })"
-            Transition="@BmotionTransitionConfig.Spring(stiffness:80, damping:15)">
-        Bmotion
+    <Bmotion Initial="Bm.To(opacity: 0, y: 30)"
+            Animate="Bm.To(opacity: 1, y: 0)"
+            Transition="Bm.Spring(stiffness: 80, damping: 15)">
+        <h1>
+            Bmotion
+        </h1>
     </Bmotion>
 
-    <Bmotion Tag="p"
-            Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 20 })"
-            Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0 })"
-            Transition="@(new BmotionTransitionConfig { Type = BmotionTransitionType.Tween, Duration = 0.6, Delay = 0.2 })">
-        A Blazor-native animation library inspired by Framer Motion.
-        Springs, gestures, layout animations, variants &mdash; zero external dependencies.
+    <Bmotion Initial="Bm.To(opacity: 0, y: 20)"
+            Animate="Bm.To(opacity: 1, y: 0)"
+            Transition="Bm.Tween(0.6, delay: 0.2)">
+        <p>
+            A Blazor-native animation library inspired by Framer Motion.
+            Springs, gestures, layout animations, variants &mdash; zero external dependencies.
+        </p>
     </Bmotion>
 
-    <Bmotion Tag="div"
-            Class="badge-list"
-            Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 15 })"
-            Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0 })"
-            Transition="@(new BmotionTransitionConfig { Duration = 0.5, Delay = 0.4 })">
-        @foreach (var f in _features)
-        {
-            <span class="badge">@f</span>
-        }
+    <Bmotion Initial="Bm.To(opacity: 0, y: 15)"
+            Animate="Bm.To(opacity: 1, y: 0)"
+            Transition="Bm.Tween(0.5, delay: 0.4)">
+        <div class="badge-list">
+            @foreach (var f in _features)
+            {
+                <span class="badge">@f</span>
+            }
+        </div>
     </Bmotion>
 </div>
 
@@ -32,13 +34,13 @@
     <h2>Quick start</h2>
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Initial="@(new BmotionAnimationProps { Scale = 0, Opacity = 0 })"
-                    Animate="@(new BmotionAnimationProps { Scale = 1, Opacity = 1 })"
-                    WhileHover="@(new BmotionAnimationProps { Scale = 1.15, Rotate = 5 })"
-                    WhileTap="@(new BmotionAnimationProps { Scale = 0.9 })"
-                    Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:20)" />
+            <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
+                    Animate="Bm.To(scale: 1, opacity: 1)"
+                    WhileHover="Bm.To(scale: 1.15, rotate: 5)"
+                    WhileTap="Bm.To(scale: 0.9)"
+                    Transition="Bm.Spring(stiffness: 300, damping: 20)">
+                <div class="box" />
+            </Bmotion>
         </div>
     </div>
 
@@ -71,13 +73,13 @@
         </style>
 
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Initial="@(new BmotionAnimationProps { Scale = 0, Opacity = 0 })"
-                    Animate="@(new BmotionAnimationProps { Scale = 1, Opacity = 1 })"
-                    WhileHover="@(new BmotionAnimationProps { Scale = 1.15, Rotate = 5 })"
-                    WhileTap="@(new BmotionAnimationProps { Scale = 0.9 })"
-                    Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:20)" />
+            <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
+                    Animate="Bm.To(scale: 1, opacity: 1)"
+                    WhileHover="Bm.To(scale: 1.15, rotate: 5)"
+                    WhileTap="Bm.To(scale: 0.9)"
+                    Transition="Bm.Spring(stiffness: 300, damping: 20)">
+                <div class="box" />
+            </Bmotion>
         </div>
         """;
 }

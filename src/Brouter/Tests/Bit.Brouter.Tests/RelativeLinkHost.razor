@@ -1,0 +1,16 @@
+@* Hosts a BrouterLink under a catch-all route so every navigation matches and fires OnNavigated
+   (which is what re-resolves a route-relative Href; unmatched navigations don't refresh links). *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/{**rest}">
+        <Content><div data-testid="content">page</div></Content>
+    </Broute>
+</Brouter>
+
+<BrouterLink Href="@Href" data-testid="link">link</BrouterLink>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = "/";
+}

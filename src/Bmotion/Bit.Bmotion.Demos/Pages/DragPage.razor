@@ -1,40 +1,34 @@
-@page "/drag"
+﻿@page "/drag"
 
 <div class="demo-section">
     <h2>Drag</h2>
     <p>
         Enable drag on any axis with <strong>Drag="true"</strong>.
-        Add <strong>DragOptions</strong> to constrain movement, tune elasticity, and momentum.
+        Constrain movement with <strong>DragConstraints</strong>, tune <strong>DragElastic</strong> and <strong>DragMomentum</strong>.
     </p>
 
     <div class="demo-row">
         <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Style="position:absolute;top:50%;left:50%;margin:-40px 0 0 -40px;cursor:grab;"
-                    Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                    WhileDrag="@(new BmotionAnimationProps { Scale = 1.1, BoxShadow = "0 15px 35px rgba(0,0,0,.5)" })"
-                    WhileHover="@(new BmotionAnimationProps { Scale = 1.05 })"
+            <Bmotion Animate="Bm.To(scale: 1)"
+                    WhileDrag='Bm.To(scale: 1.1, boxShadow: "0 15px 35px rgba(0,0,0,.5)")'
+                    WhileHover="Bm.To(scale: 1.05)"
                     Drag="true"
-                    DragOptions="@(new BmotionDragOptions { Elastic = 0.5, Momentum = true })"
-                    Transition="@BmotionTransitionConfig.Spring(stiffness:200, damping:20)" />
+                    DragElastic="0.5"
+                    Transition="Bm.Spring(stiffness: 200, damping: 20)">
+                <div class="box" style="position:absolute;top:50%;left:50%;margin:-40px 0 0 -40px;cursor:grab;" />
+            </Bmotion>
         </div>
 
         <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
             <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
                 X-axis only + constraints
             </p>
-            <Bmotion Tag="div"
-                    Class="box box-sm"
-                    Style="position:absolute;top:50%;left:50%;margin:-25px 0 0 -25px;"
-                    Drag="true"
-                    DragOptions="@(new BmotionDragOptions
-                    {
-                        Axis        = BmotionDragAxis.X,
-                        Constraints = BmotionDragConstraints.Horizontal(-120, 120),
-                        Elastic     = 0.3
-                    })"
-                    WhileDrag="@(new BmotionAnimationProps { Scale = 1.15 })" />
+            <Bmotion Drag="BmDrag.X"
+                    DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
+                    DragElastic="0.3"
+                    WhileDrag="Bm.To(scale: 1.15)">
+                <div class="box box-sm" style="position:absolute;top:50%;left:50%;margin:-25px 0 0 -25px;" />
+            </Bmotion>
         </div>
     </div>
 
@@ -42,16 +36,88 @@
 </div>
 
 <div class="demo-section">
+    <h2>Constrain to a container</h2>
+    <p>
+        <strong>BmDragConstraints.Parent()</strong> keeps the element inside its parent;
+        <c>BmDragConstraints.Within(".selector")</c> targets any container. The container is
+        measured at each drag start, so responsive layout changes just work.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="position:relative;height:220px;">
+            <Bmotion Drag="true"
+                    DragConstraints="BmDragConstraints.Parent()"
+                    DragElastic="0.2"
+                    WhileDrag="Bm.To(scale: 1.1)">
+                <div class="box box-sm" style="cursor:grab" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_dragParentCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Handles &amp; drag controls</h2>
+    <p>
+        <strong>DragHandle</strong> restricts the drag to a grip inside the element.
+        <strong>BmDragControls</strong> (motion.dev's <c>useDragControls</c>) starts the drag from
+        any other element - here, pressing anywhere on the track grabs the thumb.
+        <strong>BmDragElastic.Edges</strong> tunes the overflow give per edge.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="position:relative;height:200px;">
+            <Bmotion Drag="true"
+                    DragHandle=".grip"
+                    DragConstraints="BmDragConstraints.Parent()"
+                    WhileDrag="Bm.To(scale: 1.05)">
+                <div style="display:flex;align-items:center;gap:.6rem;background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:10px;padding:.8rem 1rem;">
+                    <span class="grip" style="cursor:grab;color:#888;font-size:1.1rem;user-select:none;">⠿</span>
+                    <span>Drag me by the grip only</span>
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="height:200px;">
+            <div style="width:100%;height:28px;border-radius:999px;background:#111;position:relative;display:flex;align-items:center;padding:0 4px;cursor:pointer;"
+                 @onpointerdown="@(e => _thumbControls.StartAsync(e))">
+                <Bmotion Drag="BmDrag.X"
+                        DragControls="_thumbControls"
+                        DragListener="false"
+                        DragConstraints="BmDragConstraints.Parent()"
+                        DragElastic="BmDragElastic.None"
+                        WhileDrag="Bm.To(scale: 1.2)">
+                    <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#6c47ff,#ff4785);" />
+                </Bmotion>
+            </div>
+        </div>
+
+        <div class="demo-card" style="position:relative;height:200px;">
+            <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
+                Rigid left/top · elastic right/bottom
+            </p>
+            <Bmotion Drag="true"
+                    DragConstraints="BmDragConstraints.Parent()"
+                    DragElastic="BmDragElastic.Edges(right: 0.9, bottom: 0.9)">
+                <div class="box box-sm" style="cursor:grab" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_handleControlsCode" />
+</div>
+
+<div class="demo-section">
     <h2>Drag Events</h2>
     <p>Listen to <c>OnDragStart</c>, <c>OnDragEnd</c> lifecycle callbacks to react to drag state transitions.</p>
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column;gap:1rem;position:relative;overflow:hidden;height:220px;">
-            <Bmotion Tag="div"
-                    Class="box box-sm"
-                    Style="cursor:grab"
-                    Drag="true"
+            <Bmotion Drag="true"
                     OnDragStart="@HandleDragStart"
-                    OnDragEnd="@HandleDragEnd" />
+                    OnDragEnd="@HandleDragEnd">
+                <div class="box box-sm" style="cursor:grab" />
+            </Bmotion>
             <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
                 @_dragInfo
             </div>
@@ -63,9 +129,43 @@
 
 @code {
     private string _dragInfo = "Drag the box";
+    private readonly BmDragControls _thumbControls = new();
 
     void HandleDragStart() => _dragInfo = "Dragging…";
     void HandleDragEnd()   => _dragInfo = "Released";
+
+    private const string _handleControlsCode = """
+        @using Bit.Bmotion
+
+        @* 1 - Drag handle: only the grip starts the drag *@
+        <Bmotion Drag="true" DragHandle=".grip" DragConstraints="BmDragConstraints.Parent()">
+            <div class="row">
+                <span class="grip">⠿</span>
+                <span>Drag me by the grip only</span>
+            </div>
+        </Bmotion>
+
+        @* 2 - Drag controls: press anywhere on the track to grab the thumb *@
+        <div class="track" @onpointerdown="@(e => _thumbControls.StartAsync(e))">
+            <Bmotion Drag="BmDrag.X"
+                    DragControls="_thumbControls"
+                    DragListener="false"
+                    DragConstraints="BmDragConstraints.Parent()">
+                <div class="thumb" />
+            </Bmotion>
+        </div>
+
+        @* 3 - Per-edge elasticity: rigid left/top, springy right/bottom *@
+        <Bmotion Drag="true"
+                DragConstraints="BmDragConstraints.Parent()"
+                DragElastic="BmDragElastic.Edges(right: 0.9, bottom: 0.9)">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private readonly BmDragControls _thumbControls = new();
+        }
+        """;
 
     private const string _dragCode = """
         @using Bit.Bmotion
@@ -91,35 +191,55 @@
 
             <div class="demo-row">
                 <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
-                    <Bmotion Tag="div"
-                            Class="box"
-                            Style="position:absolute;top:50%;left:50%;margin:-40px 0 0 -40px;cursor:grab;"
-                            Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                            WhileDrag="@(new BmotionAnimationProps { Scale = 1.1, BoxShadow = "0 15px 35px rgba(0,0,0,.5)" })"
-                            WhileHover="@(new BmotionAnimationProps { Scale = 1.05 })"
+                    <Bmotion Animate="Bm.To(scale: 1)"
+                            WhileDrag='Bm.To(scale: 1.1, boxShadow: "0 15px 35px rgba(0,0,0,.5)")'
+                            WhileHover="Bm.To(scale: 1.05)"
                             Drag="true"
-                            DragOptions="@(new BmotionDragOptions { Elastic = 0.5, Momentum = true })"
-                            Transition="@BmotionTransitionConfig.Spring(stiffness:200, damping:20)" />
+                            DragElastic="0.5"
+                            Transition="Bm.Spring(stiffness: 200, damping: 20)">
+                        <div class="box" style="position:absolute;top:50%;left:50%;margin:-40px 0 0 -40px;cursor:grab;" />
+                    </Bmotion>
                 </div>
 
                 <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
                     <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
                         X-axis only + constraints
                     </p>
-                    <Bmotion Tag="div"
-                            Class="box box-sm"
-                            Style="position:absolute;top:50%;left:50%;margin:-25px 0 0 -25px;"
-                            Drag="true"
-                            DragOptions="@(new BmotionDragOptions
-                            {
-                                Axis        = BmotionDragAxis.X,
-                                Constraints = BmotionDragConstraints.Horizontal(-120, 120),
-                                Elastic     = 0.3
-                            })"
-                            WhileDrag="@(new BmotionAnimationProps { Scale = 1.15 })" />
+                    <Bmotion Drag="BmDrag.X"
+                            DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
+                            DragElastic="0.3"
+                            WhileDrag="Bm.To(scale: 1.15)">
+                        <div class="box box-sm" style="position:absolute;top:50%;left:50%;margin:-25px 0 0 -25px;" />
+                    </Bmotion>
                 </div>
             </div>
         </div>
+        """;
+
+    private const string _dragParentCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; height: 220px; position: relative;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box-sm { width: 50px; height: 50px; border-radius: 8px; cursor: grab;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        <div class="demo-card">
+            <Bmotion Drag="true"
+                    DragConstraints="BmDragConstraints.Parent()"
+                    DragElastic="0.2"
+                    WhileDrag="Bm.To(scale: 1.1)">
+                <div class="box-sm" />
+            </Bmotion>
+        </div>
+
+        @* Any container works: DragConstraints='BmDragConstraints.Within(".drop-zone")' *@
         """;
 
     private const string _dragEventsCode = """
@@ -145,12 +265,11 @@
             <p>Listen to <c>OnDragStart</c>, <c>OnDragEnd</c> lifecycle callbacks to react to drag state transitions.</p>
             <div class="demo-row">
                 <div class="demo-card" style="flex-direction:column;gap:1rem;position:relative;overflow:hidden;height:220px;">
-                    <Bmotion Tag="div"
-                            Class="box box-sm"
-                            Style="cursor:grab"
-                            Drag="true"
+                    <Bmotion Drag="true"
                             OnDragStart="@HandleDragStart"
-                            OnDragEnd="@HandleDragEnd" />
+                            OnDragEnd="@HandleDragEnd">
+                        <div class="box box-sm" style="cursor:grab" />
+                    </Bmotion>
                     <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
                         @_dragInfo
                     </div>

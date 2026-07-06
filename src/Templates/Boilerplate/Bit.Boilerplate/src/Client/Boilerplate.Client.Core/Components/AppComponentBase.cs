@@ -29,7 +29,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
-    [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
+    [AutoInject] protected ClientExceptionHandlerBase ExceptionHandler = default!;
 
     [AutoInject] protected AuthManager AuthManager = default!;
 

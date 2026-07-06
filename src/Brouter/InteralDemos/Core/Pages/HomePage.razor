@@ -68,10 +68,58 @@
             Guarded routes
             <span class="bb-badge bb-badge-danger">guard</span>
         </h3>
-        <p class="bb-card-desc">Routes that conditionally redirect via guards.</p>
+        <p class="bb-card-desc">Routes that conditionally redirect via guards, cancel leaves, or block outright.</p>
         <ul class="bb-link-list">
             <li><BrouterLink Href="/g1">/g1 - allowed when <code>second % 2 == 0</code></BrouterLink></li>
             <li><BrouterLink Href="/g2">/g2 - allowed when <code>minute % 2 == 0</code></BrouterLink></li>
+            <li><BrouterLink Href="/editor">Leave guard - unsaved-changes editor</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-primary"></span>
+            Data layer
+            <span class="bb-badge">loader</span>
+        </h3>
+        <p class="bb-card-desc">
+            Loaders, the <code>StaleTime</code> cache, revalidation, deferred data and error boundaries.
+            The links below <strong>preload on hover</strong> (<code>Preload="Intent"</code>) - rest the
+            pointer on one for a moment and the slow loader is already done when you click.
+        </p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/data" Preload="BrouterLinkPreload.Intent">Loader + cache + revalidate + query updates</BrouterLink></li>
+            <li><BrouterLink Href="/deferred" Preload="BrouterLinkPreload.Intent">Deferred (streamed) data via <code>BrouterAwait</code></BrouterLink></li>
+            <li><BrouterLink Href="/unstable">Error boundary with retry (loader throws)</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-warning"></span>
+            Navigation control
+            <span class="bb-badge bb-badge-warn">nav</span>
+        </h3>
+        <p class="bb-card-desc">Awaited outcomes, history entry state, and the .NET 10 NotFound interop.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/outcomes">Awaited navigation (<code>NavigateAsync</code>) + <code>NotFound()</code></BrouterLink></li>
+            <li><BrouterLink Href="/history-state">History entry state across Back/Forward</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-success"></span>
+            Layout &amp; state
+            <span class="bb-badge bb-badge-success">layout</span>
+        </h3>
+        <p class="bb-card-desc">Named outlets, pathless groups, keep-alive routes, and animated page changes via the View Transitions API.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/gallery"><strong>View Transitions gallery</strong> - shared-element morphs between routes</BrouterLink></li>
+            <li><BrouterLink Href="/dashboard/stats">Named outlets + pathless group (dashboard)</BrouterLink></li>
+            <li><BrouterLink Href="/sticky">Keep-alive route + activate/deactivate lifecycle</BrouterLink></li>
+            <li><BrouterLink Href="/fleeting">Transient control route (state resets)</BrouterLink></li>
+            <li><BrouterLink Href="/notes/1">Per-parameter keep-alive (<code>KeepAliveMax</code>) + <code>ClearKeepAlive()</code></BrouterLink></li>
         </ul>
     </section>
 </div>

@@ -1,0 +1,216 @@
+@page "/butil/files"
+@inherits AppComponentBase
+@inject Bit.Butil.FileReader fileReader
+@inject Bit.Butil.ObjectUrls objectUrls
+
+<PageOutlet Url="butil/files"
+            Title="Files - Butil"
+            Description="FileReader and ObjectUrls classes of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Files</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the file related classes of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            The file features live in two classes. Inject the ones you need and use them like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.FileReader fileReader
+@@inject Bit.Butil.ObjectUrls objectUrls
+
+@@code {
+    var text = await fileReader.ReadAsText(fileInput);
+    var url = await objectUrls.Create(bytes, "image/png");
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>FileReader</BitText>
+        <div class="section-card-txt">
+            The <b>FileReader</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader" target="_blank" rel="noopener noreferrer">FileReader API</a>
+            to read files selected in an <c>&lt;input type="file"&gt;</c> element as metadata, text, bytes or data URLs.
+            <br /><br />
+
+            <b>GetFileInfos</b>: <br />
+            Returns metadata (Name, Size and Type) for every file selected in the given input element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/File" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@getFileInfosExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input type="file" @ref="fileInput" multiple />
+                        <br /><br />
+                        <BitButton OnClick="GetFileInfos">GetFileInfos</BitButton>
+                        <br /><br />
+                        <div>@fileInfos</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ReadAsText</b>: <br />
+            Reads the first selected file as UTF-8 text
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsText" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@readAsTextExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input type="file" @ref="fileInput" multiple />
+                        <br /><br />
+                        <BitButton OnClick="ReadAsText">ReadAsText</BitButton>
+                        <br /><br />
+                        <div>@fileText</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ReadAsBytes</b>: <br />
+            Reads the first selected file as raw bytes
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsArrayBuffer" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@readAsBytesExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input type="file" @ref="fileInput" multiple />
+                        <br /><br />
+                        <BitButton OnClick="ReadAsBytes">ReadAsBytes</BitButton>
+                        <br /><br />
+                        <div>@fileBytes</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ReadAsDataUrl</b>: <br />
+            Reads the first selected file as a base-64 data URL, convenient for image previews
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@readAsDataUrlExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input type="file" @ref="fileInput" multiple />
+                        <br /><br />
+                        <BitButton OnClick="ReadAsDataUrl">ReadAsDataUrl</BitButton>
+                        <br /><br />
+                        <div>@fileDataUrl</div>
+                        @if (imagePreviewUrl is not null)
+                        {
+                            <br />
+                            <img src="@imagePreviewUrl" alt="Preview" style="max-width: 15rem; border-radius: 0.5rem;" />
+                        }
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Clear</b>: <br />
+            Clears the input's selection (resets its <c>files</c> list)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@clearExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input type="file" @ref="fileInput" multiple />
+                        <br /><br />
+                        <BitButton OnClick="Clear">Clear</BitButton>
+                        <br /><br />
+                        <div>@clearResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>ObjectUrls</BitText>
+        <div class="section-card-txt">
+            The <b>ObjectUrls</b> class wraps
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL_static" target="_blank" rel="noopener noreferrer">URL.createObjectURL</a>
+            and
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL/revokeObjectURL_static" target="_blank" rel="noopener noreferrer">URL.revokeObjectURL</a>
+            for arbitrary byte payloads.
+            <br /><br />
+
+            <b>Create</b>: <br />
+            Creates a blob object URL from raw bytes plus an optional MIME type
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL_static" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@createExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="blobText" Label="Text to blob" Style="max-width: 25rem;" />
+                        <br />
+                        <BitButton OnClick="CreateObjectUrl">Create</BitButton>
+                        <br /><br />
+                        @if (objectUrl is not null)
+                        {
+                            <div>
+                                <a href="@objectUrl" target="_blank" rel="noopener">Open blob URL</a>
+                            </div>
+                        }
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Revoke</b>: <br />
+            Revokes a previously created object URL to release its memory
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/URL/revokeObjectURL_static" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@revokeExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="RevokeObjectUrl">Revoke</BitButton>
+                        <br /><br />
+                        <div>@revokeResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Fetch" PrevUrl="/butil/fetch" Next="Speech" NextUrl="/butil/speech" />

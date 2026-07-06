@@ -1,0 +1,66 @@
+@namespace Bit.BlazorUI
+
+@switch (Node)
+{
+    case BitChartSvgLine l:
+        <line x1="@BitChartSvg.N(l.X1)" y1="@BitChartSvg.N(l.Y1)" x2="@BitChartSvg.N(l.X2)" y2="@BitChartSvg.N(l.Y2)"
+              stroke="@l.Stroke" stroke-width="@BitChartSvg.N(l.StrokeWidth)" opacity="@BitChartSvg.N(l.Opacity)"
+              stroke-dasharray="@l.Dash" />
+        break;
+
+    case BitChartSvgRect r:
+        <rect x="@BitChartSvg.N(r.X)" y="@BitChartSvg.N(r.Y)" width="@BitChartSvg.N(r.Width)" height="@BitChartSvg.N(r.Height)"
+              rx="@BitChartSvg.N(r.Rx)" fill="@r.Fill" stroke="@r.Stroke" stroke-width="@BitChartSvg.N(r.StrokeWidth)"
+              opacity="@BitChartSvg.N(r.Opacity)" class="@r.CssClass">
+            @if (!string.IsNullOrEmpty(r.Title)) { <title>@r.Title</title> }
+        </rect>
+        break;
+
+    case BitChartSvgCircle c:
+        <circle cx="@BitChartSvg.N(c.Cx)" cy="@BitChartSvg.N(c.Cy)" r="@BitChartSvg.N(c.R)" fill="@c.Fill"
+                stroke="@c.Stroke" stroke-width="@BitChartSvg.N(c.StrokeWidth)" opacity="@BitChartSvg.N(c.Opacity)" class="@c.CssClass" />
+        break;
+
+    case BitChartSvgPath p:
+        <path d="@p.D" fill="@p.Fill" stroke="@p.Stroke" stroke-width="@BitChartSvg.N(p.StrokeWidth)"
+              stroke-dasharray="@p.Dash" stroke-linecap="@p.LineCap" stroke-linejoin="@p.LineJoin"
+              opacity="@BitChartSvg.N(p.Opacity)" class="@(p.AnimateDraw ? "bc-draw" : p.AnimateFade ? "bc-fade" : p.CssClass)"
+              pathLength="@(p.AnimateDraw ? "1" : null)" />
+        break;
+
+    case BitChartSvgPolygon poly:
+        @if (poly.Closed)
+        {
+            <polygon points="@PolyPoints(poly)" fill="@poly.Fill" stroke="@poly.Stroke"
+                     stroke-width="@BitChartSvg.N(poly.StrokeWidth)" stroke-linejoin="round" opacity="@BitChartSvg.N(poly.Opacity)" />
+        }
+        else
+        {
+            <polyline points="@PolyPoints(poly)" fill="none" stroke="@poly.Stroke"
+                      stroke-width="@BitChartSvg.N(poly.StrokeWidth)" opacity="@BitChartSvg.N(poly.Opacity)" />
+        }
+        break;
+
+    case BitChartSvgText t:
+        @((MarkupString)BuildText(t))
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired] public BitChartSvgNode Node { get; set; } = default!;
+
+    private static string PolyPoints(BitChartSvgPolygon p) =>
+        string.Join(" ", p.Points.Select(pt => $"{BitChartSvg.N(pt.X)},{BitChartSvg.N(pt.Y)}"));
+
+    private static string BuildText(BitChartSvgText t)
+    {
+        string transform = t.Rotation != 0
+            ? $" transform=\"rotate({BitChartSvg.N(t.Rotation)} {BitChartSvg.N(t.X)} {BitChartSvg.N(t.Y)})\""
+            : "";
+        string content = System.Net.WebUtility.HtmlEncode(t.Text);
+        return $"<text x=\"{BitChartSvg.N(t.X)}\" y=\"{BitChartSvg.N(t.Y)}\" fill=\"{t.Fill}\" " +
+               $"font-family=\"{System.Net.WebUtility.HtmlEncode(t.FontFamily)}\" font-size=\"{BitChartSvg.N(t.FontSize)}\" " +
+               $"font-weight=\"{t.FontWeight}\" font-style=\"{t.FontStyle}\" text-anchor=\"{t.Anchor}\" " +
+               $"dominant-baseline=\"{t.Baseline}\" opacity=\"{BitChartSvg.N(t.Opacity)}\"{transform}>{content}</text>";
+    }
+}

@@ -16,11 +16,11 @@
 
 <section class="page-container">
     <BitParams Parameters="_cascadingParams">
-        <BitText Typography="BitTypography.H3">Theming</BitText>
+        <BitText Element="h1" Typography="BitTypography.H3">Theming</BitText>
 
         <br />
 
-        <BitText Typography="BitTypography.H6">
+        <BitText Element="p" Typography="BitTypography.H6">
             Using bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
             the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
             <br /><br />
@@ -34,7 +34,7 @@
         <br /><br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Quick setup</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Quick setup</BitText>
 
             <br />
 
@@ -68,7 +68,7 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">CSS variables</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">CSS variables</BitText>
 
             <br />
 
@@ -144,7 +144,7 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">ThemeManager</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">ThemeManager</BitText>
 
             <br />
 
@@ -225,7 +225,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
 
             <br />
 
-            <BitText Typography="BitTypography.H5">Precedence</BitText>
+            <BitText Element="h3" Typography="BitTypography.H5">Precedence</BitText>
             <BitText>
                 <BitTag>SetThemeAsync</BitTag> updates the <BitTag>bit-theme</BitTag> attribute on the document root so the packaged Fluent stylesheets supply the base token values.
                 <BitTag>ApplyBitThemeAsync</BitTag> writes CSS variables onto an element (default: <BitTag>body</BitTag>), which overrides those tokens for the subtree because inline styles win over stylesheet rules for the same property.
@@ -234,7 +234,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
 
             <br />
 
-            <BitText Typography="BitTypography.H5">Presets, utilities, SSR</BitText>
+            <BitText Element="h3" Typography="BitTypography.H5">Presets, utilities, SSR</BitText>
             <BitText>
                 <BitTag>BitThemePresets</BitTag> exposes well-known <BitTag>bit-theme</BitTag> names (for example <BitTag>BitThemePresets.FluentDark</BitTag>).
                 <BitTag>BitThemeUtilities.ToCssVariables</BitTag> maps a <BitTag>BitTheme</BitTag> to a dictionary of CSS custom properties; <BitTag>BitThemeUtilities.Merge</BitTag> merges a child theme over a parent (same rules as <BitTag>BitThemeProvider</BitTag>).
@@ -257,7 +257,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">BitThemeSsr</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">BitThemeSsr</BitText>
 
             <br />
 
@@ -301,7 +301,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">System Theme</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">System Theme</BitText>
 
             <br />
 
@@ -320,7 +320,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Persist Theme</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Persist Theme</BitText>
 
             <br />
 
@@ -339,7 +339,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Default Theme</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Default Theme</BitText>
 
             <br />
 
@@ -356,7 +356,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Customizing theme names</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">Customizing theme names</BitText>
             
             <br />
 
@@ -373,7 +373,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">CSS in C#</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">CSS in C#</BitText>
             
             <br />
 
@@ -409,7 +409,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">ThemeProvider</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">ThemeProvider</BitText>
 
             <br />
 
@@ -473,7 +473,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">JavaScript API</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4">JavaScript API</BitText>
             
             <br />
 
