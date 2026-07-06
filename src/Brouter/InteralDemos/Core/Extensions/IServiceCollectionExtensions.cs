@@ -22,6 +22,12 @@ public static class IServiceCollectionExtensions
 
             // Animate page changes with the browser's View Transitions API (inert where unsupported).
             o.ViewTransitions = true;
+
+            // Demo-only: run the full animations even when the OS reports prefers-reduced-motion.
+            // Windows "Animation effects" is commonly off on VMs/remote desktops for performance,
+            // which would otherwise reduce this showcase to plain crossfades. Real applications
+            // should usually leave this at its default (true) and respect the user's preference.
+            o.ViewTransitionRespectReducedMotion = false;
         });
 
         services.AddScoped<DemoState>();

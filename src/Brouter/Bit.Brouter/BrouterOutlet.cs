@@ -27,6 +27,10 @@ public class BrouterOutlet : ComponentBase, IDisposable
     private sealed class ChildEntry
     {
         public required Broute Route;
+        // Retention key for per-parameter keep-alive (Broute.KeepAliveMax > 1): the matched
+        // parameter values, so each visited parameter set owns its own entry/subtree. Constant
+        // (empty) for singleton keep-alive and transient routes - one entry per route.
+        public required string Key;
         public BrouterRouteParameters Parameters = BrouterRouteParameters.Empty;
 
         // Cached cascade wrappers, mirroring BrouterRouteRenderer: rebuild only when the
@@ -35,6 +39,21 @@ public class BrouterOutlet : ComponentBase, IDisposable
         public object? CachedLoadedDataRef;
         public BrouterRouteMeta? CachedRouteMeta;
         public object? CachedMetaRef;
+
+        // Keep-alive lifecycle context for this kept child (see BrouterKeepAliveContext). A fresh
+        // instance is minted only when the child's active/hidden state flips, so consumers reading
+        // IsActive in OnParametersSet are notified on each transition without spurious churn.
+        private bool _keepAliveActive;
+        private BrouterKeepAliveContext? _keepAliveContext;
+        public BrouterKeepAliveContext GetKeepAliveContext(bool active)
+        {
+            if (_keepAliveContext is null || _keepAliveActive != active)
+            {
+                _keepAliveContext = new BrouterKeepAliveContext(active);
+                _keepAliveActive = active;
+            }
+            return _keepAliveContext;
+        }
     }
 
     private ChildEntry? _current;
@@ -43,17 +62,49 @@ public class BrouterOutlet : ComponentBase, IDisposable
     /// <summary>Receives the matched child from the parent route (see <see cref="Broute.SetOutletChild"/>).</summary>
     internal void Render(Broute route, BrouterRouteParameters parameters)
     {
-        if (_current is null || ReferenceEquals(_current.Route, route) is false)
+        // Per-parameter keep-alive (KeepAliveMax > 1) keys retained entries by the matched
+        // parameter values (ComputeKeepAliveKey returns the constant empty key in singleton mode,
+        // preserving the one-entry-that-rebinds behavior).
+        var key = Name.Length == 0 && route.KeepAlive ? route.ComputeKeepAliveKey() : string.Empty;
+
+        if (_current is null
+            || ReferenceEquals(_current.Route, route) is false
+            || string.Equals(_current.Key, key, StringComparison.Ordinal) is false)
         {
-            _current = _kept.Find(k => ReferenceEquals(k.Route, route)) ?? new ChildEntry { Route = route };
+            _current = _kept.Find(k => ReferenceEquals(k.Route, route) && string.Equals(k.Key, key, StringComparison.Ordinal))
+                ?? new ChildEntry { Route = route, Key = key };
         }
         _current.Parameters = parameters;
 
         // Keep-alive retention is a primary-outlet concern: named outlets render lightweight view
         // fragments whose state lives in the (kept) primary content anyway.
-        if (Name.Length == 0 && route.KeepAlive && _kept.Contains(_current) is false)
+        if (Name.Length == 0 && route.KeepAlive)
         {
+            // LRU order: the most recently active entry lives at the tail (Remove is a no-op for a
+            // fresh entry). SetKey keeps each entry's subtree stable across reorders.
+            _kept.Remove(_current);
             _kept.Add(_current);
+
+            // Evict this route's least-recently-used hidden entries beyond its budget. Entries of
+            // other keep-alive routes sharing this outlet have their own budgets and are untouched.
+            var max = route.EffectiveKeepAliveMax;
+            var count = 0;
+            foreach (var k in _kept)
+            {
+                if (ReferenceEquals(k.Route, route)) count++;
+            }
+            for (int i = 0; i < _kept.Count && count > max;)
+            {
+                if (ReferenceEquals(_kept[i].Route, route) && ReferenceEquals(_kept[i], _current) is false)
+                {
+                    _kept.RemoveAt(i);
+                    count--;
+                }
+                else
+                {
+                    i++;
+                }
+            }
         }
 
         StateHasChanged();
@@ -71,6 +122,30 @@ public class BrouterOutlet : ComponentBase, IDisposable
             _current = null;
         }
     }
+
+    /// <summary>
+    /// Releases every retained (hidden) keep-alive child, keeping only the currently active one.
+    /// Backs <see cref="IBrouter.ClearKeepAlive"/>; re-renders so the dropped subtrees are disposed.
+    /// </summary>
+    internal void ClearKeepAlive()
+    {
+        var active = _current is not null && _current.Route.Matched ? _current : null;
+        var removed = _kept.RemoveAll(k => ReferenceEquals(k, active) is false);
+        if (removed > 0) StateHasChanged();
+    }
+
+    // Wraps a kept child's content in the keep-alive cascade so it receives activate/deactivate
+    // transitions (see BrouterKeepAliveContext). Only kept (primary-outlet KeepAlive) children get
+    // it; transient content renders unwrapped.
+    private static RenderFragment WrapKeepAlive(ChildEntry entry, bool active, RenderFragment inner) => b =>
+    {
+        var context = entry.GetKeepAliveContext(active);
+        b.OpenComponent<CascadingValue<BrouterKeepAliveContext>>(0);
+        b.AddAttribute(1, "Value", context);
+        b.AddAttribute(2, "IsFixed", false);
+        b.AddAttribute(3, "ChildContent", inner);
+        b.CloseComponent();
+    };
 
     protected override void OnInitialized()
     {
@@ -108,16 +183,19 @@ public class BrouterOutlet : ComponentBase, IDisposable
         // unless it is the current match; the stable element (keyed by route) is what preserves
         // the component subtree - and its state - across visibility flips.
         builder.OpenRegion(0);
-        var seq = 0;
+        // Constant sequence numbers per iteration (the canonical keyed-list pattern): entries move
+        // positions on LRU reorders, and a moved entry must keep the SAME sequence numbers for its
+        // frames or the diff rebuilds its subtree - destroying the very state being kept.
         foreach (var entry in _kept)
         {
             var isActive = ReferenceEquals(entry, current);
-            builder.OpenElement(seq++, "div");
-            builder.SetKey(entry.Route);
-            if (isActive is false) builder.AddAttribute(seq, "hidden", true);
-            seq++;
-            builder.OpenRegion(seq++);
-            RenderChild(builder, entry, EmitRoutedContent(entry));
+            builder.OpenElement(0, "div");
+            // Keyed by the entry (stable per route + parameter key), not the route alone, so
+            // per-parameter keep-alive entries of the same route each keep their own subtree.
+            builder.SetKey(entry);
+            if (isActive is false) builder.AddAttribute(1, "hidden", true);
+            builder.OpenRegion(2);
+            RenderChild(builder, entry, WrapKeepAlive(entry, isActive, EmitRoutedContent(entry)), refreshData: isActive);
             builder.CloseRegion();
             builder.CloseElement();
         }
@@ -167,18 +245,21 @@ public class BrouterOutlet : ComponentBase, IDisposable
     /// RouteParameters, RouteData, RouteMeta) - the child's own values, not the hosting layout's,
     /// because the DOM renders here rather than at the child route's declaration site.
     /// </summary>
-    private void RenderChild(RenderTreeBuilder builder, ChildEntry entry, RenderFragment content)
+    private void RenderChild(RenderTreeBuilder builder, ChildEntry entry, RenderFragment content, bool refreshData = true)
     {
         var child = entry.Route;
 
+        // refreshData is false for kept-but-hidden entries: their data/meta stay frozen at the
+        // values they were deactivated with (the route's live LoadedData belongs to the currently
+        // active parameter set). The null checks still run so a first render always has wrappers.
         var loadedData = child.LoadedData;
-        if (entry.CachedRouteData is null || ReferenceEquals(entry.CachedLoadedDataRef, loadedData) is false)
+        if (entry.CachedRouteData is null || (refreshData && ReferenceEquals(entry.CachedLoadedDataRef, loadedData) is false))
         {
             entry.CachedRouteData = loadedData is null ? BrouterRouteData.Empty : new BrouterRouteData(loadedData);
             entry.CachedLoadedDataRef = loadedData;
         }
         var meta = child.Meta;
-        if (entry.CachedRouteMeta is null || ReferenceEquals(entry.CachedMetaRef, meta) is false)
+        if (entry.CachedRouteMeta is null || (refreshData && ReferenceEquals(entry.CachedMetaRef, meta) is false))
         {
             entry.CachedRouteMeta = meta is null ? BrouterRouteMeta.Empty : new BrouterRouteMeta(meta);
             entry.CachedMetaRef = meta;

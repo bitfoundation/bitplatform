@@ -358,7 +358,10 @@
     </Broute>
 
     @*============================================================================*@
-    @* Keep-alive vs transient: the same stateful component, with and without KeepAlive. *@
+    @* Keep-alive: /sticky vs the /fleeting control shows singleton retention plus the
+       activate/deactivate lifecycle (BrouterKeepAliveContext pauses the page's timer while
+       hidden); /notes/{id} shows per-parameter caching (KeepAliveMax) with LRU eviction and
+       IBrouter.ClearKeepAlive(). *@
 
     <Broute Path="/sticky" KeepAlive="true">
         <Content><StickyNotePage KeepAliveDemo="true" /></Content>
@@ -367,6 +370,15 @@
     <Broute Path="/fleeting">
         <Content><StickyNotePage KeepAliveDemo="false" /></Content>
     </Broute>
+
+    <Broute Name="notes" Path="/notes/{id:int}" KeepAlive="true" KeepAliveMax="2" Component="@typeof(NotebookPage)" />
+
+    @*============================================================================*@
+    @* View Transitions showcase: shared-element morphs between the gallery grid and the item
+       detail hero via matching view-transition-name declarations (pure CSS wiring). *@
+
+    <Broute Name="gallery" Path="/gallery" Component="@typeof(GalleryPage)" />
+    <Broute Path="/gallery/{id:int}" Component="@typeof(GalleryItemPage)" />
 
     @*============================================================================*@
     @* Named outlets + pathless group: one child route fills two layout regions; the group

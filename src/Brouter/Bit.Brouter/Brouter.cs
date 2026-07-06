@@ -425,6 +425,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         return _routeIndex;
     }
 
+    // Releases all retained keep-alive state across every registered route (their inline hidden
+    // content and any kept children held by outlets), keeping only the currently active route.
+    // Backs IBrouter.ClearKeepAlive. Runs on the renderer dispatcher like every other reader; each
+    // affected route/outlet issues its own re-render so the dropped subtrees are disposed.
+    internal void ClearKeepAlive()
+    {
+        foreach (var route in GetRoutesSnapshot()) route.ClearKeepAlive();
+    }
+
     // Reads the snapshot, not the live List: mirrors SelectWinner/ProcessNavigationAsync so name
     // lookups never touch the mutable registration set mid-pipeline (see GetRoutesSnapshot's remarks).
     internal Broute? FindRouteByName(string name)
@@ -1851,7 +1860,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // OnAfterRenderAsync once the new DOM is committed.
             if (Options.ViewTransitions)
             {
-                viewTransitionStarted = await service.BeginViewTransitionAsync();
+                viewTransitionStarted = await service.BeginViewTransitionAsync(navType);
                 if (token.IsCancellationRequested || version != _navVersion) return;
             }
 

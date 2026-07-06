@@ -168,6 +168,22 @@ public interface IBrouter
             "Override the method on your custom implementation to enable loader-cache invalidation.");
 
     /// <summary>
+    /// Releases every <see cref="Broute.KeepAlive"/> route's retained (hidden) component, leaving
+    /// only the currently visible route mounted. The kept components are disposed, so a later return
+    /// to one of them recreates it fresh instead of restoring its state. Use it to reclaim memory
+    /// held by kept pages - e.g. on sign-out, on a low-memory signal, or after invalidating the state
+    /// those pages were holding. A no-op when nothing is being kept.
+    /// </summary>
+    /// <remarks>
+    /// Default implementation throws <see cref="NotSupportedException"/>; the shipped
+    /// <see cref="IBrouter"/> service implements it. Override on custom test doubles if needed.
+    /// </remarks>
+    void ClearKeepAlive() =>
+        throw new NotSupportedException(
+            $"This {nameof(IBrouter)} implementation does not support {nameof(ClearKeepAlive)}. " +
+            "Override the method on your custom implementation to enable keep-alive eviction.");
+
+    /// <summary>
     /// Arms (<c>true</c>) or disarms (<c>false</c>) the browser's generic "leave site?" confirmation
     /// for external navigations - closing the tab, a full reload, or following a link out of the SPA.
     /// Idempotent in both directions, so a dirty-form tracker can toggle it freely. Browser rules

@@ -128,6 +128,16 @@ public sealed class BrouterOptions
     public BrouterLinkPreload DefaultLinkPreload { get; set; } = BrouterLinkPreload.None;
 
     /// <summary>
+    /// Default retained-instance budget for <see cref="Broute.KeepAlive"/> routes that don't set their
+    /// own <see cref="Broute.KeepAliveMax"/>. At the default of 1 a keep-alive route keeps a single
+    /// live instance that re-binds when its parameter values change; a value above 1 keeps up to that
+    /// many instances per route, keyed by the route's matched parameter values and evicted
+    /// least-recently-used - so <c>/item/1</c> and <c>/item/2</c> each resume their own exact state.
+    /// Values below 1 are treated as 1. See <see cref="Broute.KeepAliveMax"/> for the full semantics.
+    /// </summary>
+    public int DefaultKeepAliveMax { get; set; } = 1;
+
+    /// <summary>
     /// Debounce for <see cref="BrouterLinkPreload.Intent"/> preloading: the pointer must rest on the
     /// link this long before the preload fires, so merely brushing past links doesn't fetch.
     /// Defaults to 50 ms (TanStack Router's <c>defaultPreloadDelay</c>).
@@ -160,9 +170,45 @@ public sealed class BrouterOptions
     /// standard <c>view-transition-name</c> CSS property - no Blazor-specific animation code needed.
     /// Mirrors Angular's <c>withViewTransitions</c> and React Router's <c>viewTransition</c>.
     /// Gracefully inert on browsers without the API, during prerender, and in non-browser hosts.
-    /// Defaults to <c>false</c>.
+    /// Defaults to <c>false</c>. See also <see cref="ViewTransitionDefaultAnimations"/>.
     /// </summary>
     public bool ViewTransitions { get; set; } = false;
+
+    /// <summary>
+    /// When <c>true</c> (the default) and <see cref="ViewTransitions"/> is enabled, Brouter injects a
+    /// small stylesheet of polished, direction-aware default animations so navigations look good out
+    /// of the box: a forward navigation (push) glides the new page in, Back/Forward (pop) mirrors the
+    /// motion so going back feels like going back, a replace does a quick in-place fade, and
+    /// shared-element morphs (<c>view-transition-name</c>) get a springy glide.
+    /// <c>prefers-reduced-motion</c> (which OS accessibility settings propagate to the browser, e.g.
+    /// Windows "Animation effects" off) swaps the slides for gentle opacity-only crossfades and
+    /// disables morph motion, so navigation keeps visual feedback without movement.
+    /// <para>
+    /// The injected rules live in the CSS layer <c>bit-brouter</c>, so any unlayered
+    /// <c>::view-transition-*</c> rules in application CSS override them automatically - customize
+    /// freely without fighting specificity, or set this to <c>false</c> to opt out entirely (the
+    /// browser's plain cross-fade / your own CSS only). The current navigation's direction is exposed
+    /// as <c>data-brouter-nav="push|replace|pop"</c> on the root element for custom CSS to key off.
+    /// </para>
+    /// </summary>
+    public bool ViewTransitionDefaultAnimations { get; set; } = true;
+
+    /// <summary>
+    /// Whether the built-in default animations honor the user's <c>prefers-reduced-motion</c>
+    /// preference (the default, <c>true</c>): motion is replaced by gentle opacity-only crossfades
+    /// and shared-element morphs are stilled. Set to <c>false</c> to run the full animations
+    /// regardless of the preference.
+    /// </summary>
+    /// <remarks>
+    /// Think before disabling: <c>reduce</c> is a genuine accessibility signal for motion-sensitive
+    /// users. The legitimate reason to bypass it is that operating systems also report it for
+    /// non-accessibility reasons - e.g. Windows "Animation effects" is commonly switched off on
+    /// VMs, remote-desktop sessions and performance-tuned machines, making every browser there
+    /// report <c>reduce</c> even though no user asked for less motion. Only affects Brouter's
+    /// injected defaults (<see cref="ViewTransitionDefaultAnimations"/>); your own
+    /// <c>::view-transition-*</c> CSS is never touched.
+    /// </remarks>
+    public bool ViewTransitionRespectReducedMotion { get; set; } = true;
 
     /// <summary>
     /// When <c>true</c>, leaving the SPA entirely - closing the tab, a full page reload, or following

@@ -74,7 +74,7 @@ render modes.
 - **Per-route error boundaries**: `ErrorContent` on a `Broute` (nearest boundary wins, bubbling leaf → root) or on the `Brouter` (root fallback), with typed `BrouterErrorContext` carrying the exception and a `RetryAsync()`
 - **Awaitable navigation**: `NavigateAsync` resolves with how the navigation actually ended - `Succeeded` / `Cancelled` / `Redirected` / `NotFound` / `Failed` / `Superseded` (Vue Router navigation-failures style)
 - **History entry state**: attach a state string to a navigation (`Navigate(url, historyState: ...)`, `<BrouterLink HistoryState>`), read it back on `BrouterLocation.HistoryState` - survives Back/Forward
-- **View Transitions API**: `o.ViewTransitions = true` wraps each navigation's re-render in `document.startViewTransition` for animated page changes (`view-transition-name` CSS just works); inert on unsupported browsers
+- **View Transitions API**: `o.ViewTransitions = true` wraps each navigation's re-render in `document.startViewTransition` with **beautiful direction-aware default animations** out of the box (push glides forward, Back mirrors it, replace fades; overridable via plain CSS thanks to `@layer`, opt-out via `o.ViewTransitionDefaultAnimations`); `view-transition-name` morphs just work; inert on unsupported browsers
 - **.NET 10 `NotFound()` interop**: `NavigationManager.NotFound()` routes through Brouter's not-found handling, and an unmatched URL during static SSR sets a real HTTP 404
 - **Revalidation**: `brouter.RevalidateAsync()` re-runs the matched chain's loaders after a mutation - no guards, no URL change, current content stays while fresh data loads
 - **Loader caching (stale-while-revalidate)**: per-route `StaleTime` (or a global default) caches loader results per URL - fresh hits skip the loader (instant Back/Forward), stale hits render immediately and refresh in the background (TanStack Router style); `GcTime`, entry cap, `Blocking` mode and `ClearLoaderCache()` included
@@ -86,7 +86,7 @@ render modes.
 - **Functional query updates**: `brouter.NavigateWithQuery(q => q.Set("page", 2))` updates one parameter and preserves the rest (typed values, multi-value support, replace-by-default)
 - **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
 - **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
-- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style)
+- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget); a cascaded `BrouterKeepAliveContext` signals activate/deactivate so pages can pause background work while hidden, and `brouter.ClearKeepAlive()` evicts retained pages on demand
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
@@ -461,9 +461,13 @@ private ValueTask<object?> LoadFeed(BrouterNavigationContext ctx)
   `<BrouterLink Replace>` click, or the address-bar restore after a cancelled navigation.
 - `Pop` - a history traversal: browser Back/Forward, or `brouter.Back()` / `brouter.Forward()`.
 
-Detection relies on navigation going through Brouter's own primitives (links and `IBrouter`). A raw
-`NavigationManager.NavigateTo` that bypasses `IBrouter` is indistinguishable from a history traversal
-and is reported as `Pop`; route programmatic navigations through `IBrouter` to classify them correctly.
+Detection relies on navigation going through Brouter's own primitives (links and `IBrouter`) -
+`brouter.Back()` / `Forward()` stamp the traversal explicitly, so they always report `Pop`. Two
+framework-level caveats: a raw `NavigationManager.NavigateTo` that bypasses `IBrouter` cannot be
+classified reliably, and interactive Blazor reports **browser-button** Back/Forward as intercepted
+navigations, so those may surface as `Push` to guards/hooks. The built-in view-transition
+animations are unaffected - their direction comes from the browser's own `popstate` signal, so the
+back-button motion mirrors correctly regardless.
 
 ## Active links
 
@@ -516,8 +520,7 @@ and only in these non-fragment cases does `FocusOnNavigateSelector` (if set) the
 
 ## View transitions
 
-Enable the browser's View Transitions API to animate between pages - a cross-fade by default,
-per-element morphs via standard CSS:
+Enable the browser's View Transitions API to animate between pages:
 
 ```csharp
 builder.Services.AddBitBrouterServices(o =>
@@ -526,15 +529,46 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
+**Beautiful by default.** With `ViewTransitions` on, Brouter ships polished, direction-aware
+animations out of the box (`o.ViewTransitionDefaultAnimations`, enabled by default):
+
+- a forward navigation (push) glides the new page in;
+- Back/Forward (pop) **mirrors the motion**, so going back *feels* like going back;
+- a replace does a quick in-place fade;
+- shared-element morphs get a springy glide;
+- `prefers-reduced-motion` swaps the slides for gentle opacity-only crossfades (and stills the
+  morphs) - navigation keeps visual feedback without movement. Note that OS accessibility settings
+  feed this media query: on Windows, turning off Settings > Accessibility > Visual effects >
+  **Animation effects** makes every browser on the machine report `reduce`. Because that setting is
+  often off for *performance* reasons (VMs, remote desktops) rather than user preference, you can
+  bypass it with `o.ViewTransitionRespectReducedMotion = false` - think twice, though: for
+  motion-sensitive users `reduce` is a genuine request.
+
+The defaults live in the CSS layer `bit-brouter`, so **any unlayered `::view-transition-*` rule in
+your own CSS overrides them automatically** - customize without specificity fights, or set
+`o.ViewTransitionDefaultAnimations = false` to opt out entirely. The current direction is exposed as
+`data-brouter-nav="push|replace|pop"` on `<html>` for your CSS to key off.
+
+Per-element morphs are standard CSS - the same `view-transition-name` on both pages makes the
+element morph between them (see the demo's `/gallery` page for a tile-to-hero showcase):
+
 ```css
-/* Same view-transition-name on both pages => the element morphs between them. */
 .post-title { view-transition-name: post-title; }
 ```
 
-Brouter splits the transition around Blazor's async render: the outgoing page is snapshotted right
-before the new route renders, and the transition completes once the new DOM (including scroll/focus
-effects) has landed. On browsers without `document.startViewTransition`, during prerender, and in
-non-browser hosts the whole thing is inert - navigation behaves exactly as with the option off.
+Brouter splits the transition around Blazor's async render: the outgoing page is snapshotted (and
+the snapshot is awaited - critical for correct morphs) right before the new route renders, and the
+transition completes once the new DOM (including scroll/focus effects) has landed. On browsers
+without `document.startViewTransition`, during prerender, and in non-browser hosts the whole thing
+is inert - navigation behaves exactly as with the option off.
+
+> **Troubleshooting: animations (and other JS features) suddenly stop working in dev.** When
+> Bit.Brouter's `bit-brouter.js` changes (package update, or a local rebuild of the library), the
+> host app's cached compressed static-web-asset manifest can go stale, and the browser receives the
+> module as an empty 200 response - transitions, scroll management and link preloading all silently
+> stop while navigation keeps working. Fix: **Rebuild the host project once** (`dotnet build
+> -t:Rebuild`, or Build > Rebuild in the IDE). `curl` shows the file fine, which makes this
+> maddening to diagnose - check the response with an `Accept-Encoding: gzip` header instead.
 
 ## Not found handling (.NET 10)
 
@@ -733,10 +767,84 @@ primary match, which is the common layout case.
 
 When the user navigates away, the rendered component stays mounted inside a hidden wrapper instead
 of being disposed; navigating back flips it visible again with all its state intact - including
-through a parent's `BrouterOutlet` when switching between sibling routes. The cost is memory and
-hidden DOM for as long as the hosting layout stays mounted (state does not survive the layout's own
-unmount, or a full reload). Opt-in per route; combine with `StaleTime` for instant, fully-warm
-Back navigation.
+through a parent's `BrouterOutlet` when switching between sibling routes. Opt-in per route; combine
+with `StaleTime` for instant, fully-warm Back navigation.
+
+### Activate / deactivate lifecycle
+
+A kept component keeps *running* while hidden - timers, polling and live subscriptions all keep
+firing, and any `StateHasChanged` re-renders it off-screen (on Blazor Server that is a diff over the
+wire for a page nobody is looking at). Consume the cascaded `BrouterKeepAliveContext` to pause that
+work while inactive and resume (or refresh) when the page is shown again - the equivalent of Vue's
+`onActivated`/`onDeactivated`:
+
+```razor
+@implements IDisposable
+@code {
+    [CascadingParameter] BrouterKeepAliveContext? KeepAlive { get; set; }
+    private Timer? _poll;
+
+    protected override void OnParametersSet()
+    {
+        // A fresh context instance is cascaded on every activate/deactivate flip, so this runs on
+        // each transition. Pause background work while hidden; resume/refresh when shown again.
+        if (KeepAlive?.IsActive == false) _poll?.Change(Timeout.Infinite, Timeout.Infinite);
+        else _poll?.Change(0, 5000);
+    }
+
+    public void Dispose() => _poll?.Dispose();
+}
+```
+
+### Per-parameter caching with `KeepAliveMax`
+
+By default (`KeepAliveMax` unset, i.e. 1) retention is **per route**: a parameterized keep-alive
+route (e.g. `/item/{id}`) keeps a *single* live instance that re-binds to each new value - state
+carries *across* parameter changes. Set `KeepAliveMax` above 1 to cache **per parameter values**
+instead:
+
+```razor
+<Broute Path="/item/{id:int}" KeepAlive="true" KeepAliveMax="5">
+    <Content><ItemPage /></Content>
+</Broute>
+```
+
+Now `/item/1 → /item/2 → /item/1` keeps two separate instances and returning to each resumes its
+exact state (parameters and loader data stay frozen on hidden instances). When more than
+`KeepAliveMax` parameter sets have been visited, the least-recently-used hidden instance is evicted
+(disposed). The cache key is the route's template parameter values only - query-string variations
+share one instance. `BrouterOptions.DefaultKeepAliveMax` sets the default for routes that don't
+declare their own.
+
+### What it keeps, and for how long
+
+- **The loader still runs on return.** Keep-alive preserves component state, but a return navigation
+  re-matches the route and re-runs its `Loader` unless a `StaleTime` cache hit covers it. Pair the
+  two if you also want the data reused.
+- **Lifetime is bounded by the hosting layout.** State survives sibling switches under a layout and
+  navigations away and back at the *top* level, but not the hosting layout's own unmount, nor a full
+  page reload. To extend a nested route's retention across leaving its parent, mark the parent
+  `KeepAlive` too (at the cost of keeping the whole subtree hidden-mounted).
+
+### Cost and eviction
+
+Each kept page holds its C# state **and** its hidden DOM for as long as it is retained, so the cost
+is memory + DOM node count per kept page (measured by the `Tests/Bit.Brouter.Benchmarks` project).
+Retention is inherently bounded - one instance per `KeepAlive` route by default, up to
+`KeepAliveMax` for per-parameter caching - but you can release it on demand:
+
+```csharp
+@inject IBrouter brouter
+...
+brouter.ClearKeepAlive();  // dispose every retained (hidden) page; the visible one stays
+```
+
+Call it on sign-out, under memory pressure, or after invalidating the state those pages hold; the
+next visit to a dropped route recreates it fresh.
+
+> Notes: turning on `KeepAlive` wraps the route's inline content in a `<div>` (the stable element
+> that preserves the subtree), which can affect direct-child CSS selectors. Retention applies to a
+> route's primary content; named-outlet (`BrouterView`) fragments are not separately kept.
 
 ## Attribute-route / `@page` discovery
 

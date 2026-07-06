@@ -91,16 +91,122 @@ export function wirePreload(element: HTMLElement | null, mode: string, delayMs: 
 // receives an update promise we hold open - and completeViewTransition() is called from
 // OnAfterRenderAsync once the new DOM is committed, resolving that promise so the browser
 // snapshots the new state and runs the crossfade (customizable per-element with the standard
-// view-transition-name CSS). If C# never completes (a crash path), the browser's own transition
-// timeout aborts it - the page does not hang.
+// view-transition-name CSS).
+//
+// TWO TIMING SUBTLETIES (each was a real bug):
+//
+// 1. CAPTURE ORDERING. startViewTransition captures the OLD page state at the next rendering
+//    opportunity (~one frame later) - NOT synchronously. If beginViewTransition responded to C#
+//    as soon as startViewTransition returned, a fast circuit would apply the new route's render
+//    batch BEFORE that capture, so the "old" snapshot would picture the NEW page: old == new,
+//    shared-element morphs have nothing to morph between, and every navigation degenerates to an
+//    identical fade. The fix: beginViewTransition returns a Promise that resolves from INSIDE the
+//    update callback - the spec guarantees the callback is invoked only after the old state is
+//    captured - and JSInterop awaits JS promises, so C# doesn't start rendering until the capture
+//    is truly done. (The spec also guarantees the callback is always invoked, even for skipped
+//    transitions; the begin watchdog below is belt-and-braces for broken implementations.)
+//
+// 2. COMPLETION RACING THE CALLBACK. A completion that arrives before the update callback has
+//    parked its resolver would silently no-op, orphaning the promise - the transition then holds
+//    the page frozen (pointer blocked, rendering suppressed) until the browser's ~4s timeout
+//    aborts it with "Transition was aborted because of timeout in DOM update". With the promise-
+//    based begin above, C# can't normally complete before the callback runs, but the
+//    completedEarly flag keeps the degraded paths (begin watchdog fired, duplicate completes)
+//    correct, and the update watchdog caps how long an open transition can ever hold the page
+//    (a lost completion - circuit drop, error path - degrades to a skipped animation, not a freeze).
 
 let activeViewTransitionResolve: (() => void) | null = null;
+// Set when completeViewTransition() arrives before the browser has invoked the current
+// transition's update callback (see timing note 2). Consumed by that callback.
+let viewTransitionCompletedEarly = false;
+// Upper bound on how long the update promise may stay open. The C# side completes right after the
+// route's render lands (loaders run BEFORE the transition begins), so legitimate completions
+// arrive within a few frames; well under a second even on a slow connection.
+const viewTransitionWatchdogMs = 1500;
+// Upper bound on waiting for the old-state capture (the update callback's invocation). Normally
+// one frame; if it never comes (pathological implementation), navigation must not hang.
+const viewTransitionBeginWatchdogMs = 500;
 
-// Returns true when a transition was actually started (API present); false lets the C# side skip
+// Brouter's out-of-the-box navigation animations (BrouterOptions.ViewTransitionDefaultAnimations).
+// Direction-aware: a push glides the new page in, pop (Back/Forward) mirrors the motion, replace
+// does a quick in-place fade; shared-element morphs get a springy glide. prefers-reduced-motion
+// (which Windows/macOS accessibility settings propagate into the browser - "Animation effects"
+// off on Windows means EVERY user of that machine reports reduce) swaps the slides for gentle
+// opacity-only crossfades and disables the morph motion, so navigation still gives visual feedback
+// instead of going dead. Injected once, inside the CSS layer "bit-brouter",
+// so any UNLAYERED ::view-transition-* rule in application CSS overrides these automatically -
+// zero specificity fights. The current direction is exposed as data-brouter-nav on <html>.
+const viewTransitionDefaultCss = `
+::view-transition-old(root) { animation: 170ms cubic-bezier(.4,0,1,1) both bit-brouter-vt-out-fwd; }
+::view-transition-new(root) { animation: 300ms cubic-bezier(.22,1,.36,1) 30ms both bit-brouter-vt-in-fwd; }
+html[data-brouter-nav="pop"]::view-transition-old(root) { animation-name: bit-brouter-vt-out-back; }
+html[data-brouter-nav="pop"]::view-transition-new(root) { animation-name: bit-brouter-vt-in-back; }
+html[data-brouter-nav="replace"]::view-transition-old(root) { animation: 120ms ease-out both bit-brouter-vt-fade-out; }
+html[data-brouter-nav="replace"]::view-transition-new(root) { animation: 170ms ease-in both bit-brouter-vt-fade-in; }
+::view-transition-group(*) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.22,1,.36,1); }
+@keyframes bit-brouter-vt-out-fwd { to { opacity: 0; transform: translateX(-28px); } }
+@keyframes bit-brouter-vt-in-fwd { from { opacity: 0; transform: translateX(34px); } }
+@keyframes bit-brouter-vt-out-back { to { opacity: 0; transform: translateX(28px); } }
+@keyframes bit-brouter-vt-in-back { from { opacity: 0; transform: translateX(-34px); } }
+@keyframes bit-brouter-vt-fade-out { to { opacity: 0; } }
+@keyframes bit-brouter-vt-fade-in { from { opacity: 0; } }`;
+
+// Included only when BrouterOptions.ViewTransitionRespectReducedMotion is true (the default).
+// Bypassing it is legitimate when the OS reports reduce for non-accessibility reasons (Windows
+// "Animation effects" off on VMs / remote desktops / perf-tuned machines) - the C# option holds
+// the rationale; here we just honor the flag.
+const viewTransitionReducedMotionCss = `
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    html[data-brouter-nav]::view-transition-old(root) { animation: 120ms ease-out both bit-brouter-vt-fade-out; }
+    ::view-transition-new(root),
+    html[data-brouter-nav]::view-transition-new(root) { animation: 160ms ease-in both bit-brouter-vt-fade-in; }
+    ::view-transition-group(*) { animation-duration: 1ms; animation-delay: 0ms; }
+}`;
+
+let viewTransitionDefaultsInjected = false;
+
+function ensureViewTransitionDefaults(useDefaults: boolean, respectReducedMotion: boolean) {
+    if (!useDefaults || viewTransitionDefaultsInjected) return;
+    viewTransitionDefaultsInjected = true;
+    const style = document.createElement('style');
+    style.id = 'bit-brouter-view-transitions';
+    style.textContent = '@layer bit-brouter {' + viewTransitionDefaultCss
+        + (respectReducedMotion ? viewTransitionReducedMotionCss : '') + '\n}';
+    document.head.appendChild(style);
+}
+
+// History-traversal detection for the animation direction. The C# side classifies a navigation
+// from what the framework reports, but interactive Blazor flags Back/Forward history traversals
+// as "intercepted", which reads as a push. The browser knows the truth: popstate fires exactly on
+// history traversals (never on pushState link navigations), and it fires BEFORE the navigation
+// pipeline's beginViewTransition interop arrives - so a module-scope listener can correct the
+// direction reliably for both the browser buttons and programmatic history.go/back/forward.
+let historyTraversalPending = false;
+if (typeof window !== 'undefined') {
+    window.addEventListener('popstate', () => { historyTraversalPending = true; });
+}
+
+// Resolves true once a transition is started AND its old-state capture is complete (the C# side
+// awaits this before rendering the new route - see timing note 1); false lets the C# side skip
 // the completion round-trip entirely on unsupported browsers.
-export function beginViewTransition(): boolean {
+//   navKind              - 'push' | 'replace' | 'pop'; drives the direction-aware default
+//                          animations and is exposed as data-brouter-nav on the root element.
+//   useDefaults          - whether to inject Brouter's default animation stylesheet (once).
+//   respectReducedMotion - whether the injected defaults include the prefers-reduced-motion
+//                          fallback (BrouterOptions.ViewTransitionRespectReducedMotion).
+export function beginViewTransition(navKind?: string, useDefaults?: boolean, respectReducedMotion?: boolean): Promise<boolean> {
     const doc = document as any;
-    if (typeof doc.startViewTransition !== 'function') return false;
+    if (typeof doc.startViewTransition !== 'function') return Promise.resolve(false);
+
+    ensureViewTransitionDefaults(useDefaults !== false, respectReducedMotion !== false);
+    // Stamp the direction BEFORE the transition starts so the pseudo-element animations resolve
+    // against it. It persists (harmlessly) until the next navigation overwrites it. A pending
+    // popstate overrides the reported kind: the framework cannot distinguish Back/Forward from a
+    // push in interactive mode (see historyTraversalPending above), but the browser can.
+    const kind = historyTraversalPending ? 'pop' : (navKind || 'push');
+    historyTraversalPending = false;
+    document.documentElement.setAttribute('data-brouter-nav', kind);
 
     // A still-open previous transition (its navigation was superseded mid-flight) must be released
     // first: the browser skips/settles it and lets the new one start cleanly.
@@ -108,25 +214,68 @@ export function beginViewTransition(): boolean {
         activeViewTransitionResolve();
         activeViewTransitionResolve = null;
     }
+    viewTransitionCompletedEarly = false;
 
-    try {
-        doc.startViewTransition(() => new Promise<void>(resolve => {
-            activeViewTransitionResolve = resolve;
-        }));
-        return true;
-    } catch {
-        // Defensive: a host with a broken/partial implementation must not break navigation.
-        activeViewTransitionResolve = null;
-        return false;
-    }
+    return new Promise<boolean>(beginResolve => {
+        let beginResolved = false;
+        const resolveBegin = (started: boolean) => {
+            if (beginResolved) return;
+            beginResolved = true;
+            beginResolve(started);
+        };
+
+        try {
+            const transition = doc.startViewTransition(() => {
+                // Invoked by the browser once the old state is captured: NOW C# may render the new
+                // route (the render batch lands while rendering is paused, exactly as the API
+                // intends), then complete to trigger the new-state capture and the animation.
+                resolveBegin(true);
+
+                // The completion may already have arrived (only via the degraded begin-watchdog
+                // path) - resolve immediately instead of parking a resolver nothing would call.
+                if (viewTransitionCompletedEarly) {
+                    viewTransitionCompletedEarly = false;
+                    return Promise.resolve();
+                }
+                return new Promise<void>(resolve => {
+                    activeViewTransitionResolve = resolve;
+                    // Watchdog: never let an open transition hold the page hostage. setTimeout
+                    // still fires while rendering is suppressed, so this releases even a fully
+                    // frozen page.
+                    window.setTimeout(() => {
+                        if (activeViewTransitionResolve === resolve) activeViewTransitionResolve = null;
+                        resolve(); // idempotent if the normal completion already ran
+                    }, viewTransitionWatchdogMs);
+                });
+            });
+            // We deliberately discard the transition, so its promises reject unobserved when a
+            // rapid follow-up navigation skips it (AbortError: "Transition was skipped") - attach
+            // no-op handlers to keep that expected outcome out of the console.
+            transition?.finished?.catch?.(() => { /* skipped/aborted transitions are expected */ });
+            transition?.updateCallbackDone?.catch?.(() => { /* ditto */ });
+            transition?.ready?.catch?.(() => { /* ditto */ });
+
+            // Belt-and-braces: the spec guarantees the update callback always runs, but a broken
+            // host must not leave the navigation pipeline awaiting forever. Reporting true keeps
+            // the completion handshake alive so the transition (if any) is still released.
+            window.setTimeout(() => resolveBegin(true), viewTransitionBeginWatchdogMs);
+        } catch {
+            // Defensive: a host with a broken/partial implementation must not break navigation.
+            activeViewTransitionResolve = null;
+            resolveBegin(false);
+        }
+    });
 }
 
 // Resolves the pending transition's update promise; the browser then animates old -> new.
-// Idempotent: completing with no pending transition is a no-op.
+// Idempotent: completing with no pending transition is a no-op - EXCEPT that a completion racing
+// ahead of the update callback must be remembered (completedEarly), or the transition freezes.
 export function completeViewTransition() {
     if (activeViewTransitionResolve) {
         activeViewTransitionResolve();
         activeViewTransitionResolve = null;
+    } else {
+        viewTransitionCompletedEarly = true;
     }
 }
 

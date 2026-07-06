@@ -12,7 +12,8 @@ public class ViewTransitionTests : BunitTestContext
     {
         var module = Context!.JSInterop.SetupModule("./_content/Bit.Brouter/bit-brouter.js");
         module.Mode = JSRuntimeMode.Loose;
-        module.Setup<bool>("beginViewTransition").SetResult(beginReturns);
+        // beginViewTransition(navKind, useDefaultAnimations): match any argument values.
+        module.Setup<bool>("beginViewTransition", _ => true).SetResult(beginReturns);
         module.SetupVoid("completeViewTransition").SetVoidResult();
         return module;
     }
@@ -37,6 +38,14 @@ public class ViewTransitionTests : BunitTestContext
             // Begin fired before the render, complete after it landed.
             Assert.IsTrue(module.Invocations.Count(i => i.Identifier == "beginViewTransition") >= 1);
             Assert.IsTrue(module.Invocations.Count(i => i.Identifier == "completeViewTransition") >= 1);
+
+            // Begin carries the direction token (a programmatic Navigate is a push), the
+            // default-animations flag and the reduced-motion flag (both on by default), which
+            // drive the built-in direction-aware animations.
+            var begin = module.Invocations.First(i => i.Identifier == "beginViewTransition");
+            Assert.AreEqual("push", begin.Arguments[0]);
+            Assert.AreEqual(true, begin.Arguments[1]);
+            Assert.AreEqual(true, begin.Arguments[2]);
         });
     }
 

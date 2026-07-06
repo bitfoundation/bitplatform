@@ -90,6 +90,19 @@ public class Broute : ComponentBase, IDisposable
     [Parameter] public bool KeepAlive { get; set; }
 
     /// <summary>
+    /// Retained-instance budget for this <see cref="KeepAlive"/> route. At the default of 1 (or when
+    /// unset and <see cref="BrouterOptions.DefaultKeepAliveMax"/> is 1) the route keeps a single live
+    /// instance that re-binds when its parameter values change - state carries <em>across</em>
+    /// parameter changes. Above 1, instances are kept <em>per matched parameter values</em>: visiting
+    /// <c>/item/1</c> then <c>/item/2</c> mounts two separate instances, and returning to
+    /// <c>/item/1</c> resumes its exact state. When the budget is exceeded the least-recently-used
+    /// hidden instance is evicted (disposed). The key is built from the route's template parameter
+    /// values only - the query string is deliberately not part of it, so <c>?tab=2</c> variations
+    /// share one instance. No effect unless <see cref="KeepAlive"/> is set; values below 1 act as 1.
+    /// </summary>
+    [Parameter] public int? KeepAliveMax { get; set; }
+
+    /// <summary>
     /// Freshness window for this route's <see cref="Loader"/> result, enabling the router's
     /// stale-while-revalidate cache: a navigation (or Back/Forward) to a URL whose cached result is
     /// younger than this skips the loader entirely; an older-but-not-garbage-collected result is
@@ -363,6 +376,52 @@ public class Broute : ComponentBase, IDisposable
         else
         {
             Parent.SetMatched();
+        }
+    }
+
+    // The resolved retained-instance budget: per-route KeepAliveMax, else the global default.
+    // Clamped to >= 1 so a misconfigured 0/negative value degrades to the singleton behavior
+    // instead of rendering nothing.
+    internal int EffectiveKeepAliveMax => Math.Max(1, KeepAliveMax ?? Brouter?.Options.DefaultKeepAliveMax ?? 1);
+
+    /// <summary>
+    /// Builds the retention key for the current match of a per-parameter keep-alive route
+    /// (<see cref="EffectiveKeepAliveMax"/> &gt; 1): the route's template parameter values, in
+    /// template order, formatted invariantly. In singleton mode the key is constant (empty) so every
+    /// match reuses the one retained instance - the pre-existing re-binding behavior. The query
+    /// string is deliberately excluded (documented on <see cref="KeepAliveMax"/>).
+    /// </summary>
+    internal string ComputeKeepAliveKey()
+    {
+        if (EffectiveKeepAliveMax <= 1 || RouteTemplate is null) return string.Empty;
+
+        var sb = new System.Text.StringBuilder();
+        foreach (var seg in RouteTemplate.TemplateSegments)
+        {
+            if (seg.IsParameter is false) continue;
+            Parameters.TryGetValue(seg.Value, out var value);
+            // U+001F (unit separator) can't appear in a template's parameter name, so the
+            // key is unambiguous even when values themselves contain '=' or '/'.
+            sb.Append(seg.Value).Append('=').Append(BrouterService.FormatRouteValue(value)).Append('\u001f');
+        }
+        return sb.ToString();
+    }
+
+    // Releases this route's retained keep-alive state - both its own inline hidden content (when it
+    // is a kept-but-hidden top-level/inline route, or hidden per-parameter siblings of the active
+    // instance) and any kept children held by the outlets it hosts. The currently active instance is
+    // left untouched. Backs IBrouter.ClearKeepAlive.
+    internal void ClearKeepAlive()
+    {
+        if (_renderer is not null && KeepAlive && HasEverMatched)
+        {
+            _renderer.DropKeptContent(Matched);
+            StateHasChanged();
+        }
+
+        foreach (var outlet in Outlets.Values)
+        {
+            outlet.ClearKeepAlive();
         }
     }
 

@@ -50,6 +50,12 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
     public void ClearLoaderCache() => LoaderCache.Clear();
 
+    public void ClearKeepAlive()
+    {
+        EnsureMounted();
+        _activeBrouter!.ClearKeepAlive();
+    }
+
     internal void Attach(Brouter brouter, NavigationManager navManager)
     {
         // Only one <Brouter/> may be mounted per scope. Two competing instances would race
@@ -146,6 +152,11 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         if (delta < 1)
             throw new ArgumentOutOfRangeException(nameof(delta), delta, "Back delta must be >= 1. To go forward, use Forward / ForwardAsync.");
         EnsureMounted();
+        // Stamp the traversal type up front: interactive Blazor reports history traversals as
+        // intercepted navigations, which the pipeline's fallback heuristic reads as a push. The
+        // pending marker wins, so guards/hooks see the correct Pop. (If the traversal is a no-op -
+        // history boundary - the marker is consumed by the next navigation instead; rare and benign.)
+        _activeBrouter!.SetPendingNavigationType(BrouterNavigationType.Pop);
         return GoAsync(-delta);
     }
 
@@ -160,6 +171,8 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         if (delta < 1)
             throw new ArgumentOutOfRangeException(nameof(delta), delta, "Forward delta must be >= 1. To go back, use Back / BackAsync.");
         EnsureMounted();
+        // See BackAsync: mark the traversal so the pipeline reports Pop rather than a push.
+        _activeBrouter!.SetPendingNavigationType(BrouterNavigationType.Pop);
         return GoAsync(delta);
     }
 
@@ -195,14 +208,25 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
     /// circuits, or when <see cref="BrouterOptions.ViewTransitions"/> is off - the pipeline then
     /// skips the completion round-trip entirely.
     /// </summary>
-    internal async ValueTask<bool> BeginViewTransitionAsync()
+    internal async ValueTask<bool> BeginViewTransitionAsync(BrouterNavigationType navigationType)
     {
         if (_options.ViewTransitions is false) return false;
+
+        // The direction token drives the built-in direction-aware default animations (push glides
+        // forward, pop mirrors it, replace fades in place) and is exposed on the root element as
+        // data-brouter-nav for custom CSS.
+        var kind = navigationType switch
+        {
+            BrouterNavigationType.Replace => "replace",
+            BrouterNavigationType.Pop => "pop",
+            _ => "push",
+        };
 
         try
         {
             var module = await GetModuleAsync();
-            return await module.InvokeAsync<bool>("beginViewTransition");
+            return await module.InvokeAsync<bool>("beginViewTransition", kind,
+                _options.ViewTransitionDefaultAnimations, _options.ViewTransitionRespectReducedMotion);
         }
         catch (JSDisconnectedException ex) { LogSuppressedJsFailure(ex, "circuit disconnected mid-call"); }
         catch (JSException ex) { LogSuppressedJsFailure(ex, "JS interop failure (e.g. non-browser host)"); }

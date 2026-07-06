@@ -27,13 +27,86 @@ internal class BrouterRouteRenderer
     private BrouterRouteMeta? _cachedRouteMeta;
     private object? _cachedMetaRef;
 
+    // Keep-alive lifecycle context (see BrouterKeepAliveContext) for the singleton mode
+    // (EffectiveKeepAliveMax <= 1). A fresh instance is handed out only when the active/hidden state
+    // flips, so consumers reading IsActive in OnParametersSet are notified on every transition while
+    // unchanged renders stay allocation-free and quiet.
+    private bool _keepAliveActive;
+    private BrouterKeepAliveContext? _keepAliveContext;
+
+    // Set by DropKeptContent (IBrouter.ClearKeepAlive) to stop rendering this route's kept-but-hidden
+    // content, so its component is disposed and its retained state released. Reset the moment the
+    // route matches again, so a later visit rebuilds it fresh.
+    private bool _keptDropped;
+
+    // Per-parameter retention (EffectiveKeepAliveMax > 1) for the inline (non-outlet) render path:
+    // one entry per recently-visited parameter set, LRU-ordered with the most recently active at the
+    // end. Each entry owns a keyed subtree whose parameters/data are frozen while hidden, so a
+    // hidden /item/1 instance keeps seeing id=1 while the route's current match is /item/2.
+    private readonly List<KeptEntry> _keptEntries = [];
+
+    private sealed class KeptEntry
+    {
+        public string Key { get; }
+        public BrouterRouteParameters Parameters { get; set; } = BrouterRouteParameters.Empty;
+        public BrouterRouteData Data { get; set; } = BrouterRouteData.Empty;
+
+        // Per-entry lifecycle context, minted only on an active/hidden flip (same contract as the
+        // renderer-level singleton context above).
+        private bool _active;
+        private BrouterKeepAliveContext? _context;
+
+        public KeptEntry(string key) => Key = key;
+
+        public BrouterKeepAliveContext GetKeepAliveContext(bool active)
+        {
+            if (_context is null || _active != active)
+            {
+                _context = new BrouterKeepAliveContext(active);
+                _active = active;
+            }
+            return _context;
+        }
+    }
+
     public BrouterRouteRenderer(Broute route)
     {
         _route = route;
     }
 
+    // Drops this route's retained (hidden) keep-alive content on the next render, keeping only the
+    // currently active instance (when the route is matched). Backs IBrouter.ClearKeepAlive.
+    public void DropKeptContent(bool routeIsMatched)
+    {
+        // Per-parameter mode: the active entry (list tail, see RenderKeptEntries' LRU ordering)
+        // survives when the route is matched; every hidden sibling is dropped so its subtree is
+        // disposed on the next render.
+        if (_keptEntries.Count > 0)
+        {
+            var keep = routeIsMatched ? _keptEntries[^1] : null;
+            _keptEntries.Clear();
+            if (keep is not null) _keptEntries.Add(keep);
+        }
+
+        // Singleton mode: only kept-but-hidden content is dropped; an active route stays rendered.
+        if (routeIsMatched is false) _keptDropped = true;
+    }
+
+    private BrouterKeepAliveContext GetKeepAliveContext(bool active)
+    {
+        if (_keepAliveContext is null || _keepAliveActive != active)
+        {
+            _keepAliveContext = new BrouterKeepAliveContext(active);
+            _keepAliveActive = active;
+        }
+        return _keepAliveContext;
+    }
+
     public void BuildRenderTree(RenderTreeBuilder builder, bool matched)
     {
+        // A fresh match clears any prior "dropped" state so the route renders again.
+        if (matched) _keptDropped = false;
+
         builder.OpenComponent<CascadingValue<Broute>>(0);
         builder.AddAttribute(1, "Name", "ParentRoute");
         builder.AddAttribute(2, "Value", _route);
@@ -41,8 +114,9 @@ internal class BrouterRouteRenderer
         {
             b.AddContent(0, _route.ChildContent);
             // A KeepAlive route that has been shown at least once keeps rendering while unmatched -
-            // hidden - so its component state survives until it matches again.
-            if (matched || (_route.KeepAlive && _route.HasEverMatched))
+            // hidden - so its component state survives until it matches again (unless ClearKeepAlive
+            // dropped it, in which case it re-renders only once it matches again).
+            if (matched || (_route.KeepAlive && _route.HasEverMatched && _keptDropped is false))
             {
                 // RenderRoute restarts its own sequence numbers from 0; wrap it in a region
                 // so its frames live in an independent sequence-number space and don't collide
@@ -146,14 +220,29 @@ internal class BrouterRouteRenderer
                     // Without a primary outlet on the host, the content renders inline right here.
                     if (outletHost is null || outletHost.HasPrimaryOutlet is false)
                     {
-                        if (_route.KeepAlive)
+                        if (_route.KeepAlive && _route.EffectiveKeepAliveMax > 1)
                         {
-                            // The stable wrapper element is what preserves the component subtree
-                            // across matched <-> hidden flips; only its hidden attribute toggles.
+                            // Per-parameter retention: one keyed, hidden-unless-active subtree per
+                            // recently-visited parameter set, LRU-evicted over the route's budget.
+                            RenderKeptEntries(b3, matched, routeParams, routeData);
+                        }
+                        else if (_route.KeepAlive)
+                        {
+                            // Singleton retention: one instance that re-binds across parameter
+                            // changes. The stable wrapper element is what preserves the component
+                            // subtree across matched <-> hidden flips; only its hidden attribute
+                            // toggles.
+                            var keepAlive = GetKeepAliveContext(matched);
                             b3.OpenElement(0, "div");
                             if (matched is false) b3.AddAttribute(1, "hidden", true);
                             b3.OpenRegion(2);
-                            EmitContent(b3, routeParams);
+                            // Cascade the activate/deactivate signal to the kept content so it can
+                            // pause/resume work while hidden (see BrouterKeepAliveContext).
+                            b3.OpenComponent<CascadingValue<BrouterKeepAliveContext>>(0);
+                            b3.AddAttribute(1, "Value", keepAlive);
+                            b3.AddAttribute(2, "IsFixed", false);
+                            b3.AddAttribute(3, "ChildContent", (RenderFragment)(bk => EmitContent(bk, routeParams)));
+                            b3.CloseComponent();
                             b3.CloseRegion();
                             b3.CloseElement();
                         }
@@ -168,6 +257,92 @@ internal class BrouterRouteRenderer
             b1.CloseComponent();
         }));
         builder.CloseComponent();
+    }
+
+    /// <summary>
+    /// Per-parameter keep-alive rendering for the inline (non-outlet) path. Maintains the LRU entry
+    /// list (find-or-create the active entry by the current match's parameter key, move it to the
+    /// tail, evict the head beyond the budget) and renders every entry inside a keyed wrapper that
+    /// is hidden unless active - mirroring BrouterOutlet's kept-children region.
+    /// </summary>
+    private void RenderKeptEntries(RenderTreeBuilder b3, bool matched, BrouterRouteParameters routeParams, BrouterRouteData? routeData)
+    {
+        KeptEntry? active = null;
+        if (matched)
+        {
+            var key = _route.ComputeKeepAliveKey();
+            active = _keptEntries.Find(e => string.Equals(e.Key, key, StringComparison.Ordinal));
+            if (active is null)
+            {
+                active = new KeptEntry(key);
+                _keptEntries.Add(active);
+            }
+            else if (ReferenceEquals(_keptEntries[^1], active) is false)
+            {
+                // LRU order: the most recently active entry lives at the tail.
+                _keptEntries.Remove(active);
+                _keptEntries.Add(active);
+            }
+
+            // Only the active entry re-binds to the current match; hidden entries keep the
+            // parameters/data they were deactivated with.
+            active.Parameters = routeParams;
+            active.Data = routeData ?? BrouterRouteData.Empty;
+
+            // Evict beyond the budget: the head is always the least-recently-used hidden entry
+            // (the active one was just moved to the tail).
+            var max = _route.EffectiveKeepAliveMax;
+            while (_keptEntries.Count > max)
+            {
+                _keptEntries.RemoveAt(0);
+            }
+        }
+
+        // Constant sequence numbers per iteration (the canonical keyed-list pattern): entries move
+        // positions on every LRU reorder, and a moved entry must keep the SAME sequence numbers for
+        // its frames or the diff rebuilds its subtree - destroying the very state being kept. The
+        // key alone disambiguates siblings.
+        foreach (var entry in _keptEntries)
+        {
+            var isActive = ReferenceEquals(entry, active);
+            b3.OpenElement(0, "div");
+            b3.SetKey(entry);
+            if (isActive is false) b3.AddAttribute(1, "hidden", true);
+            b3.OpenRegion(2);
+            RenderKeptEntry(b3, entry, isActive);
+            b3.CloseRegion();
+            b3.CloseElement();
+        }
+    }
+
+    // One kept entry's subtree: shadows the outer RouteParameters/RouteData cascades with the
+    // entry's own (frozen-while-hidden) values, then cascades the activate/deactivate signal, then
+    // emits the route content bound to the entry's parameters.
+    private void RenderKeptEntry(RenderTreeBuilder b, KeptEntry entry, bool isActive)
+    {
+        var context = entry.GetKeepAliveContext(isActive);
+        var parameters = entry.Parameters;
+        var data = entry.Data;
+
+        b.OpenComponent<CascadingValue<BrouterRouteParameters>>(0);
+        b.AddAttribute(1, "Name", "RouteParameters");
+        b.AddAttribute(2, "Value", parameters);
+        b.AddAttribute(3, "IsFixed", false);
+        b.AddAttribute(4, "ChildContent", (RenderFragment)(b1 =>
+        {
+            b1.OpenComponent<CascadingValue<BrouterRouteData>>(0);
+            b1.AddAttribute(1, "Value", data);
+            b1.AddAttribute(2, "ChildContent", (RenderFragment)(b2 =>
+            {
+                b2.OpenComponent<CascadingValue<BrouterKeepAliveContext>>(0);
+                b2.AddAttribute(1, "Value", context);
+                b2.AddAttribute(2, "IsFixed", false);
+                b2.AddAttribute(3, "ChildContent", (RenderFragment)(bk => EmitContent(bk, parameters)));
+                b2.CloseComponent();
+            }));
+            b1.CloseComponent();
+        }));
+        b.CloseComponent();
     }
 
     // The route's error-boundary/content/component trio for inline (non-outlet) rendering.
