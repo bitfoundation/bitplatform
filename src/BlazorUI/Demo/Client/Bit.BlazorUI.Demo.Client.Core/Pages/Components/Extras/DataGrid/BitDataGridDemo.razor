@@ -398,10 +398,11 @@
         <DemoExample Title="Cell events &amp; context menu" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
                 The grid raises <code>OnCellClick</code>, <code>OnCellDoubleClick</code> and <code>OnCellContextMenu</code>
-                with the row, column and the underlying mouse event.
+                with the row, column and the underlying mouse event. Here <code>OnCellContextMenu</code> opens a custom
+                context menu at the pointer position (right-click any cell).
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@cellEventsProducts" Height="420px"
+            <BitDataGrid @ref="cellEventsGrid" TItem="Product" Items="@cellEventsProducts" Height="420px"
                          OnCellClick="OnCellClick"
                          OnCellDoubleClick="OnCellDoubleClick"
                          OnCellContextMenu="OnCellContextMenu">
@@ -412,6 +413,18 @@
             </BitDataGrid>
             <br />
             <BitText>@cellEventStatus</BitText>
+
+            @if (cellMenuArgs is not null)
+            {
+                <div class="ctx-menu-overlay"
+                     @onclick="CloseCellMenu"
+                     @oncontextmenu="CloseCellMenu" @oncontextmenu:preventDefault="true"></div>
+                <div class="ctx-menu" role="menu" style="left:@(cellMenuX)px;top:@(cellMenuY)px">
+                    <div class="ctx-menu-header">@cellMenuArgs.Item.Name — @cellMenuArgs.ColumnTitle</div>
+                    <button type="button" class="ctx-menu-item" role="menuitem" @onclick="CopyCellValue">Copy value</button>
+                    <button type="button" class="ctx-menu-item ctx-menu-danger" role="menuitem" @onclick="DeleteCellMenuRow">Delete row</button>
+                </div>
+            }
         </DemoExample>
 
         <DemoExample Title="Keyboard cell navigation" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">

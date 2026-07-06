@@ -7,3 +7,52 @@
     color: var(--bit-clr-fg-sec);
     font-size: 0.75rem;
 }
+
+/* Cell context menu (example 16): the invisible overlay catches the click/right-click
+   that dismisses the menu, so it must sit below the menu but above everything else. */
+.ctx-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+}
+
+.ctx-menu {
+    position: fixed;
+    z-index: 1000;
+    min-width: 180px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    background: var(--bit-clr-bg-pri);
+    border: 1px solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.ctx-menu-header {
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-sec);
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    white-space: nowrap;
+}
+
+.ctx-menu-item {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--bit-clr-fg-pri);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.ctx-menu-item:hover {
+    background: var(--bit-clr-bg-pri-hover);
+}
+
+.ctx-menu-danger {
+    color: var(--bit-clr-err);
+}

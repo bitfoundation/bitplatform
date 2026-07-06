@@ -560,19 +560,82 @@ private void OnReorder(BitDataGridRowReorderEventArgs<Product> e)
 }" + ProductModelCode + SampleDataCode;
 
     private readonly string example16RazorCode = @"
-<BitDataGrid TItem=""Product"" Items=""@products"" Height=""420px""
+<style>
+    /* The invisible overlay catches the click/right-click that dismisses the menu. */
+    .ctx-menu-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+    }
+
+    .ctx-menu {
+        position: fixed;
+        z-index: 1000;
+        min-width: 180px;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+        background: var(--bit-clr-bg-pri);
+        border: 1px solid var(--bit-clr-brd-ter);
+        border-radius: var(--bit-shp-brd-radius);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+</style>
+
+<BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""420px""
              OnCellClick=""OnCellClick""
              OnCellDoubleClick=""OnCellDoubleClick""
              OnCellContextMenu=""OnCellContextMenu"">
     <BitDataGridColumn TItem=""Product"" Field=""Name"" />
     <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />
-</BitDataGrid>";
+</BitDataGrid>
+
+@if (cellMenuArgs is not null)
+{
+    <div class=""ctx-menu-overlay""
+         @onclick=""CloseCellMenu""
+         @oncontextmenu=""CloseCellMenu"" @oncontextmenu:preventDefault=""true""></div>
+    <div class=""ctx-menu"" role=""menu"" style=""left:@(cellMenuX)px;top:@(cellMenuY)px"">
+        <div>@cellMenuArgs.Item.Name — @cellMenuArgs.ColumnTitle</div>
+        <button type=""button"" role=""menuitem"" @onclick=""CopyCellValue"">Copy value</button>
+        <button type=""button"" role=""menuitem"" @onclick=""DeleteCellMenuRow"">Delete row</button>
+    </div>
+}";
     private readonly string example16CsharpCode = @"
 private List<Product> products = SampleData.Generate(40);
+private BitDataGrid<Product>? grid;
+private BitDataGridCellEventArgs<Product>? cellMenuArgs;
+private int cellMenuX;
+private int cellMenuY;
 
 private void OnCellClick(BitDataGridCellEventArgs<Product> e) { /* e.Item, e.ColumnTitle, e.Value */ }
 private void OnCellDoubleClick(BitDataGridCellEventArgs<Product> e) { /* e.Item, e.ColumnTitle, e.Value */ }
-private void OnCellContextMenu(BitDataGridCellEventArgs<Product> e) { /* e.Mouse.ClientX / e.Mouse.ClientY */ }" + ProductModelCode + SampleDataCode;
+
+private void OnCellContextMenu(BitDataGridCellEventArgs<Product> e)
+{
+    cellMenuArgs = e;
+    // ClientX/Y are viewport coordinates, matching the menu's position:fixed placement.
+    cellMenuX = (int)e.Mouse.ClientX;
+    cellMenuY = (int)e.Mouse.ClientY;
+}
+
+private void CloseCellMenu() => cellMenuArgs = null;
+
+private async Task CopyCellValue()
+{
+    if (cellMenuArgs is null) return;
+    await JSRuntime.InvokeVoidAsync(""navigator.clipboard.writeText"", cellMenuArgs.Value?.ToString() ?? """");
+    cellMenuArgs = null;
+}
+
+private async Task DeleteCellMenuRow()
+{
+    if (cellMenuArgs is null) return;
+    products.Remove(cellMenuArgs.Item);
+    cellMenuArgs = null;
+    // The grid caches its processed view; mutating the bound list in place requires an explicit refresh.
+    if (grid is not null) await grid.RefreshAsync();
+}" + ProductModelCode + SampleDataCode;
 
     private readonly string example17RazorCode = @"
 <BitDataGrid TItem=""Product"" Items=""@products"" Height=""460px""

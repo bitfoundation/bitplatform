@@ -76,9 +76,13 @@ public partial class BitDataGridDemo : AppComponentBase
     private readonly List<Product> reorderProducts = SampleData.Generate(12);
     private string? reorderLog;
 
-    // example 16 - cell events
+    // example 16 - cell events & context menu
     private readonly List<Product> cellEventsProducts = SampleData.Generate(40);
     private string cellEventStatus = "Click, double-click or right-click any cell.";
+    private BitDataGrid<Product>? cellEventsGrid;
+    private BitDataGridCellEventArgs<Product>? cellMenuArgs;
+    private int cellMenuX;
+    private int cellMenuY;
 
     // example 17 - cell navigation
     private readonly List<Product> cellNavProducts = SampleData.Generate(40);
@@ -549,7 +553,33 @@ public partial class BitDataGridDemo : AppComponentBase
         => cellEventStatus = $"Double-clicked {e.ColumnTitle} on {e.Item.Name}";
 
     private void OnCellContextMenu(BitDataGridCellEventArgs<Product> e)
-        => cellEventStatus = $"Right-clicked {e.ColumnTitle} on {e.Item.Name} at ({e.Mouse.ClientX}, {e.Mouse.ClientY})";
+    {
+        cellMenuArgs = e;
+        // ClientX/Y are viewport coordinates, matching the menu's position:fixed placement.
+        cellMenuX = (int)e.Mouse.ClientX;
+        cellMenuY = (int)e.Mouse.ClientY;
+        cellEventStatus = $"Right-clicked {e.ColumnTitle} on {e.Item.Name}";
+    }
+
+    private void CloseCellMenu() => cellMenuArgs = null;
+
+    private async Task CopyCellValue()
+    {
+        if (cellMenuArgs is null) return;
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", cellMenuArgs.Value?.ToString() ?? "");
+        cellEventStatus = $"Copied \"{cellMenuArgs.Value}\" to the clipboard.";
+        cellMenuArgs = null;
+    }
+
+    private async Task DeleteCellMenuRow()
+    {
+        if (cellMenuArgs is null) return;
+        cellEventsProducts.Remove(cellMenuArgs.Item);
+        cellEventStatus = $"Deleted {cellMenuArgs.Item.Name}.";
+        cellMenuArgs = null;
+        // The grid caches its processed view; mutating the bound list in place requires an explicit refresh.
+        if (cellEventsGrid is not null) await cellEventsGrid.RefreshAsync();
+    }
 
 
     // ---- variable row height ----
