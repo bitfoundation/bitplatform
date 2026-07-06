@@ -2,27 +2,32 @@
 @namespace Bit.BlazorUI
 
 <div class="@RowClass" role="row" style="@RowStyle" @onclick="OnRowClick"
+     aria-rowindex="@Grid.AriaRowIndex(Item)"
+     data-ri="@(Grid.RowReorderEnabled ? Grid.RowDataIndex(Item) : null)"
      aria-selected="@(Grid.SelectionEnabled ? (Selected ? "true" : "false") : null)"
      @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
      @ondrop="() => Grid.DropRowAsync(Item)">
 
+    @{ var specialColIndex = 0; }
     @if (Grid.RowReorderEnabled)
     {
-        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" @onclick:stopPropagation="true">
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
             <button type="button" class="bit-dtg-drag-handle"
                     draggable="@(!Editing ? "true" : null)"
                     disabled="@Editing"
                     @ondragstart="() => Grid.StartRowDrag(Item)"
-                    title="@(Editing ? null : "Drag to reorder, or focus and use the arrow keys to move this row")"
-                    aria-label="@(Editing ? null : "Reorder row. Press Arrow Up or Arrow Down to move this row.")"
+                    title="@(Editing ? null : Grid.Strings.ReorderRowTitle)"
+                    aria-label="@(Editing ? null : Grid.Strings.ReorderRowLabel)"
                     @onkeydown="HandleReorderKeyDown">⠿</button>
         </div>
     }
 
     @if (Grid.HasDetailColumn)
     {
-        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" @onclick:stopPropagation="true">
-            <button type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetail(Item)" aria-label="Toggle details" aria-expanded="@Grid.IsDetailExpanded(Item)">
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            <button type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetail(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
                 @(Grid.IsDetailExpanded(Item) ? "▾" : "▸")
             </button>
         </div>
@@ -30,22 +35,27 @@
 
     @if (Grid.HasSelectColumn)
     {
-        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" @onclick:stopPropagation="true">
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
             <input type="checkbox" checked="@Selected" disabled="@(!Grid.CanSelectRow(Item))"
                    aria-label="@SelectRowLabel"
                    @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
         </div>
     }
 
-    @{
-        var cols = Grid.VisibleColumns;
-        var skip = 0;
-    }
-    @for (int ci = 0; ci < cols.Count; ci++)
+    @{ var skip = 0; }
+    @foreach (var slot in Grid.ColumnSlots)
     {
+        @* A spacer stands in for a run of horizontally scrolled-out columns (column virtualization);
+           spans never coexist with spacers (ColSpan disables column virtualization). *@
+        if (slot.Column is null)
+        {
+            <div class="bit-dtg-cell" role="gridcell" aria-hidden="true"></div>
+            continue;
+        }
         if (skip > 0) { skip--; continue; }
-        var column = cols[ci];
-        var colIndex = ci;
+        var column = slot.Column;
+        var colIndex = slot.ColIndex;
         var span = Grid.ResolveColSpan(column, Item);
         if (span > 1) skip = span - 1;
         var cellStyle = Grid.FrozenStyle(column) + (span > 1 ? $"grid-column:span {span};" : "");
@@ -58,16 +68,16 @@
 
     @if (Grid.HasCommandColumn)
     {
-        <div class="bit-dtg-cell bit-dtg-cell-command" role="gridcell" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-command" role="gridcell" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true">
             @if (Editing)
             {
-                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="Grid.CommitEditAsync">Save</button>
-                <button type="button" class="bit-dtg-btn" @onclick="Grid.CancelEditAsync">Cancel</button>
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@Grid.HasEditErrors" @onclick="Grid.CommitEditAsync">@Grid.Strings.SaveText</button>
+                <button type="button" class="bit-dtg-btn" @onclick="Grid.CancelEditAsync">@Grid.Strings.CancelText</button>
             }
             else
             {
-                <button type="button" class="bit-dtg-btn" @onclick="() => Grid.BeginEdit(Item)">Edit</button>
-                <button type="button" class="bit-dtg-btn bit-dtg-btn-danger" @onclick="() => Grid.DeleteRowAsync(Item)">Delete</button>
+                <button type="button" class="bit-dtg-btn" @onclick="() => Grid.BeginEdit(Item)">@Grid.Strings.EditText</button>
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-danger" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
             }
         </div>
     }
@@ -97,7 +107,7 @@
         {
             var cols = Grid.VisibleColumns;
             var context = cols.Count > 0 ? cols[0].GetFormattedValue(Item) : null;
-            return string.IsNullOrWhiteSpace(context) ? "Select row" : $"Select row: {context}";
+            return string.IsNullOrWhiteSpace(context) ? Grid.Strings.SelectRowLabel : string.Format(Grid.Strings.SelectRowFormat, context);
         }
     }
 
@@ -110,8 +120,10 @@
                 <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle"
                         @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
                         @onkeydown:stopPropagation="true"
-                        aria-label="Toggle children" aria-expanded="@Grid.IsTreeExpanded(Item)">
-                    @(Grid.IsTreeExpanded(Item) ? "▾" : "▸")
+                        disabled="@Grid.IsTreeNodeLoading(Item)"
+                        aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@Grid.IsTreeExpanded(Item)"
+                        aria-busy="@(Grid.IsTreeNodeLoading(Item) ? "true" : null)">
+                    @(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeExpanded(Item) ? "▾" : "▸")
                 </button>
             }
             else
@@ -157,7 +169,7 @@
     private string CellClass(BitDataGridColumn<TItem> column)
     {
         var c = "bit-dtg-cell " + BitDataGrid<TItem>.AlignClass(column.Align);
-        if (column.Frozen) c += " bit-dtg-sticky";
+        if (BitDataGrid<TItem>.IsSticky(column)) c += " bit-dtg-sticky";
         if (!string.IsNullOrEmpty(column.CellClass)) c += " " + column.CellClass;
         return c;
     }

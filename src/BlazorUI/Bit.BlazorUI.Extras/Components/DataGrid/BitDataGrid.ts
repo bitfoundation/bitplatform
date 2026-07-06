@@ -52,11 +52,162 @@ namespace BitBlazorUI {
             };
         }
 
+        // Reports the viewport's horizontal scroll offset and width to .NET so column virtualization
+        // can pick the visible column window. rAF-throttled, with a px hysteresis so tiny scroll
+        // deltas (well inside the overscan) don't cause interop chatter; a viewport resize always
+        // re-reports. RTL browsers use negative scrollLeft — normalized on the .NET side.
+        public static initHorizontalScroll(viewport: HTMLElement, dotNetRef: DotNetObject, hysteresis: number) {
+            const threshold = hysteresis > 0 ? hysteresis : 100;
+            let lastLeft = Number.NEGATIVE_INFINITY;
+            let lastWidth = -1;
+            let ticking = false;
+            let disposed = false;
+
+            const report = () => {
+                ticking = false;
+                if (disposed) return;
+                const left = viewport.scrollLeft;
+                const width = viewport.clientWidth;
+                if (Math.abs(left - lastLeft) < threshold && width === lastWidth) return;
+                lastLeft = left;
+                lastWidth = width;
+                dotNetRef.invokeMethodAsync('OnHorizontalScrollAsync', left, width).catch(() => { });
+            };
+            const onScroll = () => {
+                if (!ticking) {
+                    ticking = true;
+                    requestAnimationFrame(report);
+                }
+            };
+
+            viewport.addEventListener('scroll', onScroll, { passive: true });
+            const resizeObserver = typeof ResizeObserver !== 'undefined'
+                ? new ResizeObserver(() => { lastLeft = Number.NEGATIVE_INFINITY; onScroll(); })
+                : null;
+            resizeObserver?.observe(viewport);
+            setTimeout(report, 0);
+
+            return {
+                dispose: () => {
+                    disposed = true;
+                    viewport.removeEventListener('scroll', onScroll);
+                    resizeObserver?.disconnect();
+                }
+            };
+        }
+
+        // Touch/pen drag-and-drop for row and column reordering. Native HTML5 drag-and-drop (which the
+        // grid uses for mouse) does not fire on touch devices, so this drives the same .NET reorder
+        // pipeline from pointer events instead. Mouse pointers are ignored here to avoid double-handling.
+        // Rows are identified by their data-ri (dataset index) attribute, columns by data-col (column id);
+        // both attributes are only rendered while the corresponding reorder feature is enabled.
+        public static initPointerReorder(root: HTMLElement, dotNetRef: DotNetObject) {
+            let dragging: { kind: 'row' | 'col', from: string } | null = null;
+            let overEl: HTMLElement | null = null;
+
+            const clearOver = () => { overEl?.classList.remove('bit-dtg-drop-target'); overEl = null; };
+
+            const onPointerDown = (e: PointerEvent) => {
+                if (e.pointerType === 'mouse') return; // mouse uses native HTML5 DnD
+                const target = e.target as HTMLElement | null;
+                if (!target) return;
+
+                const handle = target.closest('.bit-dtg-drag-handle');
+                if (handle) {
+                    const row = handle.closest('[data-ri]') as HTMLElement | null;
+                    if (!row) return;
+                    dragging = { kind: 'row', from: row.getAttribute('data-ri')! };
+                    e.preventDefault();
+                    return;
+                }
+
+                const hcell = target.closest('.bit-dtg-hcell[data-col]') as HTMLElement | null;
+                if (hcell && !target.closest('.bit-dtg-resizer')) {
+                    dragging = { kind: 'col', from: hcell.getAttribute('data-col')! };
+                    e.preventDefault();
+                }
+            };
+
+            const onPointerMove = (e: PointerEvent) => {
+                if (!dragging) return;
+                // elementFromPoint hit-tests the layout under the finger regardless of event capture.
+                const under = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+                const candidate = dragging.kind === 'row'
+                    ? under?.closest('[data-ri]') as HTMLElement | null
+                    : under?.closest('.bit-dtg-hcell[data-col]') as HTMLElement | null;
+                if (candidate !== overEl) {
+                    clearOver();
+                    if (candidate && root.contains(candidate)) {
+                        overEl = candidate;
+                        overEl.classList.add('bit-dtg-drop-target');
+                    }
+                }
+            };
+
+            const onPointerUp = () => {
+                if (!dragging) return;
+                const attr = dragging.kind === 'row' ? 'data-ri' : 'data-col';
+                const to = overEl?.getAttribute(attr);
+                const { kind, from } = dragging;
+                dragging = null;
+                clearOver();
+                if (to != null && to !== from) {
+                    // Swallow rejections: the circuit may be tearing down mid-drop.
+                    if (kind === 'row') {
+                        dotNetRef.invokeMethodAsync('OnPointerRowDropAsync', parseInt(from, 10), parseInt(to, 10)).catch(() => { });
+                    } else {
+                        dotNetRef.invokeMethodAsync('OnPointerColumnDropAsync', from, to).catch(() => { });
+                    }
+                }
+            };
+
+            const onPointerCancel = () => { dragging = null; clearOver(); };
+
+            root.addEventListener('pointerdown', onPointerDown);
+            root.addEventListener('pointermove', onPointerMove);
+            root.addEventListener('pointerup', onPointerUp);
+            root.addEventListener('pointercancel', onPointerCancel);
+
+            return {
+                dispose: () => {
+                    root.removeEventListener('pointerdown', onPointerDown);
+                    root.removeEventListener('pointermove', onPointerMove);
+                    root.removeEventListener('pointerup', onPointerUp);
+                    root.removeEventListener('pointercancel', onPointerCancel);
+                    clearOver();
+                }
+            };
+        }
+
+        // Syncs the "some but not all rows selected" state onto the select-all checkbox.
+        // indeterminate is a DOM property with no attribute equivalent, so Blazor markup can't set it.
+        public static setIndeterminate(element: HTMLInputElement, value: boolean) {
+            if (element) element.indeterminate = value;
+        }
+
+        // Measures an element's rendered width. Used when a column resize starts so the drag begins
+        // from the column's real on-screen width even when its Width is expressed in %/fr units
+        // (which .NET cannot resolve to pixels on its own).
+        public static getWidth(element: HTMLElement): number {
+            return element ? element.getBoundingClientRect().width : 0;
+        }
+
         // Triggers a client-side file download for the given text content. Used by CSV export so the
         // (potentially large) CSV is generated only on demand instead of living in a DOM attribute and
         // being regenerated on every render. Uses a Blob + object URL to avoid data-URI length limits.
         public static download(fileName: string, content: string, mimeType: string) {
-            const blob = new Blob([content], { type: mimeType || 'text/plain;charset=utf-8' });
+            DataGrid.downloadBlob(fileName, new Blob([content], { type: mimeType || 'text/plain;charset=utf-8' }));
+        }
+
+        // Binary variant used by the Excel export: the .NET side sends the workbook bytes as base64.
+        public static downloadBase64(fileName: string, base64: string, mimeType: string) {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            DataGrid.downloadBlob(fileName, new Blob([bytes], { type: mimeType || 'application/octet-stream' }));
+        }
+
+        private static downloadBlob(fileName: string, blob: Blob) {
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement('a');
             anchor.href = url;

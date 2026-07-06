@@ -250,14 +250,18 @@ private void OnDelete(Product p) => products.RemoveAll(x => x.Id == p.Id);" + Pr
              Groupable=""true"" ShowFooter=""true"" Sortable=""true"">
     <BitDataGridColumn TItem=""Product"" Field=""Name"" Groupable=""false"" />
     <BitDataGridColumn TItem=""Product"" Field=""Category"" />
-    <BitDataGridColumn TItem=""Product"" Field=""Supplier"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Supplier"" AggregateBy=""@DistinctSuppliers"" />
     <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right""
                        Aggregate=""BitDataGridAggregateType.Sum"" Groupable=""false"" />
     <BitDataGridColumn TItem=""Product"" Field=""Stock"" Align=""BitDataGridColumnAlign.Right""
                        Aggregate=""BitDataGridAggregateType.Average"" AggregateFormat=""N0"" Groupable=""false"" />
 </BitDataGrid>";
     private readonly string example5CsharpCode = @"
-private List<Product> products = SampleData.Generate(80);" + ProductModelCode + SampleDataCode;
+private List<Product> products = SampleData.Generate(80);
+
+// A custom aggregate: receives the rows of the footer's view (or of each group) and returns any value.
+private object? DistinctSuppliers(IReadOnlyList<Product> rows)
+    => $""{rows.Select(p => p.Supplier).Distinct().Count()} distinct"";" + ProductModelCode + SampleDataCode;
 
     private readonly string example6RazorCode = @"
 <BitDataGrid TItem=""Product"" Items=""@products"" Height=""470px"" Sortable=""true"" ShowFooter=""true"">
@@ -274,6 +278,11 @@ private List<Product> products = SampleData.Generate(80);" + ProductModelCode + 
         </BitDataGridColumn>
         <BitDataGridColumn TItem=""Product"" Field=""Stock"" Align=""BitDataGridColumnAlign.Right"">
             <Template Context=""p"">@p.Stock in stock</Template>
+        </BitDataGridColumn>
+        @* A template-only column (no Field) becomes sortable through its SortBy key selector. *@
+        <BitDataGridColumn TItem=""Product"" ColumnId=""Value"" Title=""Value"" Align=""BitDataGridColumnAlign.Right""
+                           SortBy=""@(p => p.Price * p.Stock)"">
+            <Template Context=""p"">@((p.Price * p.Stock).ToString(""C0""))</Template>
         </BitDataGridColumn>
     </ChildContent>
 </BitDataGrid>";
@@ -639,4 +648,281 @@ private static string CategoryFa(Category category) => category switch
     Category.Grocery => ""خواربار"",
     _ => category.ToString()
 };" + ProductModelCode + PersianSampleDataCode;
+
+    private readonly string example22RazorCode = @"
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""430px""
+             Filterable=""true"" FilterOperators=""true"" ShowToolbar=""true"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" Filterable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" />
+    @* A column can override the grid-level setting and keep the fixed default filter. *@
+    <BitDataGridColumn TItem=""Product"" Field=""Supplier"" FilterOperators=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" />
+    <BitDataGridColumn TItem=""Product"" Field=""ReleaseDate"" Title=""Released"" Format=""yyyy-MM-dd"" />
+</BitDataGrid>";
+    private readonly string example22CsharpCode = @"
+private List<Product> products = SampleData.Generate(150);" + ProductModelCode + SampleDataCode;
+
+    private readonly string example23RazorCode = @"
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""430px""
+             Editable=""true"" KeyField=""p => p.Id"" Pageable=""true"" PageSize=""8"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" Editable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" Validate=""@ValidateName"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" Validate=""@ValidatePrice"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" Validate=""@ValidateStock"" />
+</BitDataGrid>";
+    private readonly string example23CsharpCode = @"
+private List<Product> products = SampleData.Generate(30);
+
+// Validators receive the row and the proposed (type-converted) value.
+// Return an error message to reject the edit (blocking Save), or null to accept.
+private string? ValidateName(Product product, object? value)
+    => string.IsNullOrWhiteSpace(value as string) ? ""Name is required."" : null;
+
+private string? ValidatePrice(Product product, object? value)
+    => value is decimal price && price < 0 ? ""Price cannot be negative."" : null;
+
+private string? ValidateStock(Product product, object? value)
+    => value is int stock && stock < 0 ? ""Stock cannot be negative."" : null;" + ProductModelCode + SampleDataCode;
+
+    private readonly string example24RazorCode = @"
+<BitStack Horizontal Wrap VerticalAlign=""BitAlignment.Center"">
+    <BitButton OnClick=""SaveGridState"">Save state</BitButton>
+    <BitButton OnClick=""RestoreGridState"" IsEnabled=""savedState is not null"" Variant=""BitVariant.Outline"">Restore state</BitButton>
+    <BitText>@stateStatus</BitText>
+</BitStack>
+
+<BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px""
+             Sortable=""true"" Filterable=""true"" Resizable=""true""
+             Pageable=""true"" PageSize=""10"" ShowToolbar=""true"" ShowColumnChooser=""true"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" Filterable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Category"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" />
+</BitDataGrid>";
+    private readonly string example24CsharpCode = @"
+private List<Product> products = SampleData.Generate(120);
+private BitDataGrid<Product>? grid;
+private BitDataGridState? savedState;
+private string stateStatus = ""Adjust the grid, then save its state."";
+
+private void SaveGridState()
+{
+    // The snapshot is serializable — persist it to local storage or a user-preferences store.
+    savedState = grid?.GetState();
+    stateStatus = savedState is null
+        ? ""Nothing to save yet.""
+        : $""Saved: page {savedState.CurrentPage}, {savedState.Sorts.Count} sort(s), {savedState.Filters.Count} filter(s)."";
+}
+
+private async Task RestoreGridState()
+{
+    if (grid is null || savedState is null) return;
+    await grid.ApplyStateAsync(savedState);
+    stateStatus = ""State restored."";
+}" + ProductModelCode + SampleDataCode;
+
+    private readonly string example25RazorCode = @"
+<BitDataGrid TItem=""Product"" OnRead=""LoadVirtualServerData"" Virtualize=""true""
+             Height=""480px"" RowHeight=""40"" Sortable=""true"" Filterable=""true"" ShowFooter=""true"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""90px"" Frozen=""true"" Filterable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""240px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Category"" Width=""140px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Supplier"" Width=""180px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Width=""140px"" Format=""C2""
+                       Aggregate=""BitDataGridAggregateType.Sum"" AggregateFormat=""C0"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" Width=""120px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Rating"" Width=""110px"" Format=""N1"" FrozenEnd=""true"" />
+</BitDataGrid>";
+    private readonly string example25CsharpCode = @"
+private List<Product> all = SampleData.Generate(100_000);
+
+private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitDataGridReadRequest request)
+{
+    // Simulate backend latency; superseded scroll windows are cancelled by the grid.
+    try { await Task.Delay(150, request.CancellationToken); }
+    catch (OperationCanceledException) { return new BitDataGridReadResult<Product>(Array.Empty<Product>(), 0); }
+
+    IEnumerable<Product> query = all;
+    // ...apply request.Filters and request.Sorts (see the Server-side data example)...
+
+    var filtered = query.ToList();
+    var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
+
+    // Aggregates computed over the WHOLE filtered dataset (not just the returned window),
+    // so the footer shows a real grand total instead of a per-window number.
+    var aggregates = new List<BitDataGridAggregateResult>
+    {
+        new()
+        {
+            ColumnId = nameof(Product.Price),
+            Type = BitDataGridAggregateType.Sum,
+            Value = filtered.Sum(p => p.Price),
+            FormattedValue = filtered.Sum(p => p.Price).ToString(""C0"")
+        }
+    };
+
+    return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
+}" + ProductModelCode + SampleDataCode;
+
+    private readonly string example26RazorCode = @"
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""420px""
+             Direction=""BitDir.Rtl"" Strings=""@persianStrings""
+             Filterable=""true"" Pageable=""true"" PageSize=""8"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""شناسه"" Width=""90px"" Filterable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Title=""نام"" Width=""220px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Title=""قیمت"" Format=""C2"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" Title=""موجودی"" />
+</BitDataGrid>";
+    private readonly string example26CsharpCode = @"
+private List<Product> products = SampleData.GeneratePersian(60);
+
+// Every user-visible string has an English default; override what you need.
+private readonly BitDataGridStrings persianStrings = new()
+{
+    EmptyText = ""رکوردی برای نمایش وجود ندارد."",
+    LoadingText = ""در حال بارگذاری…"",
+    FilterPlaceholder = ""فیلتر…"",
+    FilterAllText = ""همه"",
+    PagerRangeFormat = ""{0}–{1} از {2}"",
+    PagerPageFormat = ""صفحهٔ {0} از {1}"",
+    PerPageFormat = ""{0} در صفحه"",
+    RowsPerPageLabel = ""تعداد ردیف در صفحه"",
+    FirstPageLabel = ""صفحهٔ اول"",
+    PreviousPageLabel = ""صفحهٔ قبل"",
+    NextPageLabel = ""صفحهٔ بعد"",
+    LastPageLabel = ""صفحهٔ آخر"",
+    ClearFiltersText = ""حذف فیلترها"",
+};" + ProductModelCode + PersianSampleDataCode;
+
+    private readonly string example27RazorCode = @"
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""430px""
+             Sortable=""true"" Filterable=""true"" Pageable=""true"" PageSize=""10"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" Filterable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Supplier"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" />
+</BitDataGrid>";
+    private readonly string example27CsharpCode = @"
+// Any IQueryable works — filtering, sorting and paging are composed as expression trees the
+// provider executes at the source, so with EF Core this becomes SQL WHERE/ORDER BY/OFFSET
+// and only the current page is materialized:
+//     private IQueryable<Product> products => dbContext.Products;
+private IQueryable<Product> products = SampleData.Generate(400).AsQueryable();" + ProductModelCode + SampleDataCode;
+
+    private readonly string example28RazorCode = @"
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""430px""
+             Filterable=""true"" Pageable=""true"" PageSize=""10""
+             ShowToolbar=""true"" ShowCsvExport=""true"" ShowExcelExport=""true"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" Filterable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Category"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Discontinued"" />
+</BitDataGrid>";
+    private readonly string example28CsharpCode = @"
+private List<Product> products = SampleData.Generate(120);
+
+// Programmatic exports are also available:
+//     string csv = await grid.ToCsvAsync();     // all matching rows, even in server mode
+//     byte[] xlsx = await grid.ToExcelAsync();  // real .xlsx workbook, no external library" + ProductModelCode + SampleDataCode;
+
+    private readonly string example29RazorCode = @"
+<BitDataGrid TItem=""FileNode"" Items=""@roots"" Height=""430px""
+             ChildrenProvider=""LoadChildrenAsync"" HasChildrenSelector=""IsFolder""
+             KeyField=""n => n.Id"" Sortable=""false"">
+    <BitDataGridColumn TItem=""FileNode"" Field=""Name"" Width=""280px"" />
+    <BitDataGridColumn TItem=""FileNode"" Field=""Kind"" Width=""110px"" />
+    <BitDataGridColumn TItem=""FileNode"" Field=""Size"" Format=""N0"" />
+    <BitDataGridColumn TItem=""FileNode"" Field=""Modified"" Format=""yyyy-MM-dd"" />
+</BitDataGrid>";
+    private readonly string example29CsharpCode = @"
+private List<FileNode> roots = new()
+{
+    new() { Id = 1, Name = ""src"", Kind = ""Folder"" },
+    new() { Id = 2, Name = ""docs"", Kind = ""Folder"" },
+    new() { Id = 4, Name = ""LICENSE"", Kind = ""File"", Size = 1_070 },
+};
+
+// Unloaded nodes can't know whether they have children — this predicate decides
+// whether the expand toggle renders before the first fetch.
+private static bool IsFolder(FileNode node) => node.Kind == ""Folder"";
+
+// Called once per node, on its first expand; the grid caches the result.
+private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(FileNode parent)
+{
+    return await httpClient.GetFromJsonAsync<List<FileNode>>($""api/files/{parent.Id}/children"");
+}
+
+public class FileNode
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = """";
+    public string Kind { get; set; } = ""Folder"";
+    public long Size { get; set; }
+    public DateTime Modified { get; set; }
+}";
+
+    private readonly string example30RazorCode = @"
+@* Row and column reordering automatically work with touch/pen input as well:
+   a pointer-event fallback drives the same reorder pipeline where native
+   HTML5 drag-and-drop is mouse-only. No extra configuration is needed. *@
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""430px""
+             RowReorderable=""true"" Reorderable=""true"" Sortable=""false"" KeyField=""p => p.Id"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Category"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />
+</BitDataGrid>";
+    private readonly string example30CsharpCode = @"
+private List<Product> products = SampleData.Generate(12);" + ProductModelCode + SampleDataCode;
+
+    private readonly string example31RazorCode = @"
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""430px""
+             VirtualizeColumns=""true"" Virtualize=""true"" RowHeight=""36"" Sortable=""false"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""80px"" Frozen=""true"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""200px"" />
+    @for (var m = 1; m <= 40; m++)
+    {
+        var month = m;
+        <BitDataGridColumn TItem=""Product"" ColumnId=""@($""m{month}"")"" Title=""@($""M{month:00}"")"" Width=""110px"">
+            <Template Context=""product"">@(((product.Id * 37 + month * 13) % 1000))</Template>
+        </BitDataGridColumn>
+    }
+</BitDataGrid>";
+    private readonly string example31CsharpCode = @"
+// 3,000 rows x 42 columns — but only the visible window of rows AND columns exists in the DOM.
+// Column virtualization needs explicit pixel widths so the column window can be computed.
+private List<Product> products = SampleData.Generate(3_000);" + ProductModelCode + SampleDataCode;
+
+    private readonly string example32RazorCode = @"
+<BitButton OnClick=""SortByPrice"">Sort by price ↓</BitButton>
+<BitButton OnClick=""FilterExpensive"">Filter price > 500</BitButton>
+<BitButton OnClick=""GroupByCategory"">Group by category</BitButton>
+<BitButton OnClick=""GoToPage3"">Go to page 3</BitButton>
+
+<BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px""
+             Sortable=""true"" Filterable=""true"" Groupable=""true""
+             Pageable=""true"" PageSize=""10"">
+    <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" Filterable=""false"" Groupable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" Groupable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Category"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" Groupable=""false"" />
+    <BitDataGridColumn TItem=""Product"" Field=""Stock"" Groupable=""false"" />
+</BitDataGrid>";
+    private readonly string example32CsharpCode = @"
+private List<Product> products = SampleData.Generate(200);
+private BitDataGrid<Product>? grid;
+
+private async Task SortByPrice() => await grid!.SortByAsync(nameof(Product.Price), BitDataGridSortDirection.Descending);
+private async Task FilterExpensive() => await grid!.ApplyFilterAsync(nameof(Product.Price), BitDataGridFilterOperator.GreaterThan, 500m);
+private async Task GroupByCategory() => await grid!.GroupByAsync(nameof(Product.Category));
+private async Task GoToPage3() => await grid!.GoToPageAsync(3);
+
+// Also available: ClearSortsAsync, ClearFilterAsync/ClearFiltersAsync, UngroupAsync/ClearGroupsAsync,
+// SetPageSizeAsync, RefreshAsync, GetState/ApplyStateAsync, ToCsvAsync/ToExcelAsync.
+" + ProductModelCode + SampleDataCode;
 }

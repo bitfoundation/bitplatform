@@ -32,11 +32,30 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     [Parameter] public bool? Sortable { get; set; }
 
     /// <summary>
+    /// Optional custom sort key selector. Enables sorting for template-only columns (no
+    /// <see cref="Field"/>) and overrides the field value as the sort key when both are set —
+    /// e.g. sort a display-name column by last name.
+    /// </summary>
+    [Parameter] public Func<TItem, object?>? SortBy { get; set; }
+
+    /// <summary>
     /// When true, the first click on the header sorts descending instead of ascending.
     /// Mirrors react-data-grid's <c>sortDescendingFirst</c>.
     /// </summary>
     [Parameter] public bool SortDescendingFirst { get; set; }
+    /// <summary>
+    /// Optional validator for inline edits. Receives the row being edited and the proposed (already
+    /// type-converted) value; returns an error message to reject it, or <c>null</c> to accept.
+    /// While any column of the row in edit mode has an error, saving is blocked and the message is
+    /// shown under the editor.
+    /// </summary>
+    [Parameter] public Func<TItem, object?, string?>? Validate { get; set; }
+
     [Parameter] public bool? Filterable { get; set; }
+
+    /// <summary>Overrides the grid-level <c>FilterOperators</c> toggle (the operator dropdown next to
+    /// this column's filter editor).</summary>
+    [Parameter] public bool? FilterOperators { get; set; }
     [Parameter] public bool? Resizable { get; set; }
     [Parameter] public bool? Reorderable { get; set; }
     [Parameter] public bool? Editable { get; set; }
@@ -44,6 +63,10 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     /// <summary>Pin the column to the start edge so it stays visible while scrolling horizontally.</summary>
     [Parameter] public bool Frozen { get; set; }
+
+    /// <summary>Pin the column to the end edge (right in LTR, left in RTL) so it stays visible while
+    /// scrolling horizontally. Typical for action/status columns. Ignored when <see cref="Frozen"/> is set.</summary>
+    [Parameter] public bool FrozenEnd { get; set; }
 
     /// <summary>
     /// Optional header group name. Consecutive columns sharing the same value are rendered
@@ -68,6 +91,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     [Parameter] public BitDataGridAggregateType Aggregate { get; set; } = BitDataGridAggregateType.None;
 
+    /// <summary>
+    /// Optional custom aggregate function, for computations beyond the built-in
+    /// Sum/Average/Count/Min/Max — e.g. a distinct count or a weighted average. Receives the rows of
+    /// the footer's view (or of each group) and returns the aggregate value; <see cref="AggregateFormat"/>
+    /// (or <see cref="Format"/>) is applied to it for display. Takes precedence over <see cref="Aggregate"/>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<TItem>, object?>? AggregateBy { get; set; }
+
     /// <summary>Format string for the aggregate value. Falls back to <see cref="Format"/>.</summary>
     [Parameter] public string? AggregateFormat { get; set; }
 
@@ -91,6 +122,10 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// <summary>Current resolved width applied via inline style (set by resizing).</summary>
     internal double? ResizedWidth { get; set; }
 
+    /// <summary>The column's header cell element, captured so a starting resize can measure the real
+    /// rendered width (needed when <see cref="Width"/> is expressed in non-px units like % or fr).</summary>
+    internal ElementReference HeaderCellRef { get; set; }
+
     internal BitDataGridPropertyAccessor<TItem>? Accessor { get; private set; }
 
     // Treat empty/whitespace ColumnId and Field as "unset" (matching HasField's emptiness check) so an
@@ -113,9 +148,17 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     private string? _lastFormat;
     private string? _lastAggregateFormat;
 
+    // Tracked separately from the semantic snapshot: a Visible change only affects layout (the grid's
+    // cached visible-column list), not the computed view, so it must not trigger a data refresh.
+    private bool _lastVisible = true;
+
     internal string DisplayTitle => Title ?? Humanize(Field) ?? Id;
 
     internal bool HasField => !string.IsNullOrWhiteSpace(Field);
+
+    /// <summary>The effective sort key selector: <see cref="SortBy"/> when provided, otherwise the
+    /// field accessor's value. Null when the column has neither (such a column cannot sort).</summary>
+    internal Func<TItem, object?>? SortKey => SortBy ?? (Accessor is { } a ? a.GetValue : null);
 
     internal BitDataGridColumnDataType EffectiveDataType
     {
@@ -157,6 +200,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         // retry below once the id becomes unique.
         _registeredId = Grid.AddColumn(this) ? Id : null;
         SnapshotSemanticParameters();
+        _lastVisible = Visible;
     }
 
     protected override void OnParametersSet()
@@ -165,6 +209,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
             Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
         else
             Accessor = null;
+
+        // The grid caches its visible-column list, so a Visible change arriving as a parameter (not via
+        // the grid's own column chooser) must invalidate that cache or the layout goes stale.
+        if (_lastVisible != Visible)
+        {
+            _lastVisible = Visible;
+            if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
+        }
 
         // This column was skipped during initial registration because its id collided with another
         // column (AddColumn returned false, leaving _registeredId null). Now that ColumnId/Field may

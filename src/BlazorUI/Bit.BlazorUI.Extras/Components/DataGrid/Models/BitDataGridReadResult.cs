@@ -30,6 +30,13 @@ public sealed class BitDataGridReadResult<TItem>
     public IReadOnlyList<TItem> Items { get; }
 
     /// <summary>
+    /// Optional aggregates computed by the data source over the <b>whole</b> filtered dataset (not just
+    /// the returned page). When provided in server mode, the footer shows these instead of aggregating
+    /// the current page locally — which would otherwise present per-page numbers as if they were totals.
+    /// </summary>
+    public IReadOnlyList<BitDataGridAggregateResult>? Aggregates { get; init; }
+
+    /// <summary>
     /// The total number of items matching the current filters (across all pages) in <c>OnRead</c> mode.
     /// In <c>OnLoadMore</c> (infinite-scrolling) mode the grand total is typically unknown, so <c>0</c> is
     /// used as the "unknown total" sentinel: a non-empty batch paired with a <see cref="TotalCount"/> of

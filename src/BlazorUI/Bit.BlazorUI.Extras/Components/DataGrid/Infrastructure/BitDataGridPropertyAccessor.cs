@@ -21,11 +21,18 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     public Type UnderlyingType { get; }
     public bool CanWrite { get; }
 
+    /// <summary>
+    /// The raw, typed property-access lambda (<c>x =&gt; x.A.B</c>) without the compiled getter's
+    /// null guards or object boxing. Used to translate filters/sorts into expression trees an
+    /// <see cref="IQueryable{T}"/> provider (e.g. EF Core) can execute remotely.
+    /// </summary>
+    public LambdaExpression PropertyLambda { get; }
+
     private readonly Func<TItem, object?> _getter;
     private readonly Action<TItem, object?>? _setter;
 
     private BitDataGridPropertyAccessor(string path, Type propertyType, bool canWrite,
-        Func<TItem, object?> getter, Action<TItem, object?>? setter)
+        Func<TItem, object?> getter, Action<TItem, object?>? setter, LambdaExpression propertyLambda)
     {
         Path = path;
         PropertyType = propertyType;
@@ -33,6 +40,7 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         CanWrite = canWrite;
         _getter = getter;
         _setter = setter;
+        PropertyLambda = propertyLambda;
     }
 
     public object? GetValue(TItem item) => _getter(item);
@@ -211,7 +219,8 @@ public sealed class BitDataGridPropertyAccessor<TItem>
             setter = Expression.Lambda<Action<TItem, object?>>(assign, param, valueParam).Compile();
         }
 
-        return new BitDataGridPropertyAccessor<TItem>(path, propertyType, canWrite, getter, setter);
+        return new BitDataGridPropertyAccessor<TItem>(path, propertyType, canWrite, getter, setter,
+            Expression.Lambda(body, param));
     }
 
     private static bool CanBeNull(Type type)
