@@ -65,7 +65,7 @@ public partial class McpController : AppControllerBase
 
         AddNodes(MainLayout.NavItems);
 
-        return components.ToArray();
+        return [.. components];
     }
 
     [HttpGet]
