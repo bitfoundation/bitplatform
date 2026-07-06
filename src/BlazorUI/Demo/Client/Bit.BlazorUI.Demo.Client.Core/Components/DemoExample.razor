@@ -5,13 +5,12 @@
     if (PreventRenderForMcpClient is false)
     {
         @((MarkupString)($@"\n**{Title}**:
-```razor
+{(string.IsNullOrWhiteSpace(RazorCode) ? "" : $@"```razor
 {RazorCode}
-```
-```csharp
+```")}
+{(string.IsNullOrWhiteSpace(CsharpCode) ? "" : $@"```csharp
 {CsharpCode}
-```")
-        )
+```")}"))
     }
 }
 else
