@@ -49,7 +49,10 @@ public static class BitThemeColorDerivation
 
         if (adjustTextForWcagAa && textWasNull
             && !string.IsNullOrWhiteSpace(variants.Main)
-            && !string.IsNullOrWhiteSpace(variants.Text))
+            && !string.IsNullOrWhiteSpace(variants.Text)
+            // A caller-provided Main may be an invalid hex (only auto-filled values are guaranteed valid),
+            // and GetContrastRatio throws on non-hex input — validate first so this stays a no-op instead.
+            && BitThemeColorContrast.TryNormalizeHex(variants.Main, out _))
         {
             var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", variants.Main);
             var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", variants.Main);

@@ -374,7 +374,7 @@ public partial class _BitTimelineOptionDemo
 </BitTimeline>
 
 
-Disabled:
+<div><b>Disabled</b>:</div>
 
 <BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />

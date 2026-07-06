@@ -59,7 +59,7 @@ public partial class BitPaginationDemo
 <BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />
 
 
-<!-- Disabled: -->
+<div><b>Disabled</b>:</div>
 
 <BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Primary"" />
 <BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" />

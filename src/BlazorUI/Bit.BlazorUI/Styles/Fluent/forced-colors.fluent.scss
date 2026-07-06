@@ -34,6 +34,12 @@
         --bit-clr-fg-pri-focus: Highlight;
         --bit-clr-bg-pri-focus: Canvas;
         --bit-clr-brd-pri-focus: Highlight;
+        --bit-clr-fg-sec-focus: Highlight;
+        --bit-clr-bg-sec-focus: Canvas;
+        --bit-clr-brd-sec-focus: Highlight;
+        --bit-clr-fg-ter-focus: Highlight;
+        --bit-clr-bg-ter-focus: Canvas;
+        --bit-clr-brd-ter-focus: Highlight;
         --bit-shd-focus-ring: 0 0 0 max(2px, var(--bit-shp-focus-ring-width)) Highlight;
     }
 }
