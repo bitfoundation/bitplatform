@@ -5,7 +5,7 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_minMax" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Suggested min / max" RazorCode="@suggestedRazorCode" CsharpCode="@suggestedCsharpCode" Id="scales-suggested-min-max">
+<DemoExample Title="Suggested min / max" RazorCode="@suggestedRazorCode" CsharpCode="@suggestedCsharpCode" Id="scales-suggested-min-max" PreventRenderForMcpClient>
     <div class="example-desc">hints that expand (not clamp) the range</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_suggested" /></div></div>
 </DemoExample>
@@ -25,7 +25,7 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Rank()" Options="_reverse" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Grace (padding)" RazorCode="@graceRazorCode" CsharpCode="@graceCsharpCode" Id="scales-grace-padding">
+<DemoExample Title="Grace (padding)" RazorCode="@graceRazorCode" CsharpCode="@graceCsharpCode" Id="scales-grace-padding" PreventRenderForMcpClient>
     <div class="example-desc">10% headroom above &amp; below the data</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_grace" /></div></div>
 </DemoExample>
