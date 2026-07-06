@@ -1,8 +1,105 @@
 @inherits AppComponentBase
 
+@using System.Text.Json;
+
 @if (RenderForMcpClient)
 {
-    @((MarkupString)($"**{Name}** {string.Join(',', SecondaryNames ?? [])} {Description}{Notes} {Environment.NewLine}"))
+    @($"# {Name}")
+
+    @if (SecondaryNames?.Length > 0)
+    {
+        @($"**Also known as:** {string.Join(", ", SecondaryNames!)}")
+    }
+
+    @if (Description.HasValue())
+    {
+        @($"## Description\n{Description}")
+    }
+
+    @if (Notes.HasValue())
+    {
+        @($"## Notes\n{Notes}")
+    }
+
+    @if (Introduction.HasValue())
+    {
+        @($"## Introduction\n{Introduction}")
+    }
+
+    var publicMembers = PublicMembers;
+    if (_inputComponents.Contains(Name))
+    {
+        publicMembers.AddRange(_inputBasePublicMembers);
+    }
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        publicMembers.AddRange(_componentBasePublicMembers);
+    }
+
+    var parameters = Parameters;
+    if (_textInputComponents.Contains(Name))
+    {
+        parameters.AddRange(_textInputBaseParameters);
+    }
+    if (_inputComponents.Contains(Name))
+    {
+        parameters.AddRange(_inputBaseParameters);
+    }
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        parameters.AddRange(_componentBaseParameters);
+    }
+
+    var enums = SubEnums;
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        enums.AddRange(_componentBaseSubEnums);
+    }
+
+    @("## Parameters")
+    @("| Name | Type | Default Value | Description |")
+    @("| :--- | :--- | :------------ | :---------- |")
+    @foreach (var param in parameters)
+    {
+        @($"| {param.Name} | `{param.Type}` | {param.DefaultValue} | {param.Description} |\n")
+    }
+
+    @("## Public Members")
+    @("| Name | Type | Default Value | Description |")
+    @("| :--- | :--- | :------------ | :---------- |")
+    @foreach (var member in publicMembers)
+    {
+        @($"| {member.Name} | `{member.Type}` | {member.DefaultValue} | {member.Description} |\n")
+    }
+
+    @("## Enums")
+    @foreach (var subEnum in enums)
+    {
+        @($"### {subEnum.Name} Enum\n\n")
+        @("| Name | Value | Description |")
+        @("| :--- | :--- | :---------- |")
+        @foreach (var item in subEnum.Items)
+        {
+            @($"| {item.Name} | {item.Value} | {item.Description} |\n")
+        }
+        @("\n")
+    }
+
+    @("## Sub Classes")
+    @foreach (var subClass in SubClasses)
+    {
+        @($"### {subClass.Title} Properties\n")
+        @($"{subClass.Description}\n\n")
+        @("| Name | Type | Default Value | Description |")
+        @("| :--- | :--- | :------------ | :---------- |")
+        @foreach (var subParam in subClass.Parameters)
+        {
+            @($"| {subParam.Name} | `{subParam.Type}` | {subParam.DefaultValue} | {subParam.Description} |\n")
+        }
+        @("\n")
+    }
+
+    @("## Examples")
     @(ChildContent ?? Examples)
 }
 else

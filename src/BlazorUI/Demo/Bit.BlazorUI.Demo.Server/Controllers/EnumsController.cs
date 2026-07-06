@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Demo.Server.Controllers;
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
-public partial class ComponentEnumsController : AppControllerBase
+public partial class EnumsController : AppControllerBase
 {
     private static XDocument? SummariesXmlDocument = null;
 

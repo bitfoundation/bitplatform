@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Demo.Server.Controllers;
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
-public partial class BitIconNamesController : AppControllerBase
+public partial class IconsController : AppControllerBase
 {
     private static string[]? _allIconNames = null;
 
