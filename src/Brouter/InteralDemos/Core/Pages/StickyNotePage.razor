@@ -59,6 +59,7 @@
     private int _activations;
     private int _deactivations;
     private bool _wasActive = true;
+    private bool _disposed;
     private System.Threading.Timer? _timer;
 
     private bool IsActive => KeepAlive?.IsActive ?? true;
@@ -74,6 +75,9 @@
         {
             _timer = new System.Threading.Timer(_ =>
             {
+                // Timer.Dispose does not wait for in-flight callbacks, so guard against
+                // touching the component after disposal has started.
+                if (_disposed) return;
                 _visibleSeconds++;
                 _ = InvokeAsync(StateHasChanged);
             }, null, dueTime: 1000, period: 1000);
@@ -99,5 +103,9 @@
         _wasActive = active;
     }
 
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose()
+    {
+        _disposed = true;
+        _timer?.Dispose();
+    }
 }
