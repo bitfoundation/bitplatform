@@ -314,13 +314,15 @@ public sealed class BitThemeColorDerivationTests
     // ── adjustTextForWcagAa ───────────────────────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMainAdjustTextForWcagAaDefaultFalseKeepsHeuristicSuggestion()
+    public void FillColorRoleFromMainDefaultSuggestsHigherContrastText()
     {
-        // #888888: heuristic luminance ≈ 0.533 → suggests "#FFFFFF".
-        // Without the flag, that suggestion stands even though WCAG AA prefers black.
+        // The default on-color Text suggestion (adjustTextForWcagAa: false) uses WCAG sRGB
+        // relative-luminance contrast and keeps the higher-contrast candidate — consistent with
+        // the flag's tie-breaker (see BitThemeColorDerivation.SuggestOnColorText). For #888888,
+        // black ≈ 5.92 vs white ≈ 3.55, so black is chosen even without the flag.
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#888888");
-        Assert.AreEqual("#FFFFFF", v.Text);
+        Assert.AreEqual("#000000", v.Text);
     }
 
     [TestMethod]
