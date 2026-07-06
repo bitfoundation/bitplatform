@@ -1,18 +1,24 @@
-﻿using System.Xml.Linq;
+﻿using System.ComponentModel;
 using System.Reflection;
-using System.ComponentModel;
-using ModelContextProtocol.Server;
+using System.Xml.Linq;
 using Bit.BlazorUI.Demo.Client.Core.Shared;
+using Microsoft.AspNetCore.Components.Web;
+using ModelContextProtocol.Server;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
-public partial class ComponentsController : AppControllerBase
+public partial class McpController : AppControllerBase
 {
+    [AutoInject] private HtmlRenderer htmlRenderer = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+
+    private static string[]? _allIconNames = null;
     private static XDocument? SummariesXmlDocument = null;
     private static readonly Assembly[] ComponentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly];
+    private static readonly Type[] EnumTypes = [.. ComponentsAssemblies.SelectMany(asm => asm.GetExportedTypes().Where(t => t.IsEnum))];
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIComponentsList))]
@@ -60,6 +66,76 @@ public partial class ComponentsController : AppControllerBase
         AddNodes(MainLayout.NavItems);
 
         return components.ToArray();
+    }
+
+    [HttpGet]
+    [McpServerTool(Name = nameof(GetBitBlazorUIComponentDocs))]
+    [Description("Gets the docs/examples of a specified component.")]
+    public async Task<IActionResult> GetBitBlazorUIComponentDocs(string componentName)
+    {
+        if (string.IsNullOrWhiteSpace(componentName))
+            return BadRequest("Component name is required.");
+
+        var demoPageType = typeof(Client.Core.Routes).Assembly
+            .GetExportedTypes()
+            .SingleOrDefault(t => string.Equals(t.Name, $"{componentName}Demo", StringComparison.OrdinalIgnoreCase));
+
+        if (demoPageType is null)
+            return NotFound("No demo page found for the specified component.");
+
+        httpContextAccessor.HttpContext!.Items["RenderForMcpClient"] = true;
+
+        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var renderedComponent = await htmlRenderer.RenderComponentAsync(demoPageType);
+
+            return renderedComponent.ToHtmlString();
+        });
+
+        return Content(body.ToLlmFriendlyHtml(), "text/markdown");
+    }
+
+    [HttpGet]
+    [McpServerTool(Name = nameof(GetBitBlazorUIEnumDetails))]
+    [Description("Gets the details of a specified Bit.BlazorUI enum including its values and descriptions.")]
+    public async Task<EnumValueDetailsDto[]?> GetBitBlazorUIEnumDetails(string enumName)
+    {
+        if (string.IsNullOrWhiteSpace(enumName))
+            return null;
+
+        SummariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
+
+        var enumType = EnumTypes.FirstOrDefault(t =>
+            t.Name.Equals(enumName, StringComparison.OrdinalIgnoreCase));
+
+        if (enumType is null)
+            return null;
+
+        var values = Enum.GetNames(enumType).Select(name =>
+        {
+            var fieldXmlMember = SummariesXmlDocument?.Descendants("member")
+                                    .FirstOrDefault(m => m.Attribute("name")?.Value == $"F:{enumType.FullName}.{name}");
+
+            return new EnumValueDetailsDto
+            {
+                Name = name,
+                Description = fieldXmlMember?.Element("summary")?.Value?.Trim()
+            };
+        }).ToArray();
+
+        return values;
+    }
+
+    [HttpGet]
+    [McpServerTool(Name = nameof(GetAllBitBlazorUIIconNames))]
+    [Description("Gets all available BitIconName constant values.")]
+    public string[] GetAllBitBlazorUIIconNames()
+    {
+        return _allIconNames ??= [.. typeof(BitIconName)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
+            .Select(f => (string)f.GetValue(null)!)
+            .OrderBy(n => n)];
     }
 
     private static async Task<XDocument?> LoadSummariesXmlDocumentAsync()
