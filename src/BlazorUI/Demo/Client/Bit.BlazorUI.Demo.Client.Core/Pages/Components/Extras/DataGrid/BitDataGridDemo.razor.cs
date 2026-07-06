@@ -495,7 +495,8 @@ public partial class BitDataGridDemo : AppComponentBase
         }
         if (ordered is not null) query = ordered;
 
-        var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
+        // Take is the batch size while scrolling; null means "all rows" (issued by CSV/Excel exports).
+        var batch = query.Skip(request.Skip).Take(request.Take ?? infiniteAll.Count).ToList();
 
         // Drop a superseded batch before mutating shared demo state so stale rows aren't logged.
         request.CancellationToken.ThrowIfCancellationRequested();

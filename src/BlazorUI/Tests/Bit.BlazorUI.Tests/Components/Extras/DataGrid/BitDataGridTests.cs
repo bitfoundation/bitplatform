@@ -557,6 +557,78 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task ExportCoversAllRowsInInfiniteScrollingMode()
+    {
+        var all = CreateRows();
+        BitDataGridReadRequest? exportRequest = null;
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Height, "300px");
+            parameters.Add(p => p.LoadMoreBatchSize, 2);
+            parameters.Add(p => p.OnLoadMore, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(req =>
+            {
+                IEnumerable<TestRow> rows = all.Skip(req.Skip);
+                if (req.Take is { } take) rows = rows.Take(take);
+                else exportRequest = req;
+                return Task.FromResult(new BitDataGridReadResult<TestRow>(rows.ToList(), 0));
+            }));
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+        });
+
+        // Only the first batch is loaded/rendered.
+        component.WaitForAssertion(() => Assert.AreEqual(2, FirstCellTexts(component).Count));
+
+        string csv = null!;
+        await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
+
+        Assert.IsNotNull(exportRequest, "export must request all rows (Take = null) through OnLoadMore");
+        Assert.AreEqual(0, exportRequest!.Skip);
+        foreach (var row in all) StringAssert.Contains(csv, row.Name);
+    }
+
+    [TestMethod]
+    public async Task ExportIncludesCollapsedTreeBranches()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TreeNode>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+        };
+        var roots = new List<TreeNode>
+        {
+            new()
+            {
+                Id = 1, Name = "root",
+                Children = new() { new() { Id = 11, Name = "child-a" }, new() { Id = 12, Name = "child-b" } },
+            },
+        };
+
+        var component = RenderComponent<BitDataGrid<TreeNode>>(parameters =>
+        {
+            parameters.Add(p => p.Items, roots);
+            parameters.Add(p => p.KeyField, (Func<TreeNode, object>)(n => n.Id));
+            parameters.Add(p => p.ChildrenSelector, (Func<TreeNode, IEnumerable<TreeNode>?>)(n => n.Children));
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        // The tree renders collapsed: only the root row is visible.
+        Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+
+        string csv = null!;
+        await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
+
+        StringAssert.Contains(csv, "root");
+        StringAssert.Contains(csv, "child-a");
+        StringAssert.Contains(csv, "child-b");
+
+        // The synchronous ToCsv resolves the same rows without a provider round-trip.
+        string syncCsv = null!;
+        await component.InvokeAsync(() => syncCsv = component.Instance.ToCsv());
+        Assert.AreEqual(csv, syncCsv);
+    }
+
+    [TestMethod]
     public async Task QueryableSourcePagesSortsAndFilters()
     {
         var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
@@ -584,6 +656,7 @@ public class BitDataGridTests : BunitTestContext
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public bool IsFolder { get; set; }
+        public List<TreeNode>? Children { get; set; }
     }
 
     [TestMethod]

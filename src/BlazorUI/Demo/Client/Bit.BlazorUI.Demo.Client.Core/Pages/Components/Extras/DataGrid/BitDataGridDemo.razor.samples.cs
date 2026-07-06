@@ -496,7 +496,8 @@ private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadReque
     }
     if (ordered is not null) query = ordered;
 
-    var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
+    // Take is the batch size while scrolling; null means ""all rows"" (issued by CSV/Excel exports).
+    var batch = query.Skip(request.Skip).Take(request.Take ?? all.Count).ToList();
 
     // Drop a superseded batch before returning so a cancelled load never yields stale rows.
     request.CancellationToken.ThrowIfCancellationRequested();
@@ -827,7 +828,7 @@ private IQueryable<Product> products = SampleData.Generate(400).AsQueryable();" 
 private List<Product> products = SampleData.Generate(120);
 
 // Programmatic exports are also available:
-//     string csv = await grid.ToCsvAsync();     // all matching rows, even in server mode
+//     string csv = await grid.ToCsvAsync();     // all matching rows in every data mode
 //     byte[] xlsx = await grid.ToExcelAsync();  // real .xlsx workbook, no external library" + ProductModelCode + SampleDataCode;
 
     private readonly string example29RazorCode = @"

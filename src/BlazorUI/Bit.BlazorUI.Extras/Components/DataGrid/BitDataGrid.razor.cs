@@ -29,7 +29,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// and no knowledge of the total row count. Each call receives a <see cref="BitDataGridReadRequest"/>
     /// whose <c>Skip</c> is the number of rows already loaded and whose <c>Take</c> is
     /// <see cref="LoadMoreBatchSize"/>. The grid stops requesting more once a batch returns fewer rows
-    /// than requested (signalling the end of the data). Mirrors react-data-grid's Infinite Scrolling.
+    /// than requested (signalling the end of the data). Exports are the one exception to the batch
+    /// shape: they issue a request with <c>Skip = 0</c> and <c>Take = null</c> ("all rows") so the
+    /// exported file covers the full matching set, not just the batches already scrolled into view.
+    /// Mirrors react-data-grid's Infinite Scrolling.
     /// Requires a fixed <see cref="Height"/>. The returned <c>TotalCount</c> is ignored in this mode.
     /// </summary>
     [Parameter] public Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>? OnLoadMore { get; set; }
@@ -2611,14 +2614,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Builds a CSV string of the full (filtered/sorted) dataset. In server mode this issues an
-    /// <see cref="OnRead"/> request with no paging (<c>Take = null</c>, meaning "all rows") and the
-    /// active sorts/filters, so the export contains every matching row rather than the current page.
+    /// Builds a CSV string of the full (filtered/sorted) dataset in every data mode. Server and
+    /// infinite-scrolling modes issue an <see cref="OnRead"/>/<see cref="OnLoadMore"/> request with
+    /// no paging (<c>Take = null</c>, meaning "all rows") and the active sorts/filters, and tree
+    /// mode includes collapsed branches, so the export contains every matching row rather than the
+    /// currently rendered ones.
     /// </summary>
     public async Task<string> ToCsvAsync() => BuildCsv(await GetExportRowsAsync());
 
     /// <summary>Generates the full (filtered/sorted) dataset as an Excel workbook (.xlsx). Like
-    /// <see cref="ToCsvAsync"/>, server mode fetches all matching rows through <see cref="OnRead"/>.</summary>
+    /// <see cref="ToCsvAsync"/>, this covers all matching rows in every data mode — server and
+    /// infinite-scrolling modes fetch them through <see cref="OnRead"/>/<see cref="OnLoadMore"/>.</summary>
     public async Task<byte[]> ToExcelAsync()
     {
         var rows = await GetExportRowsAsync();
@@ -2640,41 +2646,84 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         catch (JSException) { }
     }
 
-    /// <summary>The rows an export should cover: everything matching the active sorts/filters. In
-    /// server mode (and queryable mode) that means fetching/enumerating the full filtered set, not
-    /// just the loaded page.</summary>
+    /// <summary>The rows an export should cover: everything matching the active sorts/filters,
+    /// never just what happens to be rendered. Server and infinite-scrolling modes fetch the full
+    /// matching set through their provider (<see cref="OnRead"/>/<see cref="OnLoadMore"/> with
+    /// <c>Take = null</c>), queryable mode re-runs the translated pipeline without the page window,
+    /// and tree mode walks the whole tree including collapsed branches (lazy trees are limited to
+    /// the children already loaded — fetching the rest could be unbounded).</summary>
     private async Task<IReadOnlyList<TItem>> GetExportRowsAsync()
     {
         if (IsServerMode)
         {
-            // Deliberately not using ResetLoadCancellation here: an export must not cancel (or be
-            // treated as superseding) the grid's own in-flight data load.
-            var request = new BitDataGridReadRequest
-            {
-                Skip = 0,
-                Take = null,
-                Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
-                Filters = _filters.ToList(),
-                Groups = _groups.ToList(),
-                CancellationToken = CancellationToken.None
-            };
-            var result = await OnRead!(request);
+            var result = await OnRead!(BuildExportReadRequest());
             return result.Items;
         }
 
-        if (IsQueryableMode && Items is IQueryable<TItem> queryable)
+        if (IsInfiniteMode)
         {
-            // Re-run the translated filter/sort pipeline without the page window so the provider
-            // (e.g. a database) streams the full matching set for the export.
-            return BitDataGridQueryableProcessor.Apply(queryable, _filters, _sorts, _columnsById).ToList();
+            var result = await OnLoadMore!(BuildExportReadRequest());
+            return result.Items;
         }
+
+        return GetSyncExportRows();
+    }
+
+    /// <summary>The export rows resolvable without a provider round-trip. Tree mode flattens the
+    /// entire tree in display order (per-sibling sorting applied) regardless of expand/collapse
+    /// state — the rendered view only contains expanded rows. Queryable mode re-runs the translated
+    /// filter/sort pipeline without the page window so the provider (e.g. a database) streams the
+    /// full matching set. Server/infinite modes fall back to the rows already loaded — only their
+    /// async providers can supply more (see <see cref="GetExportRowsAsync"/>).</summary>
+    private IReadOnlyList<TItem> GetSyncExportRows()
+    {
+        if (IsServerMode || IsInfiniteMode) return _pageItems;
+
+        if (IsTreeMode)
+        {
+            var all = new List<TItem>();
+            WalkAll(Items ?? Enumerable.Empty<TItem>());
+            return all;
+
+            void WalkAll(IEnumerable<TItem> siblings)
+            {
+                IEnumerable<TItem> sorted = _sorts.Count > 0
+                    ? BitDataGridDataProcessor.Sort(siblings.ToList(), _sorts, _columnsById)
+                    : siblings;
+                foreach (var item in sorted)
+                {
+                    all.Add(item);
+                    if (ResolveTreeChildren(item) is { Count: > 0 } children) WalkAll(children);
+                }
+            }
+        }
+
+        if (IsQueryableMode && Items is IQueryable<TItem> queryable)
+            return BitDataGridQueryableProcessor.Apply(queryable, _filters, _sorts, _columnsById).ToList();
 
         return _view;
     }
 
-    /// <summary>Builds a CSV string of the current (filtered/sorted) data already held by the grid.
-    /// In server mode this covers only the current page; use <see cref="ToCsvAsync"/> for all rows.</summary>
-    public string ToCsv() => BuildCsv(IsServerMode ? _pageItems : _view);
+    /// <summary>The provider request an export issues: no page window (<c>Take = null</c> means
+    /// "all rows") with the active sorts/filters, so the provider streams every matching row.
+    /// Deliberately not using ResetLoadCancellation: an export must not cancel (or be treated as
+    /// superseding) the grid's own in-flight data load.</summary>
+    private BitDataGridReadRequest BuildExportReadRequest() => new()
+    {
+        Skip = 0,
+        Take = null,
+        Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
+        Filters = _filters.ToList(),
+        Groups = _groups.ToList(),
+        CancellationToken = CancellationToken.None
+    };
+
+    /// <summary>Builds a CSV string of the full (filtered/sorted) dataset without going async:
+    /// tree mode includes collapsed branches and queryable mode covers all pages. Server and
+    /// infinite-scrolling modes are the exception — fetching beyond the loaded rows requires their
+    /// async provider, so they cover only the current page/loaded batches; use
+    /// <see cref="ToCsvAsync"/> there for all rows.</summary>
+    public string ToCsv() => BuildCsv(GetSyncExportRows());
 
     private string BuildCsv(IReadOnlyList<TItem> rows)
     {

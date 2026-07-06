@@ -307,7 +307,8 @@
             <div>
                 Set <code>OnLoadMore</code> instead of binding <code>Items</code>. The grid appends the next batch
                 automatically as the user scrolls toward the end — with no total count or paging UI. A fixed
-                <code>Height</code> is required.
+                <code>Height</code> is required. CSV/Excel exports issue a single request with
+                <code>Take = null</code> ("all rows"), so the handler should honor a <code>null</code> Take.
             </div>
             <br />
             <BitDataGrid TItem="Product" OnLoadMore="LoadMore" LoadMoreBatchSize="40"
@@ -645,10 +646,12 @@
 
         <DemoExample Title="Excel export" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
             <div>
-                <code>ShowExcelExport</code> adds a toolbar button that downloads the current (filtered/sorted)
+                <code>ShowExcelExport</code> adds a toolbar button that downloads the full (filtered/sorted)
                 data as a real <code>.xlsx</code> workbook — generated in-process with no external library.
                 Numbers and booleans are written as native cell types so spreadsheet formulas work on them.
-                In server mode the export fetches <b>all</b> matching rows, not just the current page.
+                Exports always cover <b>all</b> matching rows, not just the rendered ones: server and
+                infinite-scrolling modes fetch the full set through <code>OnRead</code>/<code>OnLoadMore</code>,
+                and tree mode includes collapsed branches.
             </div>
             <br />
             <BitDataGrid TItem="Product" Items="@excelProducts" Height="430px"
