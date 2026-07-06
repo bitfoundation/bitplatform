@@ -104,11 +104,24 @@ namespace BitBlazorUI {
         public static initPointerReorder(root: HTMLElement, dotNetRef: DotNetObject) {
             let dragging: { kind: 'row' | 'col', from: string } | null = null;
             let overEl: HTMLElement | null = null;
+            // The pointer that started the drag. Its originating element captures it so move/up keep
+            // firing even when a touch/pen drag leaves the grid (otherwise the drag would silently
+            // stall, leaving `dragging` and the drop-target highlight stuck), and move/up/cancel only
+            // act for this pointer so a second concurrent touch can't mutate or end the drag.
+            let activePointerId: number | null = null;
 
             const clearOver = () => { overEl?.classList.remove('bit-dtg-drop-target'); overEl = null; };
 
+            const startDrag = (e: PointerEvent, drag: { kind: 'row' | 'col', from: string }) => {
+                dragging = drag;
+                activePointerId = e.pointerId;
+                try { (e.target as HTMLElement).setPointerCapture(e.pointerId); } catch { /* pointer no longer active */ }
+                e.preventDefault();
+            };
+
             const onPointerDown = (e: PointerEvent) => {
                 if (e.pointerType === 'mouse') return; // mouse uses native HTML5 DnD
+                if (dragging) return; // a drag is already in progress on another pointer
                 const target = e.target as HTMLElement | null;
                 if (!target) return;
 
@@ -116,20 +129,18 @@ namespace BitBlazorUI {
                 if (handle) {
                     const row = handle.closest('[data-ri]') as HTMLElement | null;
                     if (!row) return;
-                    dragging = { kind: 'row', from: row.getAttribute('data-ri')! };
-                    e.preventDefault();
+                    startDrag(e, { kind: 'row', from: row.getAttribute('data-ri')! });
                     return;
                 }
 
                 const hcell = target.closest('.bit-dtg-hcell[data-col]') as HTMLElement | null;
                 if (hcell && !target.closest('.bit-dtg-resizer')) {
-                    dragging = { kind: 'col', from: hcell.getAttribute('data-col')! };
-                    e.preventDefault();
+                    startDrag(e, { kind: 'col', from: hcell.getAttribute('data-col')! });
                 }
             };
 
             const onPointerMove = (e: PointerEvent) => {
-                if (!dragging) return;
+                if (!dragging || e.pointerId !== activePointerId) return;
                 // elementFromPoint hit-tests the layout under the finger regardless of event capture.
                 const under = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
                 const candidate = dragging.kind === 'row'
@@ -144,12 +155,13 @@ namespace BitBlazorUI {
                 }
             };
 
-            const onPointerUp = () => {
-                if (!dragging) return;
+            const onPointerUp = (e: PointerEvent) => {
+                if (!dragging || e.pointerId !== activePointerId) return;
                 const attr = dragging.kind === 'row' ? 'data-ri' : 'data-col';
                 const to = overEl?.getAttribute(attr);
                 const { kind, from } = dragging;
                 dragging = null;
+                activePointerId = null;
                 clearOver();
                 if (to != null && to !== from) {
                     // Swallow rejections: the circuit may be tearing down mid-drop.
@@ -161,7 +173,12 @@ namespace BitBlazorUI {
                 }
             };
 
-            const onPointerCancel = () => { dragging = null; clearOver(); };
+            const onPointerCancel = (e: PointerEvent) => {
+                if (e.pointerId !== activePointerId) return;
+                dragging = null;
+                activePointerId = null;
+                clearOver();
+            };
 
             root.addEventListener('pointerdown', onPointerDown);
             root.addEventListener('pointermove', onPointerMove);

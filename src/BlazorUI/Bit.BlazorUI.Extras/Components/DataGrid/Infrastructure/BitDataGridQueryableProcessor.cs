@@ -114,7 +114,9 @@ public static class BitDataGridQueryableProcessor
         var term = filter.Value?.ToString();
         if (string.IsNullOrWhiteSpace(term)) return null;
 
-        // Case-insensitive via ToLower(), which LINQ providers translate (e.g. SQL LOWER()).
+        // Case-insensitive via ToLower(), which LINQ providers translate (e.g. SQL LOWER()). The term
+        // is lowered with the same culture-aware ToLower() so an in-memory queryable applies identical
+        // casing rules to both sides (invariant lowering would mismatch e.g. the Turkish dotless I).
         var toLower = typeof(string).GetMethod(nameof(string.ToLower), Type.EmptyTypes)!;
         var methodName = filter.Operator switch
         {
@@ -125,7 +127,7 @@ public static class BitDataGridQueryableProcessor
         var match = (Expression)Expression.Call(
             Expression.Call(member, toLower),
             typeof(string).GetMethod(methodName, new[] { typeof(string) })!,
-            Expression.Constant(term.ToLowerInvariant()));
+            Expression.Constant(term.ToLower()));
 
         var isNull = Expression.Equal(member, Expression.Constant(null, typeof(string)));
         return filter.Operator == BitDataGridFilterOperator.DoesNotContain

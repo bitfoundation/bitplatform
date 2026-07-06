@@ -9,6 +9,7 @@
            (via SetNullable), while still parsing "true"/"false" through the accessor like Set does. *@
         <select class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
                 aria-label="@EditorLabel"
+                aria-invalid="@(Error is null ? null : "true")"
                 @onchange="e => SetNullable(e.Value)">
             <option value="">@string.Empty</option>
             <option value="true">True</option>
@@ -20,6 +21,7 @@
         <input type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
                checked="@(GetBool())"
                aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
                @onchange="e => Set(e.Value)" />
         break;
 
@@ -58,6 +60,7 @@
     case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
         <select class="bit-dtg-editor" value="@(GetString())"
                 aria-label="@EditorLabel"
+                aria-invalid="@(Error is null ? null : "true")"
                 @onchange="e => Set(string.IsNullOrEmpty(e.Value as string) ? null : e.Value)">
             @if (IsNullableEnum || Value is null)
             {

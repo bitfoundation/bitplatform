@@ -7,9 +7,11 @@ namespace Bit.BlazorUI;
 /// across sessions (e.g. to local storage or a user-preferences store).
 /// </summary>
 /// <remarks>
-/// Filter <see cref="BitDataGridFilterDescriptor.Value"/> is typed <see cref="object"/>; when a state
-/// snapshot is round-tripped through JSON, deserialize those values back to their intended CLR types
-/// (number/date/bool/enum) before applying, otherwise the filters fail closed and match no rows.
+/// Filter <see cref="BitDataGridFilterDescriptor.Value"/> is typed <see cref="object"/>, so a state
+/// snapshot round-tripped through System.Text.Json deserializes those values as
+/// <see cref="System.Text.Json.JsonElement"/>. <c>ApplyStateAsync</c> re-coerces such values back to
+/// the bound column's CLR type (number/date/bool/enum) before the filters are applied, so no manual
+/// conversion is needed when restoring a JSON-persisted snapshot.
 /// </remarks>
 public sealed class BitDataGridState
 {

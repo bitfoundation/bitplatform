@@ -22,9 +22,12 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     public bool CanWrite { get; }
 
     /// <summary>
-    /// The raw, typed property-access lambda (<c>x =&gt; x.A.B</c>) without the compiled getter's
-    /// null guards or object boxing. Used to translate filters/sorts into expression trees an
-    /// <see cref="IQueryable{T}"/> provider (e.g. EF Core) can execute remotely.
+    /// The typed property-access lambda (<c>x =&gt; x.A.B</c>) without the compiled getter's object
+    /// boxing. Used to translate filters/sorts into expression trees an <see cref="IQueryable{T}"/>
+    /// provider (e.g. EF Core) can execute remotely. Nested paths carry the getter's null handling
+    /// (a conditional yielding null when an intermediate is null, lifting the leaf to its nullable
+    /// form) so in-memory queryables don't throw on rows with a null intermediate; relational
+    /// providers translate the conditional to equivalent CASE/NULL semantics.
     /// </summary>
     public LambdaExpression PropertyLambda { get; }
 
@@ -219,8 +222,23 @@ public sealed class BitDataGridPropertyAccessor<TItem>
             setter = Expression.Lambda<Action<TItem, object?>>(assign, param, valueParam).Compile();
         }
 
+        // The queryable-translation lambda mirrors the getter's null handling for nested paths: a
+        // null intermediate yields null instead of dereferencing, so sorting/filtering an in-memory
+        // IQueryable (LINQ to Objects evaluates member chains eagerly, unlike SQL) can't throw a
+        // NullReferenceException. A non-nullable value-type leaf is lifted to its nullable form so
+        // the conditional's null branch is representable; single-segment paths stay untouched.
+        Expression lambdaBody = body;
+        if (nullGuard is not null)
+        {
+            var liftedType = CanBeNull(propertyType) ? propertyType : typeof(Nullable<>).MakeGenericType(propertyType);
+            lambdaBody = Expression.Condition(
+                nullGuard,
+                Expression.Constant(null, liftedType),
+                liftedType == propertyType ? body : Expression.Convert(body, liftedType));
+        }
+
         return new BitDataGridPropertyAccessor<TItem>(path, propertyType, canWrite, getter, setter,
-            Expression.Lambda(body, param));
+            Expression.Lambda(lambdaBody, param));
     }
 
     private static bool CanBeNull(Type type)

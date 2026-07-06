@@ -57,7 +57,13 @@ internal static class BitDataGridExcelWriter
             AddEntry(zip, "_rels/.rels", PackageRelsXml);
             AddEntry(zip, "xl/workbook.xml", WorkbookXml);
             AddEntry(zip, "xl/_rels/workbook.xml.rels", WorkbookRelsXml);
-            AddEntry(zip, "xl/worksheets/sheet1.xml", BuildSheet(rows, columns));
+
+            // The worksheet is the only part that scales with the export, so stream it straight into
+            // the (deflating) zip entry instead of assembling the whole XML in memory first — the
+            // uncompressed sheet of a large export would otherwise dwarf the finished package.
+            var sheet = zip.CreateEntry("xl/worksheets/sheet1.xml", CompressionLevel.Fastest);
+            using var writer = new StreamWriter(sheet.Open(), new UTF8Encoding(false));
+            WriteSheet(writer, rows, columns);
         }
         return stream.ToArray();
     }
@@ -69,72 +75,79 @@ internal static class BitDataGridExcelWriter
         writer.Write(content);
     }
 
-    private static string BuildSheet<TItem>(IReadOnlyList<TItem> rows, IReadOnlyList<BitDataGridColumn<TItem>> columns)
+    private static void WriteSheet<TItem>(TextWriter writer, IReadOnlyList<TItem> rows, IReadOnlyList<BitDataGridColumn<TItem>> columns)
     {
-        var sb = new StringBuilder();
-        sb.Append("""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>""");
-        sb.Append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>");
+        writer.Write("""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>""");
+        writer.Write("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>");
 
-        sb.Append("<row>");
+        writer.Write("<row>");
         foreach (var column in columns)
         {
-            AppendInlineString(sb, column.DisplayTitle);
+            WriteInlineString(writer, column.DisplayTitle);
         }
-        sb.Append("</row>");
+        writer.Write("</row>");
 
         foreach (var item in rows)
         {
-            sb.Append("<row>");
+            writer.Write("<row>");
             foreach (var column in columns)
             {
-                AppendCell(sb, column, item);
+                WriteCell(writer, column, item);
             }
-            sb.Append("</row>");
+            writer.Write("</row>");
         }
 
-        sb.Append("</sheetData></worksheet>");
-        return sb.ToString();
+        writer.Write("</sheetData></worksheet>");
     }
 
-    private static void AppendCell<TItem>(StringBuilder sb, BitDataGridColumn<TItem> column, TItem item)
+    private static void WriteCell<TItem>(TextWriter writer, BitDataGridColumn<TItem> column, TItem item)
     {
         var value = column.GetValue(item);
         switch (value)
         {
             case null:
-                sb.Append("<c/>");
+                writer.Write("<c/>");
                 break;
             case bool b:
-                sb.Append("<c t=\"b\"><v>").Append(b ? '1' : '0').Append("</v></c>");
+                writer.Write("<c t=\"b\"><v>");
+                writer.Write(b ? '1' : '0');
+                writer.Write("</v></c>");
+                break;
+            // A non-finite float has no valid numeric-cell representation in SpreadsheetML (a <v> of
+            // "NaN"/"Infinity" makes the file unreadable), so write its display text as an inline
+            // string instead of a numeric cell.
+            case float f when !float.IsFinite(f):
+            case double d when !double.IsFinite(d):
+                WriteInlineString(writer, column.GetFormattedValue(item));
                 break;
             // Native numeric cells keep their real value so spreadsheet math works on the export;
             // a column Format (e.g. "C2") is presentation-only and intentionally not applied here.
             case byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal:
-                sb.Append("<c><v>")
-                  .Append(Convert.ToString(value, CultureInfo.InvariantCulture))
-                  .Append("</v></c>");
+                writer.Write("<c><v>");
+                writer.Write(Convert.ToString(value, CultureInfo.InvariantCulture));
+                writer.Write("</v></c>");
                 break;
             default:
-                AppendInlineString(sb, column.GetFormattedValue(item));
+                WriteInlineString(writer, column.GetFormattedValue(item));
                 break;
         }
     }
 
-    private static void AppendInlineString(StringBuilder sb, string text)
+    private static void WriteInlineString(TextWriter writer, string text)
     {
-        sb.Append("<c t=\"inlineStr\"><is><t xml:space=\"preserve\">");
+        writer.Write("<c t=\"inlineStr\"><is><t xml:space=\"preserve\">");
         foreach (var ch in text)
         {
             switch (ch)
             {
-                case '&': sb.Append("&amp;"); break;
-                case '<': sb.Append("&lt;"); break;
-                case '>': sb.Append("&gt;"); break;
+                case '&': writer.Write("&amp;"); break;
+                case '<': writer.Write("&lt;"); break;
+                case '>': writer.Write("&gt;"); break;
                 // Strip control characters that are invalid in XML 1.0 rather than emitting a broken file.
                 case < ' ' when ch is not ('\t' or '\n' or '\r'): break;
-                default: sb.Append(ch); break;
+                default: writer.Write(ch); break;
             }
         }
-        sb.Append("</t></is></c>");
+        writer.Write("</t></is></c>");
     }
 }

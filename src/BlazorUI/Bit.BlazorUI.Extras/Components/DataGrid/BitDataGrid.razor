@@ -37,10 +37,12 @@
                 }
                 @if (ShowColumnChooser)
                 {
+                    @* The dropdown arrow is decorative; aria-label keeps it out of the accessible name. *@
                     <button type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser"
                             aria-haspopup="true"
                             aria-expanded="@(_showColumnChooserPanel ? "true" : "false")"
-                            aria-controls="@_columnChooserPanelId">@Strings.ColumnsText ▾</button>
+                            aria-controls="@_columnChooserPanelId"
+                            aria-label="@Strings.ColumnsText">@Strings.ColumnsText <span aria-hidden="true">▾</span></button>
                 }
             </div>
         </div>

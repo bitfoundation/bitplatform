@@ -185,14 +185,15 @@ public partial class BitDataGridDemo : AppComponentBase
 
         // Aggregates computed over the WHOLE filtered dataset (not just the returned window), so the
         // footer shows a real grand total instead of a per-window number.
+        var priceSum = filtered.Sum(p => p.Price);
         var aggregates = new List<BitDataGridAggregateResult>
         {
             new()
             {
                 ColumnId = nameof(Product.Price),
                 Type = BitDataGridAggregateType.Sum,
-                Value = filtered.Sum(p => p.Price),
-                FormattedValue = filtered.Sum(p => p.Price).ToString("C0")
+                Value = priceSum,
+                FormattedValue = priceSum.ToString("C0")
             }
         };
 

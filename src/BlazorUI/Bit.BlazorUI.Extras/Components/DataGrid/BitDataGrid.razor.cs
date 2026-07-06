@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -782,19 +783,38 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // and page-scoped CSV export keep operating on what is actually rendered.
         _view = result.Items;
         _pageItems = result.Items;
+
+        // Prefer aggregates the data source computed over the whole filtered dataset (mirroring
+        // LoadServerDataAsync); the local fallback covers only the loaded window.
+        var previousAggregates = _footerAggregates;
+        _serverAggregates = result.Aggregates is not null;
+        _footerAggregates = result.Aggregates?.ToList() ?? BitDataGridDataProcessor.Aggregate(result.Items, _columns);
+
         RebuildRowIndexMap(result.Items, request.StartIndex);
         ReconcileEditState();
 
-        // The empty message renders outside the Virtualize component (which shows nothing at zero
-        // rows), so surface total-count transitions into/out of empty with an explicit re-render.
+        // The empty message and the footer render outside the Virtualize component (which only
+        // re-renders its own rows), so surface total-count transitions into/out of empty and changed
+        // footer aggregates with an explicit re-render.
         var empty = result.TotalCount == 0;
-        if (empty != _serverVirtualizeEmpty)
+        var footerChanged = ShowFooter && !FooterAggregatesEqual(previousAggregates, _footerAggregates);
+        if (empty != _serverVirtualizeEmpty || footerChanged)
         {
             _serverVirtualizeEmpty = empty;
             _ = InvokeAsync(StateHasChanged);
         }
 
         return new ItemsProviderResult<TItem>(result.Items, result.TotalCount);
+    }
+
+    private static bool FooterAggregatesEqual(IReadOnlyList<BitDataGridAggregateResult> a, IReadOnlyList<BitDataGridAggregateResult> b)
+    {
+        if (a.Count != b.Count) return false;
+        for (int i = 0; i < a.Count; i++)
+        {
+            if (a[i].ColumnId != b[i].ColumnId || a[i].FormattedValue != b[i].FormattedValue) return false;
+        }
+        return true;
     }
 
     private void ProcessClientData()
@@ -900,9 +920,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             {
                 var children = ResolveTreeChildren(item);
                 // In lazy mode an unloaded node's expandability comes from HasChildrenSelector (the
-                // children themselves don't exist locally yet); loaded/selector nodes use the real list.
-                var hasChildren = ChildrenProvider is not null
-                    ? HasChildrenSelector?.Invoke(item) ?? children is { Count: > 0 }
+                // children themselves don't exist locally yet). Once the children are loaded (or a
+                // selector provides them) the real list wins, so a node whose fetch returned no
+                // children drops its expand toggle even when the selector claimed it had some.
+                var hasChildren = ChildrenProvider is not null && children is null
+                    ? HasChildrenSelector?.Invoke(item) ?? false
                     : children is { Count: > 0 };
                 _treeMeta[GetKey(item)] = (level, hasChildren);
                 flat.Add(item);
@@ -1167,12 +1189,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // disables reordering simply makes the callbacks no-ops.
         if ((RowReorderable || Reorderable) && !_pointerReorderAttached)
         {
-            _pointerReorderAttached = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
                 _pointerReorderHandle = await JS.InvokeAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initPointerReorder", _rootRef, _gridSelfRef);
+                // Only marked attached on success, so a failed init (transient JS error) is retried on
+                // a later render instead of permanently disabling touch reorder.
+                _pointerReorderAttached = true;
             }
             catch (JSException) { }
             catch (JSDisconnectedException) { }
@@ -1182,12 +1206,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // event args don't expose; a JS observer reports them (rAF-throttled, with hysteresis).
         if (VirtualizeColumns && !_hScrollAttached)
         {
-            _hScrollAttached = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
                 _hScrollHandle = await JS.InvokeAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initHorizontalScroll", _infiniteViewport, _gridSelfRef, HScrollReportThresholdPx);
+                // Only marked attached on success so a failed init retries on a later render.
+                _hScrollAttached = true;
             }
             catch (JSException) { }
             catch (JSDisconnectedException) { }
@@ -1445,11 +1470,22 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // Treat a null, empty or whitespace-only value as "no filter" so a box cleared to spaces clears
         // the filter rather than being stored as a criterion. This matches the data processor, which
         // also ignores whitespace-only filter values, keeping remote and client modes consistent.
+        // Unspecified is the omitted/invalid operator (see the enum), so it never produces a
+        // descriptor either — the filter list and OnRead payload only ever carry real operators.
         var isEmpty = value is null || (value is string s && string.IsNullOrWhiteSpace(s));
-        var active = !isEmpty || op is BitDataGridFilterOperator.IsEmpty or BitDataGridFilterOperator.IsNotEmpty;
+        var active = op is not BitDataGridFilterOperator.Unspecified
+            && (!isEmpty || op is BitDataGridFilterOperator.IsEmpty or BitDataGridFilterOperator.IsNotEmpty);
         if (active)
         {
             _filters.Add(new BitDataGridFilterDescriptor { ColumnId = column.Id, Operator = op, Value = value });
+            // Keep the filter editor's UI state aligned with the descriptor so a programmatic
+            // ApplyFilterAsync shows up in the header (operator dropdown + raw text) like a user edit.
+            _filterOps[column.Id] = op;
+            _filterRaw[column.Id] = FormatFilterRaw(value);
+        }
+        else
+        {
+            _filterRaw.Remove(column.Id);
         }
         Announce(string.Format(active ? Strings.AnnouncementFiltered : Strings.AnnouncementFilterCleared, column.DisplayTitle));
         _currentPage = 1;
@@ -1480,14 +1516,46 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         await RefreshAsync();
     }
 
+    // The raw filter-editor text equivalent of a descriptor value, used to backfill _filterRaw when a
+    // filter is applied programmatically or restored from a snapshot. Invariant formatting matches how
+    // the typed editors parse their input back (see SetTypedFilterAsync).
+    private static string? FormatFilterRaw(object? value)
+        => value is IFormattable f ? f.ToString(null, CultureInfo.InvariantCulture) : value?.ToString();
+
+    // Values in a state snapshot that was round-tripped through System.Text.Json deserialize as
+    // JsonElement, which never equals the CLR values the filter pipeline compares against (so such
+    // filters would fail closed). Unwrap the element to its primitive and coerce it to the column's
+    // member type when one is known.
+    private static object? NormalizeFilterValue(object? value, BitDataGridColumn<TItem> column)
+    {
+        if (value is not JsonElement json) return value;
+
+        object? raw = json.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Number => json.TryGetInt64(out var l) ? l : json.TryGetDecimal(out var m) ? m : json.GetDouble(),
+            JsonValueKind.String => json.GetString(),
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            _ => json.ToString(),
+        };
+
+        return raw is not null && column.Accessor is { } accessor && accessor.TryConvertValue(raw, out var converted)
+            ? converted
+            : raw;
+    }
+
     // ----------------------------------------------------------- Grouping
+    // Grouping is a client-side operation: it reshapes the locally-held _view into _viewGroups.
+    // Server mode (OnRead) and infinite-scrolling mode (OnLoadMore) only forward sorts and filters
+    // to the data callback and render the returned rows flat, so a group would appear active without
+    // affecting the list. Tree mode likewise flattens the hierarchy without grouping, and queryable
+    // mode holds only the current page in memory. Grouping is rejected in those flows — both in the
+    // UI (ColumnGroupable) and on the programmatic/restore paths (GroupByAsync, ApplyStateAsync).
+    private bool GroupingAllowed => !IsServerMode && !IsInfiniteMode && !IsTreeMode && !IsQueryableMode;
+
     internal bool ColumnGroupable(BitDataGridColumn<TItem> column)
-        // Grouping is a client-side operation: it reshapes the locally-held _view into _viewGroups.
-        // Server mode (OnRead) and infinite-scrolling mode (OnLoadMore) only forward sorts and filters
-        // to the data callback and render the returned rows flat, so exposing a group toggle there would
-        // appear active without affecting the list. Tree mode likewise flattens the hierarchy without
-        // grouping, and queryable mode holds only the current page in memory. Disable it in those flows.
-        => column.HasField && !IsServerMode && !IsInfiniteMode && !IsTreeMode && !IsQueryableMode && (column.Groupable ?? Groupable);
+        => column.HasField && GroupingAllowed && (column.Groupable ?? Groupable);
 
     internal bool IsGrouped(BitDataGridColumn<TItem> column) => _groups.Any(g => g.ColumnId == column.Id);
 
@@ -2257,14 +2325,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     // ------------------------------------------------------ Public state API
-    /// <summary>The active sort descriptors, in priority order.</summary>
-    public IReadOnlyList<BitDataGridSortDescriptor> ActiveSorts => _sorts;
+    // These return snapshot lists (not the live backing collections) so a caller holding the result
+    // can't observe or induce mid-lifecycle mutations of the grid's internal descriptor state.
 
-    /// <summary>The active filter descriptors.</summary>
-    public IReadOnlyList<BitDataGridFilterDescriptor> ActiveFilters => _filters;
+    /// <summary>The active sort descriptors, in priority order (a snapshot).</summary>
+    public IReadOnlyList<BitDataGridSortDescriptor> ActiveSorts => _sorts.ToList();
 
-    /// <summary>The active group descriptors, in nesting order.</summary>
-    public IReadOnlyList<BitDataGridGroupDescriptor> ActiveGroups => _groups;
+    /// <summary>The active filter descriptors (a snapshot).</summary>
+    public IReadOnlyList<BitDataGridFilterDescriptor> ActiveFilters => _filters.ToList();
+
+    /// <summary>The active group descriptors, in nesting order (a snapshot).</summary>
+    public IReadOnlyList<BitDataGridGroupDescriptor> ActiveGroups => _groups.ToList();
 
     /// <summary>
     /// Programmatically sorts by the given column. <paramref name="direction"/> of
@@ -2307,9 +2378,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         await RefreshAsync();
     }
 
-    /// <summary>Adds the given column as the next (nested) grouping level. No-op when already grouped.</summary>
+    /// <summary>Adds the given column as the next (nested) grouping level. No-op when already grouped
+    /// or when the grid's data mode doesn't support grouping (server/infinite/tree/queryable).</summary>
     public async Task GroupByAsync(string columnId)
     {
+        if (!GroupingAllowed) return;
         if (!_columnsById.ContainsKey(columnId)) return;
         if (_groups.Any(g => g.ColumnId == columnId)) return;
         _groups.Add(new BitDataGridGroupDescriptor { ColumnId = columnId });
@@ -2384,17 +2457,40 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
 
         _filters.Clear();
+        _filterOps.Clear();
+        _filterRaw.Clear();
         foreach (var f in state.Filters)
         {
-            if (f.ColumnId is not null && _columnsById.ContainsKey(f.ColumnId))
-                _filters.Add(new BitDataGridFilterDescriptor { ColumnId = f.ColumnId, Operator = f.Operator, Value = f.Value });
+            if (f.ColumnId is null || !_columnsById.TryGetValue(f.ColumnId, out var filterColumn)) continue;
+            // Unspecified is the omitted/invalid operator; such a descriptor carries no criteria, so
+            // don't restore it (matching SetFilterAsync, which never creates one).
+            if (f.Operator == BitDataGridFilterOperator.Unspecified) continue;
+            // A snapshot round-tripped through JSON carries JsonElement values that never equal the
+            // CLR values the filter pipeline compares against; re-coerce them to the column's type.
+            var value = NormalizeFilterValue(f.Value, filterColumn);
+            _filters.Add(new BitDataGridFilterDescriptor { ColumnId = f.ColumnId, Operator = f.Operator, Value = value });
+        }
+        // Re-sync the filter editors' UI state (operator dropdown + raw text) with the restored
+        // descriptors so they show what is actually applied. A column holding several descriptors is
+        // a date-Equals half-open range pair, whose dropdown default (Equals) is already correct, so
+        // only single-descriptor columns adopt the restored operator.
+        foreach (var byColumn in _filters.GroupBy(f => f.ColumnId))
+        {
+            var first = byColumn.First();
+            if (byColumn.Count() == 1) _filterOps[first.ColumnId] = first.Operator;
+            _filterRaw[first.ColumnId] = FormatFilterRaw(first.Value);
         }
 
         _groups.Clear();
-        foreach (var g in state.Groups)
+        if (GroupingAllowed)
         {
-            if (g.ColumnId is not null && _columnsById.ContainsKey(g.ColumnId))
-                _groups.Add(new BitDataGridGroupDescriptor { ColumnId = g.ColumnId, Direction = g.Direction });
+            // Skipped entirely in modes that don't support grouping, so a snapshot captured in a
+            // groupable configuration can't reintroduce groups after e.g. OnRead was wired up.
+            foreach (var g in state.Groups)
+            {
+                if (g.ColumnId is not null && _columnsById.ContainsKey(g.ColumnId))
+                    _groups.Add(new BitDataGridGroupDescriptor { ColumnId = g.ColumnId, Direction = g.Direction });
+            }
         }
 
         _pageSizeOverride = state.PageSize is { } ps ? Math.Max(1, ps) : null;
