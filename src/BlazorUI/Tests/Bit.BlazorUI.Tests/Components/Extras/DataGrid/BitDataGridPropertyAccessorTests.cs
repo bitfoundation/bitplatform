@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.DataGrid;
@@ -102,9 +103,25 @@ public class BitDataGridPropertyAccessorTests
     [TestMethod]
     public void NumericConversionUsesInvariantCulture()
     {
-        var accessor = BitDataGridPropertyAccessor<Model>.For("MaybeCount");
-        Assert.IsTrue(accessor.TryConvertValue("1000", out var v));
-        Assert.AreEqual(1000, v);
+        // Run under a comma-decimal locale where "." is a group separator: CurrentCulture parsing
+        // would read "10.5" as 105, so this only passes while TryConvertValue stays invariant.
+        var original = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            var accessor = BitDataGridPropertyAccessor<Model>.For("MaybeCount");
+            Assert.IsTrue(accessor.TryConvertValue("1000", out var v));
+            Assert.AreEqual(1000, v);
+
+            var amount = BitDataGridPropertyAccessor<Model>.For("Price.Amount");
+            Assert.IsTrue(amount.TryConvertValue("10.5", out var a));
+            Assert.AreEqual(10.5m, a);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
     }
 
     [TestMethod]
