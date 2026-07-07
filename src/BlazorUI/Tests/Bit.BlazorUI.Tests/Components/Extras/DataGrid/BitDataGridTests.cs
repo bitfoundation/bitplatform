@@ -854,6 +854,68 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("Cherry", FirstCellTexts(component)[0]);
     }
 
+    public class DatedRow
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime Created { get; set; }
+        public DateTimeOffset? Shipped { get; set; }
+    }
+
+    [TestMethod]
+    public async Task QueryableDateEqualsFiltersCompareCalendarDays()
+    {
+        var rows = new List<DatedRow>
+        {
+            new() { Id = 1, Name = "Morning", Created = new DateTime(2024, 5, 1, 8, 30, 0), Shipped = new DateTimeOffset(2024, 5, 1, 23, 0, 0, TimeSpan.FromHours(2)) },
+            new() { Id = 2, Name = "Evening", Created = new DateTime(2024, 5, 1, 22, 15, 0), Shipped = null },
+            new() { Id = 3, Name = "NextDay", Created = new DateTime(2024, 5, 2, 0, 0, 0), Shipped = new DateTimeOffset(2024, 5, 2, 1, 0, 0, TimeSpan.Zero) },
+        };
+
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<DatedRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<DatedRow>>(2);
+            builder.AddComponentParameter(3, "Field", "Created");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<DatedRow>>(4);
+            builder.AddComponentParameter(5, "Field", "Shipped");
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<DatedRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, rows.AsQueryable());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        // A midnight DateTime operand means "the whole calendar day" — matching the in-memory pipeline
+        // — so both 2024-05-01 rows match regardless of their time-of-day.
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Created", BitDataGridFilterOperator.Equals, new DateTime(2024, 5, 1)));
+        Assert.AreEqual(2, component.Instance.TotalCount);
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Created", BitDataGridFilterOperator.NotEquals, new DateTime(2024, 5, 1)));
+        Assert.AreEqual(1, component.Instance.TotalCount);
+        Assert.AreEqual("NextDay", FirstDatedCellTexts(component)[0]);
+
+        // Nullable DateTimeOffset compares each row's own calendar date (23:00 +02:00 is still May 1);
+        // a null value is never equal to a day and always not-equal, like the in-memory comparer.
+        await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.Equals, new DateTimeOffset(2024, 5, 1, 0, 0, 0, TimeSpan.Zero)));
+        Assert.AreEqual(1, component.Instance.TotalCount);
+        Assert.AreEqual("Morning", FirstDatedCellTexts(component)[0]);
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.NotEquals, new DateTimeOffset(2024, 5, 1, 0, 0, 0, TimeSpan.Zero)));
+        Assert.AreEqual(2, component.Instance.TotalCount);
+    }
+
+    private static IReadOnlyList<string> FirstDatedCellTexts(IRenderedComponent<BitDataGrid<DatedRow>> component)
+        => component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-message-row):not(.bit-dtg-placeholder-row)")
+            .Select(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim())
+            .ToList();
+
     public class TreeNode
     {
         public int Id { get; set; }

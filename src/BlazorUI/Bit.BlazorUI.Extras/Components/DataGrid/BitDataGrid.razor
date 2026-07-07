@@ -251,9 +251,10 @@
             }
 
             @* Virtualize injects spacer <div>s as direct children of its host. An ARIA rowgroup must
-               contain only row elements, so when virtualizing we drop the rowgroup role here (the rows
-               stay valid grid descendants) to keep the Virtualize host free of non-row ARIA children. *@
-            <div class="bit-dtg-body" role="@(UseVirtualization ? null : "rowgroup")">
+               contain only row elements, so when virtualizing (client or server mode) we drop the
+               rowgroup role here (the rows stay valid grid descendants) to keep the Virtualize host
+               free of non-row ARIA children. *@
+            <div class="bit-dtg-body" role="@(UseVirtualization || UseServerVirtualization ? null : "rowgroup")">
                 @if (PendingNewItem is not null)
                 {
                     <BitDataGridRow TItem="TItem" Grid="this" Item="PendingNewItem" />

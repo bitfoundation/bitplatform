@@ -171,6 +171,11 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     // cached visible-column list), not the computed view, so it must not trigger a data refresh.
     private bool _lastVisible = true;
 
+    // Frozen/FrozenEnd are layout-only too: sticky positioning and the cached column slots depend on
+    // them, so a change must invalidate the grid's layout caches without refreshing data.
+    private bool _lastFrozen;
+    private bool _lastFrozenEnd;
+
     internal string DisplayTitle => Title ?? Humanize(EffectiveField) ?? Id;
 
     internal bool HasField => !string.IsNullOrWhiteSpace(EffectiveField);
@@ -221,6 +226,8 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         _registeredId = Grid.AddColumn(this) ? Id : null;
         SnapshotSemanticParameters();
         _lastVisible = Visible;
+        _lastFrozen = Frozen;
+        _lastFrozenEnd = FrozenEnd;
     }
 
     protected override void OnParametersSet()
@@ -236,6 +243,15 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         if (_lastVisible != Visible)
         {
             _lastVisible = Visible;
+            if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
+        }
+
+        // Frozen/FrozenEnd changes go through the same layout invalidation: sticky offsets and the
+        // cached column slots (which always render sticky columns) are computed from them.
+        if (_lastFrozen != Frozen || _lastFrozenEnd != FrozenEnd)
+        {
+            _lastFrozen = Frozen;
+            _lastFrozenEnd = FrozenEnd;
             if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
         }
 

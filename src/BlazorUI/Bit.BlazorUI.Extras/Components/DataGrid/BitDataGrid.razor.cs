@@ -793,6 +793,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
         }
 
+        // An OnRead that never observes the token can still complete normally after cancellation.
+        // Mirroring LoadServerDataAsync's stale-response guard, bail out before committing anything so
+        // this superseded window can't overwrite state the newer request owns.
+        if (request.CancellationToken.IsCancellationRequested)
+            return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
+
         _totalCount = result.TotalCount;
 
         // The loaded window doubles as the grid's "current rows" so select-all, keyboard navigation
@@ -1677,12 +1683,26 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     /// <summary>
     /// Removes selection and expanded-detail entries whose rows are no longer present in the (replaced)
-    /// client-side data source. Only runs for materialized sources (<see cref="ICollection{T}"/>) so a
-    /// lazy <see cref="IEnumerable{T}"/> isn't enumerated an extra time, and skips controlled selection
+    /// client-side data source. A null source counts as empty (all row state is dropped); otherwise only
+    /// materialized sources (<see cref="ICollection{T}"/>) are pruned so a lazy
+    /// <see cref="IEnumerable{T}"/> isn't enumerated an extra time. Controlled selection is skipped
     /// (<see cref="SelectedItems"/> is authoritative there and is re-applied on every parameter set).
     /// </summary>
     private async Task PruneStaleRowStateAsync()
     {
+        // A cleared source (Items set to null) drops every row, so all keyed row state goes with it;
+        // returning early here would leave removed rows selected/expanded (and strongly referenced).
+        if (Items is null)
+        {
+            _expandedDetails.Clear();
+            if (SelectedItems is null && _selectedSet is { Count: > 0 })
+            {
+                _selectedSet.Clear();
+                await NotifySelectionAsync();
+            }
+            return;
+        }
+
         if (Items is not ICollection<TItem> source) return;
 
         var keys = new HashSet<object>();
@@ -2224,6 +2244,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // The target row may span columns; snap focus to the actually-rendered cell so it always
         // lands on a real BitDataGridCell with tabindex=0 instead of a spanned-away column index.
         col = SnapToRenderedColumn(rows[row], col, colDir);
+        // While column virtualization is active only the ColumnSlots window exists in the DOM, so the
+        // target must additionally snap to a rendered slot or focus would land on a spacer-collapsed
+        // column with no cell (and no tabindex) to receive it.
+        col = SnapToVirtualizedColumn(col, colDir);
         _focusedRow = rows[row];
         _focusedCol = col;
         _focusVersion++;
@@ -2290,6 +2314,31 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
         // Moving left (or stationary): the span start is the rendered cell to focus.
         return start;
+    }
+
+    /// <summary>
+    /// Maps a desired visible-column index to a column actually present in <see cref="ColumnSlots"/>
+    /// while column virtualization is active (a scrolled-out column has no rendered cell to focus).
+    /// Advances past the skipped run in the travel direction; with no direction (vertical moves,
+    /// Home) the nearest rendered column at or after the target wins. Spans never coexist with
+    /// column virtualization, so this composes safely with <see cref="SnapToRenderedColumn"/>.
+    /// </summary>
+    private int SnapToVirtualizedColumn(int target, int dir)
+    {
+        if (!ColumnVirtualizationActive) return target;
+
+        int before = -1, after = -1;
+        foreach (var slot in ColumnSlots)
+        {
+            if (slot.Column is null) continue;
+            if (slot.ColIndex == target) return target;
+            if (slot.ColIndex < target) { if (slot.ColIndex > before) before = slot.ColIndex; }
+            else if (after < 0 || slot.ColIndex < after) after = slot.ColIndex;
+        }
+
+        var preferred = dir < 0 ? before : after;
+        var fallback = dir < 0 ? after : before;
+        return preferred >= 0 ? preferred : fallback >= 0 ? fallback : target;
     }
 
     // ------------------------------------------------- Column header groups

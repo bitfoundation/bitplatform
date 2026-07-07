@@ -158,6 +158,16 @@ public static class BitDataGridQueryableProcessor
         if (!accessor.TryConvertValue(filter.Value, out var converted) || converted is null) return null;
         var operand = Expression.Constant(converted, member.Type);
 
+        // The date filter editor emits a calendar day at midnight; the in-memory pipeline gives
+        // Equals/NotEquals on DateTime/DateTimeOffset whole-day semantics for such operands
+        // (BitDataGridDataProcessor.TryDateOnlyEquals). Mirror that here so paging/export over an
+        // IQueryable source matches the descriptor contract instead of comparing exact timestamps.
+        if (filter.Operator is BitDataGridFilterOperator.Equals or BitDataGridFilterOperator.NotEquals
+            && BuildDayEquality(member, converted, negate: filter.Operator == BitDataGridFilterOperator.NotEquals) is { } dayBody)
+        {
+            return dayBody;
+        }
+
         try
         {
             return filter.Operator switch
@@ -177,5 +187,37 @@ public static class BitDataGridQueryableProcessor
             // filter instead of surfacing an expression-construction error.
             return null;
         }
+    }
+
+    // Builds a calendar-day (in)equality for a DateTime/DateTimeOffset member and a midnight operand,
+    // via the .Date property (which LINQ providers translate, e.g. EF Core → CONVERT(date, ...));
+    // DateTimeOffset.Date uses the row's own offset, matching the in-memory behavior. Returns null
+    // when the operand isn't a date-only value for such a member, so the caller falls back to the
+    // exact comparison. A null row value is never equal to a day (and always not-equal), matching the
+    // in-memory comparer.
+    private static Expression? BuildDayEquality(Expression member, object converted, bool negate)
+    {
+        var underlying = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+
+        DateTime day;
+        if (underlying == typeof(DateTime) && converted is DateTime dt && dt.TimeOfDay == TimeSpan.Zero)
+            day = dt.Date;
+        else if (underlying == typeof(DateTimeOffset) && converted is DateTimeOffset dto && dto.TimeOfDay == TimeSpan.Zero)
+            day = dto.Date;
+        else
+            return null;
+
+        var nullable = member.Type != underlying;
+        var valueExpr = nullable ? Expression.Property(member, "Value") : member;
+        var dateExpr = Expression.Property(valueExpr, nameof(DateTime.Date));
+        var dayConst = Expression.Constant(day, typeof(DateTime));
+
+        if (!nullable)
+            return negate ? Expression.NotEqual(dateExpr, dayConst) : Expression.Equal(dateExpr, dayConst);
+
+        var hasValue = Expression.Property(member, "HasValue");
+        return negate
+            ? Expression.OrElse(Expression.Not(hasValue), Expression.NotEqual(dateExpr, dayConst))
+            : Expression.AndAlso(hasValue, Expression.Equal(dateExpr, dayConst));
     }
 }

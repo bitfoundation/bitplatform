@@ -1,4 +1,5 @@
 using Bit.BlazorUI.Demo.Client.Core.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
@@ -83,6 +84,8 @@ public partial class BitDataGridDemo : AppComponentBase
     private BitDataGridCellEventArgs<Product>? cellMenuArgs;
     private int cellMenuX;
     private int cellMenuY;
+    private ElementReference cellMenuFirstItem;
+    private bool cellMenuFocusPending;
 
     // example 17 - cell navigation
     private readonly List<Product> cellNavProducts = SampleData.Generate(40);
@@ -562,9 +565,26 @@ public partial class BitDataGridDemo : AppComponentBase
         cellMenuX = (int)e.Mouse.ClientX;
         cellMenuY = (int)e.Mouse.ClientY;
         cellEventStatus = $"Right-clicked {e.ColumnTitle} on {e.Item.Name}";
+        // Move focus into the menu once it renders so keyboard users can operate/dismiss it.
+        cellMenuFocusPending = true;
     }
 
     private void CloseCellMenu() => cellMenuArgs = null;
+
+    private void OnCellMenuKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") CloseCellMenu();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (cellMenuFocusPending && cellMenuArgs is not null)
+        {
+            cellMenuFocusPending = false;
+            await cellMenuFirstItem.FocusAsync();
+        }
+    }
 
     private async Task CopyCellValue()
     {

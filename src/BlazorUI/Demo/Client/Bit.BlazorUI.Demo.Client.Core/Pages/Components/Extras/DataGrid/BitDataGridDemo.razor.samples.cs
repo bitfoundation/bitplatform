@@ -602,9 +602,10 @@ private void OnReorder(BitDataGridRowReorderEventArgs<Product> e)
     <div class=""ctx-menu-overlay""
          @onclick=""CloseCellMenu""
          @oncontextmenu=""CloseCellMenu"" @oncontextmenu:preventDefault=""true""></div>
-    <div class=""ctx-menu"" role=""menu"" style=""left:@(cellMenuX)px;top:@(cellMenuY)px"">
+    <div class=""ctx-menu"" role=""menu"" style=""left:@(cellMenuX)px;top:@(cellMenuY)px""
+         @onkeydown=""OnCellMenuKeyDown"">
         <div>@cellMenuArgs.Item.Name — @cellMenuArgs.ColumnTitle</div>
-        <button type=""button"" role=""menuitem"" @onclick=""CopyCellValue"">Copy value</button>
+        <button type=""button"" role=""menuitem"" @ref=""cellMenuFirstItem"" @onclick=""CopyCellValue"">Copy value</button>
         <button type=""button"" role=""menuitem"" @onclick=""DeleteCellMenuRow"">Delete row</button>
     </div>
 }";
@@ -614,6 +615,8 @@ private BitDataGrid<Product>? grid;
 private BitDataGridCellEventArgs<Product>? cellMenuArgs;
 private int cellMenuX;
 private int cellMenuY;
+private ElementReference cellMenuFirstItem;
+private bool cellMenuFocusPending;
 
 private void OnCellClick(BitDataGridCellEventArgs<Product> e) { /* e.Item, e.ColumnTitle, e.Value */ }
 private void OnCellDoubleClick(BitDataGridCellEventArgs<Product> e) { /* e.Item, e.ColumnTitle, e.Value */ }
@@ -624,9 +627,26 @@ private void OnCellContextMenu(BitDataGridCellEventArgs<Product> e)
     // ClientX/Y are viewport coordinates, matching the menu's position:fixed placement.
     cellMenuX = (int)e.Mouse.ClientX;
     cellMenuY = (int)e.Mouse.ClientY;
+    // Move focus into the menu once it renders so keyboard users can operate/dismiss it.
+    cellMenuFocusPending = true;
 }
 
 private void CloseCellMenu() => cellMenuArgs = null;
+
+private void OnCellMenuKeyDown(KeyboardEventArgs e)
+{
+    if (e.Key == ""Escape"") CloseCellMenu();
+}
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    await base.OnAfterRenderAsync(firstRender);
+    if (cellMenuFocusPending && cellMenuArgs is not null)
+    {
+        cellMenuFocusPending = false;
+        await cellMenuFirstItem.FocusAsync();
+    }
+}
 
 private async Task CopyCellValue()
 {
@@ -823,14 +843,15 @@ private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitData
 
     // Aggregates computed over the WHOLE filtered dataset (not just the returned window),
     // so the footer shows a real grand total instead of a per-window number.
+    var priceSum = filtered.Sum(p => p.Price);
     var aggregates = new List<BitDataGridAggregateResult>
     {
         new()
         {
             ColumnId = nameof(Product.Price),
             Type = BitDataGridAggregateType.Sum,
-            Value = filtered.Sum(p => p.Price),
-            FormattedValue = filtered.Sum(p => p.Price).ToString(""C0"")
+            Value = priceSum,
+            FormattedValue = priceSum.ToString(""C0"")
         }
     };
 
