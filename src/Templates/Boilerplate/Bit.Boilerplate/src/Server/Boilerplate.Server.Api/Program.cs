@@ -11,6 +11,10 @@ public static partial class Program
 
         builder.Configuration.AddSharedConfigurations();
 
+        //#if (sentry == true)
+        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.Bind("Logging:Sentry", options));
+        //#endif
+
         builder.Services.AddSharedProjectServices(builder.Configuration);
         builder.AddServerApiProjectServices();
 

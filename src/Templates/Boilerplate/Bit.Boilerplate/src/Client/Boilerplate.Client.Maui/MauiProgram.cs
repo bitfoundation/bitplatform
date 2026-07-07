@@ -34,6 +34,7 @@ public static partial class MauiProgram
         ITelemetryContext.Current = new MauiTelemetryContext();
 
         var builder = MauiApp.CreateBuilder();
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
         //+:cnd:noEmit
         builder
@@ -42,11 +43,10 @@ public static partial class MauiProgram
             //#if (sentry == true)
             .UseSentry(options =>
             {
-                var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui").Build();
-                configuration.Bind("Logging:Sentry", options);
+                builder.Configuration.Bind("Logging:Sentry", options);
             })
             //#endif
-            .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
+            ;
 
         //#if (notification == true)
         if (AppPlatform.IsWindows is false)

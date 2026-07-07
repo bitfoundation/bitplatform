@@ -69,6 +69,15 @@ public static partial class Program
                 configuration.Bind("Logging:OpenTelemetry", options);
             });
 
+            //#if (sentry == true)
+            loggingBuilder.AddSentry(options =>
+            {
+                options.Debug = AppEnvironment.IsDevelopment();
+                options.Environment = AppEnvironment.Current;
+                configuration.Bind("Logging:Sentry", options);
+            });
+            //#endif
+
             loggingBuilder.AddEventLog(options => configuration.Bind("Logging:EventLog", options));
         });
 
