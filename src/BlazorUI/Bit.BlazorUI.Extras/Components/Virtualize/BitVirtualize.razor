@@ -1,0 +1,64 @@
+@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+@{
+    var template = ItemTemplate ?? ChildContent;
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     role="@Role"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     tabindex="@(TabIndex ?? "0")"
+     aria-label="@AriaLabel">
+    @if (_initialized is false && _itemCount == 0 && LoadingTemplate is not null)
+    {
+        <div class="bit-vir-ldg">@LoadingTemplate</div>
+    }
+    else if (_itemCount == 0 && _loading is false)
+    {
+        @if (EmptyTemplate is not null)
+        {
+            <div class="bit-vir-emp">@EmptyTemplate</div>
+        }
+    }
+    else
+    {
+        <div class="bit-vir-spc" style="@GetSpacerStyle()">
+            @for (int i = _renderStart; i < _renderEnd; i++)
+            {
+                var index = i;
+                <div @key="index"
+                     role="listitem"
+                     class="bit-vir-itm"
+                     style="@GetItemStyle(index)"
+                     aria-setsize="@_itemCount"
+                     aria-posinset="@(index + 1)"
+                     data-bit-vir-index="@index">
+                    @if (TryGetItem(index, out var item))
+                    {
+                        @(template?.Invoke(item))
+                    }
+                    else if (PlaceholderTemplate is not null)
+                    {
+                        @PlaceholderTemplate(new BitVirtualizePlaceholderContext(index, GetItemSize(index)))
+                    }
+                </div>
+            }
+
+            @if (_stickyActiveIndex >= 0 && TryGetItem(_stickyActiveIndex, out var stickyItem))
+            {
+                <div role="presentation"
+                     class="bit-vir-stk"
+                     style="@GetStickyStyle()"
+                     data-bit-vir-sticky-size="@FormatCssValue(GetItemSize(_stickyActiveIndex))"
+                     data-bit-vir-sticky-next="@FormatCssValue(_stickyNextOffset)">
+                    @((StickyTemplate ?? template)?.Invoke(stickyItem))
+                </div>
+            }
+        </div>
+    }
+</div>
