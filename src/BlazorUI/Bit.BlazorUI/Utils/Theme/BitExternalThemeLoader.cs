@@ -62,7 +62,7 @@ public sealed class BitExternalThemeLoader
         // check below and reach the browser, which resolves them to a cross-origin
         // http(s)://evil.example/x.css. Reject them up front; callers must use a same-origin
         // relative path or an explicit http/https URL. Browsers also normalize backslashes to
-        // forward slashes in URLs, so `\\host\x.css` is the same attack surface — block it too.
+        // forward slashes in URLs, so `\\host\x.css` is the same attack surface - block it too.
         var trimmed = href.TrimStart();
         if (trimmed.StartsWith("//", StringComparison.Ordinal) ||
             trimmed.StartsWith(@"\\", StringComparison.Ordinal) ||
@@ -77,7 +77,7 @@ public sealed class BitExternalThemeLoader
         if (Uri.TryCreate(href, UriKind.Absolute, out var absolute))
         {
             // Reject every absolute-URL scheme other than http(s). That covers javascript:, data:,
-            // file:, vbscript:, blob:, etc. — none of which belong on a <link rel="stylesheet">.
+            // file:, vbscript:, blob:, etc. - none of which belong on a <link rel="stylesheet">.
             // Uri.UriSchemeHttp/Https are static readonly fields, not constants, so they can't be
             // used in a relational pattern; compare with case-insensitive ordinal equality instead.
             if (!string.Equals(absolute.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&

@@ -111,7 +111,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
             }
             catch
             {
-                // Interop unavailable (e.g. during prerender) — stay at the fixed virtual size.
+                // Interop unavailable (e.g. during prerender) - stay at the fixed virtual size.
                 _sizeRegistered = false;
             }
         }
@@ -131,7 +131,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         }
         catch
         {
-            // Interop unavailable (e.g. during prerender) — zoom stays inert.
+            // Interop unavailable (e.g. during prerender) - zoom stays inert.
             _zoomRegistered = false;
         }
     }
@@ -279,7 +279,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
         // Decide whether to (re)play the entry animation. We key off a signature of the data
         // values (not pixel positions), so data changes replay the animation while resize/zoom/pan
-        // — which leave the values unchanged — do not.
+        // - which leave the values unchanged - do not.
         long sig = ComputeSignature();
         bool dataChanged = _initialized && sig != _lastSig;
         _lastSig = sig;
@@ -656,7 +656,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>Class for the series (line/area) group — animates with the same proven group mechanism.
+    /// <summary>Class for the series (line/area) group - animates with the same proven group mechanism.
     /// Radial/circular charts (e.g. radar) grow from the center so the web matches its joint points.</summary>
     private string SeriesGroupClass =>
         CanAnimate

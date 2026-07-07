@@ -7,7 +7,7 @@
 /// When used via <see cref="BitMediaQuery.ScreenQuery"/>, the effective media query is built at
 /// runtime from the live <c>--bit-bp-*</c> breakpoint tokens (i.e. from
 /// <see cref="BitThemeLayout.Breakpoints"/> when you customize them), not from fixed values baked
-/// into the component — so overriding the theme breakpoints changes these queries too. The pixel
+/// into the component - so overriding the theme breakpoints changes these queries too. The pixel
 /// values shown on each member below are the built-in <em>defaults</em> (used when the matching
 /// <c>--bit-bp-*</c> variable is unset). Range members are half-open: the upper bound is one CSS
 /// pixel below the next breakpoint. For a one-off breakpoint that isn't part of the theme scale,

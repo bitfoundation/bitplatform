@@ -55,7 +55,7 @@
 
         // Builds the media query for a predefined BitScreenQuery from the resolved theme breakpoints.
         // Range bounds are half-open (min inclusive, max exclusive), so the upper edge is one CSS
-        // pixel below the next breakpoint — matching the packaged media-queries.scss mixins.
+        // pixel below the next breakpoint - matching the packaged media-queries.scss mixins.
         private static buildScreenQuery(screenQuery: string): string {
             const bp = MediaQuery.resolveBreakpoints();
             const min = (v: string) => `(min-width: ${v})`;

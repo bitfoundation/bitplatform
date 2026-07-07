@@ -215,7 +215,7 @@
     //req
     --bit-clr-req: #A4262C;
 
-    //focus (a11y) — color of the focus indicator per role.
+    //focus (a11y) - color of the focus indicator per role.
     //Aliased to the role's base color so they track theme/brand overrides.
     //Override these directly to differentiate focus from base color.
     --bit-clr-pri-focus: var(--bit-clr-pri);

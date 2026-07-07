@@ -29,7 +29,7 @@ public sealed class BitThemeProvider : ComponentBase
     /// immutable ("frozen"). When <see langword="true"/>, the provider skips the relatively
     /// expensive per-render rebuild (the <see cref="BitThemeMapper"/> merge that allocates a fresh
     /// all-token <see cref="BitTheme"/> plus the ~300-entry CSS-variable string build) whenever both
-    /// references are unchanged since the last render — it just keeps the previously cached result.
+    /// references are unchanged since the last render - it just keeps the previously cached result.
     /// </summary>
     /// <remarks>
     /// This is a performance opt-in for the common case where callers hand the provider a stable
@@ -49,7 +49,7 @@ public sealed class BitThemeProvider : ComponentBase
 
     /// <summary>
     /// Catch-all for HTML attributes splatted onto the wrapping element (e.g. <c>class</c>, <c>id</c>,
-    /// <c>data-*</c>, ARIA roles). Only emitted when this provider renders a wrapping element — that
+    /// <c>data-*</c>, ARIA roles). Only emitted when this provider renders a wrapping element - that
     /// is, when a local <see cref="Theme"/> is applied (its CSS variables need a host element), or
     /// when a cascading <see cref="ParentTheme"/> is re-exposed under a custom <see cref="ThemeName"/>.
     /// When there is nothing to apply at this layer (no local <see cref="Theme"/> and no
@@ -122,7 +122,7 @@ public sealed class BitThemeProvider : ComponentBase
         // behavior consistent: previously the no-parent path cascaded the caller's own Theme instance,
         // so an in-place mutation of that instance produced the same reference and CascadingValue
         // (which compares reference types with ReferenceEquals) never notified [CascadingParameter]
-        // consumers — whereas the with-parent path always allocated a new reference and did notify.
+        // consumers - whereas the with-parent path always allocated a new reference and did notify.
         // Going through Merge in both cases means a token change yields a new reference (consumers are
         // notified), while the CSS-string equality suppression below preserves the cached reference
         // when nothing actually changed (consumers are not woken up needlessly).
@@ -135,7 +135,7 @@ public sealed class BitThemeProvider : ComponentBase
         _lastTheme = Theme;
         _lastParentTheme = ParentTheme;
 
-        // Suppress propagation when the produced output is identical to the previous render —
+        // Suppress propagation when the produced output is identical to the previous render -
         // this preserves the cascaded reference and avoids waking up every descendant consumer
         // when a parent re-renders without touching the theme.
         if (_cachedMergedTheme is not null && string.Equals(_cachedCssVarStyle, cssVarStyle, StringComparison.Ordinal))
@@ -158,7 +158,7 @@ public sealed class BitThemeProvider : ComponentBase
 
         if (_cachedCssVarStyle is null && ThemeName is null)
         {
-            // Nothing to apply at this layer: no CSS variables to emit (Theme is null — only a
+            // Nothing to apply at this layer: no CSS variables to emit (Theme is null - only a
             // ParentTheme is cascading from above) and no custom ThemeName to re-expose the value
             // under. The ancestor's unnamed CascadingValue<BitTheme> already reaches our
             // descendants, so rendering ChildContent directly preserves the cascade while avoiding

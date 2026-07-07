@@ -2,7 +2,7 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Draws one or more lines of text in the center of a doughnut/pie chart — a very common
+/// Draws one or more lines of text in the center of a doughnut/pie chart - a very common
 /// dashboard pattern (e.g. a total or KPI in the cutout).
 /// </summary>
 public sealed class BitChartCenterTextPlugin : IBitChartPlugin

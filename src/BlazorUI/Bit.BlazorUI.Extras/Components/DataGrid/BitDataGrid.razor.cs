@@ -24,7 +24,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Infinite-scrolling data callback. When set, the grid loads rows in batches and appends the
-    /// next batch automatically as the user scrolls to the end of the viewport — with no paging UI
+    /// next batch automatically as the user scrolls to the end of the viewport - with no paging UI
     /// and no knowledge of the total row count. Each call receives a <see cref="BitDataGridReadRequest"/>
     /// whose <c>Skip</c> is the number of rows already loaded and whose <c>Take</c> is
     /// <see cref="LoadMoreBatchSize"/>. The grid stops requesting more once a batch returns fewer rows
@@ -83,7 +83,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// respond to arrow keys, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>PageUp</kbd>/<kbd>PageDown</kbd>
     /// (and <kbd>Ctrl</kbd> variants). <kbd>Enter</kbd>/<kbd>F2</kbd> begins editing an editable
     /// cell and <kbd>Esc</kbd> cancels. Mirrors react-data-grid's Cell Navigation. No JavaScript
-    /// is used — focus is driven by Blazor's built-in <c>FocusAsync</c>.
+    /// is used - focus is driven by Blazor's built-in <c>FocusAsync</c>.
     /// </summary>
     [Parameter] public bool CellNavigation { get; set; }
 
@@ -260,7 +260,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _columns.Add(column);
         _columnsById[column.Id] = column;
 
-        // A column registering itself must not trigger a fresh data fetch in server/infinite modes —
+        // A column registering itself must not trigger a fresh data fetch in server/infinite modes -
         // doing so once per column re-queries the backend (or resets the infinite list) repeatedly.
         // Instead recompute footer/aggregate values from the rows already loaded and just re-render so
         // late-registered footer columns still get their values. In client mode RefreshAsync only
@@ -345,8 +345,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Re-keys a column in the registry after its <see cref="BitDataGridColumn{TItem}.Id"/> changes
     /// (its <c>ColumnId</c>/<c>Field</c> parameters were mutated after the initial registration).
-    /// Without this the registry keeps the stale key and sort/filter/group lookups — which resolve
-    /// columns by id — would no longer find the column. Active descriptors are migrated to the new id.
+    /// Without this the registry keeps the stale key and sort/filter/group lookups - which resolve
+    /// columns by id - would no longer find the column. Active descriptors are migrated to the new id.
     /// </summary>
     internal void UpdateColumnRegistration(BitDataGridColumn<TItem> column, string oldId)
     {
@@ -705,7 +705,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
         // Only after a batch was genuinely appended do we ask JS whether the viewport still isn't
         // filled (e.g. a short first batch) and therefore needs another load. Gating the re-check on a
-        // real append is essential: re-checking after a no-op load would spin a tight JS<->.NET loop —
+        // real append is essential: re-checking after a no-op load would spin a tight JS<->.NET loop -
         // while the initial batch is still in flight the viewport is empty (so it always looks "near the
         // end"), every check() would re-enter here, hit the _infiniteLoading guard, return immediately
         // and re-check again, starving the in-flight batch's continuation and freezing the UI thread.

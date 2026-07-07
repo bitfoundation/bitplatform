@@ -22,7 +22,7 @@ public static class BitThemeColorDerivation
     /// </para>
     /// <para>
     /// The variants are derived by shifting only the HSV <em>value</em> (brightness) of
-    /// <paramref name="mainHex"/> — hue and saturation are preserved. The result is clamped to the
+    /// <paramref name="mainHex"/> - hue and saturation are preserved. The result is clamped to the
     /// [0,1] value range, so for an already very bright base color the "light" steps
     /// (<see cref="BitThemeColorVariants.Light"/> / <c>LightHover</c> / <c>LightActive</c>) can
     /// saturate at white and collapse to the same hex, and likewise the "dark" steps can converge
@@ -32,7 +32,7 @@ public static class BitThemeColorDerivation
     /// <para>
     /// The auto-generated <see cref="BitThemeColorVariants.Text"/> (on-color text) is set to whichever
     /// of black/white has the higher WCAG sRGB relative-luminance contrast against the resolved
-    /// <see cref="BitThemeColorVariants.Main"/> background — which, for a black/white choice, is also the
+    /// <see cref="BitThemeColorVariants.Main"/> background - which, for a black/white choice, is also the
     /// WCAG-AA-optimal option. A caller-provided <c>Text</c> is never overwritten.
     /// </para>
     /// </remarks>
@@ -42,7 +42,7 @@ public static class BitThemeColorDerivation
 
         // Reject null/blank/invalid hex up front (same validation as BitThemeColorContrast). An
         // unrecognized value is a no-op rather than a silent all-white derivation, and a validated
-        // #RRGGBB value parses cleanly below — so no defensive catch is needed, and a genuine bug
+        // #RRGGBB value parses cleanly below - so no defensive catch is needed, and a genuine bug
         // (an exception on valid input) is allowed to surface instead of being swallowed.
         if (BitThemeColorContrast.TryNormalizeHex(mainHex, out var normalizedHex) is false) return;
 

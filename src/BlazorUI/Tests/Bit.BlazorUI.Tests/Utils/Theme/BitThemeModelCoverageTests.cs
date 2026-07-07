@@ -21,7 +21,7 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 /// </para>
 /// <para>
 /// Runtime reflection is intentionally NOT used in the production mapper (it breaks under
-/// trimming / AOT — see <c>BitThemeSerialization.EnsureNestedObjects</c>), but the test assembly
+/// trimming / AOT - see <c>BitThemeSerialization.EnsureNestedObjects</c>), but the test assembly
 /// has no such constraint, so we use reflection here to pin the contract at build/test time.
 /// </para>
 /// <para>
@@ -40,7 +40,7 @@ public sealed class BitThemeModelCoverageTests
         // assert the mapper emits exactly one CSS variable per token. A shortfall means either a
         // token was added to the model without a matching addCssVar(...) in
         // BitThemeMapper.MapToCssVariables, or two tokens were mapped to the same CSS variable
-        // name (a copy/paste bug — which additionally surfaces as a duplicate-key throw below).
+        // name (a copy/paste bug - which additionally surfaces as a duplicate-key throw below).
         var theme = new BitTheme();
         var leafCount = FillStringLeavesWithSentinels(theme);
 

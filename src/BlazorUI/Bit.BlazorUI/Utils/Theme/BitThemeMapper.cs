@@ -10,7 +10,7 @@ internal static class BitThemeMapper
 
         // Walk a normalized COPY so a hand-constructed sparse theme (e.g. new BitTheme { Color = null }
         // or new BitThemeColors { Primary = null }, both reachable via the public setters) can be
-        // traversed without NRE — WITHOUT mutating the caller's instance. (Previously this filled
+        // traversed without NRE - WITHOUT mutating the caller's instance. (Previously this filled
         // null branch objects in place on the passed theme as a side effect.)
         bitTheme = NormalizeToNew(bitTheme);
 
@@ -461,7 +461,7 @@ internal static class BitThemeMapper
     /// containing <c>;</c> would start a new declaration, <c>/*</c> would comment out the rest of the
     /// inline style, and <c>{</c>/<c>}</c>/<c>&lt;</c>/<c>&gt;</c> are never valid inside a single
     /// property value. These characters are not needed by any legitimate theme token (colors,
-    /// shadows, sizes, durations, easings, font-family lists — none of which use them), so rejecting
+    /// shadows, sizes, durations, easings, font-family lists - none of which use them), so rejecting
     /// the whole value is safe and avoids partially-stripped, malformed output.
     /// </remarks>
     private static bool IsUnsafeCssTokenValue(string value)
@@ -501,7 +501,7 @@ internal static class BitThemeMapper
     /// <see cref="BitThemeColors"/>, <see cref="BitThemeTypography"/>, <see cref="BitThemeLayout"/>)
     /// are freshly allocated. Leaf-holding branch objects (the color/typography/etc. variants, whose
     /// properties are all immutable <see cref="string"/>s) are shared by reference: callers only ever
-    /// read from the normalized graph here — the merge writes into a separate fresh result — so no
+    /// read from the normalized graph here - the merge writes into a separate fresh result - so no
     /// shared object is mutated and no per-leaf copy is needed. Direct string leaves on the container
     /// types (e.g. <see cref="BitThemeColors.Required"/>, <see cref="BitThemeTypography.FontFamily"/>,
     /// <see cref="BitThemeLayout.Direction"/>) are carried across explicitly.
@@ -591,7 +591,7 @@ internal static class BitThemeMapper
 
         // Walk normalized COPIES so hand-constructed sparse themes (e.g. new BitTheme { Color = null }
         // or new BitThemeColors { Primary = null }, both reachable via the public setters) can be
-        // traversed without NRE — WITHOUT mutating the caller's instances. (Previously this filled
+        // traversed without NRE - WITHOUT mutating the caller's instances. (Previously this filled
         // null branch objects in place on both passed themes as a side effect.)
         bitTheme = NormalizeToNew(bitTheme);
         other = NormalizeToNew(other);

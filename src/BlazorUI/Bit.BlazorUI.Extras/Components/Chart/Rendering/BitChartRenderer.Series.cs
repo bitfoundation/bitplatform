@@ -672,7 +672,7 @@ public sealed partial class BitChartRenderer
         return sb.ToString();
     }
 
-    /// <summary>Monotone cubic interpolation (Fritsch–Carlson) emitted as cubic beziers — never overshoots.</summary>
+    /// <summary>Monotone cubic interpolation (Fritsch–Carlson) emitted as cubic beziers - never overshoots.</summary>
     private static string MonotonePath(List<(double x, double y)> p)
     {
         int n = p.Count;

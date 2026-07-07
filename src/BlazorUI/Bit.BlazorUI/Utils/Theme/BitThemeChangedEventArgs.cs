@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// <para>
 /// Both <see cref="NewTheme"/> and <see cref="OldTheme"/> are <see langword="null"/>-able strings.
-/// <c>null</c> means "unknown" — typically because the document has no <c>bit-theme</c> attribute
+/// <c>null</c> means "unknown" - typically because the document has no <c>bit-theme</c> attribute
 /// yet (first paint before <see cref="BitThemeManager.SetThemeAsync"/>) or because the value
 /// arrived from JS as <c>null</c>/<c>undefined</c>. Subscribers should branch on
 /// <see cref="HasNewTheme"/>/<see cref="HasOldTheme"/> rather than comparing against the empty

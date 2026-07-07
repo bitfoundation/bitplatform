@@ -155,7 +155,7 @@ public class BitThemeManager : IAsyncDisposable
     /// Every other public method on <see cref="BitThemeManager"/> already calls the same
     /// registration step internally, so this is only useful when an app wants to subscribe to
     /// <see cref="BitThemeNotifications"/> at startup without yet calling any other manager
-    /// method. Safe to call multiple times — registration is idempotent and serialized by an
+    /// method. Safe to call multiple times - registration is idempotent and serialized by an
     /// internal semaphore.
     /// </remarks>
     public async ValueTask EnsureThemeNotificationsRegisteredAsync()
@@ -215,10 +215,10 @@ public class BitThemeManager : IAsyncDisposable
             {
                 await _js.BitThemeUnregisterDotNetNotifier().ConfigureAwait(false);
             }
-            catch (JSDisconnectedException) { } // circuit gone — nothing to unregister
+            catch (JSDisconnectedException) { } // circuit gone - nothing to unregister
             catch (JSException ex)
             {
-                // Missing JS module (e.g. after a page refresh or navigation) — safe to ignore at
+                // Missing JS module (e.g. after a page refresh or navigation) - safe to ignore at
                 // teardown. Route through ILogger when a factory was provided so hosts get their
                 // configured pipeline (Console.WriteLine bypasses logging filters and shows up
                 // raw in production terminals).

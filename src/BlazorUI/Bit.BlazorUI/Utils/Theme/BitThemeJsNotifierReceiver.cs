@@ -28,7 +28,7 @@ internal sealed class BitThemeJsNotifierReceiver
     [JSInvokable]
     public Task NotifyThemeChangedFromJs(string? newTheme, string? oldTheme)
     {
-        // newTheme/oldTheme arrive verbatim from JS — they may be null when the document has no
+        // newTheme/oldTheme arrive verbatim from JS - they may be null when the document has no
         // bit-theme attribute. We pass them through; BitThemeChangedEventArgs treats null as
         // "unknown" without coercing to an empty-string sentinel.
         try

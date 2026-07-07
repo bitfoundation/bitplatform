@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 public static partial class BitThemeColorContrast
 {
     // Accepts #RGB or #RRGGBB (case-insensitive). The underlying BitInternalColor parser silently
-    // falls back to white on invalid input, which would produce a misleading ratio — so we gate
+    // falls back to white on invalid input, which would produce a misleading ratio - so we gate
     // GetContrastRatio with this stricter check before constructing BitInternalColor.
     [GeneratedRegex(@"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")]
     private static partial Regex HexColorRegex();
@@ -74,7 +74,7 @@ public static partial class BitThemeColorContrast
     /// </summary>
     /// <remarks>
     /// "Large" per WCAG 2.x means at least 18pt (≈24px), or 14pt (≈18.66px) when bold. Apply this
-    /// helper to body copy at your own risk — for paragraph text use <see cref="MeetsWcagAaNormalText"/>.
+    /// helper to body copy at your own risk - for paragraph text use <see cref="MeetsWcagAaNormalText"/>.
     /// </remarks>
     public static bool MeetsWcagAaLargeText(double contrastRatio) => contrastRatio >= 3.0;
 

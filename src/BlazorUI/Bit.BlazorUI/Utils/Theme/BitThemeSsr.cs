@@ -66,7 +66,7 @@ public static class BitThemeSsr
     /// A concrete preference is emitted as <c>bit-theme="…"</c> so first paint is correct with no
     /// flash. The special <c>system</c> value (and a missing preference with no default) emit the
     /// <c>bit-theme-system</c> marker and defer the light/dark resolution to the client inline
-    /// script — the server cannot read <c>prefers-color-scheme</c>. A missing preference with a
+    /// script - the server cannot read <c>prefers-color-scheme</c>. A missing preference with a
     /// concrete <paramref name="defaultTheme"/> paints that default directly.
     /// </para>
     /// <para>
@@ -111,7 +111,7 @@ public static class BitThemeSsr
     /// <summary>
     /// Normalizes a theme key (trim + lower-case invariant) and validates it as a safe
     /// <c>[a-z0-9-]</c> token. Returns <see langword="null"/> for blank or invalid input so callers
-    /// treat it as "no preference" — this also prevents a tampered cookie value from being emitted
+    /// treat it as "no preference" - this also prevents a tampered cookie value from being emitted
     /// into the document.
     /// </summary>
     private static string? NormalizeThemeToken(string? value)
@@ -133,7 +133,7 @@ public static class BitThemeSsr
     private static string BuildInlineScriptBody()
     {
         // Centralizing names through BitThemeAttributeNames means the inline script picks up renames
-        // automatically — the previous version hard-coded each attribute literal twice (here and in
+        // automatically - the previous version hard-coded each attribute literal twice (here and in
         // bit-theme.ts), which was a maintenance hazard.
         var theme = BitThemeAttributeNames.Theme;
         var themeDefault = BitThemeAttributeNames.ThemeDefault;

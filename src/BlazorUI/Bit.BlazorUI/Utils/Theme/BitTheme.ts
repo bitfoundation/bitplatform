@@ -1,4 +1,4 @@
-// Attribute / storage names — kept aligned with BitThemeAttributeNames.cs and BitThemeSsr.cs in
+// Attribute / storage names - kept aligned with BitThemeAttributeNames.cs and BitThemeSsr.cs in
 // C#. If you rename a constant here, mirror the change there (the contract test under
 // Bit.BlazorUI.Tests.Utils.Theme will catch a mismatch).
 namespace BitBlazorUI {
@@ -13,7 +13,7 @@ namespace BitBlazorUI {
     // Kept aligned with BitThemeCookie.PreferenceCookieName in C#. When cookie persistence is
     // enabled, the client mirrors the persisted preference into this cookie so the server can read
     // the user's current choice (via BitThemeSsr.BuildRootThemeAttributes) and paint the matching
-    // theme on first server render — keeping the client (localStorage) and server (cookie) stores
+    // theme on first server render - keeping the client (localStorage) and server (cookie) stores
     // in sync instead of drifting apart.
     const COOKIE_NAME = 'bit-theme-preference';
     // ~400 days, the upper bound modern browsers clamp persistent cookies to.
@@ -97,14 +97,14 @@ namespace BitBlazorUI {
             let theme = Theme._initOptions.theme || Theme._initOptions.default || Theme._lightTheme;
 
             // Resolve the first-paint theme with the SAME precedence as the SSR inline script in
-            // BitThemeSsr.cs (BuildInlineScriptBody): a `system` opt-in — the bit-theme-system
-            // attribute, the JS `system: true` option, or an explicit bit-theme="system" — follows
+            // BitThemeSsr.cs (BuildInlineScriptBody): a `system` opt-in - the bit-theme-system
+            // attribute, the JS `system: true` option, or an explicit bit-theme="system" - follows
             // the OS and takes precedence over an explicit bit-theme / bit-theme-default at first
             // paint. A persisted preference (handled below) still wins over this.
             //
             // Previously this only resolved the OS theme when there was NO explicit theme/default,
             // so a document with both bit-theme="..." and bit-theme-system painted the explicit
-            // theme on hydration while the SSR script painted the OS-resolved one — a flash of the
+            // theme on hydration while the SSR script painted the OS-resolved one - a flash of the
             // wrong theme. Keeping the two code paths in lockstep avoids that.
             if (Theme._initOptions.system || Theme._initOptions.theme === Theme.SYSTEM_THEME) {
                 theme = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
@@ -117,7 +117,7 @@ namespace BitBlazorUI {
             // Restore a previously persisted preference. getPersisted() reads localStorage first and
             // falls back to the preference cookie, so this also covers a cookie-only setup
             // (persistCookie without persist) that a pure client-side render (no SSR inline script)
-            // would otherwise ignore — previously this read was gated on persist alone.
+            // would otherwise ignore - previously this read was gated on persist alone.
             if (Theme._persist || Theme._persistCookie) {
                 const persisted = Theme.getPersisted();
                 if (persisted) {
@@ -127,7 +127,7 @@ namespace BitBlazorUI {
                     Theme._stopFollowingSystem = persisted !== Theme.SYSTEM_THEME;
                 } else if (Theme._initOptions.system) {
                     // System mode is enabled but no value has been persisted yet. Avoid writing the
-                    // resolved light/dark theme to storage during the initial set() — otherwise the next
+                    // resolved light/dark theme to storage during the initial set() - otherwise the next
                     // init would treat that concrete value as an explicit user choice and stop following
                     // the OS. Disable BOTH stores for the initial set() and re-enable them afterwards so
                     // SYSTEM_THEME remains the effective persisted indicator until the user picks one.
@@ -166,8 +166,8 @@ namespace BitBlazorUI {
             // Report the theme that is actually applied: the bit-theme attribute is the source of
             // truth (it is what is painted, and set()/OS-follow keep _currentTheme in sync with it).
             // The persisted *preference* is a separate concept exposed via getPersisted(); the two
-            // can legitimately diverge — e.g. runtime OS-follow updates the attribute without
-            // rewriting storage — so get() must not substitute the persisted value here.
+            // can legitimately diverge - e.g. runtime OS-follow updates the attribute without
+            // rewriting storage - so get() must not substitute the persisted value here.
             Theme._currentTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
 
             return Theme._currentTheme;
@@ -199,7 +199,7 @@ namespace BitBlazorUI {
             if (Theme._persist) {
                 // localStorage can throw in Safari private mode, in iframes that block storage,
                 // when over quota, or under restrictive document policies (e.g. file:// in some
-                // browsers). Theme persistence is best-effort — never let it break theme switching.
+                // browsers). Theme persistence is best-effort - never let it break theme switching.
                 try {
                     localStorage.setItem(Theme.THEME_STORAGE_KEY, themeName);
                 } catch { /* persistence unavailable; continue without storing */ }
@@ -322,7 +322,10 @@ namespace BitBlazorUI {
             if (Theme._stopFollowingSystem) return false;
             // An explicitly persisted theme (anything other than SYSTEM_THEME) wins over the
             // bit-theme-system attribute, otherwise a stale attribute could override the user's choice.
-            if (Theme._persist) {
+            // Consider the persisted preference whenever any persistence source is active - including
+            // the cookie-only path (persistCookie without persist) that getPersisted() falls back to -
+            // so a persisted SYSTEM_THEME still attaches the OS-follow listener in a cookie-backed setup.
+            if (Theme._persist || Theme._persistCookie) {
                 const persisted = Theme.getPersisted();
                 if (persisted && persisted !== Theme.SYSTEM_THEME) return false;
                 if (persisted === Theme.SYSTEM_THEME) return true;

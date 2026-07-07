@@ -349,7 +349,7 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
 
         IEnumerable<Product> query = all;
 
-        // filtering — honor the operator the grid emits, not just contains/equals
+        // filtering - honor the operator the grid emits, not just contains/equals
         foreach (var f in request.Filters)
         {
             query = f.ColumnId switch

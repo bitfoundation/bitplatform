@@ -22,7 +22,7 @@
         --bit-shd-md: none;
         --bit-shd-lg: none;
 
-        // Focus must remain visible in High Contrast — use system Highlight color and a single solid ring.
+        // Focus must remain visible in High Contrast - use system Highlight color and a single solid ring.
         --bit-clr-pri-focus: Highlight;
         --bit-clr-sec-focus: Highlight;
         --bit-clr-ter-focus: Highlight;
@@ -45,7 +45,7 @@
 }
 
 // Stronger contrast preference (non-forced): deepen borders and primary text slightly.
-// Use a concrete value rather than self-referencing var(--bit-shp-brd-width, …) — a custom
+// Use a concrete value rather than self-referencing var(--bit-shp-brd-width, …) - a custom
 // property cannot reference its own current value (the cycle resolves to the fallback per
 // the CSS spec, which makes the intent unclear and brittle across engines).
 @media (prefers-contrast: more) {

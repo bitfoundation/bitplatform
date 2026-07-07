@@ -89,7 +89,7 @@ public static class BitThemeSerialization
     /// This is a safety net for <em>externally-authored</em> JSON. The sparse format produced by
     /// <see cref="Serialize"/> never emits a branch as explicit <c>null</c> (null leaves are omitted
     /// and empty objects are pruned), and <see cref="JsonSerializer"/> leaves <em>absent</em>
-    /// properties at their constructor-initialized <c>new()</c> values — so a framework round-trip
+    /// properties at their constructor-initialized <c>new()</c> values - so a framework round-trip
     /// already yields a fully-populated graph. The case this guards is hand-written or third-party
     /// JSON that contains an explicit <c>"color": null</c> (or similar), which the serializer would
     /// otherwise honor by setting the branch to <see langword="null"/>.

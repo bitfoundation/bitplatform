@@ -87,7 +87,7 @@ public static class IJSRuntimeExtensions
         // Resolve (and cache) a probe for this concrete runtime type. The probe is defensive: it
         // relies on framework-internal type names / members that can shift between .NET releases,
         // so any missing member or reflection failure is treated as "runtime is valid" (return
-        // false) rather than throwing — a wrong-but-safe answer that lets the interop call proceed
+        // false) rather than throwing - a wrong-but-safe answer that lets the interop call proceed
         // and surface a real error, instead of crashing here.
         var probe = RuntimeInvalidProbes.GetOrAdd(jsRuntime.GetType(), BuildRuntimeInvalidProbe);
         return probe(jsRuntime);

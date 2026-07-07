@@ -940,8 +940,7 @@
     border-style: $shp-border-style;
 }
 
-
-//focus (a11y) — color tokens applied on :focus-visible.
+//focus (a11y) - color tokens applied on :focus-visible.
 .bit-css-clr-pri-focus:focus-visible {
     color: $clr-pri-focus;
 }
@@ -974,7 +973,7 @@
     color: $clr-err-focus;
 }
 
-//focus ring utility — drop-in class to apply the global, theme-aware focus indicator.
+//focus ring utility - drop-in class to apply the global, theme-aware focus indicator.
 .bit-css-shd-focus-ring:focus-visible {
     @include focus-ring;
 }

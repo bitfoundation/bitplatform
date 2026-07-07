@@ -5,7 +5,7 @@ namespace BitBlazorUI {
         drag: boolean;
     }
 
-    // BitChart pointer interop — used for responsive sizing (always) and zoom/pan (optional).
+    // BitChart pointer interop - used for responsive sizing (always) and zoom/pan (optional).
     // Computes normalized cursor fractions and forwards wheel/drag gestures to .NET. All drawing
     // (geometry, scales, layout, animation) is done in C# and rendered as plain SVG.
     export class BitChart {

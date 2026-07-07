@@ -19,7 +19,7 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 /// property graph. Asserting on emitted vars gives us the contract that actually matters: every
 /// CSS variable that survives serialization of one theme must also survive serialization of the
 /// merge of that theme over an empty one. (The model is now shaped so that every leaf property
-/// maps to a CSS variable — per-variant typography tokens that aren't wired to CSS, such as a
+/// maps to a CSS variable - per-variant typography tokens that aren't wired to CSS, such as a
 /// per-heading <c>font-family</c>, are no longer exposed; see <see cref="BitThemeTypographyVariants"/>.)
 /// </para>
 /// <para>
@@ -74,7 +74,7 @@ public sealed class BitThemeMapperMergeDriftTests
     /// <summary>
     /// Builds a fully-populated <see cref="BitTheme"/> where each leaf string property is set to a
     /// unique sentinel value. We populate every reachable string slot, not just the ones the mapper
-    /// emits — Merge needs to handle the full model graph in case the mapper is later extended.
+    /// emits - Merge needs to handle the full model graph in case the mapper is later extended.
     /// </summary>
     private static BitTheme BuildSentinelTheme()
     {
@@ -104,7 +104,7 @@ public sealed class BitThemeMapperMergeDriftTests
                     var val = prop.GetValue(obj);
                     if (val is null)
                     {
-                        // Guard against types without a public parameterless ctor — treat a
+                        // Guard against types without a public parameterless ctor - treat a
                         // failed construction the same as a null instance and keep walking.
                         try
                         {

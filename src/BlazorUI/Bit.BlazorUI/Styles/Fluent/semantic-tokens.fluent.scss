@@ -1,4 +1,4 @@
-// Semantic aliases over primitive tokens — use in app CSS instead of raw --bit-clr-* where intent matters.
+// Semantic aliases over primitive tokens - use in app CSS instead of raw --bit-clr-* where intent matters.
 :root {
     --bit-sem-surface-page: var(--bit-clr-bg-pri);
     --bit-sem-surface-elevated: var(--bit-clr-bg-sec);

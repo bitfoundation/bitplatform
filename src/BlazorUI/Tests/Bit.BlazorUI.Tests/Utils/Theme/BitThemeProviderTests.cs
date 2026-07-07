@@ -143,8 +143,8 @@ public sealed class BitThemeProviderTests : BunitTestContext
         });
 
         // The outer provider applies a Theme so it renders exactly one wrapper element. The inner
-        // provider (Theme null, no ThemeName) must NOT add a second wrapper — it relies on the
-        // ancestor's existing unnamed cascade — while the probe still resolves the parent theme.
+        // provider (Theme null, no ThemeName) must NOT add a second wrapper - it relies on the
+        // ancestor's existing unnamed cascade - while the probe still resolves the parent theme.
         Assert.AreEqual(1, component.FindAll("div").Count);
         Assert.AreEqual(ParentPrimary, component.Find("span").GetAttribute("data-primary"));
     }

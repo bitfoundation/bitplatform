@@ -8,8 +8,8 @@
 /// resolves the live <c>--bit-bp-*</c> variables at runtime and builds its <c>matchMedia</c> query
 /// from them, so overriding a breakpoint here changes the corresponding <see cref="BitScreenQuery"/>
 /// behavior. They are also available to any consumer CSS/JS that reads <c>--bit-bp-*</c> directly.
-/// Note that the packaged Sass <c>@media</c> rules still compile against fixed breakpoints — a CSS
-/// <c>@media</c> query cannot read a custom property — so those specific stylesheet rules are not
+/// Note that the packaged Sass <c>@media</c> rules still compile against fixed breakpoints - a CSS
+/// <c>@media</c> query cannot read a custom property - so those specific stylesheet rules are not
 /// affected by overrides set here.
 /// </remarks>
 public class BitThemeBreakpoints

@@ -207,7 +207,7 @@ $clr-brd-dis: var(--bit-clr-brd-dis);
 //required
 $clr-req: var(--bit-clr-req);
 
-//disabled — per-role disabled colors
+//disabled - per-role disabled colors
 $clr-pri-dis: var(--bit-clr-pri-dis);
 $clr-pri-dis-text: var(--bit-clr-pri-dis-text);
 $clr-sec-dis: var(--bit-clr-sec-dis);
@@ -225,7 +225,7 @@ $clr-swr-dis-text: var(--bit-clr-swr-dis-text);
 $clr-err-dis: var(--bit-clr-err-dis);
 $clr-err-dis-text: var(--bit-clr-err-dis-text);
 
-//focus (a11y) — per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
+//focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);
 $clr-ter-focus: var(--bit-clr-ter-focus);
