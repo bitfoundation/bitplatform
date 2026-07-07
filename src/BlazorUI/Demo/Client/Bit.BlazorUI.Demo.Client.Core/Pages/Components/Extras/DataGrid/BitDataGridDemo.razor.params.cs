@@ -342,6 +342,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Count", Value = "3" },
                 new() { Name = "Min", Value = "4" },
                 new() { Name = "Max", Value = "5" },
+                new() { Name = "Custom", Value = "6", Description = "The value was produced by the column's custom AggregateBy delegate rather than a built-in function." },
             ]
         },
         new()

@@ -160,7 +160,9 @@ public static class BitDataGridDataProcessor
             results.Add(new BitDataGridAggregateResult
             {
                 ColumnId = column.Id,
-                Type = column.Aggregate,
+                // An AggregateBy value isn't the product of the declarative Aggregate function (which
+                // may even be None), so report it as Custom instead of echoing a type it didn't run.
+                Type = column.AggregateBy is not null ? BitDataGridAggregateType.Custom : column.Aggregate,
                 Value = value,
                 FormattedValue = formatted
             });

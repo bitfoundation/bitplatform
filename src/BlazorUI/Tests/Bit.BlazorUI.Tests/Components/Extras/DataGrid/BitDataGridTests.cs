@@ -452,6 +452,10 @@ public class BitDataGridTests : BunitTestContext
             builder.AddComponentParameter(1, "Field", "Name");
             builder.AddComponentParameter(2, "AggregateBy",
                 (Func<IReadOnlyList<TestRow>, object?>)(rows => rows.Select(r => r.Name[0]).Distinct().Count()));
+            // Render the aggregate's Type so the test can assert an AggregateBy result reaches the
+            // FooterTemplate marked Custom (distinguishable from both built-ins and no aggregation).
+            builder.AddComponentParameter(3, "FooterTemplate",
+                (RenderFragment<BitDataGridAggregateResult>)(agg => b => b.AddContent(0, $"{agg.Type}:{agg.FormattedValue}")));
             builder.CloseComponent();
         };
         var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
@@ -463,7 +467,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Five products with five distinct first letters.
         var footer = component.Find(".bit-dtg-footer-row .bit-dtg-cell");
-        StringAssert.Contains(footer.TextContent, "5");
+        StringAssert.Contains(footer.TextContent, "Custom:5");
     }
 
     [TestMethod]

@@ -580,6 +580,15 @@
         {
             await SetTypedFilterAsync(column, text);
         }
+        else if (GetFilter(column) is not null)
+        {
+            // Every value-carrying descriptor keeps its raw text in _filterRaw (SetFilterAsync and
+            // ApplyStateAsync backfill it), so reaching here with an active descriptor means a
+            // value-less IsEmpty/IsNotEmpty filter applied programmatically. There is no text to
+            // re-apply under the new operator, so clear the descriptor rather than leaving it
+            // silently active behind an operator the dropdown no longer reflects.
+            await SetFilterAsync(column, op, null);
+        }
         else
         {
             StateHasChanged();
