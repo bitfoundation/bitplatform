@@ -9,7 +9,6 @@ public static class BitThemeColorDerivation
     /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields by deriving HSV-shifted hex values from <paramref name="mainHex"/>.</summary>
     /// <param name="variants">Target variants to fill in-place. Already-populated properties are preserved.</param>
     /// <param name="mainHex">Source color in <c>#RGB</c> or <c>#RRGGBB</c> form. Whitespace is trimmed.</param>
-    /// <param name="adjustTextForWcagAa">When true, flips the suggested on-color text if its contrast vs <see cref="BitThemeColorVariants.Main"/> fails WCAG AA for normal text.</param>
     /// <remarks>
     /// <para>
     /// The method is lenient and never throws on bad input: a null/blank <paramref name="mainHex"/>,
@@ -30,8 +29,14 @@ public static class BitThemeColorDerivation
     /// for a near-black base. This is a convenience helper for sparse themes rather than a full
     /// perceptual palette generator; set the variants explicitly when you need precise tints/shades.
     /// </para>
+    /// <para>
+    /// The auto-generated <see cref="BitThemeColorVariants.Text"/> (on-color text) is set to whichever
+    /// of black/white has the higher WCAG sRGB relative-luminance contrast against the resolved
+    /// <see cref="BitThemeColorVariants.Main"/> background — which, for a black/white choice, is also the
+    /// WCAG-AA-optimal option. A caller-provided <c>Text</c> is never overwritten.
+    /// </para>
     /// </remarks>
-    public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex, bool adjustTextForWcagAa = false)
+    public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex)
     {
         if (variants is null) return;
 
@@ -54,35 +59,15 @@ public static class BitThemeColorDerivation
         variants.LightHover ??= ToHex(h, s, AddV(v, 0.12));
         variants.LightActive ??= ToHex(h, s, AddV(v, 0.16));
 
-        // Track whether Text was auto-generated in this call so we don't overwrite caller-provided values.
-        var textWasNull = variants.Text is null;
-        variants.Text ??= SuggestOnColorText(baseColor);
-
-        if (adjustTextForWcagAa && textWasNull
-            && !string.IsNullOrWhiteSpace(variants.Main)
-            && !string.IsNullOrWhiteSpace(variants.Text)
-            // A caller-provided Main may be an invalid hex (only auto-filled values are guaranteed valid),
-            // and GetContrastRatio throws on non-hex input — validate first so this stays a no-op instead.
-            && BitThemeColorContrast.TryNormalizeHex(variants.Main, out _))
+        // On-color text: pick the higher-contrast of black/white against the actual Main background
+        // (a caller may have preset Main to a value other than mainHex). If that preset Main is not a
+        // valid hex, fall back to the derived base color. A caller-provided Text is never overwritten.
+        if (variants.Text is null)
         {
-            var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", variants.Main);
-            var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", variants.Main);
-            var blackPasses = BitThemeColorContrast.MeetsWcagAaNormalText(blackRatio);
-            var whitePasses = BitThemeColorContrast.MeetsWcagAaNormalText(whiteRatio);
-
-            // Prefer a candidate that meets WCAG AA; if both pass or neither passes, pick the higher contrast.
-            if (blackPasses && !whitePasses)
-            {
-                variants.Text = "#000000";
-            }
-            else if (whitePasses && !blackPasses)
-            {
-                variants.Text = "#FFFFFF";
-            }
-            else
-            {
-                variants.Text = blackRatio >= whiteRatio ? "#000000" : "#FFFFFF";
-            }
+            var background = BitThemeColorContrast.TryNormalizeHex(variants.Main, out var mainNormalized)
+                ? mainNormalized
+                : normalizedHex;
+            variants.Text = SuggestOnColorText(background);
         }
     }
 
@@ -96,15 +81,14 @@ public static class BitThemeColorDerivation
     private static double Clamp01(double v) => v < 0 ? 0 : v > 1 ? 1 : v;
 
     // Picks black or white on-color text using the same WCAG sRGB relative-luminance contrast as
-    // BitThemeColorContrast (rather than the old YIQ 0.299/0.587/0.114 + 0.55 heuristic, which could
+    // BitThemeColorContrast (rather than a YIQ 0.299/0.587/0.114 brightness heuristic, which could
     // disagree with the contrast helper and pick the lower-contrast color). We compare the actual
-    // contrast ratio of black vs white against the base color and keep whichever is higher, so the
-    // default suggestion is consistent with the adjustTextForWcagAa tie-breaker in FillColorRoleFromMain.
-    private static string SuggestOnColorText(BitInternalColor c)
+    // contrast ratio of black vs white against the background and keep whichever is higher; for a
+    // black/white choice the higher-contrast option is also the WCAG-AA-optimal one.
+    private static string SuggestOnColorText(string backgroundHex)
     {
-        var hex = c.Hex!;
-        var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", hex);
-        var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", hex);
+        var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", backgroundHex);
+        var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", backgroundHex);
         return blackRatio >= whiteRatio ? "#000000" : "#FFFFFF";
     }
 }

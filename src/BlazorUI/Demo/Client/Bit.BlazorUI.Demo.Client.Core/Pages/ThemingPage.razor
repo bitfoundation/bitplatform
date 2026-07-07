@@ -632,12 +632,11 @@ BitThemeColorDerivation.FillColorRoleFromMain(
     theme.Color.Primary,
     mainHex: "#7C3AED");
 
-// Optional: flip the auto-generated Text between #000 / #FFF if it
-// fails WCAG AA contrast (4.5:1) against Main.
+// The auto-generated Text is set to #000 / #FFF by whichever has the
+// higher WCAG contrast against Main (the WCAG-AA-optimal choice).
 BitThemeColorDerivation.FillColorRoleFromMain(
     theme.Color.Success,
-    mainHex: "#107C10",
-    adjustTextForWcagAa: true);
+    mainHex: "#107C10");
 
 await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
@@ -1012,7 +1011,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
     private static BitTheme BuildTenantTheme(string accent)
     {
         var theme = new BitTheme { Shape = { BorderRadius = "0.5rem" } };
-        BitThemeColorDerivation.FillColorRoleFromMain(theme.Color.Primary, accent, adjustTextForWcagAa: true);
+        BitThemeColorDerivation.FillColorRoleFromMain(theme.Color.Primary, accent);
         return theme;
     }
 }</CodeBox>
