@@ -227,6 +227,37 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    public void CodeBlockShouldStartOnItsOwnLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.CodeBlock, "text", 4, 4);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("text\n\n```\n\n```", result.Text);
+        // caret on the empty line between the fences
+        Assert.AreEqual(10, result.SelectionStart);
+        Assert.AreEqual(10, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void CodeBlockShouldSeparateFromSurroundingText()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.CodeBlock, "ab", 1, 1);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\n\n```\n\n```\nb", result.Text);
+    }
+
+    [TestMethod]
+    public void CodeBlockShouldFenceSelectionOnItsOwnLines()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.CodeBlock, "before\ncode\nafter", 7, 11);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("before\n\n```\ncode\n```\nafter", result.Text);
+        Assert.AreEqual("code", result.Text[result.SelectionStart..result.SelectionEnd]);
+    }
+
+    [TestMethod]
     public void LinkShouldUseSelectionAsLabel()
     {
         var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Link, "bit", 0, 3);

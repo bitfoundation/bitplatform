@@ -80,6 +80,25 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownViewerShouldSanitizeBackslashLinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            // Browsers treat leading backslashes like slashes (protocol-relative).
+            parameters.Add(p => p.Markdown, @"[click](\\evil.com)");
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+        if (links.Count > 0)
+        {
+            var href = links[0].GetAttribute("href") ?? string.Empty;
+            Assert.IsTrue(
+                href.Length == 0 || !href.StartsWith('\\'),
+                $"Backslash link href was not sanitized: '{href}'.");
+        }
+    }
+
+    [TestMethod]
     public void BitMarkdownViewerShouldSanitizeUnsafeImages()
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>

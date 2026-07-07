@@ -222,18 +222,23 @@ public static partial class BitMarkdownEditorCommands
 
     private static BitMarkdownEditorEditResult CodeBlock(string text, int start, int end)
     {
+        string prefix = LeadingBlankLinePrefix(text, start);
+        // Keep the closing fence on its own line when text follows the insertion point.
+        string suffix = end < text.Length && text[end] != '\n' ? "\n" : string.Empty;
+
         string selected = text[start..end];
         if (start == end)
         {
-            string insert = "```\n\n```";
+            string insert = prefix + "```\n\n```" + suffix;
             // caret on the empty middle line
-            int caret = start + 4;
+            int caret = start + prefix.Length + 4;
             return new BitMarkdownEditorEditResult(true, text[..start] + insert + text[end..], caret, caret);
         }
 
         string body = selected.TrimEnd('\n');
-        string fenced = $"```\n{body}\n```";
-        return new BitMarkdownEditorEditResult(true, text[..start] + fenced + text[end..], start + 4, start + 4 + body.Length);
+        string fenced = prefix + $"```\n{body}\n```" + suffix;
+        int selStart = start + prefix.Length + 4;
+        return new BitMarkdownEditorEditResult(true, text[..start] + fenced + text[end..], selStart, selStart + body.Length);
     }
 
     // ---- links & images -----------------------------------------------------

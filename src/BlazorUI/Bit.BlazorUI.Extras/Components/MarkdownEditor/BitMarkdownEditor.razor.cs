@@ -12,9 +12,11 @@ public partial class BitMarkdownEditor : BitComponentBase
     private string _value = string.Empty;
     private string _previewValue = string.Empty;
     private bool _showHelp;
+    private bool _focusHelp;
     private bool _canUndo;
     private bool _canRedo;
     private bool _internalValueChange;
+    private ElementReference _helpRef = default!;
     private ElementReference _textAreaRef = default!;
     private CancellationTokenSource? _debounceCts;
     private DotNetObjectReference<BitMarkdownEditor>? _dotnetObj;
@@ -163,7 +165,7 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// </summary>
     public async ValueTask Undo()
     {
-        if (ReadOnly) return;
+        if (ReadOnly || IsEnabled is false) return;
 
         await _js.BitMarkdownEditorUndo(_Id);
     }
@@ -173,7 +175,7 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// </summary>
     public async ValueTask Redo()
     {
-        if (ReadOnly) return;
+        if (ReadOnly || IsEnabled is false) return;
 
         await _js.BitMarkdownEditorRedo(_Id);
     }
@@ -272,6 +274,12 @@ public partial class BitMarkdownEditor : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        if (_focusHelp)
+        {
+            _focusHelp = false;
+            await _helpRef.FocusAsync();
+        }
+
         if (firstRender is false) return;
 
         _dotnetObj = DotNetObjectReference.Create(this);
@@ -297,6 +305,7 @@ public partial class BitMarkdownEditor : BitComponentBase
         BitMarkdownEditorToolbarItemType.Command => ReadOnly,
         BitMarkdownEditorToolbarItemType.Undo => ReadOnly || _canUndo is false,
         BitMarkdownEditorToolbarItemType.Redo => ReadOnly || _canRedo is false,
+        BitMarkdownEditorToolbarItemType.Custom => ReadOnly,
         _ => false
     };
 
@@ -331,10 +340,19 @@ public partial class BitMarkdownEditor : BitComponentBase
                 break;
             case BitMarkdownEditorToolbarItemType.Help:
                 _showHelp = _showHelp is false;
+                _focusHelp = _showHelp;
                 break;
-            case BitMarkdownEditorToolbarItemType.Custom when item.OnClick is not null:
+            case BitMarkdownEditorToolbarItemType.Custom when item.OnClick is not null && ReadOnly is false:
                 await item.OnClick(this);
                 break;
+        }
+    }
+
+    private void OnHelpKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Escape")
+        {
+            _showHelp = false;
         }
     }
 
@@ -378,6 +396,9 @@ public partial class BitMarkdownEditor : BitComponentBase
                 return;
             }
         }
+
+        // Disposal may have started while awaiting the debounce delay.
+        if (IsDisposed) return;
 
         _previewValue = _value;
 

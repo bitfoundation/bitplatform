@@ -78,7 +78,14 @@
     @if (_showHelp)
     {
         <div class="bit-mde-hlp" @onclick="() => _showHelp = false">
-            <div class="bit-mde-hcr" @onclick:stopPropagation="true">
+            <div @ref="_helpRef"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-label="@ActiveTexts.KeyboardShortcutsTitle"
+                 tabindex="-1"
+                 class="bit-mde-hcr"
+                 @onkeydown="OnHelpKeyDown"
+                 @onclick:stopPropagation="true">
                 <header>
                     <strong>@ActiveTexts.KeyboardShortcutsTitle</strong>
                     <button type="button" class="bit-mde-hcl" @onclick="() => _showHelp = false" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>

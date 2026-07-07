@@ -26,11 +26,22 @@ public sealed class BitMarkdownPipeline
                 (byChar.TryGetValue(c, out var l) ? l : byChar[c] = new()).Add(parser);
         InlineParsersByChar = byChar.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<BitMarkdownInlineParser>)kv.Value);
 
-        // Map delimiter chars -> processor.
+        // Map delimiter chars -> processor. A char can only belong to one processor;
+        // failing loudly beats silently dropping the earlier registration.
         var delimByChar = new Dictionary<char, BitMarkdownDelimiterProcessor>();
         foreach (var dp in builder.DelimiterProcessors)
+        {
             foreach (var c in dp.Characters)
+            {
+                if (delimByChar.TryGetValue(c, out var existing))
+                {
+                    throw new InvalidOperationException(
+                        $"Delimiter character '{c}' of {dp.GetType().Name} is already registered by {existing.GetType().Name}.");
+                }
+
                 delimByChar[c] = dp;
+            }
+        }
         DelimiterByChar = delimByChar;
         DelimiterChars = new HashSet<char>(delimByChar.Keys);
     }

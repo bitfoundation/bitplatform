@@ -86,6 +86,7 @@ namespace BitBlazorUI {
         private _typingTimer: ReturnType<typeof setTimeout> | null = null;
         private _canUndo = false;
         private _canRedo = false;
+        private _commandInFlight = false;
         private _lastSelection: { start: number, end: number };
 
         private textArea: HTMLTextAreaElement;
@@ -139,7 +140,7 @@ namespace BitBlazorUI {
 
         // Reads selection + value, asks C# to transform it, then writes the result back.
         public async runCommand(command: string) {
-            if (!this.dotnetObj || this.textArea.readOnly) return;
+            if (!this.dotnetObj || this.textArea.readOnly || this._commandInFlight) return;
 
             // When a toolbar button takes focus, the textarea's live selection can be
             // lost, so fall back to the last selection captured while it was focused.
@@ -148,9 +149,19 @@ namespace BitBlazorUI {
             const end = focused ? this.textArea.selectionEnd : this._lastSelection.end;
             const value = this.textArea.value;
 
-            const result = await this.dotnetObj.invokeMethodAsync<MdeEditResult>('ApplyCommand', command, start, end, value);
+            let result: MdeEditResult | null = null;
+            this._commandInFlight = true;
+            try {
+                result = await this.dotnetObj.invokeMethodAsync<MdeEditResult>('ApplyCommand', command, start, end, value);
+            } finally {
+                this._commandInFlight = false;
+            }
 
             if (!result || !result.handled) return;
+
+            // Typing may have changed the value while awaiting .NET; applying the
+            // stale result would wipe those newer edits, so drop the command instead.
+            if (this.textArea.value !== value) return;
 
             // Record the state before the command so it can be undone as one step.
             this.endTypingGroup();
@@ -164,8 +175,7 @@ namespace BitBlazorUI {
             if (this.textArea.readOnly || !this._undo.length) return;
 
             this.endTypingGroup();
-            this._redo.push(this._baseline);
-            if (this._redo.length > MarkdownEditorCore.HISTORY_LIMIT) this._redo.shift();
+            this.pushRedo(this._baseline);
 
             this.applySnapshot(this._undo.pop()!);
             this.notifyHistory();
@@ -305,6 +315,11 @@ namespace BitBlazorUI {
         private pushUndo(snap: MdeSnapshot) {
             this._undo.push(snap);
             if (this._undo.length > MarkdownEditorCore.HISTORY_LIMIT) this._undo.shift();
+        }
+
+        private pushRedo(snap: MdeSnapshot) {
+            this._redo.push(snap);
+            if (this._redo.length > MarkdownEditorCore.HISTORY_LIMIT) this._redo.shift();
         }
 
         private endTypingGroup() {
