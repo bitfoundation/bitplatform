@@ -220,7 +220,10 @@ namespace BitBlazorUI {
                 return;
             }
 
+            // Only hijack Tab while the editor is writable; in read-only mode the
+            // default behavior must remain so keyboard focus is not trapped.
             if (e.key === 'Tab') {
+                if (this.textArea.readOnly) return;
                 e.preventDefault();
                 this.runCommand(e.shiftKey ? 'Outdent' : 'Indent');
                 return;

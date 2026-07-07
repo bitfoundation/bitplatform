@@ -63,14 +63,16 @@ public static partial class BitMarkdownEditorCommands
         // Already wrapped on the outside? -> unwrap.
         if (start >= ml && end + ml <= text.Length &&
             text.Substring(start - ml, ml) == marker &&
-            text.Substring(end, ml) == marker)
+            text.Substring(end, ml) == marker &&
+            (marker is not "*" || (IsItalicDelimiter(text, start - ml) && IsItalicDelimiter(text, end))))
         {
             string unwrapped = text[..(start - ml)] + selected + text[(end + ml)..];
             return new BitMarkdownEditorEditResult(true, unwrapped, start - ml, end - ml);
         }
 
         // Markers captured inside the selection? -> unwrap.
-        if (selected.Length >= 2 * ml && selected.StartsWith(marker, StringComparison.Ordinal) && selected.EndsWith(marker, StringComparison.Ordinal))
+        if (selected.Length >= 2 * ml && selected.StartsWith(marker, StringComparison.Ordinal) && selected.EndsWith(marker, StringComparison.Ordinal) &&
+            (marker is not "*" || (IsItalicDelimiter(selected, 0) && IsItalicDelimiter(selected, selected.Length - 1))))
         {
             string inner = selected[ml..^ml];
             return new BitMarkdownEditorEditResult(true, text[..start] + inner + text[end..], start, start + inner.Length);
@@ -84,6 +86,22 @@ public static partial class BitMarkdownEditorCommands
 
         string wrapped = marker + selected + marker;
         return new BitMarkdownEditorEditResult(true, text[..start] + wrapped + text[end..], start + ml, start + ml + selected.Length);
+    }
+
+    /// <summary>
+    /// A lone '*' that is part of a '**' run belongs to bold, not italic. The star at
+    /// <paramref name="index"/> counts as an italic delimiter only when its contiguous
+    /// run of stars has an odd length (the unpaired star is the italic marker).
+    /// </summary>
+    private static bool IsItalicDelimiter(string text, int index)
+    {
+        int s = index;
+        while (s > 0 && text[s - 1] == '*') s--;
+
+        int e = index;
+        while (e < text.Length - 1 && text[e + 1] == '*') e++;
+
+        return (e - s + 1) % 2 == 1;
     }
 
     // ---- headings -----------------------------------------------------------
@@ -242,7 +260,7 @@ public static partial class BitMarkdownEditorCommands
 
     private static BitMarkdownEditorEditResult Table(string text, int start, int end)
     {
-        string prefix = NeedsLeadingBlankLine(text, start) ? "\n" : string.Empty;
+        string prefix = LeadingBlankLinePrefix(text, start);
         const string template =
             "| Column 1 | Column 2 |\n" +
             "| -------- | -------- |\n" +
@@ -256,7 +274,7 @@ public static partial class BitMarkdownEditorCommands
 
     private static BitMarkdownEditorEditResult HorizontalRule(string text, int start, int end)
     {
-        string prefix = NeedsLeadingBlankLine(text, start) ? "\n" : string.Empty;
+        string prefix = LeadingBlankLinePrefix(text, start);
         string insert = prefix + "---\n";
         int caret = start + insert.Length;
         return new BitMarkdownEditorEditResult(true, text[..start] + insert + text[end..], caret, caret);
@@ -413,14 +431,22 @@ public static partial class BitMarkdownEditorCommands
         return idx < 0 ? text.Length : idx;
     }
 
-    private static bool NeedsLeadingBlankLine(string text, int pos)
+    /// <summary>
+    /// Block elements like tables and thematic breaks must be separated from the
+    /// preceding paragraph by a blank line ("---" right below a text line would be
+    /// parsed as a setext heading). Returns the newlines needed before insertion.
+    /// </summary>
+    private static string LeadingBlankLinePrefix(string text, int pos)
     {
-        if (pos == 0) return false;
+        if (pos == 0) return string.Empty;
 
-        // Already preceded by a blank line (two newlines) or beginning of doc.
-        if (pos >= 1 && text[pos - 1] != '\n') return true;
+        // Mid-line: end the current line and add a blank one.
+        if (text[pos - 1] != '\n') return "\n\n";
 
-        return false;
+        // At the start of a line right below a non-empty one: add a blank line.
+        if (pos >= 2 && text[pos - 2] != '\n') return "\n";
+
+        return string.Empty;
     }
 
     [GeneratedRegex(@"^(#{1,6}) ")]

@@ -48,6 +48,64 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    public void ItalicShouldUnwrapAlreadyWrappedSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "*hello* world", 1, 6);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("hello world", result.Text);
+        Assert.AreEqual(0, result.SelectionStart);
+        Assert.AreEqual(5, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void ItalicShouldUnwrapMarkersCapturedInsideSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "*hello* world", 0, 7);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("hello world", result.Text);
+    }
+
+    [TestMethod]
+    public void ItalicShouldWrapSelectionInsideBoldInsteadOfUnwrapping()
+    {
+        // The surrounding '*' belong to the bold '**' markers, so italic must wrap,
+        // not strip a star from each side.
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "**bold**", 2, 6);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("***bold***", result.Text);
+    }
+
+    [TestMethod]
+    public void ItalicShouldNotUnwrapBoldMarkersCapturedInsideSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "**bold**", 0, 8);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("***bold***", result.Text);
+    }
+
+    [TestMethod]
+    public void ItalicShouldUnwrapInsideBoldItalic()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "***both***", 3, 7);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("**both**", result.Text);
+    }
+
+    [TestMethod]
+    public void BoldShouldUnwrapInsideBoldItalic()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Bold, "***both***", 3, 7);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("*both*", result.Text);
+    }
+
+    [TestMethod]
     public void StrikethroughShouldWrapSelection()
     {
         var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Strikethrough, "hello", 0, 5);
@@ -57,12 +115,30 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    public void StrikethroughShouldUnwrapAlreadyWrappedSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Strikethrough, "~~hello~~", 2, 7);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("hello", result.Text);
+    }
+
+    [TestMethod]
     public void InlineCodeShouldWrapSelection()
     {
         var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.InlineCode, "code", 0, 4);
 
         Assert.IsTrue(result.Handled);
         Assert.AreEqual("`code`", result.Text);
+    }
+
+    [TestMethod]
+    public void InlineCodeShouldUnwrapAlreadyWrappedSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.InlineCode, "`code`", 1, 5);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("code", result.Text);
     }
 
     [TestMethod]
@@ -183,10 +259,39 @@ public class BitMarkdownEditorCommandsTests
     [TestMethod]
     public void HorizontalRuleShouldInsertAfterBlankLine()
     {
+        // a "---" right below a text line would be parsed as a setext heading,
+        // so a true blank line must separate them.
         var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.HorizontalRule, "text", 4, 4);
 
         Assert.IsTrue(result.Handled);
-        Assert.AreEqual("text\n---\n", result.Text);
+        Assert.AreEqual("text\n\n---\n", result.Text);
+    }
+
+    [TestMethod]
+    public void HorizontalRuleShouldAddBlankLineAtLineStartBelowText()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.HorizontalRule, "text\n", 5, 5);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("text\n\n---\n", result.Text);
+    }
+
+    [TestMethod]
+    public void HorizontalRuleShouldNotAddBlankLineWhenAlreadyPresent()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.HorizontalRule, "text\n\n", 6, 6);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("text\n\n---\n", result.Text);
+    }
+
+    [TestMethod]
+    public void HorizontalRuleShouldNotAddBlankLineAtDocumentStart()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.HorizontalRule, "", 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("---\n", result.Text);
     }
 
     [TestMethod]

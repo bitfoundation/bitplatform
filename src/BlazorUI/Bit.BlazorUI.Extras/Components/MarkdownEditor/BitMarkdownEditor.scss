@@ -136,6 +136,13 @@
     &::placeholder {
         color: $clr-fg-sec;
     }
+
+    // The textarea fills its pane, so an inset outline keeps the keyboard
+    // focus indicator visible instead of being clipped by the container.
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(-0.25);
+    }
 }
 
 .bit-mde-ppn {

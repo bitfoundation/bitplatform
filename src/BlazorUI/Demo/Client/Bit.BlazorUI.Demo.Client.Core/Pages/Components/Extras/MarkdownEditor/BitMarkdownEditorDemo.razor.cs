@@ -124,6 +124,13 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
+            Name = "Texts",
+            Type = "BitMarkdownEditorTexts?",
+            DefaultValue = "null",
+            Description = "The localized strings of the editor UI (status bar, help panel, aria labels). Defaults to English.",
+        },
+        new()
+        {
             Name = "Toolbar",
             Type = "IReadOnlyList<BitMarkdownEditorToolbarItem>?",
             DefaultValue = "null",

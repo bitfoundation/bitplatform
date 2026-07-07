@@ -4,7 +4,8 @@ namespace Bit.BlazorUI;
 /// BitMarkdownEditor is a native Blazor markdown editor with a customizable toolbar, keyboard
 /// shortcuts, smart list handling, undo/redo history and a live GitHub-flavored preview powered
 /// by the <see cref="BitMarkdownViewer"/>. All markdown transformations happen in C#; a small
-/// JS-interop script only handles textarea selection control and key interception.
+/// JS-interop script handles textarea selection control, key interception and the undo/redo
+/// history (coalescing rapid typing into single steps).
 /// </summary>
 public partial class BitMarkdownEditor : BitComponentBase
 {
@@ -110,6 +111,13 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public BitMarkdownEditorClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The localized strings of the editor UI (status bar, help panel, aria labels).
+    /// Defaults to English; override individual properties on a <see cref="BitMarkdownEditorTexts"/>
+    /// instance to localize them.
+    /// </summary>
+    [Parameter] public BitMarkdownEditorTexts? Texts { get; set; }
 
     /// <summary>
     /// A custom toolbar layout. Defaults to <see cref="BitMarkdownEditorToolbar.Default"/> when null.
@@ -273,7 +281,11 @@ public partial class BitMarkdownEditor : BitComponentBase
 
 
 
+    private static readonly BitMarkdownEditorTexts _defaultTexts = new();
+
     private IReadOnlyList<BitMarkdownEditorToolbarItem> ActiveToolbar => Toolbar ?? BitMarkdownEditorToolbar.Default;
+
+    private BitMarkdownEditorTexts ActiveTexts => Texts ?? _defaultTexts;
 
     private int WordCount =>
         string.IsNullOrWhiteSpace(_value)
@@ -291,6 +303,9 @@ public partial class BitMarkdownEditor : BitComponentBase
     private bool IsToolbarItemActive(BitMarkdownEditorToolbarItem item) =>
         (item.Type is BitMarkdownEditorToolbarItemType.ToggleFullScreen && FullScreen) ||
         (item.Type is BitMarkdownEditorToolbarItemType.Help && _showHelp);
+
+    private static bool IsToolbarItemToggle(BitMarkdownEditorToolbarItem item) =>
+        item.Type is BitMarkdownEditorToolbarItemType.ToggleFullScreen or BitMarkdownEditorToolbarItemType.Help;
 
     private string GetToolbarItemTitle(BitMarkdownEditorToolbarItem item) =>
         string.IsNullOrEmpty(item.Shortcut) ? item.Title : $"{item.Title} ({item.Shortcut})";

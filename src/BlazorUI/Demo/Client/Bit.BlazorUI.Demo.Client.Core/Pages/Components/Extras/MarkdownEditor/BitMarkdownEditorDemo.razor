@@ -30,7 +30,8 @@
         <BitText>
             The BitMarkdownEditor is a full-featured, dependency-free markdown editor.
             All markdown transformations run in C#, the preview is rendered natively by the BitMarkdownViewer,
-            and a tiny JS-interop script only handles textarea selection control and key interception.
+            and a small JS-interop script handles the textarea selection control, key interception
+            and the undo/redo history (with typing coalescing).
             <br />
             Start typing below and see the result in real-time, or explore the toolbar, the keyboard shortcuts (check the ? button)
             and the smart list continuation (start a line with <BitTag Text="- " Color="BitColor.SecondaryBackground" /> or

@@ -12,6 +12,9 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
     [GeneratedRegex(@"^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$")]
     private static partial Regex DelimiterRow();
 
+    [GeneratedRegex(@"^:?-+:?$")]
+    private static partial Regex AlignmentToken();
+
     public override bool TryParse(BitMarkdownBlockProcessor state, List<BitMarkdownNode> output)
     {
         var lines = state.Lines;
@@ -27,7 +30,7 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
         foreach (var d in delims)
         {
             string t = d.Trim();
-            if (!Regex.IsMatch(t, @"^:?-+:?$")) return false;
+            if (!AlignmentToken().IsMatch(t)) return false;
             bool l = t.StartsWith(':'), r = t.EndsWith(':');
             alignments.Add((l, r) switch
             {

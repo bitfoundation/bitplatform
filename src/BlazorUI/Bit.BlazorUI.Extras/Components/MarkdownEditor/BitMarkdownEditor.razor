@@ -10,7 +10,7 @@
 
     @if (ShowToolbar)
     {
-        <div role="toolbar" aria-label="Markdown formatting"
+        <div role="toolbar" aria-label="@ActiveTexts.ToolbarAriaLabel"
              style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
             @foreach (var item in ActiveToolbar)
             {
@@ -25,6 +25,7 @@
                             class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                             title="@GetToolbarItemTitle(item)"
                             aria-label="@item.Title"
+                            aria-pressed="@(IsToolbarItemToggle(item) ? (IsToolbarItemActive(item) ? "true" : "false") : null)"
                             data-cmd="@item.Name"
                             disabled="@IsToolbarItemDisabled(item)"
                             @onclick="() => OnToolbarItemClick(item)">
@@ -55,7 +56,7 @@
             }
             else if (string.IsNullOrWhiteSpace(_previewValue))
             {
-                <div class="bit-mde-emp">Nothing to preview yet.</div>
+                <div class="bit-mde-emp">@ActiveTexts.PreviewEmptyText</div>
             }
             else
             {
@@ -67,10 +68,10 @@
     @if (ShowStatusBar)
     {
         <div style="@Styles?.StatusBar" class="bit-mde-sbr @Classes?.StatusBar">
-            <span class="bit-mde-mod">@Mode</span>
+            <span class="bit-mde-mod">@ActiveTexts.GetModeLabel(Mode)</span>
             <span class="bit-mde-spc"></span>
-            <span>@WordCount words</span>
-            <span>@_value.Length chars</span>
+            <span>@string.Format(ActiveTexts.WordsFormat, WordCount)</span>
+            <span>@string.Format(ActiveTexts.CharsFormat, _value.Length)</span>
         </div>
     }
 
@@ -79,18 +80,18 @@
         <div class="bit-mde-hlp" @onclick="() => _showHelp = false">
             <div class="bit-mde-hcr" @onclick:stopPropagation="true">
                 <header>
-                    <strong>Keyboard shortcuts</strong>
-                    <button type="button" class="bit-mde-hcl" @onclick="() => _showHelp = false" aria-label="Close">&times;</button>
+                    <strong>@ActiveTexts.KeyboardShortcutsTitle</strong>
+                    <button type="button" class="bit-mde-hcl" @onclick="() => _showHelp = false" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
                 </header>
                 <dl>
-                    <div><dt>Bold</dt><dd>Ctrl/Cmd + B</dd></div>
-                    <div><dt>Italic</dt><dd>Ctrl/Cmd + I</dd></div>
-                    <div><dt>Strikethrough</dt><dd>Ctrl/Cmd + Shift + S</dd></div>
-                    <div><dt>Link</dt><dd>Ctrl/Cmd + K</dd></div>
-                    <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
-                    <div><dt>Redo</dt><dd>Ctrl/Cmd + Y (or Shift + Z)</dd></div>
-                    <div><dt>Indent / Outdent</dt><dd>Tab / Shift + Tab</dd></div>
-                    <div><dt>Continue list</dt><dd>Enter</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutBold</dt><dd>Ctrl/Cmd + B</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutItalic</dt><dd>Ctrl/Cmd + I</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutStrikethrough</dt><dd>Ctrl/Cmd + Shift + S</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutLink</dt><dd>Ctrl/Cmd + K</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutUndo</dt><dd>Ctrl/Cmd + Z</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutRedo</dt><dd>Ctrl/Cmd + Y (or Shift + Z)</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutIndentOutdent</dt><dd>Tab / Shift + Tab</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutContinueList</dt><dd>Enter</dd></div>
                 </dl>
             </div>
         </div>
