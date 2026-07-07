@@ -207,7 +207,7 @@ public static partial class BitMarkdownEditorCommands
                     Match m = OrderedItem().Match(lines[i]);
                     if (m.Success)
                     {
-                        lines[i] = lines[i][m.Length..];
+                        lines[i] = m.Groups[1].Value + lines[i][m.Length..];
                     }
                 }
                 else if (lines[i].Trim().Length > 0)

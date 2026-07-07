@@ -316,8 +316,14 @@ public partial class BitMarkdownEditor : BitComponentBase
     private static bool IsToolbarItemToggle(BitMarkdownEditorToolbarItem item) =>
         item.Type is BitMarkdownEditorToolbarItemType.ToggleFullScreen or BitMarkdownEditorToolbarItemType.Help;
 
-    private string GetToolbarItemTitle(BitMarkdownEditorToolbarItem item) =>
-        string.IsNullOrEmpty(item.Shortcut) ? item.Title : $"{item.Title} ({item.Shortcut})";
+    private string GetToolbarItemLabel(BitMarkdownEditorToolbarItem item) =>
+        ActiveTexts.GetToolbarTitle(item.Name, item.Title);
+
+    private string GetToolbarItemTitle(BitMarkdownEditorToolbarItem item)
+    {
+        var label = GetToolbarItemLabel(item);
+        return string.IsNullOrEmpty(item.Shortcut) ? label : $"{label} ({item.Shortcut})";
+    }
 
     private async Task OnToolbarItemClick(BitMarkdownEditorToolbarItem item)
     {
@@ -368,7 +374,7 @@ public partial class BitMarkdownEditor : BitComponentBase
         await AssignMode(next);
     }
 
-    private void OnValueSet()
+    private async ValueTask OnValueSet()
     {
         _value = Value ?? string.Empty;
 
@@ -381,7 +387,11 @@ public partial class BitMarkdownEditor : BitComponentBase
         // Before the first render there is nothing to push; init seeds the textarea.
         if (IsRendered is false) return;
 
-        _ = _js.BitMarkdownEditorSetValue(_Id, Value);
+        try
+        {
+            await _js.BitMarkdownEditorSetValue(_Id, Value);
+        }
+        catch (JSDisconnectedException) { } // the circuit dropped; nothing to update
     }
 
     private async Task UpdatePreviewAsync()

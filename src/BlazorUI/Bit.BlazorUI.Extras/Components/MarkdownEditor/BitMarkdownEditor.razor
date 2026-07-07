@@ -24,7 +24,7 @@
                             style="@Styles?.ToolbarButton"
                             class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
                             title="@GetToolbarItemTitle(item)"
-                            aria-label="@item.Title"
+                            aria-label="@GetToolbarItemLabel(item)"
                             aria-pressed="@(IsToolbarItemToggle(item) ? (IsToolbarItemActive(item) ? "true" : "false") : null)"
                             data-cmd="@item.Name"
                             disabled="@IsToolbarItemDisabled(item)"
