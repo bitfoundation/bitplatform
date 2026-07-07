@@ -443,11 +443,13 @@
         <DemoExample Title="Keyboard cell navigation" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 Set <code>CellNavigation="true"</code> to enable a roving tab stop. Use arrow keys, Home/End,
-                Ctrl+Home/End, PageUp/PageDown to move, and Enter/F2 to edit (Esc to cancel).
+                Ctrl+Home/End, PageUp/PageDown to move, Enter/F2 to edit (Esc to cancel), and Delete to
+                delete the focused row (requires <code>Editable</code>).
             </div>
             <br />
             <BitDataGrid Items="@cellNavProducts" Height="460px"
-                         CellNavigation="true" Sortable="true" Editable="true" OnRowSave="(Product _) => {}">
+                         CellNavigation="true" Sortable="true" Editable="true" OnRowSave="(Product _) => {}"
+                         OnRowDelete="(Product p) => cellNavProducts.Remove(p)">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />
                 <BitDataGridColumn Property="p => p.Category" />

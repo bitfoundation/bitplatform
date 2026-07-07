@@ -1840,7 +1840,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal async Task DeleteRowAsync(TItem item)
     {
-        if (OnRowDelete.HasDelegate) await OnRowDelete.InvokeAsync(item);
+        if (OnRowDelete.HasDelegate)
+        {
+            await OnRowDelete.InvokeAsync(item);
+            // Deleting leaves no visible trace at the trigger point (button or Delete key), so tell
+            // screen-reader users it happened; only announce when a handler actually processed it.
+            Announce(Strings.AnnouncementRowDeleted);
+        }
         _selected.Remove(item);
         await RefreshAsync();
     }
@@ -2235,6 +2241,18 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             case "Escape":
                 if (_editItem is not null) await CancelEditAsync();
                 return;
+            case "Delete":
+                // Keyboard parity with the command column's Delete button, gated the same way
+                // (Editable). An editing row's cells never route here (see BitDataGridCell), so
+                // Delete inside an editor keeps deleting text instead of the row.
+                if (!Editable) { handled = false; break; }
+                await DeleteRowAsync(item);
+                // The focused row is gone; land on the row that took its place (or the new last
+                // row) so the roving tab stop stays inside the grid.
+                rows = NavigableRows;
+                if (rows.Count == 0) { _focusedRow = default; return; }
+                row = Math.Min(rowIdx, rows.Count - 1);
+                break;
             default: handled = false; break;
         }
         if (!handled) return;

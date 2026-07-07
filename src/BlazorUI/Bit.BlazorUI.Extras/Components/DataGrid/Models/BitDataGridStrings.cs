@@ -129,6 +129,8 @@ public class BitDataGridStrings
     public string AnnouncementFilterCleared { get; set; } = "Filter on {0} cleared";
     /// <summary>{0} = current page, {1} = total pages.</summary>
     public string AnnouncementPage { get; set; } = "Page {0} of {1}";
+    /// <summary>Announced after a row is deleted (via the Delete button or the Delete key).</summary>
+    public string AnnouncementRowDeleted { get; set; } = "Row deleted";
 
     /// <summary>Footer aggregate labels. {0} = the formatted aggregate value.</summary>
     public string AggregateSumFormat { get; set; } = "Σ {0}";

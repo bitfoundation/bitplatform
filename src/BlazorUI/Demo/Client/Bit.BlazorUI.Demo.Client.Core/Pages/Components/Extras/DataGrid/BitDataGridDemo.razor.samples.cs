@@ -666,7 +666,8 @@ private async Task DeleteCellMenuRow()
 
     private readonly string example17RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""460px""
-             CellNavigation=""true"" Sortable=""true"" Editable=""true"" OnRowSave=""(Product _) => {}"">
+             CellNavigation=""true"" Sortable=""true"" Editable=""true"" OnRowSave=""(Product _) => {}""
+             OnRowDelete=""(Product p) => products.Remove(p)"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Editable=""false"" />
     <BitDataGridColumn Property=""p => p.Name"" />
     <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" />

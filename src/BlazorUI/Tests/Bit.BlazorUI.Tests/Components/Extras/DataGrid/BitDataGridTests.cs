@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.DataGrid;
@@ -468,6 +469,44 @@ public class BitDataGridTests : BunitTestContext
         // Five products with five distinct first letters.
         var footer = component.Find(".bit-dtg-footer-row .bit-dtg-cell");
         StringAssert.Contains(footer.TextContent, "Custom:5");
+    }
+
+    [TestMethod]
+    public void DeleteKeyDeletesTheFocusedRowAndKeepsFocusInGrid()
+    {
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.CellNavigation, true);
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.OnRowDelete, (TestRow r) => { items.Remove(r); });
+        });
+
+        component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
+            .KeyDown(new KeyboardEventArgs { Key = "Delete" });
+
+        var texts = FirstCellTexts(component);
+        Assert.AreEqual(4, texts.Count);
+        Assert.IsFalse(texts.Contains("Banana"), "the focused row must be deleted");
+        // The row that took the deleted row's place now holds the roving tab stop.
+        var newFirstCell = component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell");
+        Assert.AreEqual("0", newFirstCell.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void DeleteKeyIsIgnoredWhenGridIsNotEditable()
+    {
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.CellNavigation, true);
+            parameters.Add(p => p.OnRowDelete, (TestRow r) => { items.Remove(r); });
+        });
+
+        component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
+            .KeyDown(new KeyboardEventArgs { Key = "Delete" });
+
+        Assert.AreEqual(5, FirstCellTexts(component).Count);
     }
 
     [TestMethod]
