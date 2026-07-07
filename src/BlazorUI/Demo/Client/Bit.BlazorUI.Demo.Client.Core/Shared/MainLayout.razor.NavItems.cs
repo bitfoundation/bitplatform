@@ -175,6 +175,7 @@ public partial class MainLayout
                 new() { Text = "ProModalService", Url = "/components/promodalservice" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
+                new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "Shimmer, AI" },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },
