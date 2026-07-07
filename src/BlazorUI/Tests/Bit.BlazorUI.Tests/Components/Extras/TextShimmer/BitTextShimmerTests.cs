@@ -98,6 +98,19 @@ public class BitTextShimmerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTextShimmerShouldNotRenderOptionalStyleVariablesByDefault()
+    {
+        var component = RenderComponent<BitTextShimmer>();
+
+        var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsTrue(style.Contains("--bit-tsh-spread:20px"));
+        Assert.IsFalse(style.Contains("--bit-tsh-duration"));
+        Assert.IsFalse(style.Contains("--bit-tsh-base-clr"));
+        Assert.IsFalse(style.Contains("--bit-tsh-gradient-clr"));
+    }
+
+    [TestMethod]
     public void BitTextShimmerShouldRespectDuration()
     {
         var component = RenderComponent<BitTextShimmer>(parameters =>
