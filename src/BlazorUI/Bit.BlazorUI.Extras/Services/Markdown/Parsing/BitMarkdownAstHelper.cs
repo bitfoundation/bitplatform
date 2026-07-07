@@ -31,7 +31,9 @@ public static class BitMarkdownAstHelper
 
     private static void PushListsReversed(BitMarkdownNode node, Stack<IList<BitMarkdownNode>> stack)
     {
-        var lists = node.ChildLists as IList<IList<BitMarkdownNode>> ?? node.ChildLists.ToList();
+        // ChildLists may be a computed property; read it once.
+        var childLists = node.ChildLists;
+        var lists = childLists as IList<IList<BitMarkdownNode>> ?? childLists.ToList();
         for (int i = lists.Count - 1; i >= 0; i--)
             stack.Push(lists[i]);
     }

@@ -374,9 +374,13 @@ public partial class BitMarkdownEditor : BitComponentBase
 
         if (_internalValueChange) return;
 
+        _previewValue = _value;
+
         // The textarea is uncontrolled (JS owns its value to preserve the caret),
         // so external changes must be pushed into it through the interop script.
-        _previewValue = _value;
+        // Before the first render there is nothing to push; init seeds the textarea.
+        if (IsRendered is false) return;
+
         _ = _js.BitMarkdownEditorSetValue(_Id, Value);
     }
 

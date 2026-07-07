@@ -9,7 +9,9 @@ namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownEditor;
 [TestClass]
 public class BitMarkdownEditorTests : BunitTestContext
 {
-    private void SetupJsInterop()
+    // Runs after the base class Setup that creates the bUnit context.
+    [TestInitialize]
+    public void SetupJsInterop()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.MarkdownEditor.init");
         Context.JSInterop.SetupVoid("BitBlazorUI.MarkdownEditor.setValue");
@@ -26,8 +28,6 @@ public class BitMarkdownEditorTests : BunitTestContext
         DataRow(false)]
     public void BitMarkdownEditorShouldRespectIsEnabled(bool isEnabled)
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -48,8 +48,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldInitializeWithDefaultValue()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.Id, "id");
@@ -63,8 +61,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     public async Task BitMarkdownEditorShouldInvokeOnChange()
     {
         string? changed = null;
-
-        SetupJsInterop();
 
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
@@ -84,14 +80,13 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldSetValueAndCallJs()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.Value, "initial");
         });
 
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.setValue", 1);
+        // The initial value is seeded by init on first render, not by setValue.
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.MarkdownEditor.setValue");
 
         Assert.AreEqual("initial", component.Instance.Value);
 
@@ -100,7 +95,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.Value, "updated");
         });
 
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.setValue", 2);
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.setValue", 1);
 
         Assert.AreEqual("updated", component.Instance.Value);
     }
@@ -108,8 +103,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public async Task BitMarkdownEditorShouldRunCommand()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>();
 
         await component.Instance.Run(BitMarkdownEditorCommand.Bold);
@@ -120,8 +113,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public async Task BitMarkdownEditorShouldUndoAndRedo()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>();
 
         await component.Instance.Undo();
@@ -134,8 +125,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldApplyCommands()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>();
 
         var result = component.Instance._ApplyCommand("Bold", 0, 4, "test");
@@ -149,8 +138,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldNotApplyCommandsWhenReadOnly()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.ReadOnly, true);
@@ -165,8 +152,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldNotApplyUnknownCommands()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>();
 
         var result = component.Instance._ApplyCommand("NotACommand", 0, 4, "test");
@@ -178,8 +163,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldUpdateHistoryState()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>();
 
         Assert.IsFalse(component.Instance.CanUndo);
@@ -202,8 +185,6 @@ public class BitMarkdownEditorTests : BunitTestContext
         DataRow(BitMarkdownEditorMode.Preview)]
     public void BitMarkdownEditorShouldRespectMode(BitMarkdownEditorMode mode)
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.Mode, mode);
@@ -217,8 +198,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldRenderDefaultToolbar()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>();
 
         var buttons = component.FindAll(".bit-mde-btn");
@@ -229,8 +208,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldRenderCustomToolbar()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.Toolbar, new BitMarkdownEditorToolbarItem[]
@@ -250,8 +227,6 @@ public class BitMarkdownEditorTests : BunitTestContext
         DataRow(false)]
     public void BitMarkdownEditorShouldRespectShowToolbar(bool showToolbar)
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.ShowToolbar, showToolbar);
@@ -265,8 +240,6 @@ public class BitMarkdownEditorTests : BunitTestContext
         DataRow(false)]
     public void BitMarkdownEditorShouldRespectShowStatusBar(bool showStatusBar)
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.ShowStatusBar, showStatusBar);
@@ -280,8 +253,6 @@ public class BitMarkdownEditorTests : BunitTestContext
         DataRow(false)]
     public void BitMarkdownEditorShouldRespectFullScreen(bool fullScreen)
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.FullScreen, fullScreen);
@@ -295,8 +266,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldRespectHeight()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
             parameters.Add(p => p.Height, "10rem");
@@ -310,8 +279,6 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod]
     public async Task BitMarkdownEditorShouldDisposeJsInterop()
     {
-        SetupJsInterop();
-
         var component = RenderComponent<BitMarkdownEditor>();
 
         await component.Instance.DisposeAsync();

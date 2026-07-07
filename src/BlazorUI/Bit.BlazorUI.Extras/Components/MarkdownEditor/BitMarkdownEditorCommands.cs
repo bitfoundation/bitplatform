@@ -343,6 +343,7 @@ public static partial class BitMarkdownEditorCommands
         Match task = TaskItem().Match(fullLine);
         Match unordered = UnorderedItem().Match(fullLine);
         Match ordered = OrderedItem().Match(fullLine);
+        Match quote = QuoteItem().Match(fullLine);
 
         // Continue task list
         if (task.Success)
@@ -383,6 +384,20 @@ public static partial class BitMarkdownEditorCommands
 
             int number = int.TryParse(ordered.Groups[2].Value, out int parsed) ? parsed + 1 : 1;
             string insertion = "\n" + ordered.Groups[1].Value + number + ordered.Groups[3].Value + " ";
+            int caret = start + insertion.Length;
+            return new BitMarkdownEditorEditResult(true, text[..start] + insertion + text[end..], caret, caret);
+        }
+
+        // Continue blockquote
+        if (quote.Success)
+        {
+            string content = fullLine[quote.Length..];
+            if (content.Trim().Length == 0)
+            {
+                return ClearLine(text, lineStart, lineEnd);
+            }
+
+            string insertion = "\n" + quote.Groups[1].Value + "> ";
             int caret = start + insertion.Length;
             return new BitMarkdownEditorEditResult(true, text[..start] + insertion + text[end..], caret, caret);
         }
@@ -459,6 +474,10 @@ public static partial class BitMarkdownEditorCommands
 
     [GeneratedRegex(@"^> ")]
     private static partial Regex QuotePrefix();
+
+    // group 1 = leading whitespace (mirrors the Enter key handler's QUOTE_LINE)
+    [GeneratedRegex(@"^(\s*)> ")]
+    private static partial Regex QuoteItem();
 
     // group 1 = leading whitespace, group 2 = bullet char
     [GeneratedRegex(@"^(\s*)([-*+]) (?!\[[ xX]\])")]

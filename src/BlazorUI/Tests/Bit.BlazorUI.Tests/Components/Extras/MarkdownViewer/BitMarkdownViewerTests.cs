@@ -1,6 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 
@@ -79,21 +80,26 @@ public class BitMarkdownViewerTests : BunitTestContext
         }
     }
 
-    [TestMethod]
-    public void BitMarkdownViewerShouldSanitizeBackslashLinks()
+    [TestMethod,
+        DataRow(@"\\evil.com"),
+        DataRow(@"/\evil.com"),
+        DataRow(@"\/evil.com")]
+    public void BitMarkdownViewerShouldSanitizeBackslashLinks(string url)
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            // Browsers treat leading backslashes like slashes (protocol-relative).
-            parameters.Add(p => p.Markdown, @"[click](\\evil.com)");
+            // Browsers treat leading backslashes like slashes (protocol-relative),
+            // including mixed separator runs (BitMarkdownUrlSanitizer).
+            parameters.Add(p => p.Markdown, $"[click]({url})");
         });
 
         var links = component.FindAll(".bit-mdv a");
         if (links.Count > 0)
         {
             var href = links[0].GetAttribute("href") ?? string.Empty;
+            var leadingSeparators = href.TakeWhile(c => c is '/' or '\\');
             Assert.IsTrue(
-                href.Length == 0 || !href.StartsWith('\\'),
+                href.Length == 0 || !leadingSeparators.Contains('\\'),
                 $"Backslash link href was not sanitized: '{href}'.");
         }
     }

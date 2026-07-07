@@ -14,7 +14,7 @@ public sealed class BitMarkdownStrikethroughDelimiterProcessor : BitMarkdownDeli
         List<BitMarkdownNode> children, out BitMarkdownNode? node)
     {
         // GFM strikethrough requires runs of two on both sides.
-        if (openLength < 2 || closeLength < 2)
+        if (openLength < MinRunLength || closeLength < MinRunLength)
         {
             node = null;
             return 0;
@@ -22,6 +22,6 @@ public sealed class BitMarkdownStrikethroughDelimiterProcessor : BitMarkdownDeli
         var strike = new BitMarkdownStrikethroughNode();
         strike.Children.AddRange(children);
         node = strike;
-        return 2;
+        return MinRunLength;
     }
 }
