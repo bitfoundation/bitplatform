@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.BlazorUI;
@@ -12,8 +13,16 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 {
     [CascadingParameter] internal BitDataGrid<TItem>? Grid { get; set; }
 
-    /// <summary>Name of the property this column is bound to. Supports nested paths ("Address.City").</summary>
+    /// <summary>Name of the property this column is bound to. Supports nested paths ("Address.City").
+    /// Prefer <see cref="Property"/> for a strongly typed, refactor-safe alternative.</summary>
     [Parameter] public string? Field { get; set; }
+
+    /// <summary>
+    /// Typed selector of the property this column is bound to, e.g. <c>Property="p => p.Name"</c>.
+    /// A strongly typed, refactor-safe alternative to <see cref="Field"/> that supports nested member
+    /// chains (<c>p => p.Address.City</c>). Takes precedence over <see cref="Field"/> when both are set.
+    /// </summary>
+    [Parameter] public Expression<Func<TItem, object?>>? Property { get; set; }
 
     /// <summary>Stable identifier for the column. Defaults to <see cref="Field"/>.</summary>
     [Parameter] public string? ColumnId { get; set; }
@@ -128,11 +137,21 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     internal BitDataGridPropertyAccessor<TItem>? Accessor { get; private set; }
 
-    // Treat empty/whitespace ColumnId and Field as "unset" (matching HasField's emptiness check) so an
-    // accidental blank value can't become a column id. Blank ids would collide across columns instead of
-    // each falling back to a unique generated id, so only use the generated fallback when both are unset.
+    // The property path extracted from the Property expression. Razor recreates the expression instance
+    // every render, so the extracted string (not the expression reference) is what the rest of the column
+    // compares and registers with — it stays stable across renders for the same selector.
+    private string? _propertyPath;
+
+    /// <summary>The resolved property path this column binds to: <see cref="Property"/>'s member chain
+    /// when set, otherwise <see cref="Field"/>.</summary>
+    internal string? EffectiveField => _propertyPath ?? Field;
+
+    // Treat empty/whitespace ColumnId and the resolved field as "unset" (matching HasField's emptiness
+    // check) so an accidental blank value can't become a column id. Blank ids would collide across columns
+    // instead of each falling back to a unique generated id, so only use the generated fallback when both
+    // are unset.
     internal string Id => !string.IsNullOrWhiteSpace(ColumnId) ? ColumnId
-                        : !string.IsNullOrWhiteSpace(Field) ? Field
+                        : !string.IsNullOrWhiteSpace(EffectiveField) ? EffectiveField
                         : $"col-{GetHashCode():x}";
 
     // The id this column is currently registered under in the grid. Tracked separately from Id so a
@@ -152,9 +171,9 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     // cached visible-column list), not the computed view, so it must not trigger a data refresh.
     private bool _lastVisible = true;
 
-    internal string DisplayTitle => Title ?? Humanize(Field) ?? Id;
+    internal string DisplayTitle => Title ?? Humanize(EffectiveField) ?? Id;
 
-    internal bool HasField => !string.IsNullOrWhiteSpace(Field);
+    internal bool HasField => !string.IsNullOrWhiteSpace(EffectiveField);
 
     /// <summary>The effective sort key selector: <see cref="SortBy"/> when provided, otherwise the
     /// field accessor's value. Null when the column has neither (such a column cannot sort).</summary>
@@ -191,8 +210,9 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         // Resolve the accessor before registering with the grid. AddColumn recomputes footer/aggregate
         // values immediately, so a field-bound aggregate column whose Accessor was still null at that
         // point would be skipped on first registration.
+        _propertyPath = Property is null ? null : BitDataGridPropertyAccessor<TItem>.ResolvePath(Property);
         if (HasField)
-            Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
+            Accessor = BitDataGridPropertyAccessor<TItem>.For(EffectiveField!);
 
         // Only record a registered id when the grid actually accepted this column. A duplicate-id
         // column is skipped by AddColumn (returns false); treating it as registered would let
@@ -205,8 +225,9 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     protected override void OnParametersSet()
     {
+        _propertyPath = Property is null ? null : BitDataGridPropertyAccessor<TItem>.ResolvePath(Property);
         if (HasField)
-            Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
+            Accessor = BitDataGridPropertyAccessor<TItem>.For(EffectiveField!);
         else
             Accessor = null;
 
@@ -253,14 +274,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     }
 
     private bool SemanticParametersChanged()
-        => _lastField != Field
+        => _lastField != EffectiveField
         || _lastAggregate != Aggregate
         || _lastFormat != Format
         || _lastAggregateFormat != AggregateFormat;
 
     private void SnapshotSemanticParameters()
     {
-        _lastField = Field;
+        _lastField = EffectiveField;
         _lastAggregate = Aggregate;
         _lastFormat = Format;
         _lastAggregateFormat = AggregateFormat;

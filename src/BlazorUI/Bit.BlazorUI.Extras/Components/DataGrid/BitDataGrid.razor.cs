@@ -13,6 +13,7 @@ namespace Bit.BlazorUI;
 /// columns, grouping, aggregates and theming.
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
+[CascadingTypeParameter(nameof(TItem))]
 public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 {
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -42,6 +43,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>Column definitions and other declarative children.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Alias of <see cref="ChildContent"/>, letting column definitions read declaratively as
+    /// <c>&lt;Columns&gt;...&lt;/Columns&gt;</c>. Both fragments are rendered when both are set.</summary>
+    [Parameter] public RenderFragment? Columns { get; set; }
 
     [Parameter] public bool Loading { get; set; }
 

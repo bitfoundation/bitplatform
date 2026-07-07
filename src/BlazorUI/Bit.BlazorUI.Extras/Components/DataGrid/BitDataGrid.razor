@@ -4,6 +4,7 @@
 @* Collect column definitions (these render no visible markup) *@
 <CascadingValue Value="this" IsFixed="true">
     @ChildContent
+    @Columns
 </CascadingValue>
 
 <div class="@RootClasses()" style="@Style" @ref="_rootRef" dir="@(Direction switch { BitDir.Rtl => "rtl", BitDir.Auto => "auto", _ => "ltr" })">

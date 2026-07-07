@@ -9,6 +9,7 @@ public partial class BitDataGridDemo
         new() { Name = "OnLoadMore", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Infinite-scrolling data callback. Loads rows in batches and appends the next batch as the user scrolls toward the end. CSV/Excel exports issue a single request with Take = null (\"all rows\"), so the handler should honor a null Take.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
         new() { Name = "LoadMoreBatchSize", Type = "int", DefaultValue = "50", Description = "Number of rows fetched per batch in infinite-scrolling mode." },
         new() { Name = "ChildContent", Type = "RenderFragment?", DefaultValue = "null", Description = "Column definitions and other declarative children." },
+        new() { Name = "Columns", Type = "RenderFragment?", DefaultValue = "null", Description = "Alias of ChildContent, letting column definitions read declaratively as <Columns>...</Columns>. Both fragments are rendered when both are set." },
         new() { Name = "Loading", Type = "bool", DefaultValue = "false", Description = "Shows a loading overlay while data is being fetched." },
         new() { Name = "KeyField", Type = "Func<TItem, object>?", DefaultValue = "null", Description = "Optional key selector used for selection/edit identity. Defaults to reference equality." },
         new() { Name = "ChildrenSelector", Type = "Func<TItem, IEnumerable<TItem>?>?", DefaultValue = "null", Description = "Child selector that turns the grid into a hierarchical tree grid." },
@@ -106,9 +107,10 @@ public partial class BitDataGridDemo
             Description = "Defines a column inside a BitDataGrid. Place these as child content of the grid.",
             Parameters =
             [
-                new() { Name = "Field", Type = "string?", DefaultValue = "null", Description = "Name of the property this column is bound to. Supports nested paths (\"Address.City\")." },
-                new() { Name = "ColumnId", Type = "string?", DefaultValue = "null", Description = "Stable identifier for the column. Defaults to Field." },
-                new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "Header text. Defaults to a humanized Field." },
+                new() { Name = "Field", Type = "string?", DefaultValue = "null", Description = "Name of the property this column is bound to. Supports nested paths (\"Address.City\"). Prefer Property for a strongly typed, refactor-safe alternative." },
+                new() { Name = "Property", Type = "Expression<Func<TItem, object?>>?", DefaultValue = "null", Description = "Typed selector of the property this column is bound to, e.g. Property=\"p => p.Name\". A strongly typed, refactor-safe alternative to Field that supports nested member chains (p => p.Address.City). Takes precedence over Field when both are set." },
+                new() { Name = "ColumnId", Type = "string?", DefaultValue = "null", Description = "Stable identifier for the column. Defaults to the resolved Property/Field path." },
+                new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "Header text. Defaults to a humanized Property/Field name." },
                 new() { Name = "Width", Type = "string?", DefaultValue = "null", Description = "CSS width, e.g. \"120px\" or \"20%\". When null the column shares remaining space." },
                 new() { Name = "MinWidth", Type = "int", DefaultValue = "60", Description = "Minimum width in pixels the column can be resized to." },
                 new() { Name = "MaxWidth", Type = "int?", DefaultValue = "null", Description = "Maximum width in pixels the column can be resized to." },

@@ -131,4 +131,34 @@ public class BitDataGridPropertyAccessorTests
     {
         Assert.ThrowsExactly<ArgumentException>(() => BitDataGridPropertyAccessor<Model>.For("Nope"));
     }
+
+    [TestMethod]
+    public void ResolvePathExtractsSimpleAndBoxedMembers()
+    {
+        // Name is a reference type; Count is boxed by the object-typed lambda (Convert node to peel).
+        Assert.AreEqual("Name", BitDataGridPropertyAccessor<Model>.ResolvePath(x => x.Name));
+        Assert.AreEqual("Count", BitDataGridPropertyAccessor<Model>.ResolvePath(x => x.Count));
+    }
+
+    [TestMethod]
+    public void ResolvePathExtractsNestedChains()
+    {
+        Assert.AreEqual("Address.City", BitDataGridPropertyAccessor<Model>.ResolvePath(x => x.Address!.City));
+        Assert.AreEqual("Price.Amount", BitDataGridPropertyAccessor<Model>.ResolvePath(x => x.Price.Amount));
+    }
+
+    [TestMethod]
+    public void ResolvePathSkipsNullableValueUnwrap()
+    {
+        // ".Value" is Nullable<T> plumbing, not a data property; it must resolve to the same
+        // path (and thus the same cached accessor) as the bare member.
+        Assert.AreEqual("MaybeCount", BitDataGridPropertyAccessor<Model>.ResolvePath(x => x.MaybeCount!.Value));
+    }
+
+    [TestMethod]
+    public void ResolvePathRejectsNonMemberChains()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => BitDataGridPropertyAccessor<Model>.ResolvePath(x => x.Name!.ToString()));
+        Assert.ThrowsExactly<ArgumentException>(() => BitDataGridPropertyAccessor<Model>.ResolvePath(x => "constant"));
+    }
 }

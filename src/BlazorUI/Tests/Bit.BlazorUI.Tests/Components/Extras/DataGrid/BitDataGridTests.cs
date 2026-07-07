@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -987,5 +988,67 @@ public class BitDataGridTests : BunitTestContext
         component.SetParametersAndRender(parameters => parameters.Add(p => p.Items, replacement));
 
         Assert.AreEqual(0, selected!.Count, "selection must not keep rows that left the data source");
+    }
+
+    [TestMethod]
+    public async Task PropertyExpressionBindsColumnLikeField()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Property", (Expression<Func<TestRow, object?>>)(r => r.Name));
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+            builder.AddComponentParameter(3, "Property", (Expression<Func<TestRow, object?>>)(r => r.Price));
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        // Titles humanize from the resolved path, values render through the same accessor as Field.
+        var headers = component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Select(h => h.TextContent.Trim()).ToList();
+        CollectionAssert.AreEqual(new[] { "Name", "Price" }, headers);
+        Assert.AreEqual("Banana", FirstCellTexts(component)[0]);
+
+        // The column id falls back to the resolved path, so the programmatic state API keys still work.
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
+        Assert.AreEqual("Cherry", FirstCellTexts(component)[0]);
+    }
+
+    [TestMethod]
+    public void PropertyExpressionTakesPrecedenceOverField()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.AddComponentParameter(2, "Property", (Expression<Func<TestRow, object?>>)(r => r.Id));
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        Assert.AreEqual("Id", component.Find(".bit-dtg-header-row .bit-dtg-htext").TextContent.Trim());
+        Assert.AreEqual("1", FirstCellTexts(component)[0]);
+    }
+
+    [TestMethod]
+    public void ColumnsParameterAliasesChildContent()
+    {
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.Columns, DefaultColumns());
+        });
+
+        var headers = component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Select(h => h.TextContent.Trim()).ToList();
+        CollectionAssert.AreEqual(new[] { "Name", "Price" }, headers);
+        Assert.AreEqual(5, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
     }
 }

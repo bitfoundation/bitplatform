@@ -34,15 +34,22 @@
                 Bind a collection, declare columns, and you get sorting out of the box.
                 Click a header to sort ascending → descending → unsorted.
                 Hold Ctrl (or ⌘) and click additional headers for multi-column sorting.
+                <br /><br />
+                The item type flows from the grid to its columns automatically (no per-column TItem needed),
+                a column binds to its property with the strongly typed Property selector (the string-based
+                Field parameter also remains available), and columns can be wrapped in an optional
+                <BitTag Reversed Text="Columns" Color="BitColor.SecondaryBackground" /> element.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@basicProducts" Height="430px" MultiSort="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+            <BitDataGrid Items="@basicProducts" Height="430px" MultiSort="true">
+                <Columns>
+                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                    <BitDataGridColumn Property="p => p.Category" />
+                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+                </Columns>
             </BitDataGrid>
         </DemoExample>
 
@@ -51,18 +58,21 @@
                 A quick-filter row sits under the header; the pager controls page size and navigation.
                 Typed filters are used for numeric, date, boolean and enum columns (like Price, Stock and Category),
                 while text columns (like Name and Supplier) use case-insensitive text filtering.
+                <br /><br />
+                This example binds columns with the string-based <BitTag Reversed Text="Field" Color="BitColor.SecondaryBackground" /> parameter —
+                useful when column definitions come from configuration — instead of the strongly typed Property selector used elsewhere.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@filterProducts" Height="430px"
+            <BitDataGrid Items="@filterProducts" Height="430px"
                          Filterable="true" Pageable="true" PageSize="10"
                          PagerPosition="BitDataGridPagerPosition.Bottom"
                          ShowToolbar="true" ShowCsvExport="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Field="Name" Width="220px" />
+                <BitDataGridColumn Field="Category" />
+                <BitDataGridColumn Field="Supplier" />
+                <BitDataGridColumn Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Field="Stock" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -79,12 +89,12 @@
                 <BitText>@selectedProducts.Count selected</BitText>
             </BitStack>
             <br />
-            <BitDataGrid TItem="Product" Items="@selectionProducts" Height="420px"
+            <BitDataGrid Items="@selectionProducts" Height="420px"
                          SelectionMode="selectionMode" @bind-SelectedItems="selectedProducts" Pageable="true" PageSize="10">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -94,18 +104,20 @@
                 Use <code>EditTemplate</code> on a column to supply your own editor.
             </div>
             <br />
+            @* TItem stays explicit here: EventCallback parameters (OnRowSave/OnRowDelete/OnRowCreate)
+               bound to method groups cannot participate in generic type inference. *@
             <BitDataGrid TItem="Product" Items="@editProducts" Height="460px"
                          Editable="true" NewItemFactory="CreateProduct"
                          OnRowSave="OnSave" OnRowDelete="OnDelete" OnRowCreate="OnCreate"
                          ShowToolbar="true" Pageable="true" PageSize="10" KeyField="p => p.Id">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="200px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
-                <BitDataGridColumn TItem="Product" Field="Discontinued" Title="Discontinued" Align="BitDataGridColumnAlign.Center" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="200px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
+                <BitDataGridColumn Property="p => p.Discontinued" Title="Discontinued" Align="BitDataGridColumnAlign.Center" />
             </BitDataGrid>
             <br />
             <BitText>@editStatus</BitText>
@@ -120,17 +132,17 @@
                 aggregate — here the Supplier column counts distinct suppliers per group and overall.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@groupProducts" Height="500px"
+            <BitDataGrid Items="@groupProducts" Height="500px"
                          Groupable="true" ShowFooter="true" Sortable="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Groupable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="200px" Groupable="false" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" AggregateBy="@DistinctSuppliers" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right"
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Groupable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="200px" Groupable="false" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Supplier" AggregateBy="rows => DistinctSuppliers(rows)" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right"
                                    Aggregate="BitDataGridAggregateType.Sum" Groupable="false" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right"
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right"
                                    Aggregate="BitDataGridAggregateType.Average" AggregateFormat="N0" Groupable="false" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right"
+                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitDataGridColumnAlign.Right"
                                    Aggregate="BitDataGridAggregateType.Max" Groupable="false" />
             </BitDataGrid>
         </DemoExample>
@@ -143,7 +155,7 @@
                 <code>SortBy</code> key selector to sort it, like the computed Value column here.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@templateProducts" Height="470px" Sortable="true" ShowFooter="true">
+            <BitDataGrid Items="@templateProducts" Height="470px" Sortable="true" ShowFooter="true">
                 <DetailTemplate Context="p">
                     <BitStack Horizontal Wrap Gap="2rem">
                         <div><strong>Supplier</strong><br />@p.Supplier</div>
@@ -152,12 +164,12 @@
                         <div><strong>Status</strong><br />@(p.Discontinued ? "Discontinued" : "Active")</div>
                     </BitStack>
                 </DetailTemplate>
-                <ChildContent>
-                    <BitDataGridColumn TItem="Product" Field="Name" Width="220px">
+                <Columns>
+                    <BitDataGridColumn Property="p => p.Name" Width="220px">
                         <HeaderTemplate>📦 Product</HeaderTemplate>
                     </BitDataGridColumn>
-                    <BitDataGridColumn TItem="Product" Field="Category" />
-                    <BitDataGridColumn TItem="Product" Field="Rating" Title="Rating">
+                    <BitDataGridColumn Property="p => p.Category" />
+                    <BitDataGridColumn Property="p => p.Rating" Title="Rating">
                         <Template Context="p">
                             <span title="@p.Rating">
                                 @for (var i = 0; i < 5; i++)
@@ -167,23 +179,23 @@
                             </span>
                         </Template>
                     </BitDataGridColumn>
-                    <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right"
+                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right"
                                        Aggregate="BitDataGridAggregateType.Sum">
                         <FooterTemplate Context="agg">
                             <span>Total: @agg.FormattedValue</span>
                         </FooterTemplate>
                     </BitDataGridColumn>
-                    <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right">
+                    <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right">
                         <Template Context="p">
                             <BitTag Text="@(p.Stock == 0 ? "Out of stock" : $"{p.Stock} in stock")"
                                     Color="@(p.Stock == 0 ? BitColor.Error : BitColor.Success)" />
                         </Template>
                     </BitDataGridColumn>
-                    <BitDataGridColumn TItem="Product" ColumnId="Value" Title="Value" Align="BitDataGridColumnAlign.Right"
+                    <BitDataGridColumn ColumnId="Value" Title="Value" Align="BitDataGridColumnAlign.Right"
                                        SortBy="@(p => p.Price * p.Stock)">
                         <Template Context="p">@((p.Price * p.Stock).ToString("C0"))</Template>
                     </BitDataGridColumn>
-                </ChildContent>
+                </Columns>
             </BitDataGrid>
         </DemoExample>
 
@@ -193,16 +205,16 @@
                 The ID and Name columns are frozen, staying visible while you scroll horizontally.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@columnsProducts" Height="430px"
+            <BitDataGrid Items="@columnsProducts" Height="430px"
                          Resizable="true" Reorderable="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="80px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" Frozen="true" />
-                <BitDataGridColumn TItem="Product" Field="Category" Width="160px" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" Width="200px" />
-                <BitDataGridColumn TItem="Product" Field="Price" Width="160px" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Width="140px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Width="140px" Format="N1" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="ReleaseDate" Title="Released" Width="160px" Format="yyyy-MM-dd" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" Frozen="true" />
+                <BitDataGridColumn Property="p => p.Category" Width="160px" />
+                <BitDataGridColumn Property="p => p.Supplier" Width="200px" />
+                <BitDataGridColumn Property="p => p.Price" Width="160px" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Width="140px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Rating" Width="140px" Format="N1" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Width="160px" Format="yyyy-MM-dd" />
             </BitDataGrid>
         </DemoExample>
 
@@ -211,14 +223,14 @@
                 Set <code>Group</code> on consecutive columns to render them under a single spanning header cell.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@columnGroupsProducts" Height="460px" Sortable="true" Bordered="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="200px" Group="Identity" />
-                <BitDataGridColumn TItem="Product" Field="Category" Group="Identity" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" Group="Commercials" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" Group="Commercials" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" Group="Quality" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" Group="Quality" />
+            <BitDataGrid Items="@columnGroupsProducts" Height="460px" Sortable="true" Bordered="true">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="200px" Group="Identity" />
+                <BitDataGridColumn Property="p => p.Category" Group="Identity" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" Group="Commercials" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" Group="Commercials" />
+                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitDataGridColumnAlign.Right" Group="Quality" />
+                <BitDataGridColumn Property="p => p.Supplier" Group="Quality" />
             </BitDataGrid>
         </DemoExample>
 
@@ -228,9 +240,9 @@
                 Discontinued rows span the Name cell over Category; premium rows span Price over Stock.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@spanningProducts" Height="460px" Bordered="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" ColSpan="NameSpan">
+            <BitDataGrid Items="@spanningProducts" Height="460px" Bordered="true">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" ColSpan="p => NameSpan(p)">
                     <Template Context="p">
                         @if (p.Discontinued)
                         {
@@ -242,8 +254,8 @@
                         }
                     </Template>
                 </BitDataGridColumn>
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" ColSpan="PriceSpan">
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" ColSpan="p => PriceSpan(p)">
                     <Template Context="p">
                         @if (p.Price > 800)
                         {
@@ -255,7 +267,7 @@
                         }
                     </Template>
                 </BitDataGridColumn>
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -272,15 +284,15 @@
                 <BitText>@virtualProducts.Count.ToString("N0") rows</BitText>
             </BitStack>
             <br />
-            <BitDataGrid TItem="Product" Items="@virtualProducts" Height="520px"
+            <BitDataGrid Items="@virtualProducts" Height="520px"
                          Virtualize="true" RowHeight="36" Sortable="true" Filterable="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="240px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="240px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Supplier" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -290,14 +302,14 @@
                 This example simulates a backend with a small delay.
             </div>
             <br />
-            <BitDataGrid TItem="Product" OnRead="LoadServerData" Height="430px"
+            <BitDataGrid OnRead="LoadServerData" Height="430px"
                          Pageable="true" PageSize="10" Sortable="true" Filterable="true" Loading="serverLoading">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Supplier" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
             <br />
             <BitText>@serverLastRequest</BitText>
@@ -311,15 +323,15 @@
                 <code>Take = null</code> ("all rows"), so the handler should honor a <code>null</code> Take.
             </div>
             <br />
-            <BitDataGrid TItem="Product" OnLoadMore="LoadMore" LoadMoreBatchSize="40"
+            <BitDataGrid OnLoadMore="LoadMore" LoadMoreBatchSize="40"
                          Height="520px" RowHeight="40" Sortable="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="240px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="240px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Supplier" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
             <br />
             <BitText>@infiniteLog</BitText>
@@ -336,13 +348,13 @@
                 <BitButton OnClick="CollapseAll">Collapse all</BitButton>
             </BitStack>
             <br />
-            <BitDataGrid TItem="FileNode" Items="@fileRoots" Height="460px" Sortable="true"
+            <BitDataGrid Items="@fileRoots" Height="460px" Sortable="true"
                          ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true"
                          KeyField="n => n.Id" @ref="treeGrid">
-                <BitDataGridColumn TItem="FileNode" Field="Name" Title="Name" Width="320px" />
-                <BitDataGridColumn TItem="FileNode" Field="Kind" Title="Type" Width="120px" />
-                <BitDataGridColumn TItem="FileNode" Field="Size" Title="Size (bytes)" Format="N0" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="FileNode" Field="Modified" Format="yyyy-MM-dd" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Title="Name" Width="320px" />
+                <BitDataGridColumn Property="p => p.Kind" Title="Type" Width="120px" />
+                <BitDataGridColumn Property="p => p.Size" Title="Size (bytes)" Format="N0" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Modified" Format="yyyy-MM-dd" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -352,7 +364,7 @@
                 Each supplier expands to show a nested, sortable grid of the products it provides.
             </div>
             <br />
-            <BitDataGrid TItem="SupplierModel" Items="@suppliers" Height="520px" Sortable="true">
+            <BitDataGrid Items="@suppliers" Height="520px" Sortable="true">
                 <DetailTemplate Context="supplier">
                     <BitStack Horizontal Wrap Gap="2rem">
                         <div><strong>Products:</strong> @supplier.Products.Count</div>
@@ -361,20 +373,20 @@
                         <div><strong>Active:</strong> @supplier.Products.Count(p => !p.Discontinued)</div>
                     </BitStack>
                     <br />
-                    <BitDataGrid TItem="Product" Items="supplier.Products" Sortable="true" Bordered="true" Striped="true">
-                        <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                        <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                        <BitDataGridColumn TItem="Product" Field="Category" />
-                        <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                        <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGrid Items="supplier.Products" Sortable="true" Bordered="true" Striped="true">
+                        <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                        <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                        <BitDataGridColumn Property="p => p.Category" />
+                        <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                        <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
                     </BitDataGrid>
                 </DetailTemplate>
-                <ChildContent>
-                    <BitDataGridColumn TItem="SupplierModel" Field="Name" Title="Supplier" Width="260px" />
-                    <BitDataGridColumn TItem="SupplierModel" Field="ProductCount" Title="Products" Align="BitDataGridColumnAlign.Right" />
-                    <BitDataGridColumn TItem="SupplierModel" Field="TotalStock" Title="Total stock" Format="N0" Align="BitDataGridColumnAlign.Right" />
-                    <BitDataGridColumn TItem="SupplierModel" Field="AveragePrice" Title="Avg price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                </ChildContent>
+                <Columns>
+                    <BitDataGridColumn Property="p => p.Name" Title="Supplier" Width="260px" />
+                    <BitDataGridColumn Property="p => p.ProductCount" Title="Products" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.TotalStock" Title="Total stock" Format="N0" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.AveragePrice" Title="Avg price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                </Columns>
             </BitDataGrid>
         </DemoExample>
 
@@ -386,10 +398,10 @@
             <br />
             <BitDataGrid TItem="Product" Items="@reorderProducts" Height="460px"
                          RowReorderable="true" OnRowReorder="OnReorder" Sortable="false">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
             <br />
             <BitText>@reorderLog</BitText>
@@ -406,10 +418,10 @@
                          OnCellClick="OnCellClick"
                          OnCellDoubleClick="OnCellDoubleClick"
                          OnCellContextMenu="OnCellContextMenu">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
             <br />
             <BitText>@cellEventStatus</BitText>
@@ -433,14 +445,14 @@
                 Ctrl+Home/End, PageUp/PageDown to move, and Enter/F2 to edit (Esc to cancel).
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@cellNavProducts" Height="460px"
-                         CellNavigation="true" Sortable="true" Editable="true" OnRowSave="_ => {}">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
+            <BitDataGrid Items="@cellNavProducts" Height="460px"
+                         CellNavigation="true" Sortable="true" Editable="true" OnRowSave="(Product _) => {}">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -450,10 +462,10 @@
                 Here premium products (price over $500) get a taller row.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@variableHeightProducts" Height="480px" Sortable="true"
+            <BitDataGrid Items="@variableHeightProducts" Height="480px" Sortable="true"
                          RowHeightSelector="RowHeight">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="260px">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="260px">
                     <Template Context="p">
                         <div>
                             <div><strong>@p.Name</strong></div>
@@ -464,9 +476,9 @@
                         </div>
                     </Template>
                 </BitDataGridColumn>
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -481,7 +493,7 @@
                 <BitButton OnClick="() => emptyHasData = true">Load data</BitButton>
             </BitStack>
             <br />
-            <BitDataGrid TItem="Product" Items="@EmptyCurrent" Height="320px" Sortable="true">
+            <BitDataGrid Items="@EmptyCurrent" Height="320px" Sortable="true">
                 <EmptyTemplate>
                     <BitStack HorizontalAlign="BitAlignment.Center">
                         <div style="font-size:2rem">📭</div>
@@ -490,12 +502,12 @@
                         <BitButton OnClick="() => emptyHasData = true">Load sample data</BitButton>
                     </BitStack>
                 </EmptyTemplate>
-                <ChildContent>
-                    <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                    <BitDataGridColumn TItem="Product" Field="Name" Width="240px" />
-                    <BitDataGridColumn TItem="Product" Field="Category" />
-                    <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                </ChildContent>
+                <Columns>
+                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Name" Width="240px" />
+                    <BitDataGridColumn Property="p => p.Category" />
+                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                </Columns>
             </BitDataGrid>
         </DemoExample>
 
@@ -509,14 +521,14 @@
                 <BitButton OnClick="() => striped = !striped">Striping: @(striped ? "on" : "off")</BitButton>
             </BitStack>
             <br />
-            <BitDataGrid TItem="Product" Items="@borderStripeProducts" Height="420px"
+            <BitDataGrid Items="@borderStripeProducts" Height="420px"
                          Bordered="bordered" Striped="striped"
                          Sortable="true" Pageable="true" PageSize="8">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -525,16 +537,16 @@
                 Render the grid in a right-to-left layout by setting the <code>Direction</code> parameter to <code>BitDir.Rtl</code>.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@rtlProducts" Height="420px"
+            <BitDataGrid Items="@rtlProducts" Height="420px"
                          Direction="BitDir.Rtl"
                          Sortable="true" Pageable="true" PageSize="8">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
-                <BitDataGridColumn TItem="Product" Field="Name" Title="نام" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" Title="دسته‌بندی">
+                <BitDataGridColumn Property="p => p.Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
+                <BitDataGridColumn Property="p => p.Name" Title="نام" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" Title="دسته‌بندی">
                     <Template Context="product">@CategoryFa(product.Category)</Template>
                 </BitDataGridColumn>
-                <BitDataGridColumn TItem="Product" Field="Price" Title="قیمت" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Title="موجودی" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Price" Title="قیمت" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Title="موجودی" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -547,14 +559,14 @@
                 keeping its fixed default filter.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@operatorProducts" Height="430px"
+            <BitDataGrid Items="@operatorProducts" Height="430px"
                          Filterable="true" FilterOperators="true" ShowToolbar="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" FilterOperators="false" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Supplier" FilterOperators="false" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
             </BitDataGrid>
         </DemoExample>
 
@@ -566,12 +578,12 @@
                 Try clearing the Name, or entering a negative Price or Stock.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@validationProducts" Height="430px"
+            <BitDataGrid Items="@validationProducts" Height="430px"
                          Editable="true" KeyField="p => p.Id" Pageable="true" PageSize="8">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" Validate="@ValidateName" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" Validate="@ValidatePrice" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" Validate="@ValidateStock" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Editable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" Validate="(p, v) => ValidateName(p, v)" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" Validate="(p, v) => ValidatePrice(p, v)" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" Validate="(p, v) => ValidateStock(p, v)" />
             </BitDataGrid>
         </DemoExample>
 
@@ -588,14 +600,14 @@
                 <BitText>@gridStateStatus</BitText>
             </BitStack>
             <br />
-            <BitDataGrid @ref="stateGrid" TItem="Product" Items="@stateProducts" Height="430px"
+            <BitDataGrid @ref="stateGrid" Items="@stateProducts" Height="430px"
                          Sortable="true" Filterable="true" Resizable="true"
                          Pageable="true" PageSize="10" ShowToolbar="true" ShowColumnChooser="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -608,15 +620,15 @@
                 with <code>FrozenEnd</code>.
             </div>
             <br />
-            <BitDataGrid TItem="Product" OnRead="LoadVirtualServerData" Virtualize="true"
+            <BitDataGrid OnRead="LoadVirtualServerData" Virtualize="true"
                          Height="480px" RowHeight="40" Sortable="true" Filterable="true" ShowFooter="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" Frozen="true" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="240px" />
-                <BitDataGridColumn TItem="Product" Field="Category" Width="140px" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" Width="180px" />
-                <BitDataGridColumn TItem="Product" Field="Price" Width="140px" Format="C2" Align="BitDataGridColumnAlign.Right" Aggregate="BitDataGridAggregateType.Sum" AggregateFormat="C0" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Width="120px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Rating" Width="110px" Format="N1" Align="BitDataGridColumnAlign.Right" FrozenEnd="true" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitDataGridColumnAlign.Right" Frozen="true" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="240px" />
+                <BitDataGridColumn Property="p => p.Category" Width="140px" />
+                <BitDataGridColumn Property="p => p.Supplier" Width="180px" />
+                <BitDataGridColumn Property="p => p.Price" Width="140px" Format="C2" Align="BitDataGridColumnAlign.Right" Aggregate="BitDataGridAggregateType.Sum" AggregateFormat="C0" />
+                <BitDataGridColumn Property="p => p.Stock" Width="120px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitDataGridColumnAlign.Right" FrozenEnd="true" />
             </BitDataGrid>
         </DemoExample>
 
@@ -628,13 +640,13 @@
                 example renders a Persian (RTL) grid.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@localizedProducts" Height="420px"
+            <BitDataGrid Items="@localizedProducts" Height="420px"
                          Direction="BitDir.Rtl" Strings="@persianStrings"
                          Filterable="true" Pageable="true" PageSize="8">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Title="نام" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Price" Title="قیمت" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Title="موجودی" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Title="نام" Width="220px" />
+                <BitDataGridColumn Property="p => p.Price" Title="قیمت" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Title="موجودی" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -647,13 +659,13 @@
                 bind <code>dbContext.Products</code> the same way.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@queryableProducts" Height="430px"
+            <BitDataGrid Items="@queryableProducts" Height="430px"
                          Sortable="true" Filterable="true" Pageable="true" PageSize="10">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Supplier" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Supplier" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -673,15 +685,15 @@
                 and tree mode includes collapsed branches.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@excelProducts" Height="430px"
+            <BitDataGrid Items="@excelProducts" Height="430px"
                          Filterable="true" Pageable="true" PageSize="10" Striped="true"
                          ShowToolbar="true" ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Discontinued" Align="BitDataGridColumnAlign.Center" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Discontinued" Align="BitDataGridColumnAlign.Center" />
             </BitDataGrid>
         </DemoExample>
 
@@ -698,7 +710,7 @@
                 stays flat — there every column exports its own value, including the Category a span covers.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@complexExportProducts" Height="460px" Bordered="true"
+            <BitDataGrid Items="@complexExportProducts" Height="460px" Bordered="true"
                          Sortable="true" Filterable="true"
                          ShowToolbar="true" ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true">
                 <DetailTemplate Context="p">
@@ -709,9 +721,9 @@
                         <div><strong>Discontinued:</strong> @(p.Discontinued ? "Yes" : "No")</div>
                     </BitStack>
                 </DetailTemplate>
-                <ChildContent>
-                    <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="80px" Align="BitDataGridColumnAlign.Right" Frozen="true" Filterable="false" />
-                    <BitDataGridColumn TItem="Product" Field="Name" Width="220px" Frozen="true" ColSpan="NameSpan">
+                <Columns>
+                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Align="BitDataGridColumnAlign.Right" Frozen="true" Filterable="false" />
+                    <BitDataGridColumn Property="p => p.Name" Width="220px" Frozen="true" ColSpan="p => NameSpan(p)">
                         <Template Context="p">
                             @if (p.Discontinued)
                             {
@@ -723,15 +735,15 @@
                             }
                         </Template>
                     </BitDataGridColumn>
-                    <BitDataGridColumn TItem="Product" Field="Category" Width="170px" />
-                    <BitDataGridColumn TItem="Product" Field="Price" Width="150px" Format="C2" Align="BitDataGridColumnAlign.Right" />
-                    <BitDataGridColumn TItem="Product" Field="Stock" Width="130px" Align="BitDataGridColumnAlign.Right" />
-                    <BitDataGridColumn TItem="Product" Field="Supplier" Width="200px" />
-                    <BitDataGridColumn TItem="Product" ColumnId="Value" Title="Value" Width="140px" Align="BitDataGridColumnAlign.Right"
+                    <BitDataGridColumn Property="p => p.Category" Width="170px" />
+                    <BitDataGridColumn Property="p => p.Price" Width="150px" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Stock" Width="130px" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Supplier" Width="200px" />
+                    <BitDataGridColumn ColumnId="Value" Title="Value" Width="140px" Align="BitDataGridColumnAlign.Right"
                                        SortBy="@(p => p.Price * p.Stock)">
                         <Template Context="p">@((p.Price * p.Stock).ToString("C0"))</Template>
                     </BitDataGridColumn>
-                </ChildContent>
+                </Columns>
             </BitDataGrid>
         </DemoExample>
 
@@ -743,13 +755,13 @@
                 render an expand toggle. Expanding a folder below simulates a 600&nbsp;ms backend call.
             </div>
             <br />
-            <BitDataGrid TItem="FileNode" Items="@lazyTreeRoots" Height="430px"
+            <BitDataGrid Items="@lazyTreeRoots" Height="430px"
                          ChildrenProvider="LoadChildrenAsync" HasChildrenSelector="IsFolder"
                          KeyField="n => n.Id" Sortable="false">
-                <BitDataGridColumn TItem="FileNode" Field="Name" Width="280px" />
-                <BitDataGridColumn TItem="FileNode" Field="Kind" Width="110px" />
-                <BitDataGridColumn TItem="FileNode" Field="Size" Align="BitDataGridColumnAlign.Right" Format="N0" />
-                <BitDataGridColumn TItem="FileNode" Field="Modified" Format="yyyy-MM-dd" />
+                <BitDataGridColumn Property="p => p.Name" Width="280px" />
+                <BitDataGridColumn Property="p => p.Kind" Width="110px" />
+                <BitDataGridColumn Property="p => p.Size" Align="BitDataGridColumnAlign.Right" Format="N0" />
+                <BitDataGridColumn Property="p => p.Modified" Format="yyyy-MM-dd" />
             </BitDataGrid>
         </DemoExample>
 
@@ -761,12 +773,12 @@
                 header to reorder columns; the drop target is highlighted while dragging.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@touchReorderProducts" Height="430px"
+            <BitDataGrid Items="@touchReorderProducts" Height="430px"
                          RowReorderable="true" Reorderable="true" Sortable="false" KeyField="p => p.Id">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
             </BitDataGrid>
         </DemoExample>
 
@@ -779,14 +791,14 @@
                 datasets in both dimensions. Columns need explicit pixel widths.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@wideProducts" Height="430px"
+            <BitDataGrid Items="@wideProducts" Height="430px"
                          VirtualizeColumns="true" Virtualize="true" RowHeight="36" Sortable="false">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="80px" Frozen="true" Align="BitDataGridColumnAlign.Right" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="200px" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Frozen="true" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn Property="p => p.Name" Width="200px" />
                 @for (var m = 1; m <= 40; m++)
                 {
                     var month = m;
-                    <BitDataGridColumn TItem="Product" ColumnId="@($"m{month}")" Title="@($"M{month:00}")" Width="110px" Align="BitDataGridColumnAlign.Right">
+                    <BitDataGridColumn ColumnId="@($"m{month}")" Title="@($"M{month:00}")" Width="110px" Align="BitDataGridColumnAlign.Right">
                         <Template Context="product">@(((product.Id * 37 + month * 13) % 1000))</Template>
                     </BitDataGridColumn>
                 }
@@ -814,14 +826,14 @@
                 <BitButton OnClick="ApiRefresh" Variant="BitVariant.Outline">Refresh</BitButton>
             </BitStack>
             <br />
-            <BitDataGrid @ref="apiGrid" TItem="Product" Items="@apiProducts" Height="430px"
+            <BitDataGrid @ref="apiGrid" Items="@apiProducts" Height="430px"
                          Sortable="true" Filterable="true" Groupable="true"
                          Pageable="true" PageSize="10">
-                <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" Groupable="false" />
-                <BitDataGridColumn TItem="Product" Field="Name" Width="220px" Groupable="false" />
-                <BitDataGridColumn TItem="Product" Field="Category" />
-                <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" Groupable="false" />
-                <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" Groupable="false" />
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" Groupable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" Groupable="false" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" Groupable="false" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" Groupable="false" />
             </BitDataGrid>
         </DemoExample>
 
