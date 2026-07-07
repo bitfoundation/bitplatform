@@ -18,7 +18,8 @@ public partial class BitTextShimmer : BitComponentBase
     /// <summary>
     /// The content to shimmer, which takes precedence over the Text parameter.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// The character count used to scale the shimmer band width when the content is supplied using ChildContent.
