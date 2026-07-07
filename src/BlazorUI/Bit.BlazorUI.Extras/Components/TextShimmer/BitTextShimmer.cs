@@ -75,7 +75,7 @@ public partial class BitTextShimmer : BitComponentBase
     {
         StyleBuilder.Register(() =>
         {
-            var length = Text is not null ? Text.Length : ContentLength;
+            var length = ChildContent is null && Text is not null ? Text.Length : ContentLength;
             var spread = Math.Max(0, length * Spread);
             return FormattableString.Invariant($"--bit-tsh-spread:{spread}px");
         });
