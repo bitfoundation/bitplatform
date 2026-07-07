@@ -1,6 +1,6 @@
 namespace BitBlazorUI {
     export class Virtualize {
-        private static _instances: { [key: string]: VirtualizeInstance } = {};
+        private static _instances = new Map<string, VirtualizeInstance>();
 
         public static setup(
             id: string,
@@ -9,33 +9,33 @@ namespace BitBlazorUI {
             dotnetObj: DotNetObject) {
 
             const instance = new VirtualizeInstance(rootElement, horizontal, dotnetObj);
-            Virtualize._instances[id] = instance;
+            Virtualize._instances.set(id, instance);
 
             return instance.metrics();
         }
 
         public static syncMeasurements(id: string) {
-            Virtualize._instances[id]?.syncMeasurements();
+            Virtualize._instances.get(id)?.syncMeasurements();
         }
 
         public static updateSticky(id: string) {
-            Virtualize._instances[id]?.updateSticky();
+            Virtualize._instances.get(id)?.updateSticky();
         }
 
         public static scrollToOffset(id: string, offset: number, smooth: boolean) {
-            Virtualize._instances[id]?.scrollToOffset(offset, smooth);
+            Virtualize._instances.get(id)?.scrollToOffset(offset, smooth);
         }
 
         public static adjustScroll(id: string, delta: number) {
-            Virtualize._instances[id]?.adjustScroll(delta);
+            Virtualize._instances.get(id)?.adjustScroll(delta);
         }
 
         public static dispose(id: string) {
-            const instance = Virtualize._instances[id];
+            const instance = Virtualize._instances.get(id);
             if (!instance) return;
 
             instance.dispose();
-            delete Virtualize._instances[id];
+            Virtualize._instances.delete(id);
         }
     }
 
@@ -59,6 +59,10 @@ namespace BitBlazorUI {
         // index -> element, tracks which items are currently observed.
         private _observed = new Map<number, Element>();
         private _pendingMeasures = new Map<number, number>(); // index -> size, batched until the next frame
+        private _reported = new Map<number, number>(); // index -> last size reported to .NET, to skip duplicate reports
+        // The pinned sticky header element, cached because _updateSticky runs synchronously on
+        // every scroll event; re-resolved after renders (which can replace the element).
+        private _stickyEl: HTMLElement | null = null;
         private _viewportObserver: ResizeObserver;
         private _itemObserver: ResizeObserver;
 
@@ -101,8 +105,12 @@ namespace BitBlazorUI {
                     this._observed.set(index, node);
                     this._itemObserver.observe(node);
                 }
-                indices.push(index);
-                sizes.push(this.measureElement(node));
+                const size = this.measureElement(node);
+                if (this._reported.get(index) !== size) {
+                    this._reported.set(index, size);
+                    indices.push(index);
+                    sizes.push(size);
+                }
             });
 
             // Stop observing items that have scrolled out of the rendered window.
@@ -110,6 +118,7 @@ namespace BitBlazorUI {
                 if (!present.has(index)) {
                     this._itemObserver.unobserve(node);
                     this._observed.delete(index);
+                    this._reported.delete(index);
                 }
             }
 
@@ -117,6 +126,7 @@ namespace BitBlazorUI {
                 this._dotnetObj.invokeMethodAsync('ItemsMeasured', indices, sizes);
             }
 
+            this._stickyEl = null; // the render may have replaced the sticky element
             this._updateSticky();
         }
 
@@ -153,6 +163,8 @@ namespace BitBlazorUI {
             this._itemObserver.disconnect();
             this._observed.clear();
             this._pendingMeasures.clear();
+            this._reported.clear();
+            this._stickyEl = null;
         }
 
         private measureElement(el: Element) {
@@ -180,11 +192,17 @@ namespace BitBlazorUI {
         // .NET exposes through the data-bit-vir-sticky-next attribute) approaches the viewport edge.
         public updateSticky() {
             if (this._disposed) return;
+
+            this._stickyEl = null; // the render may have replaced the sticky element
             this._updateSticky();
         }
 
         private _updateSticky() {
-            const el = this._element.querySelector(':scope > .bit-vir-spc > .bit-vir-stk') as HTMLElement | null;
+            let el = this._stickyEl;
+            if (!el || !el.isConnected) {
+                el = this._element.querySelector(':scope > .bit-vir-spc > .bit-vir-stk') as HTMLElement | null;
+                this._stickyEl = el;
+            }
             if (!el) return;
 
             const size = parseFloat(el.getAttribute('data-bit-vir-sticky-size') || '');
@@ -231,10 +249,14 @@ namespace BitBlazorUI {
             const indices: number[] = [];
             const sizes: number[] = [];
             for (const [index, size] of this._pendingMeasures) {
+                if (this._reported.get(index) === size) continue;
+                this._reported.set(index, size);
                 indices.push(index);
                 sizes.push(size);
             }
             this._pendingMeasures.clear();
+
+            if (indices.length === 0) return;
 
             this._dotnetObj.invokeMethodAsync('ItemsMeasured', indices, sizes);
         }

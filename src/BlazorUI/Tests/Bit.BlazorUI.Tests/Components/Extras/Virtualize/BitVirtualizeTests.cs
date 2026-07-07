@@ -130,16 +130,17 @@ public class BitVirtualizeTests : BunitTestContext
     [TestMethod]
     public async Task BitVirtualizeShouldDisposeJsInterop()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.Virtualize.dispose");
-
         var component = RenderComponent<BitVirtualize<int>>(parameters =>
         {
             parameters.Add(p => p.Items, Enumerable.Range(0, 10).ToArray());
             parameters.Add(p => p.ItemTemplate, itemTemplate);
         });
 
+        Context.JSInterop.SetupVoid("BitBlazorUI.Virtualize.dispose", component.Instance.UniqueId).SetVoidResult();
+
         await component.Instance.DisposeAsync();
 
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.Virtualize.dispose");
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Virtualize.dispose");
+        Assert.AreEqual(component.Instance.UniqueId, invocation.Arguments[0]);
     }
 }

@@ -156,11 +156,6 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public bool Reversed { get; set; }
 
     /// <summary>
-    /// The ARIA role to apply to the scroll viewport of the component.
-    /// </summary>
-    [Parameter] public string? Role { get; set; } = "list";
-
-    /// <summary>
     /// The custom template to render the pinned sticky item. Falls back to the item template when not provided.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? StickyTemplate { get; set; }
@@ -352,44 +347,48 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            _dotnetObj = DotNetObjectReference.Create(this);
-            var metrics = await _js.BitVirtualizeSetup(UniqueId, RootElement, Horizontal, _dotnetObj);
-
-            // metrics is null when the js runtime is not available (e.g. prerendering).
-            if (metrics is not null)
+            if (firstRender)
             {
-                _viewportSize = metrics.ViewportSize;
-                _scrollOffset = metrics.ScrollOffset;
-                _initialized = true;
+                _dotnetObj = DotNetObjectReference.Create(this);
+                var metrics = await _js.BitVirtualizeSetup(UniqueId, RootElement, Horizontal, _dotnetObj);
+
+                // metrics is null when the js runtime is not available (e.g. prerendering).
+                if (metrics is not null)
+                {
+                    _viewportSize = metrics.ViewportSize;
+                    _scrollOffset = metrics.ScrollOffset;
+                    _initialized = true;
+                }
+
+                await InitialLoadAsync();
+
+                if (_initialized && _refreshPending)
+                {
+                    _refreshPending = false;
+                    await RefreshDataAsync();
+                }
+
+                await ApplyInitialScrollAsync();
             }
-
-            await InitialLoadAsync();
-
-            if (_initialized && _refreshPending)
+            else
             {
-                _refreshPending = false;
-                await RefreshDataAsync();
-            }
+                if (Dynamic && _initialized && _itemCount > 0)
+                {
+                    // Measure any newly rendered items and reconcile observer subscriptions.
+                    // This also refreshes the sticky header push-out transform.
+                    await _js.BitVirtualizeSyncMeasurements(UniqueId);
+                }
+                else if (IsStickyItem is not null && _initialized && _itemCount > 0)
+                {
+                    await _js.BitVirtualizeUpdateSticky(UniqueId);
+                }
 
-            await ApplyInitialScrollAsync();
+                await ApplyPendingScrollAsync();
+            }
         }
-        else
-        {
-            if (Dynamic && _initialized && _itemCount > 0)
-            {
-                // Measure any newly rendered items and reconcile observer subscriptions.
-                // This also refreshes the sticky header push-out transform.
-                await _js.BitVirtualizeSyncMeasurements(UniqueId);
-            }
-            else if (IsStickyItem is not null && _initialized && _itemCount > 0)
-            {
-                await _js.BitVirtualizeUpdateSticky(UniqueId);
-            }
-
-            await ApplyPendingScrollAsync();
-        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -468,8 +467,16 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         if (Dynamic)
         {
-            _tree ??= new BitVirtualizePrefixSumTree(count, EstimatedItemSize);
-            _tree.Reset(count, EstimatedItemSize);
+            if (_tree is null)
+            {
+                _tree = new BitVirtualizePrefixSumTree(count, EstimatedItemSize);
+            }
+            else
+            {
+                // Keep the already measured sizes of the surviving indices so a count change
+                // (e.g. infinite-scroll append) does not throw away the measurements.
+                _tree.Resize(count, EstimatedItemSize);
+            }
         }
         else
         {
@@ -590,7 +597,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             _stickyActiveIndex = -1;
             if (prevStart != _visibleStart || prevEnd != _visibleEnd)
             {
-                _ = NotifyRangeChangedAsync();
+                NotifyRangeChanged();
             }
             return;
         }
@@ -619,7 +626,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         if (rangeChanged)
         {
-            _ = NotifyRangeChangedAsync();
+            NotifyRangeChanged();
         }
     }
 
@@ -681,22 +688,39 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         if (OnEndReached.HasDelegate && atEnd && (_wasAtEnd is false || _lastEndReachedCount != _itemCount))
         {
             _lastEndReachedCount = _itemCount;
-            _ = OnEndReached.InvokeAsync();
+            _ = ObserveCallbackAsync(OnEndReached.InvokeAsync());
         }
         _wasAtEnd = atEnd;
 
         var atStart = _visibleStart <= ReachedThreshold;
         if (OnStartReached.HasDelegate && atStart && _wasAtStart is false && _initialScrollDone)
         {
-            _ = OnStartReached.InvokeAsync();
+            _ = ObserveCallbackAsync(OnStartReached.InvokeAsync());
         }
         _wasAtStart = atStart;
     }
 
-    private Task NotifyRangeChangedAsync() =>
-        OnVisibleRangeChanged.HasDelegate
-            ? OnVisibleRangeChanged.InvokeAsync((_visibleStart, _visibleEnd))
-            : Task.CompletedTask;
+    private void NotifyRangeChanged()
+    {
+        if (OnVisibleRangeChanged.HasDelegate is false) return;
+
+        _ = ObserveCallbackAsync(OnVisibleRangeChanged.InvokeAsync((_visibleStart, _visibleEnd)));
+    }
+
+    // These callbacks fire from synchronous recompute paths, so their tasks cannot be awaited
+    // in place; observing them surfaces consumer handler failures through the renderer instead
+    // of silently swallowing them.
+    private async Task ObserveCallbackAsync(Task task)
+    {
+        try
+        {
+            await task;
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
+    }
 
     private double ResolveAutoAlignment(double offset, double size)
     {

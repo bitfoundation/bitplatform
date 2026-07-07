@@ -74,6 +74,48 @@ internal sealed class BitVirtualizePrefixSumTree
     }
 
     /// <summary>
+    /// Resizes the tree to <paramref name="count"/> items, preserving the sizes of the surviving
+    /// indices and seeding only the newly added items with <paramref name="defaultValue"/>.
+    /// </summary>
+    public void Resize(int count, double defaultValue)
+    {
+        var oldCount = _count;
+        _count = count;
+
+        if (_values.Length < count)
+        {
+            Array.Resize(ref _values, count);
+            _tree = new double[count + 1];
+        }
+        else
+        {
+            Array.Clear(_tree, 0, count + 1);
+        }
+
+        _total = 0d;
+        for (var i = 0; i < count; i++)
+        {
+            if (i >= oldCount)
+            {
+                _values[i] = defaultValue;
+            }
+
+            _total += _values[i];
+        }
+
+        // Build the Fenwick tree in O(n) rather than n * O(log n).
+        for (var i = 1; i <= count; i++)
+        {
+            _tree[i] += _values[i - 1];
+            var parent = i + (i & -i);
+            if (parent <= count)
+            {
+                _tree[parent] += _tree[i];
+            }
+        }
+    }
+
+    /// <summary>
     /// Gets the currently stored size for <paramref name="index"/>.
     /// </summary>
     public double GetSize(int index) => _values[index];

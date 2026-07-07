@@ -143,13 +143,6 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
-            Name = "Role",
-            Type = "string?",
-            DefaultValue = "list",
-            Description = "The ARIA role to apply to the scroll viewport of the component.",
-         },
-         new()
-         {
             Name = "StickyTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
