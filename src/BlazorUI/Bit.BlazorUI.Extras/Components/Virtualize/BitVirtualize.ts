@@ -93,7 +93,9 @@ namespace BitBlazorUI {
         public syncMeasurements() {
             if (this._disposed) return;
 
-            const nodes = this._element.querySelectorAll('[data-bit-vir-index]');
+            // Scoped to the own spacer so items of a nested BitVirtualize (rendered inside an
+            // item, placeholder, or sticky template) never leak into this instance's measurements.
+            const nodes = this._element.querySelectorAll(':scope > .bit-vir-spc > [data-bit-vir-index]');
             const present = new Set<number>();
             const indices: number[] = [];
             const sizes: number[] = [];

@@ -143,4 +143,76 @@ public class BitVirtualizeTests : BunitTestContext
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Virtualize.dispose");
         Assert.AreEqual(component.Instance.UniqueId, invocation.Arguments[0]);
     }
+
+    [TestMethod]
+    public void BitVirtualizeDynamicShouldSizeSpacerFromEstimatedItemSize()
+    {
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Enumerable.Range(0, 200).ToArray());
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.EstimatedItemSize, 40);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        // In Dynamic mode the scrollable extent starts as EstimatedItemSize * count: 200 * 40 = 8000.
+        var spacer = component.Find(".bit-vir-spc");
+        Assert.AreEqual("height:8000px", spacer.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeDynamicShouldUpdateTotalSizeWhenItemsMeasured()
+    {
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Enumerable.Range(0, 10).ToArray());
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.EstimatedItemSize, 40);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        // Report a measured size 100px larger than the estimate; the prefix-sum tree should
+        // apply the delta to the total: (10 * 40) + 100 = 500.
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([0], [140d]));
+
+        var spacer = component.Find(".bit-vir-spc");
+        Assert.AreEqual("height:500px", spacer.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldRenderStickyHeaderForStickyItems()
+    {
+        Context.JSInterop.Setup<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", _ => true)
+                         .SetResult(new BitVirtualizeMetrics { ViewportSize = 300, ScrollOffset = 0 });
+
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Enumerable.Range(0, 100).ToArray());
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.IsStickyItem, i => i % 10 == 0);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        // Index 0 is sticky and sits at the top of the viewport, so it gets pinned as the active header.
+        var sticky = component.Find(".bit-vir-stk");
+        Assert.IsNotNull(sticky);
+    }
+
+    [TestMethod]
+    public void BitVirtualizeReversedShouldScrollToEndOnInitialRender()
+    {
+        Context.JSInterop.Setup<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", _ => true)
+                         .SetResult(new BitVirtualizeMetrics { ViewportSize = 300, ScrollOffset = 0 });
+
+        RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Enumerable.Range(0, 100).ToArray());
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        // Reversed (chat) mode anchors to the bottom on first render by scrolling to the end.
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Virtualize.scrollToOffset");
+    }
 }

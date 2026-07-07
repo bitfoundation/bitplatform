@@ -31,6 +31,11 @@
             @for (int i = _renderStart; i < _renderEnd; i++)
             {
                 var index = i;
+                var hasItem = TryGetItem(index, out var item);
+
+                // Skip unloaded indices with no placeholder so assistive tech never lands on an empty listitem.
+                if (hasItem is false && PlaceholderTemplate is null) continue;
+
                 <div @key="index"
                      role="listitem"
                      class="bit-vir-itm"
@@ -38,7 +43,7 @@
                      aria-setsize="@_itemCount"
                      aria-posinset="@(index + 1)"
                      data-bit-vir-index="@index">
-                    @if (TryGetItem(index, out var item))
+                    @if (hasItem)
                     {
                         @(template?.Invoke(item))
                     }

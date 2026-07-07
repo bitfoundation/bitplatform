@@ -523,7 +523,7 @@ private void OnBasicRangeChanged((int Start, int End) range)
     </ItemTemplate>
     <PlaceholderTemplate Context=""context"">
         <div class=""provider-item"">
-            <BitShimmer Height=""2.5rem"" Width=""100%"" />
+            <BitShimmer Height=""@($""{context.Size / 2}px"")"" Width=""@($""{100 - (context.Index % 3) * 15}%"")"" />
         </div>
     </PlaceholderTemplate>
 </BitVirtualize>";

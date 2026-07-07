@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The scroll metrics of the BitVirtualize viewport reported by the JavaScript side.
 /// </summary>
-internal sealed class BitVirtualizeMetrics
+public sealed class BitVirtualizeMetrics
 {
     /// <summary>
     /// The current scroll position (px) along the scroll axis.

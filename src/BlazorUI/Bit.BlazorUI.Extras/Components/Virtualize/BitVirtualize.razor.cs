@@ -18,6 +18,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private bool _refreshPending;
 
     private IList<TItem>? _itemList;            // materialized view of Items
+    private ICollection<TItem>? _lastItems;     // the Items reference of the last recompute
     private IReadOnlyList<TItem>? _loadedItems; // current provider window
 
     private BitVirtualizePrefixSumTree? _tree;  // dynamic mode only
@@ -284,7 +285,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [JSInvokable("ItemsMeasured")]
     public async Task _ItemsMeasured(int[] indices, double[] sizes)
     {
-        if (Dynamic is false || _tree is null || indices.Length == 0) return;
+        if (Dynamic is false || _tree is null || indices.Length == 0 || indices.Length != sizes.Length) return;
 
         var anchor = _visibleStart;
         var oldAnchorOffset = _tree.PrefixSum(anchor);
@@ -334,8 +335,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             throw new InvalidOperationException($"BitVirtualize requires either {nameof(Items)} or {nameof(ItemsProvider)}, but not both.");
         }
 
-        if (Items is not null)
+        // Only recompute when the Items reference actually changes; in-place mutations
+        // of the same collection instance are picked up via RefreshDataAsync.
+        if (Items is not null && ReferenceEquals(Items, _lastItems) is false)
         {
+            _lastItems = Items;
             _itemList = Items as IList<TItem> ?? [.. Items];
             SetItemCount(_itemList.Count);
             _loadedItems = null;
@@ -461,7 +465,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private void SetItemCount(int count)
     {
-        if (count == _itemCount && _tree is not null == Dynamic) return;
+        if (count == _itemCount && (_tree is not null) == Dynamic) return;
 
         _itemCount = count;
 
@@ -513,7 +517,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             return;
         }
 
-        _loadCts?.Cancel();
+        if (_loadCts is not null)
+        {
+            _loadCts.Cancel();
+            _loadCts.Dispose();
+        }
         _loadCts = new CancellationTokenSource();
         var token = _loadCts.Token;
 
