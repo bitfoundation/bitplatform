@@ -1,15 +1,15 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Enables <c>:shortcode:</c> emoji replacement.</summary>
-public sealed class BitMarkdownViewerEmojiExtension : IBitMarkdownViewerExtension
+public sealed class BitMarkdownEmojiExtension : IBitMarkdownExtension
 {
     private readonly IReadOnlyDictionary<string, string>? _overrides;
 
     /// <summary>Uses the built-in emoji map.</summary>
-    public BitMarkdownViewerEmojiExtension() { }
+    public BitMarkdownEmojiExtension() { }
 
     /// <summary>Uses the built-in emoji map plus the supplied per-pipeline overrides.</summary>
-    public BitMarkdownViewerEmojiExtension(IReadOnlyDictionary<string, string> overrides)
+    public BitMarkdownEmojiExtension(IReadOnlyDictionary<string, string> overrides)
     {
         ArgumentNullException.ThrowIfNull(overrides);
         // Snapshot the overrides so later mutations of the caller's dictionary can't
@@ -17,8 +17,8 @@ public sealed class BitMarkdownViewerEmojiExtension : IBitMarkdownViewerExtensio
         _overrides = new Dictionary<string, string>(overrides);
     }
 
-    public void Setup(BitMarkdownViewerPipelineBuilder builder)
+    public void Setup(BitMarkdownPipelineBuilder builder)
         => builder.AstProcessors.Add(_overrides is null
-            ? new BitMarkdownViewerEmojiAstProcessor()
-            : new BitMarkdownViewerEmojiAstProcessor(_overrides));
+            ? new BitMarkdownEmojiAstProcessor()
+            : new BitMarkdownEmojiAstProcessor(_overrides));
 }

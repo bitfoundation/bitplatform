@@ -1,15 +1,15 @@
-using static Bit.BlazorUI.BitMarkdownViewerInlineProcessor;
+using static Bit.BlazorUI.BitMarkdownInlineProcessor;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// Resolves delimiter-run tokens (emphasis, strong, strikethrough, ...) into nodes
 /// using a CommonMark-style delimiter stack. Which delimiters exist and what nodes
-/// they produce is supplied by the pipeline's <see cref="BitMarkdownViewerDelimiterProcessor"/>s.
+/// they produce is supplied by the pipeline's <see cref="BitMarkdownDelimiterProcessor"/>s.
 /// </summary>
-internal static class BitMarkdownViewerDelimiterResolver
+internal static class BitMarkdownDelimiterResolver
 {
-    public static void Process(List<Tok> tokens, BitMarkdownViewerPipeline pipeline)
+    public static void Process(List<Tok> tokens, BitMarkdownPipeline pipeline)
     {
         // Cache the "bottom" delimiter (per char + length-mod-3 + can-open) below
         // which no matching opener exists. Closers that can also open must use a
@@ -41,7 +41,7 @@ internal static class BitMarkdownViewerDelimiterResolver
             // keep scanning for an earlier opener rather than giving up on the closer.
             int openerIdx = closerIdx - 1;
             bool found = false;
-            BitMarkdownViewerMarkdownNode? node = null;
+            BitMarkdownNode? node = null;
             int used = 0;
             while (openerIdx >= 0)
             {

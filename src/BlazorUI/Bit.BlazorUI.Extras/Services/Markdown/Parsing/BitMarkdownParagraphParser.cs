@@ -1,11 +1,11 @@
 namespace Bit.BlazorUI;
 
 /// <summary>The fallback parser: gathers a paragraph and detects setext headings.</summary>
-public sealed class BitMarkdownViewerParagraphParser : BitMarkdownViewerBlockParser
+public sealed class BitMarkdownParagraphParser : BitMarkdownBlockParser
 {
     public override int Order => 1000;
 
-    public override bool TryParse(BitMarkdownViewerBlockProcessor state, List<BitMarkdownViewerMarkdownNode> output)
+    public override bool TryParse(BitMarkdownBlockProcessor state, List<BitMarkdownNode> output)
     {
         var lines = state.Lines;
         var buffer = new List<string>();
@@ -14,15 +14,15 @@ public sealed class BitMarkdownViewerParagraphParser : BitMarkdownViewerBlockPar
         while (i < lines.Count)
         {
             string l = lines[i];
-            if (BitMarkdownViewerBlockProcessor.IsBlank(l)) break;
+            if (BitMarkdownBlockProcessor.IsBlank(l)) break;
 
             if (buffer.Count > 0)
             {
-                var setext = BitMarkdownViewerBlockGrammar.Setext().Match(l);
+                var setext = BitMarkdownBlockGrammar.Setext().Match(l);
                 if (setext.Success)
                 {
                     int level = setext.Groups[1].Value[0] == '=' ? 1 : 2;
-                    var heading = new BitMarkdownViewerHeadingNode { Level = level };
+                    var heading = new BitMarkdownHeadingNode { Level = level };
                     heading.Inlines.AddRange(state.ParseInlines(string.Join('\n', buffer).Trim()));
                     output.Add(heading);
                     state.Line = i + 1;
@@ -39,7 +39,7 @@ public sealed class BitMarkdownViewerParagraphParser : BitMarkdownViewerBlockPar
 
         if (buffer.Count > 0)
         {
-            var para = new BitMarkdownViewerParagraphNode();
+            var para = new BitMarkdownParagraphNode();
             para.Inlines.AddRange(state.ParseInlines(string.Join('\n', buffer)));
             output.Add(para);
         }

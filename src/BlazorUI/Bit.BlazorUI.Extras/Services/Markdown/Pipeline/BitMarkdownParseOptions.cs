@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// resource-exhaustion (DoS) attacks. These are threaded through the recursive block
 /// and inline parsers so a single hostile document cannot exhaust the stack or CPU.
 /// </summary>
-internal sealed class BitMarkdownViewerParseOptions
+internal sealed class BitMarkdownParseOptions
 {
     /// <summary>
     /// Maximum block/inline nesting depth. Beyond this, nested content is emitted as
@@ -19,5 +19,5 @@ internal sealed class BitMarkdownViewerParseOptions
     public const int DefaultMaxDepth = 100;
 
     /// <summary>Shared instance carrying the default limits.</summary>
-    public static readonly BitMarkdownViewerParseOptions Default = new();
+    public static readonly BitMarkdownParseOptions Default = new();
 }

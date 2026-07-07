@@ -162,7 +162,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.GitHub);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
         var markup = component.Markup;
@@ -178,7 +178,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, "# Hello World :rocket:");
-            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.Advanced);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
         });
 
         var markup = component.Markup;
@@ -201,7 +201,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.GitHub);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
         Assert.Contains("<del>gone</del>", component.Markup);

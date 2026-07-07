@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 namespace Bit.BlazorUI;
 
 /// <summary>Shared regular expressions for the core block grammar.</summary>
-internal static partial class BitMarkdownViewerBlockGrammar
+internal static partial class BitMarkdownBlockGrammar
 {
     [GeneratedRegex(@"^ {0,3}(?:([-*_])[ \t]*)(?:\1[ \t]*){2,}$")]
     public static partial Regex ThematicBreak();

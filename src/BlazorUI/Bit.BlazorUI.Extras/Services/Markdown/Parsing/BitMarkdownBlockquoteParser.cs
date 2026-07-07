@@ -1,14 +1,14 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Parses block quotes (<c>&gt; ...</c>) with lazy continuation.</summary>
-public sealed class BitMarkdownViewerBlockquoteParser : BitMarkdownViewerBlockParser
+public sealed class BitMarkdownBlockquoteParser : BitMarkdownBlockParser
 {
     public override int Order => 40;
 
-    public override bool CanInterruptParagraph(BitMarkdownViewerBlockProcessor state, int lineIndex)
+    public override bool CanInterruptParagraph(BitMarkdownBlockProcessor state, int lineIndex)
         => IsQuote(state.Lines[lineIndex]);
 
-    public override bool TryParse(BitMarkdownViewerBlockProcessor state, List<BitMarkdownViewerMarkdownNode> output)
+    public override bool TryParse(BitMarkdownBlockProcessor state, List<BitMarkdownNode> output)
     {
         var lines = state.Lines;
         if (!IsQuote(lines[state.Line])) return false;
@@ -26,11 +26,11 @@ public sealed class BitMarkdownViewerBlockquoteParser : BitMarkdownViewerBlockPa
             {
                 string stripped = StripMarker(l);
                 inner.Add(stripped);
-                lastWasParagraph = !BitMarkdownViewerBlockProcessor.IsBlank(stripped)
+                lastWasParagraph = !BitMarkdownBlockProcessor.IsBlank(stripped)
                                    && !StartsBlockLine(state, stripped);
                 i++;
             }
-            else if (lastWasParagraph && !BitMarkdownViewerBlockProcessor.IsBlank(l) && !state.StartsBlock(i))
+            else if (lastWasParagraph && !BitMarkdownBlockProcessor.IsBlank(l) && !state.StartsBlock(i))
             {
                 // A lazy continuation line is itself paragraph text, so the paragraph
                 // remains open for subsequent lazy lines.
@@ -40,7 +40,7 @@ public sealed class BitMarkdownViewerBlockquoteParser : BitMarkdownViewerBlockPa
             else break;
         }
 
-        var quote = new BitMarkdownViewerBlockquoteNode();
+        var quote = new BitMarkdownBlockquoteNode();
         quote.Children.AddRange(state.ParseBlocks(inner));
         output.Add(quote);
         state.Line = i;
@@ -50,9 +50,9 @@ public sealed class BitMarkdownViewerBlockquoteParser : BitMarkdownViewerBlockPa
     // Determines whether a stripped inner line would begin a (non-paragraph) block,
     // used to decide if the blockquote's current content is still an open paragraph
     // that an unmarked line may lazily continue.
-    private static bool StartsBlockLine(BitMarkdownViewerBlockProcessor state, string strippedLine)
+    private static bool StartsBlockLine(BitMarkdownBlockProcessor state, string strippedLine)
     {
-        var probe = new BitMarkdownViewerBlockProcessor(state.Pipeline, [strippedLine]);
+        var probe = new BitMarkdownBlockProcessor(state.Pipeline, [strippedLine]);
         return probe.StartsBlock(0);
     }
 

@@ -2,9 +2,9 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Core emphasis processor for <c>*</c> and <c>_</c>, producing
-/// <see cref="BitMarkdownViewerEmphasisNode"/> / <see cref="BitMarkdownViewerStrongNode"/>.
+/// <see cref="BitMarkdownEmphasisNode"/> / <see cref="BitMarkdownStrongNode"/>.
 /// </summary>
-public sealed class BitMarkdownViewerEmphasisDelimiterProcessor : BitMarkdownViewerDelimiterProcessor
+public sealed class BitMarkdownEmphasisDelimiterProcessor : BitMarkdownDelimiterProcessor
 {
     public override char[] Characters => new[] { '*', '_' };
 
@@ -14,8 +14,8 @@ public sealed class BitMarkdownViewerEmphasisDelimiterProcessor : BitMarkdownVie
     public override (bool canOpen, bool canClose) GetFlanking(
         char c, bool leftFlanking, bool rightFlanking, char prev, char next)
     {
-        bool prevPunct = prev != '\0' && BitMarkdownViewerInlineHelpers.IsPunctuation(prev);
-        bool nextPunct = next != '\0' && BitMarkdownViewerInlineHelpers.IsPunctuation(next);
+        bool prevPunct = prev != '\0' && BitMarkdownInlineHelpers.IsPunctuation(prev);
+        bool nextPunct = next != '\0' && BitMarkdownInlineHelpers.IsPunctuation(next);
 
         if (c == '_')
         {
@@ -26,18 +26,18 @@ public sealed class BitMarkdownViewerEmphasisDelimiterProcessor : BitMarkdownVie
     }
 
     public override int TryCreate(char c, int openLength, int closeLength,
-        List<BitMarkdownViewerMarkdownNode> children, out BitMarkdownViewerMarkdownNode? node)
+        List<BitMarkdownNode> children, out BitMarkdownNode? node)
     {
         int used = openLength >= 2 && closeLength >= 2 ? 2 : 1;
         if (used == 2)
         {
-            var strong = new BitMarkdownViewerStrongNode();
+            var strong = new BitMarkdownStrongNode();
             strong.Children.AddRange(children);
             node = strong;
         }
         else
         {
-            var em = new BitMarkdownViewerEmphasisNode();
+            var em = new BitMarkdownEmphasisNode();
             em.Children.AddRange(children);
             node = em;
         }

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace Bit.BlazorUI;
 
 /// <summary>Parses GitHub-style pipe tables (a header row followed by a delimiter row).</summary>
-public sealed partial class BitMarkdownViewerPipeTableBlockParser : BitMarkdownViewerBlockParser
+public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockParser
 {
     // Tables sit just before the paragraph fallback.
     public override int Order => 65;
@@ -12,7 +12,7 @@ public sealed partial class BitMarkdownViewerPipeTableBlockParser : BitMarkdownV
     [GeneratedRegex(@"^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$")]
     private static partial Regex DelimiterRow();
 
-    public override bool TryParse(BitMarkdownViewerBlockProcessor state, List<BitMarkdownViewerMarkdownNode> output)
+    public override bool TryParse(BitMarkdownBlockProcessor state, List<BitMarkdownNode> output)
     {
         var lines = state.Lines;
         int i = state.Line;
@@ -23,7 +23,7 @@ public sealed partial class BitMarkdownViewerPipeTableBlockParser : BitMarkdownV
         var delims = SplitRow(lines[i + 1]);
         if (header.Count == 0 || delims.Count != header.Count) return false;
 
-        var alignments = new List<BitMarkdownViewerColumnAlignment>();
+        var alignments = new List<BitMarkdownColumnAlignment>();
         foreach (var d in delims)
         {
             string t = d.Trim();
@@ -31,24 +31,24 @@ public sealed partial class BitMarkdownViewerPipeTableBlockParser : BitMarkdownV
             bool l = t.StartsWith(':'), r = t.EndsWith(':');
             alignments.Add((l, r) switch
             {
-                (true, true) => BitMarkdownViewerColumnAlignment.Center,
-                (true, false) => BitMarkdownViewerColumnAlignment.Left,
-                (false, true) => BitMarkdownViewerColumnAlignment.Right,
-                _ => BitMarkdownViewerColumnAlignment.None
+                (true, true) => BitMarkdownColumnAlignment.Center,
+                (true, false) => BitMarkdownColumnAlignment.Left,
+                (false, true) => BitMarkdownColumnAlignment.Right,
+                _ => BitMarkdownColumnAlignment.None
             });
         }
 
-        var table = new BitMarkdownViewerTableNode();
+        var table = new BitMarkdownTableNode();
         table.Alignments.AddRange(alignments);
         foreach (var cell in header)
             table.Header.Add(state.ParseInlines(cell.Trim()));
 
         int j = i + 2;
-        while (j < lines.Count && !BitMarkdownViewerBlockProcessor.IsBlank(lines[j])
+        while (j < lines.Count && !BitMarkdownBlockProcessor.IsBlank(lines[j])
                && lines[j].Contains('|') && !state.StartsBlock(j))
         {
             var cells = SplitRow(lines[j]);
-            var row = new List<List<BitMarkdownViewerMarkdownNode>>();
+            var row = new List<List<BitMarkdownNode>>();
             for (int c = 0; c < header.Count; c++)
                 row.Add(state.ParseInlines(c < cells.Count ? cells[c].Trim() : string.Empty));
             table.Rows.Add(row);

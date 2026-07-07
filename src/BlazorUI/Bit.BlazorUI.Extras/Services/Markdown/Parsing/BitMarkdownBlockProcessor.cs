@@ -2,17 +2,17 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Drives block-level parsing: iterates source lines and lets the pipeline's
-/// <see cref="BitMarkdownViewerBlockParser"/>s (in priority order) consume them. Provides the shared
+/// <see cref="BitMarkdownBlockParser"/>s (in priority order) consume them. Provides the shared
 /// helpers and recursion entry points block parsers rely on.
 /// </summary>
-public sealed class BitMarkdownViewerBlockProcessor
+public sealed class BitMarkdownBlockProcessor
 {
-    internal BitMarkdownViewerBlockProcessor(BitMarkdownViewerPipeline pipeline, IReadOnlyList<string> lines)
-        : this(pipeline, lines, BitMarkdownViewerParseOptions.Default, 0)
+    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines)
+        : this(pipeline, lines, BitMarkdownParseOptions.Default, 0)
     {
     }
 
-    internal BitMarkdownViewerBlockProcessor(BitMarkdownViewerPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownViewerParseOptions options, int depth)
+    internal BitMarkdownBlockProcessor(BitMarkdownPipeline pipeline, IReadOnlyList<string> lines, BitMarkdownParseOptions options, int depth)
     {
         Pipeline = pipeline;
         Lines = lines;
@@ -20,10 +20,10 @@ public sealed class BitMarkdownViewerBlockProcessor
         Depth = depth;
     }
 
-    public BitMarkdownViewerPipeline Pipeline { get; }
+    public BitMarkdownPipeline Pipeline { get; }
 
     /// <summary>The safety limits in effect for this parse.</summary>
-    internal BitMarkdownViewerParseOptions Options { get; }
+    internal BitMarkdownParseOptions Options { get; }
 
     /// <summary>The current nesting depth of this processor within the document.</summary>
     internal int Depth { get; }
@@ -34,9 +34,9 @@ public sealed class BitMarkdownViewerBlockProcessor
     /// <summary>Index of the line currently being considered.</summary>
     public int Line { get; set; }
 
-    internal List<BitMarkdownViewerMarkdownNode> Run()
+    internal List<BitMarkdownNode> Run()
     {
-        var output = new List<BitMarkdownViewerMarkdownNode>();
+        var output = new List<BitMarkdownNode>();
         while (Line < Lines.Count)
         {
             if (IsBlank(Lines[Line])) { Line++; continue; }
@@ -50,16 +50,16 @@ public sealed class BitMarkdownViewerBlockProcessor
                     break;
                 }
             }
-            if (!matched) Line++; // safety net; BitMarkdownViewerParagraphParser is the catch-all
+            if (!matched) Line++; // safety net; BitMarkdownParagraphParser is the catch-all
         }
         return output;
     }
 
     /// <summary>Recursively parses a nested set of lines (list items, block quotes).</summary>
-    public List<BitMarkdownViewerMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines, Options, Depth + 1);
+    public List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines) => Pipeline.ParseBlocks(lines, Options, Depth + 1);
 
     /// <summary>Parses inline content using the pipeline's inline parsers.</summary>
-    public List<BitMarkdownViewerMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
+    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
 
     /// <summary>True if any block parser (other than the paragraph fallback) starts at the line.</summary>
     public bool StartsBlock(int lineIndex)

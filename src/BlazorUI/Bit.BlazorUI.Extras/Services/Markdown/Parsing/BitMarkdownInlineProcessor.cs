@@ -4,21 +4,21 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Drives inline parsing for a single block of text. It scans the text, delegating
-/// to the pipeline's <see cref="BitMarkdownViewerInlineParser"/>s at their trigger characters and
+/// to the pipeline's <see cref="BitMarkdownInlineParser"/>s at their trigger characters and
 /// collecting delimiter runs, then resolves the delimiters into emphasis-like nodes
-/// via the pipeline's <see cref="BitMarkdownViewerDelimiterProcessor"/>s.
+/// via the pipeline's <see cref="BitMarkdownDelimiterProcessor"/>s.
 /// </summary>
-public sealed class BitMarkdownViewerInlineProcessor
+public sealed class BitMarkdownInlineProcessor
 {
     private readonly StringBuilder _literal = new();
     private readonly List<Tok> _tokens = new();
 
-    internal BitMarkdownViewerInlineProcessor(BitMarkdownViewerPipeline pipeline)
-        : this(pipeline, BitMarkdownViewerParseOptions.Default, 0)
+    internal BitMarkdownInlineProcessor(BitMarkdownPipeline pipeline)
+        : this(pipeline, BitMarkdownParseOptions.Default, 0)
     {
     }
 
-    internal BitMarkdownViewerInlineProcessor(BitMarkdownViewerPipeline pipeline, BitMarkdownViewerParseOptions options, int depth)
+    internal BitMarkdownInlineProcessor(BitMarkdownPipeline pipeline, BitMarkdownParseOptions options, int depth)
     {
         Pipeline = pipeline;
         Options = options;
@@ -26,10 +26,10 @@ public sealed class BitMarkdownViewerInlineProcessor
     }
 
     /// <summary>The owning pipeline.</summary>
-    public BitMarkdownViewerPipeline Pipeline { get; }
+    public BitMarkdownPipeline Pipeline { get; }
 
     /// <summary>The safety limits in effect for this parse.</summary>
-    internal BitMarkdownViewerParseOptions Options { get; }
+    internal BitMarkdownParseOptions Options { get; }
 
     /// <summary>The current nesting depth of this processor within the document.</summary>
     internal int Depth { get; }
@@ -41,19 +41,19 @@ public sealed class BitMarkdownViewerInlineProcessor
     public int Pos { get; set; }
 
     /// <summary>Parses inline content from the supplied text.</summary>
-    public List<BitMarkdownViewerMarkdownNode> Parse(string text)
+    public List<BitMarkdownNode> Parse(string text)
     {
         Text = text;
         Pos = 0;
         _literal.Clear();
         _tokens.Clear();
         Scan();
-        BitMarkdownViewerDelimiterResolver.Process(_tokens, Pipeline);
+        BitMarkdownDelimiterResolver.Process(_tokens, Pipeline);
         return ToNodes(_tokens);
     }
 
     /// <summary>Parses inline content in an isolated child processor (e.g. for a link label).</summary>
-    public List<BitMarkdownViewerMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
+    public List<BitMarkdownNode> ParseInlines(string text) => Pipeline.ParseInlines(text, Options, Depth + 1);
 
     // -- API used by inline parsers ----------------------------------------
 
@@ -64,7 +64,7 @@ public sealed class BitMarkdownViewerInlineProcessor
     public void AppendText(string s) => _literal.Append(s);
 
     /// <summary>Flushes pending text and appends a resolved node.</summary>
-    public void AppendNode(BitMarkdownViewerMarkdownNode node)
+    public void AppendNode(BitMarkdownNode node)
     {
         Flush();
         _tokens.Add(new Tok { Kind = TokKind.Node, Node = node });
@@ -103,7 +103,7 @@ public sealed class BitMarkdownViewerInlineProcessor
             // Delimiter runs (emphasis-like) are collected for later resolution.
             if (Pipeline.DelimiterChars.Contains(c))
             {
-                int run = BitMarkdownViewerInlineHelpers.CountRun(Text, Pos, c);
+                int run = BitMarkdownInlineHelpers.CountRun(Text, Pos, c);
                 char prev = Pos > 0 ? Text[Pos - 1] : '\0';
                 char next = Pos + run < n ? Text[Pos + run] : '\0';
                 ComputeFlanking(prev, next, out bool left, out bool right);
@@ -158,8 +158,8 @@ public sealed class BitMarkdownViewerInlineProcessor
     {
         bool nextWhitespace = next == '\0' || char.IsWhiteSpace(next);
         bool prevWhitespace = prev == '\0' || char.IsWhiteSpace(prev);
-        bool nextPunct = next != '\0' && BitMarkdownViewerInlineHelpers.IsPunctuation(next);
-        bool prevPunct = prev != '\0' && BitMarkdownViewerInlineHelpers.IsPunctuation(prev);
+        bool nextPunct = next != '\0' && BitMarkdownInlineHelpers.IsPunctuation(next);
+        bool prevPunct = prev != '\0' && BitMarkdownInlineHelpers.IsPunctuation(prev);
 
         leftFlanking = !nextWhitespace && (!nextPunct || prevWhitespace || prevPunct);
         rightFlanking = !prevWhitespace && (!prevPunct || nextWhitespace || nextPunct);
@@ -173,7 +173,7 @@ public sealed class BitMarkdownViewerInlineProcessor
     {
         public TokKind Kind;
         public string Text = string.Empty;
-        public BitMarkdownViewerMarkdownNode? Node;
+        public BitMarkdownNode? Node;
 
         public char DelimChar;
         public int Count;
@@ -182,21 +182,21 @@ public sealed class BitMarkdownViewerInlineProcessor
         public bool Active = true;
     }
 
-    internal static List<BitMarkdownViewerMarkdownNode> ToNodes(List<Tok> tokens)
+    internal static List<BitMarkdownNode> ToNodes(List<Tok> tokens)
     {
-        var result = new List<BitMarkdownViewerMarkdownNode>();
+        var result = new List<BitMarkdownNode>();
         foreach (var t in tokens)
         {
             switch (t.Kind)
             {
                 case TokKind.Text:
-                    if (t.Text.Length > 0) result.Add(new BitMarkdownViewerTextNode(t.Text));
+                    if (t.Text.Length > 0) result.Add(new BitMarkdownTextNode(t.Text));
                     break;
                 case TokKind.Node:
                     if (t.Node is not null) result.Add(t.Node);
                     break;
                 case TokKind.Delim:
-                    if (t.Count > 0) result.Add(new BitMarkdownViewerTextNode(new string(t.DelimChar, t.Count)));
+                    if (t.Count > 0) result.Add(new BitMarkdownTextNode(new string(t.DelimChar, t.Count)));
                     break;
             }
         }

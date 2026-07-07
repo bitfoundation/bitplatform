@@ -1,7 +1,7 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Handles CommonMark angle-bracket autolinks: <c>&lt;https://...&gt;</c>.</summary>
-public sealed partial class BitMarkdownViewerAutolinkInlineParser : BitMarkdownViewerInlineParser
+public sealed partial class BitMarkdownAutolinkInlineParser : BitMarkdownInlineParser
 {
     public override char[] TriggerChars => new[] { '<' };
 
@@ -13,7 +13,7 @@ public sealed partial class BitMarkdownViewerAutolinkInlineParser : BitMarkdownV
         matchTimeoutMilliseconds: 1000)]
     private static partial System.Text.RegularExpressions.Regex EmailAutolink();
 
-    public override bool TryParse(BitMarkdownViewerInlineProcessor state)
+    public override bool TryParse(BitMarkdownInlineProcessor state)
     {
         string s = state.Text;
         int start = state.Pos;
@@ -54,10 +54,10 @@ public sealed partial class BitMarkdownViewerAutolinkInlineParser : BitMarkdownV
         return false;
     }
 
-    private static void Emit(BitMarkdownViewerInlineProcessor state, string href, string label, int close)
+    private static void Emit(BitMarkdownInlineProcessor state, string href, string label, int close)
     {
-        var link = new BitMarkdownViewerLinkNode { Url = BitMarkdownViewerUrlSanitizer.Sanitize(href, isImage: false) };
-        link.Children.Add(new BitMarkdownViewerTextNode(label));
+        var link = new BitMarkdownLinkNode { Url = BitMarkdownUrlSanitizer.Sanitize(href, isImage: false) };
+        link.Children.Add(new BitMarkdownTextNode(label));
         state.AppendNode(link);
         state.Pos = close + 1;
     }

@@ -4,13 +4,13 @@ namespace Bit.BlazorUI;
 /// The GitHub Flavored Markdown bundle: pipe tables, strikethrough, task lists and
 /// autolink literals.
 /// </summary>
-public sealed class BitMarkdownViewerGitHubFlavoredExtension : IBitMarkdownViewerExtension
+public sealed class BitMarkdownGitHubFlavoredExtension : IBitMarkdownExtension
 {
-    public void Setup(BitMarkdownViewerPipelineBuilder builder)
+    public void Setup(BitMarkdownPipelineBuilder builder)
     {
-        builder.Use(new BitMarkdownViewerPipeTableExtension())
-               .Use(new BitMarkdownViewerStrikethroughExtension())
-               .Use(new BitMarkdownViewerTaskListExtension())
-               .Use(new BitMarkdownViewerAutoLinkExtension());
+        builder.Use(new BitMarkdownPipeTableExtension())
+               .Use(new BitMarkdownStrikethroughExtension())
+               .Use(new BitMarkdownTaskListExtension())
+               .Use(new BitMarkdownAutoLinkExtension());
     }
 }

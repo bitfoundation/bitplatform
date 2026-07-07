@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// By default the component understands only the basic CommonMark core. Richer flavors
 /// (GitHub tables, strikethrough, task lists, autolinks, emoji, ...) are opt-in: supply
 /// a <see cref="Pipeline"/> built with the desired extensions (for example
-/// <see cref="BitMarkdownViewerPipelines.GitHub"/>).
+/// <see cref="BitMarkdownPipelines.GitHub"/>).
 /// </para>
 /// <para>
 /// Parsing produces an AST which is walked with a <see cref="Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder"/>,
@@ -22,9 +22,9 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitMarkdownViewer : BitComponentBase
 {
-    private BitMarkdownViewerDocumentNode _document = new();
+    private BitMarkdownDocumentNode _document = new();
     private string? _parsedSource;
-    private BitMarkdownViewerPipeline? _parsedWith;
+    private BitMarkdownPipeline? _parsedWith;
     private BitMarkdownViewerImageRendering _parsedImageRendering;
     private int _parsedMaxDepth;
     private int _parsedMaxLength;
@@ -42,10 +42,10 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public string? Markdown { get; set; }
 
     /// <summary>
-    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownViewerPipeline.Basic"/>,
+    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipeline.Basic"/>,
     /// i.e. the basic CommonMark core with no extensions.
     /// </summary>
-    [Parameter] public BitMarkdownViewerPipeline? Pipeline { get; set; }
+    [Parameter] public BitMarkdownPipeline? Pipeline { get; set; }
 
     /// <summary>
     /// Controls whether remote images are allowed to load, guarding against silent
@@ -67,7 +67,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// otherwise overflow the stack. Defaults to 100; values &lt;= 0 fall back to the
     /// default. Legitimate documents never approach this limit.
     /// </summary>
-    [Parameter] public int MaxNestingDepth { get; set; } = BitMarkdownViewerParseOptions.DefaultMaxDepth;
+    [Parameter] public int MaxNestingDepth { get; set; } = BitMarkdownParseOptions.DefaultMaxDepth;
 
     /// <summary>
     /// When greater than zero, the Markdown source is truncated to this many characters
@@ -90,12 +90,12 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     protected override string RootElementClass => "bit-mdv";
 
-    private BitMarkdownViewerPipeline EffectivePipeline => Pipeline ?? BitMarkdownViewerPipeline.Basic;
+    private BitMarkdownPipeline EffectivePipeline => Pipeline ?? BitMarkdownPipeline.Basic;
 
     protected override void OnParametersSet()
     {
         var pipeline = EffectivePipeline;
-        var maxDepth = MaxNestingDepth > 0 ? MaxNestingDepth : BitMarkdownViewerParseOptions.DefaultMaxDepth;
+        var maxDepth = MaxNestingDepth > 0 ? MaxNestingDepth : BitMarkdownParseOptions.DefaultMaxDepth;
 
         // Re-parse only when an input that affects the output changes.
         if (_parsedSource != Markdown ||
@@ -123,17 +123,17 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// configured depth limit, degrading gracefully to plain text if a parser regex hits
     /// its anti-ReDoS timeout.
     /// </summary>
-    private BitMarkdownViewerDocumentNode ParseSafely(BitMarkdownViewerPipeline pipeline, int maxDepth)
+    private BitMarkdownDocumentNode ParseSafely(BitMarkdownPipeline pipeline, int maxDepth)
     {
         var source = Markdown;
 
         if (StripBidiControlCharacters && !string.IsNullOrEmpty(source))
-            source = BitMarkdownViewerTextSanitizer.StripBidiControlCharacters(source);
+            source = BitMarkdownTextSanitizer.StripBidiControlCharacters(source);
 
         if (MaxLength > 0 && source is not null && source.Length > MaxLength)
             source = source[..MaxLength];
 
-        var options = new BitMarkdownViewerParseOptions { MaxDepth = maxDepth };
+        var options = new BitMarkdownParseOptions { MaxDepth = maxDepth };
 
         try
         {
@@ -143,9 +143,9 @@ public partial class BitMarkdownViewer : BitComponentBase
         {
             // A parser regex hit its safety timeout on hostile input. Fall back to a
             // plain-text rendering of the source instead of surfacing the exception.
-            var fallback = new BitMarkdownViewerDocumentNode();
-            var paragraph = new BitMarkdownViewerParagraphNode();
-            paragraph.Inlines.Add(new BitMarkdownViewerTextNode(source ?? string.Empty));
+            var fallback = new BitMarkdownDocumentNode();
+            var paragraph = new BitMarkdownParagraphNode();
+            paragraph.Inlines.Add(new BitMarkdownTextNode(source ?? string.Empty));
             fallback.Children.Add(paragraph);
             return fallback;
         }
@@ -177,7 +177,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// <see cref="ImageRendering"/> policy disallows, so the browser never issues the
     /// underlying request. The alt text is preserved for accessibility.
     /// </summary>
-    private void ApplyImageRendering(IList<BitMarkdownViewerMarkdownNode> nodes)
+    private void ApplyImageRendering(IList<BitMarkdownNode> nodes)
     {
         if (ImageRendering == BitMarkdownViewerImageRendering.All)
             return;
@@ -186,10 +186,10 @@ public partial class BitMarkdownViewer : BitComponentBase
         {
             var node = nodes[i];
 
-            if (node is BitMarkdownViewerImageNode img && ShouldBlockImage(img.Url))
+            if (node is BitMarkdownImageNode img && ShouldBlockImage(img.Url))
             {
                 // Url is init-only, so replace the node with a source-less copy.
-                nodes[i] = new BitMarkdownViewerImageNode
+                nodes[i] = new BitMarkdownImageNode
                 {
                     Url = string.Empty,
                     Title = img.Title,

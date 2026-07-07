@@ -1,8 +1,8 @@
 namespace Bit.BlazorUI;
 
 /// <summary>A block quote containing nested blocks.</summary>
-public sealed class BitMarkdownViewerBlockquoteNode : BitMarkdownViewerMarkdownNode
+public sealed class BitMarkdownBlockquoteNode : BitMarkdownNode
 {
-    public List<BitMarkdownViewerMarkdownNode> Children { get; } = new();
-    public override IList<BitMarkdownViewerMarkdownNode> ChildNodes => Children;
+    public List<BitMarkdownNode> Children { get; } = new();
+    public override IList<BitMarkdownNode> ChildNodes => Children;
 }

@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement"
@@ -7,5 +7,92 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <textarea @ref="_textAreaRef" class="bit-mde-txa" />
+
+    @if (ShowToolbar)
+    {
+        <div role="toolbar" aria-label="Markdown formatting"
+             style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
+            @foreach (var item in ActiveToolbar)
+            {
+                if (item.Type is BitMarkdownEditorToolbarItemType.Separator)
+                {
+                    <span class="bit-mde-sep" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <button type="button"
+                            style="@Styles?.ToolbarButton"
+                            class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                            title="@GetToolbarItemTitle(item)"
+                            aria-label="@item.Title"
+                            data-cmd="@item.Name"
+                            disabled="@IsToolbarItemDisabled(item)"
+                            @onclick="() => OnToolbarItemClick(item)">
+                        @((MarkupString)item.Icon)
+                    </button>
+                }
+            }
+        </div>
+    }
+
+    <div class="bit-mde-bdy bit-mde-@Mode.ToString().ToLowerInvariant()">
+        <div class="bit-mde-pne bit-mde-epn">
+            <textarea @ref="_textAreaRef"
+                      style="@Styles?.TextArea"
+                      class="bit-mde-txa @Classes?.TextArea"
+                      placeholder="@Placeholder"
+                      spellcheck="@(SpellCheck ? "true" : "false")"
+                      readonly="@(ReadOnly || IsEnabled is false)"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      autocorrect="off"></textarea>
+        </div>
+
+        <div style="@Styles?.Preview" class="bit-mde-pne bit-mde-ppn @Classes?.Preview">
+            @if (PreviewTemplate is not null)
+            {
+                @PreviewTemplate(_previewValue)
+            }
+            else if (string.IsNullOrWhiteSpace(_previewValue))
+            {
+                <div class="bit-mde-emp">Nothing to preview yet.</div>
+            }
+            else
+            {
+                <BitMarkdownViewer Markdown="@_previewValue" Pipeline="@(PreviewPipeline ?? BitMarkdownPipelines.GitHub)" />
+            }
+        </div>
+    </div>
+
+    @if (ShowStatusBar)
+    {
+        <div style="@Styles?.StatusBar" class="bit-mde-sbr @Classes?.StatusBar">
+            <span class="bit-mde-mod">@Mode</span>
+            <span class="bit-mde-spc"></span>
+            <span>@WordCount words</span>
+            <span>@_value.Length chars</span>
+        </div>
+    }
+
+    @if (_showHelp)
+    {
+        <div class="bit-mde-hlp" @onclick="() => _showHelp = false">
+            <div class="bit-mde-hcr" @onclick:stopPropagation="true">
+                <header>
+                    <strong>Keyboard shortcuts</strong>
+                    <button type="button" class="bit-mde-hcl" @onclick="() => _showHelp = false" aria-label="Close">&times;</button>
+                </header>
+                <dl>
+                    <div><dt>Bold</dt><dd>Ctrl/Cmd + B</dd></div>
+                    <div><dt>Italic</dt><dd>Ctrl/Cmd + I</dd></div>
+                    <div><dt>Strikethrough</dt><dd>Ctrl/Cmd + Shift + S</dd></div>
+                    <div><dt>Link</dt><dd>Ctrl/Cmd + K</dd></div>
+                    <div><dt>Undo</dt><dd>Ctrl/Cmd + Z</dd></div>
+                    <div><dt>Redo</dt><dd>Ctrl/Cmd + Y (or Shift + Z)</dd></div>
+                    <div><dt>Indent / Outdent</dt><dd>Tab / Shift + Tab</dd></div>
+                    <div><dt>Continue list</dt><dd>Enter</dd></div>
+                </dl>
+            </div>
+        </div>
+    }
 </div>

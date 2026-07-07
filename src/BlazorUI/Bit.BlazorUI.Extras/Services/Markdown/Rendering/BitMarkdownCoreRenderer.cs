@@ -3,23 +3,23 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Bit.BlazorUI;
 
 /// <summary>Renders all basic CommonMark node types.</summary>
-public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRenderer
+public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
 {
-    public override bool Accept(BitMarkdownViewerMarkdownNode node) => node is
-        BitMarkdownViewerHeadingNode or BitMarkdownViewerParagraphNode or BitMarkdownViewerCodeBlockNode or BitMarkdownViewerBlockquoteNode or BitMarkdownViewerListNode
-        or BitMarkdownViewerThematicBreakNode or BitMarkdownViewerTextNode or BitMarkdownViewerEmphasisNode or BitMarkdownViewerStrongNode or BitMarkdownViewerCodeSpanNode
-        or BitMarkdownViewerLinkNode or BitMarkdownViewerImageNode or BitMarkdownViewerLineBreakNode;
+    public override bool Accept(BitMarkdownNode node) => node is
+        BitMarkdownHeadingNode or BitMarkdownParagraphNode or BitMarkdownCodeBlockNode or BitMarkdownBlockquoteNode or BitMarkdownListNode
+        or BitMarkdownThematicBreakNode or BitMarkdownTextNode or BitMarkdownEmphasisNode or BitMarkdownStrongNode or BitMarkdownCodeSpanNode
+        or BitMarkdownLinkNode or BitMarkdownImageNode or BitMarkdownLineBreakNode;
 
     // Render-tree sequence numbers must be compile-time literals tied to a fixed
     // call site (never values produced at runtime), so Blazor's diff can match nodes
     // across renders. Each call site below uses a stable literal; recursion and loops
     // intentionally reuse the same literals, which Blazor handles. The ranges are
     // partitioned per renderer (core uses 0-99) to keep sibling sequences distinct.
-    public override void Write(BitMarkdownViewerMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownViewerMarkdownNode node)
+    public override void Write(BitMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownNode node)
     {
         switch (node)
         {
-            case BitMarkdownViewerHeadingNode h:
+            case BitMarkdownHeadingNode h:
                 b.OpenElement(0, "h" + h.Level);
                 if (!string.IsNullOrEmpty(h.Id))
                     b.AddAttribute(1, "id", h.Id);
@@ -27,13 +27,13 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerParagraphNode p:
+            case BitMarkdownParagraphNode p:
                 b.OpenElement(2, "p");
                 r.WriteNodes(b, p.Inlines);
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerCodeBlockNode code:
+            case BitMarkdownCodeBlockNode code:
                 b.OpenElement(3, "pre");
                 b.OpenElement(4, "code");
                 if (!string.IsNullOrWhiteSpace(code.Info))
@@ -44,44 +44,44 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerBlockquoteNode bq:
+            case BitMarkdownBlockquoteNode bq:
                 b.OpenElement(7, "blockquote");
                 r.WriteNodes(b, bq.Children);
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerListNode list:
+            case BitMarkdownListNode list:
                 WriteList(r, b, list);
                 break;
 
-            case BitMarkdownViewerThematicBreakNode:
+            case BitMarkdownThematicBreakNode:
                 b.OpenElement(8, "hr");
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerTextNode text:
+            case BitMarkdownTextNode text:
                 b.AddContent(9, text.Text);
                 break;
 
-            case BitMarkdownViewerEmphasisNode em:
+            case BitMarkdownEmphasisNode em:
                 b.OpenElement(10, "em");
                 r.WriteNodes(b, em.Children);
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerStrongNode strong:
+            case BitMarkdownStrongNode strong:
                 b.OpenElement(11, "strong");
                 r.WriteNodes(b, strong.Children);
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerCodeSpanNode cs:
+            case BitMarkdownCodeSpanNode cs:
                 b.OpenElement(12, "code");
                 b.AddContent(13, cs.Content);
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerLinkNode link:
+            case BitMarkdownLinkNode link:
                 b.OpenElement(14, "a");
                 if (!string.IsNullOrEmpty(link.Url))
                 {
@@ -98,7 +98,7 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerImageNode img:
+            case BitMarkdownImageNode img:
                 b.OpenElement(19, "img");
                 if (!string.IsNullOrEmpty(img.Url))
                     b.AddAttribute(20, "src", img.Url);
@@ -110,7 +110,7 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
                 b.CloseElement();
                 break;
 
-            case BitMarkdownViewerLineBreakNode lb:
+            case BitMarkdownLineBreakNode lb:
                 if (lb.Hard)
                 {
                     b.OpenElement(23, "br");
@@ -124,7 +124,7 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
         }
     }
 
-    private static void WriteList(BitMarkdownViewerMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownViewerListNode list)
+    private static void WriteList(BitMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownListNode list)
     {
         b.OpenElement(25, list.Ordered ? "ol" : "ul");
         if (list.Ordered && list.Start != 1)
@@ -140,7 +140,7 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
             {
                 foreach (var child in item.Children)
                 {
-                    if (child is BitMarkdownViewerParagraphNode para)
+                    if (child is BitMarkdownParagraphNode para)
                         r.WriteNodes(b, para.Inlines);
                     else
                         r.WriteNode(b, child);

@@ -6,14 +6,14 @@ namespace Bit.BlazorUI;
 /// Assigns a URL-friendly <c>id</c> (GitHub-style slug) to every heading, ensuring
 /// uniqueness within the document so headings can be deep-linked.
 /// </summary>
-public sealed class BitMarkdownViewerAutoIdentifierAstProcessor : BitMarkdownViewerAstProcessor
+public sealed class BitMarkdownAutoIdentifierAstProcessor : BitMarkdownAstProcessor
 {
-    public override void Process(BitMarkdownViewerDocumentNode document, BitMarkdownViewerPipeline pipeline)
+    public override void Process(BitMarkdownDocumentNode document, BitMarkdownPipeline pipeline)
     {
         var used = new Dictionary<string, int>();
-        foreach (var heading in BitMarkdownViewerAstHelper.Descendants(document).OfType<BitMarkdownViewerHeadingNode>())
+        foreach (var heading in BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownHeadingNode>())
         {
-            string baseSlug = Slugify(BitMarkdownViewerInlineHelpers.PlainText(heading.Inlines));
+            string baseSlug = Slugify(BitMarkdownInlineHelpers.PlainText(heading.Inlines));
             if (baseSlug.Length == 0) baseSlug = "section";
 
             string slug = baseSlug;

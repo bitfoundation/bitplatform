@@ -1,10 +1,10 @@
 namespace Bit.BlazorUI;
 
 /// <summary>A single list item containing nested blocks.</summary>
-public sealed class BitMarkdownViewerListItemNode : BitMarkdownViewerMarkdownNode
+public sealed class BitMarkdownListItemNode : BitMarkdownNode
 {
-    public List<BitMarkdownViewerMarkdownNode> Children { get; } = new();
-    public override IList<BitMarkdownViewerMarkdownNode> ChildNodes => Children;
+    public List<BitMarkdownNode> Children { get; } = new();
+    public override IList<BitMarkdownNode> ChildNodes => Children;
 
     /// <summary>
     /// The raw (pre-inline) first content of the item, used to reliably detect

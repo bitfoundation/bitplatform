@@ -1,8 +1,8 @@
 namespace Bit.BlazorUI;
 
 /// <summary>A paragraph of inline content.</summary>
-public sealed class BitMarkdownViewerParagraphNode : BitMarkdownViewerMarkdownNode
+public sealed class BitMarkdownParagraphNode : BitMarkdownNode
 {
-    public List<BitMarkdownViewerMarkdownNode> Inlines { get; } = new();
-    public override IList<BitMarkdownViewerMarkdownNode> ChildNodes => Inlines;
+    public List<BitMarkdownNode> Inlines { get; } = new();
+    public override IList<BitMarkdownNode> ChildNodes => Inlines;
 }

@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 /// Resolves runs of a delimiter character (e.g. <c>*</c>, <c>_</c>, <c>~</c>) into
 /// wrapping inline nodes using the standard delimiter-stack algorithm.
 /// </summary>
-public abstract class BitMarkdownViewerDelimiterProcessor
+public abstract class BitMarkdownDelimiterProcessor
 {
     /// <summary>Delimiter characters handled by this processor.</summary>
     public abstract char[] Characters { get; }
@@ -30,5 +30,5 @@ public abstract class BitMarkdownViewerDelimiterProcessor
     /// (0 means the pair does not match for these lengths).
     /// </summary>
     public abstract int TryCreate(
-        char c, int openLength, int closeLength, List<BitMarkdownViewerMarkdownNode> children, out BitMarkdownViewerMarkdownNode? node);
+        char c, int openLength, int closeLength, List<BitMarkdownNode> children, out BitMarkdownNode? node);
 }

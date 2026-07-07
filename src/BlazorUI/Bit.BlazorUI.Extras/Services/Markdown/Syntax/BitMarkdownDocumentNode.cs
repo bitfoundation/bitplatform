@@ -1,8 +1,8 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Root of a parsed document.</summary>
-public sealed class BitMarkdownViewerDocumentNode : BitMarkdownViewerMarkdownNode
+public sealed class BitMarkdownDocumentNode : BitMarkdownNode
 {
-    public List<BitMarkdownViewerMarkdownNode> Children { get; } = new();
-    public override IList<BitMarkdownViewerMarkdownNode> ChildNodes => Children;
+    public List<BitMarkdownNode> Children { get; } = new();
+    public override IList<BitMarkdownNode> ChildNodes => Children;
 }

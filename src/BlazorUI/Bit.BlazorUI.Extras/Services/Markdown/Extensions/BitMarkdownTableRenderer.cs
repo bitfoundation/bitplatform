@@ -2,15 +2,15 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI;
 
-/// <summary>Renders <see cref="BitMarkdownViewerTableNode"/> as an HTML table with column alignment.</summary>
-public sealed class BitMarkdownViewerTableRenderer : BitMarkdownViewerNodeRenderer
+/// <summary>Renders <see cref="BitMarkdownTableNode"/> as an HTML table with column alignment.</summary>
+public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
 {
-    public override bool Accept(BitMarkdownViewerMarkdownNode node) => node is BitMarkdownViewerTableNode;
+    public override bool Accept(BitMarkdownNode node) => node is BitMarkdownTableNode;
 
-    public override void Write(BitMarkdownViewerMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownViewerMarkdownNode node)
+    public override void Write(BitMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownNode node)
     {
-        // Fixed literal sequence numbers (see BitMarkdownViewerCoreRenderer for the rationale).
-        var table = (BitMarkdownViewerTableNode)node;
+        // Fixed literal sequence numbers (see BitMarkdownCoreRenderer for the rationale).
+        var table = (BitMarkdownTableNode)node;
         b.OpenElement(0, "table");
 
         b.OpenElement(1, "thead");
@@ -44,14 +44,14 @@ public sealed class BitMarkdownViewerTableRenderer : BitMarkdownViewerNodeRender
         b.CloseElement();
     }
 
-    private static void AddAlignment(RenderTreeBuilder b, BitMarkdownViewerTableNode table, int col)
+    private static void AddAlignment(RenderTreeBuilder b, BitMarkdownTableNode table, int col)
     {
         if (col >= table.Alignments.Count) return;
         string? align = table.Alignments[col] switch
         {
-            BitMarkdownViewerColumnAlignment.Left => "left",
-            BitMarkdownViewerColumnAlignment.Center => "center",
-            BitMarkdownViewerColumnAlignment.Right => "right",
+            BitMarkdownColumnAlignment.Left => "left",
+            BitMarkdownColumnAlignment.Center => "center",
+            BitMarkdownColumnAlignment.Right => "right",
             _ => null
         };
         if (align is not null)

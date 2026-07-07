@@ -1,20 +1,20 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Handles inline code spans delimited by runs of backticks.</summary>
-public sealed class BitMarkdownViewerCodeSpanInlineParser : BitMarkdownViewerInlineParser
+public sealed class BitMarkdownCodeSpanInlineParser : BitMarkdownInlineParser
 {
     public override char[] TriggerChars => new[] { '`' };
 
-    public override bool TryParse(BitMarkdownViewerInlineProcessor state)
+    public override bool TryParse(BitMarkdownInlineProcessor state)
     {
         string s = state.Text;
         int start = state.Pos;
-        int run = BitMarkdownViewerInlineHelpers.CountRun(s, start, '`');
+        int run = BitMarkdownInlineHelpers.CountRun(s, start, '`');
         int close = FindClosing(s, start + run, run);
         if (close < 0) return false;
 
         string content = s.Substring(start + run, close - (start + run));
-        state.AppendNode(new BitMarkdownViewerCodeSpanNode { Content = Normalize(content) });
+        state.AppendNode(new BitMarkdownCodeSpanNode { Content = Normalize(content) });
         state.Pos = close + run;
         return true;
     }
@@ -26,7 +26,7 @@ public sealed class BitMarkdownViewerCodeSpanInlineParser : BitMarkdownViewerInl
         {
             if (s[i] == '`')
             {
-                int run = BitMarkdownViewerInlineHelpers.CountRun(s, i, '`');
+                int run = BitMarkdownInlineHelpers.CountRun(s, i, '`');
                 if (run == runLen) return i;
                 i += run;
             }

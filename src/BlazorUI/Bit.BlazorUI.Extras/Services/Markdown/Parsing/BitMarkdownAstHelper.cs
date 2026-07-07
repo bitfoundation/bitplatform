@@ -1,20 +1,20 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Helpers for traversing and rewriting the AST, used by AST processors.</summary>
-public static class BitMarkdownViewerAstHelper
+public static class BitMarkdownAstHelper
 {
     /// <summary>
     /// Invokes <paramref name="action"/> for every child collection in the tree
     /// (depth-first). The action may mutate the collection in place (e.g. to split a
     /// text node into several nodes).
     /// </summary>
-    public static void VisitChildLists(BitMarkdownViewerMarkdownNode node, Action<IList<BitMarkdownViewerMarkdownNode>> action)
+    public static void VisitChildLists(BitMarkdownNode node, Action<IList<BitMarkdownNode>> action)
     {
         // Iterative depth-first traversal (over child lists) to avoid stack overflow
         // on deeply nested input. A list stack is used instead of a node stack so that
         // each list and its descendants are fully visited before the next sibling list,
         // preserving depth-first order even when a node exposes multiple child lists.
-        var stack = new Stack<IList<BitMarkdownViewerMarkdownNode>>();
+        var stack = new Stack<IList<BitMarkdownNode>>();
         PushListsReversed(node, stack);
         while (stack.Count > 0)
         {
@@ -29,18 +29,18 @@ public static class BitMarkdownViewerAstHelper
         }
     }
 
-    private static void PushListsReversed(BitMarkdownViewerMarkdownNode node, Stack<IList<BitMarkdownViewerMarkdownNode>> stack)
+    private static void PushListsReversed(BitMarkdownNode node, Stack<IList<BitMarkdownNode>> stack)
     {
-        var lists = node.ChildLists as IList<IList<BitMarkdownViewerMarkdownNode>> ?? node.ChildLists.ToList();
+        var lists = node.ChildLists as IList<IList<BitMarkdownNode>> ?? node.ChildLists.ToList();
         for (int i = lists.Count - 1; i >= 0; i--)
             stack.Push(lists[i]);
     }
 
     /// <summary>Enumerates every node in the tree (excluding the root).</summary>
-    public static IEnumerable<BitMarkdownViewerMarkdownNode> Descendants(BitMarkdownViewerMarkdownNode node)
+    public static IEnumerable<BitMarkdownNode> Descendants(BitMarkdownNode node)
     {
         // Iterative pre-order traversal to avoid stack overflow on deeply nested input.
-        var stack = new Stack<BitMarkdownViewerMarkdownNode>();
+        var stack = new Stack<BitMarkdownNode>();
         PushChildrenReversed(node, stack);
         while (stack.Count > 0)
         {
@@ -50,11 +50,11 @@ public static class BitMarkdownViewerAstHelper
         }
     }
 
-    private static void PushChildrenReversed(BitMarkdownViewerMarkdownNode node, Stack<BitMarkdownViewerMarkdownNode> stack)
+    private static void PushChildrenReversed(BitMarkdownNode node, Stack<BitMarkdownNode> stack)
     {
         // Flatten children across all child lists (in order), then push them
         // reversed so they pop in document (pre-order) order.
-        var children = new List<BitMarkdownViewerMarkdownNode>();
+        var children = new List<BitMarkdownNode>();
         foreach (var list in node.ChildLists)
             children.AddRange(list);
         for (int i = children.Count - 1; i >= 0; i--)

@@ -1,8 +1,8 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Strikethrough text (GFM), rendered as <c>&lt;del&gt;</c>.</summary>
-public sealed class BitMarkdownViewerStrikethroughNode : BitMarkdownViewerMarkdownNode
+public sealed class BitMarkdownStrikethroughNode : BitMarkdownNode
 {
-    public List<BitMarkdownViewerMarkdownNode> Children { get; } = new();
-    public override IList<BitMarkdownViewerMarkdownNode> ChildNodes => Children;
+    public List<BitMarkdownNode> Children { get; } = new();
+    public override IList<BitMarkdownNode> ChildNodes => Children;
 }

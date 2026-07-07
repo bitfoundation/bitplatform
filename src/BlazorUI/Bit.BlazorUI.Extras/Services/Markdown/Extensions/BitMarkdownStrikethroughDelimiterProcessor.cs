@@ -1,7 +1,7 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Delimiter processor for <c>~~</c> strikethrough runs.</summary>
-public sealed class BitMarkdownViewerStrikethroughDelimiterProcessor : BitMarkdownViewerDelimiterProcessor
+public sealed class BitMarkdownStrikethroughDelimiterProcessor : BitMarkdownDelimiterProcessor
 {
     public override char[] Characters => new[] { '~' };
     public override int MinRunLength => 2;
@@ -11,7 +11,7 @@ public sealed class BitMarkdownViewerStrikethroughDelimiterProcessor : BitMarkdo
         => (leftFlanking, rightFlanking);
 
     public override int TryCreate(char c, int openLength, int closeLength,
-        List<BitMarkdownViewerMarkdownNode> children, out BitMarkdownViewerMarkdownNode? node)
+        List<BitMarkdownNode> children, out BitMarkdownNode? node)
     {
         // GFM strikethrough requires runs of two on both sides.
         if (openLength < 2 || closeLength < 2)
@@ -19,7 +19,7 @@ public sealed class BitMarkdownViewerStrikethroughDelimiterProcessor : BitMarkdo
             node = null;
             return 0;
         }
-        var strike = new BitMarkdownViewerStrikethroughNode();
+        var strike = new BitMarkdownStrikethroughNode();
         strike.Children.AddRange(children);
         node = strike;
         return 2;

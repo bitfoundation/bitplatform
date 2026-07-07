@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// Turns bare URLs, <c>www.</c> hosts and email addresses appearing in plain text
 /// into links (GitHub autolink literals).
 /// </summary>
-public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownViewerAstProcessor
+public sealed partial class BitMarkdownAutoLinkAstProcessor : BitMarkdownAstProcessor
 {
     [GeneratedRegex(
         @"\b(?:" +
@@ -18,19 +18,19 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
         matchTimeoutMilliseconds: 1000)]
     private static partial Regex LinkPattern();
 
-    public override void Process(BitMarkdownViewerDocumentNode document, BitMarkdownViewerPipeline pipeline)
+    public override void Process(BitMarkdownDocumentNode document, BitMarkdownPipeline pipeline)
     {
         foreach (var list in document.ChildLists)
             Walk(list);
     }
 
-    private static void Walk(IList<BitMarkdownViewerMarkdownNode> list)
+    private static void Walk(IList<BitMarkdownNode> list)
     {
         for (int i = 0; i < list.Count; i++)
         {
             switch (list[i])
             {
-                case BitMarkdownViewerTextNode t:
+                case BitMarkdownTextNode t:
                     var replacement = Split(t.Text);
                     if (replacement is not null)
                     {
@@ -42,8 +42,8 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
                     break;
 
                 // Never autolink inside existing links/images.
-                case BitMarkdownViewerLinkNode:
-                case BitMarkdownViewerImageNode:
+                case BitMarkdownLinkNode:
+                case BitMarkdownImageNode:
                     break;
 
                 default:
@@ -54,7 +54,7 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
         }
     }
 
-    private static List<BitMarkdownViewerMarkdownNode>? Split(string text)
+    private static List<BitMarkdownNode>? Split(string text)
     {
         MatchCollection matches;
         try
@@ -69,12 +69,12 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
         }
         if (matches.Count == 0) return null;
 
-        var result = new List<BitMarkdownViewerMarkdownNode>();
+        var result = new List<BitMarkdownNode>();
         int last = 0;
         foreach (Match m in matches)
         {
             if (m.Index > last)
-                result.Add(new BitMarkdownViewerTextNode(text[last..m.Index]));
+                result.Add(new BitMarkdownTextNode(text[last..m.Index]));
 
             string matched = m.Value;
             // The url/www patterns greedily grab trailing punctuation; trim the part
@@ -89,15 +89,15 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
 
             // Route through the shared sanitizer so autolinks get the same URL safety
             // treatment as explicit links/images.
-            var link = new BitMarkdownViewerLinkNode { Url = BitMarkdownViewerUrlSanitizer.Sanitize(href, isImage: false) };
-            link.Children.Add(new BitMarkdownViewerTextNode(matched));
+            var link = new BitMarkdownLinkNode { Url = BitMarkdownUrlSanitizer.Sanitize(href, isImage: false) };
+            link.Children.Add(new BitMarkdownTextNode(matched));
             result.Add(link);
             // Advance only past the characters kept in the link so any trimmed
             // trailing punctuation is re-emitted as plain text.
             last = m.Index + matched.Length;
         }
         if (last < text.Length)
-            result.Add(new BitMarkdownViewerTextNode(text[last..]));
+            result.Add(new BitMarkdownTextNode(text[last..]));
 
         return result;
     }

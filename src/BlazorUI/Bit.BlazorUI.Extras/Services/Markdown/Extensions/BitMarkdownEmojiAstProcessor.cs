@@ -5,9 +5,9 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Replaces <c>:shortcode:</c> emoji in text with the corresponding Unicode glyph.
 /// Unknown shortcodes are left untouched. The built-in map can be extended per instance
-/// by passing overrides to the constructor (see <see cref="BitMarkdownViewerEmojiAstProcessor(IReadOnlyDictionary{string, string})"/>).
+/// by passing overrides to the constructor (see <see cref="BitMarkdownEmojiAstProcessor(IReadOnlyDictionary{string, string})"/>).
 /// </summary>
-public sealed partial class BitMarkdownViewerEmojiAstProcessor : BitMarkdownViewerAstProcessor
+public sealed partial class BitMarkdownEmojiAstProcessor : BitMarkdownAstProcessor
 {
     [GeneratedRegex(@":([a-z0-9_+\-]+):", RegexOptions.IgnoreCase)]
     private static partial Regex Shortcode();
@@ -34,7 +34,7 @@ public sealed partial class BitMarkdownViewerEmojiAstProcessor : BitMarkdownView
     private readonly IReadOnlyDictionary<string, string> _emoji;
 
     /// <summary>Creates a processor that uses the built-in emoji map.</summary>
-    public BitMarkdownViewerEmojiAstProcessor() => _emoji = DefaultEmoji;
+    public BitMarkdownEmojiAstProcessor() => _emoji = DefaultEmoji;
 
     /// <summary>
     /// Creates a processor whose lookup is the built-in map plus the supplied
@@ -42,7 +42,7 @@ public sealed partial class BitMarkdownViewerEmojiAstProcessor : BitMarkdownView
     /// dictionary, so later changes to the source collection do not affect this instance
     /// or leak across pipelines/circuits.
     /// </summary>
-    public BitMarkdownViewerEmojiAstProcessor(IReadOnlyDictionary<string, string> overrides)
+    public BitMarkdownEmojiAstProcessor(IReadOnlyDictionary<string, string> overrides)
     {
         var map = new Dictionary<string, string>(DefaultEmoji, StringComparer.OrdinalIgnoreCase);
         if (overrides is not null)
@@ -52,9 +52,9 @@ public sealed partial class BitMarkdownViewerEmojiAstProcessor : BitMarkdownView
         _emoji = map;
     }
 
-    public override void Process(BitMarkdownViewerDocumentNode document, BitMarkdownViewerPipeline pipeline)
+    public override void Process(BitMarkdownDocumentNode document, BitMarkdownPipeline pipeline)
     {
-        foreach (var text in BitMarkdownViewerAstHelper.Descendants(document).OfType<BitMarkdownViewerTextNode>())
+        foreach (var text in BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownTextNode>())
         {
             if (text.Text.IndexOf(':') < 0) continue;
             text.Text = Shortcode().Replace(text.Text, m =>

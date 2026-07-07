@@ -3,11 +3,11 @@ using System.Text;
 namespace Bit.BlazorUI;
 
 /// <summary>Handles inline links <c>[text](url "title")</c> and images <c>![alt](url)</c>.</summary>
-public sealed class BitMarkdownViewerLinkInlineParser : BitMarkdownViewerInlineParser
+public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
 {
     public override char[] TriggerChars => new[] { '[', '!' };
 
-    public override bool TryParse(BitMarkdownViewerInlineProcessor state)
+    public override bool TryParse(BitMarkdownInlineProcessor state)
     {
         string s = state.Text;
         int i = state.Pos;
@@ -29,18 +29,18 @@ public sealed class BitMarkdownViewerLinkInlineParser : BitMarkdownViewerInlineP
 
         if (isImage)
         {
-            state.AppendNode(new BitMarkdownViewerImageNode
+            state.AppendNode(new BitMarkdownImageNode
             {
-                Url = BitMarkdownViewerUrlSanitizer.Sanitize(url, isImage: true),
+                Url = BitMarkdownUrlSanitizer.Sanitize(url, isImage: true),
                 Title = title,
-                Alt = BitMarkdownViewerInlineHelpers.PlainText(state.ParseInlines(label))
+                Alt = BitMarkdownInlineHelpers.PlainText(state.ParseInlines(label))
             });
         }
         else
         {
-            var link = new BitMarkdownViewerLinkNode
+            var link = new BitMarkdownLinkNode
             {
-                Url = BitMarkdownViewerUrlSanitizer.Sanitize(url, isImage: false),
+                Url = BitMarkdownUrlSanitizer.Sanitize(url, isImage: false),
                 Title = title
             };
             // A link may not contain another link; unwrap any nested links so the
@@ -54,12 +54,12 @@ public sealed class BitMarkdownViewerLinkInlineParser : BitMarkdownViewerInlineP
 
     // Recursively replaces any nested link node with its (also unwrapped) children,
     // ensuring a link's label can never contain another link.
-    private static List<BitMarkdownViewerMarkdownNode> RemoveNestedLinks(IEnumerable<BitMarkdownViewerMarkdownNode> nodes)
+    private static List<BitMarkdownNode> RemoveNestedLinks(IEnumerable<BitMarkdownNode> nodes)
     {
-        var result = new List<BitMarkdownViewerMarkdownNode>();
+        var result = new List<BitMarkdownNode>();
         foreach (var node in nodes)
         {
-            if (node is BitMarkdownViewerLinkNode nested)
+            if (node is BitMarkdownLinkNode nested)
             {
                 result.AddRange(RemoveNestedLinks(nested.Children));
                 continue;

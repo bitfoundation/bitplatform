@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// Sanitizes link and image URLs so untrusted Markdown cannot inject active
 /// content (e.g. <c>javascript:</c> URIs) into the rendered output.
 /// </summary>
-internal static partial class BitMarkdownViewerUrlSanitizer
+internal static partial class BitMarkdownUrlSanitizer
 {
     // All ASCII C0 control characters (0x00-0x1F) plus DEL (0x7F).
     [GeneratedRegex("[\u0000-\u001F\u007F]")]

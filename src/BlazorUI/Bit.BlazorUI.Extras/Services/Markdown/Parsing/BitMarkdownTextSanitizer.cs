@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Pre-processing helpers applied to the raw Markdown source before parsing.
 /// </summary>
-internal static class BitMarkdownViewerTextSanitizer
+internal static class BitMarkdownTextSanitizer
 {
     /// <summary>
     /// Removes Unicode bidirectional formatting characters that can be abused to make

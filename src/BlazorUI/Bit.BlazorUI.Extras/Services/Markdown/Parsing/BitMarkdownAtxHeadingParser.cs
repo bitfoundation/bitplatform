@@ -1,19 +1,19 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Parses ATX headings (<c># ... ######</c>).</summary>
-public sealed class BitMarkdownViewerAtxHeadingParser : BitMarkdownViewerBlockParser
+public sealed class BitMarkdownAtxHeadingParser : BitMarkdownBlockParser
 {
     public override int Order => 20;
 
-    public override bool CanInterruptParagraph(BitMarkdownViewerBlockProcessor state, int lineIndex)
-        => BitMarkdownViewerBlockGrammar.AtxHeading().IsMatch(state.Lines[lineIndex]);
+    public override bool CanInterruptParagraph(BitMarkdownBlockProcessor state, int lineIndex)
+        => BitMarkdownBlockGrammar.AtxHeading().IsMatch(state.Lines[lineIndex]);
 
-    public override bool TryParse(BitMarkdownViewerBlockProcessor state, List<BitMarkdownViewerMarkdownNode> output)
+    public override bool TryParse(BitMarkdownBlockProcessor state, List<BitMarkdownNode> output)
     {
-        var m = BitMarkdownViewerBlockGrammar.AtxHeading().Match(state.Lines[state.Line]);
+        var m = BitMarkdownBlockGrammar.AtxHeading().Match(state.Lines[state.Line]);
         if (!m.Success) return false;
 
-        var heading = new BitMarkdownViewerHeadingNode { Level = m.Groups[1].Value.Length };
+        var heading = new BitMarkdownHeadingNode { Level = m.Groups[1].Value.Length };
         string content = m.Groups[2].Success ? StripClosingHashes(m.Groups[2].Value).Trim() : string.Empty;
         if (content.Length > 0)
             heading.Inlines.AddRange(state.ParseInlines(content));

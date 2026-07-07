@@ -1,13 +1,13 @@
 namespace Bit.BlazorUI;
 
 /// <summary>A GitHub-flavored pipe table.</summary>
-public sealed class BitMarkdownViewerTableNode : BitMarkdownViewerMarkdownNode
+public sealed class BitMarkdownTableNode : BitMarkdownNode
 {
-    public List<List<BitMarkdownViewerMarkdownNode>> Header { get; } = new();
-    public List<BitMarkdownViewerColumnAlignment> Alignments { get; } = new();
-    public List<List<List<BitMarkdownViewerMarkdownNode>>> Rows { get; } = new();
+    public List<List<BitMarkdownNode>> Header { get; } = new();
+    public List<BitMarkdownColumnAlignment> Alignments { get; } = new();
+    public List<List<List<BitMarkdownNode>>> Rows { get; } = new();
 
-    public override IEnumerable<IList<BitMarkdownViewerMarkdownNode>> ChildLists
+    public override IEnumerable<IList<BitMarkdownNode>> ChildLists
     {
         get
         {

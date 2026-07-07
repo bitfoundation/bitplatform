@@ -1,49 +1,46 @@
 namespace BitBlazorUI {
 
     export class MarkdownEditor {
-        private static _editors: { [key: string]: Editor } = {};
+        private static _editors: { [key: string]: MarkdownEditorCore } = {};
 
-        public static init(id: string, textArea: HTMLTextAreaElement, dotnetObj?: DotNetObject, defaultValue?: string) {
-            const editor = new Editor(textArea, dotnetObj);
+        public static init(id: string, textArea: HTMLTextAreaElement, root: HTMLElement, dotnetObj: DotNetObject, defaultValue?: string | null) {
+            MarkdownEditor.dispose(id);
+
+            const editor = new MarkdownEditorCore(textArea, root, dotnetObj);
 
             if (defaultValue) {
-                editor.value = defaultValue;
+                textArea.value = defaultValue;
+                editor.resetBaseline();
             }
-
-            editor.resetHistory();
 
             MarkdownEditor._editors[id] = editor;
         }
 
         public static getValue(id: string) {
             const editor = MarkdownEditor._editors[id];
-            if (!editor) return;
+            if (!editor) return '';
 
-            return editor.value;
+            return editor.getValue();
         }
 
-        public static setValue(id: string, value: string) {
-            const editor = MarkdownEditor._editors[id];
-            if (!editor) return;
-
-            if (editor.value === value) return;
-
-            editor.value = value;
-            editor.resetHistory();
+        public static setValue(id: string, value?: string | null) {
+            MarkdownEditor._editors[id]?.setValue(value ?? '');
         }
 
-        public static run(id: string, cmd: string) {
-            const editor = MarkdownEditor._editors[id];
-            if (!editor) return;
-
-            editor.command(cmd);
+        public static run(id: string, command: string) {
+            return MarkdownEditor._editors[id]?.runCommand(command);
         }
 
-        public static add(id: string, value: string, type: ContentType) {
-            const editor = MarkdownEditor._editors[id];
-            if (!editor) return;
+        public static undo(id: string) {
+            MarkdownEditor._editors[id]?.undo();
+        }
 
-            editor.addContent(value, type);
+        public static redo(id: string) {
+            MarkdownEditor._editors[id]?.redo();
+        }
+
+        public static focus(id: string) {
+            MarkdownEditor._editors[id]?.focus();
         }
 
         public static dispose(id: string) {
@@ -55,503 +52,306 @@ namespace BitBlazorUI {
         }
     }
 
-    class Editor {
-        private _opens: string[] = [];
-        private _pairs: { [key: string]: string } = {
-            '(': ')',
-            '{': '}',
-            '[': ']',
-            '<': '>',
-            '"': '"',
-            "'": "'",
-        };
+    type MdeSnapshot = {
+        text: string;
+        selStart: number;
+        selEnd: number;
+    };
 
-        private _history: string[] = [];
-        private _historyIndex: number = -1;
-        private _historyDebounce: ReturnType<typeof setTimeout> | null = null;
-        private readonly _maxHistorySize: number = 100;
-        private _isUndoRedo: boolean = false;
+    type MdeEditResult = {
+        handled: boolean;
+        text: string;
+        selectionStart: number;
+        selectionEnd: number;
+    };
+
+    // The textarea is uncontrolled (this script owns its value to preserve the caret).
+    // Toolbar commands and external updates assign `textarea.value` directly, which
+    // wipes the browser's native undo stack and would otherwise make Ctrl+Z behave
+    // erratically. Owning the history here keeps undo/redo consistent across typing,
+    // toolbar commands and keyboard shortcuts. All markdown transformations happen in C#.
+    class MarkdownEditorCore {
+        private static readonly LIST_LINE = /^(\s*)([-*+] (\[[ xX]\] )?|\d+[.)] )/;
+        private static readonly QUOTE_LINE = /^\s*> /;
+
+        // Maximum number of states kept per direction.
+        private static readonly HISTORY_LIMIT = 200;
+        // Consecutive keystrokes within this window are coalesced into one undo step.
+        private static readonly TYPING_PAUSE_MS = 100;
+
+        private _undo: MdeSnapshot[] = [];
+        private _redo: MdeSnapshot[] = [];
+        private _baseline: MdeSnapshot;
+        private _typingActive = false;
+        private _typingTimer: ReturnType<typeof setTimeout> | null = null;
+        private _canUndo = false;
+        private _canRedo = false;
+        private _lastSelection: { start: number, end: number };
 
         private textArea: HTMLTextAreaElement;
+        private root: HTMLElement | undefined | null;
         private dotnetObj: DotNetObject | undefined | null;
 
-        private clickHandler: (e: MouseEvent) => void;
-        private changeHandler: (e: Event) => void;
-        private dblClickHandler: (e: MouseEvent) => void;
-        private keydownHandler: (e: KeyboardEvent) => Promise<void>;
-
-        constructor(textArea: HTMLTextAreaElement, dotnetObj?: DotNetObject) {
+        constructor(textArea: HTMLTextAreaElement, root: HTMLElement | undefined | null, dotnetObj: DotNetObject) {
             this.textArea = textArea;
+            this.root = root;
             this.dotnetObj = dotnetObj;
 
-            this.clickHandler = this.click.bind(this);
-            this.changeHandler = this.change.bind(this);
-            this.dblClickHandler = this.dblClick.bind(this);
-            this.keydownHandler = this.keydown.bind(this);
+            this._baseline = this.snapshot();
+            this._lastSelection = { start: textArea.selectionStart || 0, end: textArea.selectionEnd || 0 };
 
-            this.textArea.addEventListener('click', this.clickHandler);
-            this.textArea.addEventListener('change', this.changeHandler);
-            this.textArea.addEventListener('input', this.changeHandler);
-            this.textArea.addEventListener('dblclick', this.dblClickHandler);
-            this.textArea.addEventListener('keydown', this.keydownHandler);
+            textArea.addEventListener('keydown', this.keyDownHandler);
+            textArea.addEventListener('input', this.inputHandler);
+            textArea.addEventListener('mouseup', this.saveSelectionHandler);
+            textArea.addEventListener('keyup', this.saveSelectionHandler);
+            // Capture the selection whenever it changes while the textarea is focused,
+            // so commands always know the intended range.
+            document.addEventListener('selectionchange', this.selectionChangeHandler);
+            // Stop toolbar buttons from stealing focus from the textarea. A native
+            // mousedown preventDefault reliably keeps the caret/selection in place.
+            root?.addEventListener('mousedown', this.toolbarMouseDownHandler);
         }
 
-        resetHistory() {
-            if (this._historyDebounce !== null) {
-                clearTimeout(this._historyDebounce);
-                this._historyDebounce = null;
-            }
-            this._history = [this.value];
-            this._historyIndex = 0;
-        }
-
-        private pushHistory() {
-            const current = this.value;
-            if (this._history.length > 0 && this._history[this._historyIndex] === current) return;
-            this._history = this._history.slice(0, this._historyIndex + 1);
-            this._history.push(current);
-            if (this._history.length > this._maxHistorySize) {
-                this._history = this._history.slice(this._history.length - this._maxHistorySize);
-            }
-            this._historyIndex = this._history.length - 1;
-        }
-
-        private undo() {
-            this.pushHistory();
-            if (this._historyIndex > 0) {
-                this._historyIndex--;
-                if (this._historyDebounce !== null) {
-                    clearTimeout(this._historyDebounce);
-                    this._historyDebounce = null;
-                }
-                this._isUndoRedo = true;
-                this.value = this._history[this._historyIndex]!;
-            }
-        }
-
-        private redo() {
-            if (this._historyIndex < this._history.length - 1) {
-                this._historyIndex++;
-                if (this._historyDebounce !== null) {
-                    clearTimeout(this._historyDebounce);
-                    this._historyDebounce = null;
-                }
-                this._isUndoRedo = true;
-                this.value = this._history[this._historyIndex]!;
-            }
-        }
-
-        private scheduleHistorySave() {
-            if (this._isUndoRedo) {
-                this._isUndoRedo = false;
-                return;
-            }
-
-            // Truncate the redo branch immediately so stale future states are unreachable at once
-            this._history = this._history.slice(0, this._historyIndex + 1);
-
-            if (this._historyDebounce !== null) {
-                clearTimeout(this._historyDebounce);
-            }
-            this._historyDebounce = setTimeout(() => {
-                const current = this.value;
-                if (this._history[this._historyIndex] !== current) {
-                    this._history.push(current);
-                    if (this._history.length > this._maxHistorySize) {
-                        this._history = this._history.slice(this._history.length - this._maxHistorySize);
-                    }
-                    this._historyIndex = this._history.length - 1;
-                }
-                this._historyDebounce = null;
-            }, 200);
-        }
-
-
-        addContent(value: string, type: ContentType = 'block') {
-            this.pushHistory();
-            this.add({ type, value });
-        }
-
-        get value() {
+        public getValue() {
             return this.textArea.value;
         }
 
-        set value(value) {
-            if (this.textArea.value === value) return;
-
-            this.textArea.value = value;
-            setTimeout(() => this.change({} as Event), 0);
-        }
-
-        get block() {
-            const codeBlocks = this.value.split('```');
-            let total = 0;
-            for (const [i, b] of codeBlocks.entries()) {
-                total += b.length + 3;
-                if (this.start < total) {
-                    return i;
-                }
-            }
-            return 0;
-        }
-
-        get end() {
-            return this.textArea.selectionEnd;
-        }
-
-        get start() {
-            return this.textArea.selectionStart;
-        }
-
-        set(start: number, end: number) {
-            this.textArea.setSelectionRange(start, end);
-        }
-
-        getLine() {
-            const total = this.value.split('\n');
-            let count = 0;
-            for (let i = 0; i < total.length; i++) {
-                const length = total.at(i)?.length ?? 0;
-                count++;
-                count += length;
-                if (count > this.end) {
-                    return {
-                        total,
-                        num: i,
-                        col: this.end - (count - length - 1),
-                    };
-                }
-            }
-            return { total, num: 0, col: 0 };
-        }
-
-        insert(content: Content, start: number, end: number) {
-            if (content.type === 'inline') {
-                this.value = `${this.value.slice(0, end)}${content.value}${this.value.slice(end)}`;
-            } else if (content.type === 'wrap') {
-                this.value = insert(this.value, content.value, start);
-                this.value = insert(
-                    this.value,
-                    this._pairs[content.value] ? this._pairs[content.value] : content.value,
-                    end + content.value.length,
-                );
-                if (this._pairs[content.value]) {
-                    this._opens.push(content.value);
-                }
-            } else if (content.type === 'block') {
-                const { total, num } = this.getLine();
-                const first = content.value.at(0);
-                if (first && total[num]?.startsWith(first)) {
-                    total[num] = content.value.trim() + total[num];
-                } else {
-                    total[num] = content.value + total[num];
-                }
-                this.value = total.join('\n');
-            } else if (content.type === 'init') { }
-        }
-
-        setCaret(text: string, start: number, end: number) {
-            let startPos = 0;
-            let endPos = 0;
-            if (/[a-z]/i.test(text)) {
-                for (let i = end; i < this.value.length; i++) {
-                    if (this.value[i]?.match(/[a-z]/i)) {
-                        if (!startPos) {
-                            startPos = i;
-                        } else {
-                            endPos = i + 1;
-                        }
-                    } else if (startPos) {
-                        break;
-                    }
-                }
-            } else {
-                startPos = start + text.length;
-                endPos = end + text.length;
+        // Pushes an externally-changed value into the (uncontrolled) textarea without
+        // notifying .NET back, so we don't loop the change into Blazor again.
+        public setValue(value: string) {
+            if (this.textArea.value !== value) {
+                this.textArea.value = value;
             }
 
-            this.set(startPos, endPos);
+            // External assignment becomes the new baseline; in-flight typing groups
+            // are closed so the next keystroke starts a fresh undo step.
+            this.endTypingGroup();
+            this._baseline = this.snapshot();
+        }
+
+        public resetBaseline() {
+            this._baseline = this.snapshot();
+        }
+
+        public focus() {
             this.textArea.focus();
         }
 
-        add(content: Content, start?: number, end?: number) {
-            const s = start || this.start;
-            const e = end || this.end;
+        // Reads selection + value, asks C# to transform it, then writes the result back.
+        public async runCommand(command: string) {
+            if (!this.dotnetObj || this.textArea.readOnly) return;
 
-            this.insert(content, s, e);
-            this.setCaret(content.value, s, e);
+            // When a toolbar button takes focus, the textarea's live selection can be
+            // lost, so fall back to the last selection captured while it was focused.
+            const focused = document.activeElement === this.textArea;
+            const start = focused ? this.textArea.selectionStart : this._lastSelection.start;
+            const end = focused ? this.textArea.selectionEnd : this._lastSelection.end;
+            const value = this.textArea.value;
+
+            const result = await this.dotnetObj.invokeMethodAsync<MdeEditResult>('ApplyCommand', command, start, end, value);
+
+            if (!result || !result.handled) return;
+
+            // Record the state before the command so it can be undone as one step.
+            this.endTypingGroup();
+            this.pushUndo({ text: value, selStart: start, selEnd: end });
+            this._redo = [];
+
+            this.applyResult(result);
         }
 
-        getRepeat(str: string | undefined) {
-            if (!str) return;
+        public undo() {
+            if (this.textArea.readOnly || !this._undo.length) return;
 
-            if (startsWithDash(str)) {
-                return '- ';
-            }
+            this.endTypingGroup();
+            this._redo.push(this._baseline);
+            if (this._redo.length > MarkdownEditorCore.HISTORY_LIMIT) this._redo.shift();
 
-            const n = startsWithNumber(str);
-            if (n) return `${n}. `;
+            this.applySnapshot(this._undo.pop()!);
+            this.notifyHistory();
         }
 
-        correct(cur: number, isDec = false) {
-            const { total } = this.getLine();
-            for (let i = cur + 1; i < total.length; i++) {
-                const l = total[i];
-                if (!l) continue;
+        public redo() {
+            if (this.textArea.readOnly || !this._redo.length) return;
 
-                const number = startsWithNumber(l);
-                if (!number) break;
+            this.endTypingGroup();
+            this.pushUndo(this._baseline);
 
-                let newNumber: number;
-                if (isDec) {
-                    if (number > 1) {
-                        newNumber = number - 1;
-                    } else {
-                        break;
-                    }
-                } else {
-                    newNumber = number + 1;
-                }
-                total[i] = l.slice(String(number).length);
-                total[i] = String(newNumber) + total[i];
-            }
-            this.value = total.join('\n');
+            this.applySnapshot(this._redo.pop()!);
+            this.notifyHistory();
         }
 
-        dispose() {
-            this.textArea.removeEventListener('click', this.clickHandler);
-            this.textArea.removeEventListener('change', this.changeHandler);
-            this.textArea.removeEventListener('input', this.changeHandler);
-            this.textArea.removeEventListener('dblclick', this.dblClickHandler);
-            this.textArea.removeEventListener('keydown', this.keydownHandler);
-
-            if (this._historyDebounce !== null) {
-                clearTimeout(this._historyDebounce);
-                this._historyDebounce = null;
+        public dispose() {
+            if (this._typingTimer) {
+                clearTimeout(this._typingTimer);
+                this._typingTimer = null;
             }
+
+            this.textArea.removeEventListener('keydown', this.keyDownHandler);
+            this.textArea.removeEventListener('input', this.inputHandler);
+            this.textArea.removeEventListener('mouseup', this.saveSelectionHandler);
+            this.textArea.removeEventListener('keyup', this.saveSelectionHandler);
+            document.removeEventListener('selectionchange', this.selectionChangeHandler);
+            this.root?.removeEventListener('mousedown', this.toolbarMouseDownHandler);
 
             this.dotnetObj = undefined;
+            this.root = undefined;
         }
 
         // ==========================================================
 
-        async keydown(e: KeyboardEvent) {
-            const reseters = ['Delete', 'ArrowUp', 'ArrowDown'];
-            const next = this.value[this.end] ?? '';
-            if (reseters.includes(e.key)) {
-                this._opens = [];
-            } else if (e.key === 'Backspace') {
-                this.backspace(e, next);
-            } else if (e.key === 'Tab') {
-                if (this.block % 2 !== 0) {
+        private keyDownHandler = (e: KeyboardEvent) => {
+            if (e.isComposing) return;
+
+            const mod = e.ctrlKey || e.metaKey;
+
+            if (mod && !e.altKey) {
+                const key = e.key.toLowerCase();
+                // Undo / redo. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl/Cmd+Y.
+                if (key === 'z' && !e.shiftKey) { e.preventDefault(); this.undo(); return; }
+                if ((key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey)) { e.preventDefault(); this.redo(); return; }
+                if (e.shiftKey && key === 's') { e.preventDefault(); this.runCommand('Strikethrough'); return; }
+                if (e.shiftKey) return;
+                switch (key) {
+                    case 'b': e.preventDefault(); this.runCommand('Bold'); return;
+                    case 'i': e.preventDefault(); this.runCommand('Italic'); return;
+                    case 'k': e.preventDefault(); this.runCommand('Link'); return;
+                }
+                return;
+            }
+
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                this.runCommand(e.shiftKey ? 'Outdent' : 'Indent');
+                return;
+            }
+
+            // Only hijack Enter when continuing a list/quote, so normal typing keeps
+            // its regular flow.
+            if (e.key === 'Enter' && !e.shiftKey &&
+                this.textArea.selectionStart === this.textArea.selectionEnd) {
+                const line = this.currentLine();
+                if (MarkdownEditorCore.LIST_LINE.test(line) || MarkdownEditorCore.QUOTE_LINE.test(line)) {
                     e.preventDefault();
-                    this.pushHistory();
-                    this.add({ type: 'inline', value: '\t' });
-                }
-            } else if (e.key === 'Enter') {
-                this.enter(e);
-            } else {
-                const nextIsPaired = Object.values(this._pairs).includes(next);
-                const isSelected = this.start !== this.end;
-                if (e.ctrlKey || e.metaKey) {
-                    if (e.key === 'z' && !e.shiftKey) {
-                        e.preventDefault();
-                        this.undo();
-                        return;
-                    }
-                    if (e.key === 'y' || (e.shiftKey && e.key === 'Z')) {
-                        e.preventDefault();
-                        this.redo();
-                        return;
-                    }
-                    if (this.start === this.end) {
-                        if (e.key === 'c' || e.key === 'x') {
-                            e.preventDefault();
-                            const { total, num, col } = this.getLine();
-
-                            await navigator.clipboard.writeText(`${num === 0 && e.key === 'x' ? '' : '\n'}${total[num]}`);
-
-                            if (e.key === 'x') {
-                                const pos = this.start - col;
-                                this.pushHistory();
-                                total.splice(num, 1);
-                                this.value = total.join('\n');
-                                setTimeout(() => this.set(pos, pos), 0);
-                            }
-                        }
-                    }
-                }
-
-                if ((e.ctrlKey || e.metaKey) && e.key) {
-                    const content = this.command(e.key);
-                    if (content) {
-                        e.preventDefault();
-                    }
-                } else if (nextIsPaired && (next === e.key || e.key === 'ArrowRight') && this._opens.length && !isSelected) {
-                    e.preventDefault();
-                    this.set(this.start + 1, this.end + 1);
-                    this._opens.pop();
-                } else if (e.key in this._pairs) {
-                    e.preventDefault();
-                    this.pushHistory();
-                    this.add({ type: 'wrap', value: e.key });
-                    this._opens.push(e.key);
+                    this.runCommand('NewLine');
                 }
             }
-        }
+        };
 
-        backspace(e: KeyboardEvent, next: string) {
-            const prev = this.value[this.start - 1];
-            if (
-                prev &&
-                prev in this._pairs &&
-                next === this._pairs[prev]
-            ) {
+        // Programmatic edits (commands, undo/redo, external sets) assign the value
+        // directly and never raise input events, so only free-form typing lands here.
+        private inputHandler = () => {
+            this.recordTyping();
+            this.notifyChange();
+        };
+
+        private selectionChangeHandler = () => {
+            if (document.activeElement === this.textArea) {
+                this.saveSelection();
+            }
+        };
+
+        private saveSelectionHandler = () => {
+            this.saveSelection();
+        };
+
+        private toolbarMouseDownHandler = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target?.closest && target.closest('.bit-mde-btn')) {
                 e.preventDefault();
-                this.pushHistory();
-                const start = this.start - 1;
-                const end = this.end - 1;
-                this.value = remove(this.value, start);
-                this.value = remove(this.value, end);
-                setTimeout(() => {
-                    this.set(start, end);
-                }, 0);
-                this._opens.pop();
             }
-            if (prev === '\n' && this.start === this.end) {
-                e.preventDefault();
-                this.pushHistory();
-                const pos = this.start - 1;
-                const { num } = this.getLine();
-                this.correct(num, true);
-                this.value = remove(this.value, pos);
-                setTimeout(async () => {
-                    this.set(pos, pos);
-                }, 0);
+        };
+
+        // ==========================================================
+
+        private snapshot(): MdeSnapshot {
+            return {
+                text: this.textArea.value,
+                selStart: this.textArea.selectionStart,
+                selEnd: this.textArea.selectionEnd
+            };
+        }
+
+        private currentLine() {
+            const value = this.textArea.value;
+            const pos = this.textArea.selectionStart;
+            const start = value.lastIndexOf('\n', pos - 1) + 1;
+            let end = value.indexOf('\n', pos);
+            if (end < 0) end = value.length;
+            return value.slice(start, end);
+        }
+
+        private saveSelection() {
+            this._lastSelection = { start: this.textArea.selectionStart, end: this.textArea.selectionEnd };
+        }
+
+        private notifyChange() {
+            this.dotnetObj?.invokeMethodAsync('OnChange', this.textArea.value);
+        }
+
+        private notifyHistory() {
+            const canUndo = this._undo.length > 0;
+            const canRedo = this._redo.length > 0;
+            if (canUndo === this._canUndo && canRedo === this._canRedo) return;
+
+            this._canUndo = canUndo;
+            this._canRedo = canRedo;
+            this.dotnetObj?.invokeMethodAsync('OnHistoryChanged', canUndo, canRedo);
+        }
+
+        private pushUndo(snap: MdeSnapshot) {
+            this._undo.push(snap);
+            if (this._undo.length > MarkdownEditorCore.HISTORY_LIMIT) this._undo.shift();
+        }
+
+        private endTypingGroup() {
+            this._typingActive = false;
+            if (this._typingTimer) {
+                clearTimeout(this._typingTimer);
+                this._typingTimer = null;
             }
         }
 
-        enter(e: KeyboardEvent) {
-            const { total, num, col } = this.getLine();
-            const line = total.at(num);
-            let rep = this.getRepeat(line);
-            const orig = rep;
-
-            const n = startsWithNumber(rep);
-            if (n) rep = `${n + 1}. `;
-
-            if (rep && (orig && orig.length < col)) {
-                e.preventDefault();
-                this.pushHistory();
-                const start = this.start;
-                const end = this.end;
-
-                if (n) this.correct(num);
-                this.add({ type: 'inline', value: `\n${rep}` }, start, end);
-            } else if (rep && (orig && orig.length === col)) {
-                e.preventDefault();
-                this.pushHistory();
-
-                const origEnd = this.end;
-                const pos = origEnd - orig.length;
-
-                for (let i = 0; i < orig.length; i++) {
-                    this.value = remove(this.value, origEnd - (i + 1));
-                }
-
-                setTimeout(async () => {
-                    this.set(pos, pos);
-                    this.textArea.focus();
-                    this.add({ type: 'inline', value: `\n` });
-                }, 0);
+        // Captures undo history for free-form typing, coalescing rapid keystrokes into
+        // a single step. The first keystroke of a burst records the state that existed
+        // before it; subsequent keystrokes only refresh the baseline.
+        private recordTyping() {
+            if (!this._typingActive) {
+                this.pushUndo(this._baseline);
+                this._redo = [];
+                this._typingActive = true;
+                this.notifyHistory();
             }
+
+            if (this._typingTimer) clearTimeout(this._typingTimer);
+            this._typingTimer = setTimeout(() => {
+                this._typingActive = false;
+                this._typingTimer = null;
+            }, MarkdownEditorCore.TYPING_PAUSE_MS);
+
+            this._baseline = this.snapshot();
         }
 
-        dblClick(e: MouseEvent) {
-            if (this.start !== this.end) {
-                if (this.value[this.start] === ' ') {
-                    this.set(this.start + 1, this.end);
-                }
-                if (this.value[this.end - 1] === ' ') {
-                    this.set(this.start, this.end - 1);
-                }
-            }
+        // Writes a snapshot back to the textarea without feeding the change into the
+        // history, while still notifying .NET of the new value.
+        private applySnapshot(snap: MdeSnapshot) {
+            this.textArea.value = snap.text;
+            this.notifyChange();
+            this.textArea.focus();
+            const max = snap.text.length;
+            this.textArea.setSelectionRange(Math.min(snap.selStart, max), Math.min(snap.selEnd, max));
+            this.saveSelection();
+            this._baseline = this.snapshot();
         }
 
-        click(e: MouseEvent) {
-            this._opens = [];
-        }
-
-        change(e: Event) {
-            this.dotnetObj?.invokeMethodAsync('OnChange', this.value);
-            this.scheduleHistorySave();
-        }
-
-        command(cmd: string) {
-            let content: Content | undefined;
-
-            if (cmd === 'h') { // heading
-                content = { type: 'block', value: '# ' };
-            }
-
-            if (cmd === 'b') { // bold
-                content = { type: 'wrap', value: '**' };
-            }
-
-            if (cmd === 'i') { // italic
-                content = { type: 'wrap', value: '*' };
-            }
-
-            if (cmd === 'l') { // link
-                content = { type: 'inline', value: '[text](href)' };
-            }
-
-            if (cmd === 'p') { // picture
-                content = { type: 'inline', value: '![alt](href)' };
-            }
-
-            if (cmd === 'q') { // quote
-                content = { type: 'block', value: '> ' };
-            }
-
-            if (cmd === '`') { // code
-                content = { type: 'wrap', value: '`' };
-            }
-
-            if (cmd === '```') { // code block
-                content = { type: 'wrap', value: '\n```\n' };
-            }
-
-            if (content) {
-                this.pushHistory();
-                this.add(content);
-            }
-
-            return content;
+        private applyResult(result: MdeEditResult) {
+            this.textArea.value = result.text;
+            this.notifyChange();
+            this.textArea.focus();
+            this.textArea.setSelectionRange(result.selectionStart, result.selectionEnd);
+            this.saveSelection();
+            this._baseline = this.snapshot();
+            this.notifyHistory();
         }
     }
-
-    type ContentType = 'inline' | 'block' | 'wrap';
-
-    type Content = {
-        value: string;
-        type: ContentType;
-    };
-
-    const startsWithDash = (str: string | undefined) => {
-        return !!(str?.startsWith('- '));
-    };
-
-    const startsWithNumber = (str: string | undefined) => {
-        const result = str?.match(/^(\d+)\./);
-        return result ? Number(result[1]) : null;
-    };
-
-    const insert = (str: string, char: string, index: number) => {
-        return str.slice(0, index) + char + str.slice(index);
-    };
-
-    const remove = (str: string, index: number) => {
-        return str.slice(0, index) + str.slice(index + 1);
-    };
 }
