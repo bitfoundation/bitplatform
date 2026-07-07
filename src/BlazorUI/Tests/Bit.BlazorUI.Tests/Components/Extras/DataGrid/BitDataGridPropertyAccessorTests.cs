@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.DataGrid;
@@ -147,6 +149,29 @@ public class BitDataGridPropertyAccessorTests
     public void UnknownPathThrows()
     {
         Assert.ThrowsExactly<ArgumentException>(() => BitDataGridPropertyAccessor<Model>.For("Nope"));
+    }
+
+    [TestMethod]
+    public void PropertyLambdaIsNullSafeInQueryableOverNestedPath()
+    {
+        // PropertyLambda promises the getter's null handling (conditional yielding null on a null
+        // intermediate), so composing it into a LINQ query — as the queryable processor does for
+        // sorts/filters — must not throw for rows whose intermediate is null.
+        var accessor = BitDataGridPropertyAccessor<Model>.For("Address.City");
+        var lambda = (Expression<Func<Model, string?>>)accessor.PropertyLambda;
+
+        var items = new[]
+        {
+            new Model { Name = "b", Address = new Address { City = "Oslo" } },
+            new Model { Name = "a", Address = null },
+            new Model { Name = "c", Address = new Address { City = "Bergen" } },
+        }.AsQueryable();
+
+        var sorted = items.OrderBy(lambda).Select(x => x.Name).ToList();
+        CollectionAssert.AreEqual(new[] { "a", "c", "b" }, sorted, "null intermediate must sort as a null key, not throw");
+
+        var getCity = lambda.Compile();
+        Assert.AreEqual(2, items.AsEnumerable().Count(x => getCity(x) is not null));
     }
 
     [TestMethod]
