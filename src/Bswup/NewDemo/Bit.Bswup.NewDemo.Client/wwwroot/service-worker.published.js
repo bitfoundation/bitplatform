@@ -26,6 +26,12 @@ self.externalAssets = [
     },
     {
         "url": "Bit.Bswup.NewDemo.Client.bundle.scp.css"
+    },
+    {
+        // Server-generated Blazor Web boot module with a fingerprint that changes each publish,
+        // so it can't be listed as an exact asset. This RegExp lets Bswup cache it lazily so the
+        // app still boots offline.
+        "url": /\/_framework\/resource-collection\..+\.js$/
     }
 ];
 

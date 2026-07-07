@@ -16,7 +16,7 @@ interface BitBswupGlobals {
     assetsManifest: any           // injected by service-worker-assets.js (version + asset list)
     assetsInclude: any            // extra RegExp(s) of asset URLs to precache
     assetsExclude: any            // RegExp(s) of asset URLs to skip
-    externalAssets: any           // additional (often cross-origin) assets to cache
+    externalAssets: any           // additional assets to cache; each entry is either an exact asset (string / { url }) precached on install, or a RegExp pattern ({ url: /re/ } or a bare /re/) that lazily caches server-generated URLs unknown ahead of time (e.g. resource-collection.<hash>.js)
     defaultUrl: any               // document served for navigation requests (SPA fallback)
     assetsUrl: any                // path to service-worker-assets.js (default '/service-worker-assets.js')
     prohibitedUrls: any           // RegExp(s) that must always be answered with 403
@@ -262,6 +262,11 @@ diag('SERVER_RENDERED_URLS:', SERVER_RENDERED_URLS);
 
 const USER_ASSETS_INCLUDE = prepareRegExpArray(self.assetsInclude);
 const USER_ASSETS_EXCLUDE = prepareRegExpArray(self.assetsExclude);
+// EXTERNAL_ASSETS holds every externalAssets entry, including RegExp patterns. Exact entries are
+// precached on install; RegExp entries (e.g. Blazor Web's fingerprinted
+// _framework/resource-collection.<hash>.js) can't be precached because their concrete URL isn't
+// known ahead of time, so they're matched and cached lazily in handleFetch and kept across
+// updates so the app still boots offline.
 const EXTERNAL_ASSETS = prepareExternalAssetsArray(self.externalAssets);
 
 diag('USER_ASSETS_INCLUDE:', USER_ASSETS_INCLUDE);
@@ -294,12 +299,14 @@ diagGroupEnd();
 // Bswup cache, fall back to the SPA default document, or pass the request straight to the
 // network. High-level flow:
 //   1. Block prohibited URLs (403) and pass through non-GET / server-handled requests.
-//   2. For navigations, substitute the default document unless the URL is server-rendered or
+//   2. For navigations, serve the default document unless the URL is server-rendered or
 //      forcePrerender is on (then the server owns the HTML).
-//   3. Resolve the request URL to a known asset (with a fallback that strips ?asp-append-version
-//      style query versioning), and serve it from cache when present.
-//   4. In passive mode a cache miss is fetched from the network and lazily written to the
-//      cache in the background; in active mode a miss simply goes to the network.
+//   3. Resolve the request to an asset by testing each asset's (RegExp) url against it.
+//   4. Serve the asset from cache. On a cache miss the response is fetched from the network and
+//      lazily written to the cache (in passive mode, and always for non-precacheable RegExp
+//      pattern assets like resource-collection.<hash>.js); in active mode a precached asset that
+//      misses simply goes to the network. Hash-less assets carry no version to diff, so they are
+//      re-downloaded on every update (see createAssetsCache), not on every request.
 async function handleFetch(e: any) {
     const req = e.request as Request;
 
@@ -323,72 +330,60 @@ async function handleFetch(e: any) {
 
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url));
     const shouldServeDefaultDoc = (req.mode === 'navigate') && !isServerRendered && !self.forcePrerender;
-    const requestUrl = shouldServeDefaultDoc ? DEFAULT_URL : req.url;
 
     const start = new Date().toISOString();
 
-    const caseMethod = self.caseInsensitiveUrl ? 'toLowerCase' : 'toString';
+    // Every asset's `url` is a RegExp (uniqueAssets converts concrete string URLs to anchored,
+    // query-tolerant patterns and keeps externalAssets RegExp entries as-is), so matching is a
+    // single uniform test against the actual request URL. Navigations instead resolve to the SPA
+    // default document.
+    const asset = shouldServeDefaultDoc
+        ? UNIQUE_ASSETS.find(a => a.isDefault)
+        : UNIQUE_ASSETS.find(a => a.url.test(req.url));
 
-    // the assets url are only the pathname part of the actual request url!
-    // since only the default url is simple and other ones contain other parts (like 'https://...`)
-    let asset = UNIQUE_ASSETS.find(a => a[shouldServeDefaultDoc ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
-
-    if (!asset) { // for assets that has asp-append-version or similar type of url versioning
-        try {
-            const url = new URL(requestUrl);
-            const reqUrl = `${url.origin}${url.pathname}`;
-            asset = UNIQUE_ASSETS.find(a => a.reqUrl[caseMethod]() === reqUrl[caseMethod]());
-        } catch { }
-    }
-
-    if (!(asset?.url)) {
-        diagFetch('+++ handleFetch ended - asset not found:', start, asset, requestUrl, e, req);
+    if (!asset) {
+        diagFetch('+++ handleFetch ended - asset not found:', start, req.url, e, req);
 
         return fetch(req);
     }
 
-    if (self.forcePrerender && asset.url === DEFAULT_URL) {
-        diagFetch('+++ handleFetch ended - skipped - forcePrerender defaultDoc:', start, asset, requestUrl, e, req);
+    if (self.forcePrerender && asset.isDefault) {
+        diagFetch('+++ handleFetch ended - skipped - forcePrerender defaultDoc:', start, asset, e, req);
 
         return fetch(req);
     }
 
-    const cacheUrl = createCacheUrl(asset);
+    // Concrete assets are keyed/fetched via their reqUrl (+ hash / ?v= cache-buster). A pattern
+    // asset (a RegExp externalAssets entry, e.g. resource-collection.<hash>.js) has no precomputed
+    // URL, so it is keyed and fetched by the actual request.
+    const cacheUrl = asset.reqUrl ? createCacheUrl(asset) : req.url;
 
     const bitBswupCache = await caches.open(CACHE_NAME);
-    // createCacheUrl always returns a non-empty string here (we already returned above when
-    // asset?.url was falsy), so the previous `cacheUrl || requestUrl` fallback was dead code.
     const cachedResponse = await bitBswupCache.match(cacheUrl);
 
-    if (cachedResponse || !self.isPassive) {
+    // Serve from cache when present. In active (non-passive) mode a precached asset that missed
+    // the cache goes straight to the network; pattern assets are never precached (their concrete
+    // URL isn't known ahead of time), so they must lazily fill the cache even in active mode.
+    if (cachedResponse || (!self.isPassive && asset.reqUrl)) {
         diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', start, asset);
 
         return cachedResponse || fetch(req);
     }
 
-    const request = createNewAssetRequest(asset);
+    const request = asset.reqUrl ? createNewAssetRequest(asset) : req;
     const response = await fetch(request);
 
     if (response.ok) {
-        // Stream the response to the page immediately and write to the cache in the
-        // background. Awaiting cache.put() here would block the (potentially large
-        // .wasm / .dll) body from reaching the page until the whole file had been
-        // downloaded and stored. response.clone() lets the browser tee the stream so the
-        // page and the cache write consume bytes as they arrive, and e.waitUntil keeps the
-        // service worker alive until the background write completes. This mirrors how
-        // Workbox's Strategy.handle returns the response while caching transparently.
-        //
-        // Lazy-fill is best-effort under both error tolerances: at runtime there is no
-        // install promise to reject, so a failed write just means the asset is re-fetched
-        // next time instead of being served from cache. (errorTolerance is enforced during
-        // install in createAssetsCache, not on this passive runtime path.)
+        // Stream the response to the page immediately and write to the cache in the background.
+        // response.clone() tees the stream so the page and the cache write consume bytes as they
+        // arrive; e.waitUntil keeps the worker alive until the background write completes.
         const cachePut = bitBswupCache.put(cacheUrl, response.clone()).catch(err => {
             diagFetch('+++ handleFetch - lazy-fill put failed:', err, asset);
         });
         e.waitUntil(cachePut);
     }
 
-    diagFetch('+++ handleFetch ended - passive saving asset:', start, asset, e, req);
+    diagFetch('+++ handleFetch ended - lazily caching asset:', start, asset, e, req);
 
     return response;
 }
@@ -510,6 +505,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
     const fold = (s: string) => self.caseInsensitiveUrl ? s.toLowerCase() : s;
     const assetByCacheKey = new Map<string, any>();
     for (const asset of UNIQUE_ASSETS) {
+        // Pattern assets (no concrete reqUrl) can't be precached or diffed; they are matched and
+        // cached lazily by handleFetch, so skip them here.
+        if (!asset.reqUrl) continue;
         assetByCacheKey.set(fold(new Request(createCacheUrl(asset)).url), asset);
     }
 
@@ -528,6 +526,14 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
         const matched = assetByCacheKey.get(fold(key.url));
         if (!matched) {
+            // A key lazily cached for a pattern asset (no concrete reqUrl, e.g.
+            // resource-collection.<hash>.js) has no entry in assetByCacheKey; keep it so it stays
+            // available offline instead of being pruned as stale.
+            if (UNIQUE_ASSETS.some(a => !a.reqUrl && a.url.test(key.url))) {
+                diag('*** keeping lazily-cached pattern asset key:', key.url);
+                continue;
+            }
+
             // No current asset maps to this key: the asset was removed from the manifest, or
             // its hash changed (a changed hash yields a different key, so the old hashed key
             // no longer matches). Either way it's stale - drop it.
@@ -551,7 +557,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // Always refresh the default document on each update so navigations pick up the latest
     // app shell even when its hash is unchanged. If it was kept above, drop it from the kept
     // set and delete its current entry so it is re-fetched below.
-    const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
+    const defaultAsset = UNIQUE_ASSETS.find(a => a.isDefault);
     if (defaultAsset && cachedAssets.has(defaultAsset)) {
         cachedAssets.delete(defaultAsset);
         keysToDelete.push(new Request(createCacheUrl(defaultAsset)).url); // get the latest version of the default doc in each update if exists!!
@@ -559,7 +565,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
     await Promise.all(keysToDelete.map(url => newCache.delete(url)));
 
-    const assetsToCache = UNIQUE_ASSETS.filter(a => !cachedAssets.has(a));
+    // Pattern assets are excluded: they can't be precached (no concrete URL) and are filled
+    // lazily by handleFetch instead.
+    const assetsToCache = UNIQUE_ASSETS.filter(a => !cachedAssets.has(a) && a.reqUrl);
 
     diag('cachedAssets:', cachedAssets.size, 'assetsToCache:', assetsToCache);
 
@@ -628,7 +636,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
             sendError({
                 reason: 'request',
                 message: 'Failed to build asset request: ' + (err && (err as any).message || String(err)),
-                url: asset && asset.url,
+                url: asset && asset.reqUrl,
                 hash: asset && asset.hash,
             });
             doReport(true);
@@ -649,7 +657,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // origin on the same tick.
                 const backoff = RETRY_DELAY * Math.pow(2, attempt - 1);
                 const wait = backoff + Math.floor(Math.random() * RETRY_DELAY);
-                diag(`*** addCache - retrying (${attempt}/${MAX_RETRIES}) in ${wait}ms:`, asset.url);
+                diag(`*** addCache - retrying (${attempt}/${MAX_RETRIES}) in ${wait}ms:`, asset.reqUrl);
                 await delay(wait);
             }
 
@@ -671,7 +679,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // worth another attempt while retries remain.
                 if (!isIntegrity && attempt < MAX_RETRIES) {
                     lastError = fetchErr;
-                    diag('*** addCache - fetch rejected (will retry):', fetchErr, asset.url);
+                    diag('*** addCache - fetch rejected (will retry):', fetchErr, asset.reqUrl);
                     continue;
                 }
 
@@ -680,9 +688,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 sendError({
                     reason: isIntegrity ? 'integrity' : 'fetch',
                     message: isIntegrity
-                        ? `Subresource Integrity check failed for ${asset.url}. The bytes served do not match the SHA hash recorded in service-worker-assets.js / blazor.boot.json. This is the classic Blazor "Failed to find a valid digest" failure and usually means a CDN, reverse proxy, or compression layer is rewriting the response after publish.`
+                        ? `Subresource Integrity check failed for ${asset.reqUrl}. The bytes served do not match the SHA hash recorded in service-worker-assets.js / blazor.boot.json. This is the classic Blazor "Failed to find a valid digest" failure and usually means a CDN, reverse proxy, or compression layer is rewriting the response after publish.`
                         : 'Asset fetch rejected' + (attempt > 0 ? ` after ${attempt + 1} attempts` : '') + ': ' + (fetchErr && (fetchErr as any).message || String(fetchErr)),
-                    url: asset.url,
+                    url: asset.reqUrl,
                     hash: asset.hash,
                     integrity: hasIntegrity,
                 });
@@ -695,7 +703,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // Permanent ones (404, 403, ...) will not change on retry.
                 if (isRetryableStatus(response.status) && attempt < MAX_RETRIES) {
                     lastError = response;
-                    diag('*** addCache - !response.ok (will retry):', response.status, asset.url);
+                    diag('*** addCache - !response.ok (will retry):', response.status, asset.reqUrl);
                     continue;
                 }
 
@@ -703,7 +711,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 sendError({
                     reason: 'fetch',
                     message: `Asset fetch failed with HTTP ${response.status} ${response.statusText || ''}`.trim() + (attempt > 0 ? ` after ${attempt + 1} attempts` : ''),
-                    url: asset.url,
+                    url: asset.reqUrl,
                     hash: asset.hash,
                     status: response.status,
                     integrity: hasIntegrity,
@@ -724,7 +732,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 sendError({
                     reason: 'cache',
                     message: 'Failed to store asset in cache: ' + (err && (err as any).message || String(err)),
-                    url: asset.url,
+                    url: asset.reqUrl,
                     hash: asset.hash,
                 });
                 doReport(true);
@@ -746,11 +754,12 @@ async function createAssetsCache(ignoreProgressReport = false) {
     }
 }
 
-// Cache key for an asset: the URL suffixed with `.<hash>` when a hash exists, so a changed
-// hash produces a distinct cache entry (the old one is detected and evicted during the
-// update diff in createAssetsCache). Hashless assets are keyed by URL alone.
+// Cache key for a concrete asset: its reqUrl suffixed with `.<hash>` when a hash exists, so a
+// changed hash produces a distinct cache entry (the old one is detected and evicted during the
+// update diff in createAssetsCache). Hashless assets are keyed by reqUrl alone. Only called for
+// concrete assets (asset.reqUrl set); pattern assets are keyed by the live request URL instead.
 function createCacheUrl(asset: any) {
-    return asset.hash ? `${asset.url}.${asset.hash}` : asset.url;
+    return asset.hash ? `${asset.reqUrl}.${asset.hash}` : asset.reqUrl;
 }
 
 // Resolves after `ms` milliseconds. Used to space out asset-download retries.
@@ -786,9 +795,9 @@ function createNewAssetRequest(asset: any) {
     const version = ((asset.hash || self.assetsManifest.version) as string).replaceAll('+', '-').replaceAll('/', '_');
     const trimmedVersion = encodeURIComponent(trimEnd(version, '='));
 
-    const url = new URL(asset.url, self.location.origin);
+    const url = new URL(asset.reqUrl, self.location.origin);
     url.searchParams.set('v', trimmedVersion);
-    if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
+    if (asset.isDefault && self.noPrerenderQuery) {
         new URLSearchParams(String(self.noPrerenderQuery)).forEach((value, key) => url.searchParams.set(key, value));
     }
 
@@ -823,24 +832,50 @@ async function deleteOldCaches() {
     return Promise.all(promises);
 }
 
-// De-duplicates the asset list by URL (the first occurrence wins) and, as a side effect,
-// precomputes `reqUrl` - the fully-resolved absolute URL the browser will actually request -
-// so handleFetch can match incoming requests without re-resolving on every fetch.
+// De-duplicates the asset list by URL (the first occurrence wins) and normalizes each entry so
+// the rest of the worker can treat every asset uniformly:
+//   - `url`   becomes a RegExp matcher. A concrete string URL is converted to an anchored,
+//             query-tolerant pattern for its resolved origin+pathname; an externalAssets RegExp
+//             entry (a server-generated file whose concrete name isn't known ahead of time, e.g.
+//             resource-collection.<hash>.js) is kept as the matcher it already is.
+//   - `reqUrl` holds the concrete absolute URL used to build cache keys and download requests. It
+//             is undefined for pattern assets, whose concrete URL is only known when a matching
+//             request arrives (they are cached lazily by that request URL instead).
+//   - `isDefault` flags the SPA default document, since `url` is no longer comparable by string.
+// The manifest entries are shallow-copied rather than mutated in place, since self.assetsManifest
+// / externalAssets are caller-owned and read elsewhere.
 function uniqueAssets(assets: any) {
     const unique = {} as any;
     const distinct = [];
     for (let i = 0; i < assets.length; i++) {
         const a = assets[i];
-        if (unique[a.url]) continue;
+        const isPattern = a.url instanceof RegExp;
+        const dedupeKey = isPattern ? a.url.toString() : a.url;
+        if (unique[dedupeKey]) continue;
+        unique[dedupeKey] = 1;
 
-        // Shallow-copy the manifest entry before adding the derived reqUrl, instead of
-        // mutating the object in place. The input comes from self.assetsManifest.assets
-        // (and externalAssets), which other code may read; tacking reqUrl onto the shared
-        // object was an unnecessary side effect on caller-owned data.
-        distinct.push({ ...a, reqUrl: new Request(a.url).url });
-        unique[a.url] = 1;
+        const reqUrl = isPattern ? undefined : new Request(a.url).url;
+        distinct.push({
+            ...a,
+            url: isPattern ? applyUrlCaseSensitivity(a.url) : urlToRegExp(reqUrl as string),
+            reqUrl,
+            isDefault: !isPattern && a.url === DEFAULT_URL,
+        });
     }
     return distinct;
+}
+
+// Escapes RegExp metacharacters so a literal string can be embedded in a pattern.
+function escapeRegExp(str: string) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Converts a concrete asset URL into a RegExp that matches requests for it. Anchored to the
+// resolved origin+pathname and tolerant of any query string, so cache-busting variants
+// (?asp-append-version, ?v=, ...) still match. Honors caseInsensitiveUrl via the `i` flag.
+function urlToRegExp(url: string) {
+    const u = new URL(url, self.location.origin);
+    return new RegExp('^' + escapeRegExp(`${u.origin}${u.pathname}`) + '(\\?.*)?$', self.caseInsensitiveUrl ? 'i' : '');
 }
 
 // Broadcasts a message to every client (controlled or not), so all open tabs - not just the
@@ -909,9 +944,10 @@ function validateAssetsManifest(manifest: any): string[] {
 }
 
 // Normalizes self.externalAssets into a consistent array of `{ url, ... }` objects. Accepts a
-// single value or an array, passes through entries that already have a url, wraps bare
-// strings into `{ url }`, and drops anything else (null/invalid) so the precache list only
-// contains well-formed asset descriptors.
+// single value or an array, passes through entries that already have a url (a concrete string or
+// a RegExp pattern), wraps bare strings and bare RegExps into `{ url }`, and drops anything else
+// (null/invalid). RegExp `url` entries flow through the same list as exact assets; they simply
+// aren't precached (their concrete URL is unknown) and are matched/cached lazily in handleFetch.
 function prepareExternalAssetsArray(value: any) {
     const array = value ? (value instanceof Array ? value : [value]) : [];
 
@@ -920,7 +956,7 @@ function prepareExternalAssetsArray(value: any) {
             return asset;
         }
 
-        if (typeof asset === 'string') {
+        if (typeof asset === 'string' || asset instanceof RegExp) {
             return ({ url: asset });
         }
 
