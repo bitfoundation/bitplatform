@@ -74,6 +74,11 @@
 
 .bit-dtg-table {
     display: block;
+    /* fit-content (not max-content) so the table grows to the row grids' min-content width when the
+       column tracks overflow the viewport — rows then span the full scroll range, keeping row borders
+       painted and giving sticky (frozen) cells a containing block that covers the whole scroll width —
+       while grids whose tracks fit keep sizing fr columns to the viewport (ellipsis still clips text). */
+    width: fit-content;
     min-width: 100%;
 }
 
@@ -494,6 +499,68 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-filter-input {
+    font-weight: 400;
+}
+
+/* Touch drag-and-drop: without touch-action none the browser turns the drag into a scroll and fires
+   pointercancel. Scoped to the drag handle and to header cells that are actually reorderable
+   (data-col is only rendered on those), so touch scrolling elsewhere is unaffected. */
+.bit-dtg-drag-handle,
+.bit-dtg-hcell[data-col] {
+    touch-action: none;
+}
+
+/* Highlights the row/header cell a touch drag would drop onto. */
+.bit-dtg-drop-target {
+    outline: 2px dashed var(--bit-clr-pri);
+    outline-offset: -2px;
+}
+
+/* Screen-reader-only content (the aria-live status region). */
+.bit-dtg-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Inline-edit validation: flag the invalid editor and show its message underneath. */
+.bit-dtg-editor[aria-invalid="true"] {
+    border-color: var(--bit-clr-err);
+    outline-color: var(--bit-clr-err);
+}
+
+.bit-dtg-editor-error {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.2;
+    color: var(--bit-clr-err);
+}
+
+/* Lays out the operator dropdown and the filter input side by side. */
+.bit-dtg-filter-wrap {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* Compact operator dropdown rendered next to a filter input. */
+.bit-dtg-filter-op {
+    flex: 0 0 auto;
+    max-width: 40%;
+    margin-inline-end: 4px;
+    padding: 4px 2px;
+    border: 1px solid var(--bit-clr-brd-ter);
+    border-radius: 4px;
+    background: var(--bit-clr-bg-pri);
+    color: var(--bit-clr-fg-pri);
+    font-size: 11px;
     font-weight: 400;
 }
 

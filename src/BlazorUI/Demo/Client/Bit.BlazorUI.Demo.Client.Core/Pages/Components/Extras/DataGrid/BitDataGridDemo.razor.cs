@@ -1,4 +1,5 @@
 using Bit.BlazorUI.Demo.Client.Core.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
@@ -34,6 +35,9 @@ public partial class BitDataGridDemo : AppComponentBase
 
     // example 5 - grouping
     private readonly List<Product> groupProducts = SampleData.Generate(80);
+
+    private object? DistinctSuppliers(IReadOnlyList<Product> rows)
+        => $"{rows.Select(p => p.Supplier).Distinct().Count()} distinct";
 
     // example 6 - templates
     private readonly List<Product> templateProducts = SampleData.Generate(30);
@@ -73,9 +77,15 @@ public partial class BitDataGridDemo : AppComponentBase
     private readonly List<Product> reorderProducts = SampleData.Generate(12);
     private string? reorderLog;
 
-    // example 16 - cell events
+    // example 16 - cell events & context menu
     private readonly List<Product> cellEventsProducts = SampleData.Generate(40);
     private string cellEventStatus = "Click, double-click or right-click any cell.";
+    private BitDataGrid<Product>? cellEventsGrid;
+    private BitDataGridCellEventArgs<Product>? cellMenuArgs;
+    private int cellMenuX;
+    private int cellMenuY;
+    private ElementReference cellMenuFirstItem;
+    private bool cellMenuFocusPending;
 
     // example 17 - cell navigation
     private readonly List<Product> cellNavProducts = SampleData.Generate(40);
@@ -96,6 +106,182 @@ public partial class BitDataGridDemo : AppComponentBase
 
     // example 21 - RTL
     private readonly List<Product> rtlProducts = SampleData.GeneratePersian(60);
+
+    // example 22 - filter operators
+    private readonly List<Product> operatorProducts = SampleData.Generate(150);
+
+    // example 23 - edit validation
+    private readonly List<Product> validationProducts = SampleData.Generate(30);
+
+    private string? ValidateName(Product product, object? value)
+        => string.IsNullOrWhiteSpace(value as string) ? "Name is required." : null;
+
+    private string? ValidatePrice(Product product, object? value)
+        => value is decimal price && price < 0 ? "Price cannot be negative." : null;
+
+    private string? ValidateStock(Product product, object? value)
+        => value is int stock && stock < 0 ? "Stock cannot be negative." : null;
+
+    // example 24 - state persistence
+    private readonly List<Product> stateProducts = SampleData.Generate(120);
+    private BitDataGrid<Product>? stateGrid;
+    private BitDataGridState? savedGridState;
+    private string gridStateStatus = "Adjust the grid, then save its state.";
+
+    private void SaveGridState()
+    {
+        savedGridState = stateGrid?.GetState();
+        gridStateStatus = savedGridState is null
+            ? "Nothing to save yet."
+            : $"Saved: page {savedGridState.CurrentPage}, {savedGridState.Sorts.Count} sort(s), {savedGridState.Filters.Count} filter(s).";
+    }
+
+    private async Task RestoreGridState()
+    {
+        if (stateGrid is null || savedGridState is null) return;
+        await stateGrid.ApplyStateAsync(savedGridState);
+        gridStateStatus = "State restored.";
+    }
+
+    // example 25 - server-side virtualization (+ server aggregates)
+    private readonly List<Product> serverVirtualAll = SampleData.Generate(100_000);
+
+    private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitDataGridReadRequest request)
+    {
+        // Simulate backend latency. Superseded scroll windows are cancelled by the grid, and the
+        // OperationCanceledException must propagate so the grid discards the stale read — returning
+        // an empty result instead would be rendered as real data and blank the viewport.
+        await Task.Delay(150, request.CancellationToken);
+
+        IEnumerable<Product> query = serverVirtualAll;
+
+        foreach (var f in request.Filters)
+        {
+            query = f.ColumnId switch
+            {
+                nameof(Product.Name) => query.Where(p => MatchText(p.Name, f)),
+                nameof(Product.Supplier) => query.Where(p => MatchText(p.Supplier, f)),
+                nameof(Product.Category) => query.Where(p => MatchComparable(p.Category, f)),
+                nameof(Product.Price) => query.Where(p => MatchComparable(p.Price, f)),
+                nameof(Product.Stock) => query.Where(p => MatchComparable(p.Stock, f)),
+                nameof(Product.Rating) => query.Where(p => MatchComparable(p.Rating, f)),
+                _ => query
+            };
+        }
+
+        IOrderedEnumerable<Product>? ordered = null;
+        foreach (var sort in request.Sorts)
+        {
+            Func<Product, object> key = sort.ColumnId switch
+            {
+                nameof(Product.Name) => p => p.Name,
+                nameof(Product.Category) => p => p.Category,
+                nameof(Product.Supplier) => p => p.Supplier,
+                nameof(Product.Price) => p => p.Price,
+                nameof(Product.Stock) => p => p.Stock,
+                nameof(Product.Rating) => p => p.Rating,
+                _ => p => p.Id
+            };
+            ordered = ordered is null
+                ? (sort.Direction == BitDataGridSortDirection.Descending ? query.OrderByDescending(key) : query.OrderBy(key))
+                : (sort.Direction == BitDataGridSortDirection.Descending ? ordered.ThenByDescending(key) : ordered.ThenBy(key));
+        }
+        if (ordered is not null) query = ordered;
+
+        var filtered = query.ToList();
+        var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
+
+        // Aggregates computed over the WHOLE filtered dataset (not just the returned window), so the
+        // footer shows a real grand total instead of a per-window number.
+        var priceSum = filtered.Sum(p => p.Price);
+        var aggregates = new List<BitDataGridAggregateResult>
+        {
+            new()
+            {
+                ColumnId = nameof(Product.Price),
+                Type = BitDataGridAggregateType.Sum,
+                Value = priceSum,
+                FormattedValue = priceSum.ToString("C0")
+            }
+        };
+
+        return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
+    }
+
+    // example 27 - IQueryable data source (an EF Core DbSet would bind the same way)
+    private readonly IQueryable<Product> queryableProducts = SampleData.Generate(400).AsQueryable();
+
+    // example 28 - Excel export
+    private readonly List<Product> excelProducts = SampleData.Generate(120);
+
+    // example 33 - export with complex layouts (master-detail + frozen + ColSpan)
+    private readonly List<Product> complexExportProducts = SampleData.Generate(30);
+
+    // example 29 - lazy tree loading
+    private readonly List<FileNode> lazyTreeRoots = BuildLazyRoots();
+    private int nextLazyNodeId = 1000;
+
+    private static List<FileNode> BuildLazyRoots() =>
+    [
+        new() { Id = 1, Name = "src", Kind = "Folder", Modified = new DateTime(2025, 1, 10) },
+        new() { Id = 2, Name = "docs", Kind = "Folder", Modified = new DateTime(2025, 2, 5) },
+        new() { Id = 3, Name = "assets", Kind = "Folder", Modified = new DateTime(2025, 3, 20) },
+        new() { Id = 4, Name = "LICENSE", Kind = "File", Size = 1_070, Modified = new DateTime(2025, 1, 2) },
+    ];
+
+    private static bool IsFolder(FileNode node) => node.Kind == "Folder";
+
+    private async Task<IEnumerable<FileNode>?> LoadChildrenAsync(FileNode parent)
+    {
+        // Simulates a backend call; results are cached by the grid, so each folder loads once.
+        await Task.Delay(600);
+        return
+        [
+            new FileNode { Id = ++nextLazyNodeId, Name = $"{parent.Name}-sub", Kind = "Folder", Modified = parent.Modified.AddDays(1) },
+            new FileNode { Id = ++nextLazyNodeId, Name = $"{parent.Name}-notes.md", Kind = "File", Size = 2_300 + parent.Id * 17, Modified = parent.Modified.AddDays(2) },
+            new FileNode { Id = ++nextLazyNodeId, Name = $"{parent.Name}-data.json", Kind = "File", Size = 5_100 + parent.Id * 31, Modified = parent.Modified.AddDays(3) },
+        ];
+    }
+
+    // example 30 - touch drag & drop
+    private readonly List<Product> touchReorderProducts = SampleData.Generate(12);
+
+    // example 31 - column virtualization
+    private readonly List<Product> wideProducts = SampleData.Generate(3_000);
+
+    // example 32 - programmatic control
+    private readonly List<Product> apiProducts = SampleData.Generate(200);
+    private BitDataGrid<Product>? apiGrid;
+
+    private async Task ApiSortByPrice() { if (apiGrid is not null) await apiGrid.SortByAsync(nameof(Product.Price), BitDataGridSortDirection.Descending); }
+    private async Task ApiClearSorts() { if (apiGrid is not null) await apiGrid.ClearSortsAsync(); }
+    private async Task ApiFilterExpensive() { if (apiGrid is not null) await apiGrid.ApplyFilterAsync(nameof(Product.Price), BitDataGridFilterOperator.GreaterThan, 500m); }
+    private async Task ApiClearFilters() { if (apiGrid is not null) await apiGrid.ClearFiltersAsync(); }
+    private async Task ApiGroupByCategory() { if (apiGrid is not null) await apiGrid.GroupByAsync(nameof(Product.Category)); }
+    private async Task ApiUngroup() { if (apiGrid is not null) await apiGrid.UngroupAsync(nameof(Product.Category)); }
+    private async Task ApiGoToPage3() { if (apiGrid is not null) await apiGrid.GoToPageAsync(3); }
+    private async Task ApiPageSize50() { if (apiGrid is not null) await apiGrid.SetPageSizeAsync(50); }
+    private async Task ApiRefresh() { if (apiGrid is not null) await apiGrid.RefreshAsync(); }
+
+    // example 26 - localization
+    private readonly List<Product> localizedProducts = SampleData.GeneratePersian(60);
+
+    private readonly BitDataGridStrings persianStrings = new()
+    {
+        EmptyText = "رکوردی برای نمایش وجود ندارد.",
+        LoadingText = "در حال بارگذاری…",
+        FilterPlaceholder = "فیلتر…",
+        FilterAllText = "همه",
+        PagerRangeFormat = "{0}–{1} از {2}",
+        PagerPageFormat = "صفحهٔ {0} از {1}",
+        PerPageFormat = "{0} در صفحه",
+        RowsPerPageLabel = "تعداد ردیف در صفحه",
+        FirstPageLabel = "صفحهٔ اول",
+        PreviousPageLabel = "صفحهٔ قبل",
+        NextPageLabel = "صفحهٔ بعد",
+        LastPageLabel = "صفحهٔ آخر",
+        ClearFiltersText = "حذف فیلترها",
+    };
 
     private static string CategoryFa(Category category) => category switch
     {
@@ -320,7 +506,8 @@ public partial class BitDataGridDemo : AppComponentBase
         }
         if (ordered is not null) query = ordered;
 
-        var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
+        // Take is the batch size while scrolling; null means "all rows" (issued by CSV/Excel exports).
+        var batch = query.Skip(request.Skip).Take(request.Take ?? infiniteAll.Count).ToList();
 
         // Drop a superseded batch before mutating shared demo state so stale rows aren't logged.
         request.CancellationToken.ThrowIfCancellationRequested();
@@ -373,7 +560,50 @@ public partial class BitDataGridDemo : AppComponentBase
         => cellEventStatus = $"Double-clicked {e.ColumnTitle} on {e.Item.Name}";
 
     private void OnCellContextMenu(BitDataGridCellEventArgs<Product> e)
-        => cellEventStatus = $"Right-clicked {e.ColumnTitle} on {e.Item.Name} at ({e.Mouse.ClientX}, {e.Mouse.ClientY})";
+    {
+        cellMenuArgs = e;
+        // ClientX/Y are viewport coordinates, matching the menu's position:fixed placement.
+        cellMenuX = (int)e.Mouse.ClientX;
+        cellMenuY = (int)e.Mouse.ClientY;
+        cellEventStatus = $"Right-clicked {e.ColumnTitle} on {e.Item.Name}";
+        // Move focus into the menu once it renders so keyboard users can operate/dismiss it.
+        cellMenuFocusPending = true;
+    }
+
+    private void CloseCellMenu() => cellMenuArgs = null;
+
+    private void OnCellMenuKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") CloseCellMenu();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (cellMenuFocusPending && cellMenuArgs is not null)
+        {
+            cellMenuFocusPending = false;
+            await cellMenuFirstItem.FocusAsync();
+        }
+    }
+
+    private async Task CopyCellValue()
+    {
+        if (cellMenuArgs is null) return;
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", cellMenuArgs.Value?.ToString() ?? "");
+        cellEventStatus = $"Copied \"{cellMenuArgs.Value}\" to the clipboard.";
+        cellMenuArgs = null;
+    }
+
+    private async Task DeleteCellMenuRow()
+    {
+        if (cellMenuArgs is null) return;
+        cellEventsProducts.Remove(cellMenuArgs.Item);
+        cellEventStatus = $"Deleted {cellMenuArgs.Item.Name}.";
+        cellMenuArgs = null;
+        // The grid caches its processed view; mutating the bound list in place requires an explicit refresh.
+        if (cellEventsGrid is not null) await cellEventsGrid.RefreshAsync();
+    }
 
 
     // ---- variable row height ----

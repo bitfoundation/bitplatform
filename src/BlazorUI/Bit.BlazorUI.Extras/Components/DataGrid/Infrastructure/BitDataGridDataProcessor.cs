@@ -38,10 +38,10 @@ public static class BitDataGridDataProcessor
         IOrderedEnumerable<TItem>? ordered = null;
         foreach (var sort in active)
         {
-            if (!columns.TryGetValue(sort.ColumnId, out var column) || column.Accessor is null)
+            // SortKey resolves the column's custom SortBy selector when present, falling back to the
+            // field accessor - so template-only columns with a SortBy participate in sorting too.
+            if (!columns.TryGetValue(sort.ColumnId, out var column) || column.SortKey is not { } key)
                 continue;
-            var accessor = column.Accessor;
-            Func<TItem, object?> key = item => accessor.GetValue(item);
             var comparer = BitDataGridValueComparer.Instance;
             if (ordered is null)
             {
@@ -149,8 +149,10 @@ public static class BitDataGridDataProcessor
         var results = new List<BitDataGridAggregateResult>();
         foreach (var column in columns)
         {
-            if (column.Aggregate == BitDataGridAggregateType.None || column.Accessor is null) continue;
-            var value = ComputeAggregate(source, column);
+            // A custom AggregateBy participates regardless of the declarative Aggregate type (and needs
+            // no field accessor); built-in aggregations require both a type and a bound field.
+            if (column.AggregateBy is null && (column.Aggregate == BitDataGridAggregateType.None || column.Accessor is null)) continue;
+            var value = column.AggregateBy is not null ? column.AggregateBy(source) : ComputeAggregate(source, column);
             var format = column.AggregateFormat ?? column.Format;
             var formatted = value is IFormattable fmt && !string.IsNullOrEmpty(format)
                 ? fmt.ToString(format, CultureInfo.CurrentCulture)
@@ -158,7 +160,9 @@ public static class BitDataGridDataProcessor
             results.Add(new BitDataGridAggregateResult
             {
                 ColumnId = column.Id,
-                Type = column.Aggregate,
+                // An AggregateBy value isn't the product of the declarative Aggregate function (which
+                // may even be None), so report it as Custom instead of echoing a type it didn't run.
+                Type = column.AggregateBy is not null ? BitDataGridAggregateType.Custom : column.Aggregate,
                 Value = value,
                 FormattedValue = formatted
             });

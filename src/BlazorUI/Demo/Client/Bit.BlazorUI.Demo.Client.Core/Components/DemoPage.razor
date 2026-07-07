@@ -118,20 +118,22 @@ else
 {
     <div class="demo-page">
         <div class="page-container example">
-            <BitText Element="h1" Typography="BitTypography.H3" Class="title">
+            <BitText Element="h1" Typography="BitTypography.H3">
                 @Name
             </BitText>
 
             @if (SecondaryNames?.Length > 0)
             {
+                <br />
                 <BitStack Horizontal AutoHeight>
                     @foreach (var name in SecondaryNames)
                     {
                         <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
                     }
                 </BitStack>
-                <br />
             }
+            
+            <br /><br /><br />
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {

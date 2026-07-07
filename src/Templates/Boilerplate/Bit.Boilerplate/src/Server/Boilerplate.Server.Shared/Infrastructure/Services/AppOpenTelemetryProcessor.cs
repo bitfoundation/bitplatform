@@ -36,10 +36,12 @@ public class AppOpenTelemetryProcessor(IHostEnvironment env) : BaseProcessor<Act
         bool isFailed = activity.Status == ActivityStatusCode.Error;
 
         // Check if the failure is due to a known or transient exception
-        bool isKnownOrTransient = activity.TagObjects.Any(t => (t.Key == "HasKnownException" || t.Key == "HasTransientException") && t.Value?.ToString() is "true");
+        bool isKnownOrTransientException = activity.TagObjects.Any(t => (t.Key == "HasKnownException" || t.Key == "HasTransientException") && t.Value?.ToString() is "true");
 
-        // Apply 5% sampling to all activities except unhandled critical errors
-        if (isFailed is false || isKnownOrTransient)
+        var wasSlow = activity.Duration > TimeSpan.FromSeconds(1);
+
+        // Apply 5% sampling to all activities except unhandled critical errors and slow activities.
+        if ((isFailed is false || isKnownOrTransientException) && wasSlow is false)
         {
             if (ShouldSample(activity) is false)
             {

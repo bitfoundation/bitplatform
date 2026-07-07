@@ -21,11 +21,21 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     public Type UnderlyingType { get; }
     public bool CanWrite { get; }
 
+    /// <summary>
+    /// The typed property-access lambda (<c>x =&gt; x.A.B</c>) without the compiled getter's object
+    /// boxing. Used to translate filters/sorts into expression trees an <see cref="IQueryable{T}"/>
+    /// provider (e.g. EF Core) can execute remotely. Nested paths carry the getter's null handling
+    /// (a conditional yielding null when an intermediate is null, lifting the leaf to its nullable
+    /// form) so in-memory queryables don't throw on rows with a null intermediate; relational
+    /// providers translate the conditional to equivalent CASE/NULL semantics.
+    /// </summary>
+    public LambdaExpression PropertyLambda { get; }
+
     private readonly Func<TItem, object?> _getter;
     private readonly Action<TItem, object?>? _setter;
 
     private BitDataGridPropertyAccessor(string path, Type propertyType, bool canWrite,
-        Func<TItem, object?> getter, Action<TItem, object?>? setter)
+        Func<TItem, object?> getter, Action<TItem, object?>? setter, LambdaExpression propertyLambda)
     {
         Path = path;
         PropertyType = propertyType;
@@ -33,6 +43,7 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         CanWrite = canWrite;
         _getter = getter;
         _setter = setter;
+        PropertyLambda = propertyLambda;
     }
 
     public object? GetValue(TItem item) => _getter(item);
@@ -124,6 +135,48 @@ public sealed class BitDataGridPropertyAccessor<TItem>
             ? Activator.CreateInstance(PropertyType)
             : null;
 
+    /// <summary>
+    /// Extracts the property path ("Address.City") from a typed selector expression like
+    /// <c>x =&gt; x.Address.City</c>, so a lambda-based column definition can reuse the same
+    /// path-keyed accessor cache (and state/export identity) as a string-based one.
+    /// Only simple property-access chains are supported; anything else (method calls, indexers,
+    /// arithmetic, field access) throws so the invalid selector fails loudly at definition time.
+    /// </summary>
+    public static string ResolvePath(Expression<Func<TItem, object?>> property)
+    {
+        Expression node = property.Body;
+
+        // The object-typed lambda makes the compiler wrap value-type (and sometimes reference-type)
+        // members in a boxing/upcast Convert node; peel those to reach the member chain.
+        while (node is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } unary)
+            node = unary.Operand;
+
+        var segments = new List<string>();
+        while (node is MemberExpression member && member.Expression is not null)
+        {
+            // ".Value" on a nullable struct intermediate (x => x.Price.Value.Amount) is Nullable<T>
+            // plumbing, not a data property — Build() inserts the unwrap itself, so drop the segment
+            // to arrive at the same cache key as the equivalent "Price.Amount" string path.
+            var isNullableValue = member.Member.Name == nameof(Nullable<int>.Value)
+                && Nullable.GetUnderlyingType(member.Expression.Type) is not null;
+
+            if (!isNullableValue)
+            {
+                if (member.Member is not PropertyInfo)
+                    throw new ArgumentException($"The property selector '{property}' is not supported: '{member.Member.Name}' is not a property. Only property-access chains like 'x => x.Property' or 'x => x.Nested.Property' can be used.", nameof(property));
+                segments.Add(member.Member.Name);
+            }
+
+            node = member.Expression;
+        }
+
+        if (node is not ParameterExpression || segments.Count == 0)
+            throw new ArgumentException($"The property selector '{property}' is not supported. Only property-access chains like 'x => x.Property' or 'x => x.Nested.Property' can be used.", nameof(property));
+
+        segments.Reverse();
+        return string.Join('.', segments);
+    }
+
     public static BitDataGridPropertyAccessor<TItem> For(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -211,7 +264,23 @@ public sealed class BitDataGridPropertyAccessor<TItem>
             setter = Expression.Lambda<Action<TItem, object?>>(assign, param, valueParam).Compile();
         }
 
-        return new BitDataGridPropertyAccessor<TItem>(path, propertyType, canWrite, getter, setter);
+        // The queryable-translation lambda mirrors the getter's null handling for nested paths: a
+        // null intermediate yields null instead of dereferencing, so sorting/filtering an in-memory
+        // IQueryable (LINQ to Objects evaluates member chains eagerly, unlike SQL) can't throw a
+        // NullReferenceException. A non-nullable value-type leaf is lifted to its nullable form so
+        // the conditional's null branch is representable; single-segment paths stay untouched.
+        Expression lambdaBody = body;
+        if (nullGuard is not null)
+        {
+            var liftedType = CanBeNull(propertyType) ? propertyType : typeof(Nullable<>).MakeGenericType(propertyType);
+            lambdaBody = Expression.Condition(
+                nullGuard,
+                Expression.Constant(null, liftedType),
+                liftedType == propertyType ? body : Expression.Convert(body, liftedType));
+        }
+
+        return new BitDataGridPropertyAccessor<TItem>(path, propertyType, canWrite, getter, setter,
+            Expression.Lambda(lambdaBody, param));
     }
 
     private static bool CanBeNull(Type type)

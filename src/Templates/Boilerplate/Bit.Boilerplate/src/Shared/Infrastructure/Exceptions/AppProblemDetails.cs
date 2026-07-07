@@ -71,13 +71,15 @@ public partial class AppProblemDetails
 
     public static implicit operator Exception(AppProblemDetails problemDetails)
     {
-        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
+        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) 
+            ?? typeof(KnownException).Assembly.ExportedTypes.FirstOrDefault(t => problemDetails.Type?.EndsWith(t.Name) is true)
+            ?? typeof(UnknownException);
 
         var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
 
         Exception exp = exceptionType == typeof(ResourceValidationException)
                             ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
-                            : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
+                            : (Exception)Activator.CreateInstance(exceptionType, [.. args])!;
 
         foreach (var data in problemDetails.Extensions)
         {
