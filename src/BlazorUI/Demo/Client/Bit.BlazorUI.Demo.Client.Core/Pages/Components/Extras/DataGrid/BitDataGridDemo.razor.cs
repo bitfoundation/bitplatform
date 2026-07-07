@@ -210,6 +210,9 @@ public partial class BitDataGridDemo : AppComponentBase
     // example 28 - Excel export
     private readonly List<Product> excelProducts = SampleData.Generate(120);
 
+    // example 33 - export with complex layouts (master-detail + frozen + ColSpan)
+    private readonly List<Product> complexExportProducts = SampleData.Generate(30);
+
     // example 29 - lazy tree loading
     private readonly List<FileNode> lazyTreeRoots = BuildLazyRoots();
     private int nextLazyNodeId = 1000;

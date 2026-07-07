@@ -577,6 +577,7 @@ public class BitDataGridTests : BunitTestContext
         using var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read);
         Assert.IsNotNull(zip.GetEntry("[Content_Types].xml"));
         Assert.IsNotNull(zip.GetEntry("xl/workbook.xml"));
+        Assert.IsNotNull(zip.GetEntry("xl/styles.xml"));
         var sheetEntry = zip.GetEntry("xl/worksheets/sheet1.xml");
         Assert.IsNotNull(sheetEntry);
 
@@ -584,6 +585,177 @@ public class BitDataGridTests : BunitTestContext
         var sheet = reader.ReadToEnd();
         StringAssert.Contains(sheet, "<t xml:space=\"preserve\">Banana</t>");
         StringAssert.Contains(sheet, "<v>-5</v>", "numbers must be native cells, not text");
+        StringAssert.Contains(sheet, "<c t=\"inlineStr\" s=\"1\">", "header cells must use the bold style");
+        StringAssert.Contains(sheet, "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
+            "the header row must be frozen (the grid header is always sticky)");
+        StringAssert.Contains(sheet, "<cols>", "grid column widths must carry over");
+    }
+
+    private static async Task<string> ExportSheetXmlAsync(IRenderedComponent<BitDataGrid<TestRow>> component)
+    {
+        byte[] bytes = null!;
+        await component.InvokeAsync(async () => bytes = await component.Instance.ToExcelAsync());
+        using var stream = new System.IO.MemoryStream(bytes);
+        using var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read);
+        using var reader = new System.IO.StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        return reader.ReadToEnd();
+    }
+
+    [TestMethod]
+    public async Task ExcelExportStyledBakesRenderedThemeIntoWorkbook()
+    {
+        // The grid samples its rendered theme via JS; simulate what getExportStyles returns.
+        Context.JSInterop.Setup<BitDataGridExcelStyle?>("BitBlazorUI.DataGrid.getExportStyles", _ => true)
+            .SetResult(new BitDataGridExcelStyle
+            {
+                HeaderBackground = "#112233",
+                HeaderForeground = "#ffffff",
+                HeaderBold = true,
+                RowForeground = "#010203",
+                RowItalic = true,
+                StripeBackground = "#f4f4f4",
+                BorderColor = "#dddddd",
+            });
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ExcelExportStyled, true);
+            parameters.Add(p => p.Striped, true);
+            parameters.Add(p => p.Bordered, true);
+        });
+
+        byte[] bytes = null!;
+        await component.InvokeAsync(async () => bytes = await component.Instance.ToExcelAsync());
+
+        using var stream = new System.IO.MemoryStream(bytes);
+        using var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read);
+        using var stylesReader = new System.IO.StreamReader(zip.GetEntry("xl/styles.xml")!.Open());
+        var styles = stylesReader.ReadToEnd();
+        StringAssert.Contains(styles, "<fgColor rgb=\"FF112233\"/>", "header fill must carry the sampled background");
+        StringAssert.Contains(styles, "<color rgb=\"FFFFFFFF\"/>", "header font must carry the sampled foreground");
+        StringAssert.Contains(styles, "<i/>", "the sampled italic row font must be written");
+        StringAssert.Contains(styles, "<fgColor rgb=\"FFF4F4F4\"/>", "the stripe fill must be written");
+        StringAssert.Contains(styles, "<left style=\"thin\"><color rgb=\"FFDDDDDD\"/></left>",
+            "Bordered mode must produce vertical borders in the sampled color");
+
+        using var sheetReader = new System.IO.StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        var sheet = sheetReader.ReadToEnd();
+        // Data rows alternate between the default format (implicit) and the stripe format s="2",
+        // matching the grid's nth-child(even) striping; Apple is the second data row.
+        StringAssert.Contains(sheet, "<c t=\"inlineStr\" s=\"2\"><is><t xml:space=\"preserve\">Apple</t>");
+        Assert.IsFalse(sheet.Contains("<c t=\"inlineStr\" s=\"2\"><is><t xml:space=\"preserve\">Banana</t>"),
+            "odd data rows must keep the default (non-stripe) format");
+    }
+
+    [TestMethod]
+    public async Task ExcelExportRepresentsColumnSpansAsMergedCells()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.AddComponentParameter(2, "ColSpan", (Func<TestRow, int?>)(r => r.Id == 1 ? 2 : null));
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(3);
+            builder.AddComponentParameter(4, "Field", "Price");
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        // The span is really active: Banana's row renders one field cell (Name covering Price).
+        Assert.IsNotNull(component.Find(".bit-dtg-cell[style*='span 2']"));
+
+        var sheet = await ExportSheetXmlAsync(component);
+
+        // Banana is the first data row (sheet row 2): its Name cell merges over the Price column,
+        // and the covered Price value is omitted (a merged region keeps only its top-left value).
+        StringAssert.Contains(sheet, "<mergeCells count=\"1\"><mergeCell ref=\"A2:B2\"/></mergeCells>");
+        Assert.IsFalse(sheet.Contains("<v>2.5</v>"), "the value covered by a merged cell must not be written");
+        // Other rows keep their Price values (their spans are inactive).
+        StringAssert.Contains(sheet, "<v>-5</v>");
+
+        // CSV has no merge concept and stays flat, covered values included.
+        string csv = null!;
+        await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
+        StringAssert.Contains(csv, "2.5");
+    }
+
+    [TestMethod]
+    public async Task ExportKeepsDeclaredColumnOrderWithFrozenColumns()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Id");
+            builder.AddComponentParameter(2, "Frozen", true);
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(3);
+            builder.AddComponentParameter(4, "Field", "Name");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(5);
+            builder.AddComponentParameter(6, "Field", "Price");
+            builder.AddComponentParameter(7, "FrozenEnd", true);
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        // Pinning is really active on both edges.
+        Assert.IsTrue(component.FindAll(".bit-dtg-header-row .bit-dtg-sticky").Count >= 2);
+
+        string csv = null!;
+        await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
+        StringAssert.StartsWith(csv, "Id,Name,Price", "frozen columns keep the declared order");
+
+        var sheet = await ExportSheetXmlAsync(component);
+        var headerRow = sheet[..sheet.IndexOf("</row>", StringComparison.Ordinal)];
+        Assert.IsTrue(
+            headerRow.IndexOf(">Id<", StringComparison.Ordinal) < headerRow.IndexOf(">Name<", StringComparison.Ordinal)
+            && headerRow.IndexOf(">Name<", StringComparison.Ordinal) < headerRow.IndexOf(">Price<", StringComparison.Ordinal),
+            "the Excel header row must keep the declared column order");
+
+        // The leading Frozen column becomes an Excel freeze pane (together with the header row);
+        // FrozenEnd has no workbook equivalent and must not affect the pane.
+        StringAssert.Contains(sheet, "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>");
+    }
+
+    [TestMethod]
+    public async Task ExcelExportCoversMasterRowsOnlyWithDetailTemplate()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+            // A template-only column (no Field) has no exportable value and must be skipped.
+            builder.OpenComponent<BitDataGridColumn<TestRow>>(2);
+            builder.AddComponentParameter(3, "ColumnId", "Computed");
+            builder.AddComponentParameter(4, "Title", "Computed");
+            builder.AddComponentParameter(5, "Template", (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"{r.Name}-{r.Price}")));
+            builder.CloseComponent();
+        };
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, columns);
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, "DETAIL-CONTENT")));
+        });
+
+        // Expand a detail row so its content is actually rendered when the export runs.
+        component.FindAll(".bit-dtg-cell-detail button")[0].Click();
+        Assert.IsNotNull(component.Find(".bit-dtg-detail-row"));
+
+        var sheet = await ExportSheetXmlAsync(component);
+
+        Assert.AreEqual(6, sheet.Split("<row>").Length - 1, "export must cover the header plus one row per master item");
+        Assert.IsFalse(sheet.Contains("DETAIL-CONTENT"), "detail template content must not be exported");
+        Assert.IsFalse(sheet.Contains("Computed"), "template-only columns have no field and must be skipped");
     }
 
     [TestMethod]

@@ -877,9 +877,11 @@ private readonly BitDataGridStrings persianStrings = new()
 private IQueryable<Product> products = SampleData.Generate(400).AsQueryable();" + ProductModelCode + SampleDataCode;
 
     private readonly string example28RazorCode = @"
+@* ExcelExportStyled samples the grid's rendered theme (colors, striping, borders, fonts)
+   from the live DOM at export time and bakes it into the workbook's styles. *@
 <BitDataGrid TItem=""Product"" Items=""@products"" Height=""430px""
-             Filterable=""true"" Pageable=""true"" PageSize=""10""
-             ShowToolbar=""true"" ShowCsvExport=""true"" ShowExcelExport=""true"">
+             Filterable=""true"" Pageable=""true"" PageSize=""10"" Striped=""true""
+             ShowToolbar=""true"" ShowCsvExport=""true"" ShowExcelExport=""true"" ExcelExportStyled=""true"">
     <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""70px"" Filterable=""false"" />
     <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" />
     <BitDataGridColumn TItem=""Product"" Field=""Category"" />
@@ -989,4 +991,52 @@ private async Task GoToPage3() => await grid!.GoToPageAsync(3);
 // Also available: ClearSortsAsync, ClearFilterAsync/ClearFiltersAsync, UngroupAsync/ClearGroupsAsync,
 // SetPageSizeAsync, RefreshAsync, GetState/ApplyStateAsync, ToCsvAsync/ToExcelAsync.
 " + ProductModelCode + SampleDataCode;
+
+    private readonly string example33RazorCode = @"
+<BitDataGrid TItem=""Product"" Items=""@products"" Height=""460px"" Bordered=""true""
+             Sortable=""true"" Filterable=""true""
+             ShowToolbar=""true"" ShowCsvExport=""true"" ShowExcelExport=""true"" ExcelExportStyled=""true"">
+    <DetailTemplate Context=""p"">
+        @* Detail content is presentation-only: exports cover the master rows. *@
+        <div><strong>Supplier:</strong> @p.Supplier · <strong>Rating:</strong> @p.Rating.ToString(""N1"")</div>
+    </DetailTemplate>
+    <ChildContent>
+        @* Leading frozen columns (with the header row) become an Excel freeze pane;
+           the exported columns keep their declared order in both formats. *@
+        <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Width=""80px"" Frozen=""true"" Filterable=""false"" />
+
+        @* A templated field column exports the raw field value, not the rendered markup.
+           In Excel the ColSpan becomes a merged cell; in CSV it is flattened, so there the
+           Category hidden under the span is exported too. *@
+        <BitDataGridColumn TItem=""Product"" Field=""Name"" Width=""220px"" Frozen=""true"" ColSpan=""NameSpan"">
+            <Template Context=""p"">
+                @if (p.Discontinued)
+                {
+                    <span>⚠ @p.Name — discontinued</span>
+                }
+                else
+                {
+                    @p.Name
+                }
+            </Template>
+        </BitDataGridColumn>
+
+        <BitDataGridColumn TItem=""Product"" Field=""Category"" Width=""170px"" />
+        <BitDataGridColumn TItem=""Product"" Field=""Price"" Width=""150px"" Format=""C2"" />
+        <BitDataGridColumn TItem=""Product"" Field=""Stock"" Width=""130px"" />
+        <BitDataGridColumn TItem=""Product"" Field=""Supplier"" Width=""200px"" />
+
+        @* A template-only column (no Field) has no exportable value and is skipped. *@
+        <BitDataGridColumn TItem=""Product"" ColumnId=""Value"" Title=""Value"" Width=""140px""
+                           SortBy=""@(p => p.Price * p.Stock)"">
+            <Template Context=""p"">@((p.Price * p.Stock).ToString(""C0""))</Template>
+        </BitDataGridColumn>
+    </ChildContent>
+</BitDataGrid>";
+    private readonly string example33CsharpCode = @"
+private List<Product> products = SampleData.Generate(30);
+
+// In the Excel export this span becomes a merged cell (the covered Category cell stays empty);
+// the CSV export has no merge concept and writes every column's own value.
+private int? NameSpan(Product p) => p.Discontinued ? 2 : null;" + ProductModelCode + SampleDataCode;
 }

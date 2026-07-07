@@ -209,6 +209,49 @@ namespace BitBlazorUI {
             return element ? element.getBoundingClientRect().width : 0;
         }
 
+        // Samples the grid's rendered theme (computed styles of representative cells) so a styled
+        // Excel export can bake the on-screen colors/fonts into the workbook. The grid's colors come
+        // from CSS theme variables that .NET cannot resolve, so this is the only faithful source.
+        // Selection/editing/message rows are skipped: their cells are recolored by transient state.
+        public static getExportStyles(root: HTMLElement): object | null {
+            if (!root) return null;
+
+            const toHex = (color: string | null | undefined) => {
+                if (!color) return null;
+                const m = color.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+%?))?\s*\)/);
+                if (!m) return null;
+                if (m[4] !== undefined && parseFloat(m[4]) === 0) return null; // fully transparent
+                const hex = (n: string) => parseInt(n, 10).toString(16).padStart(2, '0');
+                return `#${hex(m[1])}${hex(m[2])}${hex(m[3])}`;
+            };
+            const styleOf = (el: Element | null | undefined) => el ? getComputedStyle(el as HTMLElement) : null;
+            const isBold = (s: CSSStyleDeclaration | null) => !!s && (s.fontWeight === 'bold' || parseInt(s.fontWeight, 10) >= 600);
+            const isItalic = (s: CSSStyleDeclaration | null) => !!s && s.fontStyle.includes('italic');
+
+            const header = styleOf(root.querySelector('.bit-dtg-header-row .bit-dtg-hcell'));
+            const rows = root.querySelectorAll(
+                '.bit-dtg-body > .bit-dtg-row:not(.bit-dtg-selected):not(.bit-dtg-editing):not(.bit-dtg-message-row):not(.bit-dtg-placeholder-row)');
+            const cellOdd = styleOf(rows[0]?.querySelector('.bit-dtg-cell'));
+            const cellEven = styleOf(rows[1]?.querySelector('.bit-dtg-cell'));
+            if (!header && !cellOdd) return null;
+
+            const rowBackground = toHex(cellOdd?.backgroundColor);
+            const evenBackground = toHex(cellEven?.backgroundColor);
+            return {
+                headerBackground: toHex(header?.backgroundColor),
+                headerForeground: toHex(header?.color),
+                headerBold: isBold(header),
+                headerItalic: isItalic(header),
+                rowBackground: rowBackground,
+                rowForeground: toHex(cellOdd?.color),
+                rowBold: isBold(cellOdd),
+                rowItalic: isItalic(cellOdd),
+                // Only report a stripe when the second row really renders differently (grid is striped).
+                stripeBackground: evenBackground && evenBackground !== rowBackground ? evenBackground : null,
+                borderColor: toHex(styleOf(rows[0])?.borderBottomColor),
+            };
+        }
+
         // Triggers a client-side file download for the given text content. Used by CSV export so the
         // (potentially large) CSV is generated only on demand instead of living in a DOM attribute and
         // being regenerated on every render. Uses a Blob + object URL to avoid data-URI length limits.

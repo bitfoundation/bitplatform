@@ -110,6 +110,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// in-process with no external dependency; in server mode it covers all matching rows.</summary>
     [Parameter] public bool ShowExcelExport { get; set; }
 
+    /// <summary>When true, Excel exports (the toolbar button as well as
+    /// <see cref="ToExcelAsync"/>/<see cref="ExportExcelAsync"/>) also carry the grid's current
+    /// visual theme: the rendered header/row colors, striped alternating rows, border color and
+    /// bold/italic fonts are sampled from the live DOM (so the active theme — including dark mode —
+    /// is what lands in the workbook) and baked into the file's style sheet. Falls back to the
+    /// plain bold-header styling when JS is unavailable (prerendering, disconnected circuit).</summary>
+    [Parameter] public bool ExcelExportStyled { get; set; }
+
     /// <summary>
     /// Enables keyboard cell navigation. Cells become focusable via a roving tabindex and
     /// respond to arrow keys, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>PageUp</kbd>/<kbd>PageDown</kbd>
@@ -2631,12 +2639,40 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>Generates the full (filtered/sorted) dataset as an Excel workbook (.xlsx). Like
     /// <see cref="ToCsvAsync"/>, this covers all matching rows in every data mode — server and
-    /// infinite-scrolling modes fetch them through <see cref="OnRead"/>/<see cref="OnLoadMore"/>.</summary>
+    /// infinite-scrolling modes fetch them through <see cref="OnRead"/>/<see cref="OnLoadMore"/>.
+    /// The workbook mirrors the grid's layout: a bold frozen header row, the leading
+    /// <see cref="BitDataGridColumn{TItem}.Frozen"/> columns as a freeze pane, ColSpan cells as
+    /// merged regions, and the grid's column widths. With <see cref="ExcelExportStyled"/> it also
+    /// carries the grid's rendered theme (colors, striping, borders, fonts).</summary>
     public async Task<byte[]> ToExcelAsync()
     {
         var rows = await GetExportRowsAsync();
         var cols = VisibleColumns.Where(c => c.HasField).ToList();
-        return BitDataGridExcelWriter.Write(rows, cols);
+
+        // Excel freeze panes can only pin a leading run of columns, so count consecutive Frozen
+        // exported columns from the start; a Frozen column further in (or FrozenEnd) has no
+        // workbook equivalent and exports unpinned.
+        var frozen = 0;
+        while (frozen < cols.Count && cols[frozen].Frozen) frozen++;
+
+        BitDataGridExcelStyle? style = null;
+        if (ExcelExportStyled)
+        {
+            try
+            {
+                style = await JS.InvokeAsync<BitDataGridExcelStyle?>("BitBlazorUI.DataGrid.getExportStyles", _rootRef);
+                // Vertical borders come from the grid's own Bordered mode rather than a sampled edge:
+                // cell borders are only rendered when Bordered is set, and the sampled row-separator
+                // color already covers the shared border color.
+                if (style is not null) style.VerticalBorders = Bordered;
+            }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+            catch (InvalidOperationException) { } // prerendering: JS interop not available yet
+        }
+
+        var widths = cols.Select(ColumnPixelWidth).ToList();
+        return BitDataGridExcelWriter.Write(rows, cols, frozen, widths, style);
     }
 
     /// <summary>Generates the current dataset as an .xlsx workbook and triggers a client-side download.</summary>

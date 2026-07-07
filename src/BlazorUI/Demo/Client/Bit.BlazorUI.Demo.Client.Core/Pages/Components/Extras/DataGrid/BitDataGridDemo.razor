@@ -661,21 +661,77 @@
             <div>
                 <code>ShowExcelExport</code> adds a toolbar button that downloads the full (filtered/sorted)
                 data as a real <code>.xlsx</code> workbook — generated in-process with no external library.
-                Numbers and booleans are written as native cell types so spreadsheet formulas work on them.
+                Numbers and booleans are written as native cell types so spreadsheet formulas work on them,
+                and the workbook mirrors the grid's layout: a bold, frozen header row, the grid's column
+                widths, frozen columns as Excel freeze panes and <code>ColSpan</code> cells as merged cells.
+                With <code>ExcelExportStyled</code> the workbook also carries the grid's <b>current visual
+                theme</b> — the rendered header/row colors, the striped alternating background, the border
+                color and bold/italic fonts are sampled from the live DOM at export time, so whatever theme
+                is active (light, dark, custom) is what lands in the file.
                 Exports always cover <b>all</b> matching rows, not just the rendered ones: server and
                 infinite-scrolling modes fetch the full set through <code>OnRead</code>/<code>OnLoadMore</code>,
                 and tree mode includes collapsed branches.
             </div>
             <br />
             <BitDataGrid TItem="Product" Items="@excelProducts" Height="430px"
-                         Filterable="true" Pageable="true" PageSize="10"
-                         ShowToolbar="true" ShowCsvExport="true" ShowExcelExport="true">
+                         Filterable="true" Pageable="true" PageSize="10" Striped="true"
+                         ShowToolbar="true" ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true">
                 <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />
                 <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
                 <BitDataGridColumn TItem="Product" Field="Category" />
                 <BitDataGridColumn TItem="Product" Field="Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
                 <BitDataGridColumn TItem="Product" Field="Stock" Align="BitDataGridColumnAlign.Right" />
                 <BitDataGridColumn TItem="Product" Field="Discontinued" Align="BitDataGridColumnAlign.Center" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Export with complex layouts" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33">
+            <div>
+                This grid combines a master-detail <code>DetailTemplate</code>, frozen ID/Name columns and
+                <code>ColSpan</code> spanning (discontinued rows span Name over Category) — try scrolling,
+                expanding details and filtering, then export. The <b>Excel</b> file mirrors the layout:
+                the frozen ID/Name columns (plus the header row) become a freeze pane and each spanning
+                cell becomes a merged cell. The data stays faithful in both formats: frozen columns keep
+                their declared order, a templated field column (Name) exports the raw field value rather
+                than its markup, detail content is not exported (master rows only), and the template-only
+                Value column (no <code>Field</code>) is skipped. <b>CSV</b> has no layout concepts, so it
+                stays flat — there every column exports its own value, including the Category a span covers.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@complexExportProducts" Height="460px" Bordered="true"
+                         Sortable="true" Filterable="true"
+                         ShowToolbar="true" ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true">
+                <DetailTemplate Context="p">
+                    <BitStack Horizontal Wrap Gap="2rem">
+                        <div><strong>Supplier:</strong> @p.Supplier</div>
+                        <div><strong>Rating:</strong> @p.Rating.ToString("N1")</div>
+                        <div><strong>Released:</strong> @p.ReleaseDate.ToString("yyyy-MM-dd")</div>
+                        <div><strong>Discontinued:</strong> @(p.Discontinued ? "Yes" : "No")</div>
+                    </BitStack>
+                </DetailTemplate>
+                <ChildContent>
+                    <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="80px" Align="BitDataGridColumnAlign.Right" Frozen="true" Filterable="false" />
+                    <BitDataGridColumn TItem="Product" Field="Name" Width="220px" Frozen="true" ColSpan="NameSpan">
+                        <Template Context="p">
+                            @if (p.Discontinued)
+                            {
+                                <span class="span-banner">⚠ @p.Name — discontinued</span>
+                            }
+                            else
+                            {
+                                @p.Name
+                            }
+                        </Template>
+                    </BitDataGridColumn>
+                    <BitDataGridColumn TItem="Product" Field="Category" Width="170px" />
+                    <BitDataGridColumn TItem="Product" Field="Price" Width="150px" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn TItem="Product" Field="Stock" Width="130px" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn TItem="Product" Field="Supplier" Width="200px" />
+                    <BitDataGridColumn TItem="Product" ColumnId="Value" Title="Value" Width="140px" Align="BitDataGridColumnAlign.Right"
+                                       SortBy="@(p => p.Price * p.Stock)">
+                        <Template Context="p">@((p.Price * p.Stock).ToString("C0"))</Template>
+                    </BitDataGridColumn>
+                </ChildContent>
             </BitDataGrid>
         </DemoExample>
 
