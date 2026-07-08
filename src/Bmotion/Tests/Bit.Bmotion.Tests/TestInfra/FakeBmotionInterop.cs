@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.Bmotion.Tests.TestInfra;
 
@@ -56,14 +57,14 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     public int CountOf(string method) => _calls.Count(c => c.Method == method);
 
     // ── rAF loop ──────────────────────────────────────────────────────────────
-    public ValueTask StartRafLoopAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
+    public ValueTask StartRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
         RafLoopRef = dotnetRef.Value;
         Record("startRafLoop");
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask StopRafLoopAsync<T>(DotNetObjectReference<T>? dotnetRef = null) where T : class
+    public ValueTask StopRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T>? dotnetRef = null) where T : class
     {
         Record("stopRafLoop");
         return ValueTask.CompletedTask;
@@ -76,14 +77,14 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return ValueTask.FromResult(PrefersReducedMotion);
     }
 
-    public ValueTask WatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
+    public ValueTask WatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
         ReducedMotionRef = dotnetRef.Value;
         Record("watchReducedMotion");
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask UnwatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
+    public ValueTask UnwatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
         Record("unwatchReducedMotion");
         return ValueTask.CompletedTask;
@@ -122,7 +123,7 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── Gesture event listeners ───────────────────────────────────────────────
-    public ValueTask AttachEventListenersAsync<T>(string elementId, object events, DotNetObjectReference<T> dotnetRef) where T : class
+    public ValueTask AttachEventListenersAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, object events, DotNetObjectReference<T> dotnetRef) where T : class
     {
         EventListenerRefs[elementId] = dotnetRef.Value;
         Record("attachEventListeners", elementId, events);
@@ -136,14 +137,14 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── Viewport observation ──────────────────────────────────────────────────
-    public ValueTask ObserveViewportAsync<T>(string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class
+    public ValueTask ObserveViewportAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class
     {
         ViewportRefs[elementId] = dotnetRef.Value;
         Record("observeViewport", elementId, once);
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask ObserveViewportWithOptionsAsync<T>(string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class
+    public ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class
     {
         ViewportRefs[elementId] = dotnetRef.Value;
         Record("observeViewport", elementId, options);
@@ -191,7 +192,7 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── Scroll ────────────────────────────────────────────────────────────────
-    public ValueTask<string?> ObserveScrollAsync<T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class
+    public ValueTask<string?> ObserveScrollAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class
     {
         Record("observeScroll", containerId, options);
         return ValueTask.FromResult<string?>("scroll-key-" + (_calls.Count));
@@ -219,7 +220,7 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     /// <summary>Simulates native support for the View Transitions API (false = fallback path).</summary>
     public bool SupportsViewTransitions { get; set; }
 
-    public async ValueTask<bool> StartViewTransitionAsync<T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class
+    public async ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class
     {
         Record("startViewTransition", callbackName);
         // Simulate the browser invoking the C# DOM-update callback during the transition.

@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -32,6 +32,11 @@ public class CssValidatorTests
     [DataRow("</style>")]
     [DataRow("@import 'x'")]
     [DataRow("red\n color:blue")]
+    [DataRow("url(\\6A avascript:alert(1))")] // CSS-escaped "javascript:"
+    [DataRow("\\3C /style\\3E")]              // CSS-escaped "</style>"
+    [DataRow("red\\;")]
+    [DataRow("red\0blue")]
+    [DataRow("red\tblue")]
     public void IsSafe_RejectsInjection(string value)
         => Assert.IsFalse(BmotionCssValidator.IsSafe(value));
 

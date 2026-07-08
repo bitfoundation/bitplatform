@@ -4,10 +4,11 @@
 
 <nav class="bm-nav @(_open ? "open" : null)" aria-label="Bmotion demos">
     <span class="logo">Bmotion</span>
-    <button type="button" class="bm-nav-burger" @onclick="Toggle" aria-label="Toggle navigation" aria-expanded="@_open">
+    <button type="button" class="bm-nav-burger" @onclick="Toggle" aria-label="Toggle navigation"
+            aria-expanded="@(_open ? "true" : "false")" aria-controls="bm-nav-links">
         <span></span><span></span><span></span>
     </button>
-    <div class="bm-nav-links">
+    <div id="bm-nav-links" class="bm-nav-links">
         <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
         <NavLink href="basic">Basics</NavLink>
         <NavLink href="springs">Springs</NavLink>

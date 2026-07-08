@@ -9,8 +9,10 @@ namespace Bit.Bmotion;
 internal static class BmotionCssValidator
 {
     // Characters that never legitimately appear inside a single CSS *value* but are the primary
-    // vectors for breaking out of an inline-style declaration.
-    private static readonly char[] _forbiddenChars = { ';', '{', '}', '<', '>', '\n', '\r' };
+    // vectors for breaking out of an inline-style declaration. Backslash is rejected outright:
+    // CSS escape sequences (e.g. "\3C" for '<', "\6A avascript:") would otherwise smuggle any
+    // forbidden character or sequence past the substring checks below.
+    private static readonly char[] _forbiddenChars = { ';', '{', '}', '<', '>', '\\' };
 
     // Case-insensitive substrings that indicate a scripting / structural injection attempt.
     private static readonly string[] _forbiddenSequences = { "javascript:", "expression(", "/*", "*/", "</", "@import" };
@@ -23,8 +25,8 @@ internal static class BmotionCssValidator
     {
         if (string.IsNullOrEmpty(value)) return true;
 
-        foreach (var c in _forbiddenChars)
-            if (value.IndexOf(c) >= 0) return false;
+        foreach (var c in value)
+            if (char.IsControl(c) || Array.IndexOf(_forbiddenChars, c) >= 0) return false;
 
         foreach (var seq in _forbiddenSequences)
             if (value.Contains(seq, StringComparison.OrdinalIgnoreCase)) return false;

@@ -44,6 +44,17 @@ describe('flipChildCorrection', () => {
         expect(c.fromTranslateX).toBe(-15); // -30 / 2
         expect(c.fromTranslateY).toBe(24);  // -(-12) / 0.5
     });
+
+    it('clamps a zero scale so the inverse stays finite', () => {
+        const parent = rect(0, 0, 200, 100);
+        const child = rect(20, 10, 40, 40);
+        // A 0-sized start rect yields sx = sy = 0 - must not produce Infinity/NaN.
+        const c = flipChildCorrection(parent, child, 0, 0, 30, -12);
+        expect(Number.isFinite(c.fromScaleX)).toBe(true);
+        expect(Number.isFinite(c.fromScaleY)).toBe(true);
+        expect(Number.isFinite(c.fromTranslateX)).toBe(true);
+        expect(Number.isFinite(c.fromTranslateY)).toBe(true);
+    });
 });
 
 describe('correctedRadius', () => {
@@ -56,5 +67,10 @@ describe('correctedRadius', () => {
         const r = correctedRadius(10, 1, 1);
         expect(r.fromX).toBe(10);
         expect(r.fromY).toBe(10);
+    });
+    it('clamps a zero scale so the radius stays finite', () => {
+        const r = correctedRadius(12, 0, 0);
+        expect(Number.isFinite(r.fromX)).toBe(true);
+        expect(Number.isFinite(r.fromY)).toBe(true);
     });
 });

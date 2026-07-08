@@ -70,7 +70,13 @@ export function scrollFraction(scroll, size, client) {
  * jumped toward the FLIP corner at the start and slid back to centre. Including the -d/s translate
  * cancels that: net is identity at both endpoints, so children stay put and undistorted.
  */
+// FLIP scale factors come from width/height ratios, so they are non-negative; clamp them away
+// from zero so a collapsed (0-sized) start rect can't turn the inverse math into Infinity/NaN.
+const MIN_FLIP_SCALE = 1e-4;
+
 export function flipChildCorrection(parentRect, childRect, sx, sy, dx = 0, dy = 0) {
+    sx = Math.max(sx, MIN_FLIP_SCALE);
+    sy = Math.max(sy, MIN_FLIP_SCALE);
     const offsetX = childRect.left - parentRect.left;
     const offsetY = childRect.top - parentRect.top;
     return {
@@ -86,7 +92,10 @@ export function flipChildCorrection(parentRect, childRect, sx, sy, dx = 0, dy = 
  * elliptical `h / v` form so non-uniform scale still yields round corners.
  */
 export function correctedRadius(radius, sx, sy) {
-    return { fromX: radius / sx, fromY: radius / sy };
+    return {
+        fromX: radius / Math.max(sx, MIN_FLIP_SCALE),
+        fromY: radius / Math.max(sy, MIN_FLIP_SCALE),
+    };
 }
 
 //
@@ -878,11 +887,15 @@ export function playWaapiFlip(elementId, dx, dy, sx, sy, durationMs, easingStr, 
         }
     }
 
-    anim.onfinish = () => {
+    // Run on finish AND cancel: a cancelled flip must not leave the '0 0' transform-origin (or
+    // the children's counter-transform origins) stuck on the elements.
+    const settle = () => {
         el.style.transform = finalTransform || '';
         el.style.transformOrigin = '';
         for (const done of cleanups) done();
     };
+    anim.onfinish = settle;
+    anim.oncancel = settle;
 }
 
 // 
@@ -969,6 +982,12 @@ export async function startViewTransition(dotnetRef, callbackName) {
         return false;
     }
     const transition = document.startViewTransition(() => runUpdate());
-    try { await transition.finished; } catch { /* skipped/aborted transition is not an error */ }
+    try { await transition.finished; }
+    catch {
+        // `finished` also rejects when the C# update callback threw - that IS an error and must
+        // reach the caller. Re-awaiting updateCallbackDone rethrows the callback failure, while a
+        // merely skipped/aborted transition (callback succeeded) resolves and stays swallowed.
+        await transition.updateCallbackDone;
+    }
     return true;
 }

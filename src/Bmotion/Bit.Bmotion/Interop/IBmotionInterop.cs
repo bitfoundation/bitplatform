@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.Bmotion;
 
@@ -19,14 +20,17 @@ public interface IBmotionInterop : IAsyncDisposable
     /// </summary>
     bool IsInProcess { get; }
 
+    // Every generic T below propagates DotNetObjectReference<T>'s trim annotation so trimmed/AOT
+    // apps keep T's public ([JSInvokable]) methods for the JS→.NET callbacks.
+
     // ── rAF loop ──────────────────────────────────────────────────────────────
-    ValueTask StartRafLoopAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class;
-    ValueTask StopRafLoopAsync<T>(DotNetObjectReference<T>? dotnetRef = null) where T : class;
+    ValueTask StartRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class;
+    ValueTask StopRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T>? dotnetRef = null) where T : class;
 
     // ── Reduced motion (accessibility) ────────────────────────────────────────
     ValueTask<bool> PrefersReducedMotionAsync();
-    ValueTask WatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class;
-    ValueTask UnwatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class;
+    ValueTask WatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class;
+    ValueTask UnwatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class;
 
     // ── Style application ─────────────────────────────────────────────────────
     ValueTask ApplyStylesAsync(string elementId, object styles);
@@ -38,12 +42,12 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask UnregisterElementAsync(string elementId);
 
     // ── Gesture event listeners ───────────────────────────────────────────────
-    ValueTask AttachEventListenersAsync<T>(string elementId, object events, DotNetObjectReference<T> dotnetRef) where T : class;
+    ValueTask AttachEventListenersAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, object events, DotNetObjectReference<T> dotnetRef) where T : class;
     ValueTask StartDragAsync(string elementId, long pointerId, double clientX, double clientY);
 
     // ── Viewport observation ──────────────────────────────────────────────────
-    ValueTask ObserveViewportAsync<T>(string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class;
-    ValueTask ObserveViewportWithOptionsAsync<T>(string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class;
+    ValueTask ObserveViewportAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class;
+    ValueTask ObserveViewportWithOptionsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string elementId, DotNetObjectReference<T> dotnetRef, BmViewport options) where T : class;
     ValueTask UnobserveViewportAsync(string elementId);
 
     // ── FLIP layout ───────────────────────────────────────────────────────────
@@ -56,7 +60,7 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit);
 
     // ── Scroll ────────────────────────────────────────────────────────────────
-    ValueTask<string?> ObserveScrollAsync<T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class;
+    ValueTask<string?> ObserveScrollAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class;
     ValueTask UnobserveScrollAsync(string key);
 
     // ── Programmatic animate() API ─────────────────────────────────────────────
@@ -69,5 +73,5 @@ public interface IBmotionInterop : IAsyncDisposable
     /// on <paramref name="dotnetRef"/>). Returns <c>true</c> when the native API drove the
     /// transition, <c>false</c> when it isn't supported and the callback ran without one.
     /// </summary>
-    ValueTask<bool> StartViewTransitionAsync<T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class;
+    ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class;
 }

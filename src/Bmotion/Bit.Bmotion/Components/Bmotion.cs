@@ -679,9 +679,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var values = props.ToJsDictionary();
         var config = transition?.ToConfig() ?? BuildEffectiveTransition(props);
         // Cancellation stops just the properties this call animates (Stop with null keys would
-        // clobber unrelated animations on the same element).
-        if (cancellationToken.CanBeCanceled)
-            cancellationToken.Register(() => Engine.Stop(_id, values.Keys.ToArray()));
+        // clobber unrelated animations on the same element). The registration is scoped to this
+        // call so repeated calls with a long-lived token don't accumulate callbacks.
+        using var registration = cancellationToken.CanBeCanceled
+            ? cancellationToken.Register(() => Engine.Stop(_id, values.Keys.ToArray()))
+            : default;
         await Engine.AnimateToAsync(_id, values, config);
     }
 
