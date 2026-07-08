@@ -60,7 +60,7 @@ body {
     border-radius: 4px;
 }
 
-/* Hamburger toggle — hidden until the nav collapses on narrow screens */
+/* Hamburger toggle - hidden until the nav collapses on narrow screens */
 .bm-nav-burger {
     display: none;
     flex-direction: column;

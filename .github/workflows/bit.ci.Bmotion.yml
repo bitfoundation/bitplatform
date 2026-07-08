@@ -55,7 +55,9 @@ jobs:
       run: dotnet build src/Bmotion/Bit.Bmotion.slnx
 
     - name: dotnet test (C# engine + component tests)
-      run: dotnet test src/Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj -f net10.0
+      # Run from inside src so src/global.json's "test" runner setting applies
+      # (from the repo root the SDK falls back to the unsupported VSTest path).
+      run: cd src/Bmotion && dotnet test Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj -f net10.0
 
     - name: JS tests (bit-bmotion.js drag/scroll math)
       run: |

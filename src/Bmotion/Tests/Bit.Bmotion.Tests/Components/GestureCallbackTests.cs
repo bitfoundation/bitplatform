@@ -6,7 +6,7 @@ namespace Bit.Bmotion.Tests.Components;
 
 /// <summary>
 /// Exercises the JS→C# gesture/viewport callback paths (plan item 0.1 breadth) by invoking the
-/// component's [JSInvokable] entry points on the DotNetObjectReference the fake interop captured —
+/// component's [JSInvokable] entry points on the DotNetObjectReference the fake interop captured -
 /// the same call a real browser event would make.
 /// </summary>
 [TestClass]

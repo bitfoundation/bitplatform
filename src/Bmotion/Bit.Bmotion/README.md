@@ -2,7 +2,7 @@
 
 A Blazor-native animation library inspired by [Motion](https://motion.dev) (Framer Motion):
 springs, gestures, keyframes, variants, drag, layout (FLIP) animations, shared-element
-transitions and exit animations — no manual JavaScript wiring required. All animation math
+transitions and exit animations - no manual JavaScript wiring required. All animation math
 (spring, tween, inertia, keyframes, easing, color interpolation, gesture state, transform
 composition) runs in C#; JavaScript is used only as a thin bridge to browser-native APIs.
 
@@ -38,15 +38,15 @@ and `BmotionAnimateService` for the complete API surface.
 
 ## Platform support
 
-- ✅ **Blazor WebAssembly** — fully supported. Compositor-eligible animations (tweens and
+- ✅ **Blazor WebAssembly** - fully supported. Compositor-eligible animations (tweens and
   zero-velocity springs on transform/opacity) are pre-sampled in C# and run on the browser's
   Web Animations API off the main thread; everything else runs on the C# rAF engine over
   synchronous interop.
-- ⚠️ **Blazor Server** — the compositor path works (it needs only async interop), so
+- ⚠️ **Blazor Server** - the compositor path works (it needs only async interop), so
   enter/exit/hover/tap/variant animations on transform + opacity play normally. Features that
-  require the per-frame loop — inertia, color/dimension interpolation, keyframe arrays, drag,
-  motion values — degrade to instant state changes.
-- ⏸️ **Server-side prerendering** — components render their initial styles; animations start
+  require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag,
+  motion values - degrade to instant state changes.
+- ⏸️ **Server-side prerendering** - components render their initial styles; animations start
   once the circuit/runtime becomes interactive.
 
 Inject **`BmotionCapabilities`** to detect the current mode instead of guessing:
@@ -65,12 +65,12 @@ builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMod
 | `BmReducedMotionMode`      | Behaviour |
 |----------------------------|-----------|
 | `IgnoreUnlessConfigured`   | **Default (back-compat).** OS preference respected only inside a `<BmotionConfig>`. |
-| `User`                     | **Recommended.** Respect the OS preference everywhere — the web-platform default. |
+| `User`                     | **Recommended.** Respect the OS preference everywhere - the web-platform default. |
 | `Always`                   | Always reduce, regardless of the OS. |
 | `Never`                    | Never reduce, regardless of the OS. |
 
 When motion is reduced, Bit.Bmotion follows Motion's `"user"` semantics: **transforms, layout and
-dimension changes snap to their target instantly, while opacity and colour still animate** — a
+dimension changes snap to their target instantly, while opacity and colour still animate** - a
 softer, more correct reduction than collapsing every property to instant.
 
 A local `<BmotionConfig ReduceMotion="true|false">` always overrides the global mode for its subtree
@@ -110,6 +110,6 @@ Do **not** enable WebAssembly multithreading (`<WasmEnableThreads>`) with this l
 ## Disposing the programmatic helpers
 
 `BmotionScrollTracker` is registered `Transient` and is owned by the consuming component. When
-obtained via `@inject`, Blazor does **not** dispose it per component — the consuming component
+obtained via `@inject`, Blazor does **not** dispose it per component - the consuming component
 must dispose it itself (call its `DisposeAsync` from the component's own `DisposeAsync`),
 otherwise its JS subscription leaks until the app shuts down.

@@ -2,7 +2,7 @@ namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>
 /// Verifies per-property transitions flow to the engine config for transform components
-/// (plan item 2.1, step 1 — independent transforms via <see cref="BmTransition.Properties"/>).
+/// (plan item 2.1, step 1 - independent transforms via <see cref="BmTransition.Properties"/>).
 /// </summary>
 [TestClass]
 public class PerPropertyTransitionTests

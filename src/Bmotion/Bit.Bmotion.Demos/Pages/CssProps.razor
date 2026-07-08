@@ -3,9 +3,9 @@
 <h1>CSS properties</h1>
 
 <p class="page-intro">
-    Beyond transforms and colors, Bmotion's typed props reach across the whole style surface —
+    Beyond transforms and colors, Bmotion's typed props reach across the whole style surface -
     <strong>typography</strong>, <strong>spacing</strong>, <strong>positioning</strong>,
-    <strong>clipping &amp; backgrounds</strong> — and the generic <strong>Css</strong> bag animates
+    <strong>clipping &amp; backgrounds</strong> - and the generic <strong>Css</strong> bag animates
     <em>any</em> property by name. Each group below toggles on its own.
 </p>
 
@@ -164,7 +164,7 @@
 @* ── Generic escape hatch ───────────────────────────────────────────────── *@
 <div class="demo-section">
     <h2>Generic <code>Css</code> escape hatch</h2>
-    <p>The <code>css</code> bag animates <em>any</em> CSS property by name (dash- or camelCase) — the equivalent of motion.dev's <code>animate()</code>.</p>
+    <p>The <code>css</code> bag animates <em>any</em> CSS property by name (dash- or camelCase) - the equivalent of motion.dev's <code>animate()</code>.</p>
 
     <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _escape = !_escape)">
         @(_escape ? "Reset" : "Animate")
@@ -197,19 +197,19 @@
     <p>These are configured once at registration in <code>Program.cs</code>:</p>
     <ul class="feature-list">
         <li>
-            <strong>Reduced motion</strong> —
+            <strong>Reduced motion</strong> -
             <code>AddBitBmotionServices(o =&gt; o.ReducedMotion = BmReducedMotionMode.User)</code>
             respects the OS <code>prefers-reduced-motion</code> everywhere. When reduced, transforms
             snap while opacity/color still animate.
         </li>
         <li>
-            <strong>CSS-injection safe mode</strong> —
+            <strong>CSS-injection safe mode</strong> -
             <code>o.CssSafeMode = BmCssSafeMode.Throw</code> validates string values before they reach
             inline style (reject <code>;</code>, <code>}</code>, <code>javascript:</code>, …). Enable it
             when binding untrusted input.
         </li>
         <li>
-            <strong>Capabilities</strong> — inject <code>BmotionCapabilities</code> to branch on
+            <strong>Capabilities</strong> - inject <code>BmotionCapabilities</code> to branch on
             <code>SupportsFrameLoop</code> (false on Blazor Server, where per-frame features degrade).
         </li>
     </ul>

@@ -4,7 +4,7 @@
 
 @* A debug overlay that lists every element registered with the engine and its live animation state
    (active drivers, transform / numeric / string values). Drop it anywhere in a dev build:
-   <BmotionInspector /> — it polls the engine a few times a second and renders a floating panel. *@
+   <BmotionInspector /> - it polls the engine a few times a second and renders a floating panel. *@
 
 <div class="bm-inspector @(_open ? "open" : "closed")">
     <div class="bm-insp-bar" @onclick="Toggle" role="button" tabindex="0"

@@ -16,7 +16,7 @@
  */
 
 //
-// Pure drag / scroll math — no DOM access, so it is unit-tested directly (Tests/bit-bmotion-js).
+// Pure drag / scroll math - no DOM access, so it is unit-tested directly (Tests/bit-bmotion-js).
 // The exports are an internal testing surface; the C# interop only calls the named bridge functions.
 //
 
@@ -59,14 +59,14 @@ export function scrollFraction(scroll, size, client) {
 
 /**
  * Layout FLIP child counter-transform (plan item 1.2). The parent element FLIPs with the transform
- * `translate(dx,dy) scale(sx,sy)` about its top-left (origin O). A direct child would ride along —
+ * `translate(dx,dy) scale(sx,sy)` about its top-left (origin O). A direct child would ride along -
  * stretched by the scale AND shifted by the translate. To keep the child crisp and in place, apply
  * the exact inverse of the parent transform about the SAME physical point (the parent's top-left);
  * in the child's own box coordinates that point is (-offsetX, -offsetY).
  *
  * Deriving the inverse: the parent maps x → sx·x + (dx + O(1-sx)). Its inverse, written as a CSS
- * `translate(t) scale(k)` about O, is k = 1/sx and t = -dx/sx. Counter-scaling alone (t = 0) — the
- * previous behaviour — left a residual translation of exactly (dx,dy) on the child, so it visibly
+ * `translate(t) scale(k)` about O, is k = 1/sx and t = -dx/sx. Counter-scaling alone (t = 0) - the
+ * previous behaviour - left a residual translation of exactly (dx,dy) on the child, so it visibly
  * jumped toward the FLIP corner at the start and slid back to centre. Including the -d/s translate
  * cancels that: net is identity at both endpoints, so children stay put and undistorted.
  */
@@ -81,7 +81,7 @@ export function flipChildCorrection(parentRect, childRect, sx, sy, dx = 0, dy = 
 }
 
 /**
- * Border-radius that, once scaled by (sx,sy), renders as the target radius — so corners stay a
+ * Border-radius that, once scaled by (sx,sy), renders as the target radius - so corners stay a
  * constant visual size while the box scales (Motion's border-radius correction). Uses the CSS
  * elliptical `h / v` form so non-uniform scale still yields round corners.
  */
@@ -865,7 +865,7 @@ export function playWaapiFlip(elementId, dx, dy, sx, sy, durationMs, easingStr, 
             const c = flipChildCorrection(pRect, child.getBoundingClientRect(), sx, sy, dx, dy);
             const prevOrigin = child.style.transformOrigin;
             child.style.transformOrigin = `${c.originX}px ${c.originY}px`;
-            // translate first (outermost), then the inverse scale — the exact inverse of the
+            // translate first (outermost), then the inverse scale - the exact inverse of the
             // parent's `translate(dx,dy) scale(sx,sy)`, so the child neither stretches nor jumps.
             child.animate(
                 [
