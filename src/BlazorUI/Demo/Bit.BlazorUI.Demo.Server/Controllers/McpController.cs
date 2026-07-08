@@ -72,17 +72,17 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIComponentDocs))]
     [Description("Gets the docs/examples of a specified component.")]
-    public async Task<IActionResult> GetBitBlazorUIComponentDocs(string componentName)
+    public async Task<string> GetBitBlazorUIComponentDocs(string componentName)
     {
         if (string.IsNullOrWhiteSpace(componentName))
-            return BadRequest("Component name is required.");
+            return "Component name is required.";
 
         var demoPageType = typeof(Client.Core.Routes).Assembly
             .GetExportedTypes()
             .SingleOrDefault(t => string.Equals(t.Name, $"{componentName}Demo", StringComparison.OrdinalIgnoreCase));
 
         if (demoPageType is null)
-            return NotFound("No demo page found for the specified component.");
+            return "No demo page found for the specified component.";
 
         httpContextAccessor.HttpContext!.Items["RenderForMcpClient"] = true;
 
@@ -93,7 +93,9 @@ public partial class McpController : AppControllerBase
             return renderedComponent.ToHtmlString();
         });
 
-        return Content(HtmlToLLMTextService.ToLlmFriendlyHtml(body), "text/markdown");
+        var friendlyHtml = HtmlToLLMTextService.ToLlmFriendlyHtml(body);
+
+        return friendlyHtml[..Math.Min(friendlyHtml.Length, 35_000)]; // Limit to 35K, while optimizing the docs with PreventRenderForMcp parameter.
     }
 
     [HttpGet]
