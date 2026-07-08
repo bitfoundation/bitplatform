@@ -7,7 +7,7 @@ namespace Bit.Bmotion;
 /// Slim C# wrapper around the browser-API bridge in <c>BitBmotion.js</c>.
 /// Only calls browser-native APIs; all animation logic lives in the C# engine.
 /// </summary>
-public sealed class BmotionInterop : IAsyncDisposable
+public sealed class BmotionInterop : IBmotionInterop
 {
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 
@@ -208,6 +208,13 @@ public sealed class BmotionInterop : IAsyncDisposable
     /// </summary>
     public async ValueTask<string> ResolveOrRegisterByRefAsync(ElementReference elementReference)
         => await (await Module()).InvokeAsync<string>("resolveOrRegisterByRef", elementReference);
+
+    // ── View Transitions API ───────────────────────────────────────────────────
+
+    /// <summary>Wraps <c>document.startViewTransition</c> around a C# DOM-update callback.</summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
+    public async ValueTask<bool> StartViewTransitionAsync<T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class
+        => await (await Module()).InvokeAsync<bool>("startViewTransition", dotnetRef, callbackName);
 
     // ── Dispose ───────────────────────────────────────────────────────────────
 

@@ -3,17 +3,20 @@ namespace Bit.Bmotion;
 /// <summary>What a layout (FLIP) animation animates.</summary>
 public enum BmLayoutMode
 {
-    /// <summary>Animate both position and size (translate + scale).</summary>
+    /// <summary>
+    /// Animate both position and size (translate + scale). Direct children are counter-scaled and the
+    /// border-radius is corrected each frame, so text/children don't stretch and corners stay round.
+    /// </summary>
     Full,
-    /// <summary>Animate position only - avoids scale distortion on aspect-ratio-sensitive content.</summary>
+    /// <summary>Animate position only - the cheapest, always-distortion-free option.</summary>
     Position,
 }
 
 /// <summary>
 /// Layout-animation activation for a Bmotion element, motion.dev-style:
 /// <code>
-/// Layout="true"                 // animate position + size (implicit bool conversion)
-/// Layout="BmLayout.Position"    // animate position only (no scale distortion)
+/// Layout="true"                 // animate position + size, with child counter-scale + radius correction
+/// Layout="BmLayout.Position"    // animate position only (cheapest, no scaling at all)
 /// </code>
 /// </summary>
 public readonly struct BmLayout : IEquatable<BmLayout>

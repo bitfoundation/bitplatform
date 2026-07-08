@@ -49,21 +49,42 @@ and `BmotionAnimateService` for the complete API surface.
 - ⏸️ **Server-side prerendering** — components render their initial styles; animations start
   once the circuit/runtime becomes interactive.
 
-## Accessibility: reduced motion is opt-in
+Inject **`BmotionCapabilities`** to detect the current mode instead of guessing:
+`Caps.SupportsFrameLoop` is `false` on Server (drag/inertia/interpolation degrade to instant),
+`Caps.SupportsCompositor` is always `true`. On Server, the first animation that collapses to an
+instant change also logs a one-time warning so the degradation is diagnosable.
 
-`prefers-reduced-motion` is **only** honoured for elements inside a `<BmotionConfig>`. Elements
-with no surrounding config always animate, even when the OS requests reduced motion. This is a
-deliberate choice (so the OS setting never silently disables animations an app didn't opt into),
-but it is the opposite of the web-platform default — if you care about reduced-motion
-accessibility, wrap your app (or the relevant subtree) in a config:
+## Accessibility: reduced motion
+
+Choose how the library honours the OS `prefers-reduced-motion` setting **globally** at registration:
+
+```csharp
+builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+```
+
+| `BmReducedMotionMode`      | Behaviour |
+|----------------------------|-----------|
+| `IgnoreUnlessConfigured`   | **Default (back-compat).** OS preference respected only inside a `<BmotionConfig>`. |
+| `User`                     | **Recommended.** Respect the OS preference everywhere — the web-platform default. |
+| `Always`                   | Always reduce, regardless of the OS. |
+| `Never`                    | Never reduce, regardless of the OS. |
+
+When motion is reduced, Bit.Bmotion follows Motion's `"user"` semantics: **transforms, layout and
+dimension changes snap to their target instantly, while opacity and colour still animate** — a
+softer, more correct reduction than collapsing every property to instant.
+
+A local `<BmotionConfig ReduceMotion="true|false">` always overrides the global mode for its subtree
+(`null` = follow the mode):
 
 ```razor
-<BmotionConfig>           @* ReduceMotion defaults to null = follow the OS setting *@
+<BmotionConfig ReduceMotion="true">   @* force-reduce this subtree *@
     ...
 </BmotionConfig>
 ```
 
-Set `ReduceMotion="true"`/`"false"` to force it on or off regardless of the OS preference.
+> **Migration note.** The default remains `IgnoreUnlessConfigured` so existing apps are unaffected.
+> New apps should set `ReducedMotion = BmReducedMotionMode.User` to match the platform default; this
+> is planned to become the default in a future major version.
 
 ## Security note
 
@@ -71,6 +92,15 @@ String-valued animation properties (`backgroundColor`, `width`, `boxShadow`, `co
 `cssVars`, …) are written verbatim into the element's inline style. They are meant for
 developer-authored values. Do **not** bind untrusted end-user input to them, or you risk CSS
 injection into the element's `style`.
+
+If you must bind untrusted input, enable **CSS safe mode** to validate those values against a
+conservative injection check (rejecting `;`, `}`, `<`, `javascript:`, `expression(`, comments, …):
+
+```csharp
+builder.Services.AddBitBmotionServices(o => o.CssSafeMode = BmCssSafeMode.Throw); // or .Warn
+```
+
+It is `Off` by default (for performance/parity); `Warn` logs and still applies, `Throw` rejects.
 
 ## Threading
 

@@ -30,14 +30,14 @@ namespace Bit.Bmotion;
 /// </summary>
 public sealed class BmotionScrollTracker : IAsyncDisposable
 {
-    private readonly BmotionInterop _interop;
+    private readonly IBmotionInterop _interop;
     private readonly List<string> _subscriptionKeys = new();
     private DotNetObjectReference<BmotionScrollTracker>? _dotnet;
 
     private Func<BmScrollInfo, Task>? _onScroll;
     private bool _disposed;
 
-    public BmotionScrollTracker(BmotionInterop interop)
+    public BmotionScrollTracker(IBmotionInterop interop)
     {
         ArgumentNullException.ThrowIfNull(interop);
         _interop = interop;

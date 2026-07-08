@@ -1,0 +1,43 @@
+import { describe, it, expect } from 'vitest';
+import { flipChildCorrection, correctedRadius } from '../../Bit.Bmotion/wwwroot/bit-bmotion.js';
+
+const rect = (left, top, width, height) => ({
+    left, top, width, height, right: left + width, bottom: top + height, x: left, y: top,
+});
+
+describe('flipChildCorrection', () => {
+    it('inverts the parent scale and origins at the parent top-left', () => {
+        const parent = rect(0, 0, 200, 100);
+        const child = rect(20, 10, 40, 40); // 20px right, 10px down from parent
+        const c = flipChildCorrection(parent, child, 2, 0.5);
+
+        expect(c.fromScaleX).toBe(0.5);   // 1 / 2
+        expect(c.fromScaleY).toBe(2);     // 1 / 0.5
+        // Origin is the parent's top-left expressed in the child's box coords → negated offset.
+        expect(c.originX).toBe(-20);
+        expect(c.originY).toBe(-10);
+    });
+
+    it('a child flush with the parent origin scales about its own top-left', () => {
+        const parent = rect(50, 50, 300, 300);
+        const child = rect(50, 50, 100, 100);
+        const c = flipChildCorrection(parent, child, 3, 3);
+        expect(c.originX).toBeCloseTo(0); // -0 renders identically to 0
+        expect(c.originY).toBeCloseTo(0);
+        expect(c.fromScaleX).toBeCloseTo(1 / 3);
+        expect(c.fromScaleY).toBeCloseTo(1 / 3);
+    });
+});
+
+describe('correctedRadius', () => {
+    it('divides the radius by the scale so corners render constant', () => {
+        const r = correctedRadius(12, 2, 4);
+        expect(r.fromX).toBe(6);  // 12 / 2
+        expect(r.fromY).toBe(3);  // 12 / 4
+    });
+    it('is identity at scale 1', () => {
+        const r = correctedRadius(10, 1, 1);
+        expect(r.fromX).toBe(10);
+        expect(r.fromY).toBe(10);
+    });
+});

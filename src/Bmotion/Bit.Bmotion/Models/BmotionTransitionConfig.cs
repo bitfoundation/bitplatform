@@ -35,6 +35,18 @@ internal sealed class BmotionTransitionConfig
     }
     private double[]? _easeCubicBezier;
 
+    /// <summary>
+    /// Number of steps for a stepped (CSS <c>steps()</c>) easing. When greater than zero, this
+    /// overrides <see cref="Ease"/> and <see cref="EaseCubicBezier"/>. Default: 0 (not stepped).
+    /// </summary>
+    public int StepCount { get; set; }
+
+    /// <summary>Where a stepped easing's jumps occur. See <see cref="BmStepJump"/>.</summary>
+    public BmStepJump StepJump { get; set; } = BmStepJump.End;
+
+    /// <summary>Color space used when interpolating color properties. Default: sRGB.</summary>
+    public BmColorSpace ColorSpace { get; set; } = BmColorSpace.Srgb;
+
     private static double[]? ValidateCubicBezier(double[]? value)
     {
         if (value is null) return null;
@@ -212,6 +224,9 @@ internal sealed class BmotionTransitionConfig
         // Read the backing field directly: the EaseCubicBezier getter already returns a defensive
         // clone, so cloning it again here would allocate a redundant second copy.
         EaseCubicBezier = _easeCubicBezier is null ? null : (double[])_easeCubicBezier.Clone(),
+        StepCount = StepCount,
+        StepJump = StepJump,
+        ColorSpace = ColorSpace,
         Repeat = Repeat,
         RepeatInfinite = RepeatInfinite,
         RepeatType = RepeatType,

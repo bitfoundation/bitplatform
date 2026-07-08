@@ -12,6 +12,7 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
     private readonly bool _isInfinite;
     private readonly BmRepeatType _repeatType;
     private readonly double _repeatDelayMs;
+    private readonly BmColorSpace _colorSpace;
     private readonly Action<string> _apply;
 
     private double _startTime = -1;
@@ -45,6 +46,7 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
         _isInfinite = config.IsInfiniteRepeat;
         _repeatType = config.RepeatType;
         _repeatDelayMs = config.RepeatDelay * 1000;
+        _colorSpace = config.ColorSpace;
         _apply = apply;
     }
 
@@ -61,7 +63,7 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
         // Fall back to the raw target string when a color couldn't be parsed (matches the
         // string Lerp's behaviour of returning 'to' for unparseable input).
         _apply(_curFromCh != null && _curToCh != null
-            ? BmotionColorInterpolator.Lerp(_curFromCh, _curToCh, p)
+            ? BmotionColorInterpolator.Lerp(_curFromCh, _curToCh, p, _colorSpace)
             : _curTo);
 
         if (t >= 1.0)

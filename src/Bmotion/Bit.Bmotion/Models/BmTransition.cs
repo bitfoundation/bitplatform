@@ -11,6 +11,12 @@ public abstract class BmTransition
     /// <summary>Delay before the animation starts, in seconds.</summary>
     public double Delay { get; set; }
 
+    /// <summary>
+    /// Color space for interpolating color properties. <c>null</c> inherits the global
+    /// <c>&lt;BmotionConfig&gt;</c> setting (or sRGB when none). See <see cref="BmColorSpace"/>.
+    /// </summary>
+    public BmColorSpace? ColorSpace { get; set; }
+
     /// <summary>Repeat configuration. E.g. <c>Repeat = 3</c> or <c>Repeat = BmRepeat.Mirror()</c>.</summary>
     public BmRepeat? Repeat { get; set; }
 
@@ -40,6 +46,7 @@ public abstract class BmTransition
     {
         var c = CreateConfig();
         c.Delay = Delay;
+        if (ColorSpace is BmColorSpace cs) c.ColorSpace = cs;
         if (Repeat is { } r)
         {
             c.RepeatInfinite = r.IsForever;
@@ -74,6 +81,7 @@ public abstract class BmTransition
     internal virtual bool ValueEquals(BmTransition other)
     {
         if (Delay != other.Delay) return false;
+        if (ColorSpace != other.ColorSpace) return false;
         if (!Nullable.Equals(Repeat, other.Repeat)) return false;
         if (StaggerChildren != other.StaggerChildren || DelayChildren != other.DelayChildren) return false;
         // OnUpdate is deliberately excluded: inline callbacks are recreated on every render and
@@ -126,6 +134,15 @@ public sealed class BmTween : BmTransition
     public double[]? Bezier { get; set; }
 
     /// <summary>
+    /// Number of discrete steps for a stepped (CSS <c>steps()</c>) easing. When greater than zero,
+    /// this overrides <see cref="Ease"/> and <see cref="Bezier"/>. Default: 0 (not stepped).
+    /// </summary>
+    public int Steps { get; set; }
+
+    /// <summary>Where a stepped easing's jumps occur (see <see cref="Steps"/>). Default: End.</summary>
+    public BmStepJump StepJump { get; set; } = BmStepJump.End;
+
+    /// <summary>
     /// Progress offsets (0-1) for each keyframe value; evenly distributed when omitted.
     /// Length must match the keyframe array being animated.
     /// </summary>
@@ -144,6 +161,8 @@ public sealed class BmTween : BmTransition
         Duration = Duration,
         Ease = Ease,
         EaseCubicBezier = Bezier,
+        StepCount = Steps,
+        StepJump = StepJump,
         Times = Times,
         Eases = Eases,
     };
@@ -151,6 +170,7 @@ public sealed class BmTween : BmTransition
     internal override bool ValueEquals(BmTransition other)
         => other is BmTween t
            && Duration == t.Duration && Ease == t.Ease
+           && Steps == t.Steps && StepJump == t.StepJump
            && ArraysEqual(Bezier, t.Bezier) && ArraysEqual(Times, t.Times)
            && EasesEqual(Eases, t.Eases)
            && base.ValueEquals(other);

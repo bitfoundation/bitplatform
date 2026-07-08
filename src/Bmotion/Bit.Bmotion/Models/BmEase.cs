@@ -8,4 +8,15 @@ public enum BmEase
     CircIn, CircOut, CircInOut,
     BackIn, BackOut, BackInOut,
     Anticipate,
+
+    // ── Power curves ──────────────────────────────────────────────────────────
+    SineIn, SineOut, SineInOut,
+    QuadIn, QuadOut, QuadInOut,
+    QuartIn, QuartOut, QuartInOut,
+    QuintIn, QuintOut, QuintInOut,
+    ExpoIn, ExpoOut, ExpoInOut,
+
+    // ── Overshoot / oscillating (rAF path; sampled to linear() for the compositor) ──
+    ElasticIn, ElasticOut, ElasticInOut,
+    BounceIn, BounceOut, BounceInOut,
 }

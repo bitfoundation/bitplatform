@@ -25,7 +25,7 @@ namespace Bit.Bmotion;
 /// </remarks>
 public sealed class BmotionAnimationEngine : IAsyncDisposable
 {
-    private readonly BmotionInterop _interop;
+    private readonly IBmotionInterop _interop;
     private readonly ILogger<BmotionAnimationEngine>? _logger;
     private readonly Dictionary<string, BmotionElementAnimationState> _elements = new();
     private DotNetObjectReference<BmotionAnimationEngine>? _dotnet;
@@ -41,7 +41,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     // Marshaled synchronously to JS before the next ComputeFrame runs (single-threaded Blazor WASM).
     private readonly Dictionary<string, Dictionary<string, string>> _frameResult = new();
 
-    public BmotionAnimationEngine(BmotionInterop interop, ILogger<BmotionAnimationEngine>? logger = null)
+    public BmotionAnimationEngine(IBmotionInterop interop, ILogger<BmotionAnimationEngine>? logger = null)
     {
         _interop = interop;
         _logger = logger;
@@ -195,6 +195,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             _ = SuperviseOffloadAsync(elementId, state, values, transition, offload, tcs);
             return;
         }
+
+        // No compositor offload was possible: on Blazor Server (no frame loop) this animation
+        // collapses to an instant change. Warn once so the degradation is diagnosable instead of
+        // silent - see BmotionCapabilities.SupportsFrameLoop.
+        WarnIfDegradingOnServer(elementId, values, transition);
 
         // The awaits above can interleave with a concurrent caller that registered a compositor
         // plan on the same keys after this call's interrupt pass (see RegisterWaapiPlan, which
@@ -498,6 +503,25 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// <summary>Whether this environment can run the per-frame rAF loop (Blazor WebAssembly).</summary>
     internal bool SupportsFrameLoop => _interop.IsInProcess;
 
+    private bool _serverDegradationWarned;
+
+    // Warns once (per engine) when a non-offloadable animation degrades to an instant change on
+    // Blazor Server. Skips genuinely-instant transitions (duration-0 tweens) so a set()-like call
+    // doesn't produce a false positive.
+    private void WarnIfDegradingOnServer(
+        string elementId, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
+    {
+        if (_interop.IsInProcess || _serverDegradationWarned || _logger is null) return;
+        bool instant = transition is { Type: BmotionTransitionType.Tween, Duration: <= 0 };
+        if (instant || values.Count == 0) return;
+        _serverDegradationWarned = true;
+        _logger.LogWarning(
+            "Bit.Bmotion: an animation on '{ElementId}' collapsed to an instant change on Blazor Server "
+            + "(no per-frame loop; properties {Properties} are not compositor-eligible). Inject "
+            + "BmotionCapabilities to detect this - SupportsFrameLoop is false here.",
+            elementId, string.Join(", ", values.Keys));
+    }
+
     /// <summary>
     /// rAF-loop start on WebAssembly; on Blazor Server (no sync interop) drives the element's
     /// zero-duration drivers to completion and flushes the result through async interop instead.
@@ -642,9 +666,20 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         {
             samples = SampleTweenProgress(config);
             durationMs = config.Duration * 1000;
-            easing = await LinearEasingSupportedAsync()
-                ? BuildLinearEasing(samples)
-                : BmEaseFunctions.ToCssString(config);
+            if (await LinearEasingSupportedAsync())
+            {
+                easing = BuildLinearEasing(samples);
+            }
+            else if (BmEaseFunctions.HasFaithfulCssEasing(config))
+            {
+                easing = BmEaseFunctions.ToCssString(config);
+            }
+            else
+            {
+                // Elastic/bounce can't be expressed as a CSS curve and the browser lacks linear()
+                // support - run it exactly on the rAF engine instead of shipping a wrong easing.
+                return null;
+            }
         }
 
         // Two keyframes composed from the FULL transform state so untouched components persist,
