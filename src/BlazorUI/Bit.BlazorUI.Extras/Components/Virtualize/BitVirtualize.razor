@@ -18,7 +18,7 @@
     {
         <div class="bit-vir-ldg">@LoadingTemplate</div>
     }
-    else if (_itemCount == 0 && _loading is false)
+    else if (_itemCount == 0 && _loading is false && (Items is not null || _initialized))
     {
         @if (EmptyTemplate is not null)
         {

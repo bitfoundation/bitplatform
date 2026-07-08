@@ -176,7 +176,7 @@ internal sealed class BitVirtualizePrefixSumTree
 
         // Largest power of two <= _count.
         var pw = 1;
-        while (pw << 1 <= _count)
+        while (pw <= _count >> 1)
         {
             pw <<= 1;
         }
