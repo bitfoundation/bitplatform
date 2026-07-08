@@ -182,7 +182,24 @@ namespace BitBlazorUI {
                 this.toolbar.addEventListener('keydown', this.toolbarKeydownHandler);
                 this.toolbar.addEventListener('focusin', this.toolbarFocusInHandler);
                 this.initToolbarRoving();
+                this.initToolbarDropdowns();
             }
+        }
+
+        // The toolbar dropdowns open on hover / focus-within purely via CSS. Mirror that
+        // visible state onto the trigger's aria-expanded so assistive tech knows when the
+        // menu is actually open (aria-haspopup alone only says a menu exists).
+        private initToolbarDropdowns() {
+            const dropdowns = this.toolbar?.querySelectorAll<HTMLElement>('.bit-mde-dd') ?? [];
+            dropdowns.forEach(dd => {
+                const trigger = dd.querySelector<HTMLButtonElement>(':scope > .bit-mde-btn');
+                if (!trigger) return;
+                const setExpanded = (open: boolean) => trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+                dd.addEventListener('pointerenter', () => setExpanded(true));
+                dd.addEventListener('pointerleave', () => setExpanded(dd.contains(document.activeElement)));
+                dd.addEventListener('focusin', () => setExpanded(true));
+                dd.addEventListener('focusout', e => setExpanded(dd.contains(e.relatedTarget as Node) || dd.matches(':hover')));
+            });
         }
 
         // Implements the WAI-ARIA toolbar pattern: a single tab stop, arrow keys move
@@ -592,6 +609,9 @@ namespace BitBlazorUI {
             const value = this.textArea.value;
             const idx = value.indexOf(token);
             if (idx < 0) return;
+            // Close any active typing session so undo captures the post-replacement
+            // state instead of the stale placeholder baseline.
+            this.endTypingGroup();
             this.textArea.value = value.slice(0, idx) + replacement + value.slice(idx + token.length);
             const caret = idx + replacement.length;
             if (document.activeElement === this.textArea) this.textArea.setSelectionRange(caret, caret);
@@ -689,15 +709,18 @@ namespace BitBlazorUI {
         // Debounced push of the value to .NET, cutting interop chatter (important on
         // Blazor Server) while a short window keeps two-way binding responsive.
         private scheduleChange() {
-            if (this.config.autoSaveKey) this.saveDraft();
-
             if (this.config.changeDebounceMs <= 0) {
+                if (this.config.autoSaveKey) this.saveDraft();
                 this.notifyChange();
                 return;
             }
+            // Debounce the draft save alongside the change notification so we don't hit
+            // localStorage synchronously on every keystroke. flushChange() (blur / before
+            // notify) is the safety net that still persists the latest value promptly.
             if (this._changeTimer) clearTimeout(this._changeTimer);
             this._changeTimer = setTimeout(() => {
                 this._changeTimer = null;
+                if (this.config.autoSaveKey) this.saveDraft();
                 this.notifyChange();
             }, this.config.changeDebounceMs);
         }

@@ -54,12 +54,16 @@ public static class BitMarkdownAstHelper
 
     private static void PushChildrenReversed(BitMarkdownNode node, Stack<BitMarkdownNode> stack)
     {
-        // Flatten children across all child lists (in order), then push them
-        // reversed so they pop in document (pre-order) order.
-        var children = new List<BitMarkdownNode>();
-        foreach (var list in node.ChildLists)
-            children.AddRange(list);
-        for (int i = children.Count - 1; i >= 0; i--)
-            stack.Push(children[i]);
+        // Push children across all child lists in reverse document order (last list
+        // first, last node first within each) so they pop in pre-order without
+        // allocating an intermediate flattened list.
+        var childLists = node.ChildLists;
+        var lists = childLists as IList<IList<BitMarkdownNode>> ?? childLists.ToList();
+        for (int i = lists.Count - 1; i >= 0; i--)
+        {
+            var list = lists[i];
+            for (int j = list.Count - 1; j >= 0; j--)
+                stack.Push(list[j]);
+        }
     }
 }

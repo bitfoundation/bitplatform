@@ -71,7 +71,7 @@ public static partial class BitMarkdownEditorCommands
         if (start >= ml && end + ml <= text.Length &&
             text.Substring(start - ml, ml) == marker &&
             text.Substring(end, ml) == marker &&
-            (marker is not "*" || (IsItalicDelimiter(text, start - ml) && IsItalicDelimiter(text, end))))
+            IsWholeMarkerDelimiter(text, start - ml, marker) && IsWholeMarkerDelimiter(text, end, marker))
         {
             string unwrapped = text[..(start - ml)] + selected + text[(end + ml)..];
             return new BitMarkdownEditorEditResult(true, unwrapped, start - ml, end - ml);
@@ -79,7 +79,7 @@ public static partial class BitMarkdownEditorCommands
 
         // Markers captured inside the selection? -> unwrap.
         if (selected.Length >= 2 * ml && selected.StartsWith(marker, StringComparison.Ordinal) && selected.EndsWith(marker, StringComparison.Ordinal) &&
-            (marker is not "*" || (IsItalicDelimiter(selected, 0) && IsItalicDelimiter(selected, selected.Length - 1))))
+            IsWholeMarkerDelimiter(selected, 0, marker) && IsWholeMarkerDelimiter(selected, selected.Length - 1, marker))
         {
             string inner = selected[ml..^ml];
             return new BitMarkdownEditorEditResult(true, text[..start] + inner + text[end..], start, start + inner.Length);
@@ -100,16 +100,34 @@ public static partial class BitMarkdownEditorCommands
     /// <paramref name="index"/> counts as an italic delimiter only when its contiguous
     /// run of stars has an odd length (the unpaired star is the italic marker).
     /// </summary>
-    private static bool IsItalicDelimiter(string text, int index)
+    private static bool IsItalicDelimiter(string text, int index) => IsSingleCharDelimiter(text, index, '*');
+
+    /// <summary>
+    /// A lone marker char that is part of a longer run of the same character belongs to
+    /// the multi-char marker (a single '*' inside '**' is bold; a single '~' inside '~~'
+    /// is strikethrough). The char at <paramref name="index"/> counts as a single-char
+    /// delimiter only when its contiguous run has an odd length (the unpaired char is the
+    /// single marker).
+    /// </summary>
+    private static bool IsSingleCharDelimiter(string text, int index, char c)
     {
         int s = index;
-        while (s > 0 && text[s - 1] == '*') s--;
+        while (s > 0 && text[s - 1] == c) s--;
 
         int e = index;
-        while (e < text.Length - 1 && text[e + 1] == '*') e++;
+        while (e < text.Length - 1 && text[e + 1] == c) e++;
 
         return (e - s + 1) % 2 == 1;
     }
+
+    /// <summary>
+    /// True when the marker occurrence at <paramref name="index"/> is a self-contained
+    /// delimiter rather than part of a longer run of the same character. Only single-char
+    /// markers that also form a double marker are ambiguous ('*' vs '**', '~' vs '~~');
+    /// every other marker is always a whole delimiter.
+    /// </summary>
+    private static bool IsWholeMarkerDelimiter(string text, int index, string marker)
+        => marker is not ("*" or "~") || IsSingleCharDelimiter(text, index, marker[0]);
 
     // ---- headings -----------------------------------------------------------
 
