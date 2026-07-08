@@ -470,6 +470,16 @@ The content of this editor **cannot** be edited, but can still be *selected* and
         await commandsRef.Run(command);
     }
 
+    private async Task Undo()
+    {
+        await commandsRef.Undo();
+    }
+
+    private async Task Redo()
+    {
+        await commandsRef.Redo();
+    }
+
     private async Task GetValue()
     {
         getValueResult = await commandsRef.GetValue();
@@ -557,8 +567,8 @@ protected override void OnInitialized()
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunCommand(BitMarkdownEditorCommand.TaskList)"">Tasks</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunCommand(BitMarkdownEditorCommand.Table)"">Table</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunCommand(BitMarkdownEditorCommand.CodeBlock)"">Code</BitButton>
-    <BitButton Variant=""BitVariant.Outline"" IsEnabled=""commandsRef?.CanUndo ?? false"" OnClick=""() => commandsRef.Undo()"">Undo</BitButton>
-    <BitButton Variant=""BitVariant.Outline"" IsEnabled=""commandsRef?.CanRedo ?? false"" OnClick=""() => commandsRef.Redo()"">Redo</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" IsEnabled=""commandsRef?.CanUndo ?? false"" OnClick=""Undo"">Undo</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" IsEnabled=""commandsRef?.CanRedo ?? false"" OnClick=""Redo"">Redo</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""GetValue"">GetValue</BitButton>
 </div>
 
@@ -573,6 +583,16 @@ private string? getValueResult;
 private async Task RunCommand(BitMarkdownEditorCommand command)
 {
     await commandsRef.Run(command);
+}
+
+private async Task Undo()
+{
+    await commandsRef.Undo();
+}
+
+private async Task Redo()
+{
+    await commandsRef.Redo();
 }
 
 private async Task GetValue()

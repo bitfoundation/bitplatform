@@ -122,8 +122,8 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.TaskList)">Tasks</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Table)">Table</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.CodeBlock)">Code</BitButton>
-                <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanUndo ?? false" OnClick="() => commandsRef.Undo()">Undo</BitButton>
-                <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanRedo ?? false" OnClick="() => commandsRef.Redo()">Redo</BitButton>
+                <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanUndo ?? false" OnClick="Undo">Undo</BitButton>
+                <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanRedo ?? false" OnClick="Redo">Redo</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="GetValue">GetValue</BitButton>
             </div>
             <br />

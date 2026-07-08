@@ -24,32 +24,43 @@ public sealed partial class BitMarkdownAutoLinkAstProcessor : BitMarkdownAstProc
             Walk(list);
     }
 
-    private static void Walk(IList<BitMarkdownNode> list)
+    private static void Walk(IList<BitMarkdownNode> root)
     {
-        for (int i = 0; i < list.Count; i++)
+        // Iterative traversal over child lists to avoid stack overflow on deeply
+        // nested input, mirroring BitMarkdownAstHelper's approach. A dedicated stack is
+        // used instead of VisitChildLists because we must skip the subtrees of existing
+        // link/image nodes (never autolink inside them). Sibling lists are processed
+        // independently, so the LIFO order doesn't affect the result.
+        var stack = new Stack<IList<BitMarkdownNode>>();
+        stack.Push(root);
+        while (stack.Count > 0)
         {
-            switch (list[i])
+            var list = stack.Pop();
+            for (int i = 0; i < list.Count; i++)
             {
-                case BitMarkdownTextNode t:
-                    var replacement = Split(t.Text);
-                    if (replacement is not null)
-                    {
-                        list.RemoveAt(i);
-                        foreach (var node in replacement)
-                            list.Insert(i++, node);
-                        i--;
-                    }
-                    break;
+                switch (list[i])
+                {
+                    case BitMarkdownTextNode t:
+                        var replacement = Split(t.Text);
+                        if (replacement is not null)
+                        {
+                            list.RemoveAt(i);
+                            foreach (var node in replacement)
+                                list.Insert(i++, node);
+                            i--;
+                        }
+                        break;
 
-                // Never autolink inside existing links/images.
-                case BitMarkdownLinkNode:
-                case BitMarkdownImageNode:
-                    break;
+                    // Never autolink inside existing links/images.
+                    case BitMarkdownLinkNode:
+                    case BitMarkdownImageNode:
+                        break;
 
-                default:
-                    foreach (var childList in list[i].ChildLists)
-                        Walk(childList);
-                    break;
+                    default:
+                        foreach (var childList in list[i].ChildLists)
+                            stack.Push(childList);
+                        break;
+                }
             }
         }
     }
