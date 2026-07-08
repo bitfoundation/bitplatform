@@ -27,6 +27,23 @@ describe('flipChildCorrection', () => {
         expect(c.fromScaleX).toBeCloseTo(1 / 3);
         expect(c.fromScaleY).toBeCloseTo(1 / 3);
     });
+
+    it('defaults to no translate correction when the FLIP delta is omitted', () => {
+        const parent = rect(0, 0, 200, 100);
+        const child = rect(20, 10, 40, 40);
+        const c = flipChildCorrection(parent, child, 2, 0.5);
+        expect(c.fromTranslateX).toBeCloseTo(0); // -0 renders identically to 0
+        expect(c.fromTranslateY).toBeCloseTo(0);
+    });
+
+    it('cancels the parent translate as -d/s so the child does not jump', () => {
+        const parent = rect(0, 0, 200, 100);
+        const child = rect(20, 10, 40, 40);
+        // Parent FLIP: translate(30,-12) scale(2, 0.5) about its top-left.
+        const c = flipChildCorrection(parent, child, 2, 0.5, 30, -12);
+        expect(c.fromTranslateX).toBe(-15); // -30 / 2
+        expect(c.fromTranslateY).toBe(24);  // -(-12) / 0.5
+    });
 });
 
 describe('correctedRadius', () => {

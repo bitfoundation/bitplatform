@@ -55,6 +55,8 @@ public static class Bm
         BmStringKeyframes? backgroundPosition = null, BmStringKeyframes? backgroundSize = null,
         // ── Motion path ──
         BmStringKeyframes? offsetPath = null, BmStringKeyframes? offsetDistance = null,
+        // ── SVG shape morph ──
+        BmStringKeyframes? d = null,
         // ── SVG path drawing ──
         BmKeyframes? pathLength = null, BmKeyframes? pathOffset = null, BmKeyframes? pathSpacing = null,
         // ── Extras ──
@@ -81,6 +83,7 @@ public static class Bm
             LetterSpacing = letterSpacing, LineHeight = lineHeight, FontSize = fontSize,
             ClipPath = clipPath, BackgroundPosition = backgroundPosition, BackgroundSize = backgroundSize,
             OffsetPath = offsetPath, OffsetDistance = offsetDistance,
+            D = d,
             PathLength = pathLength, PathOffset = pathOffset, PathSpacing = pathSpacing,
             CssVars = cssVars,
             Css = css,

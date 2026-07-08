@@ -19,7 +19,7 @@
                 <div style="flex:1; position:relative; height:32px;">
                     <Bmotion Animate="@(_on ? Bm.To(x: 240) : Bm.To(x: 0))"
                              Transition="Bm.Tween(0.9, e)">
-                        <div class="box-sm" style="width:28px;height:28px;" />
+                        <div class="box box-sm" style="width:28px;height:28px;" />
                     </Bmotion>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                 <span style="font-size:.78rem; color:#888">steps(6, @s)</span>
                 <Bmotion Animate="@(_on2 ? Bm.To(x: 180) : Bm.To(x: 0))"
                          Transition="Bm.Tween(1.2, steps: 6, stepJump: s)">
-                    <div class="box-sm" />
+                    <div class="box box-sm" />
                 </Bmotion>
             </div>
         }
@@ -80,7 +80,7 @@
         {
             <Bmotion Animate="@(_on ? Bm.To(x: 240) : Bm.To(x: 0))"
                      Transition="Bm.Tween(0.9, e)">
-                <div class="box-sm" />
+                <div class="box box-sm" />
             </Bmotion>
         }
 
@@ -97,7 +97,7 @@
     private const string _stepsCode = """
         <Bmotion Animate="@(_on ? Bm.To(x: 180) : Bm.To(x: 0))"
                  Transition="Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.End)">
-            <div class="box-sm" />
+            <div class="box box-sm" />
         </Bmotion>
         """;
 }

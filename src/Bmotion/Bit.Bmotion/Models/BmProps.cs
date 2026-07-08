@@ -110,6 +110,15 @@ public class BmProps
     /// <summary>Position along <see cref="OffsetPath"/> (CSS <c>offset-distance</c>), e.g. <c>"0%"</c> → <c>"100%"</c>.</summary>
     public BmStringKeyframes? OffsetDistance { get; set; }
 
+    // ── SVG shape morphing ─────────────────────────────────────────────────────
+    /// <summary>
+    /// The SVG path <c>d</c> attribute, for shape morphing on a <c>&lt;path&gt;</c> element. Two
+    /// paths with the <b>same command structure</b> morph smoothly (control points interpolate);
+    /// incompatible paths snap. Put the <c>&lt;path&gt;</c> directly inside the Bmotion so it is the
+    /// animated element: <c>&lt;Bmotion Animate="Bm.To(d: "…")"&gt;&lt;path d="…" /&gt;&lt;/Bmotion&gt;</c>.
+    /// </summary>
+    public BmStringKeyframes? D { get; set; }
+
     // ── CSS custom properties (e.g. "--my-var") ───────────────────────────────
     /// <summary>Animate arbitrary CSS custom properties. Keys must start with "--".</summary>
     public Dictionary<string, string>? CssVars { get; set; }
@@ -148,6 +157,7 @@ public class BmProps
         yield return ("backgroundSize", "background-size", BackgroundSize);
         yield return ("offsetPath", "offset-path", OffsetPath);
         yield return ("offsetDistance", "offset-distance", OffsetDistance);
+        yield return ("d", "d", D);
     }
 
     // "background-position" → "backgroundPosition"; leaves camelCase and "--custom" keys untouched.
@@ -458,7 +468,7 @@ public class BmProps
             Equals(Margin, o.Margin) && Equals(Padding, o.Padding) && Equals(Gap, o.Gap) &&
             Equals(LetterSpacing, o.LetterSpacing) && Equals(LineHeight, o.LineHeight) && Equals(FontSize, o.FontSize) &&
             Equals(ClipPath, o.ClipPath) && Equals(BackgroundPosition, o.BackgroundPosition) && Equals(BackgroundSize, o.BackgroundSize) &&
-            Equals(OffsetPath, o.OffsetPath) && Equals(OffsetDistance, o.OffsetDistance) &&
+            Equals(OffsetPath, o.OffsetPath) && Equals(OffsetDistance, o.OffsetDistance) && Equals(D, o.D) &&
             Equals(PathLength, o.PathLength) && Equals(PathOffset, o.PathOffset) && Equals(PathSpacing, o.PathSpacing);
 
         return values && DictEquals(CssVars, o.CssVars) && StringKeyframesDictEquals(Css, o.Css)

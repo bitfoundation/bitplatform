@@ -58,16 +58,26 @@ export function scrollFraction(scroll, size, client) {
 }
 
 /**
- * Layout FLIP child counter-scale (plan item 1.2). When a `layout` element scales by (sx,sy) about
- * its top-left, a direct child stretches with it. To keep the child crisp, counter-scale it by the
- * inverse about the SAME physical point (the parent's top-left) — expressed in the child's own box
- * coordinates that point is (-offsetX, -offsetY). Returns the transform-origin and the start
- * (inverse) scale to animate from; the child animates back to scale 1 in lockstep with the parent.
+ * Layout FLIP child counter-transform (plan item 1.2). The parent element FLIPs with the transform
+ * `translate(dx,dy) scale(sx,sy)` about its top-left (origin O). A direct child would ride along —
+ * stretched by the scale AND shifted by the translate. To keep the child crisp and in place, apply
+ * the exact inverse of the parent transform about the SAME physical point (the parent's top-left);
+ * in the child's own box coordinates that point is (-offsetX, -offsetY).
+ *
+ * Deriving the inverse: the parent maps x → sx·x + (dx + O(1-sx)). Its inverse, written as a CSS
+ * `translate(t) scale(k)` about O, is k = 1/sx and t = -dx/sx. Counter-scaling alone (t = 0) — the
+ * previous behaviour — left a residual translation of exactly (dx,dy) on the child, so it visibly
+ * jumped toward the FLIP corner at the start and slid back to centre. Including the -d/s translate
+ * cancels that: net is identity at both endpoints, so children stay put and undistorted.
  */
-export function flipChildCorrection(parentRect, childRect, sx, sy) {
+export function flipChildCorrection(parentRect, childRect, sx, sy, dx = 0, dy = 0) {
     const offsetX = childRect.left - parentRect.left;
     const offsetY = childRect.top - parentRect.top;
-    return { originX: -offsetX, originY: -offsetY, fromScaleX: 1 / sx, fromScaleY: 1 / sy };
+    return {
+        originX: -offsetX, originY: -offsetY,
+        fromScaleX: 1 / sx, fromScaleY: 1 / sy,
+        fromTranslateX: -dx / sx, fromTranslateY: -dy / sy,
+    };
 }
 
 /**
@@ -129,9 +139,15 @@ function _tick(timestamp) {
 // Style helpers
 // 
 
+// SVG geometry presentation attributes are set on the element, not via inline style: the CSS `d`
+// property needs a path() wrapper and isn't universally supported, so setAttribute is the reliable
+// path for shape morphing (`d`) and polygon/polyline morphing (`points`).
+const _svgGeomAttrs = new Set(['d', 'points']);
+
 function _applyStyles(el, styles) {
     for (const prop in styles) {
         if (prop.startsWith('--')) el.style.setProperty(prop, styles[prop]);
+        else if (_svgGeomAttrs.has(prop)) el.setAttribute(prop, styles[prop]);
         else el.style[prop] = styles[prop];
     }
 }
@@ -782,12 +798,26 @@ export function unobserveViewport(elementId) {
 // FLIP layout animation support
 // 
 
-/** Returns the element's DOMRect as a plain object for C# to snapshot. */
+/**
+ * Returns the element's rect in DOCUMENT-relative coordinates (viewport rect + page scroll)
+ * for C# to snapshot.
+ *
+ * FLIP deltas (snap - cur) and the shared-element (LayoutId) registry may capture a rect at
+ * one scroll position and consume it at another - e.g. the user scrolls the page before
+ * clicking a new tab. Raw getBoundingClientRect values are viewport-relative, so the recorded
+ * position goes stale by exactly the scroll amount and the animation starts from the wrong
+ * place. Document coordinates are scroll-invariant, which keeps the FLIP start position correct
+ * across an intervening page scroll. (Widths/heights are unaffected by scrolling.)
+ */
 export function getBoundingRect(elementId) {
     const el = document.getElementById(elementId);
     if (!el) return null;
     const r = el.getBoundingClientRect();
-    return { x: r.x, y: r.y, width: r.width, height: r.height, top: r.top, left: r.left };
+    const sx = window.scrollX, sy = window.scrollY;
+    return {
+        x: r.x + sx, y: r.y + sy, width: r.width, height: r.height,
+        top: r.top + sy, left: r.left + sx,
+    };
 }
 
 /**
@@ -832,13 +862,15 @@ export function playWaapiFlip(elementId, dx, dy, sx, sy, durationMs, easingStr, 
         const pRect = el.getBoundingClientRect();
         for (const child of el.children) {
             if (!(child instanceof HTMLElement)) continue;
-            const c = flipChildCorrection(pRect, child.getBoundingClientRect(), sx, sy);
+            const c = flipChildCorrection(pRect, child.getBoundingClientRect(), sx, sy, dx, dy);
             const prevOrigin = child.style.transformOrigin;
             child.style.transformOrigin = `${c.originX}px ${c.originY}px`;
+            // translate first (outermost), then the inverse scale — the exact inverse of the
+            // parent's `translate(dx,dy) scale(sx,sy)`, so the child neither stretches nor jumps.
             child.animate(
                 [
-                    { transform: `scaleX(${c.fromScaleX}) scaleY(${c.fromScaleY})` },
-                    { transform: 'scaleX(1) scaleY(1)' },
+                    { transform: `translate(${c.fromTranslateX}px,${c.fromTranslateY}px) scaleX(${c.fromScaleX}) scaleY(${c.fromScaleY})` },
+                    { transform: 'translate(0px,0px) scaleX(1) scaleY(1)' },
                 ],
                 correctTiming
             );
