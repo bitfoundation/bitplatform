@@ -157,6 +157,38 @@ namespace BitBlazorUI {
             return editor ? RichTextEditor.snapshot(editor) : '';
         }
 
+        // Returns the editor content as plain text: visible text only, with block/br boundaries
+        // rendered as line breaks (innerText) and non-breaking spaces normalized to regular
+        // spaces, matching how the content facts treat text. The transient find-highlight marks
+        // only wrap existing text, so they need no special handling here.
+        public static getText(editor: any): string {
+            if (!editor) return '';
+            return (editor.innerText || '').replace(/\u00a0/g, ' ');
+        }
+
+        // Extracts the plain text of an arbitrary HTML string (used while source view is active,
+        // where the raw-HTML textarea - not the editor DOM - holds the live content).
+        public static htmlToText(editor: any, html: string): string {
+            if (!html) return '';
+            const d = document.createElement('div');
+            d.setAttribute('aria-hidden', 'true');
+            // Sanitize against the active policy first so markup the editor would never render
+            // (e.g. disallowed element bodies) cannot leak into the extracted text.
+            d.innerHTML = RichTextEditor.sanitize(editor, html);
+            // innerText only honors block/br line breaks on a rendered element; display:none or
+            // visibility:hidden would degrade it to textContent and lose the breaks, so park the
+            // scratch node offscreen instead.
+            d.style.position = 'fixed';
+            d.style.top = '0';
+            d.style.left = '-99999px';
+            document.body.appendChild(d);
+            try {
+                return (d.innerText || '').replace(/\u00a0/g, ' ');
+            } finally {
+                d.remove();
+            }
+        }
+
         // Returns the editor's HTML with transient find-highlight markup stripped, so the
         // temporary <mark class="bit-rte-find"> nodes never leak into persisted Value.
         private static cleanHtml(editor: any): string {

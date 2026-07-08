@@ -19,6 +19,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.focus");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.dispose");
         Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.getHtml", _ => true).SetResult("<p>html</p>");
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.getText", _ => true).SetResult("text");
     }
 
     [TestMethod]
@@ -131,6 +132,18 @@ public class BitRichTextEditorTests : BunitTestContext
         var html = await component.Instance.GetHtmlAsync();
 
         Assert.AreEqual("<p>html</p>", html);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldGetText()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        var text = await component.Instance.GetTextAsync();
+
+        Assert.AreEqual("text", text);
     }
 
     [TestMethod]
