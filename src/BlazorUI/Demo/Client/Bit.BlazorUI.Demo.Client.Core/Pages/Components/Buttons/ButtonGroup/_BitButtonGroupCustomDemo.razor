@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1" PreventRenderForMcpClient>
     <div>The buttons can be grouped by putting them in a ButtonGroup component.</div>
     <br />
     <BitButtonGroup Items="basicCustoms" NameSelectors="nameSelector" />
@@ -29,7 +29,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>Each item in the ButtonGroup can have an icon.</div>
     <br /><br />
     <div class="example-content">
@@ -54,7 +54,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>The IconOnly allows buttons to display only icons without any text, ideal for minimalistic designs or limited space.</div>
     <br /><br />
     <div class="example-content">
@@ -102,7 +102,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="ReversedIcon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="ReversedIcon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>Reverses the positions of the icon and the main content of the button.</div>
     <br /><br />
     <div class="example-content">
@@ -130,7 +130,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>The Toggle in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
     <br /><br />
     <div class="example-content">
@@ -158,7 +158,7 @@
     <div>Changed toggle: @onChangeToggleCustom?.Id , @onChangeToggleCustom?.IsSelected</div>
 </DemoExample>
 
-<DemoExample Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
     <br /><br />
     <div class="buttons-container">
@@ -179,7 +179,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
     <div>Managing button click events.</div>
     <br /><br />
     <div class="example-content">
@@ -200,7 +200,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
     <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
     <br /><br />
     <div class="example-content">
@@ -225,7 +225,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="FullWidth" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="FullWidth" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>Setting the FullWidth makes the button group occupy 100% of its container's width.</div>
     <br /><br />
     <div class="example-content">
@@ -235,7 +235,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br />
     <div class="example-content">
@@ -360,7 +360,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
     <div>Use icons from external libraries like FontAwesome with the Icon parameter.</div>
     
     <br />
@@ -387,7 +387,7 @@
                                              Icon = { Selector = i => i.IconInfo } })" />
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -418,7 +418,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>Use BitButtonGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl">

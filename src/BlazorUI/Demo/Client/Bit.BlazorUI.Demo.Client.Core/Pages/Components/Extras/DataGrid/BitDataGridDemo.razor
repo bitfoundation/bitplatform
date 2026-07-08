@@ -459,7 +459,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Variable row height" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <DemoExample Title="Variable row height" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
             <div>
                 Pass <code>RowHeightSelector</code> a function that returns the desired height (in pixels) for a given row.
                 Here premium products (price over $500) get a taller row.
@@ -485,7 +485,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Empty state" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <DemoExample Title="Empty state" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
             <div>
                 Supply an <code>EmptyTemplate</code> to customize the placeholder shown when there is no data,
                 or rely on the built-in "No records to display" message.
@@ -514,7 +514,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Borders &amp; Striping" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <DemoExample Title="Borders &amp; Striping" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
             <div>
                 Toggle column/row borders and alternate-row striping using the <code>Bordered</code> and <code>Striped</code> parameters.
             </div>
@@ -535,7 +535,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
             <div>
                 Render the grid in a right-to-left layout by setting the <code>Direction</code> parameter to <code>BitDir.Rtl</code>.
             </div>
@@ -700,7 +700,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Export with complex layouts" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33">
+        <DemoExample Title="Export with complex layouts" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
             <div>
                 This grid combines a master-detail <code>DetailTemplate</code>, frozen ID/Name columns and
                 <code>ColSpan</code> spanning (discontinued rows span Name over Category) — try scrolling,
@@ -750,7 +750,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Lazy tree loading" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29">
+        <DemoExample Title="Lazy tree loading" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
             <div>
                 Set <code>ChildrenProvider</code> (instead of <code>ChildrenSelector</code>) to fetch a node's
                 children <b>asynchronously on first expand</b> — e.g. from a backend — with the results cached for
@@ -768,7 +768,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Touch drag &amp; drop" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30">
+        <DemoExample Title="Touch drag &amp; drop" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
             <div>
                 Row and column reordering work with <b>touch and pen</b> as well as mouse: pointer-event based
                 drag-and-drop drives the same reorder pipeline on devices where native HTML5 drag-and-drop
@@ -785,7 +785,7 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Column virtualization" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31">
+        <DemoExample Title="Column virtualization" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
             <div>
                 <code>VirtualizeColumns</code> renders only the columns in (and near) the horizontal viewport,
                 replacing scrolled-out runs with spacer cells — for grids with very many columns. This example
