@@ -12,7 +12,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     tabindex="@(TabIndex ?? "0")"
+     tabindex="@GetRootTabIndex()"
      aria-label="@AriaLabel">
     @if (_initialized is false && _itemCount == 0 && LoadingTemplate is not null)
     {
@@ -27,36 +27,40 @@
     }
     else
     {
-        <div class="bit-vir-spc" style="@GetSpacerStyle()">
-            @for (int i = _renderStart; i < _renderEnd; i++)
-            {
-                var index = i;
-                var hasItem = TryGetItem(index, out var item);
+        <div class="bit-vir-spc" role="presentation" style="@GetSpacerStyle()">
+            <div class="bit-vir-blk" role="presentation" style="@GetBlockStyle()">
+                @for (int i = _renderStart; i < _renderEnd; i++)
+                {
+                    var index = i;
+                    var hasItem = TryGetItem(index, out var item);
 
-                // Skip unloaded indices with no placeholder so assistive tech never lands on an empty listitem.
-                if (hasItem is false && PlaceholderTemplate is null) continue;
+                    // Skip unloaded indices with no placeholder so assistive tech never lands on an empty listitem.
+                    if (hasItem is false && PlaceholderTemplate is null) continue;
 
-                <div @key="index"
-                     role="listitem"
-                     class="bit-vir-itm"
-                     style="@GetItemStyle(index)"
-                     aria-setsize="@_itemCount"
-                     aria-posinset="@(index + 1)"
-                     data-bit-vir-index="@index">
-                    @if (hasItem)
-                    {
-                        @(template?.Invoke(item))
-                    }
-                    else if (PlaceholderTemplate is not null)
-                    {
-                        @PlaceholderTemplate(new BitVirtualizePlaceholderContext(index, GetItemSize(index)))
-                    }
-                </div>
-            }
+                    <div @key="GetItemKeyAt(index, hasItem, item)"
+                         role="listitem"
+                         class="bit-vir-itm@(Dynamic ? null : " bit-vir-fix")"
+                         style="@GetItemStyle(index)"
+                         tabindex="@(index == _activeIndex ? "0" : "-1")"
+                         aria-setsize="@_itemCount"
+                         aria-posinset="@(index + 1)"
+                         data-bit-vir-index="@index">
+                        @if (hasItem)
+                        {
+                            @(template?.Invoke(item))
+                        }
+                        else if (PlaceholderTemplate is not null)
+                        {
+                            @PlaceholderTemplate(new BitVirtualizePlaceholderContext(index, GetItemSize(index)))
+                        }
+                    </div>
+                }
+            </div>
 
             @if (_stickyActiveIndex >= 0 && TryGetItem(_stickyActiveIndex, out var stickyItem))
             {
                 <div role="presentation"
+                     aria-hidden="true"
                      class="bit-vir-stk"
                      style="@GetStickyStyle()"
                      data-bit-vir-sticky-size="@FormatCssValue(GetItemSize(_stickyActiveIndex))"

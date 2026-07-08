@@ -199,6 +199,82 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitVirtualizeShouldRenderTranslatedBlockWrapper()
+    {
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Enumerable.Range(0, 100).ToArray());
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        // The rendered window lives inside a translated block so the extent stays reachable past the
+        // browser's max-element-size limit; items are direct children of that block.
+        var block = component.Find(".bit-vir-spc > .bit-vir-blk");
+        Assert.IsNotNull(block);
+        Assert.IsTrue(block.GetAttribute("style")!.Contains("translateY"));
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldRecomputeWhenSameInstanceCountChanges()
+    {
+        var list = Enumerable.Range(0, 10).ToList();
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, list);
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        Assert.AreEqual("height:500px", component.Find(".bit-vir-spc").GetAttribute("style"));
+
+        // Mutate the same list instance (add 10 items) and re-render with the same reference.
+        list.AddRange(Enumerable.Range(10, 10));
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Items, list));
+
+        Assert.AreEqual("height:1000px", component.Find(".bit-vir-spc").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldMoveRovingFocusOnKeyboardNavigation()
+    {
+        Context.JSInterop.Setup<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", _ => true)
+                         .SetResult(new BitVirtualizeMetrics { ViewportSize = 300, ScrollOffset = 0 });
+
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Enumerable.Range(0, 100).ToArray());
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        // Navigate to the last item; it becomes the active (roving tabindex=0) element.
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("End"));
+
+        component.WaitForAssertion(() =>
+        {
+            var active = component.Find("[data-bit-vir-index='99']");
+            Assert.AreEqual("0", active.GetAttribute("tabindex"));
+        });
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeScrollShouldBeNoOpAfterDispose()
+    {
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Enumerable.Range(0, 10).ToArray());
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        Context.JSInterop.SetupVoid("BitBlazorUI.Virtualize.dispose", component.Instance.UniqueId).SetVoidResult();
+        await component.Instance.DisposeAsync();
+
+        // A scroll message that arrives after disposal must be ignored without throwing.
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+    }
+
+    [TestMethod]
     public void BitVirtualizeReversedShouldScrollToEndOnInitialRender()
     {
         Context.JSInterop.Setup<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", _ => true)

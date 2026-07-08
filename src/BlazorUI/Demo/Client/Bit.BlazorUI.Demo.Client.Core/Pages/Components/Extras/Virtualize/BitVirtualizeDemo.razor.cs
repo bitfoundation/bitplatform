@@ -51,7 +51,7 @@ public partial class BitVirtualizeDemo
             Name = "IsStickyItem",
             Type = "Func<TItem, bool>?",
             DefaultValue = "null",
-            Description = "A predicate that marks certain items (for example, group headers) as sticky. The active sticky item gets pinned to the leading edge of the viewport while its group scrolls. Only supported with in-memory Items.",
+            Description = "A predicate that marks certain items (for example, group headers) as sticky. The active sticky item gets pinned to the leading edge of the viewport while its group scrolls. Fully supported with in-memory Items; in provider mode it is applied on a best-effort basis to the currently loaded window.",
          },
          new()
          {
@@ -59,6 +59,13 @@ public partial class BitVirtualizeDemo
             Type = "ICollection<TItem>?",
             DefaultValue = "null",
             Description = "The in-memory collection of items to virtualize. Mutually exclusive with ItemsProvider.",
+         },
+         new()
+         {
+            Name = "ItemKey",
+            Type = "Func<TItem, object>?",
+            DefaultValue = "null",
+            Description = "A function that returns a stable identity key for an item. When provided, rendered rows are keyed by identity (instead of by index) so per-item DOM/component state survives insertions, removals and reordering, and dynamic measurements follow their item across those mutations.",
          },
          new()
          {
@@ -403,14 +410,15 @@ public partial class BitVirtualizeDemo
     private void InitMessages()
     {
         // The newest messages (381..400); scrolling up loads the older ones down to 0.
-        messages = Enumerable.Range(381, 20).Select(i => new Message(i % 3 == 0, $"Message number {i}")).ToList();
+        messages = Enumerable.Range(381, 20).Select(i => new Message(i, i % 3 == 0, $"Message number {i}")).ToList();
     }
 
     private async Task SendChatMessage()
     {
         if (string.IsNullOrWhiteSpace(draftMessage)) return;
 
-        messages.Add(new Message(true, draftMessage.Trim()));
+        var id = messages.Count == 0 ? 1000 : Math.Max(1000, messages.Max(m => m.Id) + 1);
+        messages.Add(new Message(id, true, draftMessage.Trim()));
         draftMessage = string.Empty;
 
         await chatRef.RefreshDataAsync(); // Reversed mode keeps the list pinned to the bottom
@@ -424,7 +432,7 @@ public partial class BitVirtualizeDemo
         await Task.Delay(600); // simulate fetching older messages
 
         var batch = Math.Min(15, chatHistoryRemaining);
-        messages.InsertRange(0, Enumerable.Range(chatHistoryRemaining - batch, batch).Select(i => new Message(i % 3 == 0, $"Message number {i}")));
+        messages.InsertRange(0, Enumerable.Range(chatHistoryRemaining - batch, batch).Select(i => new Message(i, i % 3 == 0, $"Message number {i}")));
         chatHistoryRemaining -= batch;
         loadingChatHistory = false;
 
@@ -443,7 +451,7 @@ public partial class BitVirtualizeDemo
     public record Product(int Id, string Name, string LoadedAt);
     public record Post(string Author, string Time, string Body);
     public record Contact(bool IsHeader, string Name, string Email);
-    public record Message(bool Mine, string Text);
+    public record Message(int Id, bool Mine, string Text);
 
 
 
@@ -769,7 +777,7 @@ public record Contact(bool IsHeader, string Name, string Email);";
 
 <BitVirtualize @ref=""chatRef"" Items=""messages"" Dynamic EstimatedItemSize=""48""
                TItem=""Message"" Context=""message""
-               Reversed
+               Reversed ItemKey=""m => m.Id""
                OnStartReached=""LoadChatHistory"" ReachedThreshold=""3""
                Class=""chat-list"">
     <div class=""message @(message.Mine ? ""mine"" : null)"">
@@ -790,14 +798,15 @@ private int chatHistoryRemaining = 381; // count of the older messages (0..380) 
 protected override void OnInitialized()
 {
     // The newest messages (381..400); scrolling up loads the older ones down to 0.
-    messages = Enumerable.Range(381, 20).Select(i => new Message(i % 3 == 0, $""Message number {i}"")).ToList();
+    messages = Enumerable.Range(381, 20).Select(i => new Message(i, i % 3 == 0, $""Message number {i}"")).ToList();
 }
 
 private async Task SendChatMessage()
 {
     if (string.IsNullOrWhiteSpace(draftMessage)) return;
 
-    messages.Add(new Message(true, draftMessage.Trim()));
+    var id = messages.Count == 0 ? 1000 : Math.Max(1000, messages.Max(m => m.Id) + 1);
+    messages.Add(new Message(id, true, draftMessage.Trim()));
     draftMessage = string.Empty;
 
     await chatRef.RefreshDataAsync(); // Reversed mode keeps the list pinned to the bottom
@@ -811,12 +820,12 @@ private async Task LoadChatHistory()
     await Task.Delay(600); // simulate fetching older messages
 
     var batch = Math.Min(15, chatHistoryRemaining);
-    messages.InsertRange(0, Enumerable.Range(chatHistoryRemaining - batch, batch).Select(i => new Message(i % 3 == 0, $""Message number {i}"")));
+    messages.InsertRange(0, Enumerable.Range(chatHistoryRemaining - batch, batch).Select(i => new Message(i, i % 3 == 0, $""Message number {i}"")));
     chatHistoryRemaining -= batch;
     loadingChatHistory = false;
 
     await chatRef.RefreshDataAsync(); // Reversed mode preserves the scroll position
 }
 
-public record Message(bool Mine, string Text);";
+public record Message(int Id, bool Mine, string Text);";
 }

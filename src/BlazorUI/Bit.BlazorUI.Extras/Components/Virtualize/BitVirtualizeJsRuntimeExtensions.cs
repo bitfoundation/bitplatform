@@ -6,9 +6,15 @@ internal static class BitVirtualizeJsRuntimeExtensions
                                                                               string id,
                                                                               ElementReference rootElement,
                                                                               bool horizontal,
+                                                                              double scrollThreshold,
                                                                               DotNetObjectReference<BitVirtualize<T>> dotnetObj)
     {
-        return jsRuntime.Invoke<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", id, rootElement, horizontal, dotnetObj);
+        return jsRuntime.Invoke<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", id, rootElement, horizontal, scrollThreshold, dotnetObj);
+    }
+
+    public static ValueTask BitVirtualizeFocusIndex(this IJSRuntime jsRuntime, string id, int index)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.focusIndex", id, index);
     }
 
     public static ValueTask BitVirtualizeSyncMeasurements(this IJSRuntime jsRuntime, string id)

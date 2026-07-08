@@ -134,7 +134,7 @@
                 <br />
                 <BitVirtualize @ref="chatRef" Items="messages" Dynamic EstimatedItemSize="48"
                                TItem="Message" Context="message"
-                               Reversed
+                               Reversed ItemKey="m => m.Id"
                                OnStartReached="LoadChatHistory" ReachedThreshold="3"
                                Class="chat-list">
                     <div class="message @(message.Mine ? "mine" : null)">

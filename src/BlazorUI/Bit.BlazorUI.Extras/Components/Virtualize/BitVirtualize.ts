@@ -6,9 +6,10 @@ namespace BitBlazorUI {
             id: string,
             rootElement: HTMLElement,
             horizontal: boolean,
+            scrollThreshold: number,
             dotnetObj: DotNetObject) {
 
-            const instance = new VirtualizeInstance(rootElement, horizontal, dotnetObj);
+            const instance = new VirtualizeInstance(rootElement, horizontal, scrollThreshold, dotnetObj);
             Virtualize._instances.set(id, instance);
 
             return instance.metrics();
@@ -30,6 +31,10 @@ namespace BitBlazorUI {
             Virtualize._instances.get(id)?.adjustScroll(delta);
         }
 
+        public static focusIndex(id: string, index: number) {
+            Virtualize._instances.get(id)?.focusIndex(index);
+        }
+
         public static dispose(id: string) {
             const instance = Virtualize._instances.get(id);
             if (!instance) return;
@@ -41,18 +46,26 @@ namespace BitBlazorUI {
 
     // The browser-side engine of the BitVirtualize component. One instance is created per component to:
     //   * Observe the scroll position and viewport size of the scroll container and report
-    //     changes back to .NET (throttled to one notification per animation frame).
+    //     changes back to .NET (throttled to one notification per animation frame, and further
+    //     coalesced by a movement threshold to keep Blazor Server interop chatter low).
     //   * Measure rendered items with a ResizeObserver (dynamic-size mode) and report
     //     real sizes back to .NET in batches.
     //   * Provide programmatic scrolling and scroll-anchor correction so dynamic
     //     measurements never make the content visibly jump.
+    //   * Drive keyboard navigation (roving focus) via .NET.
     class VirtualizeInstance {
+        private static readonly NAV_KEYS = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'PageDown', 'PageUp', 'Home', 'End'];
+
         private _element: HTMLElement;
         private _horizontal: boolean;
+        private _threshold: number;
         private _dotnetObj: DotNetObject;
         private _disposed = false;
         private _scrollScheduled = false;
         private _measureScheduled = false;
+        private _viewportChanged = false;
+        private _lastNotifiedOffset = -1;
+        private _trailingTimer: any = null;
         // Set while the scroll gets adjusted programmatically, to suppress the resulting
         // scroll event from being treated as a user scroll.
         private _suppressScroll = false;
@@ -65,40 +78,56 @@ namespace BitBlazorUI {
         private _stickyEl: HTMLElement | null = null;
         private _viewportObserver: ResizeObserver;
         private _itemObserver: ResizeObserver;
+        // In RTL horizontal mode, browsers report scrollLeft as <= 0 (0 at the start, negative toward
+        // the end). Cached (rather than read via getComputedStyle on every scroll event) and refreshed
+        // on render/resize, since the direction rarely changes.
+        private _rtl = false;
 
-        constructor(element: HTMLElement, horizontal: boolean, dotnetObj: DotNetObject) {
+        constructor(element: HTMLElement, horizontal: boolean, threshold: number, dotnetObj: DotNetObject) {
             this._element = element;
             this._horizontal = horizontal;
+            this._threshold = threshold > 0 ? threshold : 0;
             this._dotnetObj = dotnetObj;
+            this._refreshRtl();
 
             this._element.addEventListener('scroll', this._onScroll, { passive: true });
+            this._element.addEventListener('keydown', this._onKeyDown);
 
             // Track viewport resizes.
-            this._viewportObserver = new ResizeObserver(() => this._onScroll());
+            this._viewportObserver = new ResizeObserver(() => { this._viewportChanged = true; this._refreshRtl(); this._onScroll(); });
             this._viewportObserver.observe(this._element);
 
             // Track item resizes (dynamic mode).
             this._itemObserver = new ResizeObserver(entries => this._onItemsResized(entries));
         }
 
-        public metrics() {
-            return this._horizontal
-                ? { scrollOffset: this._element.scrollLeft, viewportSize: this._element.clientWidth }
-                : { scrollOffset: this._element.scrollTop, viewportSize: this._element.clientHeight };
+        private _refreshRtl() {
+            this._rtl = this._horizontal && getComputedStyle(this._element).direction === 'rtl';
         }
 
-        // Called by .NET after every render to keep the ResizeObserver subscriptions
-        // in sync with the items that are actually in the DOM, and to take an
-        // immediate measurement of newly rendered items.
+        private _readOffset() {
+            if (!this._horizontal) return this._element.scrollTop;
+            return this._rtl ? -this._element.scrollLeft : this._element.scrollLeft;
+        }
+
+        public metrics() {
+            return this._horizontal
+                ? { scrollOffset: this._readOffset(), viewportSize: this._element.clientWidth }
+                : { scrollOffset: this._readOffset(), viewportSize: this._element.clientHeight };
+        }
+
+        // Called by .NET after every render to keep the ResizeObserver subscriptions in sync with
+        // the items actually in the DOM. Measurement itself is left to the ResizeObserver (which
+        // fires on observe) so we do not force a synchronous reflow on every render.
         public syncMeasurements() {
             if (this._disposed) return;
 
-            // Scoped to the own spacer so items of a nested BitVirtualize (rendered inside an
+            this._refreshRtl();
+
+            // Scoped to the own block so items of a nested BitVirtualize (rendered inside an
             // item, placeholder, or sticky template) never leak into this instance's measurements.
-            const nodes = this._element.querySelectorAll(':scope > .bit-vir-spc > [data-bit-vir-index]');
+            const nodes = this._element.querySelectorAll(':scope > .bit-vir-spc > .bit-vir-blk > [data-bit-vir-index]');
             const present = new Set<number>();
-            const indices: number[] = [];
-            const sizes: number[] = [];
 
             nodes.forEach(node => {
                 const index = parseInt(node.getAttribute('data-bit-vir-index')!, 10);
@@ -106,12 +135,6 @@ namespace BitBlazorUI {
                 if (this._observed.get(index) !== node) {
                     this._observed.set(index, node);
                     this._itemObserver.observe(node);
-                }
-                const size = this.measureElement(node);
-                if (this._reported.get(index) !== size) {
-                    this._reported.set(index, size);
-                    indices.push(index);
-                    sizes.push(size);
                 }
             });
 
@@ -124,10 +147,6 @@ namespace BitBlazorUI {
                 }
             }
 
-            if (indices.length > 0) {
-                this._dotnetObj.invokeMethodAsync('ItemsMeasured', indices, sizes);
-            }
-
             this._stickyEl = null; // the render may have replaced the sticky element
             this._updateSticky();
         }
@@ -137,7 +156,7 @@ namespace BitBlazorUI {
 
             const behavior = smooth ? 'smooth' : 'auto';
             if (this._horizontal) {
-                this._element.scrollTo({ left: offset, behavior });
+                this._element.scrollTo({ left: this._rtl ? -offset : offset, behavior });
             } else {
                 this._element.scrollTo({ top: offset, behavior });
             }
@@ -150,7 +169,7 @@ namespace BitBlazorUI {
 
             this._suppressScroll = true;
             if (this._horizontal) {
-                this._element.scrollLeft += delta;
+                this._element.scrollLeft += this._rtl ? -delta : delta;
             } else {
                 this._element.scrollTop += delta;
             }
@@ -158,11 +177,19 @@ namespace BitBlazorUI {
             requestAnimationFrame(() => { this._suppressScroll = false; });
         }
 
+        public focusIndex(index: number) {
+            if (this._disposed) return;
+            const el = this._element.querySelector(`:scope > .bit-vir-spc > .bit-vir-blk > [data-bit-vir-index='${index}']`) as HTMLElement | null;
+            el?.focus({ preventScroll: true });
+        }
+
         public dispose() {
             this._disposed = true;
             this._element.removeEventListener('scroll', this._onScroll);
+            this._element.removeEventListener('keydown', this._onKeyDown);
             this._viewportObserver.disconnect();
             this._itemObserver.disconnect();
+            if (this._trailingTimer) clearTimeout(this._trailingTimer);
             this._observed.clear();
             this._pendingMeasures.clear();
             this._reported.clear();
@@ -172,6 +199,10 @@ namespace BitBlazorUI {
         private measureElement(el: Element) {
             const rect = el.getBoundingClientRect();
             return this._horizontal ? rect.width : rect.height;
+        }
+
+        private _scrollExtent() {
+            return this._horizontal ? this._element.scrollWidth : this._element.scrollHeight;
         }
 
         private _onScroll = () => {
@@ -188,6 +219,19 @@ namespace BitBlazorUI {
                 this._scrollScheduled = true;
                 requestAnimationFrame(this._flushScroll);
             }
+        }
+
+        private _onKeyDown = (e: KeyboardEvent) => {
+            if (this._disposed) return;
+            if (VirtualizeInstance.NAV_KEYS.indexOf(e.key) < 0) return;
+
+            // Only take over navigation keys when focus is on the list container itself or on a
+            // list item wrapper; let inner interactive controls (inputs, buttons, links) handle them.
+            const target = e.target as HTMLElement;
+            if (target !== this._element && !target.classList.contains('bit-vir-itm')) return;
+
+            e.preventDefault();
+            this._dotnetObj.invokeMethodAsync('KeyNavigate', e.key);
         }
 
         // Pushes the pinned sticky header out of the way as the next group header (whose offset
@@ -212,7 +256,7 @@ namespace BitBlazorUI {
 
             let delta = 0;
             if (!isNaN(size) && !isNaN(next) && next >= 0) {
-                const offset = this._horizontal ? this._element.scrollLeft : this._element.scrollTop;
+                const offset = this._readOffset();
                 delta = Math.min(0, next - offset - size);
             }
 
@@ -224,7 +268,42 @@ namespace BitBlazorUI {
             if (this._disposed) return;
 
             const m = this.metrics();
-            this._dotnetObj.invokeMethodAsync('Scroll', m.scrollOffset, m.viewportSize);
+
+            if (this._shouldNotify(m.scrollOffset)) {
+                this._notify(m.scrollOffset, m.viewportSize);
+            } else {
+                this._scheduleTrailing();
+            }
+        }
+
+        // Coalesce interop: skip notifications smaller than the movement threshold unless the viewport
+        // changed or the scroll is near either edge (so edge-reached callbacks stay responsive).
+        private _shouldNotify(offset: number) {
+            if (this._viewportChanged || this._threshold <= 0 || this._lastNotifiedOffset < 0) return true;
+
+            const maxOffset = this._scrollExtent() - (this._horizontal ? this._element.clientWidth : this._element.clientHeight);
+            const nearEdge = offset <= this._threshold || offset >= maxOffset - this._threshold;
+            return nearEdge || Math.abs(offset - this._lastNotifiedOffset) >= this._threshold;
+        }
+
+        private _notify(offset: number, viewportSize: number) {
+            this._lastNotifiedOffset = offset;
+            this._viewportChanged = false;
+            if (this._trailingTimer) { clearTimeout(this._trailingTimer); this._trailingTimer = null; }
+            this._dotnetObj.invokeMethodAsync('Scroll', offset, viewportSize);
+        }
+
+        // Ensure the final resting position is always reported after the user stops scrolling.
+        private _scheduleTrailing() {
+            if (this._trailingTimer) return;
+            this._trailingTimer = setTimeout(() => {
+                this._trailingTimer = null;
+                if (this._disposed) return;
+                const m = this.metrics();
+                if (m.scrollOffset !== this._lastNotifiedOffset) {
+                    this._notify(m.scrollOffset, m.viewportSize);
+                }
+            }, 150);
         }
 
         private _onItemsResized = (entries: ResizeObserverEntry[]) => {
