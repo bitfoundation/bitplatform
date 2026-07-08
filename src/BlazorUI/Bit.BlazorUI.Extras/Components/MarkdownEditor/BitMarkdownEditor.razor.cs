@@ -13,10 +13,17 @@ public partial class BitMarkdownEditor : BitComponentBase
     private string _previewValue = string.Empty;
     private bool _showHelp;
     private bool _focusHelp;
+    private bool _showFind;
+    private bool _focusFind;
+    private string _findText = string.Empty;
+    private string _replaceText = string.Empty;
     private bool _canUndo;
     private bool _canRedo;
     private bool _internalValueChange;
+    private IReadOnlyCollection<BitMarkdownEditorCommand> _activeFormats = [];
     private ElementReference _helpRef = default!;
+    private ElementReference _helpCloseRef = default!;
+    private ElementReference _findRef = default!;
     private ElementReference _textAreaRef = default!;
     private CancellationTokenSource? _debounceCts;
     private DotNetObjectReference<BitMarkdownEditor>? _dotnetObj;
@@ -34,9 +41,30 @@ public partial class BitMarkdownEditor : BitComponentBase
     public BitMarkdownEditorClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// A stable key under which the editor content is autosaved to the browser's
+    /// localStorage. When set, a draft is written as the user types and restored on
+    /// initialization if no <see cref="Value"/>/<see cref="DefaultValue"/> is supplied.
+    /// The draft is cleared automatically once <see cref="Value"/> is committed via
+    /// <see cref="ClearDraft"/>.
+    /// </summary>
+    [Parameter] public string? AutoSaveId { get; set; }
+
+    /// <summary>
+    /// Enables wrapping the current selection when a pairing character
+    /// (for example <c>*</c>, <c>`</c>, <c>[</c>) is typed. Defaults to true.
+    /// </summary>
+    [Parameter] public bool AutoPair { get; set; } = true;
+
+    /// <summary>
     /// The debounce window (in milliseconds) before the preview re-renders while typing.
     /// </summary>
     [Parameter] public int DebounceTime { get; set; } = 150;
+
+    /// <summary>
+    /// The debounce window (in milliseconds) before the typed value is pushed to .NET.
+    /// Increase it to reduce interop traffic on Blazor Server. Defaults to 0 (immediate).
+    /// </summary>
+    [Parameter] public int ChangeDebounceTime { get; set; }
 
     /// <summary>
     /// The default text value of the editor to use at initialization.
@@ -72,6 +100,15 @@ public partial class BitMarkdownEditor : BitComponentBase
     [Parameter] public EventCallback<string?> OnChange { get; set; }
 
     /// <summary>
+    /// A handler that uploads a pasted or dropped image and returns the URL to reference
+    /// it by. When set, the editor enables clipboard-paste and drag-and-drop image upload:
+    /// a placeholder is inserted immediately and replaced with the returned URL once the
+    /// handler completes (returning null cancels the insertion). When null, image upload
+    /// is disabled and only the manual image command is available.
+    /// </summary>
+    [Parameter] public Func<BitMarkdownEditorImageUploadInfo, Task<string?>>? OnImageUpload { get; set; }
+
+    /// <summary>
     /// The placeholder text shown when the editor is empty.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -99,9 +136,25 @@ public partial class BitMarkdownEditor : BitComponentBase
     [Parameter] public bool ShowStatusBar { get; set; } = true;
 
     /// <summary>
+    /// Whether the estimated reading time is shown in the status bar.
+    /// </summary>
+    [Parameter] public bool ShowReadingTime { get; set; }
+
+    /// <summary>
     /// Whether the formatting toolbar is shown.
     /// </summary>
     [Parameter] public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>
+    /// Synchronizes scrolling between the editor and preview panes in split mode.
+    /// Defaults to true.
+    /// </summary>
+    [Parameter] public bool SyncScroll { get; set; } = true;
+
+    /// <summary>
+    /// Words-per-minute used to estimate reading time. Defaults to 200.
+    /// </summary>
+    [Parameter] public int WordsPerMinute { get; set; } = 200;
 
     /// <summary>
     /// Enables the native browser spell checking in the textarea.
@@ -158,6 +211,39 @@ public partial class BitMarkdownEditor : BitComponentBase
     public async ValueTask Run(BitMarkdownEditorCommand command)
     {
         await _js.BitMarkdownEditorRun(_Id, command.ToString());
+    }
+
+    /// <summary>
+    /// Inserts the given markdown text at the current selection as a single undo step.
+    /// Useful for building custom toolbar buttons that emit their own markdown.
+    /// </summary>
+    public async ValueTask Insert(string text)
+    {
+        if (ReadOnly || IsEnabled is false) return;
+
+        await _js.BitMarkdownEditorInsert(_Id, text);
+    }
+
+    /// <summary>
+    /// Replaces occurrences of <paramref name="search"/> with <paramref name="replacement"/>.
+    /// Returns the number of replacements made.
+    /// </summary>
+    public async ValueTask<int> Replace(string search, string replacement, bool all = true)
+    {
+        if (ReadOnly || IsEnabled is false || string.IsNullOrEmpty(search)) return 0;
+
+        return await _js.BitMarkdownEditorReplaceAll(_Id, search, replacement, all);
+    }
+
+    /// <summary>
+    /// Clears the autosaved draft (if <see cref="AutoSaveId"/> is set), e.g. after the
+    /// content has been persisted server-side.
+    /// </summary>
+    public async ValueTask ClearDraft()
+    {
+        if (string.IsNullOrEmpty(AutoSaveId)) return;
+
+        await _js.BitMarkdownEditorClearDraft(_Id);
     }
 
     /// <summary>
@@ -244,6 +330,73 @@ public partial class BitMarkdownEditor : BitComponentBase
         _ = InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Invoked from JavaScript (debounced) when the selection moves, so the toolbar can
+    /// reflect the formatting active at the caret.
+    /// </summary>
+    [JSInvokable("OnSelectionChanged")]
+    public void _OnSelectionChanged(int start, int end, string value)
+    {
+        var formats = BitMarkdownEditorCommands.DetectActiveFormats(value ?? string.Empty, start, end);
+
+        if (formats.Count == _activeFormats.Count && formats.All(_activeFormats.Contains)) return;
+
+        _activeFormats = formats;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Invoked from JavaScript to upload a pasted/dropped image via <see cref="OnImageUpload"/>.
+    /// Returns the URL to reference the image by, or null to cancel the insertion.
+    /// </summary>
+    [JSInvokable("UploadImage")]
+    public async Task<string?> _UploadImage(string fileName, string base64, string contentType)
+    {
+        if (OnImageUpload is null || ReadOnly || IsEnabled is false) return null;
+
+        byte[] data;
+        try
+        {
+            data = Convert.FromBase64String(base64);
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+
+        return await OnImageUpload(new BitMarkdownEditorImageUploadInfo(fileName, contentType, data));
+    }
+
+    /// <summary>
+    /// Invoked from JavaScript when Escape is pressed in the textarea; leaves full-screen mode.
+    /// </summary>
+    [JSInvokable("OnEscape")]
+    public async Task _OnEscape()
+    {
+        if (_showFind)
+        {
+            _showFind = false;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (FullScreen)
+        {
+            await AssignFullScreen(false);
+        }
+    }
+
+    /// <summary>
+    /// Invoked from JavaScript when Ctrl/Cmd+F is pressed; toggles the find &amp; replace panel.
+    /// </summary>
+    [JSInvokable("OnFindShortcut")]
+    public void _OnFindShortcut()
+    {
+        _showFind = true;
+        _focusFind = true;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
 
 
     protected override string RootElementClass => "bit-mde";
@@ -280,11 +433,26 @@ public partial class BitMarkdownEditor : BitComponentBase
             await _helpRef.FocusAsync();
         }
 
+        if (_focusFind)
+        {
+            _focusFind = false;
+            try { await _findRef.FocusAsync(); } catch (JSException) { } // panel may already be gone
+        }
+
         if (firstRender is false) return;
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        await _js.BitMarkdownEditorInit(_Id, _textAreaRef, RootElement, _dotnetObj, Value ?? DefaultValue);
+        var config = new
+        {
+            imageUpload = OnImageUpload is not null,
+            syncScroll = SyncScroll,
+            autoPair = AutoPair,
+            autoSaveKey = string.IsNullOrEmpty(AutoSaveId) ? null : AutoSaveId,
+            changeDebounceMs = ChangeDebounceTime
+        };
+
+        await _js.BitMarkdownEditorInit(_Id, _textAreaRef, RootElement, _dotnetObj, Value ?? DefaultValue, config);
     }
 
 
@@ -300,9 +468,25 @@ public partial class BitMarkdownEditor : BitComponentBase
             ? 0
             : _value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
 
+    // Count Unicode text elements (grapheme clusters) so emoji and combining marks
+    // are counted as one character each rather than as UTF-16 code units.
+    private int CharCount => string.IsNullOrEmpty(_value)
+        ? 0
+        : new System.Globalization.StringInfo(_value).LengthInTextElements;
+
+    private int ReadingMinutes
+    {
+        get
+        {
+            var wpm = WordsPerMinute > 0 ? WordsPerMinute : 200;
+            return Math.Max(1, (int)Math.Ceiling(WordCount / (double)wpm));
+        }
+    }
+
     private bool IsToolbarItemDisabled(BitMarkdownEditorToolbarItem item) => IsEnabled is false || item.Type switch
     {
         BitMarkdownEditorToolbarItemType.Command => ReadOnly,
+        BitMarkdownEditorToolbarItemType.Dropdown => ReadOnly,
         BitMarkdownEditorToolbarItemType.Undo => ReadOnly || _canUndo is false,
         BitMarkdownEditorToolbarItemType.Redo => ReadOnly || _canRedo is false,
         BitMarkdownEditorToolbarItemType.Custom => ReadOnly,
@@ -311,10 +495,13 @@ public partial class BitMarkdownEditor : BitComponentBase
 
     private bool IsToolbarItemActive(BitMarkdownEditorToolbarItem item) =>
         (item.Type is BitMarkdownEditorToolbarItemType.ToggleFullScreen && FullScreen) ||
-        (item.Type is BitMarkdownEditorToolbarItemType.Help && _showHelp);
+        (item.Type is BitMarkdownEditorToolbarItemType.Help && _showHelp) ||
+        (item.Type is BitMarkdownEditorToolbarItemType.Find && _showFind) ||
+        (item.Type is BitMarkdownEditorToolbarItemType.Command && item.Command is { } cmd && _activeFormats.Contains(cmd));
 
     private static bool IsToolbarItemToggle(BitMarkdownEditorToolbarItem item) =>
-        item.Type is BitMarkdownEditorToolbarItemType.ToggleFullScreen or BitMarkdownEditorToolbarItemType.Help;
+        item.Type is BitMarkdownEditorToolbarItemType.ToggleFullScreen or BitMarkdownEditorToolbarItemType.Help
+            or BitMarkdownEditorToolbarItemType.Find or BitMarkdownEditorToolbarItemType.Command;
 
     private string GetToolbarItemLabel(BitMarkdownEditorToolbarItem item) =>
         ActiveTexts.GetToolbarTitle(item.Name, item.Title);
@@ -348,18 +535,63 @@ public partial class BitMarkdownEditor : BitComponentBase
                 _showHelp = _showHelp is false;
                 _focusHelp = _showHelp;
                 break;
+            case BitMarkdownEditorToolbarItemType.Find:
+                _showFind = _showFind is false;
+                _focusFind = _showFind;
+                break;
             case BitMarkdownEditorToolbarItemType.Custom when item.OnClick is not null && ReadOnly is false:
                 await item.OnClick(this);
                 break;
         }
     }
 
-    private void OnHelpKeyDown(KeyboardEventArgs e)
+    private async Task OnHelpKeyDown(KeyboardEventArgs e)
     {
         if (e.Key is "Escape")
         {
             _showHelp = false;
+            // Return focus to the editor when the dialog closes.
+            await Focus();
         }
+        // Only the close button is focusable inside the dialog; swallowing Tab keeps
+        // focus trapped within the modal instead of leaking to the background.
+        // (Handled by @onkeydown:preventDefault in the markup.)
+    }
+
+    private async Task OnFindKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Escape":
+                _showFind = false;
+                await Focus();
+                break;
+            case "Enter" when e.ShiftKey:
+                await ReplaceAll();
+                break;
+            case "Enter":
+                await ReplaceOne();
+                break;
+        }
+    }
+
+    private async Task ReplaceOne()
+    {
+        if (string.IsNullOrEmpty(_findText)) return;
+        await Replace(_findText, _replaceText, all: false);
+    }
+
+    private async Task ReplaceAll()
+    {
+        if (string.IsNullOrEmpty(_findText)) return;
+        await Replace(_findText, _replaceText, all: true);
+    }
+
+    // Focus guards wrap the help dialog: tabbing onto either sentinel bounces focus
+    // back to the (only) focusable control, trapping keyboard focus inside the modal.
+    private async Task FocusHelpClose()
+    {
+        try { await _helpCloseRef.FocusAsync(); } catch (JSException) { }
     }
 
     private async Task CycleMode()

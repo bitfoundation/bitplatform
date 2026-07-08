@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownEditor;
@@ -408,5 +409,117 @@ public class BitMarkdownEditorCommandsTests
 
         Assert.IsTrue(result.Handled);
         Assert.AreEqual("**hello**", result.Text);
+    }
+
+    [TestMethod]
+    public void Heading4ShouldPrefixLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Heading4, "title", 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("#### title", result.Text);
+    }
+
+    [TestMethod]
+    public void Heading6ShouldToggleOffSameLevel()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Heading6, "###### title", 8, 8);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("title", result.Text);
+    }
+
+    [TestMethod]
+    public void SuperscriptShouldWrapSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Superscript, "2", 0, 1);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("^2^", result.Text);
+    }
+
+    [TestMethod]
+    public void SubscriptShouldWrapSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Subscript, "2", 0, 1);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("~2~", result.Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldStripInlineMarkers()
+    {
+        const string text = "**bold** and *italic* and `code`";
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, text, 0, text.Length);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("bold and italic and code", result.Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldStripBlockPrefixes()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, "## Heading", 0, 10);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("Heading", result.Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldStripTaskListPrefix()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, "- [ ] task", 0, 10);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("task", result.Text);
+    }
+
+    [TestMethod]
+    public void NewLineShouldRenumberFollowingOrderedItems()
+    {
+        // Pressing Enter in the middle of "1. a" / "2. b" inserts a new item and the
+        // trailing item is renumbered so the sequence stays consecutive.
+        const string text = "1. a\n2. b";
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.NewLine, text, 4, 4);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("1. a\n2. \n3. b", result.Text);
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldDetectBoldAndHeading()
+    {
+        // Caret inside a bold run on a heading line.
+        const string text = "## a **bold** b";
+        var formats = BitMarkdownEditorCommands.DetectActiveFormats(text, 8, 8);
+
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Heading2));
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldDetectSelectionWrappedItalic()
+    {
+        var formats = BitMarkdownEditorCommands.DetectActiveFormats("*italic*", 0, 8);
+
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Italic));
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldDetectTaskList()
+    {
+        var formats = BitMarkdownEditorCommands.DetectActiveFormats("- [ ] task", 8, 8);
+
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.TaskList));
+        Assert.IsFalse(formats.Contains(BitMarkdownEditorCommand.UnorderedList));
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldReturnEmptyForPlainText()
+    {
+        var formats = BitMarkdownEditorCommands.DetectActiveFormats("plain text", 3, 3);
+
+        Assert.AreEqual(0, formats.Count);
     }
 }

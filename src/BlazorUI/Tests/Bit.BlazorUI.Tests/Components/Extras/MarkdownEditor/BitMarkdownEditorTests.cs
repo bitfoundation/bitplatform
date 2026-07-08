@@ -200,9 +200,15 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>();
 
-        var buttons = component.FindAll(".bit-mde-btn");
+        // Top-level toolbar buttons (dropdown triggers included, but not the buttons
+        // rendered inside a dropdown menu).
+        var buttons = component.FindAll(".bit-mde-btn:not(.bit-mde-mi)");
 
         Assert.AreEqual(BitMarkdownEditorToolbar.Default.Count(i => i.Type is not BitMarkdownEditorToolbarItemType.Separator), buttons.Count);
+
+        // The default toolbar includes a heading dropdown with menu items.
+        var menuItems = component.FindAll(".bit-mde-mi");
+        Assert.IsTrue(menuItems.Count >= 6);
     }
 
     [TestMethod]

@@ -42,6 +42,21 @@ public enum BitMarkdownEditorCommand
     Heading3,
 
     /// <summary>
+    /// Toggles a level 4 heading on the selected lines.
+    /// </summary>
+    Heading4,
+
+    /// <summary>
+    /// Toggles a level 5 heading on the selected lines.
+    /// </summary>
+    Heading5,
+
+    /// <summary>
+    /// Toggles a level 6 heading on the selected lines.
+    /// </summary>
+    Heading6,
+
+    /// <summary>
     /// Toggles a blockquote on the selected lines.
     /// </summary>
     Quote,
@@ -99,5 +114,20 @@ public enum BitMarkdownEditorCommand
     /// <summary>
     /// Smart newline that continues lists and quotes (Enter).
     /// </summary>
-    NewLine
+    NewLine,
+
+    /// <summary>
+    /// Toggles superscript on the current selection.
+    /// </summary>
+    Superscript,
+
+    /// <summary>
+    /// Toggles subscript on the current selection.
+    /// </summary>
+    Subscript,
+
+    /// <summary>
+    /// Removes inline and block markdown formatting from the selected lines.
+    /// </summary>
+    ClearFormatting
 }

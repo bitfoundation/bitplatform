@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
@@ -37,6 +38,12 @@ public static partial class BitMarkdownEditorCommands
             BitMarkdownEditorCommand.Heading1 => Heading(text, start, end, 1),
             BitMarkdownEditorCommand.Heading2 => Heading(text, start, end, 2),
             BitMarkdownEditorCommand.Heading3 => Heading(text, start, end, 3),
+            BitMarkdownEditorCommand.Heading4 => Heading(text, start, end, 4),
+            BitMarkdownEditorCommand.Heading5 => Heading(text, start, end, 5),
+            BitMarkdownEditorCommand.Heading6 => Heading(text, start, end, 6),
+            BitMarkdownEditorCommand.Superscript => ToggleWrap(text, start, end, "^", "sup"),
+            BitMarkdownEditorCommand.Subscript => ToggleWrap(text, start, end, "~", "sub"),
+            BitMarkdownEditorCommand.ClearFormatting => ClearFormatting(text, start, end),
             BitMarkdownEditorCommand.Quote => LinePrefixToggle(text, start, end, "> ", QuotePrefix()),
             BitMarkdownEditorCommand.UnorderedList => UnorderedList(text, start, end),
             BitMarkdownEditorCommand.OrderedList => OrderedList(text, start, end),
@@ -218,6 +225,37 @@ public static partial class BitMarkdownEditorCommands
         });
     }
 
+    // ---- clear formatting ---------------------------------------------------
+
+    private static BitMarkdownEditorEditResult ClearFormatting(string text, int start, int end)
+    {
+        // With no selection, clear the whole current line so a single click on an
+        // empty selection still does something useful.
+        if (start == end)
+        {
+            start = LineStartIndex(text, start);
+            end = LineEndIndex(text, end);
+        }
+
+        return TransformBlock(text, start, end, lines =>
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                lines[i] = StripInlineMarkers(BlockPrefix().Replace(lines[i], string.Empty));
+            }
+        });
+    }
+
+    // Removes paired inline emphasis/code markers, keeping the inner text intact.
+    private static string StripInlineMarkers(string line)
+    {
+        line = BoldMarker().Replace(line, "$1");
+        line = StrikeMarker().Replace(line, "$1");
+        line = ItalicMarker().Replace(line, "$1");
+        line = InlineCodeMarker().Replace(line, "$1");
+        return line;
+    }
+
     // ---- fenced code block --------------------------------------------------
 
     private static BitMarkdownEditorEditResult CodeBlock(string text, int start, int end)
@@ -385,7 +423,13 @@ public static partial class BitMarkdownEditorCommands
             int number = int.TryParse(ordered.Groups[2].Value, out int parsed) ? parsed + 1 : 1;
             string insertion = "\n" + ordered.Groups[1].Value + number + ordered.Groups[3].Value + " ";
             int caret = start + insertion.Length;
-            return new BitMarkdownEditorEditResult(true, text[..start] + insertion + text[end..], caret, caret);
+            string inserted = text[..start] + insertion + text[end..];
+
+            // Renumber the ordered items that follow the newly inserted line so the
+            // sequence stays consecutive. Only text after the caret changes, so the
+            // caret index is unaffected.
+            inserted = RenumberOrderedFrom(inserted, caret, ordered.Groups[1].Value.Length);
+            return new BitMarkdownEditorEditResult(true, inserted, caret, caret);
         }
 
         // Continue blockquote
@@ -469,8 +513,149 @@ public static partial class BitMarkdownEditorCommands
         return string.Empty;
     }
 
+    /// <summary>
+    /// Renumbers the run of ordered-list items at <paramref name="indentLen"/> indentation
+    /// that immediately follows the line containing <paramref name="caret"/>. Only text after
+    /// the caret line is rewritten, so the caret index stays valid.
+    /// </summary>
+    private static string RenumberOrderedFrom(string text, int caret, int indentLen)
+    {
+        int lineStart = LineStartIndex(text, caret);
+        int lineEnd = LineEndIndex(text, caret);
+        Match current = OrderedItem().Match(text[lineStart..lineEnd]);
+        if (current.Success is false || int.TryParse(current.Groups[2].Value, out int number) is false)
+        {
+            return text;
+        }
+
+        var sb = new StringBuilder(text[..lineEnd]);
+        int idx = lineEnd;
+        while (idx < text.Length && text[idx] == '\n')
+        {
+            int nextStart = idx + 1;
+            int nextEnd = LineEndIndex(text, nextStart);
+            string lineText = text[nextStart..nextEnd];
+            Match m = OrderedItem().Match(lineText);
+            if (m.Success is false || m.Groups[1].Value.Length != indentLen)
+            {
+                break;
+            }
+
+            number++;
+            sb.Append('\n').Append(m.Groups[1].Value).Append(number).Append(m.Groups[3].Value).Append(' ').Append(lineText[m.Length..]);
+            idx = nextEnd;
+        }
+
+        sb.Append(text[idx..]);
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Determines which formatting commands are "active" for the given selection, so the
+    /// toolbar can reflect the caret's context (e.g. highlight Bold inside <c>**bold**</c>).
+    /// Pure and side-effect free.
+    /// </summary>
+    public static IReadOnlyCollection<BitMarkdownEditorCommand> DetectActiveFormats(string text, int start, int end)
+    {
+        var set = new HashSet<BitMarkdownEditorCommand>();
+        if (string.IsNullOrEmpty(text)) return set;
+
+        start = Math.Clamp(start, 0, text.Length);
+        end = Math.Clamp(end, 0, text.Length);
+        if (end < start)
+        {
+            (start, end) = (end, start);
+        }
+
+        // Block-level formats come from the line containing the selection start.
+        string line = text[LineStartIndex(text, start)..LineEndIndex(text, start)];
+        Match heading = HeadingPrefix().Match(line);
+        if (heading.Success)
+        {
+            set.Add(heading.Groups[1].Value.Length switch
+            {
+                1 => BitMarkdownEditorCommand.Heading1,
+                2 => BitMarkdownEditorCommand.Heading2,
+                3 => BitMarkdownEditorCommand.Heading3,
+                4 => BitMarkdownEditorCommand.Heading4,
+                5 => BitMarkdownEditorCommand.Heading5,
+                _ => BitMarkdownEditorCommand.Heading6
+            });
+        }
+        if (QuoteItem().IsMatch(line)) set.Add(BitMarkdownEditorCommand.Quote);
+        if (TaskItem().IsMatch(line)) set.Add(BitMarkdownEditorCommand.TaskList);
+        else if (UnorderedItem().IsMatch(line)) set.Add(BitMarkdownEditorCommand.UnorderedList);
+        if (OrderedItem().IsMatch(line)) set.Add(BitMarkdownEditorCommand.OrderedList);
+
+        // Inline formats.
+        if (IsWrapped(text, start, end, "**")) set.Add(BitMarkdownEditorCommand.Bold);
+        if (IsWrapped(text, start, end, "~~")) set.Add(BitMarkdownEditorCommand.Strikethrough);
+        if (IsWrapped(text, start, end, "`")) set.Add(BitMarkdownEditorCommand.InlineCode);
+        if (start != end && text[start..end] is { Length: >= 2 } sel &&
+            sel.StartsWith('*') && sel.EndsWith('*') && IsItalicDelimiter(sel, 0) && IsItalicDelimiter(sel, sel.Length - 1))
+        {
+            set.Add(BitMarkdownEditorCommand.Italic);
+        }
+
+        return set;
+    }
+
+    private static bool IsWrapped(string text, int start, int end, string marker)
+    {
+        int ml = marker.Length;
+        if (start >= ml && end + ml <= text.Length &&
+            text.Substring(start - ml, ml) == marker && text.Substring(end, ml) == marker)
+        {
+            return true;
+        }
+
+        string selected = text[start..end];
+        if (selected.Length >= 2 * ml && selected.StartsWith(marker, StringComparison.Ordinal) && selected.EndsWith(marker, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        // Caret with no selection: inside a span when an odd number of markers precede it
+        // on the line and a closing marker follows.
+        if (start == end)
+        {
+            string before = text[LineStartIndex(text, start)..start];
+            string after = text[start..LineEndIndex(text, start)];
+            return CountOccurrences(before, marker) % 2 == 1 && after.Contains(marker, StringComparison.Ordinal);
+        }
+
+        return false;
+    }
+
+    private static int CountOccurrences(string haystack, string needle)
+    {
+        int count = 0, i = 0;
+        while ((i = haystack.IndexOf(needle, i, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            i += needle.Length;
+        }
+        return count;
+    }
+
     [GeneratedRegex(@"^(#{1,6}) ")]
     private static partial Regex HeadingPrefix();
+
+    // Leading block markers stripped by Clear formatting.
+    [GeneratedRegex(@"^(\s*)(#{1,6} |> |[-*+] (\[[ xX]\] )?|\d+[.)] )+")]
+    private static partial Regex BlockPrefix();
+
+    [GeneratedRegex(@"\*\*(.+?)\*\*")]
+    private static partial Regex BoldMarker();
+
+    [GeneratedRegex(@"~~(.+?)~~")]
+    private static partial Regex StrikeMarker();
+
+    [GeneratedRegex(@"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)")]
+    private static partial Regex ItalicMarker();
+
+    [GeneratedRegex(@"`(.+?)`")]
+    private static partial Regex InlineCodeMarker();
 
     [GeneratedRegex(@"^> ")]
     private static partial Regex QuotePrefix();

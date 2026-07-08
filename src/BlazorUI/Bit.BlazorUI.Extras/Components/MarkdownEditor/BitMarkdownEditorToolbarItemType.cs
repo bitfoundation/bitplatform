@@ -41,7 +41,17 @@ public enum BitMarkdownEditorToolbarItemType
     Help,
 
     /// <summary>
+    /// Toggles the find &amp; replace panel.
+    /// </summary>
+    Find,
+
+    /// <summary>
     /// Invokes a user-supplied callback.
     /// </summary>
-    Custom
+    Custom,
+
+    /// <summary>
+    /// A button that reveals a menu of child items (e.g. a heading picker).
+    /// </summary>
+    Dropdown
 }

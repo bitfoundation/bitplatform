@@ -43,6 +43,17 @@ public class BitMarkdownEditorToolbarItem
     public Func<BitMarkdownEditor, Task>? OnClick { get; init; }
 
     /// <summary>
+    /// Child items shown in the menu when <see cref="Type"/> is
+    /// <see cref="BitMarkdownEditorToolbarItemType.Dropdown"/>.
+    /// </summary>
+    public IReadOnlyList<BitMarkdownEditorToolbarItem>? Children { get; init; }
+
+    /// <summary>
+    /// Optional short text label rendered inside the button (used by dropdown menu items).
+    /// </summary>
+    public string? Text { get; init; }
+
+    /// <summary>
     /// Convenience instance for a toolbar separator.
     /// </summary>
     public static BitMarkdownEditorToolbarItem Separator { get; } = new() { Type = BitMarkdownEditorToolbarItemType.Separator, Name = "separator" };

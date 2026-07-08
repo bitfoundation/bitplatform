@@ -7,9 +7,10 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
                                                        ElementReference textArea,
                                                        ElementReference root,
                                                        DotNetObjectReference<BitMarkdownEditor>? dotnetObj,
-                                                       string? defaultValue)
+                                                       string? defaultValue,
+                                                       object config)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.init", id, textArea, root, dotnetObj, defaultValue);
+        return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.init", id, textArea, root, dotnetObj, defaultValue, config);
     }
 
     public static ValueTask<string> BitMarkdownEditorGetValue(this IJSRuntime jsRuntime, string id)
@@ -25,6 +26,21 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
     public static ValueTask BitMarkdownEditorRun(this IJSRuntime jsRuntime, string id, string command)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.run", id, command);
+    }
+
+    public static ValueTask BitMarkdownEditorInsert(this IJSRuntime jsRuntime, string id, string text)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.insert", id, text);
+    }
+
+    public static ValueTask<int> BitMarkdownEditorReplaceAll(this IJSRuntime jsRuntime, string id, string search, string replacement, bool all)
+    {
+        return jsRuntime.Invoke<int>("BitBlazorUI.MarkdownEditor.replaceAll", id, search, replacement, all);
+    }
+
+    public static ValueTask BitMarkdownEditorClearDraft(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.clearDraft", id);
     }
 
     public static ValueTask BitMarkdownEditorUndo(this IJSRuntime jsRuntime, string id)
