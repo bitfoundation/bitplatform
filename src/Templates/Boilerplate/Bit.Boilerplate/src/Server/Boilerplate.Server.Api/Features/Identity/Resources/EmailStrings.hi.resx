@@ -196,4 +196,21 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate ऐप</value>
   </data>
+  <!--#if (multitenancy == true) -->
+  <data name="TenantInvitationEmailSubject" xml:space="preserve">
+    <value>आपको {0} में शामिल होने के लिए आमंत्रित किया गया है</value>
+  </data>
+  <data name="TenantInvitationHello" xml:space="preserve">
+    <value>नमस्ते प्रिय {0}</value>
+  </data>
+  <data name="TenantInvitationMessage" xml:space="preserve">
+    <value>{0} ने आपको {1} टेनेंट में शामिल होने के लिए आमंत्रित किया है।</value>
+  </data>
+  <data name="TenantInvitationLinkMessage" xml:space="preserve">
+    <value>नीचे दिए गए लिंक को खोलकर और साइन इन करके, आप उस टेनेंट में रह पाएंगे।</value>
+  </data>
+  <data name="TenantInvitationOpenApp" xml:space="preserve">
+    <value>ऐप खोलें</value>
+  </data>
+  <!--#endif-->
 </root>

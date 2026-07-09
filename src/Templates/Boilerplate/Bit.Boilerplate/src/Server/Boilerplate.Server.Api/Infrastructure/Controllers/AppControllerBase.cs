@@ -1,4 +1,9 @@
-﻿namespace Boilerplate.Server.Api.Infrastructure.Controllers;
+﻿//+:cnd:noEmit
+//#if (multitenancy == true)
+using Boilerplate.Server.Api.Features.Identity.Services;
+//#endif
+
+namespace Boilerplate.Server.Api.Infrastructure.Controllers;
 
 public partial class AppControllerBase : ControllerBase
 {
@@ -7,4 +12,8 @@ public partial class AppControllerBase : ControllerBase
     [AutoInject] protected AppDbContext DbContext = default!;
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+
+    //#if (multitenancy == true)
+    [AutoInject] protected TenantProvider TenantProvider = default!;
+    //#endif
 }

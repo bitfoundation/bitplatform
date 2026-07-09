@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Services;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Shared.Infrastructure.Services;
 
 public class AuthPolicies
 {
@@ -20,4 +21,12 @@ public class AuthPolicies
     /// during the initial minutes of a sign-in session of users with 2fa enabled.
     /// </summary>
     public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
+
+    //#if (multitenancy == true)
+    /// <summary>
+    /// Determines whether the signed-in user currently selected a tenant,
+    /// meaning the access token contains the <see cref="AppClaimTypes.TENANT_ID"/> claim.
+    /// </summary>
+    public const string TENANT_SELECTED = nameof(TENANT_SELECTED);
+    //#endif
 }

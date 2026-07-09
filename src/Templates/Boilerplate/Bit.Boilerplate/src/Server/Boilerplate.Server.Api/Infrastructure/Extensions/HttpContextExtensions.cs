@@ -14,7 +14,7 @@ internal static class HttpContextExtensions
     public static void ThrowIfContainsExpiredAccessToken(this HttpContext context)
     {
         if (context.ContainsExpiredAccessToken())
-            throw new UnauthorizedException();
+            throw new UnauthorizedException().WithData("Reason", "The provided access token is likely expired.");
     }
 
     /// <summary>

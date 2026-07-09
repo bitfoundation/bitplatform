@@ -16,7 +16,6 @@ public partial class AddOrEditProductPage
     private ProductDto product = new() { Id = Guid.CreateSequentialGuid() };
     private BitFileUpload fileUploadRef = default!;
     private string selectedCategoryId = string.Empty;
-    private BitRichTextEditor richTextEditorRef = default!;
     private List<BitDropdownItem<string>> allCategoryList = [];
     private AppDataAnnotationsValidator validatorRef = default!;
 
@@ -53,9 +52,6 @@ public partial class AddOrEditProductPage
         if (isLoading || isSaving) return;
 
         isSaving = true;
-
-        product.DescriptionHTML = await richTextEditorRef.GetHtml();
-        product.DescriptionText = await richTextEditorRef.GetText();
 
         try
         {

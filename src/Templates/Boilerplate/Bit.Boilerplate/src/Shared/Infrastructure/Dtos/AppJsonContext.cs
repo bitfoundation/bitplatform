@@ -17,6 +17,9 @@ using Boilerplate.Shared.Infrastructure.Dtos.SignalR;
 //#endif
 using Boilerplate.Shared.Features.Statistics;
 using Boilerplate.Shared.Features.Diagnostic;
+//#if (multitenancy == true)
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server.Abstractions.Json;
 //#endif
@@ -75,6 +78,12 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
 //#endif
 
+//#if (multitenancy == true)
+[JsonSerializable(typeof(TenantDto))]
+[JsonSerializable(typeof(List<TenantDto>))]
+[JsonSerializable(typeof(PagedResponse<TenantDto>))]
+[JsonSerializable(typeof(InviteUserToTenantRequestDto))]
+//#endif
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]

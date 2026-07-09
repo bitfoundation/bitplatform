@@ -150,6 +150,13 @@
                 }
             ]
         },
+        "multitenancy": {
+            "displayName": "Multi-tenancy",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Adds multi-tenancy support"
+        },
         "captcha": {
             "displayName": "Captcha",
             "type": "parameter",
@@ -600,6 +607,17 @@
                     "condition": "(redis == false)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppRedisCacheConfigurator.cs"
+                    ]
+                },
+                {
+                    "condition": "(multitenancy != true)",
+                    "exclude": [
+                        "src/Shared/Features/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Services/TenantProvider.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Components/TenantInvitationTemplate.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs"
                     ]
                 },
                 {

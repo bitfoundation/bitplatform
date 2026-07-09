@@ -9,6 +9,10 @@ using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Services;
+//#if (multitenancy == true)
+using Boilerplate.Server.Api.Features.Tenants;
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -68,7 +72,7 @@ public partial class UserController : AppControllerBase, IUserController
         var currentSessionId = User.GetSessionId();
 
         var userSession = await DbContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new ResourceNotFoundException();
+            .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
         DbContext.UserSessions.Remove(userSession);
         await DbContext.SaveChangesAsync(cancellationToken);
@@ -101,7 +105,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new BadRequestException(); // "Call SignOut instead"
 
         var userSession = await DbContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == id && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException();
+            .FirstOrDefaultAsync(us => us.Id == id && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
         DbContext.UserSessions.Remove(userSession);
         await DbContext.SaveChangesAsync(cancellationToken);
@@ -140,7 +144,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (appPlatformType is not AppPlatformType.Web)
             return;
 
-        var accessToken = HttpContext.GetAccessToken() ?? throw new InvalidOperationException();
+        var accessToken = HttpContext.GetAccessToken() ?? throw new InvalidOperationException("Access token not found.");
         DateTimeOffset expirationTime = DateTimeOffset.FromUnixTimeSeconds(User.GetClaimValue<long>("exp"));
 
         Response.Cookies.Append("access_token", accessToken, new CookieOptions
@@ -357,7 +361,7 @@ public partial class UserController : AppControllerBase, IUserController
     public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
+        var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         if (request.Enable is true)
         {
@@ -501,7 +505,7 @@ public partial class UserController : AppControllerBase, IUserController
         var userId = User.GetUserId();
 
         var userSession = await DbContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException();
+            .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
         userSession.NotificationStatus = userSession.NotificationStatus is UserSessionNotificationStatus.NotConfigured ? UserSessionNotificationStatus.Allowed :
             userSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? UserSessionNotificationStatus.Muted : UserSessionNotificationStatus.Allowed;
@@ -526,6 +530,67 @@ public partial class UserController : AppControllerBase, IUserController
         }
 
         return userSession.NotificationStatus;
+    }
+    //#endif
+
+    //#if (multitenancy == true)
+    [HttpGet]
+    public async Task<List<TenantDto>> GetTenants(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        // Global admins get all active tenants, so they can switch into any of them; regular users only get the tenants they
+        // belong to, including not accepted (invited) ones, so they can accept the invitation by switching into them.
+        var query = User.HasFeature(AppFeatures.Management.Tenants_Write_Global)
+            ? DbContext.Tenants.Where(t => t.IsActive)
+            : DbContext.Tenants.Where(t => t.IsActive && t.Users.Any(tu => tu.UserId == userId));
+
+        // AcceptedOn is carried over from the current user's membership so the client can tell accepted tenants (Switch)
+        // apart from pending invitations (Accept). It stays null for tenants a global admin isn't a member of.
+        var tenants = await query
+            .OrderBy(t => t.Name)
+            .Select(t => new
+            {
+                Tenant = t,
+                CurrentUserHasAcceptedThisTenantInvitation = t.Users.Where(tu => tu.UserId == userId).Select(tu => tu.AcceptedOn).FirstOrDefault()
+            })
+            .ToListAsync(cancellationToken);
+
+        return [.. tenants.Select(t =>
+        {
+            var dto = t.Tenant.Map();
+            dto.CurrentUserHasAcceptedThisTenantInvitation = t.CurrentUserHasAcceptedThisTenantInvitation is not null;
+            return dto;
+        })];
+    }
+
+    /// <summary>
+    /// Setting AcceptedOn to null hides the user from the tenant's users list and prevents auto signing into that tenant,
+    /// but the user can re-join later by switching into it again, as long as the TenantUser record exists.
+    /// </summary>
+    [HttpPost("{tenantId}"), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    public async Task LeaveTenant(Guid tenantId, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var tenantUser = await DbContext.TenantUsers
+            .FirstOrDefaultAsync(tu => tu.UserId == userId && tu.TenantId == tenantId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "Tenant user not found.");
+
+        tenantUser.AcceptedOn = null;
+
+        // The tenant claim gets read from the user session during token refresh (See IdentityController.Refresh),
+        // so all of the user's sessions that are signed into this tenant get moved to her next tenant (or none).
+        var nextTenantId = await DbContext.TenantUsers
+            .Where(tu => tu.UserId == userId && tu.TenantId != tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive)
+            .OrderBy(tu => tu.AcceptedOn)
+            .Select(tu => (Guid?)tu.TenantId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        await DbContext.UserSessions
+            .Where(us => us.UserId == userId && us.TenantId == tenantId)
+            .ExecuteUpdateAsync(us => us.SetProperty(s => s.TenantId, nextTenantId), cancellationToken);
+
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
     //#endif
 

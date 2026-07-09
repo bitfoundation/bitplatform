@@ -294,8 +294,22 @@ public static partial class Program
         //#endif
         //#endif
 
+        //#if (multitenancy == true)
+        // The AppDbContext requires the scoped TenantProvider service to apply tenant based row level security,
+        // so DbContext pooling (AddDbContextPool/AddPooledDbContextFactory) can't be used, because pooled contexts only accept DbContextOptions in their constructor.
+        services.AddDbContextFactory<AppDbContext>(AddDbContext, ServiceLifetime.Scoped);
+        services.AddDbContext<AppDbContext>(AddDbContext);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (multitenancy != true)
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
         services.AddDbContextPool<AppDbContext>(AddDbContext);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
 
         void AddDbContext(DbContextOptionsBuilder options)
         {
@@ -597,11 +611,24 @@ public static partial class Program
         {
             var cache = sp.GetRequiredService<IFusionCache>();
             var dbContext = sp.GetRequiredService<AppDbContext>();
+            //#if (multitenancy == true)
+            var tenantId = sp.GetRequiredService<TenantProvider>().GetCurrentTenantId();
+            var cacheKey = $"SystemPrompt_{tenantId}_{promptKind}";
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+            //#if (multitenancy != true)
+            var cacheKey = $"SystemPrompt_{promptKind}";
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
             var result = cache.GetOrSet(
-                $"SystemPrompt_{promptKind}", _ =>
+                cacheKey, _ =>
                 {
                     var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
-                    return prompt?.Markdown ?? throw new ResourceNotFoundException();
+                    return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
                 },
                 options => options.Duration = TimeSpan.FromHours(1));
             return result;
@@ -647,6 +674,11 @@ public static partial class Program
             .AddApiEndpoints();
 
         services.AddScoped<UserClaimsService>();
+        //#if (multitenancy == true)
+        services.AddScoped<TenantProvider>();
+        // Replaces the default RoleValidator to scope the role name uniqueness by the role's TenantId.
+        services.Replace(ServiceDescriptor.Scoped<IRoleValidator<Features.Identity.Models.Role>, AppRoleValidator>());
+        //#endif
         services.AddScoped<IUserConfirmation<User>, AppUserConfirmation>();
         services.AddScoped(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
         services.AddScoped(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());

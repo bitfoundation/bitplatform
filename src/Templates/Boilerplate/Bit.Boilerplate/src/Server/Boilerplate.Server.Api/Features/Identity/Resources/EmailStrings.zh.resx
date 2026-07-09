@@ -196,4 +196,21 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate 应用</value>
   </data>
+  <!--#if (multitenancy == true) -->
+  <data name="TenantInvitationEmailSubject" xml:space="preserve">
+    <value>您已被邀请加入 {0}</value>
+  </data>
+  <data name="TenantInvitationHello" xml:space="preserve">
+    <value>亲爱的 {0}，您好</value>
+  </data>
+  <data name="TenantInvitationMessage" xml:space="preserve">
+    <value>{0} 邀请您加入 {1} 租户。</value>
+  </data>
+  <data name="TenantInvitationLinkMessage" xml:space="preserve">
+    <value>打开下面的链接并登录后，您即可进入该租户。</value>
+  </data>
+  <data name="TenantInvitationOpenApp" xml:space="preserve">
+    <value>打开应用</value>
+  </data>
+  <!--#endif-->
 </root>

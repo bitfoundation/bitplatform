@@ -70,13 +70,22 @@ public static partial class Program
                     var principal = context.Principal!;
                     var identity = (ClaimsIdentity)principal.Identity!;
 
-                    if (principal.IsInRole(AppRoles.SuperAdmin))
+                    if (principal.IsInRole(AppRoles.GlobalAdmin))
                     {
-                        foreach (var feat in AppFeatures.GetSuperAdminFeatures())
+                        foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
                         {
                             identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
                         }
                     }
+                    //#if (multitenancy == true)
+                    else if (principal.IsInRole(AppRoles.TenantAdmin))
+                    {
+                        foreach (var feat in AppFeatures.GetTenantAdminFeatures())
+                        {
+                            identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
+                        }
+                    }
+                    //#endif
                 }
             };
         });

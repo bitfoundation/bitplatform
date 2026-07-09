@@ -104,7 +104,20 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
+        //#if (multitenancy == true)
+        var tenantId = await GetTenantId(user.Id, cancellationToken);
+
+        if (tenantId is not null)
+        {
+            userClaimsPrincipalFactory.SetTenantId(tenantId.Value);
+        }
+        //#endif
+
         var userSession = await CreateUserSession(user.Id, cancellationToken);
+
+        //#if (multitenancy == true)
+        userSession.TenantId = tenantId;
+        //#endif
 
         if (user.TwoFactorEnabled)
         {
@@ -183,6 +196,22 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         return result;
     }
 
+    //#if (multitenancy == true)
+    /// <summary>
+    /// When the user signs in, her tenants' FirstOrDefault id gets used as the tenant id claim; if none, the claim doesn't get added at all.
+    /// Only accepted memberships of active tenants are considered here; invited users can switch into the tenant
+    /// afterwards, which accepts the invitation by setting TenantUser's AcceptedOn.
+    /// </summary>
+    private async Task<Guid?> GetTenantId(Guid userId, CancellationToken cancellationToken)
+    {
+        return await DbContext.TenantUsers
+            .Where(tu => tu.UserId == userId && tu.AcceptedOn != null && tu.Tenant!.IsActive)
+            .OrderBy(tu => tu.AcceptedOn)
+            .Select(tu => (Guid?)tu.TenantId)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+    //#endif
+
     /// <summary>
     /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful <see cref="AppUserClaimsPrincipalFactory.SessionClaims"/>
     /// </summary>
@@ -240,11 +269,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
 
             if (refreshTicket?.Principal?.IsAuthenticated() is not true)
-                throw new UnauthorizedException();
+                throw new UnauthorizedException().WithData("Reason", "Refresh token is not authenticated.");
 
             HttpContext.Items[AppClaimTypes.METHOD] = refreshTicket.Principal.GetClaimValue<string?>(AppClaimTypes.METHOD);
 
-            var securityStamp = refreshTicket.Principal.GetClaimValue<string?>("AspNet.Identity.SecurityStamp") ?? throw new UnauthorizedException();
+            var securityStamp = refreshTicket.Principal.GetClaimValue<string?>("AspNet.Identity.SecurityStamp") ?? throw new UnauthorizedException().WithData("Reason", "Security stamp is missing.");
 
             var currentSessionId = refreshTicket.Principal.GetSessionId();
             userSession = await DbContext.UserSessions
@@ -252,18 +281,51 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException().WithData("UserSessionId", currentSessionId); // User session has been deleted.
 
             if ((refreshTicket.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < DateTimeOffset.UtcNow)
-                throw new UnauthorizedException(); // refresh token is expired.
+                throw new UnauthorizedException().WithData("Reason", "Refresh token is expired.");
 
             // Refresh token rotation detection: If the refresh token is used more than once, then it means the token has been compromised, so we should reject the request.
             long issuedAtClaimValue = refreshTicket.Principal.GetClaimValue<long>("iat");
             long difference = Math.Abs(issuedAtClaimValue - (userSession.RenewedOn ?? userSession.StartedOn));
             if (difference > 30) // Allow 30s window to prevent lockouts caused by lost rotation responses.
-                throw new UnauthorizedException();
+                throw new UnauthorizedException().WithData("Reason", "Refresh token rotation detected.");
 
             var user = userSession.User!;
 
             if (await signInManager.ValidateSecurityStampAsync(userSession.User, securityStamp) is false)
-                throw new UnauthorizedException(); // Security stamp has been updated (for example after 2fa configuration)
+                throw new UnauthorizedException().WithData("Reason", "Security stamp has been updated (for example after 2fa configuration)");
+
+            //#if (multitenancy == true)
+            // The tenant claim gets read from the user session (not from the passed refresh token), which is kept in sync
+            // by the sign-in, tenant switches and UserController.LeaveTenant, so there's no need to re-check the user's
+            // membership here. Note: There's also no need to check the tenant's IsActive, because deactivating a tenant
+            // revokes all of its signed-in sessions immediately (See TenantManagementController.Update).
+            var tenantId = userSession.TenantId;
+
+            if (request.RequestedTenantId is Guid requestedTenantId)
+            {
+                // The user is trying to switch into another tenant.
+                var membership = await DbContext.TenantUsers
+                    .FirstOrDefaultAsync(tu => tu.UserId == user.Id && tu.TenantId == requestedTenantId, cancellationToken);
+
+                if (membership is null && refreshTicket.Principal.HasFeature(AppFeatures.Management.Tenants_Write_Global) is false)
+                    throw new UnauthorizedException().WithData("Reason", "User doesn't have access to the requested tenant");
+
+                if (await DbContext.Tenants.AnyAsync(t => t.Id == requestedTenantId && t.IsActive, cancellationToken) is false)
+                    throw new UnauthorizedException().WithData("Reason", "Inactive (or nonexistent) tenants can't be switched into");
+
+                if (membership is { AcceptedOn: null })
+                    membership.AcceptedOn = DateTimeOffset.UtcNow; // The invitation gets accepted the first time the user switches into the tenant.
+
+                tenantId = requestedTenantId;
+
+                userSession.TenantId = tenantId;
+            }
+
+            if (tenantId is not null)
+            {
+                userClaimsPrincipalFactory.SetTenantId(tenantId.Value);
+            }
+            //#endif
 
             if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
             {

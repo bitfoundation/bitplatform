@@ -1,4 +1,5 @@
-﻿namespace System.Security.Claims;
+﻿//+:cnd:noEmit
+namespace System.Security.Claims;
 
 public static partial class ClaimsPrincipalExtensions
 {
@@ -34,6 +35,18 @@ public static partial class ClaimsPrincipalExtensions
     {
         return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
     }
+
+    //#if (multitenancy == true)
+    /// <summary>
+    /// Returns the id of the tenant the user is currently signed into, or null if the user doesn't belong to any tenant yet.
+    /// </summary>
+    public static Guid? GetTenantId(this ClaimsPrincipal claimsPrincipal)
+    {
+        var tenantId = claimsPrincipal.FindFirst(AppClaimTypes.TENANT_ID)?.Value;
+
+        return string.IsNullOrEmpty(tenantId) ? null : Guid.Parse(tenantId);
+    }
+    //#endif
 
     public static bool HasFeature(this ClaimsPrincipal claimsPrincipal, string feature)
     {

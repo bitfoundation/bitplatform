@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿//+:cnd:noEmit
+using System.Text;
 using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -71,6 +72,9 @@ public static partial class ISharedServiceCollectionExtensions
         {
             options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
             options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
+            //#if (multitenancy == true)
+            options.AddPolicy(AuthPolicies.TENANT_SELECTED, x => x.RequireAssertion(ctx => ctx.User.GetTenantId() is not null));
+            //#endif
 
             foreach (var feat in AppFeatures.GetAll())
             {

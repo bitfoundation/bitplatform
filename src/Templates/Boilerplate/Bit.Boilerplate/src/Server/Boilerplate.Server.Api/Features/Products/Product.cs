@@ -1,9 +1,15 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Categories;
+//#if (multitenancy == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 
 namespace Boilerplate.Server.Api.Features.Products;
 
 public partial class Product
+//#if (multitenancy == true)
+    : ITenantAware
+//#endif
 {
     public Guid Id { get; set; }
 
@@ -36,6 +42,13 @@ public partial class Product
     public Guid CategoryId { get; set; }
 
     public long Version { get; set; }
+
+    //#if (multitenancy == true)
+    [ForeignKey(nameof(TenantId))]
+    public Tenant? Tenant { get; set; }
+
+    public Guid TenantId { get; set; }
+    //#endif
 
     public bool HasPrimaryImage { get; set; } = false;
 

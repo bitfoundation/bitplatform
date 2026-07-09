@@ -196,4 +196,21 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate-app</value>
   </data>
+  <!--#if (multitenancy == true) -->
+  <data name="TenantInvitationEmailSubject" xml:space="preserve">
+    <value>Je bent uitgenodigd om deel te nemen aan {0}</value>
+  </data>
+  <data name="TenantInvitationHello" xml:space="preserve">
+    <value>Hallo beste {0}</value>
+  </data>
+  <data name="TenantInvitationMessage" xml:space="preserve">
+    <value>{0} heeft je uitgenodigd om deel te nemen aan de tenant {1}.</value>
+  </data>
+  <data name="TenantInvitationLinkMessage" xml:space="preserve">
+    <value>Door de onderstaande link te openen en je aan te melden, kun je in die tenant zijn.</value>
+  </data>
+  <data name="TenantInvitationOpenApp" xml:space="preserve">
+    <value>Open de app</value>
+  </data>
+  <!--#endif-->
 </root>

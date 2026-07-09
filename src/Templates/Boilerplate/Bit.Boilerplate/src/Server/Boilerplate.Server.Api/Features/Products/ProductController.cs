@@ -11,8 +11,11 @@ namespace Boilerplate.Server.Api.Features.Products;
 
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
-[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-[Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
+[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
+    //#if (multitenancy == true)
+    Authorize(Policy = AuthPolicies.TENANT_SELECTED),
+    //#endif
+    Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
@@ -58,7 +61,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         return new PagedResponse<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
         //#else
-        throw new NotImplementedException(); // Embedding based search is only implemented for PostgreSQL and SQL Server only.
+        throw new NotImplementedException("Embedding based search is only implemented for PostgreSQL and SQL Server only.");
         //#endif
     }
 

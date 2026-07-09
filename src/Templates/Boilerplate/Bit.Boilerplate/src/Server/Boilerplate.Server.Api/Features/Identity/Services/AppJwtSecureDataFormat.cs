@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿//+:cnd:noEmit
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Boilerplate.Server.Api.Infrastructure.Services;
@@ -70,13 +71,22 @@ public partial class AppJwtSecureDataFormat
 
             var identity = new ClaimsIdentity(principal.Identity, principal.Claims, IdentityConstants.BearerScheme, ClaimTypes.NameIdentifier, ClaimTypes.Role);
 
-            if (principal.IsInRole(AppRoles.SuperAdmin))
+            if (principal.IsInRole(AppRoles.GlobalAdmin))
             {
-                foreach (var feat in AppFeatures.GetSuperAdminFeatures())
+                foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
                 {
                     identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
                 }
             }
+            //#if (multitenancy == true)
+            else if (principal.IsInRole(AppRoles.TenantAdmin))
+            {
+                foreach (var feat in AppFeatures.GetTenantAdminFeatures())
+                {
+                    identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
+                }
+            }
+            //#endif
 
             var result = new ClaimsPrincipal(identity);
 

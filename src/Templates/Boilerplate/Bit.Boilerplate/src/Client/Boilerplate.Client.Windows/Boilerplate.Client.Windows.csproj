@@ -46,7 +46,6 @@
         <PackageReference Include="Microsoft.Web.WebView2" />
         <PackageReference Include="Velopack" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" />
         <!--/-:msbuild-conditional:noEmit -->

@@ -15,6 +15,19 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
     /// </summary>
     public List<Claim> SessionClaims { get; set; } = [];
 
+    //#if (multitenancy == true)
+    /// <summary>
+    /// Setting tenant id during SignIn and RefreshToken would endup having user/role claims of the current tenant in the constructed access/refresh tokens.
+    /// <see cref="UserClaimsService.GetClaims(Guid, CancellationToken)"/>
+    /// </summary>
+    /// <param name="tenantId"></param>
+    public void SetTenantId(Guid tenantId)
+    {
+        httpContextAccessor.HttpContext!.Items[AppClaimTypes.TENANT_ID] = tenantId;
+        SessionClaims.Add(new Claim(AppClaimTypes.TENANT_ID, tenantId.ToString()));
+    }
+    //#endif
+
     protected override async Task<ClaimsIdentity> GenerateClaimsAsync(User user)
     {
         var result = await GenerateClaims(user);

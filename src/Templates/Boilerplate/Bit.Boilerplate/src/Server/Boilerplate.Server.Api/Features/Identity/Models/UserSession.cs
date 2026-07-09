@@ -1,4 +1,7 @@
 ﻿//+:cnd:noEmit
+//#if (multitenancy == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
@@ -32,6 +35,16 @@ public partial class UserSession
 
     [ForeignKey(nameof(UserId))]
     public User? User { get; set; }
+
+    //#if (multitenancy == true)
+    /// <summary>
+    /// The tenant the session is currently signed into. It gets updated whenever the user switches into another tenant.
+    /// </summary>
+    [ForeignKey(nameof(TenantId))]
+    public Tenant? Tenant { get; set; }
+
+    public Guid? TenantId { get; set; }
+    //#endif
 
     //#if (notification == true)
     public PushNotificationSubscription? PushNotificationSubscription { get; set; }

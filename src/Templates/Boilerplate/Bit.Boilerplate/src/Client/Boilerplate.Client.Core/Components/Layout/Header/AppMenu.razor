@@ -1,8 +1,9 @@
+@*+:cnd:noEmit*@
 @inherits AppComponentBase
 
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
-                 OnDismiss="() => showCultures = false"
+                 OnDismiss="OnDropMenuDismiss"
                  Classes="@(new() { Callout = "app-menu-callout" })">
         <Template>
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
@@ -31,7 +32,7 @@
         </Template>
         <Body>
             <BitCard FullSize Class="app-menu-card">
-                @if (showCultures is false)
+                @if (ShowMainMenu)
                 {
                     <BitStack AutoSize>
                         <AuthorizeView>
@@ -86,6 +87,20 @@
                             </BitActionButton>
                         }
 
+                        @*#if (multitenancy == true)*@
+                        <AuthorizeView>
+                            <BitActionButton IconName="@BitIconName.Org" FullWidth OnClick="WrapHandled(ShowTenants)">
+                                <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
+                                    @Localizer[nameof(AppStrings.Tenant)]
+                                    <BitSpacer />
+                                    <BitIcon Size="BitSize.Small"
+                                             Color="BitColor.SecondaryForeground"
+                                             IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
+                                </BitStack>
+                            </BitActionButton>
+                        </AuthorizeView>
+                        @*#endif*@
+
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1"
                                              OnClick="ToggleTheme"
@@ -105,7 +120,7 @@
                         </AuthorizeView>
                     </BitStack>
                 }
-                else
+                else if (showCultures)
                 {
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
                         <BitActionButton FullWidth
@@ -132,6 +147,45 @@
                         </BitChoiceGroup>
                     </BitStack>
                 }
+                @*#if (multitenancy == true)*@
+                @if (showTenants)
+                {
+                    <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
+
+                        <BitActionButton FullWidth
+                                         Style="align-items:flex-end"
+                                         OnClick="() => showTenants = false"
+                                         IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
+                            @Localizer[nameof(AppStrings.SwitchTenant)]
+                        </BitActionButton>
+
+                        @if (tenants.Length is > 0)
+                        {
+                            <BitSeparator />
+
+                            <BitChoiceGroup Items="tenants" NoCircle Style="width:100%"
+                                            DefaultValue="@currentTenantId"
+                                            OnChange="async (string? t) => await OnTenantChanged(t)"
+                                            Styles="@(new() { ItemLabel = "flex-grow:1" })">
+                                <ItemTemplate Context="item">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
+                                        <BitIcon IconName="@BitIconName.Org" Size="BitSize.Small" Color="BitColor.Info" />
+                                        <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
+                                            @item.Text
+                                        </BitText>
+                                    </BitStack>
+                                </ItemTemplate>
+                            </BitChoiceGroup>
+
+                            <BitSeparator />
+                        }
+
+                        <BitActionButton IconName="@BitIconName.Settings" FullWidth Href="@PageUrls.ManageMyTenants" OnClick="() => isOpen = false">
+                            @Localizer[nameof(AppStrings.ManageMyTenants)]
+                        </BitActionButton>
+                    </BitStack>
+                }
+                @*#endif*@
             </BitCard>
         </Body>
     </BitDropMenu>

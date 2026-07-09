@@ -54,7 +54,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         get
         {
             if (cts == null)
-                throw new OperationCanceledException(); // Component already disposed.
+                throw new OperationCanceledException("Component already disposed.");
             cts.Token.ThrowIfCancellationRequested();
             return cts.Token;
         }
