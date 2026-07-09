@@ -504,7 +504,12 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
         if (!_needsRemeasure() || typeof ResizeObserver !== 'function') return;
         _resizeObserver = new ResizeObserver(_remeasure);
         _resizeObserver.observe(el);
-        if (el.parentElement) _resizeObserver.observe(el.parentElement);
+        // Observe the SAME container _resolveDragConstraints measures against - the parent element
+        // for { parent: true }, or the selector target (which may be a distant ancestor, not
+        // el.parentElement) for { selector }. Otherwise a mid-drag resize of a selector container
+        // wouldn't re-measure the bounds.
+        const container = constraintsCfg.parent ? el.parentElement : document.querySelector(constraintsCfg.selector);
+        if (container) _resizeObserver.observe(container);
         window.addEventListener('scroll', _remeasure, true);
         window.addEventListener('resize', _remeasure);
     }

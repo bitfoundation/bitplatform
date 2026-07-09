@@ -123,7 +123,11 @@
                 await InvokeAsync(StateHasChanged);
             }
         }
+        // Disposal races the poll loop: the timer/CTS may be disposed, or the renderer torn down,
+        // between a tick and the StateHasChanged. Both are expected during teardown - swallow them
+        // so this fire-and-forget task never surfaces an unobserved exception.
         catch (OperationCanceledException) { /* disposed */ }
+        catch (ObjectDisposedException) { /* disposed mid-tick */ }
     }
 
     private void Toggle() => _open = !_open;

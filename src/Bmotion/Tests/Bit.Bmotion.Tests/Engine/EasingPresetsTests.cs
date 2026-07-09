@@ -125,6 +125,17 @@ public class EasingPresetsTests
     }
 
     [TestMethod]
+    public void ToCssString_SingleStepJumpNone_NormalizesToJumpEnd()
+    {
+        // steps(1,jump-none) is invalid CSS; a single step is identical to jump-end at runtime.
+        Assert.AreEqual("steps(1,jump-end)",
+            BmEaseFunctions.ToCssString(Bm.Tween(steps: 1, stepJump: BmStepJump.None).ToConfig()));
+        // >= 2 steps keep jump-none (valid CSS).
+        Assert.AreEqual("steps(2,jump-none)",
+            BmEaseFunctions.ToCssString(Bm.Tween(steps: 2, stepJump: BmStepJump.None).ToConfig()));
+    }
+
+    [TestMethod]
     public void ToCssString_PowerCurves_EmitCubicBezier()
     {
         Assert.AreEqual("cubic-bezier(0.37,0,0.63,1)",
@@ -132,10 +143,22 @@ public class EasingPresetsTests
     }
 
     [TestMethod]
-    public void HasFaithfulCssEasing_FalseOnlyForElasticAndBounce()
+    public void HasFaithfulCssEasing_TrueOnlyForExactCssCurves()
     {
-        Assert.IsTrue(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.SineInOut).ToConfig()));
+        // Faithful: keyword/back presets, explicit bezier, and steps (ToCssString reproduces them exactly).
+        Assert.IsTrue(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.Linear).ToConfig()));
+        Assert.IsTrue(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.InOut).ToConfig()));
+        Assert.IsTrue(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.BackOut).ToConfig()));
+        Assert.IsTrue(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(bezier: [0.1, 0.2, 0.3, 0.4]).ToConfig()));
         Assert.IsTrue(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(steps: 4).ToConfig()));
+
+        // NOT faithful: these serialize as APPROXIMATE cubic-beziers while the runtime uses exact
+        // math, so offloading their CSS curve would drift from the rAF result.
+        Assert.IsFalse(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.SineInOut).ToConfig()));
+        Assert.IsFalse(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.QuartOut).ToConfig()));
+        Assert.IsFalse(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.ExpoIn).ToConfig()));
+        Assert.IsFalse(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.CircInOut).ToConfig()));
+        Assert.IsFalse(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.Anticipate).ToConfig()));
         Assert.IsFalse(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.ElasticOut).ToConfig()));
         Assert.IsFalse(BmEaseFunctions.HasFaithfulCssEasing(Bm.Tween(ease: BmEase.BounceInOut).ToConfig()));
     }

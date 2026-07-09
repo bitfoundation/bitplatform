@@ -158,15 +158,22 @@ internal static class BmEaseFunctions
     }
 
     /// <summary>
-    /// Whether the easing has a faithful CSS representation (keyword / cubic-bezier / steps). Elastic
-    /// and bounce do not - they must be sampled to <c>linear()</c> for the compositor, or run on rAF.
+    /// Whether the easing has a CSS representation that <b>exactly</b> reproduces the runtime curve
+    /// (so it can be shipped to the compositor via <see cref="ToCssString"/> without drift). Only
+    /// <c>steps()</c>, an explicit cubic-bezier, and the presets whose runtime function IS that CSS
+    /// keyword/bezier qualify. Curves that <see cref="ToCssString"/> serializes as an <i>approximate</i>
+    /// cubic-bezier (Circ*, Anticipate, Sine/Quad/Quart/Quint/Expo) are NOT faithful - the runtime
+    /// uses exact math there, so they must be sampled to <c>linear()</c> or run on rAF instead of
+    /// offloading a subtly-wrong curve. Elastic/bounce have no CSS form at all.
     /// </summary>
     public static bool HasFaithfulCssEasing(BmotionTransitionConfig config)
     {
         if (config.StepCount > 0 || config.EaseCubicBezier is { Length: 4 }) return true;
-        return config.Ease is not (
-            BmEase.ElasticIn or BmEase.ElasticOut or BmEase.ElasticInOut or
-            BmEase.BounceIn or BmEase.BounceOut or BmEase.BounceInOut);
+        // Only these presets are byte-for-byte reproduced by ToCssString: the linear/ease* keywords
+        // and Back* (whose runtime delegate is literally the same cubic-bezier ToCssString emits).
+        return config.Ease is
+            BmEase.Linear or BmEase.In or BmEase.Out or BmEase.InOut or
+            BmEase.BackIn or BmEase.BackOut or BmEase.BackInOut;
     }
 
     /// <summary>Returns a CSS easing string for use with the Web Animations API (FLIP).</summary>
@@ -175,10 +182,15 @@ internal static class BmEaseFunctions
         if (config == null) return "ease";
         if (config.StepCount > 0)
         {
+            // steps(1,jump-none) is invalid CSS (jump-none needs >= 2 steps). For a single step it
+            // is behaviourally identical to jump-end (hold 0, then snap to 1 at the end), which is
+            // exactly what Steps(1, None) produces at runtime - so normalize it rather than emit
+            // a string the browser rejects (which would throw when passed to element.animate).
             var jump = config.StepJump switch
             {
                 BmStepJump.Start => "jump-start",
-                BmStepJump.None => "jump-none",
+                BmStepJump.None when config.StepCount >= 2 => "jump-none",
+                BmStepJump.None => "jump-end",
                 BmStepJump.Both => "jump-both",
                 _ => "jump-end",
             };

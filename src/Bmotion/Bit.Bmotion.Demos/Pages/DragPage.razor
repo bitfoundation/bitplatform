@@ -183,10 +183,19 @@
     void HandleDragEnd()   => _dragInfo = "Released";
 
     private const string _nestedCode = """
-        @* Default: child drag stops propagation (parent stays put) *@
+        @* Default: child drag stops propagation - only the child moves, parent stays put *@
         <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
             <div class="drag-parent">
-                <Bmotion Drag="true" DragPropagation="true">  @* opt in to move both *@
+                <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+                    <div class="drag-child" />
+                </Bmotion>
+            </div>
+        </Bmotion>
+
+        @* Opt in with DragPropagation="true" - dragging the child moves both *@
+        <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+            <div class="drag-parent">
+                <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmDragConstraints.Parent()">
                     <div class="drag-child" />
                 </Bmotion>
             </div>

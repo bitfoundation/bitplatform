@@ -682,7 +682,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     public async ValueTask AnimateAsync(BmProps props, BmTransition? transition = null, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(props);
         if (cancellationToken.IsCancellationRequested) return;
+        // Apply CSS safe mode to the imperative API too, matching the declarative ResolveProps path.
+        props = GuardCss(props)!;
         var values = props.ToJsDictionary();
         var config = transition?.ToConfig() ?? BuildEffectiveTransition(props);
         // Cancellation stops just the properties this call animates (Stop with null keys would
@@ -694,11 +697,17 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         await Engine.AnimateToAsync(_id, values, config);
     }
 
-    public void Set(BmProps props) => Engine.SetInstant(_id, props.ToJsDictionary());
+    public void Set(BmProps props)
+    {
+        ArgumentNullException.ThrowIfNull(props);
+        Engine.SetInstant(_id, GuardCss(props)!.ToJsDictionary());
+    }
 
     public async ValueTask SetAsync(BmProps props, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(props);
         if (cancellationToken.IsCancellationRequested) return;
+        props = GuardCss(props)!;
         Engine.SetInstant(_id, props.ToJsDictionary());
         // Flush synchronous style update to DOM as individual declarations (never via cssText,
         // which would replace the element's entire inline style).

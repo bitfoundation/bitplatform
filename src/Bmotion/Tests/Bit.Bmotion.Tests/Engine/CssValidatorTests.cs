@@ -80,4 +80,16 @@ public class CssValidatorTests
             .Add(p => p.Animate, Bm.To(backgroundColor: "#ff0000"))
             .Add(p => p.ChildContent, Div));
     }
+
+    [TestMethod]
+    public void ThrowMode_ProgrammaticSet_RejectsInjectedValue()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        var cut = ctx.RenderComponent<Bmotion>(ps => ps.Add(p => p.ChildContent, Div));
+
+        // The imperative API must enforce safe mode just like the declarative Animate path.
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
+            cut.Instance.Set(Bm.To(backgroundColor: "red; } body{display:none")));
+    }
 }
