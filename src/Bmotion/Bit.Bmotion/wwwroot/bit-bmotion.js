@@ -502,6 +502,9 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
         !!constraintsCfg && (!!constraintsCfg.parent || typeof constraintsCfg.selector === 'string');
     function _observeConstraintChanges() {
         if (!_needsRemeasure() || typeof ResizeObserver !== 'function') return;
+        // A programmatic begin() can re-arm the observers mid-drag (no intervening onUp); tear the
+        // previous ones down first so repeated begins don't leak observers or duplicate listeners.
+        _stopObservingConstraintChanges();
         _resizeObserver = new ResizeObserver(_remeasure);
         _resizeObserver.observe(el);
         // Observe the SAME container _resolveDragConstraints measures against - the parent element
