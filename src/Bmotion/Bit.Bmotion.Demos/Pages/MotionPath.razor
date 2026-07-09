@@ -108,11 +108,16 @@
         """;
 
     private const string _code = """
-        <Bmotion Initial="Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')",
-                                offsetDistance: "0%")"
-                 Animate="Bm.To(offsetDistance: "100%")"
+        <Bmotion Initial="_initial"
+                 Animate="@(_on ? _travel : _initial)"
                  Transition="Bm.Tween(2.0, BmEase.InOut)">
             <div class="dot" />
         </Bmotion>
+
+        @code {
+            static readonly BmProps _initial =
+                Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
+            static readonly BmProps _travel = Bm.To(offsetDistance: "100%");
+        }
         """;
 }

@@ -74,4 +74,26 @@ public class ReducedMotionTests
 
         Assert.IsFalse(ctx.Interop.WasCalled("prefersReducedMotion"));
     }
+
+    // ── Programmatic API honours reduced motion ───────────────────────────────
+
+    [TestMethod]
+    public async Task AnimateAsync_ExplicitTransition_RespectsReducedMotion()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.ReducedMotion = BmReducedMotionMode.Always;
+        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.ChildContent, Div));
+
+        // An explicit transition passed to the imperative API must still be reduced (the transform
+        // snaps) instead of bypassing ShouldReduceMotion() and running the full 1s tween.
+        await cut.InvokeAsync(async () => await cut.Instance.AnimateAsync(Bm.To(x: 100), Bm.Tween(1.0)));
+
+        ctx.Engine.ComputeFrame(0);
+        ctx.Engine.ComputeFrame(16);
+
+        var el = ctx.Engine.GetDiagnostics().Single(d => d.Id == "box");
+        Assert.AreEqual(100.0, el.Transforms["x"], "reduced motion must snap the transform, not animate it");
+    }
 }

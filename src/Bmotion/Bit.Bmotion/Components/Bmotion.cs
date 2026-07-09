@@ -687,9 +687,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // Apply CSS safe mode to the imperative API too, matching the declarative ResolveProps path.
         props = GuardCss(props)!;
         var values = props.ToJsDictionary();
-        // Inherit the global <BmotionConfig> color space into the explicit transition too, matching
-        // BuildNormalTransition - otherwise an explicit transition here resets color lerping to sRGB.
-        var config = transition?.ToConfig(ConfigCtx?.ColorSpace) ?? BuildEffectiveTransition(props);
+        // Route the explicit transition through the same pipeline as the declarative path so it
+        // inherits the global color space AND respects reduced motion / TransitionSpeed - a raw
+        // transition.ToConfig() would bypass ShouldReduceMotion() and animate when it shouldn't.
+        var config = BuildEffectiveTransition(props, transition);
         // Cancellation stops just the properties this call animates (Stop with null keys would
         // clobber unrelated animations on the same element). The registration is scoped to this
         // call so repeated calls with a long-lived token don't accumulate callbacks.
@@ -999,18 +1000,18 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return reduced;
     }
 
-    private BmotionTransitionConfig? BuildEffectiveTransition(BmProps? props = null)
+    private BmotionTransitionConfig? BuildEffectiveTransition(BmProps? props = null, BmTransition? explicitTransition = null)
     {
-        var normal = BuildNormalTransition(props);
+        var normal = BuildNormalTransition(props, explicitTransition);
         // Reduced motion: snap transforms/layout but keep opacity/color animating.
         return ShouldReduceMotion() ? BuildReducedTransition(normal) : normal;
     }
 
-    private BmotionTransitionConfig? BuildNormalTransition(BmProps? props)
+    private BmotionTransitionConfig? BuildNormalTransition(BmProps? props, BmTransition? explicitTransition = null)
     {
-        // Resolution order: transition embedded in the target itself, then the component's
-        // Transition parameter, then the surrounding <BmotionConfig> default.
-        var t = props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
+        // Resolution order: an explicit transition (programmatic AnimateAsync) wins, then the one
+        // embedded in the target, then the component's Transition, then the <BmotionConfig> default.
+        var t = explicitTransition ?? props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
         if (t == null) return null;
         // ToConfig returns a fresh instance (safe to mutate below) and inherits the global
         // <BmotionConfig> color space wherever this transition - or any per-property override -
