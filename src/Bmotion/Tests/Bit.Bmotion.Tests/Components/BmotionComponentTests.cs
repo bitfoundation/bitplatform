@@ -101,8 +101,13 @@ public class BmotionComponentTests
             .Add(p => p.Initial, Bm.To(opacity: 0))
             .Add(p => p.ChildContent, Div(style: "opacity:0.7;")));
 
-        // Motion style is emitted first, author's second, so author's opacity wins (last wins).
+        // Motion style is emitted first, author's second, so author's opacity wins (CSS last-wins).
+        // Parse the LAST opacity declaration's value rather than a fragile prefix-substring compare
+        // ("opacity:0" is also a prefix of "opacity:0.7").
         var style = cut.Find("div").GetAttribute("style")!;
-        Assert.IsTrue(style.IndexOf("opacity:0.7", StringComparison.Ordinal) > style.IndexOf("opacity:0", StringComparison.Ordinal));
+        var idx = style.LastIndexOf("opacity:", StringComparison.Ordinal);
+        Assert.IsTrue(idx >= 0, $"expected an opacity declaration in: {style}");
+        var lastOpacity = style[(idx + "opacity:".Length)..].Split(';', 2)[0].Trim();
+        Assert.AreEqual("0.7", lastOpacity, $"authored opacity must be the effective (last) one: {style}");
     }
 }
