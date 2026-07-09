@@ -98,4 +98,24 @@ public class BmPropsCompositionGoldenTests
         var d = new BmProps { ScaleX = 1.5, ScaleY = 0.5 }.ToCssStyleDictionary();
         Assert.AreEqual("scaleX(1.5) scaleY(0.5)", d["transform"]);
     }
+
+    // ── SVG `d` is an attribute, not a CSS property ───────────────────────────
+
+    [TestMethod]
+    public void StyleString_ExcludesSvgD()
+    {
+        // `d` in an inline style string is invalid CSS (needs a path() wrapper); it must not appear.
+        // Other string props are unaffected.
+        var css = new BmProps { D = "M0 0 L10 10", Left = "5px" }.ToCssStyleString();
+        StringAssert.Contains(css, "left:5px;");
+        Assert.IsFalse(css.Contains("d:"), $"d must be omitted from the inline style string: {css}");
+    }
+
+    [TestMethod]
+    public void StyleDict_IncludesSvgD_ForSetAttribute()
+    {
+        // The instant-set dictionary keeps `d`; JS applies it via setAttribute (_svgGeomAttrs).
+        var d = new BmProps { D = "M0 0 L10 10" }.ToCssStyleDictionary();
+        Assert.AreEqual("M0 0 L10 10", d["d"]);
+    }
 }

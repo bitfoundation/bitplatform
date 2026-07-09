@@ -687,7 +687,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // Apply CSS safe mode to the imperative API too, matching the declarative ResolveProps path.
         props = GuardCss(props)!;
         var values = props.ToJsDictionary();
-        var config = transition?.ToConfig() ?? BuildEffectiveTransition(props);
+        // Inherit the global <BmotionConfig> color space into the explicit transition too, matching
+        // BuildNormalTransition - otherwise an explicit transition here resets color lerping to sRGB.
+        var config = transition?.ToConfig(ConfigCtx?.ColorSpace) ?? BuildEffectiveTransition(props);
         // Cancellation stops just the properties this call animates (Stop with null keys would
         // clobber unrelated animations on the same element). The registration is scoped to this
         // call so repeated calls with a long-lived token don't accumulate callbacks.

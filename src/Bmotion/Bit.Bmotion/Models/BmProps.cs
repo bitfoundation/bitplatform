@@ -362,7 +362,14 @@ public class BmProps
         }
 
         foreach (var (_, cssProp, value) in ExtendedStringProps())
+        {
+            // `d` is an SVG geometry attribute, not a CSS property: an inline `d:<path>` needs a
+            // path() wrapper and isn't universally supported, so JS applies it via setAttribute
+            // (see _svgGeomAttrs in bit-bmotion.js). The element's own `d` attribute already
+            // renders it server-side, so omit it from the initial inline-style string.
+            if (cssProp == "d") continue;
             if (CssStr(value) is { } s) sb.Append($"{cssProp}:{s};");
+        }
 
         if (Css != null)
             foreach (var kv in Css)

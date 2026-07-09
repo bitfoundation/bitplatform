@@ -168,6 +168,8 @@ internal static class BmEaseFunctions
     /// </summary>
     public static bool HasFaithfulCssEasing(BmotionTransitionConfig config)
     {
+        // A Length-4 EaseCubicBezier is always finite: the setter (ValidateCubicBezier) rejects any
+        // non-finite / wrong-length array, so ToCssString emits it verbatim. Steps are exact too.
         if (config.StepCount > 0 || config.EaseCubicBezier is { Length: 4 }) return true;
         // Only these presets are byte-for-byte reproduced by ToCssString: the linear/ease* keywords
         // and Back* (whose runtime delegate is literally the same cubic-bezier ToCssString emits).
