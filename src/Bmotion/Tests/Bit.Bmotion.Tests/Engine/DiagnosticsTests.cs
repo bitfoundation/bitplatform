@@ -28,7 +28,8 @@ public class DiagnosticsTests
     [TestMethod]
     public async Task GetDiagnostics_ShowsActiveDriversWhileAnimating()
     {
-        // Server mode (no compositor for color) keeps a rAF driver on the engine so it stays active.
+        // In-process/WASM engine: color properties never offload to the compositor, so a rAF
+        // driver stays active on the engine and the diagnostics report it mid-animation.
         var engine = NewEngine(inProcess: true);
         engine.RegisterElement("el", null);
 
