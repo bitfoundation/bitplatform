@@ -269,6 +269,9 @@ _book
 /src/Brouter/Bit.Brouter/Scripts/**/*.js
 /src/Brouter/Bit.Brouter/wwwroot/**/*.js
 
+/src/Bmotion/Bit.Bmotion/Scripts/**/*.js
+/src/Bmotion/Bit.Bmotion/wwwroot/**/*.js
+
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 
