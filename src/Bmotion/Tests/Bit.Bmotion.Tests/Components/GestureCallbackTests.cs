@@ -55,7 +55,7 @@ public class GestureCallbackTests
     }
 
     [TestMethod]
-    public async Task PointerUp_InsideElement_FiresTap_OutsideFiresCancel()
+    public async Task PointerUp_InsideElement_FiresTap_NotCancel()
     {
         using var ctx = new BmotionTestContext();
         bool tapped = false, cancelled = false;
@@ -70,6 +70,25 @@ public class GestureCallbackTests
         await cut.InvokeAsync(() => EventRef(ctx, "box").OnPointerUp(isInsideElement: true));
         Assert.IsTrue(tapped);
         Assert.IsFalse(cancelled);
+    }
+
+    [TestMethod]
+    public async Task PointerUp_OutsideElement_FiresCancel_NotTap()
+    {
+        using var ctx = new BmotionTestContext();
+        bool tapped = false, cancelled = false;
+        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.WhileTap, Bm.To(scale: 0.95))
+            .Add(p => p.OnTap, EventCallback.Factory.Create(this, () => tapped = true))
+            .Add(p => p.OnTapCancel, EventCallback.Factory.Create(this, () => cancelled = true))
+            .Add(p => p.ChildContent, Div));
+
+        await cut.InvokeAsync(() => EventRef(ctx, "box").OnPointerDown());
+        // Released outside the element (pointer left before release) ⇒ tap cancelled, not fired.
+        await cut.InvokeAsync(() => EventRef(ctx, "box").OnPointerUp(isInsideElement: false));
+        Assert.IsTrue(cancelled);
+        Assert.IsFalse(tapped);
     }
 
     [TestMethod]

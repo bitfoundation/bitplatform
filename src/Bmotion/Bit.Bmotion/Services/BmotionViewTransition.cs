@@ -20,6 +20,7 @@ public sealed class BmotionViewTransition : IAsyncDisposable
     private readonly IBmotionInterop _interop;
     private DotNetObjectReference<BmotionViewTransition>? _dotnet;
     private Func<Task>? _pending;
+    private bool _inProgress;
 
     public BmotionViewTransition(IBmotionInterop interop)
     {
@@ -35,6 +36,12 @@ public sealed class BmotionViewTransition : IAsyncDisposable
     public async ValueTask<bool> StartAsync(Func<Task> updateDom)
     {
         ArgumentNullException.ThrowIfNull(updateDom);
+        // One transition at a time: _pending is shared state read back by RunUpdateAsync, so an
+        // overlapping StartAsync would clobber the in-flight callback. Reject rather than corrupt.
+        if (_inProgress)
+            throw new InvalidOperationException(
+                "A view transition is already in progress; await the previous StartAsync before starting another.");
+        _inProgress = true;
         _pending = updateDom;
         _dotnet ??= DotNetObjectReference.Create(this);
         try
@@ -44,6 +51,7 @@ public sealed class BmotionViewTransition : IAsyncDisposable
         finally
         {
             _pending = null;
+            _inProgress = false;
         }
     }
 

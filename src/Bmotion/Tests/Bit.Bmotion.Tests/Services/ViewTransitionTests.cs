@@ -41,4 +41,29 @@ public class ViewTransitionTests
         await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             async () => await vt.StartAsync((Func<Task>)null!));
     }
+
+    [TestMethod]
+    public async Task StartAsync_WhileInProgress_Throws()
+    {
+        var interop = new FakeBmotionInterop { SupportsViewTransitions = true };
+        await using var vt = new BmotionViewTransition(interop);
+
+        // A re-entrant StartAsync (from inside the running update callback) must be rejected rather
+        // than clobber the in-flight _pending callback.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
+            await vt.StartAsync(async () => await vt.StartAsync(() => Task.CompletedTask)));
+    }
+
+    [TestMethod]
+    public async Task StartAsync_AfterCompletion_CanStartAgain()
+    {
+        var interop = new FakeBmotionInterop { SupportsViewTransitions = true };
+        await using var vt = new BmotionViewTransition(interop);
+
+        // The in-progress guard must reset after each transition settles.
+        await vt.StartAsync(() => Task.CompletedTask);
+        var ran = false;
+        await vt.StartAsync(() => { ran = true; return Task.CompletedTask; });
+        Assert.IsTrue(ran);
+    }
 }

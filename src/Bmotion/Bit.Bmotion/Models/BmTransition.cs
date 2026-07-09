@@ -42,11 +42,21 @@ public abstract class BmTransition
     public Action<double>? OnUpdate { get; set; }
 
     /// <summary>Lowers this transition into the internal flat engine configuration.</summary>
-    internal BmotionTransitionConfig ToConfig()
+    internal BmotionTransitionConfig ToConfig() => ToConfig(null);
+
+    /// <summary>
+    /// Lowers this transition, inheriting <paramref name="ambientColorSpace"/> (the enclosing
+    /// <c>&lt;BmotionConfig&gt;</c> setting) wherever this transition didn't set its own
+    /// <see cref="ColorSpace"/>. The resolved space then cascades as the ambient for nested
+    /// per-property configs, so a per-property color override doesn't reset to sRGB.
+    /// </summary>
+    internal BmotionTransitionConfig ToConfig(BmColorSpace? ambientColorSpace)
     {
         var c = CreateConfig();
         c.Delay = Delay;
-        if (ColorSpace is BmColorSpace cs) c.ColorSpace = cs;
+        // Explicit per-transition space wins; otherwise inherit the ambient (global) space.
+        var resolvedColorSpace = ColorSpace ?? ambientColorSpace;
+        if (resolvedColorSpace is BmColorSpace cs) c.ColorSpace = cs;
         if (Repeat is { } r)
         {
             c.RepeatInfinite = r.IsForever;
@@ -64,7 +74,7 @@ public abstract class BmTransition
             {
                 if (value is null)
                     throw new InvalidOperationException($"Per-property transition override for '{key}' must not be null.");
-                c.Properties[key] = value.ToConfig();
+                c.Properties[key] = value.ToConfig(resolvedColorSpace);
             }
         }
         return c;

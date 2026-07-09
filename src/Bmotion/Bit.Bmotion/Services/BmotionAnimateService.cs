@@ -65,9 +65,15 @@ public sealed class BmotionAnimateService
         if (string.IsNullOrWhiteSpace(selector))
             throw new ArgumentException("Selector must not be null or whitespace.", nameof(selector));
         ArgumentNullException.ThrowIfNull(keyframes);
+        // Skip interop + engine registration when already cancelled (see Bmotion.AnimateAsync).
+        if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var ids = await _interop.ResolveOrRegisterBySelectorAsync(selector);
         return WithCancellation(StartAnimations(ids, keyframes, transition, stagger), cancellationToken);
     }
+
+    // A resolved, no-op controls for a pre-cancelled call: no elements registered, already settled.
+    private BmAnimationControls CancelledControls()
+        => new(Array.Empty<string>(), _engine, Task.CompletedTask, static () => { });
 
     // Wires a CancellationToken to an in-flight animation: cancelling stops it (and resolves the
     // controls). The registration is disposed once the animation settles so it doesn't leak.
@@ -100,6 +106,7 @@ public sealed class BmotionAnimateService
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(keyframes);
+        if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var id = await _interop.ResolveOrRegisterByRefAsync(elementReference);
         return WithCancellation(StartAnimations([id], keyframes, transition, stagger: null), cancellationToken);
     }
@@ -191,6 +198,7 @@ public sealed class BmotionAnimateService
     public async ValueTask<BmAnimationControls> RunAsync(BmSequence sequence, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sequence);
+        if (cancellationToken.IsCancellationRequested) return CancelledControls();
 
         // Resolve every segment's targets up front so registration/refcounting is symmetric.
         var starts = new List<(string[] ids, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)>();

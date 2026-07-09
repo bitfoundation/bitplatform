@@ -2,7 +2,7 @@
 /// <summary>
 /// Internal flat transition representation consumed by the animation engine and drivers.
 /// The public API is the <see cref="BmTransition"/> hierarchy, which lowers into this
-/// via <see cref="BmTransition.ToConfig"/>.
+/// via <see cref="BmTransition.ToConfig()"/>.
 /// </summary>
 internal sealed class BmotionTransitionConfig
 {

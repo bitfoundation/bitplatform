@@ -49,8 +49,7 @@ public class DiagnosticsTests
         engine.RegisterElement("el", new Dictionary<string, object?> { ["x"] = 1.0 });
 
         var first = engine.GetDiagnostics()[0];
-        // Mutating the snapshot must not affect the engine; a later snapshot is independent.
-        Assert.IsFalse(first.Transforms is Dictionary<string, double> live && ReferenceEquals(live, first.Transforms) && live.Count == 0);
+        // A later registration must not mutate an earlier snapshot: it captured its own copy.
         engine.RegisterElement("el2", null);
         Assert.AreEqual(1, first.Transforms.Count, "earlier snapshot must be unaffected by later registrations");
     }

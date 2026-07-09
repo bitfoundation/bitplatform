@@ -232,6 +232,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             return;
         }
 
+        // No compositor offload: on Blazor Server this collapses to an instant change. Warn once
+        // so the degradation is diagnosable instead of silent (matches AnimateToAsync).
+        WarnIfDegradingOnServer(elementId, values, transition);
+
         // Same concurrent-plan sweep as AnimateToAsync's rAF branch (see comment there).
         InterruptWaapiOverlapsSync(elementId, state, values.Keys);
         state.AnimateTo(values, transition, tcs);

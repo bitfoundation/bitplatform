@@ -437,9 +437,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     private async Task InitialiseAsync()
     {
-        // Probe the OS preference whenever it can affect this element: inside a <BmotionConfig>
-        // (legacy opt-in), or when the global ReducedMotion mode is User (respect the OS everywhere).
-        if (ConfigCtx is not null || Options.ReducedMotion == BmReducedMotionMode.User)
+        // Probe the OS preference only when it can actually change ShouldReduceMotion()'s result:
+        // a local <BmotionConfig ReduceMotion> wins outright, and Always/Never ignore the OS - so
+        // detection there is a wasted interop round-trip. This mirrors ShouldReduceMotion().
+        bool osPreferenceMatters = ConfigCtx?.ReduceMotion is null && Options.ReducedMotion switch
+        {
+            BmReducedMotionMode.User => true,
+            BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,
+            _ => ConfigCtx is not null, // IgnoreUnlessConfigured: OS matters only inside a config
+        };
+        if (osPreferenceMatters)
             await Engine.EnsureReducedMotionDetectedAsync();
 
         // Register with C# engine (applies initial values synchronously)
@@ -994,11 +1001,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // Transition parameter, then the surrounding <BmotionConfig> default.
         var t = props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
         if (t == null) return null;
-        // ToConfig always returns a fresh instance, so it is safe to mutate below.
-        var config = t.ToConfig();
-        // The global <BmotionConfig> color space applies only when the transition didn't pick one.
-        if (t.ColorSpace is null && ConfigCtx?.ColorSpace is BmColorSpace globalColorSpace)
-            config.ColorSpace = globalColorSpace;
+        // ToConfig returns a fresh instance (safe to mutate below) and inherits the global
+        // <BmotionConfig> color space wherever this transition - or any per-property override -
+        // didn't set its own, so a per-property color override doesn't silently fall back to sRGB
+        // under a global OKLab config (the engine uses the per-key config verbatim, see
+        // BmotionElementAnimationState.AnimateTo).
+        var config = t.ToConfig(ConfigCtx?.ColorSpace);
         if (ConfigCtx?.TransitionSpeed is double speed && speed != 1.0)
         {
             // TransitionSpeed is a rate: 2 = twice as fast, 0.5 = half speed, <= 0 = instant.

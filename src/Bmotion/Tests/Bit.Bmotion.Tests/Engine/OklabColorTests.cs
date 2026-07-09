@@ -64,4 +64,51 @@ public class OklabColorTests
         var defaultConfig = Bm.Tween().ToConfig();
         Assert.AreEqual(BmColorSpace.Srgb, defaultConfig.ColorSpace);
     }
+
+    [TestMethod]
+    public void AmbientColorSpace_CascadesToTopLevelAndPerProperty()
+    {
+        var t = new BmTween
+        {
+            Properties = new()
+            {
+                ["backgroundColor"] = new BmTween(),                         // inherits ambient
+                ["color"] = new BmTween { ColorSpace = BmColorSpace.Srgb },  // explicit wins
+            },
+        };
+
+        var config = t.ToConfig(BmColorSpace.Oklab);
+
+        Assert.AreEqual(BmColorSpace.Oklab, config.ColorSpace, "top-level inherits the ambient space");
+        Assert.AreEqual(BmColorSpace.Oklab, config.Properties!["backgroundColor"].ColorSpace,
+            "a per-property override without its own space inherits the ambient - not sRGB");
+        Assert.AreEqual(BmColorSpace.Srgb, config.Properties!["color"].ColorSpace,
+            "an explicit per-property space is preserved");
+    }
+
+    [TestMethod]
+    public void NoAmbientColorSpace_KeepsSrgbDefaultEverywhere()
+    {
+        var t = new BmTween { Properties = new() { ["backgroundColor"] = new BmTween() } };
+
+        var config = t.ToConfig();
+
+        Assert.AreEqual(BmColorSpace.Srgb, config.ColorSpace);
+        Assert.AreEqual(BmColorSpace.Srgb, config.Properties!["backgroundColor"].ColorSpace);
+    }
+
+    [TestMethod]
+    public void ExplicitTopLevelColorSpace_CascadesToPerProperty()
+    {
+        // A parent transition's explicit space is the ambient for its per-property children.
+        var t = new BmTween
+        {
+            ColorSpace = BmColorSpace.Oklab,
+            Properties = new() { ["backgroundColor"] = new BmTween() },
+        };
+
+        var config = t.ToConfig();
+
+        Assert.AreEqual(BmColorSpace.Oklab, config.Properties!["backgroundColor"].ColorSpace);
+    }
 }
