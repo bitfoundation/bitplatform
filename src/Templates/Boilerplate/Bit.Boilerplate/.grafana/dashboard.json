@@ -774,7 +774,7 @@
                 "spec": {
                     "id": 21,
                     "title": "Memory Working Set",
-                    "description": "`dotnet.process.memory.working_set` — physical memory currently used by the process (from customMetrics).",
+                    "description": "`dotnet.process.memory.working_set` - physical memory currently used by the process (from customMetrics).",
                     "links": [],
                     "data": {
                         "kind": "QueryGroup",

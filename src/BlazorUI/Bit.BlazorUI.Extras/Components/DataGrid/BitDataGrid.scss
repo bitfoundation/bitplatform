@@ -75,8 +75,8 @@
 .bit-dtg-table {
     display: block;
     /* fit-content (not max-content) so the table grows to the row grids' min-content width when the
-       column tracks overflow the viewport — rows then span the full scroll range, keeping row borders
-       painted and giving sticky (frozen) cells a containing block that covers the whole scroll width —
+       column tracks overflow the viewport - rows then span the full scroll range, keeping row borders
+       painted and giving sticky (frozen) cells a containing block that covers the whole scroll width -
        while grids whose tracks fit keep sizing fr columns to the viewport (ellipsis still clips text). */
     width: fit-content;
     min-width: 100%;

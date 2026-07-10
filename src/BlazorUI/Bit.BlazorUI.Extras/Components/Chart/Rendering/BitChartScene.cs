@@ -9,7 +9,7 @@ public sealed class BitChartScene
 
     public List<BitChartSvgNode> Background { get; } = new();
     /// <summary>Series paths (lines + area fills) drawn above the grid and below the data points.
-    /// Rendered in an animated group so every line — solid, dashed or per-segment — animates uniformly.</summary>
+    /// Rendered in an animated group so every line - solid, dashed or per-segment - animates uniformly.</summary>
     public List<BitChartSvgNode> Series { get; } = new();
     public List<BitChartDataElement> Elements { get; } = new();
     public List<BitChartSvgNode> Foreground { get; } = new();

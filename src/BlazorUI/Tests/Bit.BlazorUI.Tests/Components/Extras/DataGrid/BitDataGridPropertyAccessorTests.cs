@@ -155,8 +155,8 @@ public class BitDataGridPropertyAccessorTests
     public void PropertyLambdaIsNullSafeInQueryableOverNestedPath()
     {
         // PropertyLambda promises the getter's null handling (conditional yielding null on a null
-        // intermediate), so composing it into a LINQ query — as the queryable processor does for
-        // sorts/filters — must not throw for rows whose intermediate is null.
+        // intermediate), so composing it into a LINQ query - as the queryable processor does for
+        // sorts/filters - must not throw for rows whose intermediate is null.
         var accessor = BitDataGridPropertyAccessor<Model>.For("Address.City");
         var lambda = (Expression<Func<Model, string?>>)accessor.PropertyLambda;
 

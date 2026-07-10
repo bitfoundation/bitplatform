@@ -934,8 +934,8 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, columns);
         });
 
-        // A midnight DateTime operand means "the whole calendar day" — matching the in-memory pipeline
-        // — so both 2024-05-01 rows match regardless of their time-of-day.
+        // A midnight DateTime operand means "the whole calendar day" - matching the in-memory pipeline
+        // - so both 2024-05-01 rows match regardless of their time-of-day.
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Created", BitDataGridFilterOperator.Equals, new DateTime(2024, 5, 1)));
         Assert.AreEqual(2, component.Instance.TotalCount);
 

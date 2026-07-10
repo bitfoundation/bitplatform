@@ -96,7 +96,7 @@ internal static class BitDataGridExcelWriter
             AddEntry(zip, "xl/styles.xml", style is null ? StylesXml : BuildStylesXml(style));
 
             // The worksheet is the only part that scales with the export, so stream it straight into
-            // the (deflating) zip entry instead of assembling the whole XML in memory first — the
+            // the (deflating) zip entry instead of assembling the whole XML in memory first - the
             // uncompressed sheet of a large export would otherwise dwarf the finished package.
             var sheet = zip.CreateEntry("xl/worksheets/sheet1.xml", CompressionLevel.Fastest);
             using var writer = new StreamWriter(sheet.Open(), new UTF8Encoding(false));

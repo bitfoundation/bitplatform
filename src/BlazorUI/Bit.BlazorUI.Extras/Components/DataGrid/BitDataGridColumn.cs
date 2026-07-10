@@ -42,7 +42,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     /// <summary>
     /// Optional custom sort key selector. Enables sorting for template-only columns (no
-    /// <see cref="Field"/>) and overrides the field value as the sort key when both are set —
+    /// <see cref="Field"/>) and overrides the field value as the sort key when both are set -
     /// e.g. sort a display-name column by last name.
     /// </summary>
     [Parameter] public Func<TItem, object?>? SortBy { get; set; }
@@ -102,7 +102,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     /// <summary>
     /// Optional custom aggregate function, for computations beyond the built-in
-    /// Sum/Average/Count/Min/Max — e.g. a distinct count or a weighted average. Receives the rows of
+    /// Sum/Average/Count/Min/Max - e.g. a distinct count or a weighted average. Receives the rows of
     /// the footer's view (or of each group) and returns the aggregate value; <see cref="AggregateFormat"/>
     /// (or <see cref="Format"/>) is applied to it for display. Takes precedence over <see cref="Aggregate"/>.
     /// </summary>
@@ -139,7 +139,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     // The property path extracted from the Property expression. Razor recreates the expression instance
     // every render, so the extracted string (not the expression reference) is what the rest of the column
-    // compares and registers with — it stays stable across renders for the same selector.
+    // compares and registers with - it stays stable across renders for the same selector.
     private string? _propertyPath;
 
     /// <summary>The resolved property path this column binds to: <see cref="Property"/>'s member chain

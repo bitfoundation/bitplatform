@@ -202,7 +202,7 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         {
             BrouterLinkMatch.All => string.Equals(current, target, comparison),
             // The root "/" prefix-matches every path (everything starts with '/'), so a "home"
-            // link would light up on every page — the classic NavLink footgun. Match the root
+            // link would light up on every page - the classic NavLink footgun. Match the root
             // exactly even under Prefix, mirroring React Router's NavLink (a link to "/" is only
             // active at the root). Note both the old `target == "/"` clause AND the `target[^1] ==
             // '/'` clause below would otherwise force the root to always match.

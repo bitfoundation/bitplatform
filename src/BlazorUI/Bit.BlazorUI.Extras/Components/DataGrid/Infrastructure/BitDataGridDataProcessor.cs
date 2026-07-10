@@ -338,7 +338,7 @@ public static class BitDataGridDataProcessor
     // Coerces a filter operand to the row value's runtime type before comparison. This mirrors the
     // type-specific parsing in BitDataGridPropertyAccessor.TryConvertValue (Guid/DateOnly/TimeOnly/
     // DateTimeOffset and enums are not handled by Convert.ChangeType), so a filter value entered as a
-    // string is converted to the property's real type the same way edits are — keeping filtering,
+    // string is converted to the property's real type the same way edits are - keeping filtering,
     // sorting and editing consistent. Parsing uses the invariant culture to match the ISO/invariant
     // strings the editors emit. Returns false when the operand can't be turned into the target type, so
     // callers fail the comparison closed instead of comparing mixed types (which the value comparer

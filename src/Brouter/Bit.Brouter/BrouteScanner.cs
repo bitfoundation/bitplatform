@@ -74,7 +74,7 @@ internal static class BrouteScanner
             if (type is null || type.IsClass is false || type.IsAbstract) continue;
             if (typeof(IComponent).IsAssignableFrom(type) is false) continue;
 
-            // inherit: false — a base component's [Route] should not silently spawn routes for every
+            // inherit: false - a base component's [Route] should not silently spawn routes for every
             // derived component. This matches the built-in Router, which reads route attributes declared
             // directly on the routable type.
             var routeAttributes = type.GetCustomAttributes(typeof(RouteAttribute), inherit: false);

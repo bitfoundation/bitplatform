@@ -26,7 +26,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Infinite-scrolling data callback. When set, the grid loads rows in batches and appends the
-    /// next batch automatically as the user scrolls to the end of the viewport — with no paging UI
+    /// next batch automatically as the user scrolls to the end of the viewport - with no paging UI
     /// and no knowledge of the total row count. Each call receives a <see cref="BitDataGridReadRequest"/>
     /// whose <c>Skip</c> is the number of rows already loaded and whose <c>Take</c> is
     /// <see cref="LoadMoreBatchSize"/>. The grid stops requesting more once a batch returns fewer rows
@@ -118,7 +118,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <summary>When true, Excel exports (the toolbar button as well as
     /// <see cref="ToExcelAsync"/>/<see cref="ExportExcelAsync"/>) also carry the grid's current
     /// visual theme: the rendered header/row colors, striped alternating rows, border color and
-    /// bold/italic fonts are sampled from the live DOM (so the active theme — including dark mode —
+    /// bold/italic fonts are sampled from the live DOM (so the active theme - including dark mode -
     /// is what lands in the workbook) and baked into the file's style sheet. Falls back to the
     /// plain bold-header styling when JS is unavailable (prerendering, disconnected circuit).</summary>
     [Parameter] public bool ExcelExportStyled { get; set; }
@@ -128,7 +128,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// respond to arrow keys, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>PageUp</kbd>/<kbd>PageDown</kbd>
     /// (and <kbd>Ctrl</kbd> variants). <kbd>Enter</kbd>/<kbd>F2</kbd> begins editing an editable
     /// cell and <kbd>Esc</kbd> cancels. Mirrors react-data-grid's Cell Navigation. No JavaScript
-    /// is used — focus is driven by Blazor's built-in <c>FocusAsync</c>.
+    /// is used - focus is driven by Blazor's built-in <c>FocusAsync</c>.
     /// </summary>
     [Parameter] public bool CellNavigation { get; set; }
 
@@ -186,7 +186,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Renders only the columns in (and near) the horizontal viewport, replacing scrolled-out runs
-    /// with spacer cells — for grids with very many columns. Column x-positions are computed from
+    /// with spacer cells - for grids with very many columns. Column x-positions are computed from
     /// pixel widths, so give columns explicit px <c>Width</c>s (non-px widths fall back to their
     /// resize default). Not applied while column header groups or per-row <c>ColSpan</c>s are used
     /// (both can span across the skipped runs); keyboard cell navigation can only reach rendered
@@ -280,7 +280,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private bool _isNewItem;
     private Dictionary<string, object?>? _editSnapshot;
     // Built-in editors write into this buffer instead of the live object, so the row's data is only
-    // mutated when the edit is committed — Cancel simply discards the buffer. (Custom EditTemplates
+    // mutated when the edit is committed - Cancel simply discards the buffer. (Custom EditTemplates
     // bind straight to the item and are covered by the snapshot/restore path instead.)
     private Dictionary<string, object?>? _editBuffer;
     // Per-column validation errors for the row being edited (conversion failures and Validate results).
@@ -356,8 +356,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         && !HasColumnGroups
         && !_columns.Any(c => c.ColSpan is not null);
 
-    /// <summary>The horizontal render slots every row-like element iterates: all visible columns, or —
-    /// while column virtualization is active — the on-screen window with spacers for skipped runs.</summary>
+    /// <summary>The horizontal render slots every row-like element iterates: all visible columns, or -
+    /// while column virtualization is active - the on-screen window with spacers for skipped runs.</summary>
     internal IReadOnlyList<BitDataGridColumnSlot<TItem>> ColumnSlots => _columnSlotsCache ??= BuildColumnSlots();
 
     private IReadOnlyList<BitDataGridColumnSlot<TItem>> BuildColumnSlots()
@@ -404,7 +404,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Invoked from JavaScript when the viewport scrolls horizontally (or resizes), so the
-    /// rendered column window can follow. RTL browsers report negative offsets — normalized here.</summary>
+    /// rendered column window can follow. RTL browsers report negative offsets - normalized here.</summary>
     [JSInvokable]
     public Task OnHorizontalScrollAsync(double scrollLeft, double clientWidth)
     {
@@ -477,7 +477,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _columnsById[column.Id] = column;
         InvalidateVisibleColumns();
 
-        // A column registering itself must not trigger a fresh data fetch in server/infinite modes —
+        // A column registering itself must not trigger a fresh data fetch in server/infinite modes -
         // doing so once per column re-queries the backend (or resets the infinite list) repeatedly.
         // Instead recompute footer/aggregate values from the rows already loaded and just re-render so
         // late-registered footer columns still get their values. In client mode RefreshAsync only
@@ -574,8 +574,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Re-keys a column in the registry after its <see cref="BitDataGridColumn{TItem}.Id"/> changes
     /// (its <c>ColumnId</c>/<c>Field</c> parameters were mutated after the initial registration).
-    /// Without this the registry keeps the stale key and sort/filter/group lookups — which resolve
-    /// columns by id — would no longer find the column. Active descriptors are migrated to the new id.
+    /// Without this the registry keeps the stale key and sort/filter/group lookups - which resolve
+    /// columns by id - would no longer find the column. Active descriptors are migrated to the new id.
     /// </summary>
     internal void UpdateColumnRegistration(BitDataGridColumn<TItem> column, string oldId)
     {
@@ -741,7 +741,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             // Virtualize owns data fetching in this mode: ask it to discard its cached windows and
             // re-query through the ItemsProvider with the current sorts/filters. Before the first
-            // render the reference is still null — the initial provider call covers that case.
+            // render the reference is still null - the initial provider call covers that case.
             if (_serverVirtualize is not null)
             {
                 await _serverVirtualize.RefreshDataAsync();
@@ -789,7 +789,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         catch (OperationCanceledException) when (request.CancellationToken.IsCancellationRequested)
         {
             // Superseded by a newer scroll window; Virtualize discards this result, so the content is
-            // irrelevant — just keep the last known total.
+            // irrelevant - just keep the last known total.
             return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
         }
 
@@ -1032,7 +1032,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Expands every node in the tree. No-op outside tree mode. In lazy mode
-    /// (<see cref="ChildrenProvider"/>) only already-loaded branches expand — recursively fetching the
+    /// (<see cref="ChildrenProvider"/>) only already-loaded branches expand - recursively fetching the
     /// whole tree could be unbounded.</summary>
     public async Task ExpandAllAsync()
     {
@@ -1158,7 +1158,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
         // Only after a batch was genuinely appended do we ask JS whether the viewport still isn't
         // filled (e.g. a short first batch) and therefore needs another load. Gating the re-check on a
-        // real append is essential: re-checking after a no-op load would spin a tight JS<->.NET loop —
+        // real append is essential: re-checking after a no-op load would spin a tight JS<->.NET loop -
         // while the initial batch is still in flight the viewport is empty (so it always looks "near the
         // end"), every check() would re-enter here, hit the _infiniteLoading guard, return immediately
         // and re-check again, starving the in-flight batch's continuation and freezing the UI thread.
@@ -1493,7 +1493,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // the filter rather than being stored as a criterion. This matches the data processor, which
         // also ignores whitespace-only filter values, keeping remote and client modes consistent.
         // Unspecified is the omitted/invalid operator (see the enum), so it never produces a
-        // descriptor either — the filter list and OnRead payload only ever carry real operators.
+        // descriptor either - the filter list and OnRead payload only ever carry real operators.
         var isEmpty = value is null || (value is string s && string.IsNullOrWhiteSpace(s));
         var active = op is not BitDataGridFilterOperator.Unspecified
             && (!isEmpty || op is BitDataGridFilterOperator.IsEmpty or BitDataGridFilterOperator.IsNotEmpty);
@@ -1572,7 +1572,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // Server mode (OnRead) and infinite-scrolling mode (OnLoadMore) only forward sorts and filters
     // to the data callback and render the returned rows flat, so a group would appear active without
     // affecting the list. Tree mode likewise flattens the hierarchy without grouping, and queryable
-    // mode holds only the current page in memory. Grouping is rejected in those flows — both in the
+    // mode holds only the current page in memory. Grouping is rejected in those flows - both in the
     // UI (ColumnGroupable) and on the programmatic/restore paths (GroupByAsync, ApplyStateAsync).
     private bool GroupingAllowed => !IsServerMode && !IsInfiniteMode && !IsTreeMode && !IsQueryableMode;
 
@@ -1862,7 +1862,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (!column.Accessor.TryConvertValue(value, out var converted))
         {
             // Keep the raw input so the editor doesn't wipe what the user typed, and surface the
-            // conversion failure — previously unparseable input was silently discarded.
+            // conversion failure - previously unparseable input was silently discarded.
             _editBuffer[column.Id] = value;
             _editErrors[column.Id] = string.Format(Strings.InvalidValueError, column.DisplayTitle);
             StateHasChanged();
@@ -2644,7 +2644,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal int HeaderRowCount => ShowHeader ? (HasColumnGroups ? 1 : 0) + 1 + (HasFilterRow ? 1 : 0) : 0;
 
     /// <summary>The 1-based aria-rowindex for a data row (accounting for all header rows), or null when
-    /// unknown — a null renders no attribute.</summary>
+    /// unknown - a null renders no attribute.</summary>
     internal int? AriaRowIndex(TItem item)
     {
         if (_rowIndexByKey is null || !_rowIndexByKey.TryGetValue(GetKey(item), out var index)) return null;
@@ -2710,7 +2710,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     public async Task<string> ToCsvAsync() => BuildCsv(await GetExportRowsAsync());
 
     /// <summary>Generates the full (filtered/sorted) dataset as an Excel workbook (.xlsx). Like
-    /// <see cref="ToCsvAsync"/>, this covers all matching rows in every data mode — server and
+    /// <see cref="ToCsvAsync"/>, this covers all matching rows in every data mode - server and
     /// infinite-scrolling modes fetch them through <see cref="OnRead"/>/<see cref="OnLoadMore"/>.
     /// The workbook mirrors the grid's layout: a bold frozen header row, the leading
     /// <see cref="BitDataGridColumn{TItem}.Frozen"/> columns as a freeze pane, ColSpan cells as
@@ -2766,7 +2766,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// matching set through their provider (<see cref="OnRead"/>/<see cref="OnLoadMore"/> with
     /// <c>Take = null</c>), queryable mode re-runs the translated pipeline without the page window,
     /// and tree mode walks the whole tree including collapsed branches (lazy trees are limited to
-    /// the children already loaded — fetching the rest could be unbounded).</summary>
+    /// the children already loaded - fetching the rest could be unbounded).</summary>
     private async Task<IReadOnlyList<TItem>> GetExportRowsAsync()
     {
         if (IsServerMode)
@@ -2786,9 +2786,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>The export rows resolvable without a provider round-trip. Tree mode flattens the
     /// entire tree in display order (per-sibling sorting applied) regardless of expand/collapse
-    /// state — the rendered view only contains expanded rows. Queryable mode re-runs the translated
+    /// state - the rendered view only contains expanded rows. Queryable mode re-runs the translated
     /// filter/sort pipeline without the page window so the provider (e.g. a database) streams the
-    /// full matching set. Server/infinite modes fall back to the rows already loaded — only their
+    /// full matching set. Server/infinite modes fall back to the rows already loaded - only their
     /// async providers can supply more (see <see cref="GetExportRowsAsync"/>).</summary>
     private IReadOnlyList<TItem> GetSyncExportRows()
     {
@@ -2835,7 +2835,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>Builds a CSV string of the full (filtered/sorted) dataset without going async:
     /// tree mode includes collapsed branches and queryable mode covers all pages. Server and
-    /// infinite-scrolling modes are the exception — fetching beyond the loaded rows requires their
+    /// infinite-scrolling modes are the exception - fetching beyond the loaded rows requires their
     /// async provider, so they cover only the current page/loaded batches; use
     /// <see cref="ToCsvAsync"/> there for all rows.</summary>
     public string ToCsv() => BuildCsv(GetSyncExportRows());

@@ -103,7 +103,7 @@ public class BitDataGridStrings
     public string LastPageLabel { get; set; } = "Last page";
 
     /// <summary>Shown after the last batch in infinite-scrolling mode.</summary>
-    public string EndOfResultsText { get; set; } = "— End of results —";
+    public string EndOfResultsText { get; set; } = "- End of results -";
 
     /// <summary>Accessible label of the detail-row toggle.</summary>
     public string ToggleDetailsLabel { get; set; } = "Toggle details";

@@ -55,7 +55,7 @@ namespace BitBlazorUI {
         // Reports the viewport's horizontal scroll offset and width to .NET so column virtualization
         // can pick the visible column window. rAF-throttled, with a px hysteresis so tiny scroll
         // deltas (well inside the overscan) don't cause interop chatter; a viewport resize always
-        // re-reports. RTL browsers use negative scrollLeft — normalized on the .NET side.
+        // re-reports. RTL browsers use negative scrollLeft - normalized on the .NET side.
         public static initHorizontalScroll(viewport: HTMLElement, dotNetRef: DotNetObject, hysteresis: number) {
             const threshold = hysteresis > 0 ? hysteresis : 100;
             let lastLeft = Number.NEGATIVE_INFINITY;

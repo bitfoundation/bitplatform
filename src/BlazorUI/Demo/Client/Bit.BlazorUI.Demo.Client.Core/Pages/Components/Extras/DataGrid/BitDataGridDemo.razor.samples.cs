@@ -365,7 +365,7 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
 
         IEnumerable<Product> query = all;
 
-        // filtering — honor the operator the grid emits, not just contains/equals
+        // filtering - honor the operator the grid emits, not just contains/equals
         foreach (var f in request.Filters)
         {
             query = f.ColumnId switch
@@ -604,7 +604,7 @@ private void OnReorder(BitDataGridRowReorderEventArgs<Product> e)
          @oncontextmenu=""CloseCellMenu"" @oncontextmenu:preventDefault=""true""></div>
     <div class=""ctx-menu"" role=""menu"" style=""left:@(cellMenuX)px;top:@(cellMenuY)px""
          @onkeydown=""OnCellMenuKeyDown"">
-        <div>@cellMenuArgs.Item.Name — @cellMenuArgs.ColumnTitle</div>
+        <div>@cellMenuArgs.Item.Name - @cellMenuArgs.ColumnTitle</div>
         <button type=""button"" role=""menuitem"" @ref=""cellMenuFirstItem"" @onclick=""CopyCellValue"">Copy value</button>
         <button type=""button"" role=""menuitem"" @onclick=""DeleteCellMenuRow"">Delete row</button>
     </div>
@@ -801,7 +801,7 @@ private string stateStatus = ""Adjust the grid, then save its state."";
 
 private void SaveGridState()
 {
-    // The snapshot is serializable — persist it to local storage or a user-preferences store.
+    // The snapshot is serializable - persist it to local storage or a user-preferences store.
     savedState = grid?.GetState();
     stateStatus = savedState is null
         ? ""Nothing to save yet.""
@@ -833,7 +833,7 @@ private List<Product> all = SampleData.Generate(100_000);
 private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitDataGridReadRequest request)
 {
     // Simulate backend latency. Superseded scroll windows are cancelled by the grid; let the
-    // OperationCanceledException propagate so the grid discards the stale read — returning an
+    // OperationCanceledException propagate so the grid discards the stale read - returning an
     // empty result instead would be rendered as real data and blank the viewport.
     await Task.Delay(150, request.CancellationToken);
 
@@ -900,7 +900,7 @@ private readonly BitDataGridStrings persianStrings = new()
     <BitDataGridColumn Property=""p => p.Stock"" />
 </BitDataGrid>";
     private readonly string example27CsharpCode = @"
-// Any IQueryable works — filtering, sorting and paging are composed as expression trees the
+// Any IQueryable works - filtering, sorting and paging are composed as expression trees the
 // provider executes at the source, so with EF Core this becomes SQL WHERE/ORDER BY/OFFSET
 // and only the current page is materialized:
 //     private IQueryable<Product> products => dbContext.Products;
@@ -943,7 +943,7 @@ private List<FileNode> roots = new()
     new() { Id = 4, Name = ""LICENSE"", Kind = ""File"", Size = 1_070 },
 };
 
-// Unloaded nodes can't know whether they have children — this predicate decides
+// Unloaded nodes can't know whether they have children - this predicate decides
 // whether the expand toggle renders before the first fetch.
 private static bool IsFolder(FileNode node) => node.Kind == ""Folder"";
 
@@ -990,7 +990,7 @@ private List<Product> products = SampleData.Generate(12);" + ProductModelCode + 
     }
 </BitDataGrid>";
     private readonly string example31CsharpCode = @"
-// 3,000 rows x 42 columns — but only the visible window of rows AND columns exists in the DOM.
+// 3,000 rows x 42 columns - but only the visible window of rows AND columns exists in the DOM.
 // Column virtualization needs explicit pixel widths so the column window can be computed.
 private List<Product> products = SampleData.Generate(3_000);" + ProductModelCode + SampleDataCode;
 
@@ -1042,7 +1042,7 @@ private async Task GoToPage3() => await grid!.GoToPageAsync(3);
             <Template Context=""p"">
                 @if (p.Discontinued)
                 {
-                    <span>⚠ @p.Name — discontinued</span>
+                    <span>⚠ @p.Name - discontinued</span>
                 }
                 else
                 {

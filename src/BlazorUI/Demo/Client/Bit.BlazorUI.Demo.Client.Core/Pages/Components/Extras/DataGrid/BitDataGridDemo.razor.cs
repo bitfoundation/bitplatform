@@ -149,7 +149,7 @@ public partial class BitDataGridDemo : AppComponentBase
     private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitDataGridReadRequest request)
     {
         // Simulate backend latency. Superseded scroll windows are cancelled by the grid, and the
-        // OperationCanceledException must propagate so the grid discards the stale read — returning
+        // OperationCanceledException must propagate so the grid discards the stale read - returning
         // an empty result instead would be rendered as real data and blank the viewport.
         await Task.Delay(150, request.CancellationToken);
 

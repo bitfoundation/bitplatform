@@ -74,7 +74,7 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     {
         // A cleared edit can arrive as an empty string (e.g. a select/text editor reset to "") rather
         // than null. Normalize it to null up front so the nullable-target handling below clears the
-        // value — but only for non-string targets. For a string-typed property, "" is a legitimate
+        // value - but only for non-string targets. For a string-typed property, "" is a legitimate
         // user edit (an intentionally emptied text cell) and must be preserved rather than nulled.
         if (value is string es && es.Length == 0 && PropertyType != typeof(string))
             value = null;
@@ -155,7 +155,7 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         while (node is MemberExpression member && member.Expression is not null)
         {
             // ".Value" on a nullable struct intermediate (x => x.Price.Value.Amount) is Nullable<T>
-            // plumbing, not a data property — Build() inserts the unwrap itself, so drop the segment
+            // plumbing, not a data property - Build() inserts the unwrap itself, so drop the segment
             // to arrive at the same cache key as the equivalent "Price.Amount" string path.
             var isNullableValue = member.Member.Name == nameof(Nullable<int>.Value)
                 && Nullable.GetUnderlyingType(member.Expression.Type) is not null;

@@ -268,8 +268,8 @@ root → leaf** by default: a parent's loader completes before its child's start
 order. That lets a child loader depend on work its parent's loader already did (e.g. state stashed
 in a scoped service), but it means the total wait is the *sum* of the chain's loader times.
 
-If the chain's loaders are independent (the common case), opt into running them concurrently —
-like React Router — with `ParallelLoaders`:
+If the chain's loaders are independent (the common case), opt into running them concurrently -
+like React Router - with `ParallelLoaders`:
 
 ```razor
 <Brouter ParallelLoaders="true">
@@ -431,8 +431,8 @@ Paths starting with `./` or `../` resolve against the **current location** using
 `/users/42/edit` and `Navigate("../7")` to `/users/7`. Extra `..` clamp at the root, and any query
 or hash on the relative URL is preserved.
 
-The same resolution applies in guard redirects — `ctx.Redirect("../login")` resolves against the
-path being navigated **to**, so a guard on `/admin/secret` lands on `/admin/login` — and in
+The same resolution applies in guard redirects - `ctx.Redirect("../login")` resolves against the
+path being navigated **to**, so a guard on `/admin/secret` lands on `/admin/login` - and in
 `<BrouterLink Href="../sibling">`, whose rendered `href` is the resolved absolute path and
 re-resolves after every (matched) navigation.
 

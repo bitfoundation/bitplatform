@@ -59,8 +59,8 @@
                 Typed filters are used for numeric, date, boolean and enum columns (like Price, Stock and Category),
                 while text columns (like Name and Supplier) use case-insensitive text filtering.
                 <br /><br />
-                This example binds columns with the string-based <BitTag Reversed Text="Field" Color="BitColor.SecondaryBackground" /> parameter —
-                useful when column definitions come from configuration — instead of the strongly typed Property selector used elsewhere.
+                This example binds columns with the string-based <BitTag Reversed Text="Field" Color="BitColor.SecondaryBackground" /> parameter -
+                useful when column definitions come from configuration - instead of the strongly typed Property selector used elsewhere.
             </div>
             <br />
             <BitDataGrid Items="@filterProducts" Height="430px"
@@ -129,7 +129,7 @@
                 Each group is collapsible and shows its own aggregates; the footer shows grand totals.
                 Group by both Category and Supplier to see multi-level grouping.
                 Beyond the built-in <code>Aggregate</code> types, <code>AggregateBy</code> computes a custom
-                aggregate — here the Supplier column counts distinct suppliers per group and overall.
+                aggregate - here the Supplier column counts distinct suppliers per group and overall.
             </div>
             <br />
             <BitDataGrid Items="@groupProducts" Height="500px"
@@ -151,7 +151,7 @@
             <div>
                 Customize any cell, header or footer, and expand rows to reveal detail content.
                 Click the ▸ toggle on the left of a row to expand its detail panel.
-                A template-only column (no <code>Field</code>) is not sortable by default — give it a
+                A template-only column (no <code>Field</code>) is not sortable by default - give it a
                 <code>SortBy</code> key selector to sort it, like the computed Value column here.
             </div>
             <br />
@@ -246,7 +246,7 @@
                     <Template Context="p">
                         @if (p.Discontinued)
                         {
-                            <span class="span-banner">⚠ @p.Name — discontinued (no further details)</span>
+                            <span class="span-banner">⚠ @p.Name - discontinued (no further details)</span>
                         }
                         else
                         {
@@ -273,7 +273,7 @@
 
         <DemoExample Title="Virtualization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
-                Render very large datasets smoothly — only visible rows hit the DOM.
+                Render very large datasets smoothly - only visible rows hit the DOM.
                 Virtualization requires a fixed <code>Height</code> and <code>RowHeight</code>.
             </div>
             <br />
@@ -318,7 +318,7 @@
         <DemoExample Title="Infinite scrolling" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 Set <code>OnLoadMore</code> instead of binding <code>Items</code>. The grid appends the next batch
-                automatically as the user scrolls toward the end — with no total count or paging UI. A fixed
+                automatically as the user scrolls toward the end - with no total count or paging UI. A fixed
                 <code>Height</code> is required. CSV/Excel exports issue a single request with
                 <code>Take = null</code> ("all rows"), so the handler should honor a <code>null</code> Take.
             </div>
@@ -360,7 +360,7 @@
 
         <DemoExample Title="Master detail" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
-                The <code>DetailTemplate</code> can render anything — including another <code>BitDataGrid</code>.
+                The <code>DetailTemplate</code> can render anything - including another <code>BitDataGrid</code>.
                 Each supplier expands to show a nested, sortable grid of the products it provides.
             </div>
             <br />
@@ -433,7 +433,7 @@
                      @oncontextmenu="CloseCellMenu" @oncontextmenu:preventDefault="true"></div>
                 <div class="ctx-menu" role="menu" style="left:@(cellMenuX)px;top:@(cellMenuY)px"
                      @onkeydown="OnCellMenuKeyDown">
-                    <div class="ctx-menu-header">@cellMenuArgs.Item.Name — @cellMenuArgs.ColumnTitle</div>
+                    <div class="ctx-menu-header">@cellMenuArgs.Item.Name - @cellMenuArgs.ColumnTitle</div>
                     <button type="button" class="ctx-menu-item" role="menuitem" @ref="cellMenuFirstItem" @onclick="CopyCellValue">Copy value</button>
                     <button type="button" class="ctx-menu-item ctx-menu-danger" role="menuitem" @onclick="DeleteCellMenuRow">Delete row</button>
                 </div>
@@ -558,7 +558,7 @@
                 Set <code>FilterOperators</code> to let users pick the comparison for each filter instead of the fixed
                 default: text columns offer contains / doesn't contain / starts with / ends with / = / ≠,
                 while number and date columns offer = ≠ &gt; ≥ &lt; ≤. Changing the operator re-applies the current filter text.
-                Individual columns can override the grid-level setting — the Supplier column opts out here,
+                Individual columns can override the grid-level setting - the Supplier column opts out here,
                 keeping its fixed default filter.
             </div>
             <br />
@@ -576,7 +576,7 @@
         <DemoExample Title="Edit validation" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>
                 Give a column a <code>Validate</code> function to check proposed edits. While any editor holds an
-                invalid value, the message renders under it and Save is blocked. Edits are buffered — the underlying
+                invalid value, the message renders under it and Save is blocked. Edits are buffered - the underlying
                 object is only modified when Save is clicked, so Cancel always leaves the row untouched.
                 Try clearing the Name, or entering a negative Price or Stock.
             </div>
@@ -617,7 +617,7 @@
         <DemoExample Title="Server-side virtualization" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
             <div>
                 Combine <code>Virtualize</code> with <code>OnRead</code> (and no paging) to browse an arbitrarily large
-                remote dataset: row windows are fetched on demand as you scroll — this example simulates 100,000 rows.
+                remote dataset: row windows are fetched on demand as you scroll - this example simulates 100,000 rows.
                 The footer shows <b>server-provided aggregates</b> (via <code>BitDataGridReadResult.Aggregates</code>)
                 computed over the whole filtered dataset, and the Rating column is pinned to the end edge
                 with <code>FrozenEnd</code>.
@@ -637,8 +637,8 @@
 
         <DemoExample Title="Localization" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
             <div>
-                Every user-visible string — pager, empty/loading texts, filter placeholders, edit buttons,
-                aria-labels and screen-reader announcements — comes from the <code>Strings</code> parameter
+                Every user-visible string - pager, empty/loading texts, filter placeholders, edit buttons,
+                aria-labels and screen-reader announcements - comes from the <code>Strings</code> parameter
                 (a <code>BitDataGridStrings</code>). Assign a customized instance to localize the grid; this
                 example renders a Persian (RTL) grid.
             </div>
@@ -656,7 +656,7 @@
         <DemoExample Title="IQueryable data source" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
             <div>
                 Bind an <code>IQueryable&lt;T&gt;</code> to <code>Items</code> and the grid translates filtering,
-                sorting and paging into <b>expression trees</b> composed onto the queryable — so a remote LINQ
+                sorting and paging into <b>expression trees</b> composed onto the queryable - so a remote LINQ
                 provider such as EF Core executes them at the source (SQL <code>WHERE</code>/<code>ORDER BY</code>/<code>OFFSET</code>)
                 and only the current page is ever materialized. This example uses an in-memory queryable;
                 bind <code>dbContext.Products</code> the same way.
@@ -675,12 +675,12 @@
         <DemoExample Title="Excel export" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
             <div>
                 <code>ShowExcelExport</code> adds a toolbar button that downloads the full (filtered/sorted)
-                data as a real <code>.xlsx</code> workbook — generated in-process with no external library.
+                data as a real <code>.xlsx</code> workbook - generated in-process with no external library.
                 Numbers and booleans are written as native cell types so spreadsheet formulas work on them,
                 and the workbook mirrors the grid's layout: a bold, frozen header row, the grid's column
                 widths, frozen columns as Excel freeze panes and <code>ColSpan</code> cells as merged cells.
                 With <code>ExcelExportStyled</code> the workbook also carries the grid's <b>current visual
-                theme</b> — the rendered header/row colors, the striped alternating background, the border
+                theme</b> - the rendered header/row colors, the striped alternating background, the border
                 color and bold/italic fonts are sampled from the live DOM at export time, so whatever theme
                 is active (light, dark, custom) is what lands in the file.
                 Exports always cover <b>all</b> matching rows, not just the rendered ones: server and
@@ -703,14 +703,14 @@
         <DemoExample Title="Export with complex layouts" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
             <div>
                 This grid combines a master-detail <code>DetailTemplate</code>, frozen ID/Name columns and
-                <code>ColSpan</code> spanning (discontinued rows span Name over Category) — try scrolling,
+                <code>ColSpan</code> spanning (discontinued rows span Name over Category) - try scrolling,
                 expanding details and filtering, then export. The <b>Excel</b> file mirrors the layout:
                 the frozen ID/Name columns (plus the header row) become a freeze pane and each spanning
                 cell becomes a merged cell. The data stays faithful in both formats: frozen columns keep
                 their declared order, a templated field column (Name) exports the raw field value rather
                 than its markup, detail content is not exported (master rows only), and the template-only
                 Value column (no <code>Field</code>) is skipped. <b>CSV</b> has no layout concepts, so it
-                stays flat — there every column exports its own value, including the Category a span covers.
+                stays flat - there every column exports its own value, including the Category a span covers.
             </div>
             <br />
             <BitDataGrid Items="@complexExportProducts" Height="460px" Bordered="true"
@@ -730,7 +730,7 @@
                         <Template Context="p">
                             @if (p.Discontinued)
                             {
-                                <span class="span-banner">⚠ @p.Name — discontinued</span>
+                                <span class="span-banner">⚠ @p.Name - discontinued</span>
                             }
                             else
                             {
@@ -753,7 +753,7 @@
         <DemoExample Title="Lazy tree loading" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
             <div>
                 Set <code>ChildrenProvider</code> (instead of <code>ChildrenSelector</code>) to fetch a node's
-                children <b>asynchronously on first expand</b> — e.g. from a backend — with the results cached for
+                children <b>asynchronously on first expand</b> - e.g. from a backend - with the results cached for
                 later toggles. Pair it with <code>HasChildrenSelector</code> so unloaded nodes know whether to
                 render an expand toggle. Expanding a folder below simulates a 600&nbsp;ms backend call.
             </div>
@@ -772,7 +772,7 @@
             <div>
                 Row and column reordering work with <b>touch and pen</b> as well as mouse: pointer-event based
                 drag-and-drop drives the same reorder pipeline on devices where native HTML5 drag-and-drop
-                doesn't fire. Try it on a touchscreen — drag the ⠿ handle to move a row, or drag a column
+                doesn't fire. Try it on a touchscreen - drag the ⠿ handle to move a row, or drag a column
                 header to reorder columns; the drop target is highlighted while dragging.
             </div>
             <br />
@@ -788,7 +788,7 @@
         <DemoExample Title="Column virtualization" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
             <div>
                 <code>VirtualizeColumns</code> renders only the columns in (and near) the horizontal viewport,
-                replacing scrolled-out runs with spacer cells — for grids with very many columns. This example
+                replacing scrolled-out runs with spacer cells - for grids with very many columns. This example
                 declares 40 measurement columns (plus a frozen ID column) but only the visible window exists in
                 the DOM while you scroll horizontally. Combine it with row <code>Virtualize</code> for large
                 datasets in both dimensions. Columns need explicit pixel widths.

@@ -178,7 +178,7 @@
     // <input type="datetime-local"> has no time-zone/Kind information, so a naive parse back through
     // the property accessor yields DateTimeKind.Unspecified and would drop the original Utc/Local
     // semantics (changing the represented instant on round-trip). Re-stamp the parsed value with the
-    // current value's Kind so edited DateTimes preserve Utc/Local consistently — mirroring how
+    // current value's Kind so edited DateTimes preserve Utc/Local consistently - mirroring how
     // SetDateTimeOffset reconstructs the offset.
     private void SetDateTime(object? raw)
     {
