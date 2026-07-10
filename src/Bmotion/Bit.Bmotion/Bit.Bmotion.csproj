@@ -77,11 +77,17 @@
             Condition="'$(IsCrossTargetingBuild)' == 'true'"
             DependsOnTargets="BuildBmotionJavaScript" />
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
-        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <!-- Use the checked-in package-lock.json with `npm ci` (not `npm install`) so the installed tree is
+         reproducible and exactly matches the lockfile - `npm ci` fails fast when package.json and the
+         lockfile drift, instead of silently mutating the lock. The lockfile is an input so a dependency
+         bump re-triggers the install; node_modules\.package-lock.json (written by npm) is the output. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-bmotion.js">
+    <Target Name="BuildJavaScript"
+            Inputs="@(TypeScriptFiles)"
+            Outputs="wwwroot/bit-bmotion.js;$(BaseIntermediateOutputPath)bit-bmotion.$(Configuration).stamp">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
              An interrupted in-place minify could leave a half-written bundle that the Outputs check
@@ -90,6 +96,20 @@
              exports intact) so the interop's dynamic import() still resolves the bridge functions. -->
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bmotion.js --minify --format=esm --outfile=wwwroot/bit-bmotion.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bmotion.min.js" DestinationFiles="wwwroot/bit-bmotion.js" OverwriteReadOnlyFiles="true" />
+
+        <!-- Configuration-aware incremental marker. The bundle (wwwroot/bit-bmotion.js) is a single shared
+             file with a config-independent path, but only Release runs esbuild to minify it. Without a
+             per-config marker, MSBuild's Inputs/Outputs check treats a Debug-built (unminified) bundle as
+             up-to-date for a subsequent Release build - silently skipping tsc/esbuild and shipping an
+             unminified bundle (and vice-versa). Stamp the current configuration and clear every other
+             config's stamp so any Debug<->Release switch invalidates this target and regenerates the
+             correct bundle. -->
+        <ItemGroup>
+            <_BmotionBuildStamp Include="$(BaseIntermediateOutputPath)bit-bmotion.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BmotionBuildStamp)" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-bmotion.$(Configuration).stamp" AlwaysCreate="true" />
     </Target>
 
 </Project>
