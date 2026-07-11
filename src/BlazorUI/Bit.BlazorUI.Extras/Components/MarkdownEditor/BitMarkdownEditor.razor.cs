@@ -443,13 +443,13 @@ public partial class BitMarkdownEditor : BitComponentBase
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        var config = new
+        var config = new BitMarkdownEditorConfig
         {
-            imageUpload = OnImageUpload is not null,
-            syncScroll = SyncScroll,
-            autoPair = AutoPair,
-            autoSaveKey = string.IsNullOrEmpty(AutoSaveId) ? null : AutoSaveId,
-            changeDebounceMs = ChangeDebounceTime
+            ImageUpload = OnImageUpload is not null,
+            SyncScroll = SyncScroll,
+            AutoPair = AutoPair,
+            AutoSaveKey = string.IsNullOrEmpty(AutoSaveId) ? null : AutoSaveId,
+            ChangeDebounceMs = ChangeDebounceTime
         };
 
         await _js.BitMarkdownEditorInit(_Id, _textAreaRef, RootElement, _dotnetObj, Value ?? DefaultValue, config);

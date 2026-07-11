@@ -8,7 +8,7 @@ internal static class BitMarkdownEditorJsRuntimeExtensions
                                                        ElementReference root,
                                                        DotNetObjectReference<BitMarkdownEditor>? dotnetObj,
                                                        string? defaultValue,
-                                                       object config)
+                                                       BitMarkdownEditorConfig config)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MarkdownEditor.init", id, textArea, root, dotnetObj, defaultValue, config);
     }
