@@ -1,9 +1,9 @@
-using Boilerplate.Shared.Features.Tenants.Dtos;
+﻿using Boilerplate.Shared.Features.Tenants.Dtos;
 
 namespace Boilerplate.Shared.Features.Tenants;
 
 /// <summary>
-/// <inheritdoc cref="AppFeatures.Management.Tenants_Write_Global"/>
+/// <inheritdoc cref="AppFeatures.Management.Tenants_Manage_Global"/>
 /// </summary>
 [Route("api/v1/[controller]/[action]/"), AuthorizedApi]
 public interface ITenantManagementController : IAppController

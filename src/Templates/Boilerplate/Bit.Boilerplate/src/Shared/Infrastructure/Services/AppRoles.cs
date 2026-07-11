@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Infrastructure.Services;
 
 public class AppRoles
@@ -21,7 +21,7 @@ public class AppRoles
 
     public static bool IsBuiltInRole(string name)
     {
-        return name is GlobalAdmin or Demo
+        return name is GlobalAdmin
             //#if (multitenancy == true)
             or TenantAdmin
             //#endif

@@ -3,7 +3,7 @@
 @attribute [Route(PageUrls.ManageAllTenants)]
 @attribute [Route("{culture?}" + PageUrls.ManageAllTenants)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppFeatures.Management.Tenants_Write_Global)]
+@attribute [Authorize(Policy = AppFeatures.Management.Tenants_Manage_Global)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.ManageAllTenants)]"

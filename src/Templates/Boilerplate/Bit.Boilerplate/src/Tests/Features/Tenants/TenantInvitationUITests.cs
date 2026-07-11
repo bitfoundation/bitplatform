@@ -1,12 +1,10 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Client.Web.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Features.Tenants;
 
 [TestClass, TestCategory("UITest")]
-public partial class TenantInvitationUITests : PageTest
+public partial class TenantInvitationUITests : AppPageTest
 {
     // The seeded store tenant admin. She's a t-admin (not a global admin), See UserConfiguration.
     private const string StoreAdminEmail = "store-admin@bitplatform.dev";
@@ -16,8 +14,8 @@ public partial class TenantInvitationUITests : PageTest
     /// End-to-end multi-tenancy invitation journey across two isolated browsers:
     /// <list type="number">
     /// <item>The tenant admin signs in and creates a brand-new tenant (which needs an elevated access token).</item>
-    /// <item>Another user, in her own browser, signs in with a magic link (OTP), the same way as the identity test.</item>
-    /// <item>The admin invites her; while the invitation is pending she does NOT appear in the tenant's users list and she can't reach the Dashboard.</item>
+    /// <item>The admin invites a brand-new e-mail address; nobody owns it yet, so the invitation itself registers the account as a pending member (See TenantController.InviteUser), and while the invitation is pending she does NOT appear in the tenant's users list.</item>
+    /// <item>That freshly-created account signs in for the first time with a magic link (OTP), the same way as the identity test - proving a user created by an invitation is a fully functional account - yet with the invitation still pending she can't reach the Dashboard.</item>
     /// <item>She accepts the invitation from the "manage my tenants" page, which lets her reach the Dashboard and makes her show up in the admin's users list.</item>
     /// <item>She leaves the tenant (which also needs an elevated access token); the Dashboard becomes off-limits again and she disappears from the users list.</item>
     /// </list>
@@ -25,19 +23,9 @@ public partial class TenantInvitationUITests : PageTest
     [TestMethod]
     public async Task TenantAdmin_InviteAcceptAndLeave_Flow_Should_WorkAsExpected()
     {
-        await using var server = new AppTestServer();
-
-        // Use the real browser storage (localStorage/sessionStorage) instead of the in-memory TestStorageService so the
-        // two users' auth tokens survive full page navigations and stay isolated between the two browser contexts.
-        // Without this, every navigation would start a fresh Blazor Server circuit whose in-memory storage is empty.
-        await server.Build(services => services.AddScoped<IStorageService, WebStorageService>())
-            .Start(TestContext.CancellationToken);
-
+        await using var server = new AppTestServer(Context);
+        await server.Build().Start(TestContext.CancellationToken);
         var serverAddress = server.WebAppServerAddress;
-
-        // Tenant switches, invitations and elevated-access prompts each involve a couple of server round-trips, so give
-        // the UI actions a comfortable timeout.
-        Page.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
 
         // ---- Browser 1: the tenant admin (the default Page / Context) ----
         await SignInWithPassword(Page, serverAddress, StoreAdminEmail, StoreAdminPassword);
@@ -46,24 +34,30 @@ public partial class TenantInvitationUITests : PageTest
         var tenantName = Guid.NewGuid().ToString();
         await CreateTenant(Page, server, tenantName);
 
+        // ---- Browser 1: the admin invites a brand-new e-mail into the new tenant ----
+        // Nobody owns this address yet, so the invitation itself registers the account: a pending member with a random
+        // password and an unconfirmed e-mail (See TenantController.InviteUser -> CreateUserWithDemoRole).
+        var invitedEmail = MagicLinkSignInUtils.NewTestEmail();
+        await InviteUserToCurrentTenant(Page, server, invitedEmail);
+
         // ---- Browser 2: the invited user, in her own isolated browser context ----
         await using var invitedContext = await Browser.NewContextAsync();
+        await SetBlazorWebAssemblyServerAddress(serverAddress, invitedContext);
         var invitedPage = await invitedContext.NewPageAsync();
         invitedPage.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
-        var invitedEmail = MagicLinkSignInUtils.NewTestEmail();
 
-        // She signs in the same way as the first identity test (magic link + OTP code).
+        // The account the invitation just created signs in for the very first time with the magic link OTP, exactly the
+        // way a self-registered user would (the same flow as MagicLinkSignInTests). Getting signed in proves that a user
+        // created by an invitation is a fully functional account, not merely a placeholder membership row.
         await MagicLinkSignInUtils.SignInViaMagicLinkOtp(invitedPage, server, invitedEmail, TestContext.CancellationToken);
 
         //#if (module == "Admin")
-        // Before being invited (no tenant selected) she can't reach the Dashboard.
+        // Her invitation is still pending (she hasn't switched into the tenant), so no tenant is selected for her (See
+        // IdentityController.GetTenantId, which only returns accepted memberships) and she can't reach the Dashboard yet.
         await AssertDashboardAccessible(invitedPage, serverAddress, accessible: false);
         //#endif
 
-        // ---- Browser 1: the admin invites her to the new tenant ----
-        await InviteUserToCurrentTenant(Page, server, invitedEmail);
-
-        // She hasn't accepted yet, so she must not appear in the tenant's users list.
+        // ---- Browser 1: signing in accepted nothing, so she still must not appear in the tenant's users list ----
         await AssertUserInTenantUsersList(Page, serverAddress, invitedEmail, shouldExist: false);
 
         // ---- Browser 2: she accepts the invitation from the "manage my tenants" page ----
@@ -117,7 +111,7 @@ public partial class TenantInvitationUITests : PageTest
 
         // Creating a tenant needs elevated access: an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
-        var elevatedToken = await server.ReadElevatedAccessTokenFromDiagnosticLog(StoreAdminEmail, TestContext.CancellationToken);
+        var elevatedToken = await server.ReadElevatedAccessToken(StoreAdminEmail, TestContext.CancellationToken);
         await MagicLinkSignInUtils.FillOtpInputs(page, elevatedToken);
 
         // After elevation the tenant gets created and she is switched into it, so it shows up as her current tenant.
@@ -192,7 +186,7 @@ public partial class TenantInvitationUITests : PageTest
 
         // Leaving needs elevated access; she has none, so an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
-        var elevatedToken = await server.ReadElevatedAccessTokenFromDiagnosticLog(email, TestContext.CancellationToken);
+        var elevatedToken = await server.ReadElevatedAccessToken(email, TestContext.CancellationToken);
         await MagicLinkSignInUtils.FillOtpInputs(page, elevatedToken);
 
         // Leaving resets her membership to "not accepted", so the tenant reverts to a pending invitation (its "Accept"
@@ -230,9 +224,4 @@ public partial class TenantInvitationUITests : PageTest
 
         throw new InvalidOperationException($"Could not keep the field filled with '{value}'.");
     }
-
-    public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
-
-    [TestCleanup]
-    public async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);
 }

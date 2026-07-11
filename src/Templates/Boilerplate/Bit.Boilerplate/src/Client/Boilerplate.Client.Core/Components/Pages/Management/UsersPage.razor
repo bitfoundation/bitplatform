@@ -6,7 +6,7 @@
 @*#if (multitenancy == true)*@
 @attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
 @*#endif*@
-@attribute [Authorize(Policy = AppFeatures.Management.Users_Write)]
+@attribute [Authorize(Policy = AppFeatures.Management.Users_Manage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Users)]"
@@ -178,7 +178,7 @@
                                                     @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
                                                     {
                                                         <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
-                                                        <AuthorizeView Policy="@AppFeatures.System.Logs_Read">
+                                                        <AuthorizeView Policy="@AppFeatures.System.Logs_View">
                                                             <BitButton IconOnly AutoLoading
                                                                        OnClick="WrapHandled(() => ReadUserSessionLogs(session.Id))"
                                                                        Title="Read user session logs"

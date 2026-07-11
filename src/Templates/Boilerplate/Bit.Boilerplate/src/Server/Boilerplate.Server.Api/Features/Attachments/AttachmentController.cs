@@ -53,7 +53,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     //#if (module == "Sales" || module == "Admin")
     [HttpPost("{productId}")]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
-    [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
+    [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
         //#if (multitenancy == true)
         [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
         //#endif
@@ -100,7 +100,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     //#if (module == "Sales" || module == "Admin")
-    [HttpDelete("{productId}"), Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
+    [HttpDelete("{productId}"), Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
     public async Task DeleteProductPrimaryImage(Guid productId, CancellationToken cancellationToken)
     {
         //#if (multitenancy == true)

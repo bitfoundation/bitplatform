@@ -1,6 +1,7 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Tests.Services;
 using Boilerplate.Tests.Infrastructure.Services;
+using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
@@ -20,6 +21,14 @@ public static partial class WebApplicationBuilderExtensions
 
             services.AddScoped<IStorageService, TestStorageService>();
             services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
+
+            // Capture every identity e-mail in-process (See TestIdentityEmailService) instead of rendering and delivering it,
+            // so tests can read back the confirmation link / OTP / elevated-access token straight from the message. Capturing
+            // synchronously as the e-mail is requested - rather than via the Hangfire delivery job - is deliberate: that job
+            // can starve and never run under parallel test load.
+            services.AddSingleton<EmailCaptureStore>();
+            services.RemoveAll<IdentityEmailService>();
+            services.AddScoped<IdentityEmailService, TestIdentityEmailService>();
 
             services.AddTransient<HttpClient>(sp =>
             {

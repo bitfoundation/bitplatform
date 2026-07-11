@@ -58,7 +58,7 @@
 
                 @* Inviting and renaming both target the current tenant, so they are only available to its admins
                    (Tenant_Write) and stay disabled until a tenant is selected. *@
-                <AuthorizeView Policy="@AppFeatures.Management.Tenant_Write">
+                <AuthorizeView Policy="@AppFeatures.Management.Tenant_Manage">
 
                     @* 2. Invite a user to the current tenant. *@
                     <BitAccordionListOption Key="invite"

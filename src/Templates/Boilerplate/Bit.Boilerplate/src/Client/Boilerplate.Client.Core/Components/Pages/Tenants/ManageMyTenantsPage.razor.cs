@@ -42,7 +42,7 @@ public partial class ManageMyTenantsPage
             var user = (await AuthenticationStateTask).User;
             // The tenant currently selected in the user's claims (if any) is highlighted in the list.
             // Global admins see every active tenant and can freely switch into any of them, so they never see the Accept (invitation) action.
-            isGlobalAdmin = await AuthorizationService.IsAuthorized(user, AppFeatures.Management.Tenants_Write_Global);
+            isGlobalAdmin = await AuthorizationService.IsAuthorized(user, AppFeatures.Management.Tenants_Manage_Global);
             tenants = await userController.GetTenants(CurrentCancellationToken);
             currentTenant = tenants.FirstOrDefault(t => t.Id == user.GetTenantId());
             ResetEditingTenant();

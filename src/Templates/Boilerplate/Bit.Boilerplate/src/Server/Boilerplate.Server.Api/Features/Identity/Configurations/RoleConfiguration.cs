@@ -61,11 +61,34 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
         */
         //#endif
 
-        builder.HasData(new Role { Id = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"), Name = AppRoles.GlobalAdmin, NormalizedName = AppRoles.GlobalAdmin.ToUpperInvariant(), ConcurrencyStamp = "8ff71671-a1d6-5f97-abb9-d87d7b47d6e7" });
         //#if (multitenancy == true)
         // The default store tenant's admin role.
-        builder.HasData(new Role { Id = Guid.Parse("7ff71671-a1d6-5f97-abb9-d87d7b47d6e9"), Name = AppRoles.TenantAdmin, NormalizedName = AppRoles.TenantAdmin.ToUpperInvariant(), TenantId = TenantConfiguration.FallbackTenantId, ConcurrencyStamp = "7ff71671-a1d6-5f97-abb9-d87d7b47d6e9" });
+        builder.HasData(new Role
+        {
+            Id = Guid.Parse("7ff71671-a1d6-5f97-abb9-d87d7b47d6e9"),
+            Name = AppRoles.TenantAdmin,
+            NormalizedName = AppRoles.TenantAdmin.ToUpperInvariant(),
+            TenantId = TenantConfiguration.FallbackTenantId,
+            ConcurrencyStamp = "7ff71671-a1d6-5f97-abb9-d87d7b47d6e9"
+        });
         //#endif
-        builder.HasData(new Role { Id = Guid.Parse("9ff71672-a1d5-4f97-abb7-d87d6b47d5e8"), Name = AppRoles.Demo, NormalizedName = AppRoles.Demo.ToUpperInvariant(), ConcurrencyStamp = "9ff71672-a1d5-4f97-abb7-d87d6b47d5e8" });
+        builder.HasData(new Role
+        {
+            Id = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"),
+            Name = AppRoles.GlobalAdmin,
+            NormalizedName = AppRoles.GlobalAdmin.ToUpperInvariant(),
+            ConcurrencyStamp = "8ff71671-a1d6-5f97-abb9-d87d7b47d6e7"
+        });
+
+        builder.HasData(new Role
+        {
+            Id = Guid.Parse("9ff71672-a1d5-4f97-abb7-d87d6b47d5e8"),
+            Name = AppRoles.Demo,
+            NormalizedName = AppRoles.Demo.ToUpperInvariant(),
+            ConcurrencyStamp = "9ff71672-a1d5-4f97-abb7-d87d6b47d5e8",
+            //#if (multitenancy == true)
+            TenantId = TenantConfiguration.FallbackTenantId
+            //#endif
+        });
     }
 }

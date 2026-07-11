@@ -1,5 +1,9 @@
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Features.Identity.Models;
+//#if (multitenancy == true)
+using Boilerplate.Server.Api.Features.Identity.Services;
+//#endif
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -66,12 +70,57 @@ public static partial class UserManagerExtensions
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
+            //#if (multitenancy == true)
+            // The freshly-created user gets the current tenant's demo role (See AssignDemoRole).
+            var tenantId = userManager.ServiceProvider.GetRequiredService<TenantProvider>().GetCurrentTenantId();
+            await userManager.AssignDemoRole(userToAdd.Id, tenantId);
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+            //#if (multitenancy != true)
             result = await userManager.AddToRoleAsync(userToAdd, AppRoles.Demo);
 
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
 
             return userToAdd;
         }
+
+        //#if (multitenancy == true)
+        /// <summary>
+        /// Grants the given tenant's demo role to the user, unless she already has it or that tenant has no demo role.
+        /// Demo is a per-tenant role (See RoleConfiguration and TenantController.Create), so its name isn't globally
+        /// unique and userManager.AddToRoleAsync (which resolves the role by its name) can't be used; the tenant's demo
+        /// role is assigned directly instead (like RoleManagementController.ToggleUserRole manages UserRoles).
+        /// Both freshly-created users (See CreateUserWithDemoRole) and already-existing invitees (See
+        /// TenantController.InviteUser) go through here, so accepting an invitation actually unlocks the tenant's demo
+        /// features (e.g. the Dashboard). If that tenant happens to have no demo role, the user is simply left without one.
+        /// </summary>
+        public async Task AssignDemoRole(Guid userId, Guid tenantId)
+        {
+            var dbContext = userManager.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var demoRoleId = await dbContext.Roles
+                .Where(role => role.Name == AppRoles.Demo && role.TenantId == tenantId)
+                .Select(role => (Guid?)role.Id)
+                .FirstOrDefaultAsync();
+
+            if (demoRoleId is null)
+                return;
+
+            // Adding it twice would violate the UserRoles primary key, so skip if she already has it (e.g. she was just
+            // created with it, then invited into the same tenant).
+            if (await dbContext.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == demoRoleId.Value))
+                return;
+
+            await dbContext.UserRoles.AddAsync(new UserRole { UserId = userId, RoleId = demoRoleId.Value, TenantId = tenantId });
+            await dbContext.SaveChangesAsync();
+        }
+        //#endif
     }
 }

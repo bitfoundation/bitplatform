@@ -5,7 +5,7 @@
 @*#if (multitenancy == true)*@
 @attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
 @*#endif*@
-@attribute [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 @inherits AppPageBase
 
 <AppPageData ShowGoBackButton=true

@@ -541,7 +541,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         // Global admins get all active tenants, so they can switch into any of them; regular users only get the tenants they
         // belong to, including not accepted (invited) ones, so they can accept the invitation by switching into them.
-        var query = User.HasFeature(AppFeatures.Management.Tenants_Write_Global)
+        var query = User.HasFeature(AppFeatures.Management.Tenants_Manage_Global)
             ? DbContext.Tenants.Where(t => t.IsActive)
             : DbContext.Tenants.Where(t => t.IsActive && t.Users.Any(tu => tu.UserId == userId));
 

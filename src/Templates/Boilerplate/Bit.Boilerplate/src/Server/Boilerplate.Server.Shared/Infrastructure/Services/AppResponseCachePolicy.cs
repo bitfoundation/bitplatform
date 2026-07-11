@@ -25,6 +25,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         context.AllowLocking = true;
         context.EnableOutputCaching = true;
         context.CacheVaryByRules.QueryKeys = "*";
+        context.CacheVaryByRules.VaryByHost = true;
         if (CultureInfoManager.InvariantGlobalization is false)
         {
             context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);

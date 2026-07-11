@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Features.Tenants.Dtos;
+﻿using Boilerplate.Shared.Features.Tenants.Dtos;
 
 namespace Boilerplate.Shared.Features.Tenants;
 
@@ -21,7 +21,7 @@ public interface ITenantController : IAppController
     Task<TenantDto> Create(TenantDto request, CancellationToken cancellationToken);
 
     /// <summary>
-    /// <inheritdoc cref="AppFeatures.Management.Tenant_Write"/>
+    /// <inheritdoc cref="AppFeatures.Management.Tenant_Manage"/>
     /// </summary>
     [HttpPut]
     Task<TenantDto> Update(TenantDto request, CancellationToken cancellationToken);

@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -16,7 +16,7 @@ namespace Boilerplate.Server.Api.Features.Tenants;
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppFeatures.Management.Tenants_Write_Global)]
+    Authorize(Policy = AppFeatures.Management.Tenants_Manage_Global)]
 public partial class TenantManagementController : AppControllerBase, ITenantManagementController
 {
     //#if (signalR == true)

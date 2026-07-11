@@ -47,7 +47,7 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         await Validate(tenantToAdd, cancellationToken);
 
-        // Each tenant gets its own t-admin role, and the user that has created the tenant becomes its first tenant admin.
+        // Each tenant gets its own roles, and the user that has created the tenant becomes its first tenant admin.
         var tenantAdminRole = new Role
         {
             Id = Guid.CreateSequentialGuid(),
@@ -67,6 +67,26 @@ public partial class TenantController : AppControllerBase, ITenantController
         }, cancellationToken);
 
         await DbContext.UserRoles.AddAsync(new() { UserId = userId, RoleId = tenantAdminRole.Id, TenantId = tenantToAdd.Id }, cancellationToken);
+
+        var demoRole = new Role
+        {
+            Id = Guid.CreateSequentialGuid(),
+            Name = AppRoles.Demo,
+            NormalizedName = AppRoles.Demo.ToUpperInvariant(),
+            TenantId = tenantToAdd.Id,
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        };
+        await DbContext.Roles.AddAsync(demoRole, cancellationToken);
+
+        foreach (var feature in AppFeatures.GetDemoFeatures())
+        {
+            await DbContext.RoleClaims.AddAsync(new()
+            {
+                RoleId = demoRole.Id,
+                ClaimType = AppClaimTypes.FEATURES,
+                ClaimValue = feature.Value
+            }, cancellationToken);
+        }
 
         // The value of AcceptedOn is set upfront for the user who has created the tenant.
         await DbContext.TenantUsers.AddAsync(new()
@@ -93,10 +113,10 @@ public partial class TenantController : AppControllerBase, ITenantController
     }
 
     /// <summary>
-    /// <inheritdoc cref="AppFeatures.Management.Tenant_Write"/>
+    /// <inheritdoc cref="AppFeatures.Management.Tenant_Manage"/>
     /// </summary>
     [HttpPut]
-    [Authorize(Policy = AppFeatures.Management.Tenant_Write), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    [Authorize(Policy = AppFeatures.Management.Tenant_Manage), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task<TenantDto> Update(TenantDto dto, CancellationToken cancellationToken)
     {
         if (dto.Id != User.GetTenantId())
@@ -121,7 +141,7 @@ public partial class TenantController : AppControllerBase, ITenantController
     }
 
     [HttpPost]
-    [Authorize(Policy = AppFeatures.Management.Tenant_Write), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
+    [Authorize(Policy = AppFeatures.Management.Tenant_Manage), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task InviteUser(InviteUserToTenantRequestDto request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
@@ -139,6 +159,12 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         if (await DbContext.TenantUsers.AnyAsync(tu => tu.TenantId == tenantId && tu.UserId == user.Id, cancellationToken))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsAlreadyInTenantErrorMessage)]);
+
+        // Grant the tenant's demo role so that once she accepts the invitation she actually gets the tenant's demo
+        // features (e.g. the Dashboard). Freshly-created users already got it from CreateUserWithDemoRole above, but an
+        // already-existing user (e.g. one who had signed in elsewhere first) would otherwise land in the tenant without
+        // any role. AssignDemoRole is idempotent, so calling it for both is safe (See UserManagerExtensions.AssignDemoRole).
+        await userManager.AssignDemoRole(user.Id, tenantId);
 
         await DbContext.TenantUsers.AddAsync(new()
         {

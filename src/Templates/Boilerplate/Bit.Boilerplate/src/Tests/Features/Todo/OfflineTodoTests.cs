@@ -5,7 +5,7 @@ using Boilerplate.Server.Api.Infrastructure.Data;
 namespace Boilerplate.Tests.Features.Todo;
 
 [TestClass, TestCategory("UITest")]
-public partial class OfflineTodoTests : PageTest
+public partial class OfflineTodoTests : AppPageTest
 {
     /// <summary>
     /// Verifies the offline-first sync flow of <c>OfflineTodoPage</c> while running the app in Blazor WebAssembly mode:
@@ -20,21 +20,16 @@ public partial class OfflineTodoTests : PageTest
     [TestMethod]
     public async Task OfflineTodo_Should_SyncPendingChanges_WhenServerIsBackOnline()
     {
-        Page.SetDefaultTimeout((float)TimeSpan.FromSeconds(90).TotalMilliseconds);
+        
 
         var firstTodoTitle = Guid.NewGuid().ToString();
         var secondTodoTitle = Guid.NewGuid().ToString();
 
-        await using var server = new AppTestServer();
+        await using var server = new AppTestServer(Context);
         var serverAddress = server.WebAppServerAddress;
 
-        // In Blazor WebAssembly mode the client calls the absolute ServerAddress from its configuration, not the origin
-        // it was served from. Push our (random free port) server address into the WebAssembly app before it boots so it
-        // talks to this test server instead of the address baked into Client.Core/appsettings.json (see the advancedTests
-        // block in Client.Web/Program.cs).
-        await SetBlazorWebAssemblyServerAddress(serverAddress);
-
-        await server.Build(configureTestConfigurations: RunInBlazorWebAssemblyMode).Start(TestContext.CancellationToken);
+        await server.Build(configureTestConfigurations: configuration => configuration["WebAppRender:BlazorMode"] = nameof(BlazorWebAppMode.BlazorWebAssembly))
+            .Start(TestContext.CancellationToken);
 
         await SignIn(serverAddress);
         await GoToOfflineTodoPage(serverAddress);
@@ -51,24 +46,8 @@ public partial class OfflineTodoTests : PageTest
 
         var syncedTitles = await GetTodoItemTitlesFromServerDatabase(server, [firstTodoTitle, secondTodoTitle], TimeSpan.FromSeconds(30));
 
-        CollectionAssert.Contains(syncedTitles, firstTodoTitle, "The todo item added while offline was not synced to the server database.");
-        CollectionAssert.Contains(syncedTitles, secondTodoTitle, "The todo item added while online was not synced to the server database.");
-    }
-
-    private static void RunInBlazorWebAssemblyMode(ConfigurationManager configuration)
-    {
-        configuration["WebAppRender:BlazorMode"] = nameof(BlazorWebAppMode.BlazorWebAssembly);
-    }
-
-    /// <summary>
-    /// Passes the server address to the Blazor WebAssembly app through a <c>startupParams</c> JS function that
-    /// Client.Web/Program.cs reads on startup (see its advancedTests block), overriding the app's configured
-    /// ServerAddress so the browser app talks to our test server rather than a hard-coded address.
-    /// More info: https://stackoverflow.com/questions/60831359/how-are-string-args-passed-to-program-main-in-a-blazor-webassembly-app
-    /// </summary>
-    private async Task SetBlazorWebAssemblyServerAddress(Uri serverAddress)
-    {
-        await Context.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={serverAddress}' ]; }};");
+        Assert.Contains(firstTodoTitle, syncedTitles, "The todo item added while offline was not synced to the server database.");
+        Assert.Contains(secondTodoTitle, syncedTitles, "The todo item added while online was not synced to the server database.");
     }
 
     private async Task SignIn(Uri serverAddress)
@@ -119,9 +98,4 @@ public partial class OfflineTodoTests : PageTest
             await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
         }
     }
-
-    public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
-
-    [TestCleanup]
-    public async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);
 }

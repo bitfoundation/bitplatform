@@ -13,7 +13,7 @@ namespace Boilerplate.Server.Api.Features.Categories;
     Authorize(Policy = AuthPolicies.TENANT_SELECTED),
     //#endif
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
+    Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
     //#if (signalR == true)

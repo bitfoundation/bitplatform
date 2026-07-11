@@ -312,7 +312,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 var membership = await DbContext.TenantUsers
                     .FirstOrDefaultAsync(tu => tu.UserId == user.Id && tu.TenantId == requestedTenantId, cancellationToken);
 
-                if (membership is null && refreshTicket.Principal.HasFeature(AppFeatures.Management.Tenants_Write_Global) is false)
+                if (membership is null && refreshTicket.Principal.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
                     throw new UnauthorizedException().WithData("Reason", "User doesn't have access to the requested tenant");
 
                 if (await DbContext.Tenants.AnyAsync(t => t.Id == requestedTenantId && t.IsActive, cancellationToken) is false)

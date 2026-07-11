@@ -156,6 +156,17 @@ jobs:
         path: ./TestPostgreSQL/src/Tests/TestResults
         retention-days: 14
 
+    - name: Fail job if any test run failed
+      if: ${{ !cancelled() }}
+      run: |
+        if [[ "${{ steps.test-postgresql-blazorserver.outcome }}" == "failure" || \
+              "${{ steps.test-postgresql-blazorwasm.outcome }}" == "failure" || \
+              "${{ steps.test-postgresql-blazorwasm-prerender.outcome }}" == "failure" || \
+              "${{ steps.test-postgresql-invariantglobalization.outcome }}" == "failure" ]]; then
+          echo "::error::One or more PostgreSQL test runs failed. See the step results and uploaded artifacts above."
+          exit 1
+        fi
+
 
 
   test-boilerplate-mssql:
@@ -273,6 +284,17 @@ jobs:
         name: sqlserver-tests-invariantglobalization
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
+
+    - name: Fail job if any test run failed
+      if: ${{ !cancelled() }}
+      run: |
+        if [[ "${{ steps.test-mssql-blazorserver.outcome }}" == "failure" || \
+              "${{ steps.test-mssql-blazorwasm.outcome }}" == "failure" || \
+              "${{ steps.test-mssql-blazorwasm-prerender.outcome }}" == "failure" || \
+              "${{ steps.test-mssql-invariantglobalization.outcome }}" == "failure" ]]; then
+          echo "::error::One or more SQL Server test runs failed. See the step results and uploaded artifacts above."
+          exit 1
+        fi
 
 
 

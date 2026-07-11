@@ -1,19 +1,18 @@
 ﻿using Hangfire;
 using System.Net;
 using System.Net.Sockets;
-using System.Text.RegularExpressions;
 using Boilerplate.Server.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
+using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Infrastructure;
 
 /// <summary>
 /// Test server, capable of running backend API and Blazor Server UI for integration and UI tests using Playwright.
 /// </summary>
-public partial class AppTestServer : IAsyncDisposable
+public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null) : IAsyncDisposable
 {
     private WebApplication? webApp;
 
@@ -55,12 +54,16 @@ public partial class AppTestServer : IAsyncDisposable
     public async Task Start(CancellationToken cancellationToken)
     {
         await WebApp.StartAsync(cancellationToken);
+        if (ClientBrowserContext is not null)
+        {
+            await ClientBrowserContext.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={WebAppServerAddress}' ]; }};");
+        }
     }
 
     /// <summary>
     /// Waits until Hangfire reports no more background jobs waiting or running (enqueued + processing == 0).
     /// Actions like sending an e-mail are handled by Hangfire background jobs, so tests call this to deterministically
-    /// wait for that work to finish instead of polling for its side effects (e.g. an e-mail landing in the log).
+    /// wait for that work to finish instead of polling for its side effects (e.g. an e-mail being captured by CapturingBackgroundJobClient).
     /// </summary>
     public async Task WaitForBackgroundJobsToComplete(CancellationToken cancellationToken)
     {
@@ -82,37 +85,46 @@ public partial class AppTestServer : IAsyncDisposable
     }
 
     /// <summary>
-    /// Waits for pending background jobs to complete, then reads the elevated access token the dev environment logged
-    /// for <paramref name="email"/>. The token is embedded in the e-mail subject: "Boilerplate {token} - Elevated access
-    /// token" (See EmailStrings.ElevatedAccessTokenEmailSubject). Callers should first wait for the elevated-access OTP
-    /// prompt (e.g. <c>.bit-otp-inp</c>) to be sure the token e-mail has already been requested.
+    /// Returns the newest captured e-mail addressed to <paramref name="email"/> that satisfies <paramref name="predicate"/>,
+    /// or throws after a timeout. E-mails are captured synchronously as they are requested (See
+    /// <see cref="TestIdentityEmailService"/>), so the message is normally already present; the short poll only guards
+    /// against a caller reading a hair before the triggering request finished.
     /// </summary>
-    public async Task<string> ReadElevatedAccessTokenFromDiagnosticLog(string email, CancellationToken cancellationToken)
+    public async Task<CapturedEmail> WaitForCapturedEmail(string email, Func<CapturedEmail, bool> predicate, CancellationToken cancellationToken)
     {
-        await WaitForBackgroundJobsToComplete(cancellationToken);
+        var store = WebApp.Services.GetRequiredService<EmailCaptureStore>();
 
-        var tokenRegex = new Regex(@"Boilerplate\s+(?<code>\d{6})\s+-\s+Elevated access token", RegexOptions.IgnoreCase);
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(30);
 
-        (DateTimeOffset CreatedOn, string Code)? latest = null;
-
-        foreach (var log in DiagnosticLogger.Store)
+        while (true)
         {
-            if (log.Message is null || log.Message.Contains(email, StringComparison.OrdinalIgnoreCase) is false)
-                continue;
+            // Newest-first so a freshly requested code wins over an earlier (now expired) one still in the capture.
+            var match = store.Captured.Reverse().FirstOrDefault(capturedEmail => capturedEmail.IsTo(email) && predicate(capturedEmail));
+            if (match is not null)
+                return match;
 
-            var match = tokenRegex.Match(log.Message);
-            if (match.Success is false)
-                continue;
+            if (DateTimeOffset.UtcNow >= deadline)
+            {
+                var recipients = store.Captured.Select(capturedEmail => capturedEmail.ToEmailAddress).Distinct().ToArray();
+                throw new InvalidOperationException(
+                    $"No captured e-mail addressed to '{email}' matched within the timeout. " +
+                    $"Captured {store.Captured.Count} e-mail(s) to: [{string.Join(", ", recipients)}].");
+            }
 
-            // Take the most recent one in case an earlier (expired) token is still sitting in the store.
-            if (latest is null || log.CreatedOn >= latest.Value.CreatedOn)
-                latest = (log.CreatedOn, match.Groups["code"].Value);
+            await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
         }
+    }
 
-        if (latest is not null)
-            return latest.Value.Code;
+    /// <summary>
+    /// Returns the 6 digit elevated-access token from the e-mail the server sent to <paramref name="email"/>. Callers
+    /// should first wait for the elevated-access OTP prompt (e.g. <c>.bit-otp-inp</c>) to be sure the token e-mail has
+    /// already been requested.
+    /// </summary>
+    public async Task<string> ReadElevatedAccessToken(string email, CancellationToken cancellationToken)
+    {
+        var captured = await WaitForCapturedEmail(email, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, cancellationToken);
 
-        throw new InvalidOperationException($"No elevated access token was found in the diagnostic log for '{email}'.");
+        return captured.Token!;
     }
 
     public async ValueTask DisposeAsync()

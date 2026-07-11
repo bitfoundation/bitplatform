@@ -5,7 +5,7 @@
 @*#if (multitenancy == true)*@
 @attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
 @*#endif*@
-@attribute [Authorize(Policy = AppFeatures.Management.Roles_Write)]
+@attribute [Authorize(Policy = AppFeatures.Management.Roles_Manage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.UserGroups)]"

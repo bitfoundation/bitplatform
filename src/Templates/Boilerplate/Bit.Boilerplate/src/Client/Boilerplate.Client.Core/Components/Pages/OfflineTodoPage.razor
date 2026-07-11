@@ -1,7 +1,7 @@
 @attribute [Route(PageUrls.OfflineTodo)]
 @attribute [Route("{culture?}" + PageUrls.OfflineTodo)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppFeatures.Todo.Todo_Write_Self)]
+@attribute [Authorize(Policy = AppFeatures.Todo.Todo_Manage_Self)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.OfflineTodoTitle)]"

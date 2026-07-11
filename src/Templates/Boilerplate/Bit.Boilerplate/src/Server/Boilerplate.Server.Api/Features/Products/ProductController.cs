@@ -15,7 +15,7 @@ namespace Boilerplate.Server.Api.Features.Products;
     //#if (multitenancy == true)
     Authorize(Policy = AuthPolicies.TENANT_SELECTED),
     //#endif
-    Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
+    Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     [AutoInject] private HtmlSanitizer htmlSanitizer = default!;

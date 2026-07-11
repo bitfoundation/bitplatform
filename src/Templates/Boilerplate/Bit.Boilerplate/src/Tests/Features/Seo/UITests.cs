@@ -1,19 +1,21 @@
 ﻿namespace Boilerplate.Tests.Features.Seo;
 
 [TestClass, TestCategory("UITest")]
-public partial class UITests : PageTest
+public partial class UITests : AppPageTest
 {
     [TestMethod, TestCategory("PreRendering")]
     public async Task Streaming_Prerender_Enabled_HomePage_Should_RenderHomeMessage()
     {
-        await using var server = new AppTestServer();
+        await using var server = new AppTestServer(Context);
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(server.WebAppServerAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = (float)TimeSpan.FromSeconds(30).TotalMilliseconds });
+        var serverAddress = server.WebAppServerAddress;
+
+        await Page.GotoAsync(serverAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = (float)TimeSpan.FromSeconds(30).TotalMilliseconds });
 
         var homeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), CultureInfo.InvariantCulture)!;
 
@@ -23,7 +25,7 @@ public partial class UITests : PageTest
     [TestMethod, TestCategory("SEO"), TestCategory("PreRendering"), TestCategory("Caching")]
     public async Task Prerendering_WithOutputCaching_Should_ReturnCompleteNonStreamedHomePage()
     {
-        await using var server = new AppTestServer();
+        await using var server = new AppTestServer(Context);
 
         // Enabling output caching makes HttpRequestExtensions.IsStreamPrerenderingSuppressed() return true,
         // because a streamed response may not be stored in the output/CDN cache. As a result the server fully
@@ -36,6 +38,8 @@ public partial class UITests : PageTest
                 configuration["ResponseCaching:EnableOutputCaching"] = "true";
             }
         ).Start(TestContext.CancellationToken);
+
+        var serverAddress = server.WebAppServerAddress;
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
@@ -68,12 +72,14 @@ public partial class UITests : PageTest
     [TestMethod, TestCategory("SEO"), TestCategory("PreRendering"), TestCategory("Localization")]
     public async Task Prerendering_FaCulture_HomePage_Should_RenderLocalizedHomeMessage()
     {
-        await using var server = new AppTestServer();
+        await using var server = new AppTestServer(Context);
 
         await server.Build(
             configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
+
+        var serverAddress = server.WebAppServerAddress;
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
@@ -92,9 +98,4 @@ public partial class UITests : PageTest
         Assert.DoesNotContain(defaultHomeMessage, html);
         Assert.Contains(faHomeMessage, html);
     }
-
-    public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
-
-    [TestCleanup]
-    public async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);
 }

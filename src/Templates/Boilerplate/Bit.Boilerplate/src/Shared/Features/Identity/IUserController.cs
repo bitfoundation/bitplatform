@@ -72,7 +72,7 @@ public interface IUserController : IAppController
     //#if (multitenancy == true)
     /// <summary>
     /// Returns the active tenants the user can switch into.
-    /// Returns all active tenants if the user has the <see cref="AppFeatures.Management.Tenants_Write_Global"/> feature.
+    /// Returns all active tenants if the user has the <see cref="AppFeatures.Management.Tenants_Manage_Global"/> feature.
     /// </summary>
     [HttpGet]
     Task<List<TenantDto>> GetTenants(CancellationToken cancellationToken);

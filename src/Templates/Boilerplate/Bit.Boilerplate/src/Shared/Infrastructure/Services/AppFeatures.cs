@@ -17,20 +17,20 @@ public class AppFeatures
         /// </summary>
         public const string SystemPrompts_Write = "1.0";
 
-        public const string Roles_Write = "1.1";
+        public const string Roles_Manage = "1.1";
 
-        public const string Users_Write = "1.2";
+        public const string Users_Manage = "1.2";
 
         //#if (multitenancy == true)
         /// <summary>
         /// This feature is for tenant-admins only. It allows them to manage their own tenant.
         /// </summary>
-        public const string Tenant_Write = "1.3";
+        public const string Tenant_Manage = "1.3";
 
         /// <summary>
         /// This feature is for global-admins only. It allows them to manage tenants across the system.
         /// </summary>
-        public const string Tenants_Write_Global = "1.4";
+        public const string Tenants_Manage_Global = "1.4";
         //#endif
     }
 
@@ -39,7 +39,7 @@ public class AppFeatures
         /// <summary>
         /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE" />
         /// </summary>
-        public const string Logs_Read = "2.0";
+        public const string Logs_View = "2.0";
 
         /// <summary>
         /// Manage background jobs using hangfire's dashboard.
@@ -54,7 +54,7 @@ public class AppFeatures
         /// <summary>
         /// Create/Update/Delete products and categories.
         /// </summary>
-        public const string ProductCatalog_Write = "3.1";
+        public const string ProductCatalog_Manage = "3.1";
     }
 
     public class Todo
@@ -62,7 +62,7 @@ public class AppFeatures
         /// <summary>
         /// Create/Update/Delete todo items for the user itself.
         /// </summary>
-        public const string Todo_Write_Self = "4.0";
+        public const string Todo_Manage_Self = "4.0";
     }
 
     private static (string Name, string Value, Type Group)[]? globalAdminFeatures;
@@ -74,15 +74,21 @@ public class AppFeatures
             .Select(t => (t.Name, t.GetRawConstantValue()!.ToString()!, t.DeclaringType!))];
     }
 
+    private static (string Name, string Value, Type Group)[]? demoFeatures;
+    public static (string Name, string Value, Type Group)[] GetDemoFeatures()
+    {
+        return demoFeatures ??= [.. GetGlobalAdminFeatures().Where(f => f.Group != typeof(System) && f.Group != typeof(Management))];
+    }
+
     //#if (multitenancy == true)
     private static (string Name, string Value, Type Group)[]? tenantAdminFeatures;
     /// <summary>
-    /// Tenant admins have access to all features except <see cref="Management.Tenants_Write_Global"/> and the <see cref="System"/>
+    /// Tenant admins have access to all features except <see cref="Management.Tenants_Manage_Global"/> and the <see cref="System"/>
     /// features (Logs/Jobs), because those aren't scoped to a tenant and are for global admins only.
     /// </summary>
     public static (string Name, string Value, Type Group)[] GetTenantAdminFeatures()
     {
-        return tenantAdminFeatures ??= [.. GetGlobalAdminFeatures().Where(f => f.Value is not Management.Tenants_Write_Global && f.Group != typeof(System))];
+        return tenantAdminFeatures ??= [.. GetGlobalAdminFeatures().Where(f => f.Value is not Management.Tenants_Manage_Global && f.Group != typeof(System))];
     }
     //#endif
 }

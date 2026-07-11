@@ -1,12 +1,12 @@
 ﻿namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("UITest")]
-public partial class UITests : PageTest
+public partial class UITests : AppPageTest
 {
     [TestMethod]
     public async Task UnauthorizedUser_Should_RenderNotAuthorizedComponent()
     {
-        await using var server = new AppTestServer();
+        await using var server = new AppTestServer(Context);
 
         await server.Build(services =>
         {
@@ -22,8 +22,10 @@ public partial class UITests : PageTest
     [TestMethod]
     public async Task SignIn_Should_WorkAsExpected()
     {
-        await using var server = new AppTestServer();
+        await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
+
+        var serverAddress = server.WebAppServerAddress;
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = TimeSpan.FromSeconds(30).Milliseconds });
 
@@ -43,9 +45,4 @@ public partial class UITests : PageTest
         await Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(userFullName);
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
-
-    public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
-
-    [TestCleanup]
-    public async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);
 }

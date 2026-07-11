@@ -65,7 +65,7 @@ public partial class AppHub : Hub
     /// <summary>
     /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
-    [Authorize(Policy = AppFeatures.System.Logs_Read)]
+    [Authorize(Policy = AppFeatures.System.Logs_View)]
     [HubMethodName(SharedAppMessages.GetUserSessionLogs)]
     public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
     {
