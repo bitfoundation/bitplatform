@@ -7,12 +7,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitMarkdownPipeline
 {
-    private static readonly Lazy<BitMarkdownPipeline> _basic =
-        new(() => new BitMarkdownPipelineBuilder().Build());
-
-    /// <summary>A pipeline with only the basic CommonMark core (no flavors).</summary>
-    public static BitMarkdownPipeline Basic => _basic.Value;
-
     internal BitMarkdownPipeline(BitMarkdownPipelineBuilder builder)
     {
         BlockParsers = builder.BlockParsers.OrderBy(p => p.Order).ToArray();

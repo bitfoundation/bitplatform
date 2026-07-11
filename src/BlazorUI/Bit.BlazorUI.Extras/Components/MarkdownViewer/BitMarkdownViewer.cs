@@ -42,7 +42,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public string? Markdown { get; set; }
 
     /// <summary>
-    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipeline.Basic"/>,
+    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipelines.Basic"/>,
     /// i.e. the basic CommonMark core with no extensions.
     /// </summary>
     [Parameter] public BitMarkdownPipeline? Pipeline { get; set; }
@@ -90,7 +90,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     protected override string RootElementClass => "bit-mdv";
 
-    private BitMarkdownPipeline EffectivePipeline => Pipeline ?? BitMarkdownPipeline.Basic;
+    private BitMarkdownPipeline EffectivePipeline => Pipeline ?? BitMarkdownPipelines.Basic;
 
     protected override void OnParametersSet()
     {

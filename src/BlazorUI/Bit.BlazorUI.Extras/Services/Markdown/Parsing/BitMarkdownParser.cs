@@ -4,9 +4,9 @@ namespace Bit.BlazorUI;
 public static class BitMarkdownParser
 {
     /// <summary>
-    /// Parses Markdown using the supplied pipeline, or <see cref="BitMarkdownPipeline.Basic"/>
+    /// Parses Markdown using the supplied pipeline, or <see cref="BitMarkdownPipelines.Basic"/>
     /// (basic CommonMark core only) when none is given.
     /// </summary>
     public static BitMarkdownDocumentNode Parse(string? markdown, BitMarkdownPipeline? pipeline = null)
-        => (pipeline ?? BitMarkdownPipeline.Basic).Parse(markdown);
+        => (pipeline ?? BitMarkdownPipelines.Basic).Parse(markdown);
 }
