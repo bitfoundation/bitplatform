@@ -982,18 +982,18 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Alternativtext</value>
   </data>
   <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>Sida</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>av</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Adminpanel</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} objekt</value>
-  </data>
-  <data name="Page" xml:space="preserve">
-    <value>Sida</value>
-  </data>
-  <data name="Of" xml:space="preserve">
-    <value>av</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Produktantal de senaste 30 dagarna</value>
@@ -1364,4 +1364,90 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Den medföljande bilden innehåller inte någon bil.</value>
   </data>
+    <!--#if (multitenancy == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>Tenant</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>Hantera alla tenants</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>Hantera alla tenants</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>Hantera mina tenants</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>Hantera mina tenants</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>Skapa ny tenant</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>Lägg till tenant</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>Redigera tenant</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>Lämna tenant</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>Är du säker på att du vill lämna tenanten {0}?</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>Du har lämnat tenanten.</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>Byt tenant</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>Bjud in användare till {0}</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>Bjud in</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>Användaren har bjudits in.</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>Den här användaren är redan medlem i tenanten.</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>Tenantnamnet '{0}' är redan upptaget.</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>Tenanten kunde inte hittas.</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} måste vara ett giltigt subdomännamn som består av små bokstäver, siffror och bindestreck (t.ex. my-tenant).</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>Ange tenantnamn</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>Ange tenanttitel</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>Du har inte valt någon tenant ännu. Byt till en av dina tenants eller skapa en ny för att komma igång.</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} har bjudit in dig att gå med i {1}. Öppna {2} och logga in för att vara i den tenanten.</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>Byt</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>Acceptera</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>Väntande inbjudan</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>Nuvarande tenant</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>Inaktiv</value>
+  </data>
+    <!--#endif-->
 </root>

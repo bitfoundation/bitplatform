@@ -53,8 +53,16 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     //#if (module == "Sales" || module == "Admin")
     [HttpPost("{productId}")]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
+        //#if (multitenancy == true)
+        [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+        //#endif
     public async Task<IActionResult> UploadProductPrimaryImage(Guid productId, IFormFile? file, CancellationToken cancellationToken)
     {
+        //#if (multitenancy == true)
+        await EnsureProductIsInCurrentTenant(productId, cancellationToken);
+        //#endif
+
         return await UploadAttachment(
             productId,
             [AttachmentKind.ProductPrimaryImageMedium, AttachmentKind.ProductPrimaryImageOriginal],
@@ -75,7 +83,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         var filePath = GetFilePath(attachmentId, kind);
 
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException().WithData("Reason", "The attachment does not exist.");
 
         var mimeType = kind switch
         {
@@ -92,11 +100,33 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     //#if (module == "Sales" || module == "Admin")
-    [HttpDelete("{productId}"), Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
+    [HttpDelete("{productId}"), Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Write)]
     public async Task DeleteProductPrimaryImage(Guid productId, CancellationToken cancellationToken)
     {
+        //#if (multitenancy == true)
+        await EnsureProductIsInCurrentTenant(productId, cancellationToken);
+        //#endif
+
         await DeleteAttachment(productId, [AttachmentKind.ProductPrimaryImageMedium, AttachmentKind.ProductPrimaryImageOriginal], cancellationToken);
     }
+
+    //#if (multitenancy == true)
+    /// <summary>
+    /// Attachments aren't tenant-aware, so before creating/updating/deleting a product's images, the product must belong
+    /// to the current tenant. Products that are being added aren't in the database yet, so they get a pass here.
+    /// </summary>
+    private async Task EnsureProductIsInCurrentTenant(Guid productId, CancellationToken cancellationToken)
+    {
+        var productTenantId = await DbContext.Products
+            .IgnoreQueryFilters()
+            .Where(p => p.Id == productId)
+            .Select(p => (Guid?)p.TenantId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (productTenantId is not null && productTenantId != TenantProvider.GetCurrentTenantId())
+            throw new ResourceNotFoundException().WithData("Reason", "The product belongs to another tenant.");
+    }
+    //#endif
     //#endif
 
     //#if (signalR == true)
@@ -161,7 +191,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     private async Task<IActionResult> UploadAttachment(Guid attachmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null)
-            throw new BadRequestException();
+            throw new BadRequestException().WithData("Reason", "No file provided.");
 
         string? altText = null; // For future use, e.g., AI-generated alt text.
 
@@ -233,7 +263,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
                     var response = await analyzeProductImageAgent.RunAsync<AIImageReviewResponse>(
                         messages: [
-                            new ChatMessage(ChatRole.User, 
+                            new ChatMessage(ChatRole.User,
                                 "Analyze this product image for our car catalog. Is this a valid car product image that meets our quality and content standards?")
                             {
                                 Contents = [new DataContent(imageBytes, "image/webp")]
@@ -245,8 +275,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                     if (response.Result.IsCar is false)
                     {
                         logger.LogWarning(
-                            "Image validation failed - Not a car product. Confidence: {Confidence}, Reasoning: {Reasoning}", 
-                            response.Result.Confidence, 
+                            "Image validation failed - Not a car product. Confidence: {Confidence}, Reasoning: {Reasoning}",
+                            response.Result.Confidence,
                             response.Result.Reasoning);
                         return BadRequest(Localizer[nameof(AppStrings.ImageNotCarError)].ToString());
                     }
@@ -254,7 +284,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                     if (response.Result.Confidence < 0.85)
                     {
                         logger.LogWarning(
-                            "Image analysis low confidence ({Confidence}). Reasoning: {Reasoning}. Alt text: {AltText}", 
+                            "Image analysis low confidence ({Confidence}). Reasoning: {Reasoning}. Alt text: {AltText}",
                             response.Result.Confidence,
                             response.Result.Reasoning,
                             response.Result.Alt);

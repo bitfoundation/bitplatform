@@ -172,7 +172,6 @@
         <PackageReference Include="Oscore.Maui.AppStoreInfo" />
         <PackageReference Include="Plugin.Maui.AppRating" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" />
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />

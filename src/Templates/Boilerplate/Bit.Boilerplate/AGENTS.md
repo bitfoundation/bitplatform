@@ -53,17 +53,17 @@ The solution is organized into the following projects. Understand their roles to
 ## 3. Information Gathering & Codebase Investigation
 
 Before implementing any changes, you **MUST** complete the following:
-*   If the user provides a **URL**, you **MUST** use the `fetch` or `get_web_pages` tools to retrieve its content.
+*   If the user provides a **URL**, you **MUST** use the `fetch`, `WebFetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
-*   If the user talks about current changes in the codebase, you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands to see the differences.
+*   Only if the user **explicitly** asks about their uncommitted/current changes (e.g. "review my current changes", "what did I just change") you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands.
 *   For UI-related tasks, you **MUST** use the `GetBitBlazorUIComponentsList` tools for component discovery and `GetBitBlazorUIComponentDocs` for API details and examples.
-*   For anything related to `bit Bswup`, `bit Butil`, `bit Besql`, `bit Brouter`, `bit Bmotion` or the bit project template, use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform`.
-*   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
-*   For Keycloak/realm related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `keycloak/keycloak` to find relevant information.
-*   For .NET Aspire tasks (AppHost orchestration, resource configuration, switching Docker resources to Azure equivalents, service discovery, integrations), you **MUST** use the `DeepWiki_ask_question` tool with repository `microsoft/aspire` to find correct implementation patterns - it significantly outperforms Microsoft Learn for code-level questions.
-*   For FusionCache tasks (hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration, cache factory configuration), you **MUST** use the `DeepWiki_ask_question` tool with repository `ZiggyCreatures/FusionCache` to find correct usage patterns.
-*   For Microsoft Agent Framework tasks (agent creation, multi-agent orchestration, workflows, tools/function calling, MCP, A2A communication, memory/context, provider integrations), you **MUST** use the `DeepWiki_ask_question` tool with repository `microsoft/agent-framework` to find correct implementation patterns.
-*   For Hangfire tasks (job scheduling, recurring jobs, filters, storage configuration, distributed processing), you **MUST** use the `DeepWiki_ask_question` tool with repository `HangfireIO/Hangfire` to find correct implementation patterns.
+*   For anything related to `bit Bswup`, `bit Butil`, `bit Besql`, `bit Brouter`, `bit Bmotion` or the bit project template, use the `DeepWiki ask_question` tool with repository `bitfoundation/bitplatform`.
+*   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
+*   For Keycloak/realm related tasks, you **MUST** use the `DeepWiki ask_question` tool with repository `keycloak/keycloak` to find relevant information.
+*   For .NET Aspire tasks (AppHost orchestration, resource configuration, switching Docker resources to Azure equivalents, service discovery, integrations), you **MUST** use the `DeepWiki ask_question` tool with repository `microsoft/aspire` to find correct implementation patterns - it significantly outperforms Microsoft Learn for code-level questions.
+*   For FusionCache tasks (hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration, cache factory configuration), you **MUST** use the `DeepWiki ask_question` tool with repository `ZiggyCreatures/FusionCache` to find correct usage patterns.
+*   For Microsoft Agent Framework tasks (agent creation, multi-agent orchestration, workflows, tools/function calling, MCP, A2A communication, memory/context, provider integrations), you **MUST** use the `DeepWiki ask_question` tool with repository `microsoft/agent-framework` to find correct implementation patterns.
+*   For Hangfire tasks (job scheduling, recurring jobs, filters, storage configuration, distributed processing), you **MUST** use the `DeepWiki ask_question` tool with repository `HangfireIO/Hangfire` to find correct implementation patterns.
 
 ## 4. Critical Command Reference
 
@@ -98,5 +98,5 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 
 ## 6. Behavioral Directives
 
--   You **MUST** verify that you have access to the `DeepWiki_ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message: **❌ CRITICAL ERROR: DeepWiki_ask_question Tool Not Available**
+-   You **MUST** verify that you have access to the `DeepWiki ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message: **❌ CRITICAL ERROR: DeepWiki ask_question Tool Not Available**
 -   If the user's prompt language is a Right-to-Left (RTL) language (e.g., فارسی, العربية, עברית), you **MUST** prepend the Unicode character U+202B (‫) at the beginning of **text, bullet points, and paragraphs**, except inside code blocks, code examples, file paths, or any technical content that should remain in LTR format.

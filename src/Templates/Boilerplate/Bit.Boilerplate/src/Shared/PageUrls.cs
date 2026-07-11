@@ -39,6 +39,12 @@ public static partial class PageUrls
     public const string SystemPrompts = "/system-prompts";
     //#endif
 
+    //#if (multitenancy == true)
+    public const string ManageMyTenants = "/manage-my-tenants";
+
+    public const string ManageAllTenants = "/manage-all-tenants";
+    //#endif
+
     public const string Roles = "/user-groups";
 
     public const string Users = "/users";

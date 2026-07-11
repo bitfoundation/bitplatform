@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿//+:cnd:noEmit
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Models;
@@ -113,6 +114,32 @@ public partial class IdentityEmailService
 
         await SendEmail(body, user.Email!, user.DisplayName!, subject);
     }
+
+    //#if (multitenancy == true)
+    public async Task SendTenantInvitation(User user, string inviterDisplayName, string tenantTitle, Uri link, CancellationToken cancellationToken)
+    {
+        var subject = emailLocalizer[EmailStrings.TenantInvitationEmailSubject, tenantTitle];
+
+        if (hostEnvironment.IsDevelopment())
+        {
+            LogSendEmail(logger, subject, user.Email!, "TenantInvitation", link.ToString());
+        }
+
+        var body = await BuildBody<TenantInvitationTemplate>(new Dictionary<string, object?>()
+        {
+            [nameof(TenantInvitationTemplate.Model)] = new TenantInvitationTemplateModel
+            {
+                DisplayName = user.DisplayName!,
+                InviterDisplayName = inviterDisplayName,
+                TenantTitle = tenantTitle,
+                Link = link
+            },
+            [nameof(TenantInvitationTemplate.HttpContext)] = httpContextAccessor.HttpContext
+        });
+
+        await SendEmail(body, user.Email!, user.DisplayName!, subject);
+    }
+    //#endif
 
     private async Task<string> BuildBody<TTemplate>(Dictionary<string, object?> parameters)
         where TTemplate : IComponent

@@ -31,7 +31,7 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
         foreach (var entry in ChangeTracker.Entries().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
         {
             if (entry.Properties.Any(p => p.Metadata.Name == "UpdatedAt"))
-                entry.CurrentValues["UpdatedAt"] = DateTimeOffset.UtcNow;
+                entry.CurrentValues["UpdatedAt"] = this.GetService<TimeProvider>().GetUtcNow();
         }
 
         return await base.SaveChangesAsync(cancellationToken);

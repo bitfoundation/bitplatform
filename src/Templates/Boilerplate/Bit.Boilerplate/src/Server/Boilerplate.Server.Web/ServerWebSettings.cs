@@ -12,8 +12,9 @@ public partial class ServerWebSettings : ClientWebSettings
 
     /// <summary>
     /// Specifies the allowed origins for CORS requests, URLs returned after external sign-in and email confirmation, and permitted origins for Web Auth, as well as forwarded headers middleware in ASP.NET Core.
+    /// Each entry may contain the <c>*</c> wildcard (e.g. <c>https://*.myapp.com</c>) so a single entry can trust every tenant subdomain.
     /// </summary>
-    public Uri[] TrustedOrigins { get; set; } = [];
+    public string[] TrustedOrigins { get; set; } = [];
     [Required]
     public WebAppRenderOptions WebAppRender { get; set; } = default!;
 

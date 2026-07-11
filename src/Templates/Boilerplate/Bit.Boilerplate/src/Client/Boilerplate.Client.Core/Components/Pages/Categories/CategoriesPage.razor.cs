@@ -9,77 +9,63 @@ public partial class CategoriesPage
     private bool isDeleteDialogOpen;
     private CategoryDto? deletingCategory;
     private AddOrEditCategoryModal? modal;
-    private string categoryNameFilter = string.Empty;
 
     private BitDataGrid<CategoryDto>? dataGrid;
-    private BitDataGridItemsProvider<CategoryDto> categoriesProvider = default!;
-    private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
 
     [AutoInject] ICategoryController categoryController = default!;
 
 
-    private string CategoryNameFilter
-    {
-        get => categoryNameFilter;
-        set
-        {
-            categoryNameFilter = value;
-            _ = RefreshData();
-        }
-    }
-
-
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
-
-        PrepareGridDataProvider();
     }
 
 
-    private void PrepareGridDataProvider()
+    private async Task<BitDataGridReadResult<CategoryDto>> LoadCategories(BitDataGridReadRequest req)
     {
-        categoriesProvider = async req =>
+        isLoading = true;
+        StateHasChanged();
+
+        try
         {
-            isLoading = true;
+            var query = new ODataQuery
+            {
+                Top = req.Take,
+                Skip = req.Skip,
+                OrderBy = req.Sorts.Count > 0
+                    ? string.Join(", ", req.Sorts.Select(s => $"{s.ColumnId} {(s.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
+                    : $"{nameof(CategoryDto.Name)} asc"
+            };
+
+            var filter = string.Join(" and ", req.Filters
+                .Where(f => string.IsNullOrEmpty(f.Value?.ToString()) is false)
+                .Select(f => $"contains(tolower({f.ColumnId}),'{f.Value!.ToString()!.ToLower().Replace("'", "''")}')"));
+            if (string.IsNullOrEmpty(filter) is false)
+            {
+                query.Filter = filter;
+            }
+
+            var data = await categoryController.WithQuery(query.ToString())
+                                               .GetCategories(req.CancellationToken);
+
+            return new BitDataGridReadResult<CategoryDto>(data!.Items!, (int)data!.TotalCount);
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+            return new BitDataGridReadResult<CategoryDto>([], 0);
+        }
+        finally
+        {
+            isLoading = false;
             StateHasChanged();
-
-            try
-            {
-                var query = new ODataQuery
-                {
-                    Top = req.Count ?? 10,
-                    Skip = req.StartIndex,
-                    OrderBy = string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
-                };
-
-                if (string.IsNullOrEmpty(CategoryNameFilter) is false)
-                {
-                    query.Filter = $"contains(tolower({nameof(CategoryDto.Name)}),'{CategoryNameFilter.ToLower()}')";
-                }
-                
-                var data = await categoryController.WithQuery(query.ToString())
-                                                   .GetCategories(req.CancellationToken);
-                
-                return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.Handle(exp);
-                return BitDataGridItemsProviderResult.From(new List<CategoryDto> { }, 0);
-            }
-            finally
-            {
-                isLoading = false;
-                StateHasChanged();
-            }
-        };
+        }
     }
 
     private async Task RefreshData()
     {
-        await dataGrid!.RefreshDataAsync();
+        await dataGrid!.RefreshAsync();
     }
 
     private async Task CreateCategory()
@@ -112,7 +98,3 @@ public partial class CategoriesPage
         }
     }
 }
-
-
-
-

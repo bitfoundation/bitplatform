@@ -36,6 +36,9 @@
             "id": "captcha"
         },
         {
+            "id": "multitenancy"
+        },
+        {
             "id": "notification"
         },
         {
@@ -65,6 +68,10 @@
         },
         {
             "id": "webAppUrl",
+            "isVisible": false
+        },
+        {
+            "id": "advancedTests",
             "isVisible": false
         }
     ]

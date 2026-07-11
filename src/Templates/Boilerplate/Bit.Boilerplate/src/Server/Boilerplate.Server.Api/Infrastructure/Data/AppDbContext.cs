@@ -6,10 +6,16 @@ using Boilerplate.Server.Api.Features.Categories;
 //#if (sample == true || offlineDb == true)
 using Boilerplate.Server.Api.Features.Todo;
 //#endif
+//#if (multitenancy == true)
+using System.Reflection;
+using Boilerplate.Server.Api.Features.Tenants;
+using Boilerplate.Server.Api.Features.Identity.Services;
+//#endif
 using Boilerplate.Server.Api.Features.Identity.Models;
 //#if (database == "PostgreSQL" || database == "SqlServer")
 using Boilerplate.Server.Api.Infrastructure.Data.Configurations;
 //#endif
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
@@ -23,10 +29,19 @@ using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Infrastructure.Data;
 
-public partial class AppDbContext(DbContextOptions<AppDbContext> options)
+public partial class AppDbContext(DbContextOptions<AppDbContext> options
+    //#if (multitenancy == true)
+    , TenantProvider tenantProvider
+    //#endif
+    )
     : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options), IDataProtectionKeyContext
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
+
+    //#if (multitenancy == true)
+    public DbSet<Tenant> Tenants { get; set; } = default!;
+    public DbSet<TenantUser> TenantUsers { get; set; } = default!;
+    //#endif
 
     //#if (sample == true || offlineDb == true)
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
@@ -96,6 +111,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         ConfigureIdentityTableNames(modelBuilder);
 
+        //#if (multitenancy == true)
+        ConfigureTenantAwareEntities(modelBuilder);
+        //#endif
+
         ConfigureConcurrencyToken(modelBuilder);
 
         //#if (database != "SQLite")
@@ -137,10 +156,17 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         ChangeTracker.DetectChanges();
 
+        //#if (multitenancy == true)
+        foreach (var entry in ChangeTracker.Entries<ITenantAware>().Where(e => e.State is EntityState.Added && e.Entity.TenantId == default))
+        {
+            entry.Entity.TenantId = CurrentTenantId;
+        }
+        //#endif
+
         foreach (var entry in ChangeTracker.Entries().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
         {
             if (entry.Properties.Any(p => p.Metadata.Name == "UpdatedAt"))
-                entry.CurrentValues["UpdatedAt"] = DateTimeOffset.UtcNow;
+                entry.CurrentValues["UpdatedAt"] = this.GetService<TimeProvider>().GetUtcNow();
         }
 
         foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
@@ -196,6 +222,37 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         base.ConfigureConventions(configurationBuilder);
     }
+
+    //#if (multitenancy == true)
+    private Guid CurrentTenantId => tenantProvider.GetCurrentTenantId();
+
+    /// <summary>
+    /// While reads are protected by the following row level security global query filters,
+    /// INSERTs/Creates assign the TenantId explicitly from User.GetTenantId() (See CategoryController.Create as an example).
+    /// </summary>
+    private void ConfigureTenantAwareEntities(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(et => typeof(ITenantAware).IsAssignableFrom(et.ClrType)))
+        {
+            typeof(AppDbContext)
+                .GetMethod(nameof(ConfigureTenantAwareEntity), BindingFlags.NonPublic | BindingFlags.Instance)!
+                .MakeGenericMethod(entityType.ClrType).Invoke(this, [modelBuilder]);
+        }
+    }
+
+    private void ConfigureTenantAwareEntity<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, ITenantAware
+    {
+        // Referencing CurrentTenantId (an AppDbContext's instance property) makes EF Core evaluate the filter per context instance.
+        modelBuilder.Entity<TEntity>().HasQueryFilter(x => x.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<TEntity>()
+            .HasOne(x => x.Tenant)
+            .WithMany()
+            .HasForeignKey(x => x.TenantId)
+            .OnDelete(DeleteBehavior.NoAction);
+    }
+    //#endif
 
     private void ConfigureIdentityTableNames(ModelBuilder builder)
     {
@@ -264,13 +321,13 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 //#if (database == "PostgreSQL")
                 //#if (IsInsideProjectTemplate == true)
                 if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
-                //#endif
-                builder.HasConversion<uint>();
+                    //#endif
+                    builder.HasConversion<uint>();
                 //#else
                 //#if (IsInsideProjectTemplate == true)
                 if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false) // SQL Server & MySQL
-                //#endif
-                builder.HasConversion<byte[]>();
+                                                                                                               //#endif
+                    builder.HasConversion<byte[]>();
                 //#endif
             }
         }

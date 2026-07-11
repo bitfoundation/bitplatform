@@ -11,34 +11,34 @@ namespace Boilerplate.Shared.Infrastructure.Services.Contracts
 {
     public static class IAppControllerExtensions
     {
-        public static TAppController WithQuery<TAppController>(this TAppController controller, string? existingQueryString)
+        extension<TAppController>(TAppController controller)
             where TAppController : IAppController
         {
-            return controller.WithQuery(queryString: AppQueryStringCollection.Parse(existingQueryString));
-        }
-
-        public static TAppController WithQuery<TAppController>(this TAppController controller, string key, object? value)
-            where TAppController : IAppController
-        {
-            controller.AddQueryString(key, value);
-            return controller;
-        }
-
-        public static TAppController WithQuery<TAppController>(this TAppController controller, Dictionary<string, object?> queryString)
-            where TAppController : IAppController
-        {
-            controller.AddQueryStrings(queryString);
-            return controller;
-        }
-
-        public static TAppController WithQueryIf<TAppController>(this TAppController controller, bool condition, string key, object? value)
-            where TAppController : IAppController
-        {
-            if (condition)
+            public TAppController WithQuery(string? existingQueryString)
             {
-                controller.WithQuery(key, value);
+                return controller.WithQuery(queryString: AppQueryStringCollection.Parse(existingQueryString));
             }
-            return controller;
+
+            public TAppController WithQuery(string key, object? value)
+            {
+                controller.AddQueryString(key, value);
+                return controller;
+            }
+
+            public TAppController WithQuery(Dictionary<string, object?> queryString)
+            {
+                controller.AddQueryStrings(queryString);
+                return controller;
+            }
+
+            public TAppController WithQueryIf(bool condition, string key, object? value)
+            {
+                if (condition)
+                {
+                    controller.WithQuery(key, value);
+                }
+                return controller;
+            }
         }
     }
 }

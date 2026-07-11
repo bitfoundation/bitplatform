@@ -36,7 +36,7 @@ public partial class IdentityController
 
         try
         {
-            info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException();
+            info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException().WithData("Reason", "External login info is missing.");
             var email = info.Principal.GetEmail();
             var phoneNumber = phoneService.NormalizePhoneNumber(info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value);
 
@@ -86,13 +86,13 @@ public partial class IdentityController
                 await userManager.AddLoginAsync(user, info);
             }
 
-            if (string.IsNullOrEmpty(email) is false && email == user.Email && await userManager.IsEmailConfirmedAsync(user) is false)
+            if (string.IsNullOrEmpty(email) is false && string.Equals(email, user.Email, StringComparison.OrdinalIgnoreCase) && await userManager.IsEmailConfirmedAsync(user) is false)
             {
                 await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 
-            if (string.IsNullOrEmpty(phoneNumber) is false && phoneNumber == user.PhoneNumber && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
+            if (string.IsNullOrEmpty(phoneNumber) is false && string.Equals(phoneNumber, user.PhoneNumber, StringComparison.OrdinalIgnoreCase) && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
             {
                 await userPhoneNumberStore.SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);

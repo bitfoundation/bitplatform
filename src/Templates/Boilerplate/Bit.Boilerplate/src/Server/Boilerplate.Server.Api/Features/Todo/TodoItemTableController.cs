@@ -11,7 +11,7 @@ namespace Boilerplate.Server.Api.Features.Todo;
 [ApiVersion(1)]
 [Route("api/v{v:apiVersion}/[controller]/"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppFeatures.Todo.ManageTodo)]
+    Authorize(Policy = AppFeatures.Todo.Todo_Write_Self)]
 public class TodoItemTableController : TableController<TodoItemDto>
 {
     public TodoItemTableController(TodoItemTableRepository repository, ILogger<TodoItemTableController> logger) : base(repository)

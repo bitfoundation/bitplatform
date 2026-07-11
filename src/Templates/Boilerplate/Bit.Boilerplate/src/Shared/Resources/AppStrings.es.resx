@@ -982,18 +982,18 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Texto alternativo</value>
   </data>
   <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>Página</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>de</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Panel de administración</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} elementos</value>
-  </data>
-  <data name="Page" xml:space="preserve">
-    <value>Página</value>
-  </data>
-  <data name="Of" xml:space="preserve">
-    <value>de</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Conteo de productos de los últimos 30 días</value>
@@ -1364,4 +1364,90 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="ImageNotCarError" xml:space="preserve">
     <value>La imagen proporcionada no contiene un automóvil.</value>
   </data>
+    <!--#if (multitenancy == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>Inquilino</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>Administrar todos los inquilinos</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>Administrar todos los inquilinos</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>Administrar mis inquilinos</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>Administrar mis inquilinos</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>Crear nuevo inquilino</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>Agregar inquilino</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>Editar inquilino</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>Abandonar inquilino</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>¿Estás seguro de que quieres abandonar el inquilino {0}?</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>Has abandonado el inquilino correctamente.</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>Cambiar de inquilino</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>Invitar usuario a {0}</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>Invitar</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>El usuario ha sido invitado correctamente.</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>Este usuario ya es miembro del inquilino.</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>El nombre de inquilino '{0}' ya está en uso.</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>No se pudo encontrar el inquilino.</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} debe ser un nombre de subdominio válido compuesto por letras minúsculas, dígitos y guiones (p. ej. my-tenant).</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>Introduce el nombre del inquilino</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>Introduce el título del inquilino</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>Aún no has seleccionado ningún inquilino. Cambia a uno de tus inquilinos o crea uno nuevo para comenzar.</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} te ha invitado a unirte a {1}. Abre {2} e inicia sesión para estar en ese inquilino.</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>Cambiar</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>Invitación pendiente</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>Inquilino actual</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>Inactivo</value>
+  </data>
+    <!--#endif-->
 </root>

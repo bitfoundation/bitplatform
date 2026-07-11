@@ -14,7 +14,11 @@ namespace Boilerplate.Server.Api.Features.Identity;
 
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
-[Authorize(Policy = AppFeatures.Management.ManageRoles)]
+[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
+    //#if (multitenancy == true)
+    Authorize(Policy = AuthPolicies.TENANT_SELECTED),
+    //#endif
+    Authorize(Policy = AppFeatures.Management.Roles_Write)]
 public partial class RoleManagementController : AppControllerBase, IRoleManagementController
 {
     //#if (signalR == true)
@@ -32,31 +36,79 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     [HttpGet, EnableQuery]
     public IQueryable<RoleDto> GetAllRoles()
     {
-        var isUserSuperAdmin = User.IsInRole(AppRoles.SuperAdmin);
+        //#if (multitenancy == true)
+        var currentTenantId = User.GetTenantId();
+        var canManageAllTenants = User.HasFeature(AppFeatures.Management.Tenants_Write_Global);
 
         return roleManager.Roles
-                          .WhereIf(isUserSuperAdmin is false, r => r.Name != AppRoles.SuperAdmin)
+                          .WhereIf(canManageAllTenants is false, r => r.TenantId == currentTenantId) // Non Global admins may only see the roles of the current tenant.
                           .Project();
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (multitenancy != true)
+        var isUserGlobalAdmin = User.IsInRole(AppRoles.GlobalAdmin);
+
+        return roleManager.Roles
+                          .WhereIf(isUserGlobalAdmin is false, r => r.Name != AppRoles.GlobalAdmin)
+                          .Project();
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
     }
 
     [HttpGet, EnableQuery]
     public IQueryable<UserDto> GetAllUsers()
     {
-        return userManager.Users
-                          .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*External sign-in*/)
-                          .Project();
+        var query = userManager.Users
+                          .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*External sign-in*/);
+
+        //#if (multitenancy == true)
+        if (User.HasFeature(AppFeatures.Management.Tenants_Write_Global) is false)
+        {
+            // Non Global admins may only see the users of the current tenant that have accepted their invitation.
+            var tenantId = User.GetTenantId();
+            query = query.Where(u => u.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null));
+        }
+        //#endif
+
+        return query.Project();
     }
 
     [HttpGet("{roleId}"), EnableQuery]
     public IQueryable<UserDto> GetUsers(Guid roleId)
     {
-        return userManager.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId)).Project();
+        var query = userManager.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId));
+
+        //#if (multitenancy == true)
+        if (User.HasFeature(AppFeatures.Management.Tenants_Write_Global) is false)
+        {
+            // Non Global admins may only see the roles of the current tenant.
+            var tenantId = User.GetTenantId();
+            query = query.Where(u => u.Roles.Any(r => r.RoleId == roleId && r.Role!.TenantId == tenantId));
+        }
+        //#endif
+
+        return query.Project();
     }
 
     [HttpGet("{roleId}"), EnableQuery]
     public IQueryable<ClaimDto> GetClaims(Guid roleId)
     {
-        return DbContext.RoleClaims.Where(rc => rc.RoleId == roleId).Project();
+        var query = DbContext.RoleClaims.Where(rc => rc.RoleId == roleId);
+
+        //#if (multitenancy == true)
+        if (User.HasFeature(AppFeatures.Management.Tenants_Write_Global) is false)
+        {
+            // Non Global admins may only see the roles of the current tenant.
+            var tenantId = User.GetTenantId();
+            query = query.Where(rc => rc.Role!.TenantId == tenantId);
+        }
+        //#endif
+
+        return query.Project();
     }
 
     [HttpPost]
@@ -64,6 +116,10 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public async Task<RoleDto> Create(RoleDto roleDto, CancellationToken cancellationToken)
     {
         var role = roleDto.Map();
+
+        //#if (multitenancy == true)
+        role.TenantId = User.GetTenantId();
+        //#endif
 
         var result = await roleManager.CreateAsync(role);
 
@@ -112,8 +168,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         var role = await GetRoleById(roleId, cancellationToken);
 
-        if (role.Name == AppRoles.SuperAdmin)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantChangeSuperAdminRoleClaimsErrorMessage)]);
+        EnsureRoleClaimsAreEditable(role);
+
+        EnsureCallerCanGrantClaims(claims);
 
         foreach (var claim in claims)
         {
@@ -130,8 +187,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var role = await GetRoleById(roleId, cancellationToken);
 
-        if (role.Name == AppRoles.SuperAdmin)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantChangeSuperAdminRoleClaimsErrorMessage)]);
+        EnsureRoleClaimsAreEditable(role);
+
+        EnsureCallerCanGrantClaims(claims);
 
         foreach (var claim in claims)
         {
@@ -153,8 +211,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var role = await GetRoleById(roleId, cancellationToken);
 
-        if (role.Name == AppRoles.SuperAdmin)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantChangeSuperAdminRoleClaimsErrorMessage)]);
+        EnsureRoleClaimsAreEditable(role);
 
         foreach (var claim in claims)
         {
@@ -170,24 +227,60 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public async Task ToggleUserRole(UserRoleDto dto, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(dto.UserId.ToString())
-            ?? throw new ResourceNotFoundException();
+            ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
-        var role = await roleManager.FindByIdAsync(dto.RoleId.ToString())
-            ?? throw new ResourceNotFoundException();
+        var role = await GetRoleById(dto.RoleId, cancellationToken);
 
-        var isSuperAdminRole = role.Name == AppRoles.SuperAdmin;
-        var isSuperAdminUser = User.IsInRole(AppRoles.SuperAdmin);
+        var isGlobalAdminRole = role.Name == AppRoles.GlobalAdmin;
+        var isGlobalAdminUser = User.IsInRole(AppRoles.GlobalAdmin);
 
-        if (isSuperAdminRole && isSuperAdminUser is false)
+        if (isGlobalAdminRole && isGlobalAdminUser is false)
             throw new UnauthorizedException();
 
+        //#if (multitenancy == true)
+        // Non Global admins may only toggle roles on users of the current tenant that have accepted their invitation.
+        if (User.HasFeature(AppFeatures.Management.Tenants_Write_Global) is false)
+        {
+            var tenantId = User.GetTenantId();
+
+            if (await DbContext.TenantUsers.AnyAsync(tu => tu.UserId == user.Id && tu.TenantId == tenantId && tu.AcceptedOn != null, cancellationToken) is false)
+                throw new ResourceNotFoundException().WithData("Reason", "User not found in the current tenant.");
+        }
+
+        // userManager.AddToRoleAsync/RemoveFromRoleAsync find the role by its name which is not unique under multi-tenancy
+        // (each tenant has its own t-admin role for example), so the UserRoles are managed directly here.
+        var userRole = await DbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id, cancellationToken);
+
+        if (userRole is not null)
+        {
+            if (isGlobalAdminRole)
+            {
+                var otherGlobalAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
+
+                if (otherGlobalAdminsCount == 0)
+                    throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+            }
+
+            DbContext.UserRoles.Remove(userRole);
+        }
+        else
+        {
+            await DbContext.UserRoles.AddAsync(new() { UserId = user.Id, RoleId = role.Id, TenantId = role.TenantId }, cancellationToken);
+        }
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (multitenancy != true)
         if (await userManager.IsInRoleAsync(user, role.Name!))
         {
-            if (isSuperAdminRole)
+            if (isGlobalAdminRole)
             {
-                var otherSuperAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
+                var otherGlobalAdminsCount = await userManager.Users.CountAsync(u => u.Roles.Any(r => r.RoleId == role.Id) && u.Id != user.Id, cancellationToken);
 
-                if (otherSuperAdminsCount == 0)
+                if (otherGlobalAdminsCount == 0)
                     throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
             }
             var result = await userManager.RemoveFromRoleAsync(user, role.Name!);
@@ -200,6 +293,10 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
     }
 
     [HttpPost("{roleId}")]
@@ -216,6 +313,10 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task SendNotification(SendNotificationToRoleDto dto, CancellationToken cancellationToken)
     {
+        // Ensure the target role exists and (for non global admins) belongs to the caller's tenant before broadcasting
+        // to its users - otherwise a tenant admin could push an in-app notification to another tenant's users.
+        await GetRoleById(dto.RoleId, cancellationToken);
+
         //#if (signalR == true)
         var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed &&
                                                                             us.SignalRConnectionId != null &&
@@ -245,8 +346,39 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     private async Task<Role> GetRoleById(Guid id, CancellationToken cancellationToken)
     {
         var role = await roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id, cancellationToken)
-                    ?? throw new ResourceNotFoundException();
+                    ?? throw new ResourceNotFoundException().WithData("Reason", "Role not found.");
+
+        //#if (multitenancy == true)
+        // Non Global admins may only manage the roles of the current tenant.
+        if (User.HasFeature(AppFeatures.Management.Tenants_Write_Global) is false && role.TenantId != User.GetTenantId())
+            throw new ResourceNotFoundException().WithData("Reason", "Role not found in the current tenant.");
+        //#endif
 
         return role;
+    }
+
+    private void EnsureRoleClaimsAreEditable(Role role)
+    {
+        if (role.Name is AppRoles.GlobalAdmin
+            //#if (multitenancy == true)
+            or AppRoles.TenantAdmin
+            //#endif
+            )
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantChangeSuperAdminRoleClaimsErrorMessage)]);
+    }
+
+    /// <summary>
+    /// A role manager may only grant feature claims they themselves possess, so they cannot escalate privileges by
+    /// assigning a feature they lack - for example granting a <see cref="AppFeatures.System"/> feature, or (under
+    /// multi-tenancy) the global-admin-only Tenants_Write_Global feature, to a role and thereby gaining those capabilities.
+    /// Non-feature claims (e.g. <see cref="AppClaimTypes.MAX_PRIVILEGED_SESSIONS"/>) are not restricted here.
+    /// </summary>
+    private void EnsureCallerCanGrantClaims(IEnumerable<ClaimDto> claims)
+    {
+        foreach (var claim in claims)
+        {
+            if (claim.ClaimType is AppClaimTypes.FEATURES && User.HasFeature(claim.ClaimValue!) is false)
+                throw new UnauthorizedException().WithData("Reason", $"Caller does not have the feature claim '{claim.ClaimValue}' and cannot grant it to a role.");
+        }
     }
 }

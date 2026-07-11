@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿//+:cnd:noEmit
+using System.Text;
 using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -8,74 +9,81 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class ISharedServiceCollectionExtensions
 {
-    public static IServiceCollection AddSharedProjectServices(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        // Services being registered here can get injected everywhere.
-
-        services.AddScoped<HtmlRenderer>();
-        services.AddScoped<CultureInfoManager>();
-        services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-
-        services.AddSingleton(sp =>
+        public IServiceCollection AddSharedProjectServices(IConfiguration configuration)
         {
-            SharedSettings settings = new();
-            configuration.Bind(settings);
-            return settings;
-        });
-        services.TryAddSingleton(sp =>
-        {
-            JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
+            // Services being registered here can get injected everywhere.
 
-            options.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
+            services.AddScoped<HtmlRenderer>();
+            services.AddScoped<CultureInfoManager>();
 
-            return options;
-        });
+            services.AddSingleton(TimeProvider.System);
 
-        services.AddOptions<SharedSettings>()
-            .Bind(configuration)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            services.AddSingleton(sp =>
+            {
+                SharedSettings settings = new();
+                configuration.Bind(settings);
+                return settings;
+            });
+            services.TryAddSingleton(sp =>
+            {
+                JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
 
-        services.ConfigureAuthorizationCore();
+                options.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
 
-        services.AddLocalization();
-        services.AddSingleton<IMemoryCache, AppMemoryCache>(); // Extends services.AddMemoryCache()
-        services.Configure<MemoryCacheOptions>(options =>
-        {
-            configuration.GetRequiredSection("MemoryCache").Bind(options);
-        });
+                return options;
+            });
 
-        return services;
-    }
+            services.AddOptions<SharedSettings>()
+                .Bind(configuration)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
-    /// <summary>
-    /// Define authorization policies here to seamlessly integrate them across various components,
-    /// including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
-    /// and programmatically in C# by injecting <see cref="IAuthorizationService"/> for enhanced security and access control.
-    /// </summary>
-    public static void ConfigureAuthorizationCore(this IServiceCollection services)
-    {
-        StringBuilder duplicateFeaturesReportString = new();
+            services.ConfigureAuthorizationCore();
 
-        foreach (var g in AppFeatures.GetAll().GroupBy(p => p.Value).Where(g => g.Count() > 1))
-        {
-            duplicateFeaturesReportString.Append(string.Join(Environment.NewLine, g.Select(p => $"{p.Group.Name}-{p.Name}-{p.Value}")));
+            services.AddLocalization();
+            services.AddSingleton<IMemoryCache, AppMemoryCache>(); // Extends services.AddMemoryCache()
+            services.Configure<MemoryCacheOptions>(options =>
+            {
+                configuration.GetRequiredSection("MemoryCache").Bind(options);
+            });
+
+            return services;
         }
 
-        if (duplicateFeaturesReportString.Length > 0)
-            throw new Exception($"Duplicate feature values found. Please ensure all feature values are unique{duplicateFeaturesReportString}");
-
-        services.AddSingleton<IAuthorizationHandler, FeatureRequirementHandler>();
-
-        services.AddAuthorizationCore(options =>
+        /// <summary>
+        /// Define authorization policies here to seamlessly integrate them across various components,
+        /// including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
+        /// and programmatically in C# by injecting <see cref="IAuthorizationService"/> for enhanced security and access control.
+        /// </summary>
+        public void ConfigureAuthorizationCore()
         {
-            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
-            options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
+            StringBuilder duplicateFeaturesReportString = new();
 
-            foreach (var feat in AppFeatures.GetAll())
+            foreach (var g in AppFeatures.GetGlobalAdminFeatures().GroupBy(p => p.Value).Where(g => g.Count() > 1))
             {
-                options.AddPolicy(feat.Value, policy => policy.AddRequirements(new AppFeatureRequirement(FeatureName: $"{feat.Group.Name}.{feat.Name}", FeatureValue: feat.Value)));
+                duplicateFeaturesReportString.Append(string.Join(Environment.NewLine, g.Select(p => $"{p.Group.Name}-{p.Name}-{p.Value}")));
             }
-        });
+
+            if (duplicateFeaturesReportString.Length > 0)
+                throw new Exception($"Duplicate feature values found. Please ensure all feature values are unique{duplicateFeaturesReportString}");
+
+            services.AddSingleton<IAuthorizationHandler, FeatureRequirementHandler>();
+
+            services.AddAuthorizationCore(options =>
+            {
+                options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+                options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireAssertion(ctx => ctx.User.GetElevatedSessionExpiresOn() > TimeProvider.GetUtcNow()));
+                //#if (multitenancy == true)
+                options.AddPolicy(AuthPolicies.TENANT_SELECTED, x => x.RequireAssertion(ctx => ctx.User.GetTenantId() is not null));
+                //#endif
+
+                foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
+                {
+                    options.AddPolicy(feat.Value, policy => policy.AddRequirements(new AppFeatureRequirement(FeatureName: $"{feat.Group.Name}.{feat.Name}", FeatureValue: feat.Value)));
+                }
+            });
+        }
     }
 }

@@ -51,15 +51,18 @@ public class AppRedisCacheConfigurator(
 
 public static class AppRedisConfiguratorExtensions
 {
-    public static IServiceCollection ConfigureRedisOptions(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisCacheOptions>, AppRedisCacheConfigurator>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisBackplaneOptions>, AppRedisCacheConfigurator>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisDistributedLockerOptions>, AppRedisCacheConfigurator>());
-        //#if (signalR == true)
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisOptions>, AppRedisCacheConfigurator>());
-        //#endif
+        public IServiceCollection ConfigureRedisOptions()
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisCacheOptions>, AppRedisCacheConfigurator>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisBackplaneOptions>, AppRedisCacheConfigurator>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisDistributedLockerOptions>, AppRedisCacheConfigurator>());
+            //#if (signalR == true)
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisOptions>, AppRedisCacheConfigurator>());
+            //#endif
 
-        return services;
+            return services;
+        }
     }
 }

@@ -24,6 +24,7 @@ public partial class AppChatbot
 {
     private AIAgent? supportAgent = default!;
 
+    [AutoInject] private TimeProvider timeProvider = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private ApiServerExceptionHandler exceptionHandler = default!;

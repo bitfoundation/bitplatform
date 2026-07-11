@@ -54,7 +54,7 @@
                             }
                             else
                             {
-                                <BitMarkdownViewer Markdown="@message.Content" Pipeline="BitMarkdownViewerPipelines.Advanced" />
+                                <BitMarkdownViewer Markdown="@message.Content" Pipeline="BitMarkdownPipelines.Advanced" />
                                 @if (message.Successful is false)
                                 {
                                     <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">

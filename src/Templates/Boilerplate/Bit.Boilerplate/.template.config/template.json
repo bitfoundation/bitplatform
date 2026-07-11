@@ -150,6 +150,13 @@
                 }
             ]
         },
+        "multitenancy": {
+            "displayName": "Multi-tenancy",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Adds multi-tenancy support"
+        },
         "captcha": {
             "displayName": "Captcha",
             "type": "parameter",
@@ -371,6 +378,13 @@
                 ]
             },
             "replaces": "use-your-web-app-url-here.com"
+        },
+        "advancedTests": {
+            "displayName": "Include advanced automated tests?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Includes advanced automated tests (e.g. the Blazor WebAssembly offline sync test) that add extra infrastructure not needed by a typical project."
         }
     },
     "postActions": [
@@ -499,7 +513,14 @@
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Data/**",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineTodoPage*",
-                        "src/Shared/Infrastructure/Dtos/BaseDtoTableData.cs"
+                        "src/Shared/Infrastructure/Dtos/BaseDtoTableData.cs",
+                        "src/Tests/Features/Todo/OfflineTodoTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true)",
+                    "exclude": [
+                        "src/Tests/Features/Todo/OfflineTodoTests.cs"
                     ]
                 },
                 {
@@ -600,6 +621,18 @@
                     "condition": "(redis == false)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppRedisCacheConfigurator.cs"
+                    ]
+                },
+                {
+                    "condition": "(multitenancy != true)",
+                    "exclude": [
+                        "src/Shared/Features/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Services/TenantProvider.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Components/TenantInvitationTemplate.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationUITests.cs"
                     ]
                 },
                 {

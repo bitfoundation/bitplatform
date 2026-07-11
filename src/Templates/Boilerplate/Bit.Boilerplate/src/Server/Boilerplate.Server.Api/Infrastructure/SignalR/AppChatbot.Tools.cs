@@ -27,13 +27,13 @@ public partial class AppChatbot
         {
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
-            var userDateTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone);
+            var userDateTime = TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), timeZone);
 
             return $"Current date/time in user's timezone ({timeZoneId}) is {userDateTime:o}";
         }
         catch
         {
-            return $"Current date/time in utc is {DateTimeOffset.UtcNow:o}";
+            return $"Current date/time in utc is {timeProvider.GetUtcNow():o}";
         }
     }
 

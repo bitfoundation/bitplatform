@@ -21,7 +21,10 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             "/en-US", "/en-GB", "/nl-NL", "/fa-IR", "/sv-SE", "/hi-IN", "/zh-CN", "/es-ES", "/fr-FR", "/ar-SA", "/de-DE",
                             PageUrls.Confirm, PageUrls.ForgotPassword, PageUrls.Settings, PageUrls.ResetPassword, PageUrls.SignIn,
                             PageUrls.SignUp, PageUrls.NotAuthorized, PageUrls.NotFound, PageUrls.Terms, PageUrls.PrivacyPolicy, PageUrls.About,
-                            PageUrls.Roles, PageUrls.Users,
+                            PageUrls.Roles, PageUrls.Users, 
+                            //#if (multitenancy == true)
+                            PageUrls.ManageMyTenants, PageUrls.ManageAllTenants,
+                            //#endif
                             //#if (module == "Admin")
                             PageUrls.AddOrEditProduct, PageUrls.Categories, PageUrls.Dashboard, PageUrls.Products,
                             //#endif

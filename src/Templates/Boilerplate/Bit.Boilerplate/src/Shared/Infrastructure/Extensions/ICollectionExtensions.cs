@@ -2,18 +2,24 @@ namespace System.Collections.Generic;
 
 public static partial class ICollectionExtensions
 {
-    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> items, CancellationToken cancellationToken)
+    extension<T>(IAsyncEnumerable<T> items)
     {
-        var results = new List<T>();
-        await foreach (var item in items.WithCancellation(cancellationToken))
+        public async Task<List<T>> ToListAsync(CancellationToken cancellationToken)
         {
-            results.Add(item);
+            var results = new List<T>();
+            await foreach (var item in items.WithCancellation(cancellationToken))
+            {
+                results.Add(item);
+            }
+            return results;
         }
-        return results;
     }
 
-    public static IEnumerable<(T item, int index)> Indexed<T>(this IEnumerable<T> source)
+    extension<T>(IEnumerable<T> source)
     {
-        return source.Select((item, index) => (item, index));
+        public IEnumerable<(T item, int index)> Indexed()
+        {
+            return source.Select((item, index) => (item, index));
+        }
     }
 }
