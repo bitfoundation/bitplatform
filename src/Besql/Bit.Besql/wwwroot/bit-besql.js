@@ -1,5 +1,5 @@
 var BitBesql = window.BitBesql || {};
-BitBesql.version = window['bit-besql version'] = '10.5.0-pre-07';
+BitBesql.version = window['bit-besql version'] = '10.5.0-pre-08';
 
 BitBesql.persist = async function besqlPersist(fileName) {
 
