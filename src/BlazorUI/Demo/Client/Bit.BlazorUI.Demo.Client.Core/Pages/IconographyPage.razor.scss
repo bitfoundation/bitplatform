@@ -31,18 +31,6 @@
         }
     }
 
-    .icon-details-panel-content {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .icon-details-panel-header {
-        flex: none;
-        height: auto;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid var(--bit-clr-brd-sec);
-    }
-
     .icon-details-panel-body {
         flex: 1 1 auto;
         min-height: 0;
