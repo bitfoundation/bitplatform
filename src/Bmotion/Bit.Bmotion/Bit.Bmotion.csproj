@@ -86,7 +86,7 @@
     </Target>
 
     <Target Name="BuildJavaScript"
-            Inputs="@(TypeScriptFiles)"
+            Inputs="@(TypeScriptFiles);tsconfig.json"
             Outputs="wwwroot/bit-bmotion.js;$(BaseIntermediateOutputPath)bit-bmotion.$(Configuration).stamp">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.

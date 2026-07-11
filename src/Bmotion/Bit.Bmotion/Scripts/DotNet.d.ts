@@ -1,5 +1,5 @@
 // https://github.com/dotnet/aspnetcore/issues/18902#issuecomment-585987887
-declare module DotNet {
+declare namespace DotNet {
     /**
      * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
      * synchronous invocation, so if possible use invokeMethodAsync instead.
