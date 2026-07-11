@@ -171,7 +171,12 @@ namespace BitBlazorUI {
             root?.addEventListener('touchstart', this.toolbarPointerDownHandler, { passive: false });
 
             if (this.config.syncScroll && root) {
-                this.editorPane = root.querySelector('.bit-mde-epn');
+                // The editor pane's textarea fills the pane (height:100%) and scrolls
+                // internally, so the pane wrapper (`.bit-mde-epn`) itself never overflows.
+                // Scroll events don't bubble, so listening on the wrapper never fires and
+                // writing its scrollTop moves nothing. The textarea is the real scroller on
+                // the editor side; the preview pane is the scroller on the preview side.
+                this.editorPane = textArea;
                 this.previewPane = root.querySelector('.bit-mde-ppn');
                 this.editorPane?.addEventListener('scroll', this.editorScrollHandler);
                 this.previewPane?.addEventListener('scroll', this.previewScrollHandler);
