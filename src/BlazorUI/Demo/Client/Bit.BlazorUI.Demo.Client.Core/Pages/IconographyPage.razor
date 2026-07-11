@@ -9,7 +9,8 @@
     };
 }
 
-<PageOutlet Url="iconography" Title="Iconography"
+<PageOutlet Url="iconography"
+            Title="Iconography"
             Description="Browse and search the full set of Fabric (MDL2) icons available in bit BlazorUI, and copy any icon name with a click." />
 
 <section class="page-container">
@@ -28,8 +29,7 @@
 
         <BitCard>
             <BitText>
-                <b>Note:</b> To use these Icons, you need to add the <BitTag>Bit.BlazorUI.Icons</BitTag> nuget package
-                to your project
+                <b>Note:</b> To use these Icons, you need to add the <BitTag>Bit.BlazorUI.Icons</BitTag> nuget package to your project
                 as described in the Optional steps of the <BitLink Href="/getting-started">Getting started</BitLink>
                 page.
             </BitText>
@@ -47,8 +47,13 @@
                 snippets.
             </BitText>
 
-            <BitSearchBox Immediate DebounceTime="300" OnClear="HandleClear" OnChange="HandleChange"
-                          Placeholder="Search icons" IconName="@BitIconName.Search" Class="iconography-search-box" />
+            <BitSearchBox Immediate
+                          DebounceTime="300"
+                          OnClear="HandleClear"
+                          OnChange="HandleChange"
+                          Placeholder="Search icons"
+                          IconName="@BitIconName.Search"
+                          Class="iconography-search-box" />
 
             <br />
 
@@ -64,7 +69,8 @@
                         {
                             <BitStack Gap="0.5rem"
                                       Class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")"
-                                      Alignment="BitAlignment.Center" @onclick="() => OpenIconPanel(icon)">
+                                      Alignment="BitAlignment.Center"
+                                      @onclick="() => OpenIconPanel(icon)">
                                 <BitIcon IconName="@icon.Value" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
 
                                 <BitText Class="icon-name" Typography="BitTypography.Caption1">
@@ -84,7 +90,9 @@
 </section>
 
 <div class="icon-details-panel-scope">
-    <BitProPanel AutoToggleScroll Modeless ShowCloseButton Size="IconPanelSize" @bind-IsOpen="isIconPanelOpen"
+    <BitProPanel AutoToggleScroll Modeless ShowCloseButton
+                 @bind-IsOpen="isIconPanelOpen"
+                 Size="IconPanelSize"
                  Position="BitPanelPosition.End" CloseIconName="@BitIconName.ChromeClose"
                  HeaderText="Icon details"
                  Classes="@(new() { Body = "icon-details-panel-body" })"
@@ -97,7 +105,9 @@
                 <BitStack Gap="1rem" FillContent>
                     <BitCard FullWidth Background="BitColorKind.Secondary" Class="icon-details-hero">
                         <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
-                            <BitIcon Size="BitSize.Large" IconName="@selectedIcon.Value" Class="icon-details-hero-icon"
+                            <BitIcon Size="BitSize.Large"
+                                     IconName="@selectedIcon.Value"
+                                     Class="icon-details-hero-icon"
                                      Color="BitColor.PrimaryForeground" />
                             <BitText Gutter Typography="BitTypography.H5" Class="icon-details-hero-title">
                                 @selectedIcon.Value
@@ -156,18 +166,30 @@
                             Properties
                         </BitText>
                         <BitCard FullWidth Class="icon-details-properties">
-                            <IconDetailRow Label="Name" Value="@selectedIcon.Value" CopyKey="name-row"
-                                           CopyFeedbackKey="@copyFeedbackKey" OnCopy="HandleDetailCopy" />
+                            <IconDetailRow Label="Name"
+                                           Value="@selectedIcon.Value"
+                                           CopyKey="name-row"
+                                           CopyFeedbackKey="@copyFeedbackKey"
+                                           OnCopy="HandleDetailCopy" />
 
-                            <IconDetailRow Label="Constant" Value="@selectedIcon.ConstantReference" CopyKey="constant"
-                                           CopyFeedbackKey="@copyFeedbackKey" OnCopy="HandleDetailCopy" />
+                            <IconDetailRow Label="Constant"
+                                           Value="@selectedIcon.ConstantReference"
+                                           CopyKey="constant"
+                                           CopyFeedbackKey="@copyFeedbackKey"
+                                           OnCopy="HandleDetailCopy" />
 
-                            <IconDetailRow Label="CSS class" Value="@selectedIcon.CssClass" CopyKey="css"
-                                           CopyFeedbackKey="@copyFeedbackKey" OnCopy="HandleDetailCopy" />
+                            <IconDetailRow Label="CSS class"
+                                           Value="@selectedIcon.CssClass"
+                                           CopyKey="css"
+                                           CopyFeedbackKey="@copyFeedbackKey"
+                                           OnCopy="HandleDetailCopy" />
                             @if (string.IsNullOrEmpty(glyphCode) is false)
                             {
-                                <IconDetailRow Label="Glyph" Value="@glyphCode" CopyKey="glyph"
-                                               CopyFeedbackKey="@copyFeedbackKey" OnCopy="HandleDetailCopy" />
+                                <IconDetailRow Label="Glyph"
+                                               CopyKey="glyph"
+                                               Value="@glyphCode"
+                                               CopyFeedbackKey="@copyFeedbackKey"
+                                               OnCopy="HandleDetailCopy" />
                             }
                         </BitCard>
                     </section>
