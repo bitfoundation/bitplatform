@@ -17,7 +17,7 @@ public partial class UserController
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException();
+                    ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         var existingCredentials = DbContext.WebAuthnCredential.Where(c => c.UserId == userId);
         var existingKeys = existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports));
@@ -65,11 +65,11 @@ public partial class UserController
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException();
+                    ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         var key = GetWebAuthnCacheKey(userId);
         var options = await cache.GetOrSetAsync<CredentialCreateOptions>(key,
-            async _ => throw new ResourceNotFoundException(),
+            async _ => throw new ResourceNotFoundException().WithData("Reason", "WebAuthn credential options not found."),
             token: cancellationToken);
 
 
@@ -89,7 +89,7 @@ public partial class UserController
             PublicKey = credential.PublicKey,
             UserHandle = credential.User.Id,
             SignCount = credential.SignCount,
-            RegDate = DateTimeOffset.UtcNow,
+            RegDate = TimeProvider.GetUtcNow(),
             AaGuid = credential.AaGuid,
             Transports = credential.Transports,
             AttestationFormat = credential.AttestationFormat,
@@ -111,14 +111,14 @@ public partial class UserController
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException();
+                    ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         var affectedRows = await DbContext.WebAuthnCredential
             .Where(webAuthCred => webAuthCred.Id == assertionResponse.RawId)
             .ExecuteDeleteAsync(cancellationToken);
 
         if (affectedRows == 0)
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException().WithData("Reason", "WebAuthn credential not found.");
     }
 
     private static string GetWebAuthnCacheKey(Guid userId) => $"WebAuthn_Options_{userId}";

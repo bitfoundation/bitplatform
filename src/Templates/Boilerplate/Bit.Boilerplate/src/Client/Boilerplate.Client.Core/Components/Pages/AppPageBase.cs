@@ -5,6 +5,19 @@ public abstract partial class AppPageBase : AppComponentBase
 {
     [Parameter] public string? culture { get; set; }
 
+    protected BitDataGridStrings DataGridStrings { get; private set; } = default!;
+
+    protected override async Task OnInitAsync()
+    {
+        DataGridStrings = new()
+        {
+            PagerPageFormat = $"{Localizer[nameof(AppStrings.Page)]} {{0}} {Localizer[nameof(AppStrings.Of)]} {{1}}",
+            PagerRangeFormat = $"{{0}}–{{1}} {Localizer[nameof(AppStrings.Of)]} {{2}}"
+        };
+
+        await base.OnInitAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);

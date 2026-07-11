@@ -4,18 +4,21 @@ namespace Foundation;
 
 public static partial class NSDataExtensions
 {
-    public static string? ToHexString(this NSData data)
+    extension(NSData data)
     {
-        var bytes = data.ToArray();
+        public string? ToHexString()
+        {
+            var bytes = data.ToArray();
 
-        if (bytes == null)
-            return null;
+            if (bytes == null)
+                return null;
 
-        StringBuilder sb = new StringBuilder(bytes.Length * 2);
+            StringBuilder sb = new StringBuilder(bytes.Length * 2);
 
-        foreach (byte b in bytes)
-            sb.AppendFormat("{0:x2}", b);
+            foreach (byte b in bytes)
+                sb.AppendFormat("{0:x2}", b);
 
-        return sb.ToString().ToUpperInvariant();
+            return sb.ToString().ToUpperInvariant();
+        }
     }
 }

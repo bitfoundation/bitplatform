@@ -9,7 +9,7 @@ public partial class BaseDtoTableData : ITableData
 
     public bool Deleted { get; set; }
 
-    public DateTimeOffset? UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     public byte[] Version { get; set; } = [];
 

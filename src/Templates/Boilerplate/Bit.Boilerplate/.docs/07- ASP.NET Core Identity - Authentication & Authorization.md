@@ -18,14 +18,19 @@ Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you w
    - [Role-Based and Permission-Based Authorization](#role-based-and-permission-based-authorization)
    - [Policy-Based Authorization](#policy-based-authorization)
    - [Custom Claim Types](#custom-claim-types)
-4. [Identity Configuration](#identity-configuration)
-5. [Security Best Practices](#security-best-practices)
-6. [One-Time Token System](#one-time-token-system)
-7. [Advanced Topics](#advanced-topics)
+4. [Multi-Tenancy](#multi-tenancy)
+   - [How the Model Works](#how-the-model-works)
+   - [How a Request Resolves Its Tenant](#how-a-request-resolves-its-tenant)
+   - [Rules for Adding Tenant-Scoped Entities and Endpoints](#rules-for-adding-tenant-scoped-entities-and-endpoints)
+   - [Security Caveats](#security-caveats)
+5. [Identity Configuration](#identity-configuration)
+6. [Security Best Practices](#security-best-practices)
+7. [One-Time Token System](#one-time-token-system)
+8. [Advanced Topics](#advanced-topics)
    - [JWT Token Signing with PFX Certificates](#jwt-token-signing-with-pfx-certificates)
    - [Keycloak Integration](#keycloak-integration)
-8. [Hands-On Exploration](#hands-on-exploration)
-9. [Video Tutorial](#video-tutorial)
+9. [Hands-On Exploration](#hands-on-exploration)
+10. [Video Tutorial](#video-tutorial)
 
 **Important**: All topics related to WebAuthn, passkeys, and passwordless authentication are explained in [Stage 24](/.docs/24-%20WebAuthn%20and%20Passwordless%20Authentication%20(Advanced).md).
 
@@ -268,7 +273,7 @@ public static void ConfigureAuthorizationCore(this IServiceCollection services)
         options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, 
             x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
         options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, 
-            x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
+            x => x.AddRequirements(new ElevatedAccessRequirement())); // Handled by ElevatedAccessRequirementHandler using the injected TimeProvider.
 
         // Feature-based policies (automatically generated based on `AppFeatures`)
         foreach (var feat in AppFeatures.GetAll())
@@ -454,8 +459,141 @@ public class AppClaimTypes
 - **`SESSION_ID`**: Unique identifier for the current user session => Guid value stored in UserSessions table
 - **`MAX_PRIVILEGED_SESSIONS`**: Maximum allowed privileged sessions for this user => -1 (Unlimited) or a positive number
 - **`PRIVILEGED_SESSION`**: Indicates if this session is privileged => "true" or "false"
-- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations => "true" or "false"
+- **`ELEVATED_SESSION`**: Unix time seconds until which the session stays elevated (after recent authentication for sensitive operations). The `ELEVATED_ACCESS` policy checks it against the current time, so a passed value is harmless and can be carried across refresh token calls (e.g. tenant switches).
 - **`FEATURES`**: Contains the list of features/permissions values granted to the user => Array of AppFeature's values, for example ["1.1", "2.1"]
+
+---
+
+## Multi-Tenancy
+
+> **Availability**: This section applies only when the project is created with the **multi-tenancy** template option enabled (`multitenancy == true`). When it is disabled, none of the types below are generated and every entity is single-tenant.
+
+The Boilerplate implements multi-tenancy as **row-level security**: a single tenant column on each tenant-owned table, plus a global EF Core query filter that transparently constrains every read to the caller's current tenant. Multiple tenants share the same database and the same user accounts; a user can belong to many tenants and switch between them.
+
+### How the Model Works
+
+#### The `Tenant` and `TenantUser` entities
+
+- [`Tenant`](/src/Server/Boilerplate.Server.Api/Features/Tenants/Tenant.cs) is the tenant itself. Its `Name` must satisfy sub-domain naming rules (see [`TenantDto.NAME_REGEX_PATTERN`](/src/Shared/Features/Tenants/Dtos/TenantDto.cs)) so the tenant can be resolved from a request sub-domain. `IsActive` controls whether the tenant can be signed/switched into.
+- [`TenantUser`](/src/Server/Boilerplate.Server.Api/Features/Tenants/TenantUser.cs) is the many-to-many join between users and tenants. Its `AcceptedOn` is `null` while a user has only been **invited** (or has left), and is stamped the first time the user switches into the tenant (or up front for the user who created the tenant).
+- A seeded **default tenant** (`Name = "store"`, id `TenantConfiguration.FallbackTenantId`) is created by [`TenantConfiguration`](/src/Server/Boilerplate.Server.Api/Features/Tenants/TenantConfiguration.cs). All data seeds live under it, and it is also used as the fallback tenant (see caveats below).
+
+#### `ITenantAware` and the global query filter
+
+Any entity that should be isolated per tenant implements [`ITenantAware`](/src/Server/Boilerplate.Server.Api/Features/Tenants/ITenantAware.cs), which requires a `Guid TenantId` and a `Tenant` navigation:
+
+```csharp
+public interface ITenantAware
+{
+    public Guid TenantId { get; set; }
+
+    [ForeignKey(nameof(TenantId))]
+    public Tenant? Tenant { get; set; }
+}
+```
+
+In [`AppDbContext.OnModelCreating`](/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs), a small reflection loop applies the **same tenant filter to every `ITenantAware` entity** — you never write the filter by hand:
+
+```csharp
+private void ConfigureTenantAwareEntities(ModelBuilder modelBuilder)
+{
+    foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+        .Where(et => typeof(ITenantAware).IsAssignableFrom(et.ClrType)))
+    {
+        // reflectively calls SetTenantQueryFilter<TEntity>(modelBuilder)
+    }
+}
+
+private void SetTenantQueryFilter<TEntity>(ModelBuilder modelBuilder)
+    where TEntity : class, ITenantAware
+{
+    // CurrentTenantId is an AppDbContext instance property, so EF Core
+    // re-evaluates the filter per context instance (per request).
+    modelBuilder.Entity<TEntity>().HasQueryFilter(x => x.TenantId == CurrentTenantId);
+}
+
+private Guid CurrentTenantId => tenantProvider.GetCurrentTenantId();
+```
+
+Out of the box, `Product`, `Category`, and `SystemPrompt` are the `ITenantAware` entities. The filter is the **only** global query filter in the model, so there is no soft-delete or other filter to combine with.
+
+> ⚠️ **Reads only.** A global query filter constrains `SELECT`s. It does **not** stamp `TenantId` on `INSERT`, and it does **not** apply to `DELETE`/`UPDATE` of a detached (stub) entity. Those paths must be handled explicitly — see the rules below.
+
+#### Identity tables are tenant-scoped by *convention*, not by the filter
+
+`Role`, `UserRole`, `UserClaim`, and `UserSession` each carry a **nullable** `TenantId` and deliberately do **not** implement `ITenantAware`:
+
+- `TenantId == null` → a **global** row (e.g. the `g-admin` role, or a claim that applies in every tenant).
+- `TenantId == <guid>` → the row only applies while the user is signed into that tenant.
+
+Because they are not `ITenantAware`, they get **no** global query filter; their tenant scoping is enforced manually in code:
+
+- At **token-issuance** time, [`UserClaimsService.GetClaims`](/src/Server/Boilerplate.Server.Api/Features/Identity/Services/UserClaimsService.cs) filters user claims and roles with `x.TenantId == null || x.TenantId == tenantId`, so a token only ever carries the current tenant's roles/claims plus global ones.
+- In the **management controllers** ([`RoleManagementController`](/src/Server/Boilerplate.Server.Api/Features/Identity/RoleManagementController.cs), [`UserManagementController`](/src/Server/Boilerplate.Server.Api/Features/Identity/UserManagementController.cs)), every query for a non-global admin is filtered by `TenantId == User.GetTenantId()`.
+
+Each tenant gets its own `t-admin` role; the `g-admin` (global admin) role is global. Feature claims are re-derived from the role on every request in [`AppJwtSecureDataFormat.Unprotect`](/src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppJwtSecureDataFormat.cs) (`g-admin` → all features, `t-admin` → the tenant-scoped subset from `AppFeatures.GetTenantAdminFeatures()`).
+
+### How a Request Resolves Its Tenant
+
+The scoped [`TenantProvider`](/src/Server/Boilerplate.Server.Api/Features/Identity/Services/TenantProvider.cs) turns the current request into a `TenantId`, which `AppDbContext` reads through `CurrentTenantId`. Resolution order:
+
+| # | Source | When it applies |
+|---|--------|-----------------|
+| 1 | **Explicit** `SetCurrentTenantId(guid)` | Background jobs / code that sets the tenant deliberately (takes precedence for the rest of the scope) |
+| 2 | **Throw** if there is no `HttpContext` and nothing was set explicitly | Background jobs that forgot to set a tenant — fails closed rather than guessing |
+| 3 | **`t-id` claim** of the signed-in user (`User.GetTenantId()`) | Authenticated requests — the trusted, server-issued tenant |
+| 4 | **Sub-domain** of the request `Host` (matched against active tenants) | Anonymous requests, e.g. the public Sales product pages on `tenant.example.com` |
+| 5 | **Fallback** to `TenantConfiguration.FallbackTenantId` (the seeded `"store"` tenant) | Nothing else matched (apex domain, unknown sub-domain, authenticated user with no tenant) |
+
+```csharp
+public Guid GetCurrentTenantId()
+{
+    if (tenantId is not null) return tenantId.Value;                    // (1) explicit
+
+    var httpContext = httpContextAccessor.HttpContext;
+    if (httpContext is null)                                            // (2) background job
+        throw new InvalidOperationException("Inside background jobs, either set the TenantId explicitly or Use IgnoreQueryFilters");
+
+    var user = httpContext?.User;
+    if (user.IsAuthenticated() && user!.GetTenantId() is Guid claimTenantId)
+        return claimTenantId;                                          // (3) claim
+
+    // ... sub-domain lookup ...                                       // (4) sub-domain
+    return TenantConfiguration.FallbackTenantId;                       // (5) fallback
+}
+```
+
+### Rules for Adding Tenant-Scoped Entities and Endpoints
+
+Follow these rules whenever you add a new tenant-owned entity or a create/update/delete endpoint.
+
+**1. Make the entity `ITenantAware`.** Implement the interface (add `TenantId` + `Tenant` nav). The global filter is applied automatically — no per-entity wiring needed. If a value must be unique *within* a tenant, make the index tenant-scoped, e.g. `builder.HasIndex(p => new { p.TenantId, p.Name }).IsUnique();`, then add a migration.
+
+**2. Stamp `TenantId` on create — server-side, from the trusted claim.** The query filter does not do this for you. Always:
+
+```csharp
+entityToAdd.TenantId = User.GetTenantId() ?? throw new InvalidOperationException();
+```
+
+Never bind `TenantId` from the client DTO. (The shared DTOs intentionally expose no `TenantId`, so the mapper cannot smuggle one — keep it that way.)
+
+**3. On update/delete, fetch the row through a filtered query first — never a detached stub.** Loading via `FindAsync` / `FirstOrDefaultAsync` / `Where(...)` applies the tenant filter, so a row in another tenant simply returns `null` (→ `ResourceNotFoundException`). Deleting or updating a hand-constructed stub (`Remove(new() { Id = id })`) **bypasses the filter** and can reach another tenant's row.
+
+Always carry the `long Version` concurrency token through updates/deletes.
+
+**4. Protect tenant-data endpoints with `TENANT_SELECTED`.** Add `[Authorize(Policy = AuthPolicies.TENANT_SELECTED)]` (the policy asserts `User.GetTenantId() is not null`). This guarantees the tenant comes from the signed claim and prevents an authenticated user *without* a tenant from ever falling through to sub-domain/fallback resolution. All shipped tenant-data controllers (`Product`, `Category`, `Chatbot`, `Dashboard`, `UserManagement`, `RoleManagement`) already do this.
+
+**5. Scope identity data (roles/claims/sessions) manually.** These tables are not `ITenantAware`. Set `TenantId` when creating tenant-scoped roles/claims, and when reading/mutating them for a non-global admin, filter by `TenantId == User.GetTenantId()` (and verify `TenantUser` membership with `AcceptedOn != null` where relevant), mirroring the existing management controllers.
+
+**6. Tenant-scope your cache keys.** Any cache entry that holds per-tenant data must include the tenant id in its key, e.g. `\$"SystemPrompt_{TenantProvider.GetCurrentTenantId()}_{promptKind}"`. For HTTP response/output caching of tenant-varying data, do not mark it `UserAgnostic` and make sure the cache key varies by tenant (or host).
+
+### Security Caveats
+
+- **`IgnoreQueryFilters()` removes tenant isolation.** Any query that calls it must **re-apply** a tenant check explicitly. The one legitimate use in the template — [`AttachmentController.EnsureProductIsInCurrentTenant`](/src/Server/Boilerplate.Server.Api/Features/Attachments/AttachmentController.cs) — bypasses the filter to look up a product's real tenant and then compares it against `TenantProvider.GetCurrentTenantId()`, rejecting cross-tenant products. Follow that pattern; never return `IgnoreQueryFilters()` results to a caller unscoped.
+- **Background jobs have no `HttpContext`.** `GetCurrentTenantId()` throws by design instead of silently using the fallback tenant, so a job that touches `ITenantAware` data must either call `SetCurrentTenantId(...)` for each tenant it processes, or use `IgnoreQueryFilters()` with its own explicit tenant scoping.
+- **The fallback tenant is a fail-open surface.** Anonymous requests to the apex domain or an unknown sub-domain — and any authenticated request that reaches tenant data without a tenant claim — resolve to the seeded `"store"` tenant. Keep real or sensitive data out of the default tenant, and pin the accepted hosts (`AllowedHosts`) so the sub-domain that selects a tenant cannot be spoofed via the `Host` header. Only expose genuinely public, per-tenant data through anonymous, sub-domain-resolved endpoints.
+- **Identity tables are not filtered by the model.** Because `Role`/`UserRole`/`UserClaim`/`UserSession` rely on manual scoping, any new query against them must add the `TenantId == User.GetTenantId()` (or `TenantId == null`) predicate itself — the global filter will not save you.
+- **Privilege changes are eventually-consistent (short-lived tokens).** When an admin **removes** a user from a tenant, `RemoveUserFromCurrentTenant` revokes that user's sessions signed into the tenant (deletes them + a SignalR `SESSION_REVOKED` nudge, like `KickOutTenantUsers`), so the removed member cannot refresh back in. When a user **leaves** a tenant themselves, their session is instead re-pointed to their next tenant and the client refreshes immediately (they keep their own access). In every case a JWT is stateless and there is no per-request session/security-stamp check on ordinary API calls, so an *already-issued* access token stays valid until it expires (default 5 minutes) — that residual window is inherent to short-lived JWTs and applies to all privilege changes.
 
 ---
 
@@ -717,10 +855,12 @@ When you run the project with .NET Aspire enabled (default configuration), Keycl
 The Keycloak instance comes pre-configured with the following demo accounts (Provided by [src\Server\Boilerplate.Server.AppHost\Infrastructure\Realms\dev-realm.json](..\src\Server\Boilerplate.Server.AppHost\Infrastructure\Realms\dev-realm.json)):
 
 | Username | Password | Role | Description |
-|----------|----------|------|-------------|
-| test | 123456 | Admin | Full administrative access |
-| bob | bob | Demo | Standard demo user |
-| alice | alice | Demo | Standard demo user |
+|----------|----------|--------------|-------------|
+| test | 123456 | g-admin (Global admin) | Full administrative access |
+| bob | bob | demo | Standard demo user |
+| alice | alice | demo | Standard demo user |
+
+Note: The realm also contains a `t-admin` (tenant admin) group that maps to each tenant's admin role when the multi-tenancy feature is enabled.
 
 #### How Keycloak Mapping Works
 

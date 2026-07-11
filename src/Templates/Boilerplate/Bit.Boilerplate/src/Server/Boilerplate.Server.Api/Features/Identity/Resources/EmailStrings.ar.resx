@@ -196,4 +196,21 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>تطبيق Boilerplate</value>
   </data>
+  <!--#if (multitenancy == true) -->
+  <data name="TenantInvitationEmailSubject" xml:space="preserve">
+    <value>لقد تمت دعوتك للانضمام إلى {0}</value>
+  </data>
+  <data name="TenantInvitationHello" xml:space="preserve">
+    <value>مرحبًا عزيزي {0}</value>
+  </data>
+  <data name="TenantInvitationMessage" xml:space="preserve">
+    <value>قام {0} بدعوتك للانضمام إلى المستأجر {1}.</value>
+  </data>
+  <data name="TenantInvitationLinkMessage" xml:space="preserve">
+    <value>من خلال فتح الرابط أدناه وتسجيل الدخول، ستتمكن من أن تكون في هذا المستأجر.</value>
+  </data>
+  <data name="TenantInvitationOpenApp" xml:space="preserve">
+    <value>افتح التطبيق</value>
+  </data>
+  <!--#endif-->
 </root>

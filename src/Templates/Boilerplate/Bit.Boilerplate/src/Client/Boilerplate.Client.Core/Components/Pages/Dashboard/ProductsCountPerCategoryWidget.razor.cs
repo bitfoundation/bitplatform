@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Dashboard;
+using Boilerplate.Shared.Features.Dashboard;
 
 namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 
@@ -7,22 +7,25 @@ public partial class ProductsCountPerCategoryWidget
     [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
-    private BitChartBarConfig config = default!;
+    private BitChartConfig config = default!;
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
-        config = new BitChartBarConfig
+        config = new BitChartConfig
         {
-            Options = new BitChartBarOptions
+            Type = BitChartType.Bar,
+            Options = new BitChartOptions
             {
-                Scales = new() { YAxes = [new BitChartLinearCartesianAxis() { Ticks = new() { Min = 0 } }] },
-                Responsive = true,
-                Legend = new BitChartLegend()
+                Plugins = new BitChartPluginOptions
                 {
-                    Display = false,
+                    Legend = new BitChartLegendOptions { Display = false }
                 },
+                Scales =
+                {
+                    ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, BeginAtZero = true }
+                }
             }
         };
 
@@ -37,15 +40,16 @@ public partial class ProductsCountPerCategoryWidget
         {
             var data = await dashboardController.GetProductsCountPerCategoryStats(CurrentCancellationToken);
 
-            BitChartBarDataset<int> chartDataSet = [.. data.Select(d => d.ProductCount)];
-            chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
-            config.Data.Datasets.Add(chartDataSet);
             config.Data.Labels.AddRange(data.Select(d => d.CategoryName ?? string.Empty));
+            config.Data.Datasets.Add(new BitChartDataset
+            {
+                Data = [.. data.Select(d => (double?)d.ProductCount)],
+                BackgroundColors = [.. data.Select(d => d.CategoryColor ?? string.Empty)]
+            });
         }
         finally
         {
             isLoading = false;
         }
     }
-
 }

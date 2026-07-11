@@ -982,18 +982,18 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Alt-tekst</value>
   </data>
   <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>Pagina</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>van</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Admin-paneel</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} items</value>
-  </data>
-  <data name="Page" xml:space="preserve">
-    <value>Pagina</value>
-  </data>
-  <data name="Of" xml:space="preserve">
-    <value>van</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Aantal producten laatste 30 dagen</value>
@@ -1364,4 +1364,90 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="ImageNotCarError" xml:space="preserve">
     <value>De opgegeven afbeelding bevat geen auto.</value>
   </data>
+    <!--#if (multitenancy == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>Tenant</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>Alle tenants beheren</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>Alle tenants beheren</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>Mijn tenants beheren</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>Mijn tenants beheren</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>Nieuwe tenant aanmaken</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>Tenant toevoegen</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>Tenant bewerken</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>Tenant verlaten</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>Weet je zeker dat je de tenant {0} wilt verlaten?</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>Je hebt de tenant succesvol verlaten.</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>Van tenant wisselen</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>Gebruiker uitnodigen voor {0}</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>Uitnodigen</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>De gebruiker is succesvol uitgenodigd.</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>Deze gebruiker is al lid van de tenant.</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>De tenantnaam '{0}' is al in gebruik.</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>Tenant kon niet worden gevonden.</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} moet een geldige subdomeinnaam zijn die bestaat uit kleine letters, cijfers en koppeltekens (bijv. my-tenant).</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>Voer de tenantnaam in</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>Voer de tenanttitel in</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>Je hebt nog geen tenant geselecteerd. Wissel naar een van je tenants of maak een nieuwe aan om te beginnen.</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} heeft je uitgenodigd om deel te nemen aan {1}. Open {2} en meld je aan om in die tenant te zijn.</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>Wisselen</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>Accepteren</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>Openstaande uitnodiging</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>Huidige tenant</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>Inactief</value>
+  </data>
+    <!--#endif-->
 </root>

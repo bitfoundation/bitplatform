@@ -72,7 +72,7 @@ public partial class PushNotificationJobRunner
                 var target = subscription.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
                                     : subscription.Platform is "fcmV1" ? AdsPushTarget.Android
                                     : subscription.Platform is "apns" ? AdsPushTarget.Ios
-                                    : throw new NotImplementedException();
+                                    : throw new NotImplementedException($"Platform {subscription.Platform} is not supported.");
 
                 await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, default);
 

@@ -1,0 +1,68 @@
+@using Boilerplate.Shared.Features.Tenants.Dtos
+
+@attribute [Route(PageUrls.ManageAllTenants)]
+@attribute [Route("{culture?}" + PageUrls.ManageAllTenants)]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@attribute [Authorize(Policy = AppFeatures.Management.Tenants_Write_Global)]
+@inherits AppPageBase
+
+<AppPageData Title="@Localizer[nameof(AppStrings.ManageAllTenants)]"
+             PageTitle="@Localizer[nameof(AppStrings.ManageAllTenantsPageTitle)]" />
+
+<section>
+    <BitStack>
+        <BitStack Horizontal FitHeight>
+            <BitButton ReversedIcon
+                       OnClick="CreateTenant"
+                       IconName="@BitIconName.Add">
+                @Localizer[nameof(AppStrings.AddTenant)]
+            </BitButton>
+            @if (isLoading)
+            {
+                <BitSlickBarsLoading CustomSize="32" />
+            }
+        </BitStack>
+        <BitStack Gap="0" FillContent>
+            <div class="grid-container">
+                <BitDataGrid @ref="dataGrid"
+                             TItem="TenantDto"
+                             Class="tenants-grid"
+                             OnRead="LoadTenants"
+                             Loading="isLoading"
+                             Pageable Filterable Resizable
+                             ShowToolbar ShowCsvExport ShowExcelExport
+                             PageSize="10"
+                             Strings="DataGridStrings">
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Name)]"
+                                       Property="t => t.Name" />
+
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Title)]"
+                                       Property="t => t.Title"
+                                       Width="240px"
+                                       Filterable="false" />
+
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Active)]"
+                                       Align="BitDataGridColumnAlign.Center"
+                                       Width="150px"
+                                       Sortable="false"
+                                       Filterable="false">
+                        <Template Context="tenant">
+                            <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                                @* Deactivating a tenant kicks out all of its accepted users immediately. *@
+                                <BitToggle Value="tenant.IsActive"
+                                           ValueChanged="(bool v) => { }"
+                                           OnChange="WrapHandled(() => ToggleIsActive(tenant))" />
+                                <BitButton Variant="BitVariant.Text"
+                                           IconName="@BitIconName.Edit"
+                                           Title="@Localizer[(nameof(AppStrings.Edit))]"
+                                           OnClick="WrapHandled(() => EditTenant(tenant))" />
+                            </BitStack>
+                        </Template>
+                    </BitDataGridColumn>
+                </BitDataGrid>
+            </div>
+        </BitStack>
+    </BitStack>
+</section>
+
+<AddOrEditTenantModal @ref="modal" OnSave="WrapHandled(async (TenantDto _) => await RefreshData())" />

@@ -20,7 +20,7 @@ public partial class CultureService
             await cookie.Set(new()
             {
                 Name = ".AspNetCore.Culture",
-                Value = Uri.EscapeDataString($"c={cultureName}|uic={cultureName}"),
+                Value = $"c={cultureName}|uic={cultureName}",
                 MaxAge = 3600 * 24 * 30,
                 Path = "/",
                 SameSite = SameSite.Strict,

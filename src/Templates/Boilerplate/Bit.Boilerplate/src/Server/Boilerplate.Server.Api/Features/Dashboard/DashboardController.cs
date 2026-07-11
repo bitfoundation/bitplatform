@@ -1,11 +1,15 @@
-﻿using Boilerplate.Shared.Features.Dashboard;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Features.Dashboard;
 
 namespace Boilerplate.Server.Api.Features.Dashboard;
 
 [ApiVersion(1)]
-[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"), 
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppFeatures.AdminPanel.Dashboard)]
+    //#if (multitenancy == true)
+    Authorize(Policy = AuthPolicies.TENANT_SELECTED),
+    //#endif
+    Authorize(Policy = AppFeatures.AdminPanel.Dashboard_View)]
 public partial class DashboardController : AppControllerBase, IDashboardController
 {
     [HttpGet]
@@ -13,7 +17,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     {
         var result = new OverallAnalyticsStatsDataResponseDto();
 
-        var last30DaysDate = DateTimeOffset.UtcNow.AddDays(-30);
+        var last30DaysDate = TimeProvider.GetUtcNow().AddDays(-30);
 
         result.TotalProducts = await DbContext.Products.CountAsync(cancellationToken);
         result.Last30DaysProductCount = await DbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate, cancellationToken);

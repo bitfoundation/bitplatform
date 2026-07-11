@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using System.Web;
 using Boilerplate.Shared.Features.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
@@ -10,95 +11,59 @@ public partial class ProductsPage
     private string? searchQuery;
     private bool isDeleteDialogOpen;
     private ProductDto? deletingProduct;
-    private string productNameFilter = string.Empty;
-    private string categoryNameFilter = string.Empty;
 
     private BitDataGrid<ProductDto>? dataGrid;
-    private BitDataGridItemsProvider<ProductDto> productsProvider = default!;
-    private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
 
     [AutoInject] IProductController productController = default!;
 
 
-    private string ProductNameFilter
+    private async Task<BitDataGridReadResult<ProductDto>> LoadProducts(BitDataGridReadRequest req)
     {
-        get => productNameFilter;
-        set
+        isLoading = true;
+        StateHasChanged();
+
+        try
         {
-            productNameFilter = value;
-            _ = RefreshData();
+            var query = new ODataQuery
+            {
+                Top = req.Take, // null when exporting (CSV/Excel) so the server returns every matching row.
+                Skip = req.Skip,
+                OrderBy = req.Sorts.Count > 0
+                    ? string.Join(", ", req.Sorts.Select(s => $"{s.ColumnId} {(s.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
+                    : $"{nameof(ProductDto.Name)} asc"
+            };
+
+            var filter = string.Join(" and ", req.Filters
+                .Where(f => string.IsNullOrEmpty(f.Value?.ToString()) is false)
+                .Select(f => $"contains(tolower({f.ColumnId}),'{f.Value!.ToString()!.ToLower().Replace("'", "''")}')"));
+            if (string.IsNullOrEmpty(filter) is false)
+            {
+                query.Filter = filter;
+            }
+
+            var queriedRequest = productController.WithQuery(query.ToString());
+            var data = await (string.IsNullOrWhiteSpace(searchQuery)
+                        ? queriedRequest.GetProducts(req.CancellationToken)
+                        : queriedRequest.SearchProducts(searchQuery, req.CancellationToken));
+
+            return new BitDataGridReadResult<ProductDto>(data!.Items!, (int)data!.TotalCount);
         }
-    }
-
-    private string CategoryNameFilter
-    {
-        get => categoryNameFilter;
-        set
+        catch (Exception exp)
         {
-            categoryNameFilter = value;
-            _ = RefreshData();
+            ExceptionHandler.Handle(exp);
+            return new BitDataGridReadResult<ProductDto>([], 0);
         }
-    }
-
-
-    protected override async Task OnInitAsync()
-    {
-        await base.OnInitAsync();
-
-        PrepareGridDataProvider();
-    }
-
-
-    private void PrepareGridDataProvider()
-    {
-        productsProvider = async req =>
+        finally
         {
-            isLoading = true;
+            isLoading = false;
             StateHasChanged();
-
-            try
-            {
-                var query = new ODataQuery
-                {
-                    Top = req.Count ?? 10,
-                    Skip = req.StartIndex,
-                    OrderBy = string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
-                };
-
-                if (string.IsNullOrEmpty(ProductNameFilter) is false)
-                {
-                    query.Filter = $"contains(tolower({nameof(ProductDto.Name)}),'{ProductNameFilter.ToLower()}')";
-                }
-
-                if (string.IsNullOrEmpty(CategoryNameFilter) is false)
-                {
-                    query.AndFilter = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
-                }
-
-                var queriedRequest = productController.WithQuery(query.ToString());
-                var data = await (string.IsNullOrWhiteSpace(searchQuery)
-                            ? queriedRequest.GetProducts(req.CancellationToken)
-                            : queriedRequest.SearchProducts(searchQuery, req.CancellationToken));
-
-                return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.Handle(exp);
-                return BitDataGridItemsProviderResult.From(new List<ProductDto> { }, 0);
-            }
-            finally
-            {
-                isLoading = false;
-                StateHasChanged();
-            }
-        };
+        }
     }
 
     private async Task RefreshData()
     {
-        await dataGrid!.RefreshDataAsync();
+        await dataGrid!.RefreshAsync();
     }
 
     private async Task CreateProduct()
@@ -128,7 +93,3 @@ public partial class ProductsPage
         await RefreshData();
     }
 }
-
-
-
-

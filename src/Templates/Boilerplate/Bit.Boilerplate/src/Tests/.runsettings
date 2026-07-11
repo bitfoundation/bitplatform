@@ -12,8 +12,9 @@
             <!--<BROWSER>firefox</BROWSER>-->
 
             <!-- You can override the configuration from appsettings.json for tests here. -->
-            <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
             <Hangfire__UseIsolatedStorage>true</Hangfire__UseIsolatedStorage>
+            <DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>false</DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>
+            <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
         </EnvironmentVariables>
     </RunConfiguration>
 

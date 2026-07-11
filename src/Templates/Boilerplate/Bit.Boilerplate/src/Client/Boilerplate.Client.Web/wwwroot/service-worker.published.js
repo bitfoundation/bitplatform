@@ -52,16 +52,6 @@ self.assetsExclude = [
     /pdfjs-4\.7\.76\.js$/,
     /pdfjs-4\.7\.76-worker\.js$/,
 
-    //#if (module != "Admin")
-    /chartjs-2\.9\.4\.js$/,
-    /chartjs-2\.9\.4-adapter\.js$/,
-
-    // If a RichTextEditor (https://blazorui.bitplatform.dev/components/richtexteditor) is needed in the PWA, remove the following lines:
-    /quill-2\.0\.3\.js$/,
-    /quill.snow-2\.0\.3\.css$/,
-    /quill.bubble-2\.0\.3\.css$/,
-    //#endif
-
     // country flags
     /_content\/Bit\.BlazorUI\.Extras\/flags/
 ];

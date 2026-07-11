@@ -11,7 +11,7 @@ namespace Boilerplate.Server.Api.Features.Todo;
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppFeatures.Todo.ManageTodo)]
+    Authorize(Policy = AppFeatures.Todo.Todo_Write_Self)]
 public partial class TodoItemController : AppControllerBase, ITodoItemController
 {
     [HttpGet, EnableQuery]
@@ -53,7 +53,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
 
         entityToAdd.UserId = User.GetUserId();
 
-        entityToAdd.UpdatedAt = DateTimeOffset.UtcNow;
+        entityToAdd.UpdatedAt = TimeProvider.GetUtcNow();
 
         await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
 

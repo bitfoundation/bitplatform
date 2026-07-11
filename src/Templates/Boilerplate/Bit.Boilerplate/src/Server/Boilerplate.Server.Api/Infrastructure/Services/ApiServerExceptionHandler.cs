@@ -10,6 +10,7 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProblemDetailsWriter
 {
     [AutoInject] private IHostEnvironment env = default!;
+    [AutoInject] private TimeProvider timeProvider = default!;
     [AutoInject] private ILogger<ApiServerExceptionHandler> logger = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
@@ -56,7 +57,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
             { "ServerAppVersion", typeof(ApiServerExceptionHandler).Assembly.GetName().Version },
             { "Culture", CultureInfo.CurrentUICulture.Name },
             { "Environment", env.EnvironmentName },
-            { "ServerDateTime", DateTimeOffset.UtcNow.ToString("u") },
+            { "ServerDateTime", timeProvider.GetUtcNow().ToString("u") },
         };
 
         string? instance = null;

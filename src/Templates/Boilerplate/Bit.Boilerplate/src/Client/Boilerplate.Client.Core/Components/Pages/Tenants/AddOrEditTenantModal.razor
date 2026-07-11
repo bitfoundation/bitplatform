@@ -1,0 +1,66 @@
+@inherits AppPageBase
+
+@if (isOpen)
+{
+    <NavigationLock OnBeforeInternalNavigation="OnNavigation" />
+}
+
+<BitProModal @bind-IsOpen="isOpen"
+          AutoToggleScroll="false" Blocking="isChanged"
+          Draggable DragElementSelector=".header-stack">
+    <section>
+        <BitStack Class="stack">
+            <BitStack VerticalAlign="BitAlignment.Center" Class="header-stack" Horizontal>
+                <BitText Typography="BitTypography.H5">
+                    @if (tenant.Id == default)
+                    {
+                        @Localizer[nameof(AppStrings.AddTenant)]
+                    }
+                    else
+                    {
+                        @Localizer[nameof(AppStrings.EditTenant)]
+                    }
+                </BitText>
+                <BitSpacer />
+                <BitButton IconOnly FixedColor
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Cancel"
+                           Color="BitColor.SecondaryBackground"
+                           OnClick="() => isOpen = false" />
+            </BitStack>
+            <BitCard FullSize>
+                <EditForm @ref="editForm" Model="tenant" OnValidSubmit="WrapHandled(Save)" novalidate>
+                    <AppDataAnnotationsValidator @ref="validatorRef" />
+
+                    <BitStack Gap="0.25rem">
+                        <BitTextField @bind-Value="tenant.Name"
+                                      Label="@Localizer[nameof(AppStrings.Name)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.EnterTenantName)]" />
+                        <ValidationMessage For="() => tenant.Name" />
+                        <br />
+                        <BitTextField @bind-Value="tenant.Title"
+                                      Label="@Localizer[nameof(AppStrings.Title)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.EnterTenantTitle)]" />
+                        <ValidationMessage For="() => tenant.Title" />
+                        <br />
+                        @if (tenant.Id != default)
+                        {
+                            @* Deactivating a tenant kicks out all of its accepted users immediately. *@
+                            <BitToggle @bind-Value="tenant.IsActive" Label="@Localizer[nameof(AppStrings.Active)]" />
+                            <br />
+                        }
+                        <BitStack Horizontal>
+                            <BitButton ButtonType="BitButtonType.Button" OnClick="(() => isOpen = false)" Variant="BitVariant.Outline">
+                                @Localizer[nameof(AppStrings.Cancel)]
+                            </BitButton>
+
+                            <BitButton IsLoading=isSaving ButtonType="BitButtonType.Submit">
+                                @Localizer[nameof(AppStrings.Save)]
+                            </BitButton>
+                        </BitStack>
+                    </BitStack>
+                </EditForm>
+            </BitCard>
+        </BitStack>
+    </section>
+</BitProModal>

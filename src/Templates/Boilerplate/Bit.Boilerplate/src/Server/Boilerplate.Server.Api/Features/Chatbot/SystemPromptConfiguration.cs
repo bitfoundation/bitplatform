@@ -1,6 +1,9 @@
 ﻿//+:cnd:noEmit
 
 using Boilerplate.Shared.Features.Chatbot;
+//#if (multitenancy == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 
 namespace Boilerplate.Server.Api.Features.Chatbot;
 
@@ -8,8 +11,21 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
 {
     public void Configure(EntityTypeBuilder<SystemPrompt> builder)
     {
+        //#if (multitenancy == true)
+        // The prompt kind must be unique within the tenant, not globally.
+        builder.HasIndex(sp => new { sp.TenantId, sp.PromptKind })
+            .IsUnique();
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (multitenancy != true)
         builder.HasIndex(sp => sp.PromptKind)
             .IsUnique();
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
 
         var defaultVersion = 1;
 
@@ -18,7 +34,10 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             Id = Guid.Parse("a8c94d94-0004-4dd0-921c-255e0a581424"),
             PromptKind = PromptKind.Support,
             Version = defaultVersion,
-            Markdown = GetInitialSystemPromptMarkdown()
+            Markdown = GetInitialSystemPromptMarkdown(),
+            //#if (multitenancy == true)
+            TenantId = TenantConfiguration.FallbackTenantId,
+            //#endif
         });
 
         builder.HasData(new SystemPrompt
@@ -26,7 +45,10 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             Id = Guid.Parse("0234b819-030c-4f13-899d-3eca02bf7caf"),
             PromptKind = PromptKind.AnalyzeProductImage,
             Version = defaultVersion,
-            Markdown = GetAnalyzeProductImageSystemPromptMarkdown()
+            Markdown = GetAnalyzeProductImageSystemPromptMarkdown(),
+            //#if (multitenancy == true)
+            TenantId = TenantConfiguration.FallbackTenantId,
+            //#endif
         });
 
         builder.HasData(new SystemPrompt
@@ -34,11 +56,15 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             Id = Guid.Parse("7a454ba4-c0bf-438c-a97e-fd18ebeba540"),
             PromptKind = PromptKind.FollowUpSuggestion,
             Version = defaultVersion,
-            Markdown = GetFollowUpSuggestionSystemPromptMarkdown()
+            Markdown = GetFollowUpSuggestionSystemPromptMarkdown(),
+            //#if (multitenancy == true)
+            TenantId = TenantConfiguration.FallbackTenantId,
+            //#endif
         });
     }
 
-    private static string GetAnalyzeProductImageSystemPromptMarkdown()
+    // These prompts are public, so they're re-used as the default system prompts of newly created tenants (See TenantController.Create).
+    public static string GetAnalyzeProductImageSystemPromptMarkdown()
     {
         return @"You are a Product Image Specialist Agent. Your role is to analyze product images for an e-commerce catalog.
 
@@ -60,7 +86,7 @@ VALIDATION RULES:
 - Car must be clearly visible as the main subject";
     }
 
-    private static string GetFollowUpSuggestionSystemPromptMarkdown()
+    public static string GetFollowUpSuggestionSystemPromptMarkdown()
     {
         return @"You are a Follow-Up Suggestion Agent. Your role is to generate natural, contextual follow-up questions or actions for users.
 
@@ -94,7 +120,7 @@ VALIDATION RULES:
 - Keep each suggestion concise (under 60 characters)";
     }
 
-    private static string GetInitialSystemPromptMarkdown()
+    public static string GetInitialSystemPromptMarkdown()
     {
         return @"You are a assistant for the Boilerplate app. Below, you will find a markdown document containing information about the app, followed by the user's query.
 

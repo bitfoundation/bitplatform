@@ -982,18 +982,18 @@
     <value>النص البديل</value>
   </data>
   <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>صفحة</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>من</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>لوحة الإدارة</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} عناصر</value>
-  </data>
-  <data name="Page" xml:space="preserve">
-    <value>صفحة</value>
-  </data>
-  <data name="Of" xml:space="preserve">
-    <value>من</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>عدد المنتجات في آخر 30 يومًا</value>
@@ -1364,4 +1364,90 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>الصورة المقدمة لا تحتوي على سيارة.</value>
   </data>
+    <!--#if (multitenancy == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>المستأجر</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>إدارة جميع المستأجرين</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>إدارة جميع المستأجرين</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>إدارة المستأجرين الخاصين بي</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>إدارة المستأجرين الخاصين بي</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>إنشاء مستأجر جديد</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>إضافة مستأجر</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>تعديل المستأجر</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>مغادرة المستأجر</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد مغادرة المستأجر {0}؟</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>لقد غادرت المستأجر بنجاح.</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>تبديل المستأجر</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>دعوة مستخدم إلى {0}</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>دعوة</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>تمت دعوة المستخدم بنجاح.</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>هذا المستخدم عضو بالفعل في المستأجر.</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>اسم المستأجر '{0}' مستخدم بالفعل.</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>لم يتم العثور على المستأجر.</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>يجب أن يكون {0} اسم نطاق فرعي صالحًا يتكون من أحرف صغيرة وأرقام وشرطات (مثل my-tenant).</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>أدخل اسم المستأجر</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>أدخل عنوان المستأجر</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>لم تقم بتحديد أي مستأجر بعد. بدّل إلى أحد مستأجريك أو أنشئ مستأجرًا جديدًا للبدء.</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>قام {0} بدعوتك للانضمام إلى {1}. افتح {2} وسجل الدخول لتكون في هذا المستأجر.</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>تبديل</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>دعوة معلقة</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>المستأجر الحالي</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>غير نشط</value>
+  </data>
+    <!--#endif-->
 </root>

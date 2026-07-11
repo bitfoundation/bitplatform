@@ -60,7 +60,7 @@ public interface ITelemetryContext
             { nameof(AppVersion), AppVersion },
             { nameof(PageUrl), PageUrl },
             { nameof(TimeZone), TimeZone },
-            { "ClientDateTime", DateTimeOffset.UtcNow.ToString("u") },
+            { "ClientDateTime", TimeProvider.GetUtcNow().ToString("u") },
             { nameof(Culture), Culture },
             { nameof(Environment), Environment },
             { nameof(IsOnline), IsOnline }
