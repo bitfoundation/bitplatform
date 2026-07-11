@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages;
@@ -38,13 +39,6 @@ public partial class IconographyPage
     private bool isIconPanelOpen;
     private Dictionary<string, string>? iconGlyphs;
     private string? copyFeedbackKey;
-
-    private readonly IEnumerable<IBitComponentParams> cascadingParams =
-    [
-        new BitCardParams { Background = BitColorKind.Primary, FullWidth = true, Style = "padding: 1.5rem" },
-        new BitTextParams { Typography = BitTypography.Body1 },
-        new BitTagParams { Color = BitColor.TertiaryBackground },
-    ];
 
 
 
@@ -113,6 +107,11 @@ public partial class IconographyPage
         if (iconGlyphs is null) return null;
 
         if (iconGlyphs.TryGetValue(icon.Value, out var glyph) is false || string.IsNullOrEmpty(glyph)) return null;
+
+        if (glyph[0] == '\\' && int.TryParse(glyph[1..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var escapedCodePoint))
+        {
+            return $"\\{escapedCodePoint:X4}";
+        }
 
         return $"\\{char.ConvertToUtf32(glyph, 0):X4}";
     }
