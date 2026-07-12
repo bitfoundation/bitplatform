@@ -15,6 +15,13 @@ public sealed class DemoState
 
     /// <summary>Whether the /unstable route's loader should throw (toggled from UnstablePage's error UI).</summary>
     public bool UnstableShouldFail { get; set; } = true;
+
+    /// <summary>
+    /// Route-lifecycle events recorded by LifecyclePage (newest first). Owned by this scoped state
+    /// rather than the page so the Disposing deactivation - which fires while the page tears
+    /// down - is still readable after the instance is gone.
+    /// </summary>
+    public List<string> LifecycleLog { get; } = [];
 }
 
 /// <summary>Payload produced by the /data route's loader (see AppRouter.LoadData).</summary>

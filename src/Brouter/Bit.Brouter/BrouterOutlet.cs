@@ -110,8 +110,9 @@ public class BrouterOutlet : ComponentBase, IDisposable
     {
         // The route is being torn down outside a navigation: any still-active content gets its
         // Disposing deactivation before the subtree unmounts (idempotent for hidden entries, which
-        // were deactivated when they were hidden).
-        foreach (var k in _kept)
+        // were deactivated when they were hidden). Snapshot: deactivation handlers run
+        // synchronously and can mutate _kept (e.g. via IBrouter.ClearKeepAlive).
+        foreach (var k in _kept.ToArray())
         {
             if (ReferenceEquals(k.Route, route)) NotifyEntryTeardown(k);
         }
@@ -180,9 +181,10 @@ public class BrouterOutlet : ComponentBase, IDisposable
         if (route.KeepAlive)
         {
             // Kept entries survive; a transient hide (pending-UI render while the route stays
-            // matched) is a no-op for them, resolving as a renavigation at commit.
+            // matched) is a no-op for them, resolving as a renavigation at commit. Snapshot:
+            // deactivation handlers run synchronously and can mutate _kept.
             if (willRemainMatched) return;
-            foreach (var k in _kept)
+            foreach (var k in _kept.ToArray())
             {
                 if (ReferenceEquals(k.Route, route))
                 {
@@ -212,7 +214,8 @@ public class BrouterOutlet : ComponentBase, IDisposable
         if (route.KeepAlive is false) return;
 
         var key = route.ComputeKeepAliveKey();
-        foreach (var k in _kept)
+        // Snapshot: deactivation handlers run synchronously and can mutate _kept.
+        foreach (var k in _kept.ToArray())
         {
             if (ReferenceEquals(k.Route, route) is false) continue;
             if (string.Equals(k.Key, key, StringComparison.Ordinal)) continue;
@@ -233,8 +236,9 @@ public class BrouterOutlet : ComponentBase, IDisposable
         if (current is null || ReferenceEquals(current.Route, route) is false) return;
 
         // Sibling entries were already deactivated pre-render by PrepareArrival; this sweep is a
-        // cheap idempotent backstop (FireDeactivated no-ops on inactive contexts).
-        foreach (var k in _kept)
+        // cheap idempotent backstop (FireDeactivated no-ops on inactive contexts). Snapshot:
+        // handlers run synchronously and can mutate _kept.
+        foreach (var k in _kept.ToArray())
         {
             if (ReferenceEquals(k.Route, route) && ReferenceEquals(k, current) is false)
             {
@@ -418,8 +422,9 @@ public class BrouterOutlet : ComponentBase, IDisposable
 
         // The outlet unmounting destroys every child subtree it hosts - kept and current alike.
         // Any still-active content gets its Disposing deactivation (hidden kept entries already got
-        // Hidden when they were hidden; FireDeactivated no-ops on them).
-        foreach (var k in _kept) NotifyEntryTeardown(k);
+        // Hidden when they were hidden; FireDeactivated no-ops on them). Snapshot: deactivation
+        // handlers run synchronously and can mutate _kept.
+        foreach (var k in _kept.ToArray()) NotifyEntryTeardown(k);
         if (_current is not null) NotifyEntryTeardown(_current);
 
         _current = null;

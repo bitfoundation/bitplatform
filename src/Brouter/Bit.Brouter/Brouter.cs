@@ -621,15 +621,22 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // from OnAfterRenderAsync once the commit render has landed - the content must be mounted (so
     // handlers are registered) and the DOM available before the callbacks run. Deactivations are
     // never staged: they fire synchronously in the pipeline BEFORE the render that hides/unmounts
-    // the departing content. Each entry carries the _navVersion of the commit that staged it so the
-    // flush can drop arrivals from a commit that was superseded before its flush ran (the newer
-    // commit staged its own; firing the stale ones would deliver arrivals - resolved against the
-    // routes' CURRENT parameters - for a location that never settled). Plain tuples rather than
-    // closures: nothing captured, inspectable in a debugger. Same single-dispatcher discipline as
-    // the surrounding fields. Note this staging also makes the lifecycle a no-op under static
-    // prerendering (OnAfterRenderAsync never runs there), mirroring Vue's "not called during SSR"
-    // contract.
+    // the departing content. Each entry carries the lifecycle navigation generation of the commit
+    // that staged it so the flush can drop arrivals from a commit that was superseded before its
+    // flush ran (the newer commit staged its own; firing the stale ones would deliver arrivals -
+    // resolved against the routes' CURRENT parameters - for a location that never settled). Plain
+    // tuples rather than closures: nothing captured, inspectable in a debugger. Same
+    // single-dispatcher discipline as the surrounding fields. Note this staging also makes the
+    // lifecycle a no-op under static prerendering (OnAfterRenderAsync never runs there), mirroring
+    // Vue's "not called during SSR" contract.
     private readonly List<(Broute Node, BrouterNavigationContext Ctx, long Version)> _pendingLifecycleFlush = [];
+
+    // Generation counter for _pendingLifecycleFlush: increments only when a NAVIGATION pipeline
+    // starts. Deliberately distinct from _navVersion, which revalidation also bumps for
+    // supersession - a revalidation running between a commit and its OnAfterRenderAsync flush is
+    // not a navigation (it stages no arrivals of its own) and must not invalidate the arrivals the
+    // commit staged. Same single-dispatcher discipline as the surrounding fields.
+    private long _lifecycleNavGeneration;
 
     /// <summary>
     /// Fires the route-lifecycle departures for the routes an imminent render will remove from the
@@ -670,12 +677,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Stages the route-lifecycle arrivals for a committed chain (root -> leaf), to be fired by
-    /// OnAfterRenderAsync once the commit render has landed. Stamped with the current nav version;
-    /// see <see cref="_pendingLifecycleFlush"/>.
+    /// OnAfterRenderAsync once the commit render has landed. Stamped with the current lifecycle
+    /// navigation generation; see <see cref="_pendingLifecycleFlush"/>.
     /// </summary>
     private void StageArrivals(BrouterNavigationContext ctx, List<Broute> chain)
     {
-        var version = _navVersion;
+        var version = _lifecycleNavGeneration;
         foreach (var node in chain)
         {
             _pendingLifecycleFlush.Add((node, ctx, version));
@@ -1065,10 +1072,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             {
                 var staged = _pendingLifecycleFlush.ToArray();
                 _pendingLifecycleFlush.Clear();
-                var currentVersion = _navVersion;
                 foreach (var (node, ctx, version) in staged)
                 {
-                    if (version != currentVersion) continue;
+                    // Live read per entry (not captured before the loop): a callback's synchronous
+                    // prefix can start a new navigation mid-flush, superseding the remaining entries.
+                    if (version != _lifecycleNavGeneration) continue;
                     node.FireArrival(ctx);
                 }
             }
@@ -1731,6 +1739,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         // Supersede any in-flight navigation work.
         var version = Interlocked.Increment(ref _navVersion);
+        // A navigation (never a revalidation) starting is what invalidates staged lifecycle
+        // arrivals - see _lifecycleNavGeneration.
+        _lifecycleNavGeneration++;
         var newCts = new CancellationTokenSource();
         var oldCts = Interlocked.Exchange(ref _navCts, newCts);
         // Cancel the previous navigation if any. We do NOT dispose oldCts here: the
@@ -1840,6 +1851,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // eventual commit - replaces it): notify route-lifecycle departures while the
                 // departing content is still alive, before any render unmounts it.
                 NotifyChainDepartures(ctx, _committedChain);
+                // Departure callbacks run synchronously into user code and can start a new
+                // navigation; when that happened, the newer pipeline owns the committed state now.
+                if (token.IsCancellationRequested || version != _navVersion) return;
                 _committedChain = [];
                 _currentRouteData = null;
                 ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.NotFound());
@@ -2049,6 +2063,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                     NotifyChainDepartures(ctx, _committedChain, matchedChain, notifySurvivorsAsRemaining: true);
                     departuresNotified = true;
 
+                    // A departure callback's synchronous prefix may have started a new navigation;
+                    // don't reveal pending UI (or run loaders) on behalf of a superseded one.
+                    if (token.IsCancellationRequested || version != _navVersion) return;
+
                     _navigating = true;
                     StateHasChanged();
                 }
@@ -2193,12 +2211,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (departuresNotified is false)
             {
                 NotifyChainDepartures(ctx, _committedChain, matchedChain);
+                // Departure callbacks run synchronously into user code and can start a new
+                // navigation; abandon this commit before it mutates state the newer one owns.
+                if (token.IsCancellationRequested || version != _navVersion) return;
             }
 
             // Pre-render arrival preparation: per-parameter keep-alive routes deactivate the
             // outgoing sibling entry now, while its instance is guaranteed alive - the commit
             // render below may LRU-evict it, and an evicted entry must never die still-active.
             PrepareArrivals(ctx, matchedChain);
+            // Same synchronous-supersession hazard as the departures above.
+            if (token.IsCancellationRequested || version != _navVersion) return;
 
             // Loaders are done: hide the pending-navigation UI. SetMatched marks the whole chain and
             // issues one render request at its topmost route, which renders the now-matched route in
@@ -2505,6 +2528,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 surviving.Remove(node);
                 NotifyChainDepartures(ctx, _committedChain, surviving);
 
+                // Departure callbacks run synchronously into user code and can start a new
+                // navigation (cancelling this one's token); the newer pipeline owns the
+                // committed/error state then - don't paint the boundary over it.
+                if (ctx.CancellationToken.IsCancellationRequested) return;
+
                 node.CurrentError = errorContext;
                 // SetMatched marks node + ancestors and issues the render; node's renderer emits
                 // ErrorContent instead of Content/Component while CurrentError is set. Descendants
@@ -2534,6 +2562,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // The router-level boundary evicts everything routed: notify departures while the
             // departing content is still alive, before the render below unmounts it.
             NotifyChainDepartures(ctx, _committedChain);
+
+            // Same synchronous-supersession hazard as the route-boundary branch above.
+            if (ctx.CancellationToken.IsCancellationRequested) return;
 
             _navError = errorContext;
             _committedChain = [];

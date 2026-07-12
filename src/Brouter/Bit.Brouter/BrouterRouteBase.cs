@@ -72,8 +72,10 @@ public abstract class BrouterRouteBase : ComponentBase, IBrouterRoute, IDisposab
         await OnActivatedAsync(activation);
         // Reactivated pages almost always changed state (resumed work, refreshed data) - repaint.
         // Runs on the renderer's dispatcher: lifecycle callbacks are invoked there, and the await
-        // above resumes on the captured context.
-        StateHasChanged();
+        // above resumes on the captured context. The component may have been disposed or
+        // deactivated again while the async callback was in flight - dead or hidden content must
+        // not repaint.
+        if (_disposed is false && IsActive) StateHasChanged();
     }
 
     async ValueTask IBrouterRoute.OnDeactivatedAsync(BrouterRouteDeactivation deactivation)
@@ -88,7 +90,8 @@ public abstract class BrouterRouteBase : ComponentBase, IBrouterRoute, IDisposab
     {
         OnRenavigated(renavigation);
         await OnRenavigatedAsync(renavigation);
-        StateHasChanged();
+        // Same guard as the activation path: skip the repaint for disposed/deactivated content.
+        if (_disposed is false && IsActive) StateHasChanged();
     }
 
     /// <summary>Override to add teardown; the base unregisters the lifecycle handler.</summary>

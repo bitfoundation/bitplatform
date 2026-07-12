@@ -430,6 +430,16 @@
                 Component="@typeof(NotebookPage)" />
 
         @*============================================================================*@
+        @* Route lifecycle: /lifecycle/{id} is a singleton Component route whose page implements
+       IBrouterRoute directly (auto-discovered by the router - no base class needed). The same
+       instance is re-committed across id/query changes (OnRenavigated); leaving fires
+       OnDeactivated with reason Disposing. Contrast with /sticky above, where keep-alive
+       retention makes the reason Hidden. *@
+
+        <Broute Path="/lifecycle" RedirectTo="/lifecycle/1" />
+        <Broute Path="/lifecycle/{id:int}" Component="@typeof(LifecyclePage)" />
+
+        @*============================================================================*@
         @* View Transitions showcase: shared-element morphs between the gallery grid and the item
        detail hero via matching view-transition-name declarations (pure CSS wiring). *@
 
