@@ -2,6 +2,10 @@
 using System.Reflection;
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
+//#if (multitenant == true)
+using Boilerplate.Shared.Features.Tenants;
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -18,6 +22,9 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IUserController userController = default!;
+    //#if (multitenant == true)
+    [AutoInject] private ITenantController tenantController = default!;
+    //#endif
     [AutoInject] private BitExtraServices bitExtraServices = default!;
     [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
@@ -32,6 +39,9 @@ public partial class MainLayout : IAsyncDisposable
     private BitDir? currentDir;
     private bool? isIdentityPage;
     private UserDto? currentUser;
+    //#if (multitenant == true)
+    private TenantDto? currentTenant;
+    //#endif
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
@@ -95,6 +105,17 @@ public partial class MainLayout : IAsyncDisposable
                 await InvokeAsync(StateHasChanged);
             }));
 
+            //#if (multitenant == true)
+            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.CURRENT_TENANT_CHANGED, async payload =>
+            {
+                // Published by the pages/menus that change the current tenant (See ManageMyTenantsPage). Switching, signing in/out and
+                // leaving a tenant already update this through the authentication-state change, so this mainly covers renaming the current tenant.
+                currentTenant = (TenantDto?)payload;
+
+                await InvokeAsync(StateHasChanged);
+            }));
+            //#endif
+
             await SetCurrentUser(AuthenticationStateTask);
 
             SetCurrentDir();
@@ -148,12 +169,41 @@ public partial class MainLayout : IAsyncDisposable
         if (authUser.IsAuthenticated() is false)
         {
             currentUser = null;
+            //#if (multitenant == true)
+            currentTenant = null;
+            //#endif
         }
-        else if (authUser.GetUserId() != currentUser?.Id)
+        else
         {
-            currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
+            if (authUser.GetUserId() != currentUser?.Id)
+            {
+                currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
+            }
+
+            //#if (multitenant == true)
+            await SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token);
+            //#endif
         }
     }
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// Resolves the tenant the user is currently signed into (shown next to the app version in AppShell).
+    /// Switching, signing in/out and leaving a tenant all change the tenant claim, so re-resolving here keeps the display in sync.
+    /// </summary>
+    private async Task SetCurrentTenantIfNeeded(Guid? tenantId, CancellationToken cancellationToken)
+    {
+        if (tenantId is null)
+        {
+            currentTenant = null;
+            return;
+        }
+
+        if (currentTenant?.Id == tenantId) return; // Already showing this tenant (e.g. a page already published it).
+
+        currentTenant = await tenantController.GetCurrentTenant(cancellationToken);
+    }
+    //#endif
 
     private void SetCurrentDir()
     {

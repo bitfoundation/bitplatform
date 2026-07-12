@@ -12,4 +12,5 @@ public partial class SnackBarService
 
     public void Error(string title, string body = "") => Show(title, body, BitColor.Error);
     public void Success(string title, string body = "") => Show(title, body, BitColor.Success);
+    public void Warning(string title, string body = "") => Show(title, body, BitColor.Warning);
 }

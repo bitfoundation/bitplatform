@@ -774,6 +774,15 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Una vez que hayas escaneado el código QR o ingresado la clave anterior, tu app de autenticación de dos factores te proporcionará un código único. Ingresa el código en el cuadro de confirmación a continuación.</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>Por tu seguridad, se cerrará tu sesión en todos tus dispositivos, incluido este, en unos minutos. Vuelve a iniciar sesión.</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>Cambiar contraseña</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Tu contraseña se ha cambiado correctamente.</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>La autenticación de dos factores ha sido habilitada.</value>
   </data>

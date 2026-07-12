@@ -36,6 +36,20 @@
                             </AuthorizeView>
                             @if (isNavPanelToggled is false)
                             {
+                                @*#if (multitenant == true)*@
+                                @if (CurrentTenant is not null)
+                                {
+                                    <BitActionButton Class="current-tenant"
+                                                     IconName="@BitIconName.Org"
+                                                     Href="@PageUrls.ManageMyTenants"
+                                                     Title="@Localizer[nameof(AppStrings.CurrentTenant)]"
+                                                     Styles="@(new() { Content = "overflow:hidden;white-space:nowrap;text-overflow:ellipsis" })">
+                                        <BitText Typography="BitTypography.Caption2">
+                                            @(string.IsNullOrEmpty(CurrentTenant.Title) ? CurrentTenant.Name : CurrentTenant.Title)
+                                        </BitText>
+                                    </BitActionButton>
+                                }
+                                @*#endif*@
                                 <BitActionButton Class="app-version" OnClick="WrapHandled(UpdateApp)">
                                     <BitText Typography="BitTypography.Caption2">@TelemetryContext.AppVersion</BitText>
                                 </BitActionButton>

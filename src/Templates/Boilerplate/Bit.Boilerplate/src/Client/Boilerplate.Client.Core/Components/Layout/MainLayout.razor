@@ -1,6 +1,9 @@
 @*+:cnd:noEmit*@
 @inherits LayoutComponentBase
 
+@*#if (multitenant == true)*@
+<CascadingValue Value="currentTenant">
+@*#endif*@
 <CascadingValue Value="currentDir">
     <CascadingValue Value="currentUser">
         <CascadingValue Value="currentTheme">
@@ -28,3 +31,6 @@
         </CascadingValue>
     </CascadingValue>
 </CascadingValue>
+@*#if (multitenant == true)*@
+</CascadingValue>
+@*#endif*@

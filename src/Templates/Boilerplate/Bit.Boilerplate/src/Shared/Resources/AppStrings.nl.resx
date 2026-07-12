@@ -774,6 +774,15 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Zodra u de QR-code hebt gescand of de sleutel hierboven hebt ingevoerd, zal uw twee-factor-authenticatie-app u een unieke code geven. Voer de code in het bevestigingsvak hieronder in.</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>Om veiligheidsredenen wordt u binnen enkele minuten op al uw apparaten, inclusief dit apparaat, afgemeld. Meld u opnieuw aan.</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>Wachtwoord wijzigen</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Uw wachtwoord is succesvol gewijzigd.</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Twee-factor-authenticatie is ingeschakeld.</value>
   </data>

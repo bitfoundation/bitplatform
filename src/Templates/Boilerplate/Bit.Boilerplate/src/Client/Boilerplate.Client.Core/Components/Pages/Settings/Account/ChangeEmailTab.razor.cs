@@ -13,6 +13,8 @@ public partial class ChangeEmailTab
     [Parameter, SupplyParameterFromQuery(Name = "emailToken")]
     public string? EmailTokenQueryString { get; set; }
 
+    [CascadingParameter] public UserDto? CurrentUser { get; set; }
+
 
     [AutoInject] private IUserController userController = default!;
 
@@ -83,7 +85,12 @@ public partial class ChangeEmailTab
         {
             await userController.ChangeEmail(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}", forceLoad: true);
+            CurrentUser!.Email = changeModel.Email;
+            PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
+
+            showConfirmation = false;
+            isEmailUnavailable = true;
+            sendModel.Email = changeModel.Email = changeModel.Token = null;
         }
         catch (KnownException e)
         {

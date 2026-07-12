@@ -151,7 +151,7 @@
             ]
         },
         "multitenant": {
-            "displayName": "Multi-tenancy",
+            "displayName": "Multi-Tenant",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "true",
@@ -520,7 +520,12 @@
                 {
                     "condition": "(advancedTests != true)",
                     "exclude": [
-                        "src/Tests/Features/Todo/OfflineTodoTests.cs"
+                        "src/Tests/Features/Todo/OfflineTodoTests.cs",
+                        "src/Tests/Features/Identity/TrustedOriginsTests.cs",
+                        "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
+                        "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
+                        "src/Tests/Features/Seo/**",
+                        "src/Tests/Features/Tenants/TenantInvitationUITests.cs"
                     ]
                 },
                 {
