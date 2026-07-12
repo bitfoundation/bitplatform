@@ -40,20 +40,12 @@ public class BrouterOutlet : ComponentBase, IDisposable
         public BrouterRouteMeta? CachedRouteMeta;
         public object? CachedMetaRef;
 
-        // Keep-alive lifecycle context for this kept child (see BrouterKeepAliveContext). A fresh
-        // instance is minted only when the child's active/hidden state flips, so consumers reading
-        // IsActive in OnParametersSet are notified on each transition without spurious churn.
-        private bool _keepAliveActive;
-        private BrouterKeepAliveContext? _keepAliveContext;
-        public BrouterKeepAliveContext GetKeepAliveContext(bool active)
-        {
-            if (_keepAliveContext is null || _keepAliveActive != active)
-            {
-                _keepAliveContext = new BrouterKeepAliveContext(active);
-                _keepAliveActive = active;
-            }
-            return _keepAliveContext;
-        }
+        // Route lifecycle context for this child's content (see BrouterRouteContext): stable for
+        // the entry's whole life, so a kept instance's handlers stay registered across hide/show
+        // flips. Transient children get a fresh entry (and context) per content session - the
+        // pipeline's departure notification discards the entry when the child leaves. Born active:
+        // entries are only ever created for the current match (see Render).
+        public BrouterRouteContext Context { get; } = new(initiallyActive: true);
     }
 
     private ChildEntry? _current;
@@ -116,11 +108,20 @@ public class BrouterOutlet : ComponentBase, IDisposable
     /// <summary>Drops any retained entry for a disposed route (see <see cref="Broute.Dispose"/>).</summary>
     internal void ForgetChild(Broute route)
     {
-        _kept.RemoveAll(k => ReferenceEquals(k.Route, route));
+        // The route is being torn down outside a navigation: any still-active content gets its
+        // Disposing deactivation before the subtree unmounts (idempotent for hidden entries, which
+        // were deactivated when they were hidden).
+        foreach (var k in _kept)
+        {
+            if (ReferenceEquals(k.Route, route)) NotifyEntryTeardown(k);
+        }
         if (_current is not null && ReferenceEquals(_current.Route, route))
         {
+            NotifyEntryTeardown(_current);
             _current = null;
         }
+
+        _kept.RemoveAll(k => ReferenceEquals(k.Route, route));
     }
 
     /// <summary>
@@ -131,21 +132,118 @@ public class BrouterOutlet : ComponentBase, IDisposable
     {
         var active = _current is not null && _current.Route.Matched ? _current : null;
         var removed = _kept.RemoveAll(k => ReferenceEquals(k, active) is false);
+
+        // If the current entry was among the dropped (route not matched right now), forget it too:
+        // reusing it on the next visit would recycle its lifecycle context - and any handlers of
+        // the disposed subtree - for a brand-new component instance, corrupting IsFirstActivation.
+        // Mirrors the inline renderer's DropKeptContent nulling its _context.
+        if (_current is not null && ReferenceEquals(_current, active) is false)
+        {
+            _current = null;
+        }
+
         if (removed > 0) StateHasChanged();
     }
 
-    // Wraps a kept child's content in the keep-alive cascade so it receives activate/deactivate
-    // transitions (see BrouterKeepAliveContext). Only kept (primary-outlet KeepAlive) children get
-    // it; transient content renders unwrapped.
-    private static RenderFragment WrapKeepAlive(ChildEntry entry, bool active, RenderFragment inner) => b =>
+    // Fires the Disposing deactivation for an entry whose content is being torn down outside a
+    // navigation (route removal, outlet unmount). Idempotent per entry via the context's IsActive
+    // guard; failures surface through the same channel as pipeline lifecycle errors.
+    private void NotifyEntryTeardown(ChildEntry entry)
     {
-        var context = entry.GetKeepAliveContext(active);
-        b.OpenComponent<CascadingValue<BrouterKeepAliveContext>>(0);
-        b.AddAttribute(1, "Value", context);
-        b.AddAttribute(2, "IsFixed", false);
+        var brouter = Parent?.Brouter;
+        var location = brouter?.CurrentLocation ?? BrouterLocation.Empty;
+        entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, location,
+            ex => brouter?.ReportLifecycleError(location, ex));
+    }
+
+    // Wraps a primary-outlet child's content in the route lifecycle cascade (see
+    // BrouterRouteContext) - kept and transient children alike, since the lifecycle is universal.
+    // The context is stable per entry, so the cascade is fixed; activate/deactivate/renavigate
+    // flow through IBrouterRoute callbacks, not cascade updates. Named outlets render lightweight
+    // view fragments and are not separately kept, so they don't carry the cascade.
+    private static RenderFragment WrapRouteContext(ChildEntry entry, RenderFragment inner) => b =>
+    {
+        b.OpenComponent<CascadingValue<BrouterRouteContext>>(0);
+        b.AddAttribute(1, "Value", entry.Context);
+        b.AddAttribute(2, "IsFixed", true);
         b.AddAttribute(3, "ChildContent", inner);
         b.CloseComponent();
     };
+
+    /// <summary>
+    /// Fires the deactivation side of the route lifecycle for an outlet-hosted child, called by the
+    /// navigation pipeline BEFORE the render that hides or unmounts its content (see
+    /// <see cref="BrouterRouteRenderer.NotifyDeparture"/> for the timing/willRemainMatched contract).
+    /// </summary>
+    internal void NotifyDeparture(Broute route, BrouterLocation to, bool willRemainMatched, Action<Exception> onError)
+    {
+        if (route.KeepAlive)
+        {
+            // Kept entries survive; a transient hide (pending-UI render while the route stays
+            // matched) is a no-op for them, resolving as a renavigation at commit.
+            if (willRemainMatched) return;
+            foreach (var k in _kept)
+            {
+                if (ReferenceEquals(k.Route, route))
+                {
+                    k.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
+                }
+            }
+            return;
+        }
+
+        // Transient child: its content unmounts and disposes; the entry (and its context/session)
+        // goes with it so a later visit starts fresh.
+        if (_current is not null && ReferenceEquals(_current.Route, route))
+        {
+            _current.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
+            _current = null;
+        }
+    }
+
+    /// <summary>
+    /// Pre-render half of an arrival for an outlet-hosted per-parameter keep-alive child:
+    /// deactivates (Hidden) the previously active entries whose key differs from the incoming
+    /// match, BEFORE the commit render - so an entry that render is about to LRU-evict has always
+    /// received its Hidden deactivation first (see <see cref="BrouterRouteRenderer.PrepareArrival"/>).
+    /// </summary>
+    internal void PrepareArrival(Broute route, BrouterLocation to, Action<Exception> onError)
+    {
+        if (route.KeepAlive is false) return;
+
+        var key = route.ComputeKeepAliveKey();
+        foreach (var k in _kept)
+        {
+            if (ReferenceEquals(k.Route, route) is false) continue;
+            if (string.Equals(k.Key, key, StringComparison.Ordinal)) continue;
+            k.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
+        }
+    }
+
+    /// <summary>
+    /// Fires the arrival side of the route lifecycle for an outlet-hosted child, called by the
+    /// navigation pipeline AFTER the commit render has landed (see
+    /// <see cref="BrouterRouteRenderer.FireArrival"/> for the timing contract). Hidden kept siblings
+    /// of the arriving entry (per-parameter keep-alive) are deactivated here - their instances are
+    /// retained, so the post-render timing is safe.
+    /// </summary>
+    internal void FireArrival(Broute route, BrouterLocation from, BrouterLocation to, Action<Exception> onError)
+    {
+        var current = _current;
+        if (current is null || ReferenceEquals(current.Route, route) is false) return;
+
+        // Sibling entries were already deactivated pre-render by PrepareArrival; this sweep is a
+        // cheap idempotent backstop (FireDeactivated no-ops on inactive contexts).
+        foreach (var k in _kept)
+        {
+            if (ReferenceEquals(k.Route, route) && ReferenceEquals(k, current) is false)
+            {
+                k.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
+            }
+        }
+
+        current.Context.FireArrival(from, to, onError);
+    }
 
     protected override void OnInitialized()
     {
@@ -195,18 +293,20 @@ public class BrouterOutlet : ComponentBase, IDisposable
             builder.SetKey(entry);
             if (isActive is false) builder.AddAttribute(1, "hidden", true);
             builder.OpenRegion(2);
-            RenderChild(builder, entry, WrapKeepAlive(entry, isActive, EmitRoutedContent(entry)), refreshData: isActive);
+            RenderChild(builder, entry, WrapRouteContext(entry, EmitRoutedContent(entry)), refreshData: isActive);
             builder.CloseRegion();
             builder.CloseElement();
         }
         builder.CloseRegion();
 
         // Region 1: the current match when it isn't a kept entry - the classic transient path,
-        // rendered without any wrapper element (unchanged markup for non-KeepAlive routes).
+        // rendered without any wrapper element (unchanged markup for non-KeepAlive routes). The
+        // lifecycle cascade still applies: the route lifecycle is universal, keep-alive only
+        // changes what follows deactivation.
         builder.OpenRegion(1);
         if (current is not null && _kept.Contains(current) is false)
         {
-            RenderChild(builder, current, EmitRoutedContent(current));
+            RenderChild(builder, current, WrapRouteContext(current, EmitRoutedContent(current)));
         }
         builder.CloseRegion();
     }
@@ -231,8 +331,12 @@ public class BrouterOutlet : ComponentBase, IDisposable
             // see Brouter.Found), so the same fail-closed [Authorize] guard as the inline path applies.
             BrouterRouteRenderer.EnsureNoAuthorizationRequirements(child.Component);
             b2.OpenComponent(0, child.Component);
-            BrouterRouteRenderer.ApplyTypedParameters(b2, child.Component, entry.Parameters, child.Brouter?.CurrentLocation,
+            var seq = BrouterRouteRenderer.ApplyTypedParameters(b2, child.Component, entry.Parameters, child.Brouter?.CurrentLocation,
                 child.BindComponentParametersByName ? child.TemplateParameterNames : null);
+            // Auto-register the page instance for the route lifecycle (see the matching capture in
+            // BrouterRouteRenderer.EmitContent). The sequence follows the parameter frames and is
+            // stable per component type.
+            b2.AddComponentReferenceCapture(seq, entry.Context.AutoRegisterDelegate);
             b2.CloseComponent();
         }
 
@@ -311,6 +415,12 @@ public class BrouterOutlet : ComponentBase, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+
+        // The outlet unmounting destroys every child subtree it hosts - kept and current alike.
+        // Any still-active content gets its Disposing deactivation (hidden kept entries already got
+        // Hidden when they were hidden; FireDeactivated no-ops on them).
+        foreach (var k in _kept) NotifyEntryTeardown(k);
+        if (_current is not null) NotifyEntryTeardown(_current);
 
         _current = null;
         _kept.Clear();

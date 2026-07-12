@@ -86,7 +86,8 @@ render modes.
 - **Functional query updates**: `brouter.NavigateWithQuery(q => q.Set("page", 2))` updates one parameter and preserves the rest (typed values, multi-value support, replace-by-default)
 - **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
 - **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
-- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget); a cascaded `BrouterKeepAliveContext` signals activate/deactivate so pages can pause background work while hidden, and `brouter.ClearKeepAlive()` evicts retained pages on demand
+- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand
+- **Route lifecycle**: every routed component (keep-alive or not, at any depth) can receive `OnActivated` / `OnDeactivated` / `OnRenavigated` callbacks - implement `IBrouterRoute` on a page (auto-discovered) or derive from `BrouterRouteBase` (the Ionic `ionViewWillEnter` / Vue `onActivated` idea, with async support and a Disposing-vs-Hidden reason)
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
@@ -778,31 +779,80 @@ of being disposed; navigating back flips it visible again with all its state int
 through a parent's `BrouterOutlet` when switching between sibling routes. Opt-in per route; combine
 with `StaleTime` for instant, fully-warm Back navigation.
 
-### Activate / deactivate lifecycle
+### Route lifecycle: activate / deactivate / renavigate
 
-A kept component keeps *running* while hidden - timers, polling and live subscriptions all keep
-firing, and any `StateHasChanged` re-renders it off-screen (on Blazor Server that is a diff over the
-wire for a page nobody is looking at). Consume the cascaded `BrouterKeepAliveContext` to pause that
-work while inactive and resume (or refresh) when the page is shown again - the equivalent of Vue's
-`onActivated`/`onDeactivated`:
+Every routed component - keep-alive or not - can receive discrete lifecycle callbacks, the
+component-level hooks Angular's `RouteReuseStrategy` never delivered and Ionic's
+`ionViewWillEnter`/`ionViewDidLeave` proved right:
+
+- **`OnActivated`** - the content just became the visible route content: on the first show (with
+  `activation.IsFirstActivation` set, Vue-style superset-of-mount semantics) and again every time a
+  kept-alive instance is revealed. Runs after the commit render, so the DOM is available.
+- **`OnDeactivated`** - it just stopped being visible, with a reason: `Hidden` (kept mounted,
+  keep-alive) or `Disposing` (about to be torn down - the synchronous part runs *before* `Dispose`,
+  and unlike `Dispose` it carries the destination location). `KeepAlive` only changes which reason
+  you get; pages written against the lifecycle keep working when the route's retention changes.
+- **`OnRenavigated`** - a navigation re-committed this route while the *same instance* stayed
+  visible (`/item/1 → /item/2` on a singleton route, or a query-only change): the "user arrived
+  here again" moment that `OnInitialized` misses on instance reuse. On a per-parameter keep-alive
+  route (`KeepAliveMax` > 1) a parameter change mounts a separate instance instead, so it surfaces
+  as an activate/deactivate pair rather than a renavigation.
+
+All callbacks have async variants; returned tasks are observed for errors (surfaced via
+`IBrouter.OnError`) but never delay the navigation. They are not invoked during static prerendering.
+
+The easiest consumption is `BrouterRouteBase` - it works for any component under the routed content
+(any depth, any render path) and repaints automatically after activation/renavigation:
 
 ```razor
-@implements IDisposable
+@inherits BrouterRouteBase
 @code {
-    [CascadingParameter] BrouterKeepAliveContext? KeepAlive { get; set; }
     private Timer? _poll;
 
-    protected override void OnParametersSet()
+    protected override void OnActivated(BrouterRouteActivation activation)
     {
-        // A fresh context instance is cascaded on every activate/deactivate flip, so this runs on
-        // each transition. Pause background work while hidden; resume/refresh when shown again.
-        if (KeepAlive?.IsActive == false) _poll?.Change(Timeout.Infinite, Timeout.Infinite);
-        else _poll?.Change(0, 5000);
+        // First show AND every reveal from keep-alive retention: resume/refresh here.
+        _poll ??= new Timer(_ => Refresh(), null, 0, 5000);
+        _poll.Change(0, 5000);
     }
 
-    public void Dispose() => _poll?.Dispose();
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+    {
+        // Hidden (kept) or Disposing (leaving for real) - pause background work either way.
+        _poll?.Change(Timeout.Infinite, Timeout.Infinite);
+    }
+
+    protected override void Dispose(bool disposing) => _poll?.Dispose();
 }
 ```
+
+A page component instantiated by the router itself (a `Component=` route or a discovered `@page`
+route) can skip the base class and just implement the interface - the router discovers it
+automatically:
+
+```razor
+@implements IBrouterRoute
+@code {
+    public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
+        => RefreshAsync(); // e.g. /item/1 -> /item/2 reused this instance; OnInitialized won't re-run
+}
+```
+
+(All `IBrouterRoute` members have no-op defaults - implement only what you need.) For full manual
+control - or for content the router doesn't instantiate (`Content` fragments, `Found`-template
+pages) when not using the base class - take the cascaded context and register any handler:
+
+```razor
+@code {
+    [CascadingParameter] BrouterRouteContext? RouteContext { get; set; }
+    // RouteContext.Register(handler) / Unregister(handler); RouteContext.IsActive for current state.
+}
+```
+
+Why it matters for keep-alive in particular: a kept component keeps *running* while hidden - timers,
+polling and live subscriptions all keep firing, and any `StateHasChanged` re-renders it off-screen
+(on Blazor Server that is a diff over the wire for a page nobody is looking at). Pause that work in
+`OnDeactivated` and resume (or refresh) in `OnActivated`.
 
 ### Per-parameter caching with `KeepAliveMax`
 
@@ -852,7 +902,10 @@ next visit to a dropped route recreates it fresh.
 
 > Notes: turning on `KeepAlive` wraps the route's inline content in a `<div>` (the stable element
 > that preserves the subtree), which can affect direct-child CSS selectors. Retention applies to a
-> route's primary content; named-outlet (`BrouterView`) fragments are not separately kept.
+> route's primary content; named-outlet (`BrouterView`) fragments are not separately kept and don't
+> carry the route lifecycle cascade. Instances dropped by LRU eviction or `ClearKeepAlive()` were
+> already deactivated (`Hidden`) when they were hidden, so plain component disposal is their final
+> signal.
 
 ## Attribute-route / `@page` discovery
 

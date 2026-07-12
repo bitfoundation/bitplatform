@@ -410,9 +410,9 @@
 
         @*============================================================================*@
         @* Keep-alive: /sticky vs the /fleeting control shows singleton retention plus the
-       activate/deactivate lifecycle (BrouterKeepAliveContext pauses the page's timer while
-       hidden); /notes/{id} shows per-parameter caching (KeepAliveMax) with LRU eviction and
-       IBrouter.ClearKeepAlive(). *@
+       route lifecycle (StickyNotePage derives from BrouterRouteBase and pauses its timer in
+       OnDeactivated / resumes it in OnActivated); /notes/{id} shows per-parameter caching
+       (KeepAliveMax) with LRU eviction and IBrouter.ClearKeepAlive(). *@
 
         <Broute Path="/sticky" KeepAlive="true">
             <Content>

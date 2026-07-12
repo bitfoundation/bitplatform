@@ -93,18 +93,27 @@ public class KeepAliveTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task KeepAlive_context_signals_deactivate_and_reactivate_transitions()
+    public async Task KeepAlive_lifecycle_signals_activate_deactivate_and_reactivate_transitions()
     {
         var (cut, brouter) = RenderAt("http://localhost/kl");
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=lifecycle]").TextContent, "active:True"));
+        cut.WaitForAssertion(() =>
+        {
+            // Activation fires on the very first show too (Vue/Ionic semantics), flagged as first.
+            var el = cut.Find("[data-testid=lifecycle]");
+            StringAssert.Contains(el.TextContent, "active:True");
+            StringAssert.Contains(el.TextContent, "activations:1");
+            StringAssert.Contains(el.TextContent, "first:1");
+        });
 
         await cut.InvokeAsync(() => brouter.Navigate("/other"));
         cut.WaitForAssertion(() =>
         {
-            // Kept mounted but hidden - and the component was told it is now inactive.
+            // Kept mounted but hidden - and the component was told it is now inactive, with the
+            // Hidden reason (retained, not disposed).
             var el = cut.Find("div[hidden] [data-testid=lifecycle]");
             StringAssert.Contains(el.TextContent, "active:False");
             StringAssert.Contains(el.TextContent, "deactivations:1");
+            StringAssert.Contains(el.TextContent, "reasons:Hidden");
         });
 
         await cut.InvokeAsync(() => brouter.Navigate("/kl"));
@@ -112,9 +121,11 @@ public class KeepAliveTests : BunitTestContext
         {
             var el = cut.Find("[data-testid=lifecycle]");
             StringAssert.Contains(el.TextContent, "active:True");
-            // Same instance survived, so the transition counters accumulated rather than reset.
+            // Same instance survived, so the transition counters accumulated rather than reset -
+            // and the reactivation is not flagged as first.
             StringAssert.Contains(el.TextContent, "deactivations:1");
-            StringAssert.Contains(el.TextContent, "activations:1");
+            StringAssert.Contains(el.TextContent, "activations:2");
+            StringAssert.Contains(el.TextContent, "first:1");
         });
     }
 
