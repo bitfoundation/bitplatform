@@ -169,7 +169,7 @@ public partial class MainLayout
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
-                new() { Text = "PdfReader", Url = "/components/pdfreader" },
+                new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "ProModal", Url = "/components/promodal" },
                 new() { Text = "ProModalService", Url = "/components/promodalservice" },

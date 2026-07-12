@@ -120,12 +120,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.css",
-        "inputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.css",
         "inputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.scss",
         "minify": { "enabled": false },
