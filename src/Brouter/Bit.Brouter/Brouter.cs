@@ -992,6 +992,21 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        // Claim this render pass's staged route-lifecycle arrivals up front, before any await
+        // below can yield the dispatcher. The interop awaits in this method can overlap a newer
+        // navigation's commit, and the arrivals that commit stages must wait for ITS render's
+        // OnAfterRenderAsync: draining them from this older invocation would fire activations
+        // before their content has mounted (handlers not registered, per-parameter kept entries
+        // not materialized yet), silently losing them. Entries staged while this flush is in
+        // flight stay queued for the invocation that matches their render; the generation filter
+        // in the finally below still drops entries whose commit a newer navigation superseded.
+        var staged = Array.Empty<(Broute Node, BrouterNavigationContext Ctx, long Version)>();
+        if (_pendingLifecycleFlush.Count > 0)
+        {
+            staged = _pendingLifecycleFlush.ToArray();
+            _pendingLifecycleFlush.Clear();
+        }
+
         if (firstRender)
         {
             // Enabling navigation interception genuinely requires an interactive runtime, so it stays
@@ -1039,9 +1054,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // route instead of the previous page. Exchange to null so each staged navigation's effects
         // run exactly once; a navigation with nothing pending is a no-op. During static prerender
         // this method never runs, so effects are correctly skipped server-side (no DOM/JS there).
-        // The staged route-lifecycle arrivals flush in the finally: a JS interop failure in the
-        // effects/view-transition interop (e.g. a dropped Blazor Server circuit) must not strand
-        // the committed navigation's activation callbacks.
+        // The arrivals claimed at the top of this method flush in the finally: a JS interop
+        // failure in the effects/view-transition interop (e.g. a dropped Blazor Server circuit)
+        // must not strand the committed navigation's activation callbacks.
         try
         {
             var pending = Interlocked.Exchange(ref _pendingEffectsLocation, null);
@@ -1060,25 +1075,20 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
         finally
         {
-            // Fire the staged route-lifecycle arrivals (IBrouterRoute activation/renavigation) now
-            // that the commit render is on screen - after the DOM effects and view-transition
-            // completion above, so lifecycle callbacks never delay the visual navigation. Entries
-            // staged by a commit that has since been superseded are dropped: the newer commit
-            // staged its own, and firing stale ones would resolve against the routes' current state
-            // with a location that never settled. The callbacks themselves are
-            // started-but-not-awaited (see BrouterRouteContext.Invoke); handler failures surface
-            // via ReportLifecycleError, never out of this method.
-            if (_pendingLifecycleFlush.Count > 0)
+            // Fire the route-lifecycle arrivals (IBrouterRoute activation/renavigation) claimed at
+            // the top of this method, now that the commit render is on screen - after the DOM
+            // effects and view-transition completion above, so lifecycle callbacks never delay the
+            // visual navigation. Entries staged by a commit that has since been superseded are
+            // dropped: the newer commit staged its own, and firing stale ones would resolve
+            // against the routes' current state with a location that never settled. The callbacks
+            // themselves are started-but-not-awaited (see BrouterRouteContext.Invoke); handler
+            // failures surface via ReportLifecycleError, never out of this method.
+            foreach (var (node, ctx, version) in staged)
             {
-                var staged = _pendingLifecycleFlush.ToArray();
-                _pendingLifecycleFlush.Clear();
-                foreach (var (node, ctx, version) in staged)
-                {
-                    // Live read per entry (not captured before the loop): a callback's synchronous
-                    // prefix can start a new navigation mid-flush, superseding the remaining entries.
-                    if (version != _lifecycleNavGeneration) continue;
-                    node.FireArrival(ctx);
-                }
+                // Live read per entry (not captured before the loop): a callback's synchronous
+                // prefix can start a new navigation mid-flush, superseding the remaining entries.
+                if (version != _lifecycleNavGeneration) continue;
+                node.FireArrival(ctx);
             }
         }
     }
@@ -1314,6 +1324,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         {
             await InvokeAsync(async () =>
             {
+                // Captured to detect a navigation starting while OnNotFound is awaited below (the
+                // generation only ever changes when a navigation pipeline starts, never for
+                // revalidation - see _lifecycleNavGeneration).
+                var generation = _lifecycleNavGeneration;
+
                 // Unmatch the currently rendered chain so the fallback replaces the page content -
                 // the URL deliberately stays put (the resource at this URL is what's missing).
                 foreach (var r in GetRoutesSnapshot()) r.Matched = false;
@@ -1331,7 +1346,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 _committedChain = [];
                 _currentRouteData = null;
 
-                if (OnNotFound is not null) await OnNotFound(location);
+                if (OnNotFound is not null)
+                {
+                    await OnNotFound(location);
+                    // A navigation that started while OnNotFound was awaited owns the router state
+                    // now (committed chain, route data, URL): redirecting to the fallback or
+                    // re-rendering the unmatched state here would hijack it.
+                    if (generation != _lifecycleNavGeneration) return;
+                }
 
                 if (string.IsNullOrEmpty(NotFoundUrl) is false && IsSamePath(location.Path, NotFoundUrl) is false)
                 {
