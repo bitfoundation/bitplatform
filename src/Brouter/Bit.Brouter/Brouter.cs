@@ -1341,6 +1341,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 NotifyChainDepartures(
                     new BrouterNavigationContext(location, location, CancellationToken.None),
                     _committedChain);
+                // A departure callback's synchronous prefix can start a new navigation (same
+                // re-entrancy FlushPendingLifecycle guards against) - that navigation owns the
+                // router state now; clearing the committed chain below would skip its leave guards
+                // for content still on screen.
+                if (generation != _lifecycleNavGeneration) return;
                 // The fallback replaces the routed content, so nothing routed is on screen anymore -
                 // a later navigation must not run leave guards for the replaced chain.
                 _committedChain = [];

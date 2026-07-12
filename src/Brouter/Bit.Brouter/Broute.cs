@@ -605,7 +605,9 @@ public class Broute : ComponentBase, IDisposable
         var outletHost = FindOutletHost();
         if (outletHost is not null)
         {
-            foreach (var outlet in outletHost.Outlets.Values)
+            // Snapshot: ForgetChild runs deactivation handlers synchronously, which can re-enter
+            // and mutate the host's outlet registrations mid-iteration.
+            foreach (var outlet in outletHost.Outlets.Values.ToArray())
             {
                 outlet.ForgetChild(this);
             }
