@@ -1,6 +1,6 @@
 @using Bit.Brouter
 
-<Brouter NotFound="/404">
+<Brouter NotFoundUrl="/404">
     <Broute Path="/secret" Guard="@Deny">
         <Content><div data-testid="ok">should not render</div></Content>
     </Broute>

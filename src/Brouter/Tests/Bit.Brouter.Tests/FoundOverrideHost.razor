@@ -1,0 +1,9 @@
+@* An explicitly set Found parameter must win over the built-in NotAuthorized/DefaultLayout
+   composition. *@
+<Brouter AppAssembly="@typeof(FoundOverrideHost).Assembly" DefaultLayout="@typeof(FoundTestLayout)">
+    <Found Context="routeData">
+        <div data-testid="explicit-found">@routeData.PageType.Name</div>
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotAuthorized><div data-testid="override-denied">denied</div></NotAuthorized>
+</Brouter>

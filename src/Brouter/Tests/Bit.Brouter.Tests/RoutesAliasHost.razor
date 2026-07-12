@@ -1,0 +1,19 @@
+@* Exercises the Routes alias for ChildContent on both Brouter and Broute: routes declared inside
+   an explicit <Routes> fragment register and render exactly like ChildContent-declared ones,
+   nesting included. *@
+@using Bit.Brouter
+
+<Brouter>
+    <Routes>
+        <Broute Path="/top">
+            <Content><div data-testid="top">top</div></Content>
+        </Broute>
+        <Broute Path="/parent">
+            <Routes>
+                <Broute Path="/child">
+                    <Content><div data-testid="child">child</div></Content>
+                </Broute>
+            </Routes>
+        </Broute>
+    </Routes>
+</Brouter>

@@ -1,0 +1,16 @@
+@* Misconfiguration host for RoutesAliasTests: a Brouter with BOTH ChildContent and its Routes
+   alias set, which must throw instead of silently picking one. *@
+@using Bit.Brouter
+
+<Brouter>
+    <ChildContent>
+        <Broute Path="/a">
+            <Content><div data-testid="a">a</div></Content>
+        </Broute>
+    </ChildContent>
+    <Routes>
+        <Broute Path="/b">
+            <Content><div data-testid="b">b</div></Content>
+        </Broute>
+    </Routes>
+</Brouter>

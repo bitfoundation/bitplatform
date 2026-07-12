@@ -1,0 +1,6 @@
+@page "/secure"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+@* An [Authorize]-protected page: with Brouter.Found handing a real framework RouteData to the
+   built-in AuthorizeRouteView, the attribute is honored with zero Brouter-specific auth code. *@
+<div data-testid="secure">secure</div>

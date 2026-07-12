@@ -227,6 +227,9 @@ public class BrouterOutlet : ComponentBase, IDisposable
         }
         else if (child.Component is not null)
         {
+            // Outlet-hosted routes always render natively (Found deliberately doesn't apply here -
+            // see Brouter.Found), so the same fail-closed [Authorize] guard as the inline path applies.
+            BrouterRouteRenderer.EnsureNoAuthorizationRequirements(child.Component);
             b2.OpenComponent(0, child.Component);
             BrouterRouteRenderer.ApplyTypedParameters(b2, child.Component, entry.Parameters, child.Brouter?.CurrentLocation,
                 child.BindComponentParametersByName ? child.TemplateParameterNames : null);

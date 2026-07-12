@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
@@ -23,13 +24,86 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// URL to navigate to when no route matches. If null, no redirect happens and
-    /// <see cref="NotFoundContent"/> (if any) is rendered in place.
+    /// Alias for <see cref="ChildContent"/>. When another template (<see cref="Found"/>,
+    /// <see cref="NotFound"/>, <see cref="Navigating"/>, ...) forces the child fragments to be
+    /// spelled out explicitly, <c>&lt;Routes&gt;</c> states the intent better than
+    /// <c>&lt;ChildContent&gt;</c>. Set one or the other, not both.
     /// </summary>
-    [Parameter] public string? NotFound { get; set; }
+    [Parameter] public RenderFragment? Routes { get; set; }
 
-    /// <summary>Inline content to render when no route matches and <see cref="NotFound"/> is null.</summary>
-    [Parameter] public RenderFragment<BrouterLocation>? NotFoundContent { get; set; }
+    /// <summary>
+    /// When set, every matched route that renders a <see cref="Broute.Component"/> (attribute-discovered
+    /// <c>@page</c> routes and hand-declared <c>Component=</c> routes alike) renders through this template
+    /// instead of Brouter instantiating the component itself. The fragment receives a real framework
+    /// <see cref="RouteData"/> - the matched page type plus the route parameter values - which is exactly
+    /// what the built-in <c>RouteView</c>, <c>AuthorizeRouteView</c> and <c>FocusOnNavigate</c> consume.
+    /// This makes the built-in Router's <c>&lt;Found Context="routeData"&gt;</c> block port over unchanged:
+    /// <c>[Authorize]</c> handling, <c>Authorizing</c>/<c>NotAuthorized</c> UI, per-page <c>@layout</c>
+    /// resolution and focus-on-navigate all keep working through those framework components, with no
+    /// Brouter-specific reimplementation. The template is responsible for rendering the page (typically by
+    /// ending in a <c>RouteView</c>/<c>AuthorizeRouteView</c> bound to the supplied route data); guards,
+    /// loaders, keep-alive and error boundaries still run around it as usual. Routes that render a
+    /// <see cref="Broute.Content"/> fragment ignore this template - they have no page type to expose -
+    /// and so do child routes rendered into a <see cref="BrouterOutlet"/>: nested-outlet layouts are
+    /// Brouter's own layout model, and a Found template that resolves per-page <c>@layout</c>s inside
+    /// an outlet-hosted layout would apply two layout systems at once. Mirrors <c>Router.Found</c>.
+    /// For the common case you don't need this template at all: set <see cref="NotAuthorized"/> /
+    /// <see cref="Authorizing"/> / <see cref="DefaultLayout"/> instead and Brouter composes the
+    /// standard <c>AuthorizeRouteView</c>/<c>RouteView</c> rendering itself; an explicitly set Found
+    /// always wins over that composition.
+    /// </summary>
+    [Parameter] public RenderFragment<RouteData>? Found { get; set; }
+
+    /// <summary>
+    /// Displayed when the user is not authorized for the matched <c>[Authorize]</c> page, receiving
+    /// the current <c>AuthenticationState</c>. Setting this (or <see cref="Authorizing"/> /
+    /// <see cref="Resource"/>) routes every Component-rendering route through the framework's own
+    /// <c>AuthorizeRouteView</c> - so policy/role evaluation, per-page <c>@layout</c> +
+    /// <see cref="DefaultLayout"/> resolution and reaction to live authentication-state changes are
+    /// all the framework's implementation, with no routing template in the app. Pages without
+    /// <c>[Authorize]</c> render normally through the same path. Like <c>AuthorizeRouteView</c>
+    /// itself, this requires the cascading <c>Task&lt;AuthenticationState&gt;</c>
+    /// (<c>CascadingAuthenticationState</c> / <c>AddCascadingAuthenticationState()</c>) and
+    /// <c>AddAuthorizationCore()</c>. When null, the framework's default "Not authorized" content
+    /// is shown. Ignored when <see cref="Found"/> is set.
+    /// </summary>
+    [Parameter] public RenderFragment<AuthenticationState>? NotAuthorized { get; set; }
+
+    /// <summary>
+    /// Displayed while the framework determines whether the user is authorized for an
+    /// <c>[Authorize]</c> page (e.g. an async <c>AuthenticationStateProvider</c> is still
+    /// resolving). Enables the same <c>AuthorizeRouteView</c> composition as
+    /// <see cref="NotAuthorized"/>. When null, the framework's default "Authorizing..." content is
+    /// shown. Ignored when <see cref="Found"/> is set.
+    /// </summary>
+    [Parameter] public RenderFragment? Authorizing { get; set; }
+
+    /// <summary>
+    /// The layout for matched pages that don't declare their own <c>@layout</c> - a page-level
+    /// <c>@layout</c> (and its nested layout chain) always wins, exactly like the built-in
+    /// <c>RouteView.DefaultLayout</c>. On its own it routes Component-rendering routes through the
+    /// framework's <c>RouteView</c>; combined with <see cref="NotAuthorized"/> /
+    /// <see cref="Authorizing"/> / <see cref="Resource"/> it flows to their
+    /// <c>AuthorizeRouteView</c> composition instead. Ignored when <see cref="Found"/> is set.
+    /// </summary>
+    [Parameter, DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    public Type? DefaultLayout { get; set; }
+
+    /// <summary>
+    /// Optional resource passed to the authorization service for resource-based policy evaluation,
+    /// forwarded to <c>AuthorizeRouteView.Resource</c>. Enables the same <c>AuthorizeRouteView</c>
+    /// composition as <see cref="NotAuthorized"/>. Ignored when <see cref="Found"/> is set.
+    /// </summary>
+    [Parameter] public object? Resource { get; set; }
+
+    /// <summary>
+    /// URL to navigate to when no route matches. If null, no redirect happens and
+    /// <see cref="NotFound"/> (if any) is rendered in place.
+    /// </summary>
+    [Parameter] public string? NotFoundUrl { get; set; }
+
+    /// <summary>Inline content to render when no route matches and <see cref="NotFoundUrl"/> is null.</summary>
+    [Parameter] public RenderFragment<BrouterLocation>? NotFound { get; set; }
 
     /// <summary>
     /// Router-level error UI: the fallback boundary for commit-phase navigation failures (typically
@@ -110,6 +184,82 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
     internal BrouterLocation CurrentLocation { get; private set; } = BrouterLocation.Empty;
     internal BrouterOptions Options => _brouterService.Options;
+
+
+    // Cached delegates for the built-in Found compositions below. Method-group conversion allocates
+    // a fresh delegate per use, and EffectiveFound is read on every render of every matched route,
+    // so the delegate is minted once and reused. The composing methods read the live parameter
+    // values (NotAuthorized, DefaultLayout, ...) at render time, so caching the delegate never
+    // captures stale configuration.
+    private RenderFragment<RouteData>? _authorizeRouteViewFound;
+    private RenderFragment<RouteData>? _routeViewFound;
+
+    /// <summary>
+    /// The Found template in effect for Component-rendering routes. An explicit <see cref="Found"/>
+    /// parameter always wins; otherwise setting any of <see cref="NotAuthorized"/> /
+    /// <see cref="Authorizing"/> / <see cref="Resource"/> composes the framework's
+    /// <c>AuthorizeRouteView</c>, a lone <see cref="DefaultLayout"/> composes the framework's
+    /// <c>RouteView</c> (which itself fails closed on <c>[Authorize]</c> pages), and with nothing
+    /// set Brouter renders components natively (null).
+    /// </summary>
+    internal RenderFragment<RouteData>? EffectiveFound
+    {
+        get
+        {
+            if (Found is not null) return Found;
+
+            // AuthorizeRouteView only when an auth-related parameter opted in: it unconditionally
+            // requires the cascading Task<AuthenticationState>, so composing it for every app would
+            // break auth-less hosts.
+            if (NotAuthorized is not null || Authorizing is not null || Resource is not null)
+            {
+                return _authorizeRouteViewFound ??= RenderPageWithAuthorization;
+            }
+
+            if (DefaultLayout is not null)
+            {
+                return _routeViewFound ??= RenderPageWithLayout;
+            }
+
+            return null;
+        }
+    }
+
+    // The built-in authorization composition: the framework AuthorizeRouteView bound to the
+    // RouteData the router built for the matched page. Authorization correctness (policy/role
+    // evaluation, Authorizing/NotAuthorized states, layout resolution, live auth-state changes)
+    // deliberately stays the framework's implementation - Brouter only composes it. Null fragments
+    // are passed through; AuthorizeRouteView substitutes its own defaults.
+    private RenderFragment RenderPageWithAuthorization(RouteData routeData) => builder =>
+    {
+        builder.OpenComponent<AuthorizeRouteView>(0);
+        builder.AddAttribute(1, nameof(AuthorizeRouteView.RouteData), routeData);
+        builder.AddAttribute(2, nameof(AuthorizeRouteView.DefaultLayout), DefaultLayout);
+        builder.AddAttribute(3, nameof(AuthorizeRouteView.NotAuthorized), NotAuthorized);
+        builder.AddAttribute(4, nameof(AuthorizeRouteView.Authorizing), Authorizing);
+        builder.AddAttribute(5, nameof(AuthorizeRouteView.Resource), Resource);
+        builder.CloseComponent();
+    };
+
+    // The layout-only composition: the framework RouteView, which resolves per-page @layout chains
+    // with DefaultLayout as the fallback - and throws for [Authorize] pages, so a layout-only
+    // configuration can never silently skip authorization.
+    private RenderFragment RenderPageWithLayout(RouteData routeData) => builder =>
+    {
+        builder.OpenComponent<RouteView>(0);
+        builder.AddAttribute(1, nameof(RouteView.RouteData), routeData);
+        builder.AddAttribute(2, nameof(RouteView.DefaultLayout), DefaultLayout);
+        builder.CloseComponent();
+    };
+
+
+    // The framework RouteData of the currently committed navigation: the matched page type plus its
+    // route parameter values, or null when nothing (or a Content-fragment route, which has no page
+    // type) is committed. Cascaded unnamed-by-type from BuildRenderTree as an observer channel, so
+    // components anywhere under the Brouter (route-data publishers, breadcrumbs, telemetry) can take
+    // a [CascadingParameter] RouteData? without threading it through a Found template. Written only
+    // by the navigation pipeline on the renderer's dispatcher, like the rest of the nav-state fields.
+    private RouteData? _currentRouteData;
 
 
     // Routes discovered by scanning AppAssembly / AdditionalAssemblies for [Route]/@page components.
@@ -547,6 +697,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         base.OnInitialized();
 
+        // Validate here as well as in OnParametersSet: the first OnParametersSet only runs after the
+        // async initialization below completes, and a misconfiguration should fail the first render
+        // synchronously instead of surfacing as an unhandled async exception.
+        ValidateChildContentAlias();
+
         // Compute discovered routes here (not only in OnParametersSet): the initial route match runs in
         // OnInitializedAsync, before OnParametersSet, and the synthetic <Broute> children must already be
         // present in the first render so they register in time to be matched on the initial navigation.
@@ -592,10 +747,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         base.OnParametersSet();
 
+        ValidateChildContentAlias();
+
         // Refresh discovered routes whenever the assembly set changes (including the first parameter set,
         // and when AdditionalAssemblies grows because a lazy-loaded assembly was added). Kept out of the
         // navigation pipeline so scanning cost is paid on parameter changes, not per navigation.
         RefreshDiscoveredRoutesIfNeeded();
+    }
+
+    private void ValidateChildContentAlias()
+    {
+        if (ChildContent is not null && Routes is not null)
+            throw new InvalidOperationException(
+                $"{nameof(Brouter)} accepts either {nameof(ChildContent)} or {nameof(Routes)} ({nameof(Routes)} is an alias for {nameof(ChildContent)}), not both.");
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026",
@@ -834,9 +998,18 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         builder.OpenComponent<CascadingValue<Brouter>>(0);
         builder.AddAttribute(1, "Name", "Brouter");
         builder.AddAttribute(2, "Value", this);
-        builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
+        builder.AddAttribute(3, "ChildContent", (RenderFragment)(bo =>
         {
-            b.AddContent(0, ChildContent);
+            // Observer channel: the committed navigation's framework RouteData (or null when nothing
+            // routed is committed), cascaded unnamed-by-type so any descendant can take a
+            // [CascadingParameter] RouteData? - publishers, breadcrumbs, telemetry - without a Found
+            // template. Not fixed: the value is replaced on every commit and subscribers must see it.
+            bo.OpenComponent<CascadingValue<RouteData?>>(0);
+            bo.AddAttribute(1, "Value", _currentRouteData);
+            bo.AddAttribute(2, "IsFixed", false);
+            bo.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
+            {
+            b.AddContent(0, ChildContent ?? Routes);
 
             // Emit a synthetic <Broute> for each attribute-discovered route. They register themselves
             // exactly like hand-declared children (via Broute.OnInitialized) and so participate in the
@@ -881,12 +1054,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 b.CloseRegion();
             }
 
-            // Render the inline fallback when no route matched and either NotFound is unset, or
-            // NotFound resolves to the current URL (no redirect happened, so we'd otherwise show nothing).
-            if (_noRouteMatched && NotFoundContent is not null &&
-                (string.IsNullOrEmpty(NotFound) || IsSamePath(CurrentLocation.Path, NotFound)))
+            // Render the inline fallback when no route matched and either NotFoundUrl is unset, or
+            // NotFoundUrl resolves to the current URL (no redirect happened, so we'd otherwise show nothing).
+            if (_noRouteMatched && NotFound is not null &&
+                (string.IsNullOrEmpty(NotFoundUrl) || IsSamePath(CurrentLocation.Path, NotFoundUrl)))
             {
-                b.AddContent(2, NotFoundContent(CurrentLocation));
+                b.AddContent(2, NotFound(CurrentLocation));
             }
 
             // Pending-navigation UI. Shown while the current navigation awaits its loaders (see the
@@ -906,6 +1079,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             {
                 b.AddContent(4, ErrorContent(_navError));
             }
+            }));
+            bo.CloseComponent();
         }));
         builder.CloseComponent();
     }
@@ -997,7 +1172,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// Handles <c>NavigationManager.OnNotFound</c> (.NET 10): application code called
     /// <c>NavigationManager.NotFound()</c> to report a missing resource (e.g. a page whose entity
     /// lookup failed). Brouter takes over rendering: it fires its own <see cref="OnNotFound"/> hook,
-    /// then either redirects to <see cref="NotFound"/> or renders <see cref="NotFoundContent"/> in
+    /// then either redirects to <see cref="NotFoundUrl"/> or renders <see cref="NotFound"/> in
     /// place, and signals the framework via <c>NotFoundEventArgs.Path</c> that the rendering is
     /// handled (mirroring the built-in Router's contract).
     /// </summary>
@@ -1008,11 +1183,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // Signal "handled" synchronously (the framework reads args after the event returns). Only
         // claim it when this Brouter actually has a fallback to show; otherwise leave the args
         // untouched so the framework's own not-found handling (status codes / re-execution) runs.
-        if (string.IsNullOrEmpty(NotFound) is false)
+        if (string.IsNullOrEmpty(NotFoundUrl) is false)
         {
-            args.Path = NotFound;
+            args.Path = NotFoundUrl;
         }
-        else if (NotFoundContent is not null)
+        else if (NotFound is not null)
         {
             args.Path = CurrentLocation.Path;
         }
@@ -1037,12 +1212,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // the URL deliberately stays put (the resource at this URL is what's missing).
                 foreach (var r in GetRoutesSnapshot()) r.Matched = false;
                 _noRouteMatched = true;
+                _currentRouteData = null;
 
                 if (OnNotFound is not null) await OnNotFound(location);
 
-                if (string.IsNullOrEmpty(NotFound) is false && IsSamePath(location.Path, NotFound) is false)
+                if (string.IsNullOrEmpty(NotFoundUrl) is false && IsSamePath(location.Path, NotFoundUrl) is false)
                 {
-                    NavigateInternal(NotFound);
+                    NavigateInternal(NotFoundUrl);
                     return;
                 }
 
@@ -1131,17 +1307,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
             if (winnerMatch is null)
             {
-                // No route matched. Fire OnNotFound, then either redirect to the NotFound target
+                // No route matched. Fire OnNotFound, then either redirect to the NotFoundUrl target
                 // (preventively, so the unmatched URL never appears in the address bar) or allow
-                // the commit phase to render NotFoundContent in place.
+                // the commit phase to render NotFound in place.
                 if (OnNotFound is not null) await OnNotFound(to);
                 if (token.IsCancellationRequested) return;
 
-                if (string.IsNullOrEmpty(NotFound) is false && IsSamePath(to.Path, NotFound) is false)
+                if (string.IsNullOrEmpty(NotFoundUrl) is false && IsSamePath(to.Path, NotFoundUrl) is false)
                 {
                     context.PreventNavigation();
                     ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.NotFound());
-                    NavigateInternal(NotFound);
+                    NavigateInternal(NotFoundUrl);
                     return;
                 }
 
@@ -1235,7 +1411,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// <summary>
     /// Marks the next navigation this Brouter is about to trigger programmatically as a push or a
     /// replace, then delegates to <c>NavigationManager.NavigateTo</c>. Used for all of Brouter's own
-    /// internal navigations (redirects, NotFound redirect, cancelled-navigation address-bar restore) so
+    /// internal navigations (redirects, NotFoundUrl redirect, cancelled-navigation address-bar restore) so
     /// the phase that observes the resulting navigation classifies it correctly instead of guessing.
     /// </summary>
     private void NavigateInternal(string url, bool replace = false)
@@ -1341,9 +1517,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         return new BrouterLocation(uri, path, rawSegments, query, hash, hasTrailingSlash, historyState);
     }
 
-    // Cache the most recently-computed normalization. NotFound is typically a constant per
-    // Brouter instance, and BuildRenderTree calls IsSamePath on every render (NotFoundContent
-    // fallback check). One-slot cache is enough; on a NotFound parameter change the cached
+    // Cache the most recently-computed normalization. NotFoundUrl is typically a constant per
+    // Brouter instance, and BuildRenderTree calls IsSamePath on every render (NotFound
+    // fallback check). One-slot cache is enough; on a NotFoundUrl parameter change the cached
     // entry is replaced.
     private string? _isSamePathCacheTarget;
     private string? _isSamePathCacheNormalized;
@@ -1354,7 +1530,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// when their normalized path components are equal.
     /// </summary>
     /// <remarks>
-    /// Used by the NotFound logic to detect the "we're already at the NotFound target"
+    /// Used by the not-found logic to detect the "we're already at the NotFoundUrl target"
     /// case without triggering a redirect loop. The target may be absolute, base-relative,
     /// trailing-slash, query-bearing, or fragment-bearing; we strip query/fragment, drop
     /// the trailing slash under <see cref="BrouterOptions.IgnoreTrailingSlash"/>, and apply
@@ -1534,11 +1710,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 _noRouteMatched = true;
                 // Nothing routed is on screen once the fallback renders below; leave guards of the
                 // previous chain already ran for this navigation. Either way this navigation's
-                // awaited outcome is NotFound (resolved before any NotFound redirect fires).
+                // awaited outcome is NotFound (resolved before any NotFoundUrl redirect fires).
                 _committedChain = [];
+                _currentRouteData = null;
                 ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.NotFound());
 
-                // OnNotFound + the preventive NotFound redirect already ran in the changing phase
+                // OnNotFound + the preventive NotFoundUrl redirect already ran in the changing phase
                 // when decisionAlreadyMade is true; only run them here for the full-pipeline path.
                 if (decisionAlreadyMade is false)
                 {
@@ -1549,17 +1726,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                     // redirect/render on behalf of a superseded navigation.
                     if (token.IsCancellationRequested || version != _navVersion) return;
 
-                    if (string.IsNullOrEmpty(NotFound) is false)
+                    if (string.IsNullOrEmpty(NotFoundUrl) is false)
                     {
-                        // Avoid a self-redirect loop when the current URL is already the NotFound target
+                        // Avoid a self-redirect loop when the current URL is already the NotFoundUrl target
                         // (and still doesn't match any route). Render the fallback UI instead.
                         // Compare normalized base-relative paths rather than raw absolute URIs:
                         // "http://host/x" vs "http://host/x/" or vs "http://host/x?foo=1" would
                         // otherwise miss the equality check and trigger an infinite redirect loop
-                        // (the NotFound URL keeps not matching, we keep navigating to it).
-                        if (IsSamePath(to.Path, NotFound) is false)
+                        // (the NotFoundUrl keeps not matching, we keep navigating to it).
+                        if (IsSamePath(to.Path, NotFoundUrl) is false)
                         {
-                            NavigateInternal(NotFound);
+                            NavigateInternal(NotFoundUrl);
                             return;
                         }
                     }
@@ -1873,6 +2050,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // Record what is now on screen so the next navigation's leave guards know which routes
             // they would deactivate.
             _committedChain = matchedChain.ToArray();
+
+            // Publish the committed navigation's framework RouteData on the observer cascade (see
+            // _currentRouteData). Content-fragment routes have no page type, so they publish null.
+            _currentRouteData = winner.Component is not null
+                ? new RouteData(winner.Component, winner.Parameters)
+                : null;
 
             if (OnMatch is not null) await OnMatch(winner);
             // Each await below can yield long enough for a newer navigation to start. If that

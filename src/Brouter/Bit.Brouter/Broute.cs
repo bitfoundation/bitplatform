@@ -141,6 +141,14 @@ public class Broute : ComponentBase, IDisposable
     /// <summary>Child routes (used for nesting).</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Alias for <see cref="ChildContent"/>. When another template (<see cref="Content"/>,
+    /// <see cref="ErrorContent"/>, ...) forces the child fragments to be spelled out explicitly,
+    /// <c>&lt;Routes&gt;</c> states the intent better than <c>&lt;ChildContent&gt;</c>.
+    /// Set one or the other, not both.
+    /// </summary>
+    [Parameter] public RenderFragment? Routes { get; set; }
+
 
     [CascadingParameter(Name = "Brouter")] internal Brouter? Brouter { get; set; }
     [CascadingParameter(Name = "ParentRoute")] internal Broute? Parent { get; set; }
@@ -240,6 +248,15 @@ public class Broute : ComponentBase, IDisposable
     internal BrouterErrorContext? CurrentError { get; set; }
 
     private BrouterRouteRenderer? _renderer;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (ChildContent is not null && Routes is not null)
+            throw new InvalidOperationException(
+                $"{nameof(Broute)} accepts either {nameof(ChildContent)} or {nameof(Routes)} ({nameof(Routes)} is an alias for {nameof(ChildContent)}), not both.");
+    }
 
     protected override void OnInitialized()
     {

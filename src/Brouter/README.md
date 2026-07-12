@@ -34,7 +34,7 @@ render modes.
 ## Quick start
 
 ```razor
-<Brouter NotFound="404">
+<Brouter NotFoundUrl="404">
     <Broute Path="/" RedirectTo="/home" />
 
     <Broute Name="home" Path="/home">
@@ -92,7 +92,7 @@ render modes.
 - Component or `Content` (typed render fragment) rendering
 - **Pending navigation UI**: a `Navigating` fragment shown while a navigation awaits slow loaders - revealed lazily so loader-less (or cache-hit) navigations never flash it (mirrors the built-in `Router.Navigating`)
 - Router-level hooks: `OnMatch` (a route matched) and `OnNotFound` (nothing matched), alongside the global `IBrouter` events
-- `NotFound` URL or inline `NotFoundContent`
+- `NotFoundUrl` redirect or inline `NotFound` content
 - **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
 - **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
@@ -103,6 +103,9 @@ render modes.
 - **Preventive guards** (via `RegisterLocationChangingHandler`): a cancel/redirect stops the URL from ever changing - no address-bar flicker, no corrupted history/back button, and real "unsaved changes" prompts are possible
 - In-flight loader cancellation when navigation is superseded
 - **Attribute-route / `@page` discovery**: scan `AppAssembly` / `AdditionalAssemblies` for `[Route]`-annotated components so routes live colocated with their pages (Razor class libraries and lazy-loaded assemblies included)
+- **Drop-in built-in-Router migration via `Found`**: a `RenderFragment<RouteData>` that receives a real framework `RouteData` for every matched page, so the built-in `RouteView`, `AuthorizeRouteView` (`[Authorize]`, `Authorizing`/`NotAuthorized` UI), per-page `@layout` resolution and `FocusOnNavigate` all keep working unchanged - the built-in Router's `<Found Context="routeData">` block ports over as-is
+- **Zero-template authorization**: set `NotAuthorized` / `Authorizing` / `DefaultLayout` / `Resource` directly on `<Brouter>` and `[Authorize]` pages just work - Brouter composes the framework's own `AuthorizeRouteView`/`RouteView` internally, so authorization correctness stays Microsoft's code; native rendering fails closed on `[Authorize]` components it can't enforce
+- **Cascaded `RouteData` observer channel**: the committed navigation's framework `RouteData` (or null on not-found) is cascaded unnamed-by-type, so publishers/breadcrumbs/telemetry anywhere under the router can take `[CascadingParameter] RouteData?` with no template plumbing
 - **Prerender state bridging**: loader results captured during prerender are restored on the interactive pass via `PersistentComponentState`, so loaders don't double-fetch (opt-in)
 - Query string and hash exposed via `BrouterLocation`
 - Configurable case sensitivity and trailing-slash handling
@@ -205,7 +208,7 @@ still fires either way.
 
 ```razor
 <Brouter>
-    <ChildContent>
+    <Routes>
         <Broute Path="/users/{id:int}" Loader="@LoadUser">
             <Content Context="p"><UserDetails /></Content>
             <ErrorContent Context="err">
@@ -213,7 +216,7 @@ still fires either way.
                 <button @onclick="@(() => err.RetryAsync())">Try again</button>
             </ErrorContent>
         </Broute>
-    </ChildContent>
+    </Routes>
     <ErrorContent Context="err">
         <h1>Something went wrong</h1>
         <button @onclick="@(() => err.RetryAsync())">Retry</button>
@@ -285,9 +288,9 @@ instead of all of them combined.
 
 ```razor
 <Brouter>
-    <ChildContent>
+    <Routes>
         <Broute Path="/reports" Loader="@LoadReports">...</Broute>
-    </ChildContent>
+    </Routes>
     <Navigating>
         <div class="spinner">Loading…</div>
     </Navigating>
@@ -575,8 +578,8 @@ is inert - navigation behaves exactly as with the option off.
 On net10.0, Brouter participates in the framework's not-found contract:
 
 - Application code calling `NavigationManager.NotFound()` (e.g. a page whose entity lookup failed)
-  flows through Brouter: the `OnNotFound` hook fires, then the `NotFound` URL redirect or inline
-  `NotFoundContent` renders - the URL stays put, mirroring the built-in router.
+  flows through Brouter: the `OnNotFound` hook fires, then the `NotFoundUrl` redirect or inline
+  `NotFound` content renders - the URL stays put, mirroring the built-in router.
 - When Brouter itself matches nothing during **static SSR**, it calls `NavigationManager.NotFound()`
   so the response carries a real **HTTP 404** (and drives `UseStatusCodePagesWithReExecute` when
   configured) instead of a 200 with fallback HTML.
@@ -619,7 +622,7 @@ On net10.0, Brouter participates in the framework's not-found contract:
 
 Besides the `IBrouter` events, the `Brouter` component itself takes two async hooks:
 `OnMatch` (fired with the winning `Broute` whenever a route matches) and `OnNotFound` (fired with
-the `BrouterLocation` when nothing matches, before the `NotFound` redirect/fallback applies).
+the `BrouterLocation` when nothing matches, before the `NotFoundUrl` redirect / `NotFound` fallback applies).
 
 ## Nested routes
 
@@ -638,11 +641,16 @@ the `BrouterLocation` when nothing matches, before the `NotFound` redirect/fallb
         <h1>Dashboard</h1>
         <BrouterOutlet />
     </Content>
-    <ChildContent>
+    <Routes>
         <Broute Path="/stats" Component="@typeof(StatsPage)" />
-    </ChildContent>
+    </Routes>
 </Broute>
 ```
+
+When another template (`Content`, `Found`, `NotFound`, `ErrorContent`, ...) is present, Razor
+requires the child routes to be wrapped in an explicit fragment. `Routes` is an alias for
+`ChildContent` on both `Brouter` and `Broute` so that wrapper can carry a self-describing name -
+either spelling works (setting both throws).
 
 ### Pathless group routes
 
@@ -653,10 +661,10 @@ Share behavior across routes without inventing a URL segment:
     <Content>
         <AdminShell><BrouterOutlet /></AdminShell>
     </Content>
-    <ChildContent>
+    <Routes>
         <Broute Path="/dashboard" Component="@typeof(DashboardPage)" />
         <Broute Path="/audit" Component="@typeof(AuditPage)" />
-    </ChildContent>
+    </Routes>
 </Broute>
 ```
 
@@ -741,15 +749,15 @@ route provides its main content plus optional named `BrouterView` fragments:
         <main><BrouterOutlet /></main>                @* primary: the child's Content/Component *@
         <aside><BrouterOutlet Name="sidebar" /></aside> @* named: the child's matching BrouterView *@
     </Content>
-    <ChildContent>
+    <Routes>
         <Broute Path="/stats">
             <Content><StatsPage /></Content>
-            <ChildContent>
+            <Routes>
                 <BrouterView Name="sidebar" Context="p"><StatsFilters /></BrouterView>
-            </ChildContent>
+            </Routes>
         </Broute>
         <Broute Path="/settings" Component="@typeof(SettingsPage)" />  @* no view -> sidebar renders empty *@
-    </ChildContent>
+    </Routes>
 </Broute>
 ```
 
@@ -888,6 +896,112 @@ same by-name binding on a hand-declared route, set `BindComponentParametersByNam
 
 > Discovery reflects over the given assemblies, so - like the built-in Blazor `Router` - keep your routable
 > components preserved when trimming.
+
+## Migrating from the built-in Router
+
+The built-in Router's companion components - `RouteView`, `AuthorizeRouteView`, `FocusOnNavigate` - are
+router-independent: they consume a `RouteData` (the matched page type plus its route values), not the
+`Router` itself. Brouter builds that `RouteData` for every matched page and hands it to those framework
+components for you - so for the common case the whole `Found`/`AuthorizeRouteView` template disappears
+into a few flat parameters, and for full control the built-in `<Found>` block still ports over verbatim.
+
+### Zero-template authorization
+
+For the common case - `[Authorize]` on pages, a layout, fallback UI - you don't need any routing
+template at all. Set the fallback fragments (and optionally a `DefaultLayout`) directly on the router:
+
+```razor
+<Brouter AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="_additional"
+         DefaultLayout="@typeof(MainLayout)">
+    <Authorizing>Checking credentials…</Authorizing>
+    <NotAuthorized><RedirectToLogin /></NotAuthorized>
+    <NotFound>Sorry, there's nothing here.</NotFound>
+    <Navigating>Loading…</Navigating>
+</Brouter>
+```
+
+Setting any of `NotAuthorized` / `Authorizing` / `Resource` routes every Component-rendering route
+through the framework's own `AuthorizeRouteView`. That's deliberate: policy/role evaluation, the
+`Authorizing`/`NotAuthorized` states, `DefaultLayout` plus per-page `@layout` resolution, and reaction
+to live authentication-state changes are all Microsoft's implementation - Brouter never owns
+authorization correctness. Pages without `[Authorize]` render normally through the same path, and
+`Resource` is forwarded for resource-based policies. As with the built-in Router stack, the app still
+provides `CascadingAuthenticationState` (or `AddCascadingAuthenticationState()`) and
+`AddAuthorizationCore()`.
+
+A lone `DefaultLayout` (no auth fragments) composes the framework's plain `RouteView` instead - which,
+per its own contract, throws for `[Authorize]` pages rather than skipping the check. And when nothing
+is configured at all, Brouter's native rendering **fails closed** too: instantiating a component that
+declares `[Authorize]` throws with guidance, so a missing configuration can never silently bypass
+authorization (use a route `Guard` and drop the attribute if you want guard-based auth instead). An
+explicit `Found` parameter (below) always wins over these built-in compositions.
+
+### Full control: the `Found` template
+
+When you need arbitrary per-navigation markup around the page - telemetry publishers, custom
+`AuthorizeRouteView` subclasses, `FocusOnNavigate` - the built-in Router's `<Found Context="routeData">`
+block ports over verbatim:
+
+```razor
+<Brouter AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="_additional">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <Authorizing>Checking credentials…</Authorizing>
+            <NotAuthorized><RedirectToLogin /></NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>Sorry, there's nothing here.</NotFound>
+    <Navigating>Loading…</Navigating>
+</Brouter>
+```
+
+Everything the framework components already do keeps working with zero Brouter-specific code:
+
+- **Authorization** - `[Authorize]` (policies/roles) on pages, the `Authorizing` and `NotAuthorized`
+  fragments, and `CascadingAuthenticationState` integration, all via the built-in `AuthorizeRouteView`.
+- **Layouts** - `DefaultLayout` plus per-page `@layout` directives (nested layout chains included), via
+  the built-in `RouteView`/`AuthorizeRouteView`.
+- **Focus** - `FocusOnNavigate` re-focuses its selector whenever the supplied `RouteData` changes.
+
+### Observing the current `RouteData` from anywhere
+
+Brouter also cascades the committed navigation's `RouteData` (unnamed, by type) to every descendant -
+null when nothing matched or the matched route renders a `Content` fragment. Route-data publishers,
+breadcrumbs and telemetry components can observe it without touching the routing template:
+
+```razor
+@* Works anywhere under the Brouter - no Found template required. *@
+@code {
+    [CascadingParameter] public RouteData? RouteData { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // Fires on every committed navigation with the new RouteData (or null on not-found).
+    }
+}
+```
+
+The mapping from the built-in `Router`:
+
+| Built-in `Router` stack | Brouter |
+|---|---|
+| `<Found>` + `<AuthorizeRouteView>` + `Authorizing`/`NotAuthorized` | flat `Authorizing`/`NotAuthorized` fragments on `<Brouter>` (no template), or an unchanged `<Found Context="routeData">` for full control |
+| `RouteView`/`AuthorizeRouteView` `DefaultLayout` | `DefaultLayout` on `<Brouter>` |
+| `AuthorizeRouteView` `Resource` | `Resource` on `<Brouter>` |
+| `<NotFound>` | `<NotFound>` (unchanged; or a `NotFoundUrl` redirect URL) |
+| `<Navigating>` | `<Navigating>` (unchanged) |
+| `AppAssembly` / `AdditionalAssemblies` / `OnNavigateAsync` | same-named parameters |
+
+`Found` applies to every matched route that renders a `Component` - attribute-discovered `@page` routes
+and hand-declared `<Broute Component=...>` routes alike. When set, Brouter builds the `RouteData` and the
+template renders the page; Brouter does not instantiate the component itself, so parameter binding is the
+built-in `RouteView` binding (which is the point: identical behavior to the built-in stack). Guards,
+loaders, keep-alive and error boundaries still run around the template as usual. Two kinds of routes
+deliberately ignore `Found`: `Content`-fragment routes (no page type to expose) and child routes rendered
+into a `BrouterOutlet` - nested-outlet layouts are Brouter's own layout model, and resolving per-page
+`@layout`s inside an outlet-hosted layout would apply two layout systems at once. Migrate first, then
+adopt guards/loaders/outlets incrementally where they earn their keep.
 
 ## Performance & scalability
 
