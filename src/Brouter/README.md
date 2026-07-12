@@ -70,6 +70,7 @@ render modes.
 - Nested routes via `Broute` children or `BrouterOutlet`
 - Async `Guard` with cancel/redirect via `BrouterNavigationContext`
 - **Per-route `LeaveGuard`** (Angular `CanDeactivate` / Vue `beforeRouteLeave` style): runs preventively, leaf → root, only for routes the navigation actually deactivates - real per-route "unsaved changes" prompts
+- **Component-level navigation lock**: the routed component itself vetoes navigation from `OnDeactivating` / `OnRenavigating` (React Router `useBlocker` / Vue `onBeforeRouteLeave`+`beforeRouteUpdate` style) - awaited, cancellable lock callbacks on the route lifecycle that can hold the navigation open for a **custom confirmation dialog** and cover the case `LeaveGuard` can't: parameter changes on the same route
 - **External-navigation confirmation**: `o.ConfirmExternalNavigation` (always-on) or `brouter.SetConfirmExternalNavigationAsync(...)` (runtime toggle) arms the browser's `beforeunload` dialog for tab-close/reload/external links
 - **Per-route error boundaries**: `ErrorContent` on a `Broute` (nearest boundary wins, bubbling leaf → root) or on the `Brouter` (root fallback), with typed `BrouterErrorContext` carrying the exception and a `RetryAsync()`
 - **Awaitable navigation**: `NavigateAsync` resolves with how the navigation actually ended - `Succeeded` / `Cancelled` / `Redirected` / `NotFound` / `Failed` / `Superseded` (Vue Router navigation-failures style)
@@ -87,7 +88,7 @@ render modes.
 - **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
 - **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
 - **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand
-- **Route lifecycle**: every routed component (keep-alive or not, at any depth) can receive `OnActivated` / `OnDeactivated` / `OnRenavigated` callbacks - implement `IBrouterRoute` on a page (auto-discovered) or derive from `BrouterRouteBase` (the Ionic `ionViewWillEnter` / Vue `onActivated` idea, with async support and a Disposing-vs-Hidden reason)
+- **Route lifecycle**: every routed component (keep-alive or not, at any depth) can receive `OnActivated` / `OnDeactivated` / `OnRenavigated` callbacks - implement `IBrouterRoute` on a page (auto-discovered) or derive from `BrouterRouteBase` (the Ionic `ionViewWillEnter` / Vue `onActivated` idea, with async support and a Disposing-vs-Hidden reason) - plus the pre-commit `OnDeactivating` / `OnRenavigating` lock callbacks above
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
@@ -199,6 +200,11 @@ Leaving the SPA entirely (tab close, reload, external link) can't run C# - for t
 browser's generic confirmation dialog: `o.ConfirmExternalNavigation = true` at startup, or toggle it
 at runtime with `brouter.SetConfirmExternalNavigationAsync(isDirty)` from a dirty-form tracker.
 (Browser rules: the dialog needs prior user interaction and its text is not customizable.)
+
+`LeaveGuard` lives on the route declaration; when the veto belongs to the *component* - it knows
+whether its form is dirty - use the [component-level navigation lock](#navigation-lock-blocking-from-the-component-itself)
+instead, which also covers parameter changes on the same route (a case `LeaveGuard` deliberately
+never fires for).
 
 ## Error boundaries
 
@@ -818,6 +824,8 @@ component-level hooks Angular's `RouteReuseStrategy` never delivered and Ionic's
 
 All callbacks have async variants; returned tasks are observed for errors (surfaced via
 `IBrouter.OnError`) but never delay the navigation. They are not invoked during static prerendering.
+(The lifecycle also carries two *pre-commit* callbacks that deliberately CAN delay a navigation -
+the navigation lock below.)
 
 The easiest consumption is `BrouterRouteBase` - it works for any component under the routed content
 (any depth, any render path) and repaints automatically after activation/renavigation:
@@ -871,6 +879,96 @@ Why it matters for keep-alive in particular: a kept component keeps *running* wh
 polling and live subscriptions all keep firing, and any `StateHasChanged` re-renders it off-screen
 (on Blazor Server that is a diff over the wire for a page nobody is looking at). Pause that work in
 `OnDeactivated` and resume (or refresh) in `OnActivated`.
+
+### Navigation lock: blocking from the component itself
+
+The lifecycle's two *pre-commit* callbacks let the routed component - the code that actually knows
+whether its form is dirty or its save is still in flight - veto a pending navigation (React Router's
+`useBlocker`, Vue's `onBeforeRouteLeave` + `beforeRouteUpdate`, Angular's `CanDeactivate`, delivered
+component-side):
+
+- **`OnDeactivating`** - a pending navigation would deactivate this content. Carries the pending
+  target (`context.To`), the `NavigationType`, and the retention that would follow
+  (`context.Reason`: `Hidden` for keep-alive - state survives, so you may skip the prompt
+  entirely - or `Disposing`).
+- **`OnRenavigating`** - a pending navigation keeps this route matched (a route/query parameter
+  change, or moving between its descendants). This is the case `LeaveGuard` deliberately never
+  fires for - without it, a dirty edit form on `/item/1` couldn't veto going to `/item/2`.
+
+Both are **awaited** by the pipeline (unlike the notify-only lifecycle callbacks) and run inside
+the preventive phase, so `context.Cancel()` / `context.Redirect(...)` stop the URL from ever
+changing - no address-bar flicker, no corrupted Back stack. Because they're awaited, a lock can
+hold the navigation open and show a **custom confirmation dialog** instead of `window.confirm`:
+
+```razor
+@inherits BrouterRouteBase
+
+@if (_prompt is not null)
+{
+    <div class="modal">
+        Unsaved changes - leave for @_target anyway?
+        <button @onclick="@(() => _prompt.TrySetResult(true))">Stay</button>
+        <button @onclick="@(() => _prompt.TrySetResult(false))">Leave</button>
+    </div>
+}
+
+@code {
+    private TaskCompletionSource<bool>? _prompt;
+    private string? _target;
+
+    protected override async Task OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
+    {
+        if (_isDirty is false) return;
+
+        _prompt = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        _target = context.To.Path;
+        StateHasChanged();                       // show the dialog; the navigation stays parked
+
+        // A superseding navigation cancels the token: dismiss the prompt, the answer no longer matters.
+        await using var dismiss = context.CancellationToken.Register(() => _prompt?.TrySetResult(false));
+        var stay = await _prompt.Task;
+
+        _prompt = null;
+        StateHasChanged();
+        if (stay) context.Cancel();              // preventive: the URL never changed
+    }
+}
+```
+
+Semantics worth knowing:
+
+- **Ordering.** Locks run in the leave phase, leaf → root, and per route the content's own locks run
+  *before* the route-declared `LeaveGuard` (innermost first - the code closest to the state at risk
+  gets the first veto), all before `OnNavigating` and any enter guards.
+- **First decision wins.** Handlers on the same content run in registration order; the first
+  `Cancel()`/`Redirect()` anywhere settles the phase and skips every remaining lock and leave
+  guard - no stacked prompts.
+- **Only visible content votes.** Hidden kept-alive instances aren't being deactivated by the
+  navigation and are not consulted.
+- **Fail closed.** A lock that throws blocks the navigation (like a guard) and surfaces via
+  `IBrouter.OnError`.
+- **Supersession.** A newer navigation cancels `context.CancellationToken`; a parked lock should
+  observe it (as above) so a stale prompt can't decide a dead navigation - the pipeline ignores its
+  outcome either way.
+- **Per-parameter keep-alive nuance.** On a `KeepAliveMax > 1` route that stays matched across a
+  parameter change, the active entry receives `OnRenavigating` (pre-commit, the new parameter key
+  isn't known yet) even though the commit then surfaces as a `Hidden` deactivation + sibling
+  activation.
+- **Platform boundary.** Locks cover in-app navigations only. Tab close, reload and external links
+  can't run C# - arm the browser's generic dialog via `o.ConfirmExternalNavigation` /
+  `brouter.SetConfirmExternalNavigationAsync(...)` for those (see
+  [Leave guards](#leave-guards-unsaved-changes)).
+
+Any component under the routed content can hold a lock - derive from `BrouterRouteBase` (as above),
+implement `IBrouterRoute` on a router-instantiated page (auto-discovered), or `Register` a handler
+on the cascaded `BrouterRouteContext`. Simple non-interactive locks are one line:
+
+```csharp
+protected override void OnDeactivating(BrouterRouteDeactivatingContext context)
+{
+    if (_isDirty) context.Cancel();
+}
+```
 
 ### Per-parameter caching with `KeepAliveMax`
 

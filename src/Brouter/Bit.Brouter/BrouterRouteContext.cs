@@ -72,6 +72,11 @@ public sealed class BrouterRouteContext
     /// <summary>Removes a previously registered lifecycle handler. No-op when not registered.</summary>
     public void Unregister(IBrouterRoute handler) => _handlers.Remove(handler);
 
+    // Cheap pre-flight for the navigation pipeline: whether dispatching to this context could do
+    // anything at all. Lets the lock phase skip contexts (and payload allocations) for content
+    // that never registered a lifecycle handler.
+    internal bool HasHandlers => _handlers.Count > 0;
+
     // Auto-registration hook for components the router instantiates itself (see the
     // AddComponentReferenceCapture calls in BrouterRouteRenderer/BrouterOutlet). One slot: a
     // recaptured (replaced) page instance displaces the previous registration - see _autoRegistered.
@@ -142,6 +147,43 @@ public sealed class BrouterRouteContext
         foreach (var handler in _handlers.ToArray())
         {
             Invoke(handler.OnRenavigatedAsync, args, onError);
+        }
+    }
+
+    /// <summary>
+    /// Pre-commit navigation-lock dispatch (see <see cref="IBrouterRoute.OnDeactivatingAsync"/>):
+    /// unlike the notify-only callbacks below, handlers are AWAITED sequentially so they can hold
+    /// the pending navigation open (e.g. for a custom confirmation dialog). The first handler that
+    /// settles the navigation (cancel or redirect) wins - later handlers are skipped so they never
+    /// observe an already-decided navigation - and a superseded navigation stops the walk. Only
+    /// active (visible) content gets a vote: hidden kept instances aren't being deactivated by
+    /// this navigation and must not be able to veto it. Exceptions propagate to the pipeline,
+    /// which fails closed exactly like a throwing guard.
+    /// </summary>
+    internal async ValueTask FireDeactivatingAsync(BrouterRouteDeactivatingContext context)
+    {
+        if (IsActive is false) return;
+        // Snapshot: a handler may register/unregister others (or itself) from its callback.
+        foreach (var handler in _handlers.ToArray())
+        {
+            if (context.CancellationToken.IsCancellationRequested) return;
+            await handler.OnDeactivatingAsync(context);
+            if (context.HasDecision) return;
+        }
+    }
+
+    /// <summary>
+    /// Pre-commit renavigation-lock dispatch (see <see cref="IBrouterRoute.OnRenavigatingAsync"/>);
+    /// same awaited, first-decision-wins semantics as <see cref="FireDeactivatingAsync"/>.
+    /// </summary>
+    internal async ValueTask FireRenavigatingAsync(BrouterRouteRenavigatingContext context)
+    {
+        if (IsActive is false) return;
+        foreach (var handler in _handlers.ToArray())
+        {
+            if (context.CancellationToken.IsCancellationRequested) return;
+            await handler.OnRenavigatingAsync(context);
+            if (context.HasDecision) return;
         }
     }
 

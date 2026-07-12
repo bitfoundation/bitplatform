@@ -390,6 +390,12 @@
             </Content>
         </Broute>
 
+        @* Component-level navigation lock: the PAGE holds the veto (OnDeactivating/OnRenavigating
+       on BrouterRouteBase) and shows a custom confirmation dialog - including for /lock/1 ->
+       /lock/2 parameter changes, which the route-declared LeaveGuard above can never see. *@
+        <Broute Path="/lock" RedirectTo="/lock/1" />
+        <Broute Path="/lock/{id:int}" Component="@typeof(NavigationLockPage)" />
+
         <Broute Path="/history-state">
             <Content>
                 <HistoryStatePage />

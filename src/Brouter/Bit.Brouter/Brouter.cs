@@ -2465,25 +2465,31 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Runs the <see cref="Broute.LeaveGuard"/>s of every currently committed route that the pending
-    /// navigation to <paramref name="to"/> would deactivate, leaf -> root (children veto before their
-    /// parents, mirroring Angular's CanDeactivate order). A route that stays matched under the new
-    /// URL - same route instance in both chains, e.g. only a parameter or a descendant changed - is
-    /// not "left" and its guard does not fire. Returns false when a guard cancelled/redirected (the
-    /// decision is on <paramref name="ctx"/> for the caller to apply) or the navigation was
-    /// superseded; true to continue the pipeline.
+    /// The leave phase of the pending navigation to <paramref name="to"/>, leaf -> root (children
+    /// veto before their parents, mirroring Angular's CanDeactivate order). For every currently
+    /// committed route it runs, in order: the component-level navigation locks of its active
+    /// content (<see cref="IBrouterRoute.OnDeactivatingAsync"/> when the route is being left,
+    /// <see cref="IBrouterRoute.OnRenavigatingAsync"/> when it stays matched - so parameter changes
+    /// are voteable too), then - only for routes actually being left - the route-declared
+    /// <see cref="Broute.LeaveGuard"/>. Locks are awaited, so they can hold the navigation open for
+    /// user input. Returns false when a lock/guard cancelled/redirected (the decision is on
+    /// <paramref name="ctx"/> for the caller to apply) or the navigation was superseded; true to
+    /// continue the pipeline. A throwing lock/guard propagates to the caller, which fails closed.
     /// </summary>
     private async ValueTask<bool> InvokeLeaveGuardsAsync(BrouterLocation to, BrouterNavigationContext ctx)
     {
         var committed = _committedChain;
         if (committed.Length == 0) return true;
 
-        var anyLeaveGuard = false;
+        // Anything to do at all? Route-declared LeaveGuards and component-level locks (content
+        // with registered lifecycle handlers, see IBrouterRoute.OnDeactivatingAsync) share this
+        // phase; with neither present the (pure but non-free) SelectWinner below is skipped.
+        var anyWork = false;
         foreach (var node in committed)
         {
-            if (node.LeaveGuard is not null) { anyLeaveGuard = true; break; }
+            if (node.LeaveGuard is not null || node.HasActiveLifecycleHandlers()) { anyWork = true; break; }
         }
-        if (anyLeaveGuard is false) return true;
+        if (anyWork is false) return true;
 
         // Which committed routes survive the new URL? Match it (SelectWinner is pure, so this is
         // safe pre-commit) and collect the new chain; committed routes present in it are updated,
@@ -2495,11 +2501,55 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             for (var node = newMatch.Route; node is not null; node = node.Parent) staying.Add(node);
         }
 
+        // Leaf -> root, and per route the content's own locks run before the route-declared
+        // LeaveGuard - innermost first, so the code closest to the state at risk gets the first
+        // veto. Locks are awaited (they may hold the navigation open for a custom confirmation
+        // dialog); the first cancel/redirect anywhere settles the phase and skips everything else.
+        List<BrouterRouteContext>? lockContexts = null;
+        BrouterRouteRenavigatingContext? renavigating = null;
+
         for (var i = committed.Length - 1; i >= 0; i--)
         {
             var node = committed[i];
-            if (node.LeaveGuard is null) continue;
-            if (staying is not null && staying.Contains(node)) continue;
+            var stays = staying is not null && staying.Contains(node);
+
+            // 1. Component-level locks. A route being left dispatches OnDeactivatingAsync to its
+            // active content; a route that stays matched dispatches OnRenavigatingAsync instead
+            // (a parameter change is not a "leave", but a dirty form must still be able to veto
+            // it - Vue's beforeRouteUpdate). The Hidden/Disposing reason mirrors the retention
+            // that would follow the commit. One pre-commit nuance: on a per-parameter keep-alive
+            // route (KeepAliveMax > 1) that stays matched across a parameter change, the active
+            // entry receives OnRenavigating here even though the commit then surfaces as a Hidden
+            // deactivation + sibling activation - the new parameter key isn't known until the
+            // navigation's parameters commit.
+            if (node.HasActiveLifecycleHandlers())
+            {
+                lockContexts ??= [];
+                lockContexts.Clear();
+                node.CollectActiveRouteContexts(lockContexts);
+
+                foreach (var context in lockContexts)
+                {
+                    if (ctx.CancellationToken.IsCancellationRequested) return false;
+                    if (stays)
+                    {
+                        renavigating ??= new BrouterRouteRenavigatingContext(ctx);
+                        await context.FireRenavigatingAsync(renavigating);
+                    }
+                    else
+                    {
+                        var reason = node.KeepAlive
+                            ? BrouterRouteDeactivationReason.Hidden
+                            : BrouterRouteDeactivationReason.Disposing;
+                        await context.FireDeactivatingAsync(new BrouterRouteDeactivatingContext(ctx, reason));
+                    }
+                    if (ctx.CancellationToken.IsCancellationRequested) return false;
+                    if (ctx.IsCancelled || ctx.RedirectUrl is not null) return false;
+                }
+            }
+
+            // 2. The route-declared LeaveGuard, only when the route is actually being left.
+            if (stays || node.LeaveGuard is null) continue;
 
             if (ctx.CancellationToken.IsCancellationRequested) return false;
             // Expose the route being left for the duration of its own guard call only.

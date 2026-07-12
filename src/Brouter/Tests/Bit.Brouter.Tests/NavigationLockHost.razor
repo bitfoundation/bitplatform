@@ -1,0 +1,53 @@
+@* Host for NavigationLockTests: lock probes on a transient route (with a LeaveGuard for ordering),
+   a parameterized singleton route (renavigating locks), a keep-alive route (Hidden reason), and a
+   route with two probes (first cancel wins). *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/edit" LeaveGuard="EditLeaveGuard">
+        <Content><NavigationLockProbe Label="edit" State="EditState" /></Content>
+    </Broute>
+
+    <Broute Path="/doc/{id:int}">
+        <Content Context="p">
+            <div data-testid="doc">doc @(p.Get<int>("id"))</div>
+            <NavigationLockProbe Label="doc" State="DocState" />
+        </Content>
+    </Broute>
+
+    <Broute Path="/kal" KeepAlive="true">
+        <Content><NavigationLockProbe Label="kal" State="KalState" /></Content>
+    </Broute>
+
+    <Broute Path="/two">
+        <Content>
+            <NavigationLockProbe Label="two1" State="TwoFirstState" />
+            <NavigationLockProbe Label="two2" State="TwoSecondState" />
+        </Content>
+    </Broute>
+
+    <Broute Path="/other">
+        <Content><div data-testid="other">other</div></Content>
+    </Broute>
+
+    <Broute Path="/target">
+        <Content><div data-testid="target">target</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    public NavigationLockState EditState { get; } = new();
+    public NavigationLockState DocState { get; } = new();
+    public NavigationLockState KalState { get; } = new();
+    public NavigationLockState TwoFirstState { get; } = new();
+    public NavigationLockState TwoSecondState { get; } = new();
+
+    private ValueTask EditLeaveGuard(BrouterNavigationContext ctx)
+    {
+        // Ordering probe: the content's own lock must have run (and not cancelled) before the
+        // route-declared guard gets its turn.
+        EditState.Log.Add("edit:leaveguard");
+        return ValueTask.CompletedTask;
+    }
+}

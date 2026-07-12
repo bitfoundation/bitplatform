@@ -504,6 +504,42 @@ public class Broute : ComponentBase, IDisposable
     }
 
     /// <summary>
+    /// Whether this route's currently visible content has lifecycle handlers registered - the
+    /// pre-flight the navigation pipeline uses to decide whether the pre-commit lock phase
+    /// (<see cref="IBrouterRoute.OnDeactivatingAsync"/> / <see cref="IBrouterRoute.OnRenavigatingAsync"/>)
+    /// has anything to dispatch to for this route.
+    /// </summary>
+    internal bool HasActiveLifecycleHandlers()
+    {
+        if (_disposed || _renderer is null) return false;
+
+        var outlet = ResolveContentOutlet();
+        return outlet is not null
+            ? outlet.HasActiveLifecycleHandlers(this)
+            : _renderer.HasActiveLifecycleHandlers();
+    }
+
+    /// <summary>
+    /// Collects the lifecycle contexts of this route's active (visible) content that have handlers
+    /// registered, from whichever owner holds the content (the hosting primary outlet or the inline
+    /// renderer), for the pre-commit navigation-lock dispatch.
+    /// </summary>
+    internal void CollectActiveRouteContexts(List<BrouterRouteContext> into)
+    {
+        if (_disposed || _renderer is null) return;
+
+        var outlet = ResolveContentOutlet();
+        if (outlet is not null)
+        {
+            outlet.CollectActiveContexts(this, into);
+        }
+        else
+        {
+            _renderer.CollectActiveContexts(into);
+        }
+    }
+
+    /// <summary>
     /// Routes the pre-render arrival preparation (per-parameter sibling deactivation, see
     /// <see cref="BrouterRouteRenderer.PrepareArrival"/>) to whichever owner holds this route's
     /// content. Called by the navigation pipeline at commit, after the route's parameters are

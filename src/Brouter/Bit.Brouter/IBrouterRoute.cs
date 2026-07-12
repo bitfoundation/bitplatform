@@ -19,6 +19,10 @@ namespace Bit.Brouter;
 /// famously misses when Blazor reuses the component. On a per-parameter keep-alive route
 /// (<see cref="Broute.KeepAliveMax"/> &gt; 1) a parameter change mounts a separate instance instead,
 /// so it surfaces as an activate/deactivate pair rather than a renavigation.</item>
+/// <item><see cref="OnDeactivatingAsync"/> / <see cref="OnRenavigatingAsync"/> - the pre-commit,
+/// cancellable counterparts (the component-level navigation lock): called BEFORE a pending
+/// navigation commits, awaited by the pipeline, able to cancel or redirect it preventively. See
+/// each member for details.</item>
 /// </list>
 /// The Ionic <c>ionViewWillEnter</c>/<c>ionViewDidLeave</c> and Vue <c>onActivated</c>/<c>onDeactivated</c>
 /// idea, delivered to the component itself.
@@ -43,8 +47,18 @@ namespace Bit.Brouter;
 /// guaranteed to run before <c>Dispose</c>. Content destroyed <em>outside</em> a navigation (a
 /// conditionally-removed route, a hosting layout or outlet unmounting) gets a best-effort
 /// Disposing deactivation as its owner tears down.</para>
-/// <para><b>Async.</b> Returned tasks are observed for errors (surfaced via
-/// <see cref="IBrouter.OnError"/>) but never block or delay the navigation. Permanent teardown
+/// <para><b>Async.</b> The notification callbacks (activated / deactivated / renavigated) return
+/// tasks that are observed for errors (surfaced via <see cref="IBrouter.OnError"/>) but never
+/// block or delay the navigation. The lock callbacks (<see cref="OnDeactivatingAsync"/> /
+/// <see cref="OnRenavigatingAsync"/>) are the deliberate exception: the pipeline awaits them -
+/// delaying the pending navigation is their purpose - handlers run sequentially leaf -&gt; root,
+/// the first cancel/redirect wins and skips the rest, and a callback that throws blocks the
+/// navigation (fail closed, like a guard) with the error surfaced via <see cref="IBrouter.OnError"/>.
+/// Locks only run for interactive navigations the router can intercept - never during static
+/// prerendering, and not for external departures (tab close, reload, external links), for which
+/// <see cref="BrouterOptions.ConfirmExternalNavigation"/> /
+/// <see cref="IBrouter.SetConfirmExternalNavigationAsync"/> arm the browser's generic dialog.
+/// Permanent teardown
 /// still surfaces through normal component disposal (<c>IDisposable</c>): retained instances
 /// dropped by LRU eviction or <see cref="IBrouter.ClearKeepAlive"/> were already deactivated
 /// (<c>Hidden</c>) when they were hidden, so disposal is their only remaining signal - a kept
@@ -76,4 +90,26 @@ public interface IBrouterRoute
     /// again" work that <c>OnInitialized</c> misses on instance reuse.
     /// </summary>
     ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation) => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Called BEFORE a pending navigation that would deactivate this component's routed content
+    /// commits - the component-level navigation lock. Unlike the notify-only callbacks above, the
+    /// pipeline awaits it, and <see cref="BrouterRouteDeactivatingContext.Cancel"/> /
+    /// <see cref="BrouterRouteDeactivatingContext.Redirect"/> are preventive: the URL never
+    /// changes when the navigation is blocked. The callback may await user input (a custom
+    /// "unsaved changes" dialog) - render the prompt, await its completion, then decide - while
+    /// observing <see cref="BrouterRouteDeactivatingContext.CancellationToken"/> so a superseding
+    /// navigation dismisses the prompt. See <see cref="OnRenavigatingAsync"/> for navigations that
+    /// keep this route matched (parameter changes).
+    /// </summary>
+    ValueTask OnDeactivatingAsync(BrouterRouteDeactivatingContext context) => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Called BEFORE a pending navigation under which this component's route stays matched commits
+    /// (a parameter/query change or a move between the route's descendants) - the renavigation
+    /// half of the navigation lock, needed because a parameter change is not a "leave" (a dirty
+    /// form on <c>/item/1</c> must also be able to veto going to <c>/item/2</c>). Same awaited,
+    /// preventive semantics as <see cref="OnDeactivatingAsync"/>.
+    /// </summary>
+    ValueTask OnRenavigatingAsync(BrouterRouteRenavigatingContext context) => ValueTask.CompletedTask;
 }

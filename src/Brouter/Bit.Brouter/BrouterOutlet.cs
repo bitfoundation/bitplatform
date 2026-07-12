@@ -224,6 +224,45 @@ public class BrouterOutlet : ComponentBase, IDisposable
     }
 
     /// <summary>
+    /// Whether any of <paramref name="route"/>'s outlet-hosted content is active (visible) AND has
+    /// lifecycle handlers registered - the outlet counterpart of
+    /// <see cref="BrouterRouteRenderer.HasActiveLifecycleHandlers"/>.
+    /// </summary>
+    internal bool HasActiveLifecycleHandlers(Broute route)
+    {
+        if (_current is not null && ReferenceEquals(_current.Route, route)
+            && _current.Context is { IsActive: true, HasHandlers: true }) return true;
+
+        foreach (var k in _kept)
+        {
+            if (ReferenceEquals(k.Route, route) && k.Context is { IsActive: true, HasHandlers: true }) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Collects the lifecycle contexts of <paramref name="route"/>'s active (visible) outlet-hosted
+    /// content that have handlers registered, for the pre-commit navigation-lock dispatch - the
+    /// outlet counterpart of <see cref="BrouterRouteRenderer.CollectActiveContexts"/>. Hidden kept
+    /// entries get no vote; the current entry may also live in the kept list, so it is deduplicated.
+    /// </summary>
+    internal void CollectActiveContexts(Broute route, List<BrouterRouteContext> into)
+    {
+        if (_current is not null && ReferenceEquals(_current.Route, route)
+            && _current.Context is { IsActive: true, HasHandlers: true })
+        {
+            into.Add(_current.Context);
+        }
+
+        foreach (var k in _kept)
+        {
+            if (ReferenceEquals(k.Route, route) is false) continue;
+            if (ReferenceEquals(k, _current)) continue;
+            if (k.Context is { IsActive: true, HasHandlers: true }) into.Add(k.Context);
+        }
+    }
+
+    /// <summary>
     /// Fires the arrival side of the route lifecycle for an outlet-hosted child, called by the
     /// navigation pipeline AFTER the commit render has landed (see
     /// <see cref="BrouterRouteRenderer.FireArrival"/> for the timing contract). Hidden kept siblings

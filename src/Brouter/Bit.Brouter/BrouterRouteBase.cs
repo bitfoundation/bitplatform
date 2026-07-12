@@ -66,6 +66,25 @@ public abstract class BrouterRouteBase : ComponentBase, IBrouterRoute, IDisposab
     /// <summary>Asynchronous renavigation callback; see <see cref="IBrouterRoute.OnRenavigatedAsync"/>.</summary>
     protected virtual Task OnRenavigatedAsync(BrouterRouteRenavigation renavigation) => Task.CompletedTask;
 
+    /// <summary>Synchronous navigation-lock callback; see <see cref="IBrouterRoute.OnDeactivatingAsync"/>.</summary>
+    protected virtual void OnDeactivating(BrouterRouteDeactivatingContext context) { }
+
+    /// <summary>
+    /// Asynchronous navigation-lock callback; see <see cref="IBrouterRoute.OnDeactivatingAsync"/>.
+    /// Awaited by the navigation pipeline: the pending navigation is held open until it completes,
+    /// so it may await a custom confirmation dialog before calling <c>context.Cancel()</c>.
+    /// </summary>
+    protected virtual Task OnDeactivatingAsync(BrouterRouteDeactivatingContext context) => Task.CompletedTask;
+
+    /// <summary>Synchronous renavigation-lock callback; see <see cref="IBrouterRoute.OnRenavigatingAsync"/>.</summary>
+    protected virtual void OnRenavigating(BrouterRouteRenavigatingContext context) { }
+
+    /// <summary>
+    /// Asynchronous renavigation-lock callback; see <see cref="IBrouterRoute.OnRenavigatingAsync"/>.
+    /// Awaited by the navigation pipeline, like <see cref="OnDeactivatingAsync(BrouterRouteDeactivatingContext)"/>.
+    /// </summary>
+    protected virtual Task OnRenavigatingAsync(BrouterRouteRenavigatingContext context) => Task.CompletedTask;
+
     async ValueTask IBrouterRoute.OnActivatedAsync(BrouterRouteActivation activation)
     {
         OnActivated(activation);
@@ -92,6 +111,20 @@ public abstract class BrouterRouteBase : ComponentBase, IBrouterRoute, IDisposab
         await OnRenavigatedAsync(renavigation);
         // Same guard as the activation path: skip the repaint for disposed/deactivated content.
         if (_disposed is false && IsActive) StateHasChanged();
+    }
+
+    async ValueTask IBrouterRoute.OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
+    {
+        OnDeactivating(context);
+        await OnDeactivatingAsync(context);
+        // No automatic StateHasChanged: the navigation hasn't been decided yet, and a lock that
+        // shows a confirmation dialog repaints itself as part of showing it.
+    }
+
+    async ValueTask IBrouterRoute.OnRenavigatingAsync(BrouterRouteRenavigatingContext context)
+    {
+        OnRenavigating(context);
+        await OnRenavigatingAsync(context);
     }
 
     /// <summary>Override to add teardown; the base unregisters the lifecycle handler.</summary>

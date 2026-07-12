@@ -167,6 +167,37 @@ internal class BrouterRouteRenderer
     }
 
     /// <summary>
+    /// Whether any of this route's inline-rendered content is active (visible) AND has lifecycle
+    /// handlers registered - the pre-flight for the navigation-lock phase (see
+    /// <see cref="CollectActiveContexts"/>), so navigations away from handler-less content skip
+    /// the lock walk entirely.
+    /// </summary>
+    public bool HasActiveLifecycleHandlers()
+    {
+        foreach (var entry in _keptEntries)
+        {
+            if (entry.Context is { IsActive: true, HasHandlers: true }) return true;
+        }
+        return _context is { IsActive: true, HasHandlers: true };
+    }
+
+    /// <summary>
+    /// Collects the lifecycle contexts of this route's active (visible) inline content that have
+    /// handlers registered, for the pre-commit navigation-lock dispatch (see
+    /// <see cref="BrouterRouteContext.FireDeactivatingAsync"/>). Hidden kept entries are excluded -
+    /// they aren't being deactivated by the pending navigation and get no vote. At most one context
+    /// is active per renderer (the singleton context or the active per-parameter entry).
+    /// </summary>
+    public void CollectActiveContexts(List<BrouterRouteContext> into)
+    {
+        foreach (var entry in _keptEntries)
+        {
+            if (entry.Context is { IsActive: true, HasHandlers: true }) into.Add(entry.Context);
+        }
+        if (_context is { IsActive: true, HasHandlers: true }) into.Add(_context);
+    }
+
+    /// <summary>
     /// Fires the arrival side of the route lifecycle for this route's inline-rendered content,
     /// called by the navigation pipeline AFTER the commit render has landed (content mounted,
     /// handlers registered, DOM available): an activation when the content wasn't active before,
