@@ -93,6 +93,22 @@ public class BrouterAuthorizationTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task Authorize_page_fails_closed_under_the_DefaultLayout_only_composition()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/secure");
+
+        // AutoAuthLayoutHost sets only DefaultLayout, composing the framework RouteView - which
+        // performs no authorization check at all - so Brouter's own guard must throw rather than
+        // silently render the [Authorize] page.
+        _ = RenderComponent<AutoAuthLayoutHost>();
+
+        var exception = await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.IsInstanceOfType<InvalidOperationException>(exception);
+        StringAssert.Contains(exception.Message, "authorization");
+    }
+
+    [TestMethod]
     public async Task Authorize_page_rendered_natively_fails_closed()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();

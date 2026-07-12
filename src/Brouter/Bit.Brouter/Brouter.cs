@@ -199,8 +199,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// parameter always wins; otherwise setting any of <see cref="NotAuthorized"/> /
     /// <see cref="Authorizing"/> / <see cref="Resource"/> composes the framework's
     /// <c>AuthorizeRouteView</c>, a lone <see cref="DefaultLayout"/> composes the framework's
-    /// <c>RouteView</c> (which itself fails closed on <c>[Authorize]</c> pages), and with nothing
-    /// set Brouter renders components natively (null).
+    /// <c>RouteView</c> (behind Brouter's own fail-closed <c>[Authorize]</c> guard - see
+    /// <see cref="RenderPageWithLayout"/>), and with nothing set Brouter renders components
+    /// natively (null).
     /// </summary>
     internal RenderFragment<RouteData>? EffectiveFound
     {
@@ -242,10 +243,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     };
 
     // The layout-only composition: the framework RouteView, which resolves per-page @layout chains
-    // with DefaultLayout as the fallback - and throws for [Authorize] pages, so a layout-only
-    // configuration can never silently skip authorization.
+    // with DefaultLayout as the fallback. RouteView performs no authorization check whatsoever
+    // (the Components assembly doesn't even reference the authorization package), so Brouter
+    // applies its own fail-closed guard first - a layout-only configuration must never silently
+    // render an [Authorize] page.
     private RenderFragment RenderPageWithLayout(RouteData routeData) => builder =>
     {
+        BrouterRouteRenderer.EnsureNoAuthorizationRequirements(routeData.PageType);
+
         builder.OpenComponent<RouteView>(0);
         builder.AddAttribute(1, nameof(RouteView.RouteData), routeData);
         builder.AddAttribute(2, nameof(RouteView.DefaultLayout), DefaultLayout);
@@ -1212,6 +1217,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // the URL deliberately stays put (the resource at this URL is what's missing).
                 foreach (var r in GetRoutesSnapshot()) r.Matched = false;
                 _noRouteMatched = true;
+                // The fallback replaces the routed content, so nothing routed is on screen anymore -
+                // a later navigation must not run leave guards for the replaced chain.
+                _committedChain = [];
                 _currentRouteData = null;
 
                 if (OnNotFound is not null) await OnNotFound(location);
@@ -2053,8 +2061,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
             // Publish the committed navigation's framework RouteData on the observer cascade (see
             // _currentRouteData). Content-fragment routes have no page type, so they publish null.
+            // Route values carry explicit nulls for unfilled optional parameters, matching the
+            // framework router's RouteData contract (see NormalizeRouteValues).
             _currentRouteData = winner.Component is not null
-                ? new RouteData(winner.Component, winner.Parameters)
+                ? new RouteData(winner.Component,
+                    BrouterRouteRenderer.NormalizeRouteValues(winner.Parameters, winner.TemplateParameterNames))
                 : null;
 
             if (OnMatch is not null) await OnMatch(winner);
@@ -2331,6 +2342,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 for (var n = node; n is not null; n = n.Parent) chain.Add(n);
                 chain.Reverse();
                 _committedChain = chain.ToArray();
+
+                // The failed target's page never rendered - the boundary is on screen in its place -
+                // so the observer cascade must stop publishing the previous page's RouteData.
+                // StateHasChanged re-emits the cascade (SetMatched only re-renders the routes).
+                _currentRouteData = null;
+                StateHasChanged();
                 return;
             }
         }
@@ -2339,6 +2356,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         {
             _navError = errorContext;
             _committedChain = [];
+            _currentRouteData = null;
             StateHasChanged();
         }
     }

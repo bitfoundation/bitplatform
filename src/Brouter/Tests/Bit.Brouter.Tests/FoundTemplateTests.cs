@@ -124,6 +124,23 @@ public class FoundTemplateTests : BunitTestContext
     }
 
     [TestMethod]
+    public void RouteView_clears_an_optional_route_value_left_unfilled_by_the_next_navigation()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/opt/saleh");
+
+        var cut = RenderComponent<OptionalRouteViewHost>();
+        cut.WaitForAssertion(() => Assert.AreEqual("saleh", cut.Find("[data-testid=opt-name]").TextContent));
+
+        // Same Broute and page type: the component instance is reused, so the unfilled optional
+        // must arrive as an explicit null route value (framework RouteData parity) - omitting the
+        // entry would leave the previous navigation's value on the parameter.
+        nav.NavigateTo("http://localhost/opt");
+
+        cut.WaitForAssertion(() => Assert.AreEqual("(none)", cut.Find("[data-testid=opt-name]").TextContent));
+    }
+
+    [TestMethod]
     public void AuthorizeRouteView_inside_Found_renders_the_page_when_authorized()
     {
         var auth = Context!.AddTestAuthorization();

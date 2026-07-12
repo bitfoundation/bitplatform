@@ -390,12 +390,14 @@ internal class BrouterRouteRenderer
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, bool> _requiresAuthorizationCache = new();
 
     /// <summary>
-    /// Fail-closed guard for the native rendering path, mirroring the built-in <c>RouteView</c>:
-    /// a component carrying <c>[Authorize]</c> must never be instantiated by a code path that
-    /// cannot enforce it. Rendering through <c>Brouter.Found</c> or the built-in
+    /// Fail-closed guard for code paths that cannot enforce authorization: a component carrying
+    /// <c>[Authorize]</c> must never be instantiated by one. The built-in
     /// <c>NotAuthorized</c>/<c>Authorizing</c> composition never reaches this (the framework's
-    /// <c>AuthorizeRouteView</c>/<c>RouteView</c> handle or reject it there); this covers direct
-    /// instantiation by Brouter itself, inline or inside a <see cref="BrouterOutlet"/>.
+    /// <c>AuthorizeRouteView</c> enforces the attribute there); a user-supplied <c>Brouter.Found</c>
+    /// template owns its own auth stack, like the built-in Router. This covers direct instantiation
+    /// by Brouter itself - inline or inside a <see cref="BrouterOutlet"/> - and the layout-only
+    /// <c>DefaultLayout</c> composition, because the framework's plain <c>RouteView</c> performs
+    /// no authorization check at all.
     /// </summary>
     internal static void EnsureNoAuthorizationRequirements(Type componentType)
     {
@@ -434,12 +436,34 @@ internal class BrouterRouteRenderer
             // The merged parameter values (ancestor + own template parameters) mirror what the
             // built-in router's RouteData.RouteValues carries for the matched page: for a flat
             // discovered @page route they are exactly the template's matched values, constraint-
-            // converted (e.g. {id:int} -> boxed int) the same way RouteView expects to bind them.
-            _cachedPageRouteData = new RouteData(_route.Component!, routeParams.Values);
+            // converted (e.g. {id:int} -> boxed int) the same way RouteView expects to bind them,
+            // normalized with explicit nulls for optional parameters the URL left unfilled.
+            _cachedPageRouteData = new RouteData(_route.Component!,
+                NormalizeRouteValues(routeParams.Values, _route.TemplateParameterNames));
             _cachedPageRouteDataParamsRef = routeParams;
             _cachedPageRouteDataComponentRef = _route.Component;
         }
         return _cachedPageRouteData;
+    }
+
+    // Framework-router parity for RouteData.RouteValues: the built-in router adds an explicit null
+    // entry for every route parameter the URL left unfilled (trailing optionals), so RouteView still
+    // emits a parameter frame for it and a page instance reused across navigations (e.g.
+    // /profile/saleh -> /profile) has the stale value reset instead of silently kept. Returns the
+    // original dictionary unchanged when every template parameter is present.
+    internal static IReadOnlyDictionary<string, object?> NormalizeRouteValues(
+        IReadOnlyDictionary<string, object?> values, IReadOnlySet<string>? templateParameterNames)
+    {
+        if (templateParameterNames is null || templateParameterNames.Count == 0) return values;
+
+        Dictionary<string, object?>? augmented = null;
+        foreach (var name in templateParameterNames)
+        {
+            if (values.ContainsKey(name)) continue;
+            augmented ??= new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase);
+            augmented[name] = null;
+        }
+        return augmented ?? values;
     }
 
     internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location, IReadOnlySet<string>? conventionalTemplateParameters = null)
