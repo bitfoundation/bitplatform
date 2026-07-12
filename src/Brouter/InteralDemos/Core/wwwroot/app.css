@@ -25,6 +25,14 @@
     box-sizing: border-box;
 }
 
+html {
+    /* Keep the viewport width constant whether or not the page scrolls (classic scrollbars eat
+       layout width on Windows). Without this, navigating between a tall page (home, lifecycle)
+       and a short one resizes every element ~17px, so even chrome pinned out of the view
+       transition via view-transition-name gets a visible 320ms resize animation on its group. */
+    scrollbar-gutter: stable;
+}
+
 html, body {
     margin: 0;
     padding: 0;

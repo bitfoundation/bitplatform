@@ -560,6 +560,24 @@ element morph between them (see the demo's `/gallery` page for a tile-to-hero sh
 .post-title { view-transition-name: post-title; }
 ```
 
+The same mechanism **excludes persistent chrome** from the page animation. Anything without a
+`view-transition-name` is captured into the `root` snapshot, so a layout header/sidebar would glide
+along with the page even though it lives outside the router. Give it its own name and it gets its
+own transition group - old and new snapshots are identical, so it stays visually pinned while only
+the page content animates:
+
+```css
+.app-header { view-transition-name: app-header; }
+```
+
+One follow-up gotcha: if some pages scroll and others don't, classic scrollbars (Windows) change
+the viewport width between snapshots, so even a named header animates a ~17px resize. Reserve the
+gutter to keep the layout width constant:
+
+```css
+html { scrollbar-gutter: stable; }
+```
+
 Brouter splits the transition around Blazor's async render: the outgoing page is snapshotted (and
 the snapshot is awaited - critical for correct morphs) right before the new route renders, and the
 transition completes once the new DOM (including scroll/focus effects) has landed. On browsers
