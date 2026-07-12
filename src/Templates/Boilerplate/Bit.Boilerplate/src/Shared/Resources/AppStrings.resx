@@ -1364,7 +1364,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>The provided image does not contain a car.</value>
   </data>
-    <!--#if (multitenancy == true) -->
+    <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Tenant</value>
   </data>

@@ -115,7 +115,7 @@ public partial class IdentityEmailService
         await SendEmail(body, user.Email!, user.DisplayName!, subject);
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     public virtual async Task SendTenantInvitation(User user, string inviterDisplayName, string tenantTitle, Uri link, CancellationToken cancellationToken)
     {
         var subject = emailLocalizer[EmailStrings.TenantInvitationEmailSubject, tenantTitle];

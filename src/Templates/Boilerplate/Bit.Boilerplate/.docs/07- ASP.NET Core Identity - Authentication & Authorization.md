@@ -18,7 +18,7 @@ Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you w
    - [Role-Based and Permission-Based Authorization](#role-based-and-permission-based-authorization)
    - [Policy-Based Authorization](#policy-based-authorization)
    - [Custom Claim Types](#custom-claim-types)
-4. [Multi-Tenancy](#multi-tenancy)
+4. [Multi-Tenant](#multi-tenant)
    - [How the Model Works](#how-the-model-works)
    - [How a Request Resolves Its Tenant](#how-a-request-resolves-its-tenant)
    - [Rules for Adding Tenant-Scoped Entities and Endpoints](#rules-for-adding-tenant-scoped-entities-and-endpoints)
@@ -464,11 +464,11 @@ public class AppClaimTypes
 
 ---
 
-## Multi-Tenancy
+## Multi-Tenant
 
-> **Availability**: This section applies only when the project is created with the **multi-tenancy** template option enabled (`multitenancy == true`). When it is disabled, none of the types below are generated and every entity is single-tenant.
+> **Availability**: This section applies only when the project is created with the **multi-tenant** template option enabled (`multitenant == true`). When it is disabled, none of the types below are generated and every entity is single-tenant.
 
-The Boilerplate implements multi-tenancy as **row-level security**: a single tenant column on each tenant-owned table, plus a global EF Core query filter that transparently constrains every read to the caller's current tenant. Multiple tenants share the same database and the same user accounts; a user can belong to many tenants and switch between them.
+The Boilerplate implements multi-tenant as **row-level security**: a single tenant column on each tenant-owned table, plus a global EF Core query filter that transparently constrains every read to the caller's current tenant. Multiple tenants share the same database and the same user accounts; a user can belong to many tenants and switch between them.
 
 ### How the Model Works
 
@@ -860,7 +860,7 @@ The Keycloak instance comes pre-configured with the following demo accounts (Pro
 | bob | bob | demo | Standard demo user |
 | alice | alice | demo | Standard demo user |
 
-Note: The realm also contains a `t-admin` (tenant admin) group that maps to each tenant's admin role when the multi-tenancy feature is enabled.
+Note: The realm also contains a `t-admin` (tenant admin) group that maps to each tenant's admin role when the multi-tenant feature is enabled.
 
 #### How Keycloak Mapping Works
 

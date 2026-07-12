@@ -1364,7 +1364,7 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>الصورة المقدمة لا تحتوي على سيارة.</value>
   </data>
-    <!--#if (multitenancy == true) -->
+    <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>المستأجر</value>
   </data>

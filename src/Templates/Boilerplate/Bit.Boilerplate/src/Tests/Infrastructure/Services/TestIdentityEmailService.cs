@@ -67,7 +67,7 @@ public class TestIdentityEmailService : IdentityEmailService
         return Task.CompletedTask;
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     public override Task SendTenantInvitation(User user, string inviterDisplayName, string tenantTitle, Uri link, CancellationToken cancellationToken)
     {
         captureStore.Add(new() { Kind = CapturedEmailKind.TenantInvitation, ToEmailAddress = user.Email!, Link = link });

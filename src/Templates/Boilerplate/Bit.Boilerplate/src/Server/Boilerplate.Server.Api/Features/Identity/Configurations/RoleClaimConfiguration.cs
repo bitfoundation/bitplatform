@@ -21,7 +21,7 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
             RoleId = globalAdminRoleId
         });
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // Unlimited privileged sessions for the default store tenant's admins
         var tenantAdminRoleId = Guid.Parse("7ff71671-a1d6-5f97-abb9-d87d7b47d6e9");
         builder.HasData(new RoleClaim

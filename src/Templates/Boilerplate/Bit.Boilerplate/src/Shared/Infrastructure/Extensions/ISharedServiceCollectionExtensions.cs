@@ -75,7 +75,7 @@ public static partial class ISharedServiceCollectionExtensions
             {
                 options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
                 options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireAssertion(ctx => ctx.User.GetElevatedSessionExpiresOn() > TimeProvider.GetUtcNow()));
-                //#if (multitenancy == true)
+                //#if (multitenant == true)
                 options.AddPolicy(AuthPolicies.TENANT_SELECTED, x => x.RequireAssertion(ctx => ctx.User.GetTenantId() is not null));
                 //#endif
 

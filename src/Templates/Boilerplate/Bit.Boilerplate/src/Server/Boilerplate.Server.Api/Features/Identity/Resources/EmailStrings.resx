@@ -196,7 +196,7 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate app</value>
   </data>
-  <!--#if (multitenancy == true) -->
+  <!--#if (multitenant == true) -->
   <data name="TenantInvitationEmailSubject" xml:space="preserve">
     <value>You have been invited to join {0}</value>
   </data>

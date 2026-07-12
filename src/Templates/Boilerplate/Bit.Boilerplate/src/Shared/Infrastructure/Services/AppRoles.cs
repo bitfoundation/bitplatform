@@ -8,7 +8,7 @@ public class AppRoles
     /// </summary>
     public const string GlobalAdmin = "g-admin";
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Each tenant has its own role named t-admin (Scoped by Role's TenantId).
     /// Has the features returned by <see cref="AppFeatures.GetTenantAdminFeatures"/> automatically assigned (See IAuthTokenProvider.ReadClaims and AppJwtSecureDataFormat.Unprotect).
@@ -22,7 +22,7 @@ public class AppRoles
     public static bool IsBuiltInRole(string name)
     {
         return name is GlobalAdmin
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             or TenantAdmin
             //#endif
             ;

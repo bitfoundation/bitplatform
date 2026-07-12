@@ -20,7 +20,7 @@ public partial class MainLayout
             }
         ];
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         var tenantIsSelected = await authorizationService.IsAuthorized(authUser!, AuthPolicies.TENANT_SELECTED);
         //#endif
 
@@ -28,7 +28,7 @@ public partial class MainLayout
         var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.AdminPanel.Dashboard_View),
             authorizationService.IsAuthorized(authUser!, AppFeatures.AdminPanel.ProductCatalog_Manage));
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (tenantIsSelected is false)
         {
             dashboard = manageProductCatalog = false;
@@ -116,7 +116,7 @@ public partial class MainLayout
             authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Users_Manage),
             authorizationService.IsAuthorized(authUser!, AppFeatures.Management.SystemPrompts_Write));
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (tenantIsSelected is false)
         {
             manageRoles = manageUsers = manageAiPrompt = false;
@@ -126,7 +126,7 @@ public partial class MainLayout
         //#endif
 
         if (manageRoles || manageUsers || manageAiPrompt
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             || manageTenantsGlobally
             //#endif
             )
@@ -172,7 +172,7 @@ public partial class MainLayout
             }
             //#endif
 
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             if (manageTenantsGlobally)
             {
                 managementItem.ChildItems.Add(new()

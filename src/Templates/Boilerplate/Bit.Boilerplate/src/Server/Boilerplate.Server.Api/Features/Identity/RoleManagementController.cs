@@ -15,7 +15,7 @@ namespace Boilerplate.Server.Api.Features.Identity;
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     Authorize(Policy = AuthPolicies.TENANT_SELECTED),
     //#endif
     Authorize(Policy = AppFeatures.Management.Roles_Manage)]
@@ -36,7 +36,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     [HttpGet, EnableQuery]
     public IQueryable<RoleDto> GetAllRoles()
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         var currentTenantId = User.GetTenantId();
         var canManageAllTenants = User.HasFeature(AppFeatures.Management.Tenants_Manage_Global);
 
@@ -47,7 +47,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         var isUserGlobalAdmin = User.IsInRole(AppRoles.GlobalAdmin);
 
         return roleManager.Roles
@@ -65,7 +65,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         var query = userManager.Users
                           .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*External sign-in*/);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             // Non Global admins may only see the users of the current tenant that have accepted their invitation.
@@ -82,7 +82,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var query = userManager.Users.Where(u => u.Roles.Any(r => r.RoleId == roleId));
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             // Non Global admins may only see the roles of the current tenant.
@@ -99,7 +99,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var query = DbContext.RoleClaims.Where(rc => rc.RoleId == roleId);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             // Non Global admins may only see the roles of the current tenant.
@@ -120,7 +120,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         if (AppRoles.IsBuiltInRole(role.Name!))
             throw new BadRequestException(Localizer[nameof(AppStrings.CanNotChangeBuiltInRole), role.Name!]);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         role.TenantId = User.GetTenantId();
         //#endif
 
@@ -244,7 +244,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         if (isGlobalAdminRole && isGlobalAdminUser is false)
             throw new UnauthorizedException();
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // Non Global admins may only toggle roles on users of the current tenant that have accepted their invitation.
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
@@ -254,7 +254,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                 throw new ResourceNotFoundException().WithData("Reason", "User not found in the current tenant.");
         }
 
-        // userManager.AddToRoleAsync/RemoveFromRoleAsync find the role by its name which is not unique under multi-tenancy
+        // userManager.AddToRoleAsync/RemoveFromRoleAsync find the role by its name which is not unique under multi-tenant
         // (each tenant has its own t-admin role for example), so the UserRoles are managed directly here.
         var userRole = await DbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id, cancellationToken);
 
@@ -280,7 +280,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         if (await userManager.IsInRoleAsync(user, role.Name!))
         {
             if (isGlobalAdminRole)
@@ -328,7 +328,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed &&
                                                                             us.SignalRConnectionId != null &&
                                                                             us.User!.Roles.Any(r => r.RoleId == dto.RoleId))
-                                                               //#if (multitenancy == true)
+                                                               //#if (multitenant == true)
                                                                // A tenant scoped role only notifies the sessions currently signed into that tenant, so a user holding
                                                                // tenant A's role but signed into tenant B doesn't receive it on her tenant B session (global roles notify all).
                                                                .Where(us => role.TenantId == null || us.TenantId == role.TenantId)
@@ -349,7 +349,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             RequesterUserSessionId = User.GetSessionId()
             //#endif
         }, customSubscriptionFilter: s => s.UserSession!.User!.Roles.Any(r => r.RoleId == dto.RoleId)
-                                          //#if (multitenancy == true)
+                                          //#if (multitenant == true)
                                           // Same tenant scoping as the SignalR recipients above: a tenant scoped role only pushes to the sessions signed into that tenant.
                                           && (role.TenantId == null || s.UserSession!.TenantId == role.TenantId)
                                           //#endif
@@ -364,7 +364,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         var role = await roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id, cancellationToken)
                     ?? throw new ResourceNotFoundException().WithData("Reason", "Role not found.");
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // Non Global admins may only manage the roles of the current tenant.
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false && role.TenantId != User.GetTenantId())
             throw new ResourceNotFoundException().WithData("Reason", "Role not found in the current tenant.");
@@ -376,7 +376,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     private void EnsureRoleClaimsAreEditable(Role role)
     {
         if (role.Name is AppRoles.GlobalAdmin
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             or AppRoles.TenantAdmin
             //#endif
             )
@@ -386,7 +386,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     /// <summary>
     /// A role manager may only grant feature claims they themselves possess, so they cannot escalate privileges by
     /// assigning a feature they lack - for example granting a <see cref="AppFeatures.System"/> feature, or (under
-    /// multi-tenancy) the global-admin-only Tenants_Write_Global feature, to a role and thereby gaining those capabilities.
+    /// multi-tenant) the global-admin-only Tenants_Write_Global feature, to a role and thereby gaining those capabilities.
     /// Non-feature claims (e.g. <see cref="AppClaimTypes.MAX_PRIVILEGED_SESSIONS"/>) are not restricted here.
     /// </summary>
     private void EnsureCallerCanGrantClaims(IEnumerable<ClaimDto> claims)

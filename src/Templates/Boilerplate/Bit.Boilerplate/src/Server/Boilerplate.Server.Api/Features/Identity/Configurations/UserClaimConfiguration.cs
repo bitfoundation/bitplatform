@@ -7,7 +7,7 @@ public partial class UserClaimConfiguration : IEntityTypeConfiguration<UserClaim
 {
     public void Configure(EntityTypeBuilder<UserClaim> builder)
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // 1. The user claim must be unique within the tenant (When TenantId is not null).
         // 2. The user claim must be unique among the global user claims (When TenantId is null).
         //#if (database != "PostgreSQL")
@@ -38,7 +38,7 @@ public partial class UserClaimConfiguration : IEntityTypeConfiguration<UserClaim
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         builder.HasIndex(userClaim => new { userClaim.UserId, userClaim.ClaimType, userClaim.ClaimValue });
         //#endif
         //#if (IsInsideProjectTemplate == true)

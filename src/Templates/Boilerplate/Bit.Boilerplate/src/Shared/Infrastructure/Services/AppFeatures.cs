@@ -21,7 +21,7 @@ public class AppFeatures
 
         public const string Users_Manage = "1.2";
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         /// <summary>
         /// This feature is for tenant-admins only. It allows them to manage their own tenant.
         /// </summary>
@@ -80,7 +80,7 @@ public class AppFeatures
         return demoFeatures ??= [.. GetGlobalAdminFeatures().Where(f => f.Group != typeof(System) && f.Group != typeof(Management))];
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     private static (string Name, string Value, Type Group)[]? tenantAdminFeatures;
     /// <summary>
     /// Tenant admins have access to all features except <see cref="Management.Tenants_Manage_Global"/> and the <see cref="System"/>

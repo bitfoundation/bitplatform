@@ -8,7 +8,7 @@ public partial class UserClaimsService
     [AutoInject]
     private AppDbContext dbContext = default!;
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     [AutoInject]
     private IHttpContextAccessor httpContextAccessor = default!;
     //#endif
@@ -55,7 +55,7 @@ public partial class UserClaimsService
         if (_cachedClaims.TryGetValue(userId, out var cachedClaims))
             return cachedClaims;
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         Guid tenantId = httpContextAccessor.HttpContext!.Items.ContainsKey(AppClaimTypes.TENANT_ID) ?
             (Guid)httpContextAccessor.HttpContext!.Items[AppClaimTypes.TENANT_ID]! : Guid.Empty;
 
@@ -69,7 +69,7 @@ public partial class UserClaimsService
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId).Select(uc => new { ClaimType = uc.ClaimType!, ClaimValue = uc.ClaimValue! });
 
         var userRolesQuery = dbContext.Roles.Where(role => role.Users.Any(ur => ur.UserId == userId));

@@ -6,7 +6,7 @@ using Boilerplate.Server.Api.Features.Categories;
 //#if (sample == true || offlineDb == true)
 using Boilerplate.Server.Api.Features.Todo;
 //#endif
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using System.Reflection;
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Server.Api.Features.Identity.Services;
@@ -30,7 +30,7 @@ using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 namespace Boilerplate.Server.Api.Infrastructure.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     , TenantProvider tenantProvider
     //#endif
     )
@@ -38,7 +38,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     public DbSet<Tenant> Tenants { get; set; } = default!;
     public DbSet<TenantUser> TenantUsers { get; set; } = default!;
     //#endif
@@ -111,7 +111,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options
 
         ConfigureIdentityTableNames(modelBuilder);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         ConfigureTenantAwareEntities(modelBuilder);
         //#endif
 
@@ -156,7 +156,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options
     {
         ChangeTracker.DetectChanges();
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         foreach (var entry in ChangeTracker.Entries<ITenantAware>().Where(e => e.State is EntityState.Added && e.Entity.TenantId == default))
         {
             entry.Entity.TenantId = CurrentTenantId;
@@ -223,7 +223,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options
         base.ConfigureConventions(configurationBuilder);
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     private Guid CurrentTenantId => tenantProvider.GetCurrentTenantId();
 
     /// <summary>

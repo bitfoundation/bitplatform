@@ -12,7 +12,7 @@ namespace Boilerplate.Server.Api.Features.Identity;
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     Authorize(Policy = AuthPolicies.TENANT_SELECTED),
     //#endif
     Authorize(Policy = AppFeatures.Management.Users_Manage)]
@@ -28,7 +28,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [HttpGet, EnableQuery]
     public IQueryable<UserDto> GetAllUsers()
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             // Non Global admins may only see the users of the current tenant that have accepted their invitation.
@@ -46,7 +46,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         var usersQuery = DbContext.Users.AsQueryable();
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             var tenantId = User.GetTenantId();
@@ -62,7 +62,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     {
         var query = DbContext.UserSessions.Where(us => us.UserId == userId);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             // Non Global admins may only see the sessions that are created in (signed into) the current tenant.
@@ -81,7 +81,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         if (User.GetUserId() == userId)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveItselfErrorMessage)]);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         await EnsureUserIsInCurrentTenant(userId, cancellationToken);
 
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
@@ -137,7 +137,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         var entityToDelete = await DbContext.UserSessions.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         await EnsureUserIsInCurrentTenant(entityToDelete.UserId, cancellationToken);
 
         // Non Global admins may only revoke the sessions that are signed into the current tenant (See GetUserSessions).
@@ -161,7 +161,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task RevokeAllUserSessions(Guid userId, CancellationToken cancellationToken)
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         await EnsureUserIsInCurrentTenant(userId, cancellationToken);
         //#endif
 
@@ -169,7 +169,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
         var sessionsToRevokeQuery = DbContext.UserSessions.Where(us => us.Id != userSessionId && us.UserId == userId);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
             // Non Global admins may only revoke the sessions that are signed into the current tenant (See GetUserSessions).
@@ -203,7 +203,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         return user;
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Non Global admins may only manage the users of the current tenant that have accepted their invitation.
     /// </summary>

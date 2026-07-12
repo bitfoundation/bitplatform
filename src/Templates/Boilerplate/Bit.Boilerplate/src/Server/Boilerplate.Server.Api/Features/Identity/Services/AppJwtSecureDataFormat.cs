@@ -81,7 +81,7 @@ public partial class AppJwtSecureDataFormat
                     identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
                 }
             }
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             else if (principal.IsInRole(AppRoles.TenantAdmin))
             {
                 foreach (var feat in AppFeatures.GetTenantAdminFeatures())

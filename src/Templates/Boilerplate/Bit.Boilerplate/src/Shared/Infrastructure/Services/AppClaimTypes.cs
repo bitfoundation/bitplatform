@@ -37,7 +37,7 @@ public class AppClaimTypes
     /// </summary>
     public const string METHOD = "method";
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Guid: The id of the tenant the user is currently signed into (if any).
     /// </summary>

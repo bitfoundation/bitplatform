@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 
 using Boilerplate.Shared.Features.Chatbot;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
@@ -11,7 +11,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
 {
     public void Configure(EntityTypeBuilder<SystemPrompt> builder)
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // The prompt kind must be unique within the tenant, not globally.
         builder.HasIndex(sp => new { sp.TenantId, sp.PromptKind })
             .IsUnique();
@@ -19,7 +19,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         builder.HasIndex(sp => sp.PromptKind)
             .IsUnique();
         //#endif
@@ -35,7 +35,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             PromptKind = PromptKind.Support,
             Version = defaultVersion,
             Markdown = GetInitialSystemPromptMarkdown(),
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             TenantId = TenantConfiguration.FallbackTenantId,
             //#endif
         });
@@ -46,7 +46,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             PromptKind = PromptKind.AnalyzeProductImage,
             Version = defaultVersion,
             Markdown = GetAnalyzeProductImageSystemPromptMarkdown(),
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             TenantId = TenantConfiguration.FallbackTenantId,
             //#endif
         });
@@ -57,7 +57,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             PromptKind = PromptKind.FollowUpSuggestion,
             Version = defaultVersion,
             Markdown = GetFollowUpSuggestionSystemPromptMarkdown(),
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             TenantId = TenantConfiguration.FallbackTenantId,
             //#endif
         });

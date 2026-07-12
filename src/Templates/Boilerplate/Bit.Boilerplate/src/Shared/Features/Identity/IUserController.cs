@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Features.Identity.Dtos;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Shared.Features.Tenants.Dtos;
 //#endif
 
@@ -69,7 +69,7 @@ public interface IUserController : IAppController
     Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken);
     //#endif
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Returns the active tenants the user can switch into.
     /// Returns all active tenants if the user has the <see cref="AppFeatures.Management.Tenants_Manage_Global"/> feature.

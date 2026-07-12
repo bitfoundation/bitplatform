@@ -1,13 +1,13 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Features.Chatbot;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
 namespace Boilerplate.Server.Api.Features.Chatbot;
 
 public class SystemPrompt
-//#if (multitenancy == true)
+//#if (multitenant == true)
     : ITenantAware
 //#endif
 {
@@ -20,7 +20,7 @@ public class SystemPrompt
 
     public long Version { get; set; }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     [ForeignKey(nameof(TenantId))]
     public Tenant? Tenant { get; set; }
 

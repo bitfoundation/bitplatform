@@ -22,7 +22,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             PageUrls.Confirm, PageUrls.ForgotPassword, PageUrls.Settings, PageUrls.ResetPassword, PageUrls.SignIn,
                             PageUrls.SignUp, PageUrls.NotAuthorized, PageUrls.NotFound, PageUrls.Terms, PageUrls.PrivacyPolicy, PageUrls.About,
                             PageUrls.Roles, PageUrls.Users, 
-                            //#if (multitenancy == true)
+                            //#if (multitenant == true)
                             PageUrls.ManageMyTenants, PageUrls.ManageAllTenants,
                             //#endif
                             //#if (module == "Admin")

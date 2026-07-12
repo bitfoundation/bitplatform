@@ -47,7 +47,7 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
         }]);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         const string storeAdminUserName = "store-admin";
         const string storeAdminEmail = "store-admin@bitplatform.dev";
 

@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
@@ -9,14 +9,14 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // The category name must be unique within the tenant, not globally.
         builder.HasIndex(p => new { p.TenantId, p.Name }).IsUnique();
         //#endif
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         builder.HasIndex(p => p.Name).IsUnique();
         //#endif
         //#if (IsInsideProjectTemplate == true)
@@ -31,7 +31,7 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 Name = "Ford",
                 Color = "#FFCD56",
                 Version = defaultVersion,
-                //#if (multitenancy == true)
+                //#if (multitenant == true)
                 TenantId = TenantConfiguration.FallbackTenantId,
                 //#endif
             },
@@ -41,7 +41,7 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 Name = "Nissan",
                 Color = "#FF6384",
                 Version = defaultVersion,
-                //#if (multitenancy == true)
+                //#if (multitenant == true)
                 TenantId = TenantConfiguration.FallbackTenantId,
                 //#endif
             },
@@ -51,7 +51,7 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 Name = "Benz",
                 Color = "#4BC0C0",
                 Version = defaultVersion,
-                //#if (multitenancy == true)
+                //#if (multitenant == true)
                 TenantId = TenantConfiguration.FallbackTenantId,
                 //#endif
             },
@@ -61,7 +61,7 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 Name = "BMW",
                 Color = "#FF9124",
                 Version = defaultVersion,
-                //#if (multitenancy == true)
+                //#if (multitenant == true)
                 TenantId = TenantConfiguration.FallbackTenantId,
                 //#endif
             },
@@ -71,7 +71,7 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 Name = "Tesla",
                 Color = "#2B88D8",
                 Version = defaultVersion,
-                //#if (multitenancy == true)
+                //#if (multitenant == true)
                 TenantId = TenantConfiguration.FallbackTenantId,
                 //#endif
             });

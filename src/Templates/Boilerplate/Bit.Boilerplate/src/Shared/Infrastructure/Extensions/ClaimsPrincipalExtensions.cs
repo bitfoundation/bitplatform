@@ -41,7 +41,7 @@ public static partial class ClaimsPrincipalExtensions
             return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
         }
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         /// <summary>
         /// Returns the id of the tenant the user is currently signed into, or null if the user doesn't belong to any tenant yet.
         /// </summary>

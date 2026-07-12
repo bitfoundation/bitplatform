@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
@@ -10,13 +10,13 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         builder.HasIndex(p => new { p.TenantId, p.Name }).IsUnique();
         //#endif
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         builder.HasIndex(p => p.Name).IsUnique();
         //#endif
         //#if (IsInsideProjectTemplate == true)
@@ -24,7 +24,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#endif
         builder.HasIndex(p => p.ShortId).IsUnique();
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         void HasData(Product product)
         {
             product.TenantId = TenantConfiguration.FallbackTenantId;
@@ -34,7 +34,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         void HasData(Product product)
         {
             builder.HasData(product);

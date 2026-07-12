@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
@@ -9,7 +9,7 @@ public class UserClaim : IdentityUserClaim<Guid>
 {
     public User? User { get; set; }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Null means the claim is assigned to the user globally, otherwise the claim only applies while the user is signed into that tenant.
     /// </summary>

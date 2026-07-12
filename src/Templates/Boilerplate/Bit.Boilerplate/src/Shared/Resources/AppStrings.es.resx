@@ -1364,7 +1364,7 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="ImageNotCarError" xml:space="preserve">
     <value>La imagen proporcionada no contiene un automóvil.</value>
   </data>
-    <!--#if (multitenancy == true) -->
+    <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Inquilino</value>
   </data>

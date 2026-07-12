@@ -1364,7 +1364,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Das bereitgestellte Bild enthält kein Auto.</value>
   </data>
-    <!--#if (multitenancy == true) -->
+    <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Mandant</value>
   </data>

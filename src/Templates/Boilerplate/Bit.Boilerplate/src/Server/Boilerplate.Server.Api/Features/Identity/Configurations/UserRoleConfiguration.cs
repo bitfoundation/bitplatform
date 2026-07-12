@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Identity.Models;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
@@ -17,7 +17,7 @@ public partial class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
         var globalAdminRoleId = Guid.Parse("8ff71671-a1d6-5f97-abb9-d87d7b47d6e7");
         builder.HasData(new UserRole { RoleId = globalAdminRoleId, UserId = defaultTestUserId });
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         var tenantAdminRoleId = Guid.Parse("7ff71671-a1d6-5f97-abb9-d87d7b47d6e9");
         var storeAdminUserId = Guid.Parse("6ff71671-a1d6-4f97-abb9-d87d7b47d6e5");
 

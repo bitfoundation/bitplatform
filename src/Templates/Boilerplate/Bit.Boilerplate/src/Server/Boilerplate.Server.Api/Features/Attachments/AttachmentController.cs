@@ -54,12 +54,12 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [HttpPost("{productId}")]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
     [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
         //#endif
     public async Task<IActionResult> UploadProductPrimaryImage(Guid productId, IFormFile? file, CancellationToken cancellationToken)
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         await EnsureProductIsInCurrentTenant(productId, cancellationToken);
         //#endif
 
@@ -103,14 +103,14 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [HttpDelete("{productId}"), Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
     public async Task DeleteProductPrimaryImage(Guid productId, CancellationToken cancellationToken)
     {
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         await EnsureProductIsInCurrentTenant(productId, cancellationToken);
         //#endif
 
         await DeleteAttachment(productId, [AttachmentKind.ProductPrimaryImageMedium, AttachmentKind.ProductPrimaryImageOriginal], cancellationToken);
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Attachments aren't tenant-aware, so before creating/updating/deleting a product's images, the product must belong
     /// to the current tenant. Products that are being added aren't in the database yet, so they get a pass here.

@@ -19,7 +19,7 @@
             @Localizer[nameof(AppStrings.HomeMessage)]
         </BitText>
 
-        @*#if (multitenancy == true && module != "Sales")*@
+        @*#if (multitenant == true && module != "Sales")*@
         <AuthorizeView Policy="@AuthPolicies.TENANT_SELECTED">
             <NotAuthorized>
                 <BitCard FullWidth Style="padding:2rem">

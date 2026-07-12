@@ -26,7 +26,7 @@ public partial class AppMenu
     private bool showCultures;
     private bool isSignOutConfirmOpen;
     private BitChoiceGroupItem<string>[] cultures = default!;
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     private bool showTenants;
     private string? currentTenantId;
     private BitChoiceGroupItem<string>[] tenants = [];
@@ -34,7 +34,7 @@ public partial class AppMenu
 
     private bool ShowMainMenu =>
         showCultures is false
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         && showTenants is false
         //#endif
         ;
@@ -48,7 +48,7 @@ public partial class AppMenu
         await base.OnInitAsync();
 
         NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         AuthManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
         //#endif
 
@@ -72,7 +72,7 @@ public partial class AppMenu
         await cultureService.ChangeCulture(cultureName);
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     private async Task ShowTenants()
     {
         showTenants = true;
@@ -113,12 +113,12 @@ public partial class AppMenu
     private void OnDropMenuDismiss()
     {
         showCultures = false;
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         showTenants = false;
         //#endif
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     private void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         showTenants = false; // This would help refreshing the list of tenants, so they would get loaded again the next time user opens the tenant menu.
@@ -132,7 +132,7 @@ public partial class AppMenu
         await base.DisposeAsync(disposing);
 
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
         //#endif
     }

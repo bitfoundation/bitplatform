@@ -79,7 +79,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     private TaskCompletionSource<string?>? accessTokenTsc = null;
 
     public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreServerConnectionException = false
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         , Guid? requestedTenantId = null // The id of the tenant the user is trying to switch into.
         //#endif
         )
@@ -108,7 +108,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     {
                         RefreshToken = refreshToken,
                         ElevatedAccessToken = elevatedAccessToken,
-                        //#if (multitenancy == true)
+                        //#if (multitenant == true)
                         RequestedTenantId = requestedTenantId,
                         //#endif
                     }, default);
@@ -194,7 +194,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         return string.IsNullOrEmpty(accessToken) is false;
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Switches the user into the given tenant by refreshing the access token (See RefreshTokenRequestDto.TenantId).
     /// Passing the id of a tenant that the user doesn't have access to (or is not active) ends up kicking the user out.

@@ -9,7 +9,7 @@ using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Services;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 //#endif
@@ -533,7 +533,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
     //#endif
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     [HttpGet]
     public async Task<List<TenantDto>> GetTenants(CancellationToken cancellationToken)
     {

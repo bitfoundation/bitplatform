@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Identity.Models;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
@@ -20,7 +20,7 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
             .WithOne(ur => ur.Role)
             .HasForeignKey(ur => ur.RoleId);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // The base IdentityDbContext adds a global unique index (RoleNameIndex) on NormalizedName that conflicts
         // with having a t-admin role per tenant, so its uniqueness gets replaced by the following filtered unique indexes:
         // 1. The role name must be unique within the tenant (When TenantId is not null).
@@ -54,14 +54,14 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         builder.HasIndex(role => role.Name).IsUnique();
         //#endif
         //#if (IsInsideProjectTemplate == true)
         */
         //#endif
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // The default store tenant's admin role.
         builder.HasData(new Role
         {
@@ -86,7 +86,7 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
             Name = AppRoles.Demo,
             NormalizedName = AppRoles.Demo.ToUpperInvariant(),
             ConcurrencyStamp = "9ff71672-a1d5-4f97-abb7-d87d6b47d5e8",
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             TenantId = TenantConfiguration.FallbackTenantId
             //#endif
         });

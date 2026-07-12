@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Identity.Services;
 //#endif
 
@@ -15,7 +15,7 @@ public partial class AppControllerBase : ControllerBase
 
     [AutoInject] protected TimeProvider TimeProvider = default!;
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     [AutoInject] protected TenantProvider TenantProvider = default!;
     //#endif
 }

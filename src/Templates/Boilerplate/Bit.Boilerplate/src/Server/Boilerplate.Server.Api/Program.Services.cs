@@ -294,7 +294,7 @@ public static partial class Program
         //#endif
         //#endif
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         // The AppDbContext requires the scoped TenantProvider service to apply tenant based row level security,
         // so DbContext pooling (AddDbContextPool/AddPooledDbContextFactory) can't be used, because pooled contexts only accept DbContextOptions in their constructor.
         services.AddDbContextFactory<AppDbContext>(AddDbContext, ServiceLifetime.Scoped);
@@ -303,7 +303,7 @@ public static partial class Program
         //#if (IsInsideProjectTemplate == true)
         /*
         //#endif
-        //#if (multitenancy != true)
+        //#if (multitenant != true)
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
         services.AddDbContextPool<AppDbContext>(AddDbContext);
         //#endif
@@ -621,14 +621,14 @@ public static partial class Program
         {
             var cache = sp.GetRequiredService<IFusionCache>();
             var dbContext = sp.GetRequiredService<AppDbContext>();
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             var tenantId = sp.GetRequiredService<TenantProvider>().GetCurrentTenantId();
             var cacheKey = $"SystemPrompt_{tenantId}_{promptKind}";
             //#endif
             //#if (IsInsideProjectTemplate == true)
             /*
             //#endif
-            //#if (multitenancy != true)
+            //#if (multitenant != true)
             var cacheKey = $"SystemPrompt_{promptKind}";
             //#endif
             //#if (IsInsideProjectTemplate == true)
@@ -684,7 +684,7 @@ public static partial class Program
             .AddApiEndpoints();
 
         services.AddScoped<UserClaimsService>();
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         services.AddScoped<TenantProvider>();
         // Replaces the default RoleValidator to scope the role name uniqueness by the role's TenantId.
         services.Replace(ServiceDescriptor.Scoped<IRoleValidator<Features.Identity.Models.Role>, AppRoleValidator>());

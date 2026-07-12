@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
@@ -11,7 +11,7 @@ public class UserRole : IdentityUserRole<Guid>
 
     public Role? Role { get; set; }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Follows the <see cref="Role.TenantId"/> of the assigned role. Null means a global role assignment.
     /// </summary>

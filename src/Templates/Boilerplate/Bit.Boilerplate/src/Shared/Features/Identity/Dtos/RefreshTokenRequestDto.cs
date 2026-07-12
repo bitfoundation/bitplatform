@@ -12,7 +12,7 @@ public partial class RefreshTokenRequestDto
     /// </summary>
     public string? ElevatedAccessToken { get; set; }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// The id of the tenant the user is trying to switch into.
     /// If it has a value and the user has such an active tenant, then that id will be stored as the <see cref="AppClaimTypes.TENANT_ID"/> claim,

@@ -91,10 +91,10 @@
         <BitGridItem Class="grid-item md" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Multi-tenancy</BitText>
-                <BitToggle @bind-Value="multiTenancy.Value" OnText="true" OffText="false" />
+                <BitToggle @bind-Value="multiTenant.Value" OnText="true" OffText="false" />
             </div>
             <CodeBox>
-                @GetMultiTenancyCommand()
+                @GetMultiTenantCommand()
             </CodeBox>
             <BitText Typography="BitTypography.Body1" Gutter>
                 You can experience the Multi-tenancy feature instantly by logging into <a href="https://adminpanel.bitplatform.dev" target="_blank">adminpanel.bitplatform.dev</a> using <strong>store-user@bitplatform.dev</strong> (Password: <code>123456</code>). This gives you access to a demo tenant ("Store") where you can explore the Dashboard, Products, and Categories.

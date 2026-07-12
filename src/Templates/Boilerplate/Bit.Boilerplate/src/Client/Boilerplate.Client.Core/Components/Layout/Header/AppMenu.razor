@@ -87,7 +87,7 @@
                             </BitActionButton>
                         }
 
-                        @*#if (multitenancy == true)*@
+                        @*#if (multitenant == true)*@
                         <AuthorizeView>
                             <BitActionButton IconName="@BitIconName.Org" FullWidth OnClick="WrapHandled(ShowTenants)">
                                 <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
@@ -147,7 +147,7 @@
                         </BitChoiceGroup>
                     </BitStack>
                 }
-                @*#if (multitenancy == true)*@
+                @*#if (multitenant == true)*@
                 @if (showTenants)
                 {
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>

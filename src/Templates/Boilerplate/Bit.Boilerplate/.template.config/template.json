@@ -150,12 +150,12 @@
                 }
             ]
         },
-        "multitenancy": {
+        "multitenant": {
             "displayName": "Multi-tenancy",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "true",
-            "description": "Adds multi-tenancy support"
+            "description": "Adds multi-tenant support"
         },
         "captcha": {
             "displayName": "Captcha",
@@ -624,7 +624,7 @@
                     ]
                 },
                 {
-                    "condition": "(multitenancy != true)",
+                    "condition": "(multitenant != true)",
                     "exclude": [
                         "src/Shared/Features/Tenants/**",
                         "src/Server/Boilerplate.Server.Api/Features/Tenants/**",

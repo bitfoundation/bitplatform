@@ -12,7 +12,7 @@ namespace Boilerplate.Server.Api.Features.Products;
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     Authorize(Policy = AuthPolicies.TENANT_SELECTED),
     //#endif
     Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]

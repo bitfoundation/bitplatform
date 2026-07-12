@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Features.Identity.Models;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Identity.Services;
 //#endif
 
@@ -70,7 +70,7 @@ public static partial class UserManagerExtensions
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             // The freshly-created user gets the current tenant's demo role (See AssignDemoRole).
             var tenantId = userManager.ServiceProvider.GetRequiredService<TenantProvider>().GetCurrentTenantId();
             await userManager.AssignDemoRole(userToAdd.Id, tenantId);
@@ -78,7 +78,7 @@ public static partial class UserManagerExtensions
             //#if (IsInsideProjectTemplate == true)
             /*
             //#endif
-            //#if (multitenancy != true)
+            //#if (multitenant != true)
             result = await userManager.AddToRoleAsync(userToAdd, AppRoles.Demo);
 
             if (result.Succeeded is false)
@@ -91,7 +91,7 @@ public static partial class UserManagerExtensions
             return userToAdd;
         }
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         /// <summary>
         /// Grants the given tenant's demo role to the user, unless she already has it or that tenant has no demo role.
         /// Demo is a per-tenant role (See RoleConfiguration and TenantController.Create), so its name isn't globally

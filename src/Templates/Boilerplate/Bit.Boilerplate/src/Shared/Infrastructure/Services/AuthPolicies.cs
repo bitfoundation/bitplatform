@@ -24,7 +24,7 @@ public class AuthPolicies
     /// </summary>
     public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// Determines whether the signed-in user currently selected a tenant,
     /// meaning the access token contains the <see cref="AppClaimTypes.TENANT_ID"/> claim.

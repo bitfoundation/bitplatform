@@ -61,7 +61,7 @@ public interface IAuthTokenProvider
             foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
                 claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
         }
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         else if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.TenantAdmin))
         {
             foreach (var feat in AppFeatures.GetTenantAdminFeatures())

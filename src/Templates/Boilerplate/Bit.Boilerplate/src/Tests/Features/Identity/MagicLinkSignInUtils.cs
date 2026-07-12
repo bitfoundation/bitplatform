@@ -4,7 +4,7 @@ namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>
 /// Helpers for the magic link / one-time-password (OTP) sign-in flow, shared by the identity and the
-/// multi-tenancy UI tests.
+/// multi-tenant UI tests.
 /// <para>
 /// Instead of delivering e-mails, the test server captures every outgoing message in-memory as it is requested (See
 /// <see cref="TestIdentityEmailService"/>), which lets a test read back the confirmation link / OTP that would otherwise

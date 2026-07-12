@@ -1,13 +1,13 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Categories;
-//#if (multitenancy == true)
+//#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 
 namespace Boilerplate.Server.Api.Features.Products;
 
 public partial class Product
-//#if (multitenancy == true)
+//#if (multitenant == true)
     : ITenantAware
 //#endif
 {
@@ -43,7 +43,7 @@ public partial class Product
 
     public long Version { get; set; }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     [ForeignKey(nameof(TenantId))]
     public Tenant? Tenant { get; set; }
 

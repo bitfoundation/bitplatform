@@ -104,7 +104,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         var tenantId = await GetTenantId(user.Id, cancellationToken);
 
         if (tenantId is not null)
@@ -115,7 +115,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var userSession = await CreateUserSession(user.Id, cancellationToken);
 
-        //#if (multitenancy == true)
+        //#if (multitenant == true)
         userSession.TenantId = tenantId;
         //#endif
 
@@ -195,7 +195,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         return result;
     }
 
-    //#if (multitenancy == true)
+    //#if (multitenant == true)
     /// <summary>
     /// When the user signs in, her tenants' FirstOrDefault id gets used as the tenant id claim; if none, the claim doesn't get added at all.
     /// Only accepted memberships of active tenants are considered here; invited users can switch into the tenant
@@ -299,7 +299,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             if (await signInManager.ValidateSecurityStampAsync(userSession.User, securityStamp) is false)
                 throw new UnauthorizedException().WithData("Reason", "Security stamp has been updated (for example after 2fa configuration)");
 
-            //#if (multitenancy == true)
+            //#if (multitenant == true)
             // The tenant claim gets read from the user session (not from the passed refresh token), which is kept in sync
             // by the sign-in, tenant switches and UserController.LeaveTenant, so there's no need to re-check the user's
             // membership here. Note: There's also no need to check the tenant's IsActive, because deactivating a tenant

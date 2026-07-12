@@ -11,7 +11,7 @@ public partial class TenantInvitationUITests : AppPageTest
     private const string StoreAdminPassword = "123456";
 
     /// <summary>
-    /// End-to-end multi-tenancy invitation journey across two isolated browsers:
+    /// End-to-end multi-tenant invitation journey across two isolated browsers:
     /// <list type="number">
     /// <item>The tenant admin signs in and creates a brand-new tenant (which needs an elevated access token).</item>
     /// <item>The admin invites a brand-new e-mail address; nobody owns it yet, so the invitation itself registers the account as a pending member (See TenantController.InviteUser), and while the invitation is pending she does NOT appear in the tenant's users list.</item>

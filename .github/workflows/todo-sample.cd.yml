@@ -42,7 +42,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenancy false
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false
        
     - name: Use Bit.ResxTranslator
       run: |
@@ -95,7 +95,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenancy false
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false
        
     - name: Use Bit.ResxTranslator
       run: |
@@ -158,7 +158,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads --multitenancy false
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads --multitenant false
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -207,7 +207,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads --multitenancy false
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads --multitenant false
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -261,7 +261,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads --multitenancy false
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads --multitenant false
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -314,7 +314,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads --multitenancy false
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads --multitenant false
   
     - name: Use Bit.ResxTranslator
       run: |
@@ -376,7 +376,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --multitenancy false
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --multitenant false
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
@@ -477,7 +477,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --multitenancy false
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --multitenant false
       
     - name: Use Bit.ResxTranslator
       run: |

@@ -2,7 +2,7 @@
 @attribute [Route(PageUrls.SystemPrompts)]
 @attribute [Route("{culture?}" + PageUrls.SystemPrompts)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@*#if (multitenancy == true)*@
+@*#if (multitenant == true)*@
 @attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
 @*#endif*@
 @attribute [Authorize(Policy = AppFeatures.Management.SystemPrompts_Write)]

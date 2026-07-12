@@ -1364,7 +1364,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="ImageNotCarError" xml:space="preserve">
     <value>L'image fournie ne contient pas de voiture.</value>
   </data>
-    <!--#if (multitenancy == true) -->
+    <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Locataire</value>
   </data>
