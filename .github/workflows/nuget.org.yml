@@ -134,6 +134,11 @@ jobs:
     - name: dotnet pack Brouter
       run: dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output . --configuration Release
 
+    - name: dotnet build Brouter.Generators
+      run: dotnet build src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Brouter.Generators
+      run: dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output . --configuration Release
+
     - name: dotnet build Besql
       run: dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Besql
