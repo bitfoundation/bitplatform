@@ -105,7 +105,9 @@ internal class BrouterRouteRenderer
         {
             // Per-parameter entries are always retained; a transient hide is a no-op for them.
             if (willRemainMatched) return;
-            foreach (var entry in _keptEntries)
+            // Snapshot: deactivation handlers run synchronously and can mutate _keptEntries
+            // (e.g. via IBrouter.ClearKeepAlive -> DropKeptContent).
+            foreach (var entry in _keptEntries.ToArray())
             {
                 entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
             }
@@ -137,7 +139,9 @@ internal class BrouterRouteRenderer
         if (_route.KeepAlive is false || _route.EffectiveKeepAliveMax <= 1) return;
 
         var key = _route.ComputeKeepAliveKey();
-        foreach (var entry in _keptEntries)
+        // Snapshot: deactivation handlers run synchronously and can mutate _keptEntries
+        // (e.g. via IBrouter.ClearKeepAlive -> DropKeptContent).
+        foreach (var entry in _keptEntries.ToArray())
         {
             if (string.Equals(entry.Key, key, StringComparison.Ordinal)) continue;
             entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
@@ -152,7 +156,9 @@ internal class BrouterRouteRenderer
     /// </summary>
     public void NotifyTeardown(BrouterLocation location, Action<Exception> onError)
     {
-        foreach (var entry in _keptEntries)
+        // Snapshot: deactivation handlers run synchronously and can mutate _keptEntries
+        // (e.g. via IBrouter.ClearKeepAlive -> DropKeptContent).
+        foreach (var entry in _keptEntries.ToArray())
         {
             entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, location, onError);
         }
@@ -178,8 +184,9 @@ internal class BrouterRouteRenderer
             if (entry is null) return; // defensive: the commit render materializes the entry first
 
             // Sibling entries were already deactivated pre-render by PrepareArrival; this sweep is
-            // a cheap idempotent backstop (FireDeactivated no-ops on inactive contexts).
-            foreach (var other in _keptEntries)
+            // a cheap idempotent backstop (FireDeactivated no-ops on inactive contexts). Snapshot:
+            // handlers run synchronously and can mutate _keptEntries (e.g. via ClearKeepAlive).
+            foreach (var other in _keptEntries.ToArray())
             {
                 if (ReferenceEquals(other, entry) is false)
                 {
