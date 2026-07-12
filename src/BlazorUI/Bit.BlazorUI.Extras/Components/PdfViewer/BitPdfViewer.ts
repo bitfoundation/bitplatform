@@ -17,9 +17,40 @@ namespace BitBlazorUI {
             }
             const target = container.querySelector(`[data-page='${pageNumber}']`);
             if (target) {
-                target.scrollIntoView({ behavior: "smooth", block: "start" });
+                PdfViewer.scrollWithin(container, target, "start", "smooth");
                 // Render the destination immediately so jumps don't land on a placeholder.
                 PdfViewer.scheduleRender(container, (container as any).__bitPdvDotnet);
+            }
+        }
+
+        // Scrolls `target` into view by scrolling ONLY `container` — unlike
+        // scrollIntoView, which also scrolls every scrollable ancestor (including
+        // the hosting page, yanking the whole document around when the viewer is
+        // embedded mid-page).
+        private static scrollWithin(container: HTMLElement, target: Element, block: "start" | "center" | "nearest", behavior: ScrollBehavior = "auto") {
+            const cRect = container.getBoundingClientRect();
+            const tRect = target.getBoundingClientRect();
+
+            let top = container.scrollTop;
+            if (block === "start") {
+                top += tRect.top - cRect.top;
+            } else if (block === "center") {
+                top += tRect.top - cRect.top - (container.clientHeight - tRect.height) / 2;
+            } else if (tRect.top < cRect.top) {
+                top += tRect.top - cRect.top;
+            } else if (tRect.bottom > cRect.bottom) {
+                top += Math.min(tRect.top - cRect.top, tRect.bottom - cRect.bottom);
+            }
+
+            let left = container.scrollLeft;
+            if (tRect.left < cRect.left) {
+                left += tRect.left - cRect.left;
+            } else if (tRect.right > cRect.right) {
+                left += Math.min(tRect.left - cRect.left, tRect.right - cRect.right);
+            }
+
+            if (top !== container.scrollTop || left !== container.scrollLeft) {
+                container.scrollTo({ top, left, behavior });
             }
         }
 
@@ -252,7 +283,7 @@ namespace BitBlazorUI {
             }
             const target = container.querySelector(`[data-thumb='${pageNumber}']`);
             if (target) {
-                target.scrollIntoView({ block: "nearest" });
+                PdfViewer.scrollWithin(container, target, "nearest");
                 if ((container as any).__bitPdvThumbDotnet) {
                     PdfViewer.scheduleThumbRender(container, (container as any).__bitPdvThumbDotnet);
                 }
@@ -315,7 +346,7 @@ namespace BitBlazorUI {
 
         // Prints the rendered pages at their true physical size by cloning each page
         // into a hidden iframe (one sheet per page) and invoking the browser dialog.
-        public static print(container: HTMLElement) {
+        public static async print(container: HTMLElement) {
             if (!container) {
                 return;
             }
@@ -339,9 +370,16 @@ namespace BitBlazorUI {
                 "</style></head><body></body></html>");
             doc.close();
 
+            // Html-mode glyphs resolve through the document-wide embedded @font-face
+            // rules kept in <style> elements inside the viewer surface; without them the
+            // print document falls back to default fonts with wrong metrics.
+            container.querySelectorAll("style").forEach((style) => {
+                doc.head.appendChild(doc.importNode(style, true));
+            });
+
             const ptToPx = 96 / 72; // PDF points to CSS pixels for physical-size output
-            pages.forEach((inner) => {
-                const el = inner as HTMLElement;
+            for (const inner of Array.prototype.slice.call(pages) as HTMLElement[]) {
+                const el = inner;
                 const w = parseFloat(el.style.width) || 0;
                 const h = parseFloat(el.style.height) || 0;
                 const sheet = doc.createElement("div");
@@ -354,38 +392,73 @@ namespace BitBlazorUI {
                     clone.style.transform = "scale(" + ptToPx + ")";
                     clone.style.transformOrigin = "top left";
                     // A cloned <canvas> loses its pixels: substitute a snapshot image so
-                    // canvas-mode pages print their painted content.
+                    // canvas-mode pages print their painted content. Pages with a cached
+                    // display list re-rasterize at print resolution — the screen-resolution
+                    // bitmap is sized for on-screen zoom and prints blurry.
                     const srcCanvases = el.querySelectorAll("canvas[data-bit-pdv-canvas]");
                     const dstCanvases = clone.querySelectorAll("canvas[data-bit-pdv-canvas]");
-                    srcCanvases.forEach((src, i) => {
+                    for (let i = 0; i < srcCanvases.length; i++) {
+                        const src = srcCanvases[i] as HTMLCanvasElement;
                         const dst = dstCanvases[i];
                         if (!dst) {
-                            return;
+                            continue;
                         }
                         try {
                             const img = doc.createElement("img");
-                            img.src = (src as HTMLCanvasElement).toDataURL();
-                            img.style.cssText = (src as HTMLCanvasElement).style.cssText;
+                            img.src = (await PdfViewer.rasterizeForPrint(src)) || src.toDataURL();
+                            img.style.cssText = src.style.cssText;
                             dst.replaceWith(img);
                         } catch { /* tainted or unpainted canvas: leave the clone as-is */ }
-                    });
+                    }
                 }
                 doc.body.appendChild(sheet);
-            });
+            }
 
             const cleanup = () => setTimeout(() => frame.remove(), 1000);
             if (frame.contentWindow) {
                 frame.contentWindow.addEventListener("afterprint", cleanup, { once: true });
             }
-            // Allow a tick for fonts/images to lay out before printing.
-            setTimeout(() => {
+            // The copied @font-face fonts load lazily after layout; wait for them
+            // (bounded, in case a face is rejected) so the print snapshot uses the
+            // embedded faces instead of fallbacks.
+            const start = () => {
                 try {
                     frame.contentWindow!.focus();
                     frame.contentWindow!.print();
                 } catch {
                     frame.remove();
                 }
-            }, 300);
+            };
+            setTimeout(() => {
+                const fonts = doc.fonts;
+                if (fonts && fonts.ready) {
+                    Promise.race([
+                        fonts.ready,
+                        new Promise((resolve) => setTimeout(resolve, 3000))
+                    ]).then(start, start);
+                } else {
+                    start();
+                }
+            }, 100);
+        }
+
+        // Re-rasterizes a canvas-mode page at print resolution (300 dpi) from the
+        // display list cached by paintCanvasPages, so printouts stay crisp instead of
+        // upscaling the screen-resolution bitmap. Returns null when no display list is
+        // cached or rasterization fails (the caller falls back to a plain snapshot).
+        private static async rasterizeForPrint(src: HTMLCanvasElement): Promise<string | null> {
+            const cache = (src as any).__bitPdvOps;
+            if (!cache) {
+                return null;
+            }
+            try {
+                const off = document.createElement("canvas");
+                (off as any).__bitPdvOps = cache; // shares the decoded-image cache
+                await PdfViewer.replayOps(off, 1, 300 / 72); // device px per PDF point at 300 dpi
+                return off.toDataURL();
+            } catch {
+                return null;
+            }
         }
 
         // ----- Canvas rendering (display-list replay) -----
@@ -451,12 +524,13 @@ namespace BitBlazorUI {
             }, 180) as unknown as number);
         }
 
-        private static async replayOps(canvas: HTMLCanvasElement, scale: number) {
+        private static async replayOps(canvas: HTMLCanvasElement, scale: number, pixelRatio?: number) {
             const { ops, w, h, images } = (canvas as any).__bitPdvOps as { ops: any[][], w: number, h: number, images: Map<string, HTMLImageElement> };
             // Rasterize at devicePixelRatio x zoom so the backing store matches the
             // on-screen pixel density (the element is CSS-scaled by --bit-pdv-scale).
+            // Print passes an explicit pixelRatio to rasterize at printer resolution.
             // Cap the backing store to stay inside browser canvas limits on large pages.
-            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+            const dpr = pixelRatio || Math.min(window.devicePixelRatio || 1, 3);
             let px = dpr * Math.max(scale, 0.1);
             px = Math.min(px, 8192 / w, 8192 / h, Math.sqrt(16777216 / (w * h)));
             canvas.width = Math.max(1, Math.round(w * px));
@@ -725,7 +799,7 @@ namespace BitBlazorUI {
             (CSS as any).highlights.set("bit-pdv-search-current", new (globalThis as any).Highlight(range));
             const el = range.startContainer.parentElement;
             if (el) {
-                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                PdfViewer.scrollWithin(container, el, "center", "smooth");
             }
         }
 
