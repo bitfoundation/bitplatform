@@ -1,37 +1,40 @@
+@import "../../Styles/extra-variables.scss";
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+
 .bit-pdv {
     display: flex;
-    flex-direction: column;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
     overflow: hidden;
-    background: #525659;
-    font-family: system-ui, sans-serif;
     position: relative;
+    flex-direction: column;
+    background: $clr-bg-sec-dark;
+    font-family: $tg-font-family;
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 /* Top loading bar (indeterminate). Animates transform/opacity only so it keeps
    moving on the compositor even while the WASM thread is busy parsing. */
 .bit-pdv-progress {
-    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 3px;
-    background: rgba(76, 139, 245, 0.25);
-    overflow: hidden;
     z-index: 20;
+    overflow: hidden;
+    position: absolute;
+    background: $clr-pri-light;
 }
 
 .bit-pdv-progress-bar {
-    position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
     width: 40%;
-    background: #4c8bf5;
+    height: 100%;
+    position: absolute;
+    background: $clr-pri;
+    will-change: transform;
     border-radius: 0 3px 3px 0;
     animation: bit-pdv-progress-slide 1.1s ease-in-out infinite;
-    will-change: transform;
 }
 
 @keyframes bit-pdv-progress-slide {
@@ -40,10 +43,11 @@
     100% { transform: translateX(260%) scaleX(0.6); }
 }
 
-/* Placeholder shown while a page is being rendered on demand. */
+/* Placeholder shown while a page is being rendered on demand. Pdf pages paint
+   on white regardless of the theme, so the placeholder mimics a white page. */
 .bit-pdv-page-placeholder {
-    position: absolute;
     inset: 0;
+    position: absolute;
     background: linear-gradient(100deg, #f2f2f2 30%, #e6e6e6 50%, #f2f2f2 70%) #f2f2f2;
     background-size: 200% 100%;
     animation: bit-pdv-shimmer 1.3s linear infinite;
@@ -58,20 +62,20 @@
 /* Toolbar */
 .bit-pdv-toolbar {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.4rem 0.6rem;
-    background: #323639;
-    color: #f0f0f0;
-    font-size: 0.85rem;
-    border-bottom: 1px solid #1f2123;
+    gap: spacing(1.5);
     flex-wrap: wrap;
+    color: $clr-fg-pri;
+    align-items: center;
+    font-size: rem2(13.5px);
+    background: $clr-bg-sec;
+    padding: spacing(0.8) spacing(1.2);
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-pdv-group {
     display: flex;
+    gap: spacing(0.5);
     align-items: center;
-    gap: 0.25rem;
 }
 
 .bit-pdv-right {
@@ -80,45 +84,50 @@
 
 .bit-pdv-title {
     flex: 1;
-    text-align: center;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    opacity: 0.9;
     min-width: 0;
+    opacity: 0.9;
+    overflow: hidden;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .bit-pdv-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
     padding: 0;
     border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: #e8e8e8;
+    width: spacing(3.75);
+    height: spacing(3.75);
     cursor: pointer;
+    color: $clr-fg-pri;
+    align-items: center;
+    display: inline-flex;
+    background: transparent;
+    justify-content: center;
+    border-radius: $shp-border-radius;
 
     &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.14);
+        background: $clr-bg-sec-hover;
     }
 
     &:disabled {
-        opacity: 0.35;
         cursor: default;
+        color: $clr-fg-dis;
     }
 
     &.bit-pdv-act {
-        background: rgba(76, 139, 245, 0.35);
+        color: $clr-pri-text;
+        background: $clr-pri;
+
+        &:hover:not(:disabled) {
+            background: $clr-pri-hover;
+        }
     }
 
     svg {
-        width: 18px;
-        height: 18px;
         fill: none;
+        width: rem2(18px);
+        height: rem2(18px);
         stroke: currentColor;
         stroke-width: 2;
         stroke-linecap: round;
@@ -128,65 +137,69 @@
 
 .bit-pdv-search-box {
     display: flex;
+    gap: spacing(0.5);
     align-items: center;
-    gap: 0.25rem;
 }
 
 .bit-pdv-search-input {
-    width: 150px;
-    height: 26px;
-    border: 1px solid #5a5f63;
-    border-radius: 4px;
-    background: #1f2123;
-    color: #f0f0f0;
-    font-size: 0.8rem;
-    padding: 0 0.4rem;
+    width: spacing(19);
+    height: spacing(3.25);
+    color: $clr-fg-pri;
+    font-size: rem2(13px);
+    background: $clr-bg-pri;
+    padding: 0 spacing(0.8);
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-pdv-search-count {
-    min-width: 40px;
     text-align: center;
-    font-size: 0.78rem;
-    opacity: 0.8;
+    color: $clr-fg-sec;
+    min-width: spacing(5);
+    font-size: rem2(12.5px);
     font-variant-numeric: tabular-nums;
 }
 
 /* The pages-sidebar icon uses filled squares. */
 .bit-pdv-group:first-child .bit-pdv-btn svg {
-    fill: currentColor;
     stroke: none;
+    fill: currentColor;
 }
 
 .bit-pdv-page-input {
-    width: 42px;
-    height: 26px;
+    width: spacing(5.25);
+    height: spacing(3.25);
+    color: $clr-fg-pri;
     text-align: center;
-    border: 1px solid #5a5f63;
-    border-radius: 4px;
-    background: #1f2123;
-    color: #f0f0f0;
-    font-size: 0.8rem;
+    font-size: rem2(13px);
+    background: $clr-bg-pri;
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-pdv-page-total {
-    opacity: 0.7;
+    color: $clr-fg-sec;
     font-variant-numeric: tabular-nums;
 }
 
+.bit-pdv-page-label {
+    color: $clr-fg-sec;
+}
+
 .bit-pdv-zoom {
-    min-width: 44px;
     text-align: center;
+    min-width: spacing(5.5);
     font-variant-numeric: tabular-nums;
 }
 
 .bit-pdv-select {
-    height: 28px;
-    border: 1px solid #5a5f63;
-    border-radius: 4px;
-    background: #1f2123;
-    color: #f0f0f0;
-    font-size: 0.8rem;
-    padding: 0 0.25rem;
+    height: spacing(3.5);
+    color: $clr-fg-pri;
+    font-size: rem2(13px);
+    background: $clr-bg-pri;
+    padding: 0 spacing(0.5);
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 /* Body: optional thumbnail sidebar + scrollable surface */
@@ -197,27 +210,27 @@
 }
 
 .bit-pdv-thumbs {
-    width: 150px;
-    flex-shrink: 0;
-    overflow-y: auto;
-    background: #3a3e41;
-    padding: 0.75rem 0.5rem;
     display: flex;
+    flex-shrink: 0;
+    gap: spacing(1.5);
+    overflow-y: auto;
+    width: spacing(19);
     flex-direction: column;
-    gap: 0.75rem;
-    border-right: 1px solid #1f2123;
+    background: $clr-bg-sec;
+    padding: spacing(1.5) spacing(1);
+    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-pdv-thumb {
+    line-height: 0;
     cursor: pointer;
-    border: 2px solid transparent;
-    border-radius: 3px;
     background: #fff;
     position: relative;
-    line-height: 0;
+    border-radius: $shp-border-radius;
+    border: 2px $shp-border-style transparent;
 
     &.bit-pdv-act {
-        border-color: #4c8bf5;
+        border-color: $clr-pri;
     }
 }
 
@@ -226,34 +239,34 @@
 }
 
 .bit-pdv-thumb-label {
-    position: absolute;
-    bottom: 2px;
     right: 4px;
-    font-size: 0.7rem;
-    color: #fff;
-    background: rgba(0, 0, 0, 0.55);
-    border-radius: 3px;
-    padding: 0 4px;
+    bottom: 2px;
     line-height: 1.4;
+    position: absolute;
+    padding: 0 spacing(0.5);
+    color: $clr-ntr-white;
+    font-size: rem2(11px);
+    background: $clr-bg-overlay;
+    border-radius: $shp-border-radius;
 }
 
 .bit-pdv-surface {
     flex: 1;
     overflow: auto;
-    padding: 1rem;
+    padding: spacing(2);
     scroll-behavior: smooth;
 }
 
 /* Bookmarks (document outline) sidebar */
 .bit-pdv-outline {
-    width: 230px;
     flex-shrink: 0;
     overflow: auto;
-    background: #3a3e41;
-    padding: 0.5rem 0.25rem 0.5rem 0.5rem;
-    border-right: 1px solid #1f2123;
-    color: #e6e6e6;
-    font-size: 0.85rem;
+    width: spacing(29);
+    color: $clr-fg-pri;
+    background: $clr-bg-sec;
+    font-size: rem2(13.5px);
+    padding: spacing(1) spacing(0.5) spacing(1) spacing(1);
+    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
 
     > .bit-pdv-outline-list {
         padding-left: 0;
@@ -261,59 +274,60 @@
 }
 
 .bit-pdv-outline-list {
-    list-style: none;
     margin: 0;
-    padding: 0 0 0 0.75rem;
+    list-style: none;
+    padding: 0 0 0 spacing(1.5);
 }
 
 .bit-pdv-outline-item {
     cursor: pointer;
-    padding: 0.2rem 0.35rem;
-    border-radius: 3px;
-    white-space: nowrap;
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
+    border-radius: $shp-border-radius;
+    padding: spacing(0.4) spacing(0.7);
 
     &:hover {
-        background: #4c8bf5;
-        color: #fff;
+        color: $clr-pri-text;
+        background: $clr-pri;
     }
 
     &.bit-pdv-dis {
         cursor: default;
-        color: #9aa0a6;
+        color: $clr-fg-dis;
 
         &:hover {
+            color: $clr-fg-dis;
             background: transparent;
-            color: #9aa0a6;
         }
     }
 }
 
 .bit-pdv-empty {
-    display: grid;
-    place-items: center;
     height: 100%;
-    color: #c8c8c8;
+    display: grid;
+    color: $clr-fg-sec;
+    place-items: center;
 }
 
 .bit-pdv-pages {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    width: fit-content;
-    min-width: 100%;
+    gap: spacing(2);
     margin: 0 auto;
+    min-width: 100%;
+    align-items: center;
+    width: fit-content;
+    flex-direction: column;
 }
 
+/* Pdf pages paint on white regardless of the theme. */
 .bit-pdv-page {
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     line-height: 0;
     flex-shrink: 0;
-    position: relative;
+    background: #fff;
     overflow: hidden;
+    position: relative;
+    box-shadow: $box-shadow-2;
 }
 
 .bit-pdv-page .bit-pdv-html-page,
@@ -325,8 +339,8 @@
    container is transparent to pointer events so link annotations underneath stay
    clickable; each text span opts back in so dragging over it selects. */
 .bit-pdv-page .bit-pdv-text-layer span {
-    pointer-events: auto;
     cursor: text;
+    pointer-events: auto;
 }
 
 /* Selection spans (data-bit-pdv-sel) hold the real Unicode but paint nothing — keep
@@ -337,5 +351,5 @@
 .bit-pdv-page .bit-pdv-html-page span[data-bit-pdv-sel]::selection,
 .bit-pdv-thumb-svg .bit-pdv-html-page span[data-bit-pdv-sel]::selection {
     color: transparent;
-    background: rgba(35, 130, 255, 0.35);
+    background: color-mix(in srgb, #{$clr-pri} 35%, transparent);
 }

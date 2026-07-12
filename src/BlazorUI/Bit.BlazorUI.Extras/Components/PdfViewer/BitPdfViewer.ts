@@ -452,7 +452,7 @@ namespace BitBlazorUI {
         }
 
         private static async replayOps(canvas: HTMLCanvasElement, scale: number) {
-            const { ops, w, h, images } = (canvas as any).__bitPdvOps;
+            const { ops, w, h, images } = (canvas as any).__bitPdvOps as { ops: any[][], w: number, h: number, images: Map<string, HTMLImageElement> };
             // Rasterize at devicePixelRatio x zoom so the backing store matches the
             // on-screen pixel density (the element is CSS-scaled by --bit-pdv-scale).
             // Cap the backing store to stay inside browser canvas limits on large pages.
@@ -628,8 +628,8 @@ namespace BitBlazorUI {
             const style = document.createElement("style");
             style.id = "bit-pdv-search-style";
             style.textContent =
-                "::highlight(bit-pdv-search){background:#ffe066;color:#000}" +
-                "::highlight(bit-pdv-search-current){background:#ff8f00;color:#000}";
+                "::highlight(bit-pdv-search){background:var(--bit-clr-wrn,#ffe066);color:var(--bit-clr-wrn-text,#000)}" +
+                "::highlight(bit-pdv-search-current){background:var(--bit-clr-swr,#ff8f00);color:var(--bit-clr-swr-text,#000)}";
             document.head.appendChild(style);
         }
 
