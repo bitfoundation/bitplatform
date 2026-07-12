@@ -15,7 +15,7 @@ public partial class IconographyPage
 
         public string RazorIconName => $"IconName=\"@BitIconName.{FieldName}\"";
 
-        public string RazorIconInfo => $"Icon='@BitIconInfo.Bit(\"{Value}\")'";
+        public string RazorIconInfo => $"Icon=\"@BitIconInfo.Bit(\"{Value}\")\"";
     }
 
 
