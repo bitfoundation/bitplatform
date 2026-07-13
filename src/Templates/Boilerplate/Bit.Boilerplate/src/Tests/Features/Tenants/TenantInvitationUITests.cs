@@ -22,7 +22,7 @@ public partial class TenantInvitationUITests : AppPageTest
     /// <item>She leaves the tenant (which also needs an elevated access token); the Dashboard becomes off-limits again and she disappears from the users list.</item>
     /// </list>
     /// </summary>
-    [TestMethod, Ignore]
+    [TestMethod]
     public async Task TenantAdmin_InviteAcceptAndLeave_Flow_Should_WorkAsExpected()
     {
         await using var server = new AppTestServer(Context);
@@ -191,7 +191,7 @@ public partial class TenantInvitationUITests : AppPageTest
         // Leaving needs elevated access; she has none, so an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
 
-        var captured = await server.WaitForCapturedEmail(StoreAdminEmail, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
+        var captured = await server.WaitForCapturedEmail(email, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
         var elevatedToken = captured.Token!;
         await BitOtpInputUtils.FillOtpInputs(page, elevatedToken);
 
