@@ -16,19 +16,11 @@ namespace Bit.Brouter.Tests;
 [TestClass]
 public class NavigationLockTests : BunitTestContext
 {
-    private (IRenderedComponent<NavigationLockHost> Cut, IBrouter Brouter) RenderAt(string url)
-    {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
-        nav.NavigateTo(url);
-        var cut = RenderComponent<NavigationLockHost>();
-        return (cut, Services.GetRequiredService<IBrouter>());
-    }
-
     [TestMethod]
     public void Locked_content_cancels_the_navigation_preventively()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
-        var (cut, brouter) = RenderAt("http://localhost/edit");
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
         cut.Instance.EditState.Locked = true;
@@ -50,7 +42,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public void Unlocked_content_observes_the_callback_before_the_route_leave_guard_and_navigation_proceeds()
     {
-        var (cut, brouter) = RenderAt("http://localhost/edit");
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
         cut.InvokeAsync(() => brouter.Navigate("/other"));
@@ -69,7 +61,7 @@ public class NavigationLockTests : BunitTestContext
     public void Renavigating_lock_vetoes_a_parameter_change_on_the_same_route()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
-        var (cut, brouter) = RenderAt("http://localhost/doc/1");
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/doc/1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=doc]"));
 
         cut.Instance.DocState.Locked = true;
@@ -88,7 +80,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public void KeepAlive_content_sees_the_hidden_reason_and_can_let_the_navigation_proceed()
     {
-        var (cut, brouter) = RenderAt("http://localhost/kal");
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/kal");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
         cut.InvokeAsync(() => brouter.Navigate("/other"));
@@ -106,7 +98,7 @@ public class NavigationLockTests : BunitTestContext
     public void Lock_can_redirect_the_navigation()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
-        var (cut, brouter) = RenderAt("http://localhost/edit");
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
         cut.Instance.EditState.RedirectTo = "/target";
@@ -122,7 +114,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public void First_cancelling_lock_wins_and_later_handlers_are_skipped()
     {
-        var (cut, brouter) = RenderAt("http://localhost/two");
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/two");
         cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-testid=lockprobe]").Count));
 
         cut.Instance.TwoFirstState.Locked = true;
@@ -142,7 +134,7 @@ public class NavigationLockTests : BunitTestContext
     public async Task Async_lock_holds_the_navigation_open_for_a_custom_prompt()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
-        var (cut, brouter) = RenderAt("http://localhost/edit");
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
         // The user says "stay": the parked navigation is cancelled.

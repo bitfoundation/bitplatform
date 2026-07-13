@@ -5,7 +5,9 @@
 @using Bit.Brouter
 @inherits BrouterRouteBase
 
-<div data-testid="lifecycle">active:@IsActive activations:@_activations first:@_firstActivations deactivations:@_deactivations reasons:@_lastReason renavigations:@_renavigations</div>
+@* "activated:" rather than "activations:" - the assertions match these labels with substring
+   Contains, and "activations:N" would also match inside "deactivations:N". *@
+<div data-testid="lifecycle">active:@IsActive activated:@_activations first:@_firstActivations deactivations:@_deactivations reasons:@_lastReason renavigations:@_renavigations</div>
 
 @code {
     private int _activations;

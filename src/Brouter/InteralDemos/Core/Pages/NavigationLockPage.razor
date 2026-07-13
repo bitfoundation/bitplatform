@@ -53,8 +53,10 @@
 @if (_prompt is not null)
 {
     <div style="position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 1000;">
-        <div class="bb-card" style="max-width: 26rem; margin: 0;">
-            <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Unsaved changes</h3>
+        <div class="bb-card" style="max-width: 26rem; margin: 0;"
+             role="dialog" aria-modal="true" aria-labelledby="lock-prompt-title"
+             tabindex="-1" @ref="_promptDialog">
+            <h3 id="lock-prompt-title" class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Unsaved changes</h3>
             <p class="bb-card-desc">
                 Your draft for item @Id isn't saved. Leave for <code>@_promptTarget</code> anyway?
             </p>
@@ -77,8 +79,21 @@
     // buttons complete it. Non-null exactly while the dialog is rendered.
     private TaskCompletionSource<bool>? _prompt;
     private string? _promptTarget;
+    private ElementReference _promptDialog;
+    private bool _focusPrompt;
 
     private void Save() => _saved = _draft;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Move keyboard focus into the just-opened dialog so screen readers announce it and
+        // keyboard users aren't left focused on the link that triggered the parked navigation.
+        if (_focusPrompt)
+        {
+            _focusPrompt = false;
+            await _promptDialog.FocusAsync();
+        }
+    }
 
     private void AnswerPrompt(bool stay) => _prompt?.TrySetResult(stay);
 
@@ -94,6 +109,7 @@
 
         _prompt = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         _promptTarget = to.Path + to.Query;
+        _focusPrompt = true;
         StateHasChanged(); // show the dialog; the navigation stays parked on the await below
 
         // A superseding navigation cancels the token: dismiss the dialog and let the router move on.
