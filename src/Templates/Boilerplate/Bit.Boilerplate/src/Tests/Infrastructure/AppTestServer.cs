@@ -115,18 +115,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         }
     }
 
-    /// <summary>
-    /// Returns the 6 digit elevated-access token from the e-mail the server sent to <paramref name="email"/>. Callers
-    /// should first wait for the elevated-access OTP prompt (e.g. <c>.bit-otp-inp</c>) to be sure the token e-mail has
-    /// already been requested.
-    /// </summary>
-    public async Task<string> ReadElevatedAccessToken(string email, CancellationToken cancellationToken)
-    {
-        var captured = await WaitForCapturedEmail(email, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, cancellationToken);
-
-        return captured.Token!;
-    }
-
     public async ValueTask DisposeAsync()
     {
         if (webApp != null)

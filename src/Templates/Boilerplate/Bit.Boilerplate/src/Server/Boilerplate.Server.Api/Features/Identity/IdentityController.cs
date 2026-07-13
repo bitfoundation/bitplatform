@@ -395,7 +395,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
-            await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+            await SendConfirmationToken(user, request.ReturnUrl ?? returnUrl, cancellationToken);
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
         }
 

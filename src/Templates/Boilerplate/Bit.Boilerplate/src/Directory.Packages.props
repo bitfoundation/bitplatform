@@ -118,6 +118,7 @@
         <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.9" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.9" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Locking.Distributed.Redis" Version="2.6.0" />
+        <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Otp.NET" Version="1.4.0" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="3.0.10" />
         <PackageVersion Include="QRCoder" Version="1.8.0" />

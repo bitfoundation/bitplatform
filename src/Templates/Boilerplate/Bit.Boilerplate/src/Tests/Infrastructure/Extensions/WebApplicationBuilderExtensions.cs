@@ -1,8 +1,6 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Tests.Services;
 using Boilerplate.Tests.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -18,9 +16,6 @@ public static partial class WebApplicationBuilderExtensions
             builder.AddServerWebProjectServices();
 
             // Register test-specific services for all tests here
-
-            services.AddScoped<IStorageService, TestStorageService>();
-            services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
 
             // Capture every identity e-mail in-process (See TestIdentityEmailService) instead of rendering and delivering it,
             // so tests can read back the confirmation link / OTP / elevated-access token straight from the message. Capturing

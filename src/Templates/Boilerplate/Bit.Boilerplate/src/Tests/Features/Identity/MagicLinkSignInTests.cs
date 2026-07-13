@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Boilerplate.Tests.Infrastructure.Components;
 
 namespace Boilerplate.Tests.Features.Identity;
 
@@ -27,7 +28,7 @@ public partial class MagicLinkSignInTests : AppPageTest
         Assert.MatchesRegex(new Regex(@"^\d{6}$"), otpCode,
             "The one-time-password read from the confirmation e-mail should be a 6 digit code.");
 
-        await MagicLinkSignInUtils.FillOtpInputs(Page, otpCode);
+        await BitOtpInputUtils.FillOtpInputs(Page, otpCode);
 
         // Filling the last digit signs her in and lands on the home page.
         await Expect(Page).ToHaveURLAsync(serverAddress.ToString());

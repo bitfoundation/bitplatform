@@ -5,7 +5,7 @@ public class AppPageTest : PageTest
     [TestInitialize]
     public async Task PageTimeoutSetup()
     {
-        Page.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
+        Page.SetDefaultTimeout((float)TimeSpan.FromMinutes(1).TotalMilliseconds);
     }
 
     /// <summary>

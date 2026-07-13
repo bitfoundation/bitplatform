@@ -520,12 +520,29 @@
                 {
                     "condition": "(advancedTests != true)",
                     "exclude": [
+                        "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
+                        "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
+                        "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
+                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || aspire != true)",
+                    "exclude": [
+                        "src/Tests/Features/Identity/ExternalIdentityTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || module != Sales)",
+                    "exclude": [
+                        "src/Tests/Features/Products/BuyProductUITests.cs",
+                        "src/Tests/Features/Products/MagicLinkReturnUrlTests.cs"
                     ]
                 },
                 {
@@ -637,7 +654,8 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Components/TenantInvitationTemplate.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
-                        "src/Tests/Features/Tenants/TenantInvitationUITests.cs"
+                        "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs"
                     ]
                 },
                 {

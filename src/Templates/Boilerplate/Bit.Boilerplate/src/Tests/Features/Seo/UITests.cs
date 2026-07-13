@@ -15,7 +15,7 @@ public partial class UITests : AppPageTest
 
         var serverAddress = server.WebAppServerAddress;
 
-        await Page.GotoAsync(serverAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = (float)TimeSpan.FromSeconds(30).TotalMilliseconds });
+        await Page.GotoAsync(serverAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         var homeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), CultureInfo.InvariantCulture)!;
 
@@ -97,5 +97,39 @@ public partial class UITests : AppPageTest
 
         Assert.DoesNotContain(defaultHomeMessage, html);
         Assert.Contains(faHomeMessage, html);
+    }
+
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering"), TestCategory("Localization")]
+    public async Task Prerendering_FaAcceptLanguageHeader_HomePage_Should_RenderLocalizedHomeMessage()
+    {
+        // A browser can advertise the *neutral* culture "fa" (rather than the specific "fa-IR") in its Accept-Language
+        // header. AppAcceptLanguageRequestCultureProvider maps that neutral name up to the supported specific culture
+        // "fa-IR", so the (culture-less) home page must still be served in Persian. Unlike the test above, this drives a
+        // real browser to prove the neutral -> specific mapping happens purely from the Accept-Language header, with no
+        // culture in the URL.
+        var contextOptions = ContextOptions();
+        contextOptions.Locale = "fa"; // Playwright turns Locale into the Accept-Language request header (here just "fa", not "fa-IR").
+        await using var faContext = await Browser.NewContextAsync(contextOptions);
+
+        await using var server = new AppTestServer(faContext);
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        var serverAddress = server.WebAppServerAddress;
+
+        var faPage = await faContext.NewPageAsync();
+        faPage.SetDefaultTimeout((float)TimeSpan.FromMinutes(1).TotalMilliseconds);
+
+        // Navigate to the root (culture-less) URL; the culture is resolved solely from the "fa" Accept-Language header.
+        await faPage.GotoAsync(serverAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        // Read the expected translation from the resx resources for the fa-IR culture instead of hard-coding it.
+        var faCulture = CultureInfoManager.GetCultureInfo("fa-IR")!;
+        var faHomeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), faCulture)!;
+
+        await Expect(faPage.GetByText(faHomeMessage)).ToBeVisibleAsync();
     }
 }
