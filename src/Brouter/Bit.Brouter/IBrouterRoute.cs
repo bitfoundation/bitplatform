@@ -94,11 +94,11 @@ public interface IBrouterRoute
     /// <summary>
     /// Called BEFORE a pending navigation that would deactivate this component's routed content
     /// commits - the component-level navigation lock. Unlike the notify-only callbacks above, the
-    /// pipeline awaits it, and <see cref="BrouterRouteDeactivatingContext.Cancel"/> /
-    /// <see cref="BrouterRouteDeactivatingContext.Redirect"/> are preventive: the URL never
+    /// pipeline awaits it, and <see cref="BrouterRouteNavigatingContext.Cancel"/> /
+    /// <see cref="BrouterRouteNavigatingContext.Redirect"/> are preventive: the URL never
     /// changes when the navigation is blocked. The callback may await user input (a custom
     /// "unsaved changes" dialog) - render the prompt, await its completion, then decide - while
-    /// observing <see cref="BrouterRouteDeactivatingContext.CancellationToken"/> so a superseding
+    /// observing <see cref="BrouterRouteNavigatingContext.CancellationToken"/> so a superseding
     /// navigation dismisses the prompt. See <see cref="OnRenavigatingAsync"/> for navigations that
     /// keep this route matched (parameter changes).
     /// </summary>
