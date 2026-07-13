@@ -157,11 +157,13 @@ public class BrouterOutlet : ComponentBase, IDisposable
             ex => brouter?.ReportLifecycleError(location, ex));
     }
 
-    // Wraps a primary-outlet child's content in the route lifecycle cascade (see
-    // BrouterRouteContext) - kept and transient children alike, since the lifecycle is universal.
-    // The context is stable per entry, so the cascade is fixed; activate/deactivate/renavigate
-    // flow through IBrouterRoute callbacks, not cascade updates. Named outlets render lightweight
-    // view fragments and are not separately kept, so they don't carry the cascade.
+    // Wraps an outlet child's content in the route lifecycle cascade (see BrouterRouteContext) -
+    // primary and named outlets, kept and transient children alike, since the lifecycle is
+    // universal. The context is stable per entry, so the cascade is fixed; activate/deactivate/
+    // renavigate flow through IBrouterRoute callbacks, not cascade updates. Named views are never
+    // kept (retention is a primary-outlet concern), but BrouterRouteBase descendants inside them
+    // still need lifecycle and navigation-lock callbacks, so each named entry carries its own
+    // context - dispatched alongside the primary content's (see Broute.CollectActiveRouteContexts).
     private static RenderFragment WrapRouteContext(ChildEntry entry, RenderFragment inner) => b =>
     {
         b.OpenComponent<CascadingValue<BrouterRouteContext>>(0);
@@ -178,7 +180,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
     /// </summary>
     internal void NotifyDeparture(Broute route, BrouterLocation to, bool willRemainMatched, Action<Exception> onError)
     {
-        if (route.KeepAlive)
+        if (Name.Length == 0 && route.KeepAlive)
         {
             // Kept entries survive; a transient hide (pending-UI render while the route stays
             // matched) is a no-op for them, resolving as a renavigation at commit. Snapshot:
@@ -194,7 +196,8 @@ public class BrouterOutlet : ComponentBase, IDisposable
             return;
         }
 
-        // Transient child: its content unmounts and disposes; the entry (and its context/session)
+        // Transient child - or any named view, which is never kept regardless of KeepAlive (see
+        // WrapRouteContext): its content unmounts and disposes; the entry (and its context/session)
         // goes with it so a later visit starts fresh.
         if (_current is not null && ReferenceEquals(_current.Route, route))
         {
@@ -314,7 +317,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
                 : null;
             if (view is null) return;
 
-            RenderChild(builder, current, b => b.AddContent(0, view(current.Parameters)));
+            RenderChild(builder, current, WrapRouteContext(current, b => b.AddContent(0, view(current.Parameters))));
             return;
         }
 

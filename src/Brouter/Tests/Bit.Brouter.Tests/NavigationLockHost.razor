@@ -35,6 +35,29 @@
         </ChildContent>
     </Broute>
 
+    @* Lock probe living in a NAMED-outlet view fragment: named views carry their own lifecycle
+       context (see BrouterOutlet.WrapRouteContext), so a probe there must register and be able to
+       veto navigations exactly like primary content. *@
+    <Broute Path="/nshell">
+        <Content>
+            <main><BrouterOutlet /></main>
+            <aside data-testid="nside"><BrouterOutlet Name="side" /></aside>
+        </Content>
+        <ChildContent>
+            <Broute Path="/view">
+                <Content><div data-testid="nview-main">view main</div></Content>
+                <ChildContent>
+                    <BrouterView Name="side" Context="p">
+                        <NavigationLockProbe Label="nview" State="NamedViewState" />
+                    </BrouterView>
+                </ChildContent>
+            </Broute>
+            <Broute Path="/plain">
+                <Content><div data-testid="nplain">plain</div></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
     <Broute Path="/two">
         <Content>
             <NavigationLockProbe Label="two1" State="TwoFirstState" />
@@ -56,6 +79,7 @@
     public NavigationLockState DocState { get; } = new();
     public NavigationLockState KalState { get; } = new();
     public NavigationLockState KaloState { get; } = new();
+    public NavigationLockState NamedViewState { get; } = new();
     public NavigationLockState TwoFirstState { get; } = new();
     public NavigationLockState TwoSecondState { get; } = new();
 

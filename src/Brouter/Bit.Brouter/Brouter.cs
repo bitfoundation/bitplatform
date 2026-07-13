@@ -2523,7 +2523,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // route (KeepAliveMax > 1) that stays matched across a parameter change, the active
             // entry receives OnRenavigating here even though the commit then surfaces as a Hidden
             // deactivation + sibling activation - the new parameter key isn't known until the
-            // navigation's parameters commit.
+            // navigation's parameters commit. The reason is per-route: a keep-alive route's named
+            // views (never kept, see BrouterOutlet.WrapRouteContext) see Hidden here too, though
+            // their deactivation resolves as Disposing.
             if (node.HasActiveLifecycleHandlers())
             {
                 lockContexts ??= [];

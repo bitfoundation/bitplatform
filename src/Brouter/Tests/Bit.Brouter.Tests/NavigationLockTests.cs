@@ -102,6 +102,42 @@ public class NavigationLockTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task Named_outlet_view_content_registers_a_lock_and_can_veto_the_navigation()
+    {
+        // Regression: named-outlet views carry the route lifecycle cascade (see
+        // BrouterOutlet.WrapRouteContext), so a BrouterRouteBase inside a <BrouterView> fragment
+        // registers a lock against the CHILD route - without the cascade it would never be
+        // consulted and the navigation would sail through.
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/nshell/view");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
+
+        cut.Instance.NamedViewState.Locked = true;
+        await cut.InvokeAsync(() => brouter.Navigate("/nshell/plain"));
+
+        cut.WaitForAssertion(() =>
+        {
+            // Named views die with the child route - transient regardless of KeepAlive - so the
+            // lock sees the Disposing reason, and its cancel keeps content and URL in place.
+            CollectionAssert.Contains(cut.Instance.NamedViewState.Log, "nview:deactivating:Disposing:to=/nshell/plain");
+            Assert.IsNotNull(cut.Find("[data-testid=lockprobe]"));
+            Assert.AreEqual(0, cut.FindAll("[data-testid=nplain]").Count);
+            Assert.IsTrue(nav.Uri.EndsWith("/nshell/view", StringComparison.Ordinal));
+        });
+
+        // Unlocked, the same navigation proceeds and unmounts the named view.
+        cut.Instance.NamedViewState.Locked = false;
+        await cut.InvokeAsync(() => brouter.Navigate("/nshell/plain"));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=nplain]"));
+            Assert.AreEqual(0, cut.FindAll("[data-testid=lockprobe]").Count);
+            Assert.IsTrue(nav.Uri.EndsWith("/nshell/plain", StringComparison.Ordinal));
+        });
+    }
+
+    [TestMethod]
     public void KeepAlive_content_sees_the_hidden_reason_and_can_let_the_navigation_proceed()
     {
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/kal");

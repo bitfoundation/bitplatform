@@ -456,12 +456,10 @@ public class Broute : ComponentBase, IDisposable
     /// includes a host that only declares named outlets - see the render path's
     /// <c>HasPrimaryOutlet</c> check).
     /// </summary>
-    private BrouterOutlet? ResolveContentOutlet()
-    {
-        var outletHost = FindOutletHost();
-        if (outletHost is null) return null;
-        return outletHost.Outlets.TryGetValue(string.Empty, out var primary) ? primary : null;
-    }
+    private BrouterOutlet? ResolveContentOutlet() => PrimaryOutletOf(FindOutletHost());
+
+    private static BrouterOutlet? PrimaryOutletOf(Broute? outletHost)
+        => outletHost is not null && outletHost.Outlets.TryGetValue(string.Empty, out var primary) ? primary : null;
 
     // Lifecycle callback failures surface through the same observability channel as loader/guard
     // failures (IBrouter.OnError), never through the render pipeline.
@@ -471,8 +469,10 @@ public class Broute : ComponentBase, IDisposable
     /// <summary>
     /// Routes the pre-render deactivation notification (see <see cref="IBrouterRoute"/>) to
     /// whichever owner holds this route's content - the hosting primary outlet or the inline
-    /// renderer. Called by the navigation pipeline before the render that hides/unmounts the
-    /// content; see <see cref="BrouterRouteRenderer.NotifyDeparture"/> for the
+    /// renderer - plus the host's named outlets, which render this route's
+    /// <see cref="BrouterView"/> fragments with their own lifecycle contexts. Called by the
+    /// navigation pipeline before the render that hides/unmounts the content; see
+    /// <see cref="BrouterRouteRenderer.NotifyDeparture"/> for the
     /// <paramref name="willRemainMatched"/> contract.
     /// </summary>
     internal void NotifyDeparture(BrouterNavigationContext ctx, bool willRemainMatched)
@@ -480,14 +480,22 @@ public class Broute : ComponentBase, IDisposable
         if (_disposed || _renderer is null) return;
 
         var onError = CreateLifecycleErrorSink(ctx);
-        var outlet = ResolveContentOutlet();
-        if (outlet is not null)
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        if (primary is not null)
         {
-            outlet.NotifyDeparture(this, ctx.To, willRemainMatched, onError);
+            primary.NotifyDeparture(this, ctx.To, willRemainMatched, onError);
         }
         else
         {
             _renderer.NotifyDeparture(ctx.To, willRemainMatched, onError);
+        }
+
+        if (outletHost is null) return;
+        foreach (var (name, outlet) in outletHost.Outlets)
+        {
+            if (name.Length == 0) continue;
+            outlet.NotifyDeparture(this, ctx.To, willRemainMatched, onError);
         }
     }
 
@@ -501,29 +509,49 @@ public class Broute : ComponentBase, IDisposable
     {
         if (_disposed || _renderer is null) return false;
 
-        var outlet = ResolveContentOutlet();
-        return outlet is not null
-            ? outlet.HasActiveLifecycleHandlers(this)
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        var hasContentHandlers = primary is not null
+            ? primary.HasActiveLifecycleHandlers(this)
             : _renderer.HasActiveLifecycleHandlers();
+        if (hasContentHandlers) return true;
+
+        if (outletHost is null) return false;
+        foreach (var (name, outlet) in outletHost.Outlets)
+        {
+            if (name.Length == 0) continue;
+            if (outlet.HasActiveLifecycleHandlers(this)) return true;
+        }
+        return false;
     }
 
     /// <summary>
     /// Collects the lifecycle contexts of this route's active (visible) content that have handlers
     /// registered, from whichever owner holds the content (the hosting primary outlet or the inline
-    /// renderer), for the pre-commit navigation-lock dispatch.
+    /// renderer) and from the host's named outlets (this route's <see cref="BrouterView"/>
+    /// fragments), for the pre-commit navigation-lock dispatch. Primary content votes before
+    /// named views.
     /// </summary>
     internal void CollectActiveRouteContexts(List<BrouterRouteContext> into)
     {
         if (_disposed || _renderer is null) return;
 
-        var outlet = ResolveContentOutlet();
-        if (outlet is not null)
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        if (primary is not null)
         {
-            outlet.CollectActiveContexts(this, into);
+            primary.CollectActiveContexts(this, into);
         }
         else
         {
             _renderer.CollectActiveContexts(into);
+        }
+
+        if (outletHost is null) return;
+        foreach (var (name, outlet) in outletHost.Outlets)
+        {
+            if (name.Length == 0) continue;
+            outlet.CollectActiveContexts(this, into);
         }
     }
 
@@ -562,14 +590,22 @@ public class Broute : ComponentBase, IDisposable
         if (_disposed || _renderer is null || Matched is false) return;
 
         var onError = CreateLifecycleErrorSink(ctx);
-        var outlet = ResolveContentOutlet();
-        if (outlet is not null)
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        if (primary is not null)
         {
-            outlet.FireArrival(this, ctx.From, ctx.To, onError);
+            primary.FireArrival(this, ctx.From, ctx.To, onError);
         }
         else
         {
             _renderer.FireArrival(ctx.From, ctx.To, onError);
+        }
+
+        if (outletHost is null) return;
+        foreach (var (name, outlet) in outletHost.Outlets)
+        {
+            if (name.Length == 0) continue;
+            outlet.FireArrival(this, ctx.From, ctx.To, onError);
         }
     }
 
