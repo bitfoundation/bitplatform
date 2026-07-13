@@ -473,9 +473,12 @@ public class Broute : ComponentBase, IDisposable
     /// <see cref="BrouterView"/> fragments with their own lifecycle contexts. Called by the
     /// navigation pipeline before the render that hides/unmounts the content; see
     /// <see cref="BrouterRouteRenderer.NotifyDeparture"/> for the
-    /// <paramref name="willRemainMatched"/> contract.
+    /// <paramref name="willRemainMatched"/> and <paramref name="contentReplaced"/> contracts.
+    /// <paramref name="contentReplaced"/> is only honored by the inline renderer: an outlet-hosted
+    /// error render happens inside the surviving child entry, whose context handles the page swap
+    /// via <see cref="BrouterRouteContext.ClearAutoRegistered"/>.
     /// </summary>
-    internal void NotifyDeparture(BrouterNavigationContext ctx, bool willRemainMatched)
+    internal void NotifyDeparture(BrouterNavigationContext ctx, bool willRemainMatched, bool contentReplaced = false)
     {
         if (_disposed || _renderer is null) return;
 
@@ -488,7 +491,7 @@ public class Broute : ComponentBase, IDisposable
         }
         else
         {
-            _renderer.NotifyDeparture(ctx.To, willRemainMatched, onError);
+            _renderer.NotifyDeparture(ctx.To, willRemainMatched, onError, contentReplaced);
         }
 
         if (outletHost is null) return;
@@ -530,11 +533,14 @@ public class Broute : ComponentBase, IDisposable
     /// registered, from whichever owner holds the content (the hosting primary outlet or the inline
     /// renderer) and from the host's named outlets (this route's <see cref="BrouterView"/>
     /// fragments), for the pre-commit navigation-lock dispatch. Primary content votes before
-    /// named views.
+    /// named views. Returns the index in <paramref name="into"/> where the named-view contexts
+    /// begin: entries from there on are never retained by keep-alive (see
+    /// <see cref="BrouterOutlet.NotifyDeparture"/>), so their deactivation reason is always
+    /// Disposing regardless of the primary content's.
     /// </summary>
-    internal void CollectActiveRouteContexts(List<BrouterRouteContext> into)
+    internal int CollectActiveRouteContexts(List<BrouterRouteContext> into)
     {
-        if (_disposed || _renderer is null) return;
+        if (_disposed || _renderer is null) return into.Count;
 
         var outletHost = FindOutletHost();
         var primary = PrimaryOutletOf(outletHost);
@@ -546,13 +552,17 @@ public class Broute : ComponentBase, IDisposable
         {
             _renderer.CollectActiveContexts(into);
         }
+        var namedFrom = into.Count;
 
-        if (outletHost is null) return;
-        foreach (var (name, outlet) in outletHost.Outlets)
+        if (outletHost is not null)
         {
-            if (name.Length == 0) continue;
-            outlet.CollectActiveContexts(this, into);
+            foreach (var (name, outlet) in outletHost.Outlets)
+            {
+                if (name.Length == 0) continue;
+                outlet.CollectActiveContexts(this, into);
+            }
         }
+        return namedFrom;
     }
 
     /// <summary>

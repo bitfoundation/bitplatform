@@ -98,8 +98,13 @@ internal class BrouterRouteRenderer
     /// to unmount its content anyway: retained keep-alive content skips the event (it merely hides
     /// for the duration and resolves as a renavigation at commit), while transient content really is
     /// torn down and gets its Disposing notification plus a fresh session.
+    /// <paramref name="contentReplaced"/> is true when the coming render replaces this route's
+    /// committed content in place (an error boundary painting its ErrorContent, see
+    /// <see cref="Brouter.RenderNavigationError"/>): the page is disposed even on a keep-alive
+    /// route, so the departure is forced to Disposing and the session ends - the replacement
+    /// output then activates as a fresh one.
     /// </summary>
-    public void NotifyDeparture(BrouterLocation to, bool willRemainMatched, Action<Exception> onError)
+    public void NotifyDeparture(BrouterLocation to, bool willRemainMatched, Action<Exception> onError, bool contentReplaced = false)
     {
         if (_route.KeepAlive && _route.EffectiveKeepAliveMax > 1)
         {
@@ -114,14 +119,16 @@ internal class BrouterRouteRenderer
             return;
         }
 
-        if (_route.KeepAlive && _keptDropped is false)
+        if (_route.KeepAlive && _keptDropped is false && contentReplaced is false)
         {
             if (willRemainMatched) return;
             _context?.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
             return;
         }
 
-        // Transient content: the departing render unmounts and disposes it, ending the session.
+        // Transient content - or content an error boundary's render is about to replace
+        // (contentReplaced, keep-alive included): the departing render unmounts and disposes it,
+        // ending the session.
         _context?.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
         _context = null;
     }

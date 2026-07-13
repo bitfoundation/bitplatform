@@ -650,14 +650,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// honest Disposing notification for the instance that render destroys.
     /// </summary>
     private static void NotifyChainDepartures(BrouterNavigationContext ctx, Broute[] departingChain,
-        List<Broute>? surviving = null, bool notifySurvivorsAsRemaining = false)
+        List<Broute>? surviving = null, bool notifySurvivorsAsRemaining = false, Broute? contentReplacedNode = null)
     {
         for (var i = departingChain.Length - 1; i >= 0; i--)
         {
             var node = departingChain[i];
             var survives = surviving is not null && surviving.Contains(node);
             if (survives && notifySurvivorsAsRemaining is false) continue;
-            node.NotifyDeparture(ctx, willRemainMatched: survives);
+            // contentReplacedNode is the error-boundary route whose committed content the coming
+            // render REPLACES with its ErrorContent (see RenderNavigationError): its departure is
+            // forced to Disposing - keep-alive retention keeps a subtree that no longer holds the
+            // page, so Hidden would be a lie.
+            node.NotifyDeparture(ctx, willRemainMatched: survives,
+                contentReplaced: ReferenceEquals(node, contentReplacedNode));
         }
     }
 
@@ -2523,17 +2528,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // route (KeepAliveMax > 1) that stays matched across a parameter change, the active
             // entry receives OnRenavigating here even though the commit then surfaces as a Hidden
             // deactivation + sibling activation - the new parameter key isn't known until the
-            // navigation's parameters commit. The reason is per-route: a keep-alive route's named
-            // views (never kept, see BrouterOutlet.WrapRouteContext) see Hidden here too, though
-            // their deactivation resolves as Disposing.
+            // navigation's parameters commit. The reason is per-context: retention only ever
+            // preserves primary content, so a keep-alive route's named-view contexts (collected
+            // after the primary content's, see Broute.CollectActiveRouteContexts) always report
+            // Disposing even when the primary content reports Hidden.
             if (node.HasActiveLifecycleHandlers())
             {
                 lockContexts ??= [];
                 lockContexts.Clear();
-                node.CollectActiveRouteContexts(lockContexts);
+                var namedFrom = node.CollectActiveRouteContexts(lockContexts);
 
-                foreach (var context in lockContexts)
+                for (var c = 0; c < lockContexts.Count; c++)
                 {
+                    var context = lockContexts[c];
                     if (ctx.CancellationToken.IsCancellationRequested) return false;
                     if (stays)
                     {
@@ -2542,7 +2549,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                     }
                     else
                     {
-                        var reason = node.KeepAlive && KeptContentSurvivesLeave(node, staying)
+                        var reason = c < namedFrom
+                            && node.KeepAlive && KeptContentSurvivesLeave(node, staying)
                             ? BrouterRouteDeactivationReason.Hidden
                             : BrouterRouteDeactivationReason.Disposing;
                         await context.FireDeactivatingAsync(new BrouterRouteDeactivatingContext(ctx, reason));
@@ -2619,16 +2627,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // whose pending-navigation render already notified them is fine: departures are
                 // idempotent. The boundary node itself is deliberately NOT treated as surviving:
                 // when it was on screen, the CurrentError render REPLACES its committed content
-                // with ErrorContent - disposing the old page - so it gets an honest departure
-                // (ending its transient session; the error UI then activates as a fresh one)
-                // instead of a renavigation delivered to a destroyed instance.
+                // with ErrorContent - disposing the old page even when the route is keep-alive -
+                // so it gets an honest, forced-Disposing departure (ending its content session;
+                // the error UI then activates as a fresh one) instead of a renavigation or Hidden
+                // notification delivered to a destroyed instance.
                 var chain = new List<Broute>();
                 for (var n = node; n is not null; n = n.Parent) chain.Add(n);
                 chain.Reverse();
 
                 var surviving = new List<Broute>(chain);
                 surviving.Remove(node);
-                NotifyChainDepartures(ctx, _committedChain, surviving);
+                NotifyChainDepartures(ctx, _committedChain, surviving, contentReplacedNode: node);
 
                 // Departure callbacks run synchronously into user code and can start a new
                 // navigation (cancelling this one's token); the newer pipeline owns the

@@ -76,11 +76,10 @@
     private bool IsDirty => string.Equals(_draft, _saved, StringComparison.Ordinal) is false;
 
     // The parked decision of the currently open dialog: the lock callback awaits it, the dialog
-    // buttons complete it. Non-null exactly while the dialog is rendered. _promptDecided
-    // distinguishes an explicit button answer from a dismissal by a superseding navigation
+    // buttons complete it. Non-null exactly while the dialog is rendered. The result encodes the
+    // outcome: true = stay, false = leave & discard, null = dismissed by a superseding navigation
     // (the token registration below), which must neither cancel nor touch the draft.
-    private TaskCompletionSource<bool>? _prompt;
-    private bool _promptDecided;
+    private TaskCompletionSource<bool?>? _prompt;
     private string? _promptTarget;
     private ElementReference _promptDialog;
     private bool _focusPrompt;
@@ -98,10 +97,7 @@
         }
     }
 
-    private void AnswerPrompt(bool stay)
-    {
-        if (_prompt?.TrySetResult(stay) is true) _promptDecided = true;
-    }
+    private void AnswerPrompt(bool stay) => _prompt?.TrySetResult(stay);
 
     protected override Task OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
         => ConfirmLeaveAsync(context.To, context.CancellationToken, context.Cancel);
@@ -113,26 +109,33 @@
     {
         if (IsDirty is false) return;
 
-        _prompt = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _promptDecided = false;
+        // Everything below binds to THIS prompt instance: a superseding navigation's own lock can
+        // open a replacement dialog (reassigning _prompt) before this parked await has finished
+        // unwinding, and the unwind must not touch the replacement.
+        var prompt = new TaskCompletionSource<bool?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _prompt = prompt;
         _promptTarget = to.Path + to.Query;
         _focusPrompt = true;
         StateHasChanged(); // show the dialog; the navigation stays parked on the await below
 
-        // A superseding navigation cancels the token: dismiss the dialog and let the router move on.
-        await using var dismiss = token.Register(() => _prompt?.TrySetResult(false));
-        var stay = await _prompt.Task;
-        var decided = _promptDecided;
+        // A superseding navigation cancels the token: dismiss the dialog (null - no user decision)
+        // and let the router move on.
+        await using var dismiss = token.Register(() => prompt.TrySetResult(null));
+        var stay = await prompt.Task;
 
-        _prompt = null;
-        _promptTarget = null;
-        StateHasChanged();
+        // Close the dialog only while it is still this prompt's; a newer prompt owns the UI otherwise.
+        if (ReferenceEquals(_prompt, prompt))
+        {
+            _prompt = null;
+            _promptTarget = null;
+            StateHasChanged();
+        }
 
         // Dismissed by a superseding navigation, not the user: no decision was made, so keep the
         // dirty draft (the newer navigation runs its own lock and prompts again if needed).
-        if (decided is false) return;
+        if (stay is null) return;
 
-        if (stay) cancel();
+        if (stay.Value) cancel();
         else _draft = _saved; // leaving: drop the draft so a kept/renavigated instance isn't still dirty
     }
 }

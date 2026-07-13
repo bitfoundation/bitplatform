@@ -55,6 +55,17 @@
             <Broute Path="/plain">
                 <Content><div data-testid="nplain">plain</div></Content>
             </Broute>
+            @* Keep-alive child with probes in BOTH the primary content and a named view: on a
+               sibling switch retention preserves only the primary content, so its lock sees Hidden
+               while the named view's lock sees Disposing - in the same navigation. *@
+            <Broute Path="/kview" KeepAlive="true">
+                <Content><NavigationLockProbe Label="kview" State="KviewState" /></Content>
+                <ChildContent>
+                    <BrouterView Name="side" Context="p">
+                        <NavigationLockProbe Label="kviewside" State="KviewSideState" />
+                    </BrouterView>
+                </ChildContent>
+            </Broute>
         </ChildContent>
     </Broute>
 
@@ -80,6 +91,8 @@
     public NavigationLockState KalState { get; } = new();
     public NavigationLockState KaloState { get; } = new();
     public NavigationLockState NamedViewState { get; } = new();
+    public NavigationLockState KviewState { get; } = new();
+    public NavigationLockState KviewSideState { get; } = new();
     public NavigationLockState TwoFirstState { get; } = new();
     public NavigationLockState TwoSecondState { get; } = new();
 

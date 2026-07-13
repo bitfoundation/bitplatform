@@ -132,6 +132,16 @@ public class BrouterOutlet : ComponentBase, IDisposable
     internal void ClearKeepAlive()
     {
         var active = _current is not null && _current.Route.Matched ? _current : null;
+
+        // Teardown parity with ForgetChild/Dispose: any still-active dropped entry gets its
+        // Disposing deactivation before the re-render unmounts its subtree (a no-op for hidden
+        // entries, which were deactivated when they were hidden). Snapshot: deactivation handlers
+        // run synchronously and can mutate _kept.
+        foreach (var k in _kept.ToArray())
+        {
+            if (ReferenceEquals(k, active) is false) NotifyEntryTeardown(k);
+        }
+
         var removed = _kept.RemoveAll(k => ReferenceEquals(k, active) is false);
 
         // If the current entry was among the dropped (route not matched right now), forget it too:
@@ -140,6 +150,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
         // Mirrors the inline renderer's DropKeptContent nulling its _context.
         if (_current is not null && ReferenceEquals(_current, active) is false)
         {
+            NotifyEntryTeardown(_current);
             _current = null;
         }
 

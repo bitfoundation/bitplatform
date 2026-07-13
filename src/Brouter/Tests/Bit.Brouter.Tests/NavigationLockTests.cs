@@ -138,6 +138,25 @@ public class NavigationLockTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task Keepalive_named_view_lock_sees_disposing_while_primary_content_sees_hidden()
+    {
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/nshell/kview");
+        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-testid=lockprobe]").Count));
+
+        await cut.InvokeAsync(() => brouter.Navigate("/nshell/plain"));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=nplain]"));
+            // The reason is per-context: retention preserves the primary content across the
+            // sibling switch (Hidden), but a named view is never kept - its lock honestly sees
+            // Disposing in the very same navigation.
+            CollectionAssert.Contains(cut.Instance.KviewState.Log, "kview:deactivating:Hidden:to=/nshell/plain");
+            CollectionAssert.Contains(cut.Instance.KviewSideState.Log, "kviewside:deactivating:Disposing:to=/nshell/plain");
+        });
+    }
+
+    [TestMethod]
     public void KeepAlive_content_sees_the_hidden_reason_and_can_let_the_navigation_proceed()
     {
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/kal");

@@ -48,6 +48,16 @@
                 <div data-testid="elock-boundary">@err.Exception.Message</div>
             </ErrorContent>
         </Broute>
+
+        @* Keep-alive route with a lifecycle probe: when its own error boundary replaces the
+           content, the departure must report Disposing (the page is destroyed even though the
+           route is keep-alive), never Hidden. *@
+        <Broute Path="/kerr" KeepAlive="true" Loader="KErrLoader">
+            <Content><LifecycleProbe Log="KErrLog" /></Content>
+            <ErrorContent Context="err">
+                <div data-testid="kerr-boundary">@err.Exception.Message</div>
+            </ErrorContent>
+        </Broute>
     </ChildContent>
     <ErrorContent Context="err">
         <div data-testid="root-boundary">@err.Exception.Message</div>
@@ -60,6 +70,10 @@
 
     // Toggled by tests: lets /elock render fine first, then fail on a later navigation.
     public bool ELockShouldFail { get; set; }
+
+    // Same toggle for /kerr, plus the lifecycle log its probe reports into.
+    public bool KErrShouldFail { get; set; }
+    public List<string> KErrLog { get; } = [];
 
     public int ErrorHookCount { get; private set; }
     public Exception? LastError { get; private set; }
@@ -91,6 +105,11 @@
     private ValueTask<object?> ELockLoader(BrouterNavigationContext ctx)
         => ELockShouldFail
             ? throw new InvalidOperationException("elock loader failed")
+            : ValueTask.FromResult<object?>(null);
+
+    private ValueTask<object?> KErrLoader(BrouterNavigationContext ctx)
+        => KErrShouldFail
+            ? throw new InvalidOperationException("kerr loader failed")
             : ValueTask.FromResult<object?>(null);
 
     public void Dispose()
