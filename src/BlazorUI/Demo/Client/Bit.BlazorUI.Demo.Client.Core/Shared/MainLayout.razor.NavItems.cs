@@ -71,7 +71,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = ["/components/basic-list"] },
-                new() { Text = "Carousel", Url = "/components/carousel", Description = "Slideshow" },
+                new() { Text = "Carousel", Url = "/components/carousel", Description = "SlideShow" },
                 new() { Text = "Swiper", Url = "/components/swiper", Description = "TouchSlider" },
                 new() { Text = "Timeline", Url = "/components/timeline" },
             ]
