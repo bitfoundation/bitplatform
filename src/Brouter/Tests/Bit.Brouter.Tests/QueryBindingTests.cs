@@ -45,12 +45,23 @@ public class QueryBindingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void Guid_and_enum_query_values_convert_correctly()
+    public void Guid_query_value_converts_correctly()
     {
         var id = Guid.NewGuid();
-        var cut = RenderAt($"http://localhost/q?id={id}&day=Tuesday");
+        var cut = RenderAt($"http://localhost/q?id={id}");
 
         cut.WaitForAssertion(() => Assert.AreEqual(id.ToString(), cut.Find("[data-testid=id]").TextContent));
+    }
+
+    [TestMethod]
+    public void Enum_query_value_binds_via_BrouterQuery()
+    {
+        // Enums are outside the framework query supplier's supported types (it throws for them when
+        // the property uses [SupplyParameterFromQuery]); [BrouterQuery] is the opt-in escape hatch -
+        // the supplier ignores it, and Brouter's own converter handles the enum. This render (with
+        // bUnit's framework supplier active) also proves the supplier leaves the property alone.
+        var cut = RenderAt("http://localhost/q?day=Tuesday");
+
         cut.WaitForAssertion(() => Assert.AreEqual("Tuesday", cut.Find("[data-testid=day]").TextContent));
     }
 
@@ -66,7 +77,7 @@ public class QueryBindingTests : BunitTestContext
     [TestMethod]
     public void Aliased_query_uses_attribute_name_over_property_name()
     {
-        // The "Aliased" property is annotated with [BrouterQuery(Name = "q")];
+        // The "Aliased" property is annotated with [SupplyParameterFromQuery(Name = "q")];
         // its property name should NOT be matched.
         var cut = RenderAt("http://localhost/q?q=hello&aliased=ignored");
 

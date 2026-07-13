@@ -96,7 +96,7 @@ render modes.
 - Router-level hooks: `OnMatch` (a route matched) and `OnNotFound` (nothing matched), alongside the global `IBrouter` events
 - `NotFoundUrl` redirect or inline `NotFound` content
 - **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
-- **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
+- **Auto-binding** to plain `[Parameter]` properties by name (Blazor-style) and `[SupplyParameterFromQuery]` for query values, plus two opt-in Brouter attributes that extend the built-in tools: `[BrouterParameter(Name = ...)]` remaps a route parameter to a differently-named property, and `[BrouterQuery]` binds query values of types the framework supplier can't parse (e.g. enums)
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
 - **Relative navigation**: `./edit` and `../sibling` resolve against the current location (segment math, React Router style) in `Navigate`, guard redirects and `<BrouterLink>`
@@ -138,14 +138,46 @@ render modes.
 
 ## Auto-bound parameters
 
+Route parameters bind to `[Parameter]` properties by name, exactly like the built-in Blazor
+`Router` - no extra attribute needed:
+
 ```razor
 <Broute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
 ```
 
 ```razor
 @code {
-    [Parameter, BrouterParameter] public string? Username { get; set; }
+    [Parameter] public string? Username { get; set; }
+}
+```
+
+When the property name and the route parameter name differ, remap with
+`[BrouterParameter(Name = ...)]` (a feature the built-in Router doesn't have). It also serves as
+the escape hatch when an unrelated `[Parameter]` property collides with a route parameter name:
+
+```razor
+<Broute Path="/users/{id:int}" Component="@typeof(UserPage)" />
+```
+
+```razor
+@code {
     [Parameter, BrouterParameter(Name = "id")] public int UserId { get; set; }
+}
+```
+
+Only `[Parameter]` properties whose names match a parameter in the route's template (or that carry
+`[BrouterParameter]`) are driven by the router; other component parameters are left untouched.
+
+Query values bind the standard Blazor way, via `[Parameter, SupplyParameterFromQuery]`. When the
+property's type falls outside what the framework's query supplier can parse - enums, for example -
+switch that property to Brouter's opt-in `[BrouterQuery]`: the framework supplier ignores it (it only
+reacts to its own attribute), and Brouter converts the value itself (any `Convert.ChangeType`-compatible
+scalar, `Guid`, enums, nullables, and `string[]` for multi-value keys):
+
+```razor
+@code {
+    [Parameter, SupplyParameterFromQuery] public string? Tab { get; set; }   // ?tab=..., framework-supported type
+    [Parameter, BrouterQuery] public DayOfWeek? Day { get; set; }            // ?day=tuesday - enums need [BrouterQuery]
 }
 ```
 
@@ -1059,9 +1091,17 @@ A hand-declared `<Broute>` with the exact template of a discovered `@page` shado
 `Guard`/`Loader` to an existing page) - this is the one duplicate-template pairing that isn't rejected as
 ambiguous. Duplicating a template across two `@page` components, or across two hand-declared routes, throws.
 
-Discovered routes bind their `[Parameter]` properties by name (Blazor-style) - route segments to plain
-`[Parameter]` properties and query values to `[SupplyParameterFromQuery]` (or `[BrouterQuery]`). To get the
-same by-name binding on a hand-declared route, set `BindComponentParametersByName="true"` on the `<Broute>`.
+Discovered and hand-declared routes bind component parameters identically: route segments to `[Parameter]`
+properties by name (Blazor-style) and query values to `[Parameter, SupplyParameterFromQuery]` properties.
+Brouter binds the query values itself, so this works even where the framework's own query supplier isn't
+registered; where it is registered, the framework prefers the router-supplied value by design.
+Two framework rules to keep in mind: a `[SupplyParameterFromQuery]` property *without* `[Parameter]` is
+left to the framework's supplier (Blazor forbids setting it explicitly), so pair the two attributes on
+routed components; and `[SupplyParameterFromQuery]` property types must stay within the set the framework
+supplier can parse - string, numerics, bool, Guid, DateTime/DateOnly/TimeOnly, plus nullables and arrays
+of those (notably *not* enums) - because the supplier evaluates every annotated property and throws for
+anything else. For types outside that set, use Brouter's opt-in `[BrouterQuery]` instead (see
+[Auto-bound parameters](#auto-bound-parameters)).
 
 > Discovery reflects over the given assemblies, so - like the built-in Blazor `Router` - keep your routable
 > components preserved when trimming.

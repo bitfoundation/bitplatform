@@ -515,7 +515,7 @@ internal class BrouterRouteRenderer
                 EnsureNoAuthorizationRequirements(_route.Component);
                 b3.OpenComponent(0, _route.Component);
                 var seq = ApplyTypedParameters(b3, _route.Component, routeParams, _route.Brouter?.CurrentLocation,
-                    _route.BindComponentParametersByName ? _route.TemplateParameterNames : null);
+                    _route.TemplateParameterNames);
                 // Auto-register the page instance for the route lifecycle when it implements
                 // IBrouterRoute - the router instantiates the component here, so this is the one
                 // render path where interface discovery needs no cooperation from the page (the
@@ -614,31 +614,28 @@ internal class BrouterRouteRenderer
 
     // Returns the next free sequence number after the emitted parameter frames, so callers can
     // append further frames (e.g. a component reference capture) at a stable position.
-    internal static int ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location, IReadOnlySet<string>? conventionalTemplateParameters = null)
+    internal static int ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location, IReadOnlySet<string>? templateParameterNames)
     {
         // Reflect once per type. Simple, correct, allocates only on first hit per type.
         // Trimming: Component is annotated DynamicallyAccessedMemberTypes.All so its members are preserved.
         //
-        // Two binding modes:
-        //   - Default (conventionalTemplateParameters is null): bind only [BrouterParameter]/[BrouterQuery]
-        //     annotated properties. This is the original, opt-in Brouter model.
-        //   - Conventional (BindComponentParametersByName / attribute-discovered @page routes): additionally
-        //     bind plain [Parameter] properties by name and [SupplyParameterFromQuery] properties from the
-        //     query, Blazor-style. Plain [Parameter] properties that don't correspond to a route parameter
-        //     in this route's template are skipped so unrelated component parameters aren't clobbered.
-        var conventional = conventionalTemplateParameters is not null;
-        var bindings = conventional
-            ? BrouterTypedParameterCache.GetConventionalBindings(componentType)
-            : BrouterTypedParameterCache.GetBindings(componentType);
+        // One binding mode, Blazor-style: plain [Parameter] properties bind route parameters by name
+        // (filtered to the names in this route's template so unrelated component inputs aren't
+        // clobbered), and [SupplyParameterFromQuery] (or opt-in [BrouterQuery]) properties bind from
+        // the query string. [BrouterParameter] optionally remaps a route parameter to a
+        // differently-named property; such explicitly annotated properties bypass the template-name
+        // filter (the annotation is the developer's stated intent that the route drives this property).
+        var bindings = BrouterTypedParameterCache.GetBindings(componentType);
         // Sequence numbers for dynamic parameter attributes start after the OpenComponent (0).
         // These are stable per render because the same bindings are iterated in the same order.
         var seq = 1;
         foreach (var b in bindings)
         {
-            // In conventional mode, a non-query binding whose name isn't one of this route's template
+            // A convention-bound (non-annotated) binding whose name isn't one of this route's template
             // parameters is a plain component input, not a route value: leave it untouched. (The skip set
             // is deterministic for a given type+template, so sequence numbers stay stable across renders.)
-            if (conventional && b.IsQuery is false && conventionalTemplateParameters!.Contains(b.ParameterName) is false)
+            if (b.IsQuery is false && b.IsExplicit is false
+                && (templateParameterNames is null || templateParameterNames.Contains(b.ParameterName) is false))
                 continue;
 
             // Always emit an attribute frame per binding, even when the binding is missing or
@@ -717,7 +714,7 @@ internal class BrouterRouteRenderer
 
         var propType = binding.PropertyType;
 
-        // Multi-value support: per BrouterQueryAttribute docs, string[]-typed properties receive every value.
+        // Multi-value support: string[]-typed query-bound properties receive every value.
         if (propType == typeof(string[]))
         {
             var arr = new string[values.Count];
@@ -740,8 +737,8 @@ internal class BrouterRouteRenderer
         }
 
         // Convert.ChangeType doesn't support string -> Guid or string -> Enum, so handle them
-        // explicitly before falling back. Mirrors RouteParameters.TryGetWeak so [BrouterQuery]
-        // bindings accept the same scalar types as [BrouterParameter]. Nullable<T> is honored
+        // explicitly before falling back. Mirrors RouteParameters.TryGetWeak so query bindings
+        // accept the same scalar types as route parameter bindings. Nullable<T> is honored
         // because we resolved the underlying type above.
         if (underlying == typeof(Guid))
         {
@@ -798,16 +795,19 @@ internal class BrouterRouteRenderer
 internal static class BrouterTypedParameterCache
 {
     // ConcurrentDictionary lets cold-start renders run reflection in parallel instead of
-    // serializing on a single lock. The cache is read every render of every component that
-    // uses [BrouterParameter] / [BrouterQuery], so contention on a coarse lock matters when
-    // many such components are mounted at once (e.g. a list page with many cards).
+    // serializing on a single lock. The cache is read every render of every routed component,
+    // so contention on a coarse lock matters when many such components are mounted at once
+    // (e.g. a list page with many cards).
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, BrouterParameterBinding[]> _cache = new();
 
-    // Separate cache for the conventional (by-name) binding set used by attribute-discovered / @page
-    // routes. Kept apart from _cache because the two produce different binding sets for the same type
-    // (conventional covers every [Parameter] property; the default covers only annotated ones).
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, BrouterParameterBinding[]> _conventionalCache = new();
-
+    /// <summary>
+    /// Builds the binding set for a routed component. Every public <c>[Parameter]</c> property is
+    /// considered: query-supplied ones (<c>[SupplyParameterFromQuery]</c> or <c>[BrouterQuery]</c>)
+    /// become query bindings, the rest become route-parameter bindings keyed by property name
+    /// (honoring a <c>[BrouterParameter(Name = ...)]</c> override). The caller filters the
+    /// convention-bound route bindings down to the parameters actually present in the route template;
+    /// explicitly annotated ones (<see cref="BrouterParameterBinding.IsExplicit"/>) are always applied.
+    /// </summary>
     public static BrouterParameterBinding[] GetBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
         // Fast path: hit the cached value without going through the factory delegate.
@@ -832,100 +832,70 @@ internal static class BrouterTypedParameterCache
         var bindings = new List<BrouterParameterBinding>();
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            var paramAttr = prop.GetCustomAttribute<BrouterParameterAttribute>();
-            var queryAttr = prop.GetCustomAttribute<BrouterQueryAttribute>();
-            if (paramAttr is null && queryAttr is null) continue;
-
-            // Reject ambiguous annotations up front: a property carrying both attributes
-            // would silently bind as one or the other, leaving the developer unaware that
-            // half of their intent was dropped. Fail fast with a clear message that names
-            // the offending property and both attribute names.
-            if (paramAttr is not null && queryAttr is not null)
-                throw new InvalidOperationException(
-                    $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
-                    $"[{nameof(BrouterParameterAttribute)}] and [{nameof(BrouterQueryAttribute)}]. " +
-                    "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
-
-            // [BrouterParameter] / [BrouterQuery] only have an effect when Blazor recognises
-            // the property as a component parameter, i.e. it's annotated with [Parameter]
-            // (or [CascadingParameter], which Brouter doesn't drive) and has a public setter.
-            // Without that, AddAttribute below would feed an unknown attribute into the
-            // component and Blazor would throw a generic exception the moment the route
-            // matches. Failing here gives the developer a clear, actionable message.
-            var attrName = paramAttr is not null ? nameof(BrouterParameterAttribute) : nameof(BrouterQueryAttribute);
-            if (prop.GetCustomAttribute<ParameterAttribute>() is null)
-                throw new InvalidOperationException(
-                    $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but is missing [Parameter]. " +
-                    "Add [Parameter] (or remove the Brouter binding attribute).");
-            if (prop.SetMethod is null || prop.SetMethod.IsPublic is false)
-                throw new InvalidOperationException(
-                    $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but has no public setter. " +
-                    "Add a public setter so the router can assign the bound value.");
-
-            if (paramAttr is not null)
-            {
-                bindings.Add(new BrouterParameterBinding(prop.Name, paramAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
-            }
-            else
-            {
-                bindings.Add(new BrouterParameterBinding(prop.Name, queryAttr!.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
-            }
-        }
-
-        return bindings.ToArray();
-    }
-
-    /// <summary>
-    /// Builds the binding set for conventional (Blazor-style) route components - those rendered by an
-    /// attribute-discovered route or with <see cref="Broute.BindComponentParametersByName"/> set. Every
-    /// public <c>[Parameter]</c> property is considered: query-supplied ones (<c>[SupplyParameterFromQuery]</c>
-    /// or <c>[BrouterQuery]</c>) become query bindings, the rest become route-parameter bindings keyed by
-    /// property name (honoring a <c>[BrouterParameter(Name = ...)]</c> override). The caller filters the
-    /// route bindings down to the parameters actually present in the route template.
-    /// </summary>
-    public static BrouterParameterBinding[] GetConventionalBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
-    {
-        if (_conventionalCache.TryGetValue(type, out var cached)) return cached;
-
-        var bindings = BuildConventionalBindings(type);
-        _conventionalCache.TryAdd(type, bindings);
-        return _conventionalCache.TryGetValue(type, out var stored) ? stored : bindings;
-    }
-
-    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2067",
-        Justification = "type flows from GetConventionalBindings whose parameter is annotated with " +
-                        "DynamicallyAccessedMemberTypes.PublicProperties; the factory only reads public properties.")]
-    private static BrouterParameterBinding[] BuildConventionalBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
-    {
-        var bindings = new List<BrouterParameterBinding>();
-        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-        {
-            // Only Blazor component parameters participate. [CascadingParameter] properties are driven by
-            // the framework, not by route values, so they're intentionally excluded.
-            if (prop.GetCustomAttribute<ParameterAttribute>() is null) continue;
-            if (prop.SetMethod is null || prop.SetMethod.IsPublic is false) continue;
-
             var brouterParam = prop.GetCustomAttribute<BrouterParameterAttribute>();
             var brouterQuery = prop.GetCustomAttribute<BrouterQueryAttribute>();
+            var brouterAttrName = brouterParam is not null ? nameof(BrouterParameterAttribute)
+                : brouterQuery is not null ? nameof(BrouterQueryAttribute) : null;
+
+            // Only Blazor component parameters participate. [CascadingParameter] properties are driven by
+            // the framework, not by route values, so they're intentionally excluded. For plain properties
+            // that's a silent skip (standard Blazor semantics); for Brouter-annotated ones it's a
+            // developer error - the annotation states binding intent that can never take effect - so
+            // fail fast with an actionable message instead of leaving the property mysteriously unbound.
+            if (prop.GetCustomAttribute<ParameterAttribute>() is null)
+            {
+                if (brouterAttrName is not null)
+                    throw new InvalidOperationException(
+                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{brouterAttrName}] but is missing [Parameter]. " +
+                        "Add [Parameter] (or remove the Brouter binding attribute).");
+                continue;
+            }
+            if (prop.SetMethod is null || prop.SetMethod.IsPublic is false)
+            {
+                if (brouterAttrName is not null)
+                    throw new InvalidOperationException(
+                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{brouterAttrName}] but has no public setter. " +
+                        "Add a public setter so the router can assign the bound value.");
+                continue;
+            }
+
+            var supplyFromQuery = prop.GetCustomAttribute<SupplyParameterFromQueryAttribute>();
+
+            // Reject ambiguous annotation pairs up front: a property carrying two binding attributes
+            // would silently bind as one or the other, leaving the developer unaware that half of their
+            // intent was dropped. [BrouterQuery] + [SupplyParameterFromQuery] is additionally
+            // self-defeating: the framework's query supplier reacts to its own attribute regardless of
+            // Brouter, so combining them re-introduces the framework's type restrictions that
+            // [BrouterQuery] exists to escape. Fail fast with a clear message naming the property.
             if (brouterParam is not null && brouterQuery is not null)
                 throw new InvalidOperationException(
                     $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
                     $"[{nameof(BrouterParameterAttribute)}] and [{nameof(BrouterQueryAttribute)}]. " +
                     "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
-
-            var supplyFromQuery = prop.GetCustomAttribute<SupplyParameterFromQueryAttribute>();
+            if (brouterParam is not null && supplyFromQuery is not null)
+                throw new InvalidOperationException(
+                    $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
+                    $"[{nameof(BrouterParameterAttribute)}] and [{nameof(SupplyParameterFromQueryAttribute)}]. " +
+                    "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
+            if (brouterQuery is not null && supplyFromQuery is not null)
+                throw new InvalidOperationException(
+                    $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
+                    $"[{nameof(BrouterQueryAttribute)}] and [{nameof(SupplyParameterFromQueryAttribute)}]. " +
+                    "Pick exactly one: they are alternative ways to bind the same query value, and " +
+                    "[SupplyParameterFromQuery] additionally subjects the property to the framework " +
+                    "query supplier's type restrictions.");
 
             if (brouterQuery is not null)
             {
-                bindings.Add(new BrouterParameterBinding(prop.Name, brouterQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
+                bindings.Add(new BrouterParameterBinding(prop.Name, brouterQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true, IsExplicit: true));
             }
             else if (supplyFromQuery is not null)
             {
-                bindings.Add(new BrouterParameterBinding(prop.Name, supplyFromQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
+                bindings.Add(new BrouterParameterBinding(prop.Name, supplyFromQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true, IsExplicit: true));
             }
             else
             {
-                bindings.Add(new BrouterParameterBinding(prop.Name, brouterParam?.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
+                bindings.Add(new BrouterParameterBinding(prop.Name, brouterParam?.Name ?? prop.Name, prop.PropertyType, IsQuery: false, IsExplicit: brouterParam is not null));
             }
         }
 
@@ -933,4 +903,4 @@ internal static class BrouterTypedParameterCache
     }
 }
 
-internal readonly record struct BrouterParameterBinding(string PropertyName, string ParameterName, Type PropertyType, bool IsQuery);
+internal readonly record struct BrouterParameterBinding(string PropertyName, string ParameterName, Type PropertyType, bool IsQuery, bool IsExplicit);

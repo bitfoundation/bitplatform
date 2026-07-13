@@ -126,18 +126,6 @@ public class Broute : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public RenderFragment<BrouterErrorContext>? ErrorContent { get; set; }
 
-    /// <summary>
-    /// When <c>true</c>, the matched route parameters (and query-string values) are bound to the
-    /// rendered <see cref="Component"/>'s conventional <c>[Parameter]</c> properties <em>by name</em>,
-    /// Blazor-style, in addition to any <c>[BrouterParameter]</c>/<c>[BrouterQuery]</c> annotated
-    /// properties. This is what makes plain <c>@page</c> components (which bind route values to
-    /// <c>[Parameter]</c> properties, and query values via <c>[SupplyParameterFromQuery]</c>) render
-    /// correctly. It is enabled automatically for attribute-discovered routes
-    /// (see <see cref="Brouter.AppAssembly"/> / <see cref="Brouter.AdditionalAssemblies"/>).
-    /// Defaults to <c>false</c> so existing <c>[BrouterParameter]</c>-only components are unaffected.
-    /// </summary>
-    [Parameter] public bool BindComponentParametersByName { get; set; }
-
     /// <summary>Child routes (used for nesting).</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -354,7 +342,7 @@ public class Broute : ComponentBase, IDisposable
 
     /// <summary>
     /// The parameter names declared in this route's template (case-insensitive). Cached at construction
-    /// and consumed by the conventional by-name component binding (<see cref="BindComponentParametersByName"/>).
+    /// and consumed by the by-name component parameter binding (see BrouterRouteRenderer.ApplyTypedParameters).
     /// </summary>
     internal IReadOnlySet<string>? TemplateParameterNames { get; private set; }
 

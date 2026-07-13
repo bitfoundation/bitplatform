@@ -33,7 +33,7 @@ else
 }
 
 @code {
-    [Parameter, BrouterParameter] public int Id { get; set; }
+    [Parameter] public int Id { get; set; }
 
     private GalleryItem? Item => GalleryCatalog.Find(Id);
     private GalleryItem? Prev => GalleryCatalog.Find(Id - 1);

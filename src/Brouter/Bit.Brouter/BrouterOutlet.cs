@@ -379,7 +379,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
             BrouterRouteRenderer.EnsureNoAuthorizationRequirements(child.Component);
             b2.OpenComponent(0, child.Component);
             var seq = BrouterRouteRenderer.ApplyTypedParameters(b2, child.Component, entry.Parameters, child.Brouter?.CurrentLocation,
-                child.BindComponentParametersByName ? child.TemplateParameterNames : null);
+                child.TemplateParameterNames);
             // Auto-register the page instance for the route lifecycle (see the matching capture in
             // BrouterRouteRenderer.EmitContent). The sequence follows the parameter frames and is
             // stable per component type.

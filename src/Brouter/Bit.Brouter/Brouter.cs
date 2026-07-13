@@ -1162,7 +1162,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         b1.SetKey(discovered);
                         b1.AddAttribute(seq++, nameof(Broute.Path), discovered.Template);
                         b1.AddAttribute(seq++, nameof(Broute.Component), discovered.ComponentType);
-                        b1.AddAttribute(seq++, nameof(Broute.BindComponentParametersByName), true);
                         b1.CloseComponent();
                     }
                 }));

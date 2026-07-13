@@ -22,6 +22,6 @@ else
 }
 
 @code {
-    // Optional parameter: bound when the URL provides one, otherwise null.
-    [Parameter, BrouterParameter] public string? Username { get; set; }
+    // Optional parameter: bound by name when the URL provides one, otherwise null.
+    [Parameter] public string? Username { get; set; }
 }
