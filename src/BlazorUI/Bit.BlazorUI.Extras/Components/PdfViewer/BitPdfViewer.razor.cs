@@ -26,6 +26,15 @@ public partial class BitPdfViewer : BitComponentBase
     private readonly List<double> _pageWidths = [];  // points, display orientation
     private readonly List<double> _pageHeights = [];
 
+    // Pages waiting to be lazily rendered, drained one page per event-loop turn
+    // by the pump in EnsurePagesRendered so scrolling stays responsive on WASM.
+    private readonly Queue<int> _renderQueue = new();
+    private bool _renderPumpActive;
+
+    // The thumbnail sidebar's counterpart of the render queue/pump.
+    private readonly Queue<int> _thumbQueue = new();
+    private bool _thumbPumpActive;
+
     // The thumbnail sidebar owns its own render slots, decoupled from _pages, so
     // it can lazy-render only the thumbnails scrolled into the sidebar viewport
     // instead of mirroring whatever the main surface happens to have rendered.
@@ -179,6 +188,15 @@ public partial class BitPdfViewer : BitComponentBase
             await OnPageChanged.InvokeAsync(_currentPage);
         }
 
+        // Render the destination before scrolling so jumps (toolbar, thumbnails,
+        // outline) land on content instead of a placeholder.
+        if (_pages[target - 1] is null)
+        {
+            _pages[target - 1] = RenderPageContent(target - 1);
+            EvictDistantPages();
+            StateHasChanged();
+        }
+
         await _js.BitPdfViewerScrollToPage(_containerRef, _currentPage);
         if (_showThumbnails)
         {
@@ -256,7 +274,7 @@ public partial class BitPdfViewer : BitComponentBase
                     _loading = true;
                     _status = "Preparing all pages for printing…";
                     StateHasChanged();
-                    await Task.Yield();
+                    await Task.Delay(1);
                     rendered = true;
                 }
                 _pages[i] = RenderPageContent(i);
@@ -266,7 +284,7 @@ public partial class BitPdfViewer : BitComponentBase
         {
             _loading = false;
             StateHasChanged();
-            await Task.Yield(); // let the DOM paint the freshly rendered pages
+            await Task.Delay(1); // let the DOM paint the freshly rendered pages
         }
 
         await _js.BitPdfViewerPrint(_containerRef);
@@ -313,68 +331,112 @@ public partial class BitPdfViewer : BitComponentBase
 
     /// <summary>
     /// Invoked from JavaScript as pages approach the viewport. Renders any of
-    /// the requested pages that have not been rendered yet.
+    /// the requested pages that have not been rendered yet, one page per
+    /// event-loop turn: on single-threaded WASM rendering a whole batch in one
+    /// go would block scrolling and painting for the entire batch, which shows
+    /// up as freezes while scrolling through the document.
     /// </summary>
     [JSInvokable]
-    public void EnsurePagesRendered(int[] pageNumbers)
+    public async Task EnsurePagesRendered(int[] pageNumbers)
     {
         if (_document is null || pageNumbers is null) return;
 
-        bool changed = false;
         foreach (int n in pageNumbers)
         {
             int idx = n - 1;
-            if (idx >= 0 && idx < _pages.Count && _pages[idx] is null)
+            if (idx >= 0 && idx < _pages.Count && _pages[idx] is null && _renderQueue.Contains(idx) is false)
             {
-                _pages[idx] = RenderPageContent(idx);
-                changed = true;
+                _renderQueue.Enqueue(idx);
             }
         }
 
-        if (changed)
+        // A pump is already draining the queue (scroll events keep arriving
+        // while it yields); the pages just enqueued are picked up by it.
+        if (_renderPumpActive) return;
+
+        _renderPumpActive = true;
+        int version = _loadVersion; // a reload while yielding invalidates the queue
+        try
         {
-            EvictDistantPages();
-            StateHasChanged();
+            while (_renderQueue.Count > 0)
+            {
+                if (version != _loadVersion)
+                {
+                    _renderQueue.Clear();
+                    return;
+                }
+
+                int idx = _renderQueue.Dequeue();
+                if (idx >= _pages.Count || _pages[idx] is not null) continue;
+
+                _pages[idx] = RenderPageContent(idx);
+                EvictDistantPages();
+                StateHasChanged();
+                // Let the browser apply the diff, paint and process scroll input
+                // before the next (expensive) page render. Task.Delay (unlike
+                // Task.Yield, whose continuation may run before the browser gets
+                // control back) guarantees a real event-loop turn on WASM.
+                await Task.Delay(1);
+            }
+        }
+        finally
+        {
+            _renderPumpActive = false;
         }
     }
 
     /// <summary>
     /// Invoked from JavaScript as thumbnails approach the sidebar viewport.
-    /// Renders any requested thumbnails that are still placeholders. This is the
-    /// sidebar's counterpart to <see cref="EnsurePagesRendered"/> and runs on the
-    /// sidebar's own scroll, so opening the panel on a 500-page document renders
-    /// only the handful of thumbnails on screen.
+    /// Renders any requested thumbnails that are still placeholders, one per
+    /// event-loop turn (a thumbnail fragment is as heavy as a full page). This is
+    /// the sidebar's counterpart to <see cref="EnsurePagesRendered"/> and runs on
+    /// the sidebar's own scroll, so opening the panel on a 500-page document
+    /// renders only the handful of thumbnails on screen.
     /// </summary>
     [JSInvokable]
-    public void EnsureThumbsRendered(int[] pageNumbers)
+    public async Task EnsureThumbsRendered(int[] pageNumbers)
     {
         if (_document is null || pageNumbers is null) return;
 
-        bool changed = false;
-        int lo = int.MaxValue, hi = int.MinValue;
         foreach (int n in pageNumbers)
         {
             int idx = n - 1;
-            if (idx >= 0 && idx < _thumbs.Count)
+            if (idx >= 0 && idx < _thumbs.Count && _thumbs[idx] is null && _thumbQueue.Contains(idx) is false)
             {
-                lo = Math.Min(lo, idx);
-                hi = Math.Max(hi, idx);
-                if (_thumbs[idx] is null)
-                {
-                    _thumbs[idx] = RenderThumbContent(idx);
-                    changed = true;
-                }
+                _thumbQueue.Enqueue(idx);
             }
         }
 
-        if (changed)
+        if (_thumbPumpActive) return;
+
+        _thumbPumpActive = true;
+        int version = _loadVersion;
+        try
         {
-            // Evict around the range just requested (what is visible in the
-            // sidebar), not the current page — scrolling the sidebar leaves the
-            // current page put, so centering on it would blank the very
-            // thumbnails the user just scrolled to.
-            EvictDistantThumbs(lo, hi);
-            StateHasChanged();
+            while (_thumbQueue.Count > 0)
+            {
+                if (version != _loadVersion)
+                {
+                    _thumbQueue.Clear();
+                    return;
+                }
+
+                int idx = _thumbQueue.Dequeue();
+                if (idx >= _thumbs.Count || _thumbs[idx] is not null) continue;
+
+                _thumbs[idx] = RenderThumbContent(idx);
+                // Evict around the thumbnail just rendered (what the sidebar is
+                // showing), not the current page — scrolling the sidebar leaves the
+                // current page put, so centering on it would blank the very
+                // thumbnails the user just scrolled to.
+                EvictDistantThumbs(idx, idx);
+                StateHasChanged();
+                await Task.Delay(1);
+            }
+        }
+        finally
+        {
+            _thumbPumpActive = false;
         }
     }
 
@@ -565,6 +627,8 @@ public partial class BitPdfViewer : BitComponentBase
     {
         int version = ++_loadVersion; // supersedes any load still in flight
         _pages.Clear();
+        _renderQueue.Clear(); // pending lazy renders belong to the old document
+        _thumbQueue.Clear();
         _pageWidths.Clear();
         _pageHeights.Clear();
         _document = null;
@@ -582,10 +646,11 @@ public partial class BitPdfViewer : BitComponentBase
 
         // Show the progress bar and let it paint before the synchronous parse
         // work begins. The bar animates on the compositor so it keeps moving
-        // even while the WASM thread is busy parsing.
+        // even while the WASM thread is busy parsing. Task.Delay guarantees the
+        // browser gets an event-loop turn to paint (Task.Yield does not on WASM).
         _loading = true;
         StateHasChanged();
-        await Task.Yield();
+        await Task.Delay(1);
 
         // A newer Source arrived while we yielded: abandon this stale load.
         if (version != _loadVersion) return;
@@ -694,13 +759,13 @@ public partial class BitPdfViewer : BitComponentBase
             _pageHeights.Add(swap ? page.Width : page.Height);
         }
 
-        // Eagerly render a small window around the current page so something is
-        // visible instantly (page 1 on load, or the viewed page after rotation).
+        // Eagerly render only the current page so something is visible instantly
+        // (page 1 on load, or the viewed page after rotation). Neighbors follow
+        // right after through the lazy-render pump, which yields to the browser
+        // between pages — rendering a whole window here would extend the blocking
+        // stretch on WASM's single thread by one page render per neighbor.
         int center = Math.Clamp(_currentPage - 1, 0, _pages.Count - 1);
-        for (int i = Math.Max(0, center - 1); i <= Math.Min(_pages.Count - 1, center + 1); i++)
-        {
-            _pages[i] = RenderPageContent(i);
-        }
+        _pages[center] = RenderPageContent(center);
 
         // If the sidebar is open, its slots were just reset; let its spy re-fill
         // the visible thumbnails on the next render.
@@ -998,7 +1063,7 @@ public partial class BitPdfViewer : BitComponentBase
 
         _loading = true;
         StateHasChanged();
-        await Task.Yield();
+        await Task.Delay(1);
 
         // Search a per-page extracted-text index (built lazily) rather than the
         // rendered DOM, so we only render the pages that actually contain matches
@@ -1021,7 +1086,7 @@ public partial class BitPdfViewer : BitComponentBase
         if (rendered)
         {
             StateHasChanged();
-            await Task.Yield(); // let the freshly rendered pages paint before highlighting
+            await Task.Delay(1); // let the freshly rendered pages paint before highlighting
         }
 
         _searchTotal = await _js.BitPdfViewerSearchAll(_containerRef, _searchQuery);

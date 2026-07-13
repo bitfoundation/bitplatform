@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Forms;
+
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PdfViewer;
 
 public partial class BitPdfViewerDemo
@@ -313,25 +315,69 @@ public partial class BitPdfViewerDemo
 
 
 
-    private readonly BitPdfSource basicSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
-    private readonly BitPdfSource plainSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/hello-world.pdf", "hello-world.pdf");
-    private readonly BitPdfSource canvasSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
-    private readonly BitPdfSource eventsSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
-    private readonly BitPdfSource publicApiSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
+    private BitPdfSource basicSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/sample-pdf.pdf", "sample.pdf");
+
+    // The remaining examples load on demand through their "Load document" buttons:
+    // parsing a document blocks the single WASM thread, so loading five viewers at
+    // once would freeze the whole page for several seconds at startup.
+    private BitPdfSource? plainSource;
+    private BitPdfSource? canvasSource;
+    private BitPdfSource? eventsSource;
+    private BitPdfSource? publicApiSource;
 
     private readonly List<string> eventsLog = [];
 
     private BitPdfViewer pdfViewerRef = default!;
 
+    private static BitPdfSource CreateSampleSource()
+        => BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/sample-pdf.pdf", "sample.pdf");
+
+    private static BitPdfSource CreateArticleSource()
+        => BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
+
+    private async Task OnBasicFileChange(InputFileChangeEventArgs e)
+    {
+        basicSource = await ReadFileSource(e) ?? basicSource;
+    }
+
+    private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
+    {
+        canvasSource = await ReadFileSource(e) ?? canvasSource;
+    }
+
+    private static async Task<BitPdfSource?> ReadFileSource(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount == 0) return null;
+
+        using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
+        var bytes = new byte[e.File.Size];
+        await stream.ReadExactlyAsync(bytes);
+
+        return BitPdfSource.FromBytes(bytes, e.File.Name);
+    }
+
 
 
     private readonly string example1RazorCode = @"
+<InputFile OnChange=""OnBasicFileChange"" accept="".pdf,application/pdf"" />
+
 <BitPdfViewer Source=""basicSource"" />";
     private readonly string example1CsharpCode = @"
-private readonly BitPdfSource basicSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+private BitPdfSource basicSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
 
 // or from in-memory bytes:
-// private readonly BitPdfSource basicSource = BitPdfSource.FromBytes(pdfBytes, ""file-name.pdf"");";
+// private BitPdfSource basicSource = BitPdfSource.FromBytes(pdfBytes, ""file-name.pdf"");
+
+private async Task OnBasicFileChange(InputFileChangeEventArgs e)
+{
+    if (e.FileCount == 0) return;
+
+    using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
+    var bytes = new byte[e.File.Size];
+    await stream.ReadExactlyAsync(bytes);
+
+    basicSource = BitPdfSource.FromBytes(bytes, e.File.Name);
+}";
 
     private readonly string example2RazorCode = @"
 <BitPdfViewer Source=""plainSource"" ShowToolbar=""false"" Height=""420px"" />";
@@ -339,9 +385,22 @@ private readonly BitPdfSource basicSource = BitPdfSource.FromUrl(""url-to-the-pd
 private readonly BitPdfSource plainSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");";
 
     private readonly string example3RazorCode = @"
+<InputFile OnChange=""OnCanvasFileChange"" accept="".pdf,application/pdf"" />
+
 <BitPdfViewer Source=""canvasSource"" RenderMode=""BitPdfRenderMode.Canvas"" />";
     private readonly string example3CsharpCode = @"
-private readonly BitPdfSource canvasSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");";
+private BitPdfSource canvasSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+
+private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
+{
+    if (e.FileCount == 0) return;
+
+    using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
+    var bytes = new byte[e.File.Size];
+    await stream.ReadExactlyAsync(bytes);
+
+    canvasSource = BitPdfSource.FromBytes(bytes, e.File.Name);
+}";
 
     private readonly string example4RazorCode = @"
 <BitPdfViewer Source=""eventsSource""
