@@ -44,19 +44,34 @@
 }
 
 /* Placeholder shown while a page is being rendered on demand. Pdf pages paint
-   on white regardless of the theme, so the placeholder mimics a white page. */
+   on white regardless of the theme, so the placeholder mimics a white page.
+   The loading pulse animates opacity on a small pseudo-element so it runs on
+   the compositor: animating a gradient's background-position across the whole
+   page box (the previous shimmer) repaints every visible placeholder on the
+   main thread on every frame, which alone causes scroll jank. */
 .bit-pdv-page-placeholder {
     inset: 0;
     position: absolute;
-    background: linear-gradient(100deg, #f2f2f2 30%, #e6e6e6 50%, #f2f2f2 70%) #f2f2f2;
-    background-size: 200% 100%;
-    animation: bit-pdv-shimmer 1.3s linear infinite;
-    will-change: background-position;
+    background: #f2f2f2;
 }
 
-@keyframes bit-pdv-shimmer {
-    0% { background-position: 150% 0; }
-    100% { background-position: -50% 0; }
+.bit-pdv-page-placeholder::after {
+    content: "";
+    top: 50%;
+    left: 50%;
+    width: 25%;
+    height: 6px;
+    max-width: 96px;
+    position: absolute;
+    border-radius: 3px;
+    background: #d9d9d9;
+    transform: translate(-50%, -50%);
+    animation: bit-pdv-pulse 1.3s ease-in-out infinite;
+}
+
+@keyframes bit-pdv-pulse {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
 }
 
 /* Toolbar */
@@ -236,6 +251,7 @@
 
 .bit-pdv-thumb-svg {
     line-height: 0;
+    contain: strict; /* explicit inline width/height, same isolation as .bit-pdv-page */
 }
 
 .bit-pdv-thumb-label {
@@ -328,6 +344,11 @@
     overflow: hidden;
     position: relative;
     box-shadow: $box-shadow-2;
+    /* Pages always carry an explicit inline width/height, so full containment is
+       safe. It isolates each page's (potentially huge) subtree: inserting or
+       evicting one page no longer forces style/layout work across the rest of
+       the document surface (or the hosting page). */
+    contain: strict;
 }
 
 .bit-pdv-page .bit-pdv-html-page,
