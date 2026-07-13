@@ -1,9 +1,16 @@
 @using Bit.BlazorUI.Demo.Client.Core.Shared
-@using Bit.BlazorUI.Demo.Client.Web.Components
+@using Bit.BlazorUI.Demo.Client.Web.Shared.Components
 
 @{
+#if INCLUDE_WASM
+    var includeWasm = true;
+#else
+    var includeWasm = false;
+#endif
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
-    var renderMode = noPrerender ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.Current;
+    var renderMode = noPrerender
+        ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
+        : AppRenderMode.Current;
 }
 
 <!DOCTYPE html>
@@ -71,9 +78,13 @@
 
     <HeadOutlet @rendermode=renderMode />
 
-    <Link rel="manifest" Href="manifest.json" />
-    <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
-    <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
+    @if (includeWasm)
+    {
+        @* These files live in the Client.Web project's wwwroot, so they only exist when the WASM client is part of the build. *@
+        <Link rel="manifest" Href="manifest.json" />
+        <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
+    }
+    <Link rel="icon" Href="_content/Bit.BlazorUI.Demo.Client.Core/favicon.ico" type="image/x-icon" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main bit-blazor-web">
@@ -94,10 +105,18 @@
 
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-        <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-        <AppBswupProgressBar />
+        @if (includeWasm)
+        {
+            <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
+            <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js"></Script>
+            <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+            <AppBswupProgressBar />
+        }
+        else
+        {
+            @* No WASM client in this build (Debug renders in Blazor Server mode), so boot blazor directly without Bswup/service-worker. *@
+            <Script Src="_framework/bit.blazor.web.es2019.js"></Script>
+        }
         <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>

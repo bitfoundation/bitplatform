@@ -2,11 +2,24 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <UserSecretsId>fcf350f4-eef5-430b-a5cb-144713a68932</UserSecretsId>
 
+        <!-- In Debug the app renders in Blazor Server mode (see AppRenderMode.Current), so building the
+             Blazor WebAssembly client (webcil, boot json, service worker manifest, compression) on every
+             inner-loop build is pure overhead. The WASM client is therefore only referenced in Release
+             builds, or on demand via `dotnet build/run -p:IncludeWasm=true` (required to test the
+             ?no-prerender WASM mode or the -BlazorWebAssembly launch profile in Debug). -->
+        <IncludeWasm Condition=" '$(IncludeWasm)' == '' And '$(Configuration)' == 'Release' ">true</IncludeWasm>
+        <IncludeWasm Condition=" '$(IncludeWasm)' == '' ">false</IncludeWasm>
+        <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
+    </PropertyGroup>
+
+    <!-- Self-contained + ReadyToRun are deployment concerns; keeping them out of Debug builds avoids
+         RID-specific output with the whole runtime copied (and locked) on every dev build. -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <SelfContained>true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
-        <UserSecretsId>fcf350f4-eef5-430b-a5cb-144713a68932</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,6 +34,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <!-- Used by the development-only ScssCompilerService to tie the sass watch child process lifetime to the server. -->
+        <PackageReference Include="Meziantou.Framework.Win32.Jobs" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.7.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
@@ -45,8 +60,26 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.BlazorUI.Demo.Shared\Bit.BlazorUI.Demo.Shared.csproj" />
         <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
-        <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
+        <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Web.Shared\Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
+        <ProjectReference Condition=" '$(IncludeWasm)' == 'true' " Include="..\Client\Bit.BlazorUI.Demo.Client.Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
     </ItemGroup>
+
+    <!-- Bit.BlazorES2019 delivers its scripts as NuGet contentFiles that are only copied to the build/publish
+         output wwwroot, so during development (where static files are served from the source wwwroot) requests
+         to _framework/bit.blazor.*.es2019.js would 404. Copy them into the source wwwroot at build time and
+         keep them out of the Content items (the package's own items already handle output/publish copies). -->
+    <ItemGroup>
+        <!-- Keep the copied scripts out of every item group so builds and dotnet watch ignore them. -->
+        <Content Remove="wwwroot\_framework\*.js" />
+        <None Remove="wwwroot\_framework\*.js" />
+        <!-- The version here must match the Bit.BlazorES2019 PackageReference above. -->
+        <_BitBlazorES2019Scripts Include="$(NuGetPackageRoot)bit.blazores2019\10.5.0-pre-08\contentFiles\any\net10.0\wwwroot\_framework\*.js" />
+    </ItemGroup>
+    <Target Name="CopyBitBlazorES2019ScriptsToWwwroot" BeforeTargets="BeforeBuild"
+            Inputs="@(_BitBlazorES2019Scripts)"
+            Outputs="@(_BitBlazorES2019Scripts->'wwwroot\_framework\%(Filename)%(Extension)')">
+        <Copy SourceFiles="@(_BitBlazorES2019Scripts)" DestinationFolder="wwwroot\_framework" SkipUnchangedFiles="true" />
+    </Target>
 
     <ItemGroup>
         <Content Include=".config\dotnet-tools.json" />

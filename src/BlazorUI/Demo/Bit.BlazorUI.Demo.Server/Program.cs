@@ -21,4 +21,6 @@ var app = builder.Build();
 
 Bit.BlazorUI.Demo.Server.Startup.Middlewares.Use(app, builder.Environment, builder.Configuration);
 
-app.Run();
+await Task.WhenAll(
+    app.RunAsync(),
+    Bit.BlazorUI.Demo.Server.Services.ScssCompilerService.WatchScssFiles(app) /* Development-only, no-op otherwise */);

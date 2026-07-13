@@ -25,6 +25,7 @@
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj">
       <Deploy />
     </Project>
+    <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Web.Shared/Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Web/Bit.BlazorUI.Demo.Client.Web.csproj" />
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Bit.BlazorUI.Demo.Client.Windows.csproj" />
   </Folder>

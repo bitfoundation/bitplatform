@@ -23,12 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Watch Include="..\Bit.BlazorUI.Demo.Client.Core\**\*.razor" />
-        <Watch Include="..\Bit.BlazorUI.Demo.Client.Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="10.5.0-pre-08" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -41,6 +35,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
+        <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Web.Shared\Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />

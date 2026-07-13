@@ -13,6 +13,7 @@ public static class AppRenderMode
     private static IComponentRenderMode BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(PrerenderEnabled);
     private static IComponentRenderMode BlazorServer => new InteractiveServerRenderMode(PrerenderEnabled);
     public static IComponentRenderMode NoPrerenderBlazorWebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false);
+    public static IComponentRenderMode NoPrerenderBlazorServer => new InteractiveServerRenderMode(prerender: false);
 
     public static IComponentRenderMode Current => BuildConfiguration.IsDebug() 
                                                     ? BlazorServer /*For better development experience*/ 

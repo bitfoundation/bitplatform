@@ -232,3 +232,5 @@ custom.aprof
 /Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app*.js
 
 /Bit.BlazorUI.Demo.Server/Bit.BlazorUI.DemoDb.db*
+# Bit.BlazorES2019 scripts copied into the source wwwroot at build time (see Bit.BlazorUI.Demo.Server.csproj)
+Bit.BlazorUI.Demo.Server/wwwroot/_framework/
