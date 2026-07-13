@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Brouter;
@@ -486,6 +486,10 @@ internal class BrouterRouteRenderer
         // surrounding cascades (parameters/data/meta) stay available to the fragment.
         if (_route.CurrentError is not null && _route.ErrorContent is not null)
         {
+            // This render disposes the directly-instantiated page (if any) that the error UI
+            // replaces; drop its auto-registration from the (possibly surviving keep-alive)
+            // context - see BrouterRouteContext.ClearAutoRegistered.
+            context?.ClearAutoRegistered();
             b3.AddContent(0, _route.ErrorContent(_route.CurrentError));
         }
         else if (_route.Content is not null)

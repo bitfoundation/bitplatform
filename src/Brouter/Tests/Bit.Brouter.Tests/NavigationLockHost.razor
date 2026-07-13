@@ -20,6 +20,21 @@
         <Content><NavigationLockProbe Label="kal" State="KalState" /></Content>
     </Broute>
 
+    @* Keep-alive child hosted in a transient parent's outlet: retention only survives sibling
+       switches under the parent - leaving the parent tears the kept child down with it, so the
+       lock reason must be Disposing there and Hidden for sibling switches. *@
+    <Broute Path="/shell">
+        <Content><div data-testid="shell"><BrouterOutlet /></div></Content>
+        <ChildContent>
+            <Broute Path="/kalo" KeepAlive="true">
+                <Content><NavigationLockProbe Label="kalo" State="KaloState" /></Content>
+            </Broute>
+            <Broute Path="/sibling">
+                <Content><div data-testid="sibling">sibling</div></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
     <Broute Path="/two">
         <Content>
             <NavigationLockProbe Label="two1" State="TwoFirstState" />
@@ -40,6 +55,7 @@
     public NavigationLockState EditState { get; } = new();
     public NavigationLockState DocState { get; } = new();
     public NavigationLockState KalState { get; } = new();
+    public NavigationLockState KaloState { get; } = new();
     public NavigationLockState TwoFirstState { get; } = new();
     public NavigationLockState TwoSecondState { get; } = new();
 

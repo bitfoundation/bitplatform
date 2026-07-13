@@ -362,6 +362,10 @@ public class BrouterOutlet : ComponentBase, IDisposable
 
         if (child.CurrentError is not null && child.ErrorContent is not null)
         {
+            // This render disposes the directly-instantiated page (if any) that the error UI
+            // replaces; drop its auto-registration from the entry's surviving context - see
+            // BrouterRouteContext.ClearAutoRegistered.
+            entry.Context.ClearAutoRegistered();
             b2.AddContent(0, child.ErrorContent(child.CurrentError));
         }
         else if (child.Content is not null)

@@ -78,6 +78,30 @@ public class NavigationLockTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task Outlet_hosted_keepalive_content_sees_hidden_for_sibling_switches_but_disposing_when_the_host_leaves()
+    {
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/shell/kalo");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
+
+        // Sibling switch under the same host: the kept child survives hidden - Hidden reason.
+        await cut.InvokeAsync(() => brouter.Navigate("/shell/sibling"));
+        cut.WaitForAssertion(() =>
+            CollectionAssert.Contains(cut.Instance.KaloState.Log, "kalo:deactivating:Hidden:to=/shell/sibling"));
+
+        await cut.InvokeAsync(() => brouter.Navigate("/shell/kalo"));
+        cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
+
+        // Leaving the (transient) host destroys its outlet and the kept child with it: the lock
+        // must report Disposing - KeepAlive alone doesn't mean the state survives this navigation.
+        await cut.InvokeAsync(() => brouter.Navigate("/other"));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=other]"));
+            CollectionAssert.Contains(cut.Instance.KaloState.Log, "kalo:deactivating:Disposing:to=/other");
+        });
+    }
+
+    [TestMethod]
     public void KeepAlive_content_sees_the_hidden_reason_and_can_let_the_navigation_proceed()
     {
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/kal");
@@ -165,5 +189,39 @@ public class NavigationLockTests : BunitTestContext
             Assert.IsNotNull(cut.Find("[data-testid=other]"));
             Assert.IsTrue(nav.Uri.EndsWith("/other", StringComparison.Ordinal));
         });
+    }
+
+    [TestMethod]
+    public async Task A_superseding_navigation_completes_while_the_first_is_parked_and_never_resolves_its_prompt()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
+
+        // Park the first navigation inside the awaited lock and deliberately never answer it.
+        var firstPrompt = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        cut.Instance.EditState.Prompt = firstPrompt;
+        await cut.InvokeAsync(() => brouter.Navigate("/other"));
+
+        cut.WaitForAssertion(() =>
+            CollectionAssert.Contains(cut.Instance.EditState.Log, "edit:deactivating:Disposing:to=/other"));
+        Assert.AreEqual(0, cut.FindAll("[data-testid=other]").Count);
+        Assert.IsTrue(nav.Uri.EndsWith("/edit", StringComparison.Ordinal));
+
+        // A second navigation while the first is still parked supersedes it: the probe observes
+        // the first context's CancellationToken (its parked await is released without touching
+        // the prompt) and the second navigation runs its own lock phase and commits.
+        cut.Instance.EditState.Prompt = null;
+        await cut.InvokeAsync(() => brouter.Navigate("/target"));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=target]"));
+            Assert.IsTrue(nav.Uri.EndsWith("/target", StringComparison.Ordinal));
+            CollectionAssert.Contains(cut.Instance.EditState.Log, "edit:deactivating:Disposing:to=/target");
+        });
+
+        // Nothing ever resolved the abandoned prompt - the supersession alone released the lock.
+        Assert.IsFalse(firstPrompt.Task.IsCompleted);
     }
 }

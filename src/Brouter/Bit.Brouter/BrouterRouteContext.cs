@@ -89,6 +89,19 @@ public sealed class BrouterRouteContext
         Register(handler);
     };
 
+    // Drops the auto-registered page instance. Called when a render replaces the
+    // directly-instantiated component with other output (an error boundary's fragment) while this
+    // context survives the swap (a keep-alive session outlives its content's error render):
+    // reference captures only fire on (re)assignment, never on removal, so without this the
+    // disposed instance would keep receiving lifecycle/lock callbacks - a stale lock could even
+    // veto every later navigation.
+    internal void ClearAutoRegistered()
+    {
+        if (_autoRegistered is null) return;
+        _handlers.Remove(_autoRegistered);
+        _autoRegistered = null;
+    }
+
     /// <summary>
     /// Resolves an arrival on this context: a renavigation when the content was already active AND
     /// has received its activation (same instance re-committed), otherwise an activation - which

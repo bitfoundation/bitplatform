@@ -126,4 +126,37 @@ public class ErrorContentTests : BunitTestContext
             Assert.AreEqual(0, cut.FindAll("[data-testid=leaf-boundary]").Count);
         });
     }
+
+    [TestMethod]
+    public async Task Error_content_replacing_a_page_drops_its_stale_lock_so_later_navigation_proceeds()
+    {
+        // /elock is keep-alive, so its route lifecycle context SURVIVES the error render that
+        // replaces its page - the disposed page's auto-registered lock (ErrorLockPage cancels
+        // every deactivation and never unregisters) must be dropped with the page, or it would
+        // veto every later navigation from beyond the grave.
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/elock");
+
+        var cut = RenderComponent<ErrorContentHost>();
+        cut.WaitForAssertion(() => cut.Find("[data-testid=elock-page]"));
+
+        // A renavigation (query change - OnDeactivating doesn't fire) with a failing loader swaps
+        // the page for the route's error boundary, disposing the page instance.
+        cut.Instance.ELockShouldFail = true;
+        var brouter = Services.GetRequiredService<IBrouter>();
+        await cut.InvokeAsync(() => brouter.Navigate("/elock?attempt=2"));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=elock-boundary]"));
+            Assert.AreEqual(0, cut.FindAll("[data-testid=elock-page]").Count);
+        });
+
+        // The disposed page's always-cancel lock must not block leaving the error UI.
+        await cut.InvokeAsync(() => brouter.Navigate("/ok"));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=ok]"));
+            Assert.IsTrue(nav.Uri.EndsWith("/ok", StringComparison.Ordinal));
+        });
+    }
 }

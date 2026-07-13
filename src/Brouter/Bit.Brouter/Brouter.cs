@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -2517,7 +2517,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // active content; a route that stays matched dispatches OnRenavigatingAsync instead
             // (a parameter change is not a "leave", but a dirty form must still be able to veto
             // it - Vue's beforeRouteUpdate). The Hidden/Disposing reason mirrors the retention
-            // that would follow the commit. One pre-commit nuance: on a per-parameter keep-alive
+            // that would follow the commit: keep-alive content is Hidden only when its retained
+            // subtree actually survives the leave - a kept child whose outlet host is itself being
+            // torn down dies with the host and honestly reports Disposing (see
+            // KeptContentSurvivesLeave). One pre-commit nuance: on a per-parameter keep-alive
             // route (KeepAliveMax > 1) that stays matched across a parameter change, the active
             // entry receives OnRenavigating here even though the commit then surfaces as a Hidden
             // deactivation + sibling activation - the new parameter key isn't known until the
@@ -2538,7 +2541,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                     }
                     else
                     {
-                        var reason = node.KeepAlive
+                        var reason = node.KeepAlive && KeptContentSurvivesLeave(node, staying)
                             ? BrouterRouteDeactivationReason.Hidden
                             : BrouterRouteDeactivationReason.Disposing;
                         await context.FireDeactivatingAsync(new BrouterRouteDeactivatingContext(ctx, reason));
@@ -2566,6 +2569,27 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (ctx.IsCancelled || ctx.RedirectUrl is not null) return false;
         }
 
+        return true;
+    }
+
+    /// <summary>
+    /// Whether a keep-alive route's content actually survives being left, for the lock phase's
+    /// Hidden/Disposing reason: retention keeps the subtree mounted (hidden) inside its outlet
+    /// host's content, so the retained content only lives while every hosting content stays
+    /// mounted. Walking the hosting chain: a host that stays matched keeps its content (and
+    /// outlets) mounted; a keep-alive host being left keeps hosting from its own retained hidden
+    /// content, so the walk continues at ITS host; a transient host being left unmounts everything
+    /// inside it, kept children included (see
+    /// <c>KeepAliveTests.KeepAlive_state_is_lost_across_the_hosting_layout_unmount</c>). Inline
+    /// content renders at the route's declaration site, which stays mounted regardless of matching.
+    /// </summary>
+    private static bool KeptContentSurvivesLeave(Broute node, HashSet<Broute>? staying)
+    {
+        for (var host = node.FindOutletHost(); host is not null; host = host.FindOutletHost())
+        {
+            if (staying is not null && staying.Contains(host)) return true;
+            if (host.KeepAlive is false) return false;
+        }
         return true;
     }
 

@@ -76,8 +76,11 @@
     private bool IsDirty => string.Equals(_draft, _saved, StringComparison.Ordinal) is false;
 
     // The parked decision of the currently open dialog: the lock callback awaits it, the dialog
-    // buttons complete it. Non-null exactly while the dialog is rendered.
+    // buttons complete it. Non-null exactly while the dialog is rendered. _promptDecided
+    // distinguishes an explicit button answer from a dismissal by a superseding navigation
+    // (the token registration below), which must neither cancel nor touch the draft.
     private TaskCompletionSource<bool>? _prompt;
+    private bool _promptDecided;
     private string? _promptTarget;
     private ElementReference _promptDialog;
     private bool _focusPrompt;
@@ -95,7 +98,10 @@
         }
     }
 
-    private void AnswerPrompt(bool stay) => _prompt?.TrySetResult(stay);
+    private void AnswerPrompt(bool stay)
+    {
+        if (_prompt?.TrySetResult(stay) is true) _promptDecided = true;
+    }
 
     protected override Task OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
         => ConfirmLeaveAsync(context.To, context.CancellationToken, context.Cancel);
@@ -108,6 +114,7 @@
         if (IsDirty is false) return;
 
         _prompt = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _promptDecided = false;
         _promptTarget = to.Path + to.Query;
         _focusPrompt = true;
         StateHasChanged(); // show the dialog; the navigation stays parked on the await below
@@ -115,10 +122,15 @@
         // A superseding navigation cancels the token: dismiss the dialog and let the router move on.
         await using var dismiss = token.Register(() => _prompt?.TrySetResult(false));
         var stay = await _prompt.Task;
+        var decided = _promptDecided;
 
         _prompt = null;
         _promptTarget = null;
         StateHasChanged();
+
+        // Dismissed by a superseding navigation, not the user: no decision was made, so keep the
+        // dirty draft (the newer navigation runs its own lock and prompts again if needed).
+        if (decided is false) return;
 
         if (stay) cancel();
         else _draft = _saved; // leaving: drop the draft so a kept/renavigated instance isn't still dirty
