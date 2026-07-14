@@ -8,7 +8,7 @@
         width: 5.125rem;
         cursor: pointer;
         padding: 0.5rem;
-        border-radius: var(--bit-shp-brd-radius);
+        border-radius: $shp-brd-radius;
         transition: background-color 0.15s ease;
 
         .icon-name {
@@ -19,7 +19,7 @@
 
         &:hover,
         &.selected {
-            background-color: var(--bit-clr-bg-sec);
+            background-color: $clr-bg-sec;
 
             .icon-name {
                 opacity: 1;
@@ -27,7 +27,7 @@
         }
 
         &.selected {
-            outline: 1px solid var(--bit-clr-brd-pri);
+            outline: 1px solid $clr-brd-pri;
         }
     }
 }
