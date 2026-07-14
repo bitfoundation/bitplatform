@@ -1,12 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Tests.Features.Identity;
+﻿using Microsoft.EntityFrameworkCore;
 using Boilerplate.Tests.Infrastructure.Components;
 using Boilerplate.Server.Api.Infrastructure.Data;
 
-namespace Boilerplate.Tests.Features.Products;
+namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("UITest")]
-public partial class BuyProductUITests : AppPageTest
+public partial class QuickSignInUITests : AppPageTest
 {
     /// <summary>
     /// A brand-new (anonymous) shopper buys a seeded product end-to-end:

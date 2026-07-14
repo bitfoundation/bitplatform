@@ -89,27 +89,46 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         await page.GetByText(AppRoles.Demo, new() { Exact = true }).ClickAsync();
         await page.GetByText(AppStrings.Features, new() { Exact = true }).ClickAsync();
 
-        // The toggle button sits right after the feature's label in the same row.
+        // The toggle button sits right after the feature's label in the same row. Its glyph reflects the current state:
+        // "AddTo" while unassigned, "RemoveFrom" once assigned.
         var toggle = page.GetByText(RolesManageFeatureName, new() { Exact = true }).Locator("xpath=following::button[1]");
+        var targetStateIcon = granted ? RemoveFeatureIconSelector : AddFeatureIconSelector;
+
+        // The toggle stays disabled (and its glyph reads as unassigned) until the selected role's claims finish loading, so
+        // wait for it to become enabled before trusting its glyph.
+        await Expect(toggle).ToBeEnabledAsync();
+
+        // Be tolerant of the demo user-group already being in the wanted state (e.g. a feature the seed already granted):
+        // if the toggle is already showing the target glyph there is nothing to do and no elevation is needed.
+        if (await toggle.Locator(targetStateIcon).IsVisibleAsync())
+            return;
 
         await toggle.ClickAsync();
 
-        if (granted)
+        // Mutating a role's features needs elevated access. The first such mutation in the session pops the OTP prompt (and
+        // an elevated token is e-mailed / dev-logged); later mutations reuse that still-valid elevation, so no prompt shows.
+        // Wait briefly for the prompt and only fill it when it actually appears, rather than assuming which call elevates.
+        try
         {
-            // Granting a feature needs elevated access, so an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
-            await page.Locator(".bit-otp-inp").First.WaitForAsync();
+            await page.Locator(".bit-otp-inp").First.WaitForAsync(new()
+            {
+                Timeout = (float)TimeSpan.FromSeconds(10).TotalMilliseconds
+            });
 
             var captured = await server.WaitForCapturedEmail(StoreAdminEmail,
                 capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
 
-            // Filling the OTP elevates her session (a token refresh) and then persists the new role claim.
+            // Filling the OTP elevates her session (a token refresh) and then persists the role-claim change.
             await BitOtpInputUtils.FillOtpInputs(page, captured.Token!);
         }
-        // else: she is still elevated from the grant, so removing the feature needs no new OTP prompt.
+        catch (TimeoutException)
+        {
+            // No prompt appeared: the session is still elevated from an earlier mutation, so the change was persisted directly.
+        }
 
         // The role-claim change runs over the Blazor Server circuit (invisible to Playwright's network events), so wait on
         // the toggle's own icon flipping to its new state to know the change has been persisted before moving on.
-        await Expect(toggle.Locator(granted ? RemoveFeatureIconSelector : AddFeatureIconSelector)).ToBeVisibleAsync();
+        await Expect(toggle.Locator(targetStateIcon)).ToBeVisibleAsync();
     }
 
     private async Task AssertManageRolesPageAccessible(IPage page, Uri serverAddress, bool accessible)

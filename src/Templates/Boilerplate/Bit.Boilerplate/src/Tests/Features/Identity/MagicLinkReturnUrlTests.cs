@@ -1,9 +1,8 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
-using Boilerplate.Tests.Features.Identity;
 using Boilerplate.Server.Api.Infrastructure.Data;
 
-namespace Boilerplate.Tests.Features.Products;
+namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("UITest")]
 public partial class MagicLinkReturnUrlTests : AppPageTest
