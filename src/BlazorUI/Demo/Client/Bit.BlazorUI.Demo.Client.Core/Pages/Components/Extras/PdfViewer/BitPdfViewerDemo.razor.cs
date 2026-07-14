@@ -357,7 +357,7 @@ public partial class BitPdfViewerDemo
         if (e.FileCount == 0) return null;
 
         using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
-        var bytes = new byte[e.File.Size];
+        var bytes = new byte[(int)e.File.Size];
         await stream.ReadExactlyAsync(bytes);
 
         return BitPdfSource.FromBytes(bytes, e.File.Name);
@@ -382,16 +382,19 @@ private async Task OnBasicFileChange(InputFileChangeEventArgs e)
     if (e.FileCount == 0) return;
 
     using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
-    var bytes = new byte[e.File.Size];
+    var bytes = new byte[(int)e.File.Size];
     await stream.ReadExactlyAsync(bytes);
 
     basicSource = BitPdfSource.FromBytes(bytes, e.File.Name);
 }";
 
     private readonly string example2RazorCode = @"
-<BitPdfViewer Source=""plainSource"" ShowToolbar=""false"" Height=""420px"" />";
+<BitButton IsEnabled=""plainSource is null""
+           OnClick='() => plainSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
+<BitPdfViewer Source=""plainSource"" ShowToolbar=""false"" Height=""600px"" />";
     private readonly string example2CsharpCode = @"
-private readonly BitPdfSource plainSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");";
+private BitPdfSource? plainSource;";
 
     private readonly string example3RazorCode = @"
 <InputFile OnChange=""OnCanvasFileChange"" accept="".pdf,application/pdf"" />
@@ -405,13 +408,16 @@ private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
     if (e.FileCount == 0) return;
 
     using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
-    var bytes = new byte[e.File.Size];
+    var bytes = new byte[(int)e.File.Size];
     await stream.ReadExactlyAsync(bytes);
 
     canvasSource = BitPdfSource.FromBytes(bytes, e.File.Name);
 }";
 
     private readonly string example4RazorCode = @"
+<BitButton IsEnabled=""eventsSource is null""
+           OnClick='() => eventsSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
 <BitPdfViewer Source=""eventsSource""
               OnDocumentLoaded='() => eventsLog.Add(""Document loaded"")'
               OnPageChanged='p => eventsLog.Add($""Page changed: {p}"")'
@@ -425,11 +431,14 @@ private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
     }
 </div>";
     private readonly string example4CsharpCode = @"
-private readonly BitPdfSource eventsSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+private BitPdfSource? eventsSource;
 
 private readonly List<string> eventsLog = [];";
 
     private readonly string example5RazorCode = @"
+<BitButton IsEnabled=""publicApiSource is null""
+           OnClick='() => publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
 <BitButton OnClick=""() => pdfViewerRef.GoToPage(1)"">First</BitButton>
 <BitButton OnClick=""() => pdfViewerRef.PrevPage()"">Prev</BitButton>
 <BitTag Variant=""BitVariant.Outline"" Text=""@($""{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}"")"" Color=""BitColor.Info"" />
@@ -446,7 +455,7 @@ private readonly List<string> eventsLog = [];";
               OnDocumentLoaded=""StateHasChanged""
               OnPageChanged=""_ => StateHasChanged()"" />";
     private readonly string example5CsharpCode = @"
-private readonly BitPdfSource publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+private BitPdfSource? publicApiSource;
 
 private BitPdfViewer pdfViewerRef = default!;";
 }
