@@ -108,6 +108,22 @@ internal class BrouterRouteRenderer
     {
         if (_route.KeepAlive && _route.EffectiveKeepAliveMax > 1)
         {
+            // The error-boundary render replaces the ACTIVE entry's page with ErrorContent: that
+            // entry's session honestly ends (Disposing) and the entry is dropped, so the
+            // replacement output renders with a fresh context (RenderKeptEntries recreates the
+            // missing active entry). Hidden siblings keep their retention - they already received
+            // their Hidden deactivation when they were hidden.
+            if (contentReplaced)
+            {
+                foreach (var entry in _keptEntries.ToArray())
+                {
+                    if (entry.Context.IsActive is false) continue;
+                    entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
+                    _keptEntries.Remove(entry);
+                }
+                return;
+            }
+
             // Per-parameter entries are always retained; a transient hide is a no-op for them.
             if (willRemainMatched) return;
             // Snapshot: deactivation handlers run synchronously and can mutate _keptEntries

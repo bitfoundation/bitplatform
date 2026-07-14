@@ -161,6 +161,32 @@ public class ErrorContentTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task Error_content_replacing_the_active_per_parameter_entry_reports_disposing()
+    {
+        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        nav.NavigateTo("http://localhost/kperr/1");
+
+        var cut = RenderComponent<ErrorContentHost>();
+        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kperr-page]").TextContent, "kperr 1"));
+
+        // A second parameter set retains entry 1 hidden (its honest Hidden deactivation).
+        var brouter = Services.GetRequiredService<IBrouter>();
+        await cut.InvokeAsync(() => brouter.Navigate("/kperr/2"));
+        cut.WaitForAssertion(() => CollectionAssert.Contains(cut.Instance.KPErrLog, "deactivated:Hidden"));
+
+        // A renavigation with a failing loader swaps the ACTIVE entry's page for the boundary:
+        // that entry ends with Disposing (its page is destroyed, not hidden) and is dropped.
+        cut.Instance.KPErrShouldFail = true;
+        await cut.InvokeAsync(() => brouter.Navigate("/kperr/2?attempt=2"));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=kperr-boundary]"));
+            CollectionAssert.Contains(cut.Instance.KPErrLog, "deactivated:Disposing");
+        });
+    }
+
+    [TestMethod]
     public async Task Error_content_replacing_keepalive_content_reports_a_disposing_deactivation()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();

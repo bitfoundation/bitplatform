@@ -1021,58 +1021,59 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             _pendingLifecycleFlush.Clear();
         }
 
-        if (firstRender)
-        {
-            // Enabling navigation interception genuinely requires an interactive runtime, so it stays
-            // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
-            // this method doesn't run at all - that's fine: the initial match already happened in
-            // OnInitializedAsync, and interception is enabled here once the component goes interactive.
-            //
-            // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
-            // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
-            // interactivity handoff) does not depend on it succeeding right now. Mirror the defensive
-            // style used in BrouterLink and BrouterService.BackAsync so a transient failure here can't
-            // kill navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
-            // attachment naturally on the next user click via NavigationManager fallback paths.
-            try
-            {
-                await _navInterception.EnableNavigationInterceptionAsync();
-            }
-            catch (JSDisconnectedException) { /* circuit disconnected before/during interop */ }
-            catch (JSException) { /* JS interop failure; non-fatal */ }
-            catch (InvalidOperationException) { /* interop unavailable during prerender */ }
-            catch (TaskCanceledException) { /* component disposed mid-call */ }
-
-            // Arm the always-on external-navigation confirmation once interactive (the JS side is
-            // idempotent; runtime toggling goes through IBrouter.SetConfirmExternalNavigationAsync).
-            if (Options.ConfirmExternalNavigation)
-            {
-                await _brouterService.SetConfirmExternalNavigationAsync(true);
-            }
-
-            // Register the preventive navigation handler now that the runtime is interactive.
-            // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
-            // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
-            // (LocationChangingContext.PreventNavigation) instead of reactively "undoing" a URL change
-            // that already happened. This is what makes guards preventive rather than reactive: no
-            // address-bar flicker, no corrupted history on a cancelled Back, and real "unsaved changes"
-            // prompts become possible. LocationChanged is kept only for the commit phase (loaders +
-            // render). During static prerender this method never runs, so the handler simply isn't
-            // registered there - which is correct, since there is no interactive navigation to guard.
-            _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
-        }
-
-        // Apply any post-navigation DOM effects (fragment/top scroll, focus) staged by the last
-        // committed navigation. Running here - after the render batch has been applied to the DOM -
-        // is what lets fragment (#section) and focus selectors resolve against the newly rendered
-        // route instead of the previous page. Exchange to null so each staged navigation's effects
-        // run exactly once; a navigation with nothing pending is a no-op. During static prerender
-        // this method never runs, so effects are correctly skipped server-side (no DOM/JS there).
-        // The arrivals claimed at the top of this method flush in the finally: a JS interop
-        // failure in the effects/view-transition interop (e.g. a dropped Blazor Server circuit)
-        // must not strand the committed navigation's activation callbacks.
+        // Everything below can await JS interop and throw (a dropped circuit failing the
+        // first-render SetConfirmExternalNavigationAsync, the effects/view-transition interop):
+        // the finally flushes the arrivals claimed above either way, so the committed
+        // navigation's activation callbacks are never stranded by a setup or effects failure.
         try
         {
+            if (firstRender)
+            {
+                // Enabling navigation interception genuinely requires an interactive runtime, so it stays
+                // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
+                // this method doesn't run at all - that's fine: the initial match already happened in
+                // OnInitializedAsync, and interception is enabled here once the component goes interactive.
+                //
+                // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
+                // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
+                // interactivity handoff) does not depend on it succeeding right now. Mirror the defensive
+                // style used in BrouterLink and BrouterService.BackAsync so a transient failure here can't
+                // kill navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
+                // attachment naturally on the next user click via NavigationManager fallback paths.
+                try
+                {
+                    await _navInterception.EnableNavigationInterceptionAsync();
+                }
+                catch (JSDisconnectedException) { /* circuit disconnected before/during interop */ }
+                catch (JSException) { /* JS interop failure; non-fatal */ }
+                catch (InvalidOperationException) { /* interop unavailable during prerender */ }
+                catch (TaskCanceledException) { /* component disposed mid-call */ }
+
+                // Arm the always-on external-navigation confirmation once interactive (the JS side is
+                // idempotent; runtime toggling goes through IBrouter.SetConfirmExternalNavigationAsync).
+                if (Options.ConfirmExternalNavigation)
+                {
+                    await _brouterService.SetConfirmExternalNavigationAsync(true);
+                }
+
+                // Register the preventive navigation handler now that the runtime is interactive.
+                // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
+                // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
+                // (LocationChangingContext.PreventNavigation) instead of reactively "undoing" a URL change
+                // that already happened. This is what makes guards preventive rather than reactive: no
+                // address-bar flicker, no corrupted history on a cancelled Back, and real "unsaved changes"
+                // prompts become possible. LocationChanged is kept only for the commit phase (loaders +
+                // render). During static prerender this method never runs, so the handler simply isn't
+                // registered there - which is correct, since there is no interactive navigation to guard.
+                _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
+            }
+
+            // Apply any post-navigation DOM effects (fragment/top scroll, focus) staged by the last
+            // committed navigation. Running here - after the render batch has been applied to the DOM -
+            // is what lets fragment (#section) and focus selectors resolve against the newly rendered
+            // route instead of the previous page. Exchange to null so each staged navigation's effects
+            // run exactly once; a navigation with nothing pending is a no-op. During static prerender
+            // this method never runs, so effects are correctly skipped server-side (no DOM/JS there).
             var pending = Interlocked.Exchange(ref _pendingEffectsLocation, null);
             if (pending is not null)
             {
