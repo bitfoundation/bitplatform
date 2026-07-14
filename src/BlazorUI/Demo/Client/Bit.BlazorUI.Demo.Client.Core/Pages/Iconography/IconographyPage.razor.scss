@@ -1,4 +1,4 @@
-@import '../Styles/abstracts/_bit-css-variables.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
     .iconography-search-box {
@@ -22,6 +22,8 @@
         }
 
         &:hover,
+        &:focus-visible,
+        &:active,
         &.selected {
             color: inherit;
             background-color: $bit-color-background-secondary;
@@ -29,11 +31,6 @@
             .icon-name {
                 opacity: 1;
             }
-        }
-
-        &:active {
-            color: inherit;
-            background-color: $bit-color-background-secondary;
         }
 
         &.selected {

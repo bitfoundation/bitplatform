@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Components;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Iconography;
 
 public partial class IconDetailRow
 {

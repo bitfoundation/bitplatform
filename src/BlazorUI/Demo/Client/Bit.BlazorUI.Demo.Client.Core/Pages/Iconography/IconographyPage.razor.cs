@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.BlazorUI.Demo.Client.Core.Pages;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Iconography;
 
 public partial class IconographyPage
 {

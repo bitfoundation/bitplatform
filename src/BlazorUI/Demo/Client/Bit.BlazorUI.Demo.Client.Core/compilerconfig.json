@@ -546,8 +546,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/IconographyPage.razor.css",
-        "inputFile": "Pages/IconographyPage.razor.scss",
+        "outputFile": "Pages/Iconography/IconographyPage.razor.css",
+        "inputFile": "Pages/Iconography/IconographyPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
