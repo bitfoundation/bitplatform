@@ -1,3 +1,5 @@
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
 ::deep {
     .iconography-search-box {
         max-width: 19rem;
@@ -8,7 +10,7 @@
         width: 5.125rem;
         cursor: pointer;
         padding: 0.5rem;
-        border-radius: $shp-brd-radius;
+        border-radius: $bit-shape-border-radius;
         transition: background-color 0.15s ease;
 
         .icon-name {
@@ -19,7 +21,7 @@
 
         &:hover,
         &.selected {
-            background-color: $clr-bg-sec;
+            background-color: $bit-color-background-secondary;
 
             .icon-name {
                 opacity: 1;
@@ -27,7 +29,7 @@
         }
 
         &.selected {
-            outline: 1px solid $clr-brd-pri;
+            outline: 1px solid $bit-color-border-primary;
         }
     }
 }
