@@ -58,6 +58,13 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "BackgroundRendering",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Offloads document parsing and page rendering to a background thread so scrolling and navigation stay responsive while a complex page renders. Only has an effect when the runtime provides a spare thread (Blazor Server, or a Blazor WebAssembly app built with WasmEnableThreads); on the default single-threaded WebAssembly runtime it is a safe no-op.",
+        },
+        new()
+        {
             Name = "OnDocumentLoaded",
             Type = "EventCallback",
             DefaultValue = "",
@@ -361,7 +368,9 @@ public partial class BitPdfViewerDemo
     private readonly string example1RazorCode = @"
 <InputFile OnChange=""OnBasicFileChange"" accept="".pdf,application/pdf"" />
 
-<BitPdfViewer Source=""basicSource"" />";
+@* BackgroundRendering offloads parse/render to a worker thread when the runtime
+   has one (Blazor Server, or a WASM app built with WasmEnableThreads). *@
+<BitPdfViewer Source=""basicSource"" BackgroundRendering />";
     private readonly string example1CsharpCode = @"
 private BitPdfSource basicSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
 
