@@ -69,11 +69,15 @@
             // Created paused: OnActivated (which also fires on the first show) starts the ticking.
             _timer = new System.Threading.Timer(_ =>
             {
-                // Timer.Dispose does not wait for in-flight callbacks, so guard against
-                // touching the component after disposal has started.
-                if (_disposed) return;
-                _visibleSeconds++;
-                _ = InvokeAsync(StateHasChanged);
+                // Hop to the renderer's dispatcher before touching component state, and re-check
+                // disposal there: Timer.Dispose does not wait for in-flight callbacks, so a tick
+                // can still be unwinding while the component is torn down.
+                _ = InvokeAsync(() =>
+                {
+                    if (_disposed) return;
+                    _visibleSeconds++;
+                    StateHasChanged();
+                });
             }, null, dueTime: System.Threading.Timeout.Infinite, period: System.Threading.Timeout.Infinite);
         }
     }

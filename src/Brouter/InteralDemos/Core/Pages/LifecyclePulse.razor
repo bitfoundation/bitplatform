@@ -26,7 +26,9 @@
 @code {
     [CascadingParameter] private BrouterRouteContext? RouteContext { get; set; }
 
-    private bool _registered;
+    // The exact context instance this component registered with, so Dispose unregisters from the
+    // same one even if the cascaded parameter were ever re-assigned.
+    private BrouterRouteContext? _registeredContext;
     private int _activations;
     private int _renavigations;
 
@@ -34,10 +36,10 @@
     {
         // The cascade is a stable, fixed instance - registering once on the first parameter set
         // is enough, and it happens during the mount render, before the arrival callbacks fire.
-        if (_registered is false && RouteContext is not null)
+        if (_registeredContext is null && RouteContext is not null)
         {
-            RouteContext.Register(this);
-            _registered = true;
+            _registeredContext = RouteContext;
+            _registeredContext.Register(this);
         }
     }
 
@@ -55,8 +57,5 @@
         return ValueTask.CompletedTask;
     }
 
-    public void Dispose()
-    {
-        if (_registered) RouteContext?.Unregister(this);
-    }
+    public void Dispose() => _registeredContext?.Unregister(this);
 }

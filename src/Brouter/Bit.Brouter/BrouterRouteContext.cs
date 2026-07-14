@@ -65,12 +65,27 @@ public sealed class BrouterRouteContext
     public void Register(IBrouterRoute handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        if (_handlers.Contains(handler)) return;
+        if (IndexOf(handler) >= 0) return;
         _handlers.Add(handler);
     }
 
     /// <summary>Removes a previously registered lifecycle handler. No-op when not registered.</summary>
-    public void Unregister(IBrouterRoute handler) => _handlers.Remove(handler);
+    public void Unregister(IBrouterRoute handler)
+    {
+        var index = IndexOf(handler);
+        if (index >= 0) _handlers.RemoveAt(index);
+    }
+
+    // Handlers are tracked by object identity: List's default value-equality lookup would let a
+    // handler that overrides Equals register or unregister on behalf of a DIFFERENT instance.
+    private int IndexOf(IBrouterRoute handler)
+    {
+        for (var i = 0; i < _handlers.Count; i++)
+        {
+            if (ReferenceEquals(_handlers[i], handler)) return i;
+        }
+        return -1;
+    }
 
     // Cheap pre-flight for the navigation pipeline: whether dispatching to this context could do
     // anything at all. Lets the lock phase skip contexts (and payload allocations) for content
@@ -84,7 +99,7 @@ public sealed class BrouterRouteContext
     {
         if (component is not IBrouterRoute handler) return;
         if (ReferenceEquals(_autoRegistered, handler)) return;
-        if (_autoRegistered is not null) _handlers.Remove(_autoRegistered);
+        if (_autoRegistered is not null) Unregister(_autoRegistered);
         _autoRegistered = handler;
         Register(handler);
     };
@@ -98,7 +113,7 @@ public sealed class BrouterRouteContext
     internal void ClearAutoRegistered()
     {
         if (_autoRegistered is null) return;
-        _handlers.Remove(_autoRegistered);
+        Unregister(_autoRegistered);
         _autoRegistered = null;
     }
 
