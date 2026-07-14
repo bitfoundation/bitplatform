@@ -576,9 +576,12 @@ public static partial class Program
             }
             else
             {
+                var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                Directory.CreateDirectory(appDataDirPath);
                 hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
-                    optionsBuilder.UseSqlite($"Data Source=App_Data/BoilerplateJobDb.db;");
+                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(appDataDirPath, "BoilerplateJobDb.db")};");
                 }, new()
                 {
                     Schema = "jobs",
