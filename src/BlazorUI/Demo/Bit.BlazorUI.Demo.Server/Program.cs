@@ -21,6 +21,10 @@ var app = builder.Build();
 
 Bit.BlazorUI.Demo.Server.Startup.Middlewares.Use(app, builder.Environment, builder.Configuration);
 
+// Start the host first so startup failures propagate immediately, then await the
+// SCSS watcher alongside shutdown (the watcher ties its own lifetime to app shutdown).
+await app.StartAsync();
+
 await Task.WhenAll(
-    app.RunAsync(),
+    app.WaitForShutdownAsync(),
     Bit.BlazorUI.Demo.Server.Services.ScssCompilerService.WatchScssFiles(app) /* Development-only, no-op otherwise */);

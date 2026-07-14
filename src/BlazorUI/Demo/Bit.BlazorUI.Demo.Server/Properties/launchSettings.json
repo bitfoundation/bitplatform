@@ -1,9 +1,6 @@
 {
     "$schema": "http://json.schemastore.org/launchsettings.json",
     "profiles": {
-        // Debug renders in Blazor Server mode (the WASM client is excluded by default - see IncludeWasm in the
-        // csproj). To run/debug the Blazor WebAssembly client, build with the WASM client included, e.g.:
-        //     dotnet run -p:IncludeWasm=true
         "Bit.BlazorUI.Demo.Server": {
             "commandName": "Project",
             "dotnetRunMessages": true,
