@@ -80,6 +80,7 @@ public partial class IconographyPage
     {
         selectedIcon = icon;
         isIconPanelOpen = true;
+        copyFeedbackKey = null;
         await EnsureGlyphsLoadedAsync();
     }
 
