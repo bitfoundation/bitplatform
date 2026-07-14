@@ -356,7 +356,10 @@ public partial class BitPdfViewerDemo
     {
         if (e.FileCount == 0) return null;
 
-        using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
+        const long maxSize = 512 * 1024 * 1024;
+        if (e.File.Size <= 0 || e.File.Size > maxSize) return null; // reject empty/oversized files before buffering
+
+        using var stream = e.File.OpenReadStream(maxAllowedSize: maxSize);
         var bytes = new byte[(int)e.File.Size];
         await stream.ReadExactlyAsync(bytes);
 
@@ -397,11 +400,14 @@ private async Task OnBasicFileChange(InputFileChangeEventArgs e)
 private BitPdfSource? plainSource;";
 
     private readonly string example3RazorCode = @"
+<BitButton IsEnabled=""canvasSource is null""
+           OnClick='() => canvasSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
 <InputFile OnChange=""OnCanvasFileChange"" accept="".pdf,application/pdf"" />
 
 <BitPdfViewer Source=""canvasSource"" RenderMode=""BitPdfRenderMode.Canvas"" />";
     private readonly string example3CsharpCode = @"
-private BitPdfSource canvasSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+private BitPdfSource? canvasSource;
 
 private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
 {

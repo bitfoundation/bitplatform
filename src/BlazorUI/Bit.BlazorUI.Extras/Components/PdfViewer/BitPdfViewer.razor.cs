@@ -403,6 +403,16 @@ public partial class BitPdfViewer : BitComponentBase
                 _renderQueued.Remove(idx);
                 if (await RenderPageAsync(idx) is false) continue;
 
+                // RenderPageAsync may have yielded (background build / gate wait); a
+                // reload or disposal in that window means the slots are torn down —
+                // don't evict or re-render against them.
+                if (IsDisposed || version != _loadVersion)
+                {
+                    _renderQueue.Clear();
+                    _renderQueued.Clear();
+                    return;
+                }
+
                 EvictDistantPages();
                 StateHasChanged();
                 // Let the browser apply the diff, paint and process scroll input
@@ -458,6 +468,15 @@ public partial class BitPdfViewer : BitComponentBase
                 int idx = _thumbQueue.Dequeue();
                 _thumbQueued.Remove(idx);
                 if (await RenderThumbAsync(idx) is false) continue;
+
+                // A reload or disposal during RenderThumbAsync's gate wait tears the
+                // slots down; stop before touching them.
+                if (IsDisposed || version != _loadVersion)
+                {
+                    _thumbQueue.Clear();
+                    _thumbQueued.Clear();
+                    return;
+                }
 
                 // Evict around the thumbnail just rendered (what the sidebar is
                 // showing), not the current page — scrolling the sidebar leaves the
@@ -831,13 +850,21 @@ public partial class BitPdfViewer : BitComponentBase
     /// returns its HTML plus any canvas display list. May run on a worker thread
     /// (see <see cref="BackgroundRendering"/>); it touches the shared document and
     /// font store, so it is only ever called while holding <see cref="_renderGate"/>.
-    /// The document/font-store references are captured into locals so a concurrent
-    /// reload (which nulls the fields) cannot fault this in-flight build — its result
-    /// is discarded by the version/epoch guard instead.
+    /// The document reference is captured into a local so a concurrent reload (which
+    /// nulls the field) cannot fault an in-flight build: if the field is already null
+    /// when captured, it bails with a discardable result that <see cref="RenderPageAsync"/>'s
+    /// version/epoch guard drops; if it is nulled after capture, the local keeps the
+    /// old document alive and the result is likewise discarded.
     /// </summary>
     private BitPdfPageBuild BuildPage(int index)
     {
-        var doc = _document!;
+        var doc = _document;
+        if (doc is null || index < 0 || index >= doc.Pages.Count)
+        {
+            // A reload nulled _document before this (possibly background) build ran;
+            // return an empty, discardable result — the caller's guard drops it.
+            return new BitPdfPageBuild(string.Empty, null);
+        }
         var store = _fontStore ??= new BitPdfFontStore();
         var page = doc.Pages[index];
         var renderer = new BitPdfHtmlRenderer(page, doc.XRef, store, _rotation)
@@ -887,21 +914,28 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     private async Task<bool> RenderPageAsync(int index)
     {
-        if (index < 0 || index >= _pages.Count || _pages[index] is not null) return false;
+        if (index < 0 || index >= _pages.Count || _pages[index] is not null || IsDisposed) return false;
 
-        await _renderGate.WaitAsync();
         try
         {
-            if (index >= _pages.Count || _pages[index] is not null) return false; // filled while waiting
+            await _renderGate.WaitAsync();
+        }
+        catch (ObjectDisposedException)
+        {
+            return false; // disposal disposed the gate while we waited for it
+        }
+        try
+        {
+            if (IsDisposed || index >= _pages.Count || _pages[index] is not null) return false; // filled/disposed while waiting
             int version = _loadVersion, epoch = _renderEpoch;
 
             BitPdfPageBuild build = BackgroundRendering
                 ? await Task.Run(() => BuildPage(index))
                 : BuildPage(index);
 
-            // A reload, rotation or mode change while the build was in flight
-            // invalidated these slots: drop the now-stale fragment.
-            if (version != _loadVersion || epoch != _renderEpoch || index >= _pages.Count || _pages[index] is not null)
+            // A reload, rotation, mode change or disposal while the build was in
+            // flight invalidated these slots: drop the now-stale fragment.
+            if (IsDisposed || version != _loadVersion || epoch != _renderEpoch || index >= _pages.Count || _pages[index] is not null)
             {
                 return false;
             }
@@ -922,12 +956,19 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     private async Task<bool> RenderThumbAsync(int index)
     {
-        if (index < 0 || index >= _thumbs.Count || _thumbs[index] is not null) return false;
+        if (index < 0 || index >= _thumbs.Count || _thumbs[index] is not null || IsDisposed) return false;
 
-        await _renderGate.WaitAsync();
         try
         {
-            if (index >= _thumbs.Count || _thumbs[index] is not null) return false;
+            await _renderGate.WaitAsync();
+        }
+        catch (ObjectDisposedException)
+        {
+            return false; // disposal disposed the gate while we waited for it
+        }
+        try
+        {
+            if (IsDisposed || index >= _thumbs.Count || _thumbs[index] is not null) return false;
             _thumbs[index] = RenderThumbContent(index);
             return true;
         }
@@ -1213,9 +1254,15 @@ public partial class BitPdfViewer : BitComponentBase
         // — a 500-page document with matches on 3 pages renders 3, not 500.
         _pageText ??= new string?[_document.PageCount];
         string needle = _searchQuery;
+        int version = _loadVersion;        // a reload while yielding supersedes this search
+        int pageCount = _document.PageCount; // captured so the loop condition never reads a nulled _document
         bool rendered = false;
-        for (int i = 0; i < _document.PageCount; i++)
+        for (int i = 0; i < pageCount; i++)
         {
+            // A reload or disposal during a yield may have reset _document/_pageText;
+            // stop before touching them (mirrors the render pumps' guard).
+            if (IsDisposed || version != _loadVersion) return;
+
             _pageText[i] ??= _document.Pages[i].ExtractText();
             if (_pageText[i]!.Contains(needle, StringComparison.OrdinalIgnoreCase)
                 && i < _pages.Count && _pages[i] is null)
@@ -1286,6 +1333,11 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        // Prevent any new render work from starting: the pumps and the render methods
+        // all bail on IsDisposed. base.DisposeAsync sets this too, but only at the end
+        // of this method — set it up front so those guards take effect during disposal.
+        IsDisposed = true;
+
         // Stop the lazy-render pumps: clear pending work so a pump resuming from its
         // Task.Delay yield after disposal finds nothing left to render against the
         // torn-down component.
@@ -1293,6 +1345,15 @@ public partial class BitPdfViewer : BitComponentBase
         _renderQueued.Clear();
         _thumbQueue.Clear();
         _thumbQueued.Clear();
+
+        // Wait for any in-flight render to release the gate before disposing it, so a
+        // background build that is mid-flight can run its finally (Release) without
+        // faulting on a disposed semaphore. New renders are already blocked above.
+        try
+        {
+            await _renderGate.WaitAsync();
+        }
+        catch (ObjectDisposedException) { } // Already disposed; nothing to drain.
 
         try
         {
