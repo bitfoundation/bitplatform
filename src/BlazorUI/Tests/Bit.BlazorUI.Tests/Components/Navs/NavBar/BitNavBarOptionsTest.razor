@@ -1,0 +1,16 @@
+@using Bit.BlazorUI
+
+<BitNavBar TItem="BitNavBarOption" Mode="@Mode">
+    <BitNavBarOption Text="Home" />
+    @if (ShowMiddle)
+    {
+        <BitNavBarOption Text="Profile" />
+    }
+    <BitNavBarOption Text="Settings" />
+</BitNavBar>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+
+    [Parameter] public BitNavMode Mode { get; set; }
+}

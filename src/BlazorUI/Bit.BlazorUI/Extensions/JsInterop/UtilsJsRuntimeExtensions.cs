@@ -20,6 +20,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask<string[]> BitUtilsGetChildrenAttributes(this IJSRuntime jsRuntime, string containerId, string attribute)
+    {
+        return jsRuntime.Invoke<string[]>("BitBlazorUI.Utils.getChildrenAttributes", containerId, attribute);
+    }
+
+
     internal static ValueTask<BoundingClientRect> BitUtilsGetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
     {
         return jsRuntime.Invoke<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", element);

@@ -146,6 +146,20 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
 
 
+    internal int Depth => Parent is null ? 0 : Parent.Depth + 1;
+
+    internal void InternalRecursiveStateHasChanged()
+    {
+        StateHasChanged();
+
+        foreach (var child in ChildItems)
+        {
+            child.InternalRecursiveStateHasChanged();
+        }
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
         if (Parent is null)

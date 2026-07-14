@@ -6,6 +6,7 @@ namespace Bit.BlazorUI;
 public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 {
     private bool _isCalloutOpen;
+    private bool _optionsOrderDirty;
     private uint _internalOverflowIndex;
     private uint _internalMaxDisplayedItems;
     private List<TItem> _items = [];
@@ -18,6 +19,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private string _overlayId = default!;
     private string _overflowAnchorId = default!;
     private string _scrollContainerId = default!;
+    private string _optionsContainerId = default!;
 
 
 
@@ -138,6 +140,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         _internalItems = [.. _items];
         _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_items.Count : MaxDisplayedItems;
         _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+        _optionsOrderDirty = true;
         SetItemsToShow();
         StateHasChanged();
     }
@@ -145,6 +148,36 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
         _items.Remove((option as TItem)!);
+        _internalItems = [.. _items];
+        _optionsOrderDirty = true;
+        SetItemsToShow();
+        StateHasChanged();
+    }
+
+    // Reorders the registered options based on the DOM order of their rendered markers, since an
+    // option that gets conditionally rendered after the first render registers itself at the end of
+    // the items list, no matter where in the markup it is located.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        List<TItem> ordered = new(_items.Count);
+
+        foreach (var optionId in orderedOptionIds)
+        {
+            var item = _items.FirstOrDefault(i => (i as BitBreadcrumbOption)?._OptionId == optionId);
+            if (item is null || ordered.Contains(item)) continue;
+
+            ordered.Add(item);
+        }
+
+        if (ordered.Count == 0) return;
+
+        ordered.AddRange(_items.Except(ordered));
+
+        if (ordered.SequenceEqual(_items)) return;
+
+        _items = ordered;
         _internalItems = [.. _items];
         SetItemsToShow();
         StateHasChanged();
@@ -170,6 +203,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         _overlayId = $"BitBreadcrumb-{UniqueId}-overlay";
         _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
         _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
+        _optionsContainerId = $"BitBreadcrumb-{UniqueId}-options-container";
 
         return base.OnInitializedAsync();
     }
@@ -207,6 +241,27 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         }
 
         base.OnAfterRender(firstRender);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_optionsOrderDirty)
+        {
+            _optionsOrderDirty = false;
+
+            try
+            {
+                var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_optionsContainerId, BitBreadcrumbOption._OPTION_ID_ATTRIBUTE);
+                if (orderedOptionIds is not null)
+                {
+                    ReorderOptions(orderedOptionIds);
+                }
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // we can ignore this exception here (e.g. during prerendering)
+        }
     }
 
 

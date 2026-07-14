@@ -152,6 +152,10 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         base.OnParametersSet();
 
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // choice group's own parameters (Value, Styles, NoCircle, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
         if (ChildContent is not null || Items is null || Items.Any() is false) return;
 
         if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
@@ -273,7 +277,17 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         CurrentValue = GetValue(item);
 
+        RefreshOptions();
+
         StateHasChanged();
+    }
+
+    private void RefreshOptions()
+    {
+        foreach (var item in _items)
+        {
+            (item as BitChoiceGroupOption<TValue>)?.InternalStateHasChanged();
+        }
     }
 
     internal bool GetIsCheckedItem(TItem item)

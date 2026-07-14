@@ -103,11 +103,30 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
 
 
 
+    internal void InternalStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
         Parent.RegisterOption(this);
 
         await base.OnInitializedAsync();
+    }
+
+    // Renders the option's item in place, so the rendered order of the items always follows the
+    // markup order of the options, even when an option is added or removed conditionally later on.
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (Parent is null) return;
+
+        builder.OpenComponent<_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>>(0);
+        builder.AddComponentParameter(1, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.ChoiceGroup), Parent);
+        builder.AddComponentParameter(2, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.Item), this);
+        builder.CloseComponent();
     }
 
 

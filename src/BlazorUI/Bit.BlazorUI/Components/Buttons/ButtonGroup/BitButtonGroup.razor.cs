@@ -275,12 +275,26 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // button group's own parameters (Styles, Toggle, IconOnly, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
         await base.OnParametersSetAsync();
     }
 
 
 
-    private async Task HandleOnItemClick(TItem item)
+    private void RefreshOptions()
+    {
+        foreach (var item in _items)
+        {
+            (item as BitButtonGroupOption)?.InternalStateHasChanged();
+        }
+    }
+
+
+
+    internal async Task HandleOnItemClick(TItem item)
     {
         if (GetIsEnabled(item) is false) return;
 
@@ -311,7 +325,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         await UpdateItemToggle(item);
     }
 
-    private string? GetItemClass(TItem item)
+    internal string? GetItemClass(TItem item)
     {
         List<string> classes = ["bit-btg-itm"];
 
@@ -344,7 +358,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return string.Join(' ', classes);
     }
 
-    private string? GetItemStyle(TItem item)
+    internal string? GetItemStyle(TItem item)
     {
         List<string> styles = [];
 
@@ -367,7 +381,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return string.Join(';', styles);
     }
 
-    private string? GetItemText(TItem item)
+    internal string? GetItemText(TItem item)
     {
         if (IconOnly) return null;
 
@@ -394,7 +408,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetText(item);
     }
 
-    private string? GetItemTitle(TItem item)
+    internal string? GetItemTitle(TItem item)
     {
         if (Toggle)
         {
@@ -419,7 +433,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetTitle(item);
     }
 
-    private BitIconInfo? GetItemIcon(TItem item)
+    internal BitIconInfo? GetItemIcon(TItem item)
     {
         if (Toggle)
         {
@@ -475,6 +489,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         await AssignToggleKey(toggleKey);
         await OnToggleChange.InvokeAsync(item);
+
+        // A toggle change affects the rendering of the previously and newly toggled items, but the click
+        // handler now runs on the clicked item's renderer, so both the parent (Items API) and the
+        // registered options need an explicit re-render.
+        RefreshOptions();
+        StateHasChanged();
     }
 
     private bool IsItemToggled(TItem item)
@@ -708,7 +728,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty<string?>(NameSelectors.OffIconName.Name);
     }
 
-    private bool GetIsEnabled(TItem? item)
+    internal bool GetIsEnabled(TItem? item)
     {
         if (item is null) return false;
 
@@ -756,7 +776,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private RenderFragment<TItem>? GetTemplate(TItem? item)
+    internal RenderFragment<TItem>? GetTemplate(TItem? item)
     {
         if (item is null) return null;
 

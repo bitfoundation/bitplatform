@@ -2,6 +2,10 @@
 
 public partial class BitBreadcrumbOption : ComponentBase, IDisposable
 {
+    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-brc-opt";
+
+    internal string _OptionId { get; } = BitShortId.NewId();
+
     private bool _disposed;
 
 
@@ -83,6 +87,16 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
         Parent.RegisterOptions(this);
 
         base.OnInitialized();
+    }
+
+    // Renders a hidden marker element in place, whose DOM order (in the hidden options container of
+    // the breadcrumb) is used to keep the order of the registered items in sync with the markup order
+    // of the options, even when an option is added or removed conditionally later on.
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, _OPTION_ID_ATTRIBUTE, _OptionId);
+        builder.CloseElement();
     }
 
 

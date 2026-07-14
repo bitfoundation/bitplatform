@@ -2,12 +2,6 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>
-        @(Options ?? ChildContent)
-    </div>
-</CascadingValue>
-
 <nav @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="navigation"
@@ -18,10 +12,17 @@
 
     <ul role="list">
         <CascadingValue Value="this" IsFixed="true">
-            @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+            @if (Options is not null || ChildContent is not null)
             {
-                var key = GetItemKey(item, idx.ToString());
-                <_BitNavChild @key="@key" Key="@key" Item="item" Depth="0" />
+                @(Options ?? ChildContent)
+            }
+            else
+            {
+                @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+                {
+                    var key = GetItemKey(item, idx.ToString());
+                    <_BitNavChild @key="@key" Key="@key" Item="item" Depth="0" />
+                }
             }
         </CascadingValue>
     </ul>

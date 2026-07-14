@@ -1,0 +1,26 @@
+@namespace Bit.BlazorUI
+@typeparam TItem where TItem : class
+
+@{
+    var isEnabled = AccordionList.IsEnabled && AccordionList.GetIsEnabled(Item);
+    var headerTemplate = AccordionList.GetItemHeaderTemplate(Item);
+}
+
+<BitAccordion Background="AccordionList.Background"
+              Border="AccordionList.Border"
+              Class="@AccordionList.GetClass(Item)"
+              Style="@AccordionList.GetStyle(Item)"
+              Classes="AccordionList._itemClasses"
+              Styles="AccordionList._itemStyles"
+              Dir="AccordionList.Dir"
+              IsEnabled="isEnabled"
+              NoBorder="AccordionList.NoBorder"
+              Title="@AccordionList.GetTitle(Item)"
+              Description="@AccordionList.GetDescription(Item)"
+              ExpanderIcon="AccordionList.GetItemExpanderIcon(Item)"
+              ExpanderIconName="@AccordionList.GetItemExpanderIconName(Item)"
+              HeaderTemplate="headerTemplate"
+              IsExpanded="AccordionList.IsItemExpanded(Item)"
+              OnClick="() => AccordionList.HandleOnItemClick(Item)">
+    @AccordionList.GetItemBody(Item)
+</BitAccordion>

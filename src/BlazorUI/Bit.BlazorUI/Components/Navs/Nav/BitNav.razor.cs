@@ -25,6 +25,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     public void CollapseAll(TItem? item = null)
     {
         (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, false));
+
+        RefreshOptions();
     }
 
     /// <summary>
@@ -35,6 +37,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         if (SingleExpand) return;
 
         (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, true));
+
+        RefreshOptions();
     }
 
     /// <summary>
@@ -60,6 +64,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 SetItemExpanded(Item, isExpanded);
             }
 
+            RefreshOptions();
             StateHasChanged();
 
             _currentItem = Item;
@@ -187,6 +192,15 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         await base.OnInitializedAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // nav's own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
+        base.OnParametersSet();
+    }
+
 
 
     internal void SetItemExpanded(TItem item, bool value)
@@ -230,6 +244,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         await OnSelectItem.InvokeAsync(item);
 
+        RefreshOptions();
         StateHasChanged();
     }
 
@@ -312,9 +327,23 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     private void OnSetSelectedItem()
     {
+        // The selection affects the previously and newly selected items, which render themselves in
+        // the options mode, so push a re-render to all of them.
+        RefreshOptions();
+
         if (SelectedItem is null) return;
 
         ToggleItemAndParents(_items, SelectedItem, true);
+
+        RefreshOptions();
+    }
+
+    private void RefreshOptions()
+    {
+        foreach (var item in _items)
+        {
+            (item as BitNavOption)?.InternalRecursiveStateHasChanged();
+        }
     }
 
     private void OnSetMode()

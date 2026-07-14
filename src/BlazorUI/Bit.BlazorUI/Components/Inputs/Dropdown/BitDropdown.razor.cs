@@ -567,6 +567,29 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         StateHasChanged();
     }
 
+    // The search text and the selected items change in many different places, so instead of pushing a
+    // re-render to the options at each of those sites, refresh them after every render of the dropdown
+    // itself (Blazor skips re-rendering them otherwise, since their own parameters do not change).
+    internal bool ShouldRenderOptionItem(TItem item)
+    {
+        return _searchText.HasNoValue() || GetSearchedItems().Contains(item);
+    }
+
+    internal string? GetItemCheckIconCss()
+    {
+        return BitIconInfo.From(ItemCheckIcon, ItemCheckIconName ?? "Accept")?.GetCssClasses();
+    }
+
+    private void RefreshOptions()
+    {
+        if (Items is null) return;
+
+        foreach (var item in Items)
+        {
+            (item as BitDropdownOption<TValue>)?.InternalStateHasChanged();
+        }
+    }
+
     internal void UnregisterOption(BitDropdownOption<TValue> option)
     {
         var item = (option as TItem)!;
@@ -1020,6 +1043,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        RefreshOptions();
+
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;

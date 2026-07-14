@@ -158,12 +158,19 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             _items = Items.ToList();
         }
 
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // timeline's own parameters (Styles, IsEnabled, ...) change, so push a re-render to each one.
+        foreach (var item in _items)
+        {
+            (item as BitTimelineOption)?.InternalStateHasChanged();
+        }
+
         return base.OnParametersSetAsync();
     }
 
 
 
-    private string? GetItemClasses(TItem item)
+    internal string? GetItemClasses(TItem item)
     {
         StringBuilder className = new StringBuilder();
 
@@ -212,7 +219,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return className.ToString();
     }
 
-    private async Task HandleOnItemClick(TItem item)
+    internal async Task HandleOnItemClick(TItem item)
     {
         if (GetIsEnabled(item) is false) return;
 
@@ -265,7 +272,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
-    private BitIconInfo? GetIcon(TItem? item)
+    internal BitIconInfo? GetIcon(TItem? item)
     {
         if (item is null) return null;
 
@@ -289,7 +296,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
     }
 
-    private string? GetIconName(TItem? item)
+    internal string? GetIconName(TItem? item)
     {
         if (item is null) return null;
 
@@ -313,7 +320,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    private bool GetIsEnabled(TItem? item)
+    internal bool GetIsEnabled(TItem? item)
     {
         if (item is null) return false;
 
@@ -337,7 +344,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
-    private string? GetStyle(TItem? item)
+    internal string? GetStyle(TItem? item)
     {
         if (item is null) return null;
 
@@ -361,7 +368,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private RenderFragment<TItem>? GetPrimaryContent(TItem? item)
+    internal RenderFragment<TItem>? GetPrimaryContent(TItem? item)
     {
         if (item is null) return null;
 
@@ -385,7 +392,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.PrimaryContent.Name);
     }
 
-    private RenderFragment<TItem>? GetSecondaryContent(TItem? item)
+    internal RenderFragment<TItem>? GetSecondaryContent(TItem? item)
     {
         if (item is null) return null;
 
@@ -409,7 +416,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.SecondaryContent.Name);
     }
 
-    private string? GetPrimaryText(TItem? item)
+    internal string? GetPrimaryText(TItem? item)
     {
         if (item is null) return null;
 
@@ -433,7 +440,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.PrimaryText.Name);
     }
 
-    private string? GetSecondaryText(TItem? item)
+    internal string? GetSecondaryText(TItem? item)
     {
         if (item is null) return null;
 
@@ -457,7 +464,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.SecondaryText.Name);
     }
 
-    private bool GetHideDot(TItem? item)
+    internal bool GetHideDot(TItem? item)
     {
         if (item is null) return false;
 
@@ -505,7 +512,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty(NameSelectors.Reversed.Name, false);
     }
 
-    private RenderFragment<TItem>? GetDotTemplate(TItem? item)
+    internal RenderFragment<TItem>? GetDotTemplate(TItem? item)
     {
         if (item is null) return null;
 

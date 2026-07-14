@@ -10,53 +10,19 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    <CascadingValue Value="this" IsFixed="true">
-        <div style="display:none" hidden>@(Options ?? ChildContent)</div>
-    </CascadingValue>
-
     <div style="@Styles?.Container" class="bit-nbr-cnt @Classes?.Container">
-        @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+        @if (Options is not null || ChildContent is not null)
         {
-            var itm = item;
-            var url = GetUrl(item);
-            var template = GetTemplate(item);
-            var isEnabled = GetIsEnabled(item);
-            var href = (isEnabled && (SelectedItem != itm || Reselectable)) ? url : null;
-
-            <_BitNavBarChild @key="@GetItemKey(item, idx.ToString())"
-                             Href="@href"
-                             Title="@GetTitle(item)"
-                             Target="@GetTarget(item)"
-                             Style="@GetItemCssStyle(item)"
-                             Disabled="@(isEnabled is false)"
-                             OnClick="() => HandleOnClick(itm)"
-                             Class="@GetItemCssClass(item, isEnabled)">
-                @if (template is not null)
-                {
-                    @template(item)
-                }
-                else if (ItemTemplate is not null)
-                {
-                    @ItemTemplate(item)
-                }
-                else
-                {
-                    var icon = GetIcon(item);
-                    var iconName = GetIconName(item);
-
-                    icon = BitIconInfo.From(icon, iconName);
-
-                    @if (icon is not null)
-                    {
-                        <i style="@Styles?.ItemIcon" class="bit-nbr-ico @icon.GetCssClasses() @Classes?.ItemIcon" />
-                    }
-
-                    @if (IconOnly is false)
-                    {
-                        <span style="@Styles?.ItemText" class="bit-nbr-txt @Classes?.ItemText">@GetText(item)</span>
-                    }
-                }
-            </_BitNavBarChild>
+            <CascadingValue Value="this" IsFixed="true">
+                @(Options ?? ChildContent)
+            </CascadingValue>
+        }
+        else
+        {
+            @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+            {
+                <_BitNavBarItem @key="@GetItemKey(item, idx.ToString())" NavBar="this" Item="item" />
+            }
         }
     </div>
 </nav>

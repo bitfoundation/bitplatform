@@ -108,6 +108,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     /// Selected item to show in the navbar.
     /// </summary>
     [Parameter, TwoWayBound]
+    [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
 
     /// <summary>
@@ -196,7 +197,29 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         await base.OnInitializedAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // navbar's own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
+        RefreshOptions();
 
+        base.OnParametersSet();
+    }
+
+
+
+    private void OnSetSelectedItem()
+    {
+        RefreshOptions();
+    }
+
+    private void RefreshOptions()
+    {
+        foreach (var item in _items)
+        {
+            (item as BitNavBarOption)?.InternalStateHasChanged();
+        }
+    }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
@@ -247,7 +270,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
-    private async Task HandleOnClick(TItem item)
+    internal async Task HandleOnClick(TItem item)
     {
         if (GetIsEnabled(item) is false) return;
 
@@ -262,7 +285,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private string GetItemCssStyle(TItem item)
+    internal string GetItemCssStyle(TItem item)
     {
         var itm = Styles?.Item;
         var style = GetStyle(item);
@@ -270,7 +293,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return $"{itm} {style} {selected}".Trim();
     }
 
-    private string GetItemCssClass(TItem item, bool isEnabled)
+    internal string GetItemCssClass(TItem item, bool isEnabled)
     {
         var itm = Classes?.Item;
         var @class = GetClass(item);
@@ -304,7 +327,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
-    private BitIconInfo? GetIcon(TItem item)
+    internal BitIconInfo? GetIcon(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
@@ -326,7 +349,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
     }
 
-    private string? GetIconName(TItem item)
+    internal string? GetIconName(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
@@ -348,7 +371,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    private bool GetIsEnabled(TItem item)
+    internal bool GetIsEnabled(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
@@ -414,7 +437,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private string? GetTarget(TItem item)
+    internal string? GetTarget(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
@@ -436,7 +459,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
     }
 
-    private RenderFragment<TItem>? GetTemplate(TItem item)
+    internal RenderFragment<TItem>? GetTemplate(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
@@ -458,7 +481,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
-    private string? GetText(TItem item)
+    internal string? GetText(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
@@ -480,7 +503,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    private string? GetTitle(TItem item)
+    internal string? GetTitle(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
@@ -502,7 +525,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
     }
 
-    private string? GetUrl(TItem item)
+    internal string? GetUrl(TItem item)
     {
         if (item is BitNavBarItem navItem)
         {
