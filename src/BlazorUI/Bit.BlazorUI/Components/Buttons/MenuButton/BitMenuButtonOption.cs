@@ -77,7 +77,7 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        Parent.RegisterOption(this);
+        Parent?.RegisterOption(this);
 
         await base.OnInitializedAsync();
     }
@@ -104,7 +104,7 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        Parent.UnregisterOption(this);
+        Parent?.UnregisterOption(this);
 
         _disposed = true;
     }

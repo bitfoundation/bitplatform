@@ -572,7 +572,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // itself (Blazor skips re-rendering them otherwise, since their own parameters do not change).
     internal bool ShouldRenderOptionItem(TItem item)
     {
-        return _searchText.HasNoValue() || GetSearchedItems().Contains(item);
+        if (_searchText.HasNoValue()) return true;
+
+        if (SearchFunction is not null) return GetSearchedItems().Contains(item);
+
+        return GetItemType(item) == BitDropdownItemType.Normal &&
+               GetText(item)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) is true;
     }
 
     internal string? GetItemCheckIconCss()

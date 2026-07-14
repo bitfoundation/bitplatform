@@ -336,7 +336,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         // menu button's own parameters (Styles, Sticky, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
-        if (ChildContent is not null || Items.Any() is false || Items == _oldItems) return;
+        if (ChildContent is not null || Options is not null || Items.Any() is false || Items == _oldItems) return;
 
         _oldItems = Items;
         _items = [.. Items];

@@ -269,7 +269,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         await OnClick.InvokeAsync(item);
     }
 
-    internal async Task HandleChange(TItem item)
+    internal void HandleChange(TItem item)
     {
         if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
 
