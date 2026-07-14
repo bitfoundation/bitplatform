@@ -37,7 +37,7 @@
         {
             @foreach (var item in _items)
             {
-                <_BitChoiceGroupItem Item="item" ChoiceGroup="this" />
+                <_BitChoiceGroupItem @key="item" Item="item" ChoiceGroup="this" />
             }
         }
     </div>

@@ -149,7 +149,7 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        Parent.RegisterOption(this);
+        Parent?.RegisterOption(this);
 
         await base.OnInitializedAsync();
     }
@@ -176,7 +176,7 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        Parent.UnregisterOption(this);
+        Parent?.UnregisterOption(this);
 
         _disposed = true;
     }
