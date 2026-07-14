@@ -223,6 +223,10 @@ public partial class BitPdfViewer : BitComponentBase
             StateHasChanged();
         }
 
+        // RenderPageAsync may have yielded; if the component was disposed in that
+        // window, don't drive JS against the torn-down viewer.
+        if (IsDisposed) return;
+
         await _js.BitPdfViewerScrollToPage(_containerRef, _currentPage);
         if (_showThumbnails)
         {
@@ -782,6 +786,12 @@ public partial class BitPdfViewer : BitComponentBase
 
             PreparePages();
             await RenderCurrentPageEagerlyAsync();
+
+            // A newer Source may have superseded this load while the eager render
+            // awaited (or the component was disposed); stop before touching _document
+            // or publishing stale outline/status/callbacks.
+            if (IsDisposed || version != _loadVersion) return;
+
             try
             {
                 _outline = _document.Outline;
@@ -870,9 +880,11 @@ public partial class BitPdfViewer : BitComponentBase
     /// nulls the field) cannot fault an in-flight build: if the field is already null
     /// when captured, it bails with a discardable result that <see cref="RenderPageAsync"/>'s
     /// version/epoch guard drops; if it is nulled after capture, the local keeps the
-    /// old document alive and the result is likewise discarded.
+    /// old document alive and the result is likewise discarded. The render settings are
+    /// passed in as a UI-thread snapshot so a background build reads a consistent set
+    /// even if the component's state changes while it runs.
     /// </summary>
-    private BitPdfPageBuild BuildPage(int index)
+    private BitPdfPageBuild BuildPage(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode)
     {
         var doc = _document;
         if (doc is null || index < 0 || index >= doc.Pages.Count)
@@ -883,11 +895,11 @@ public partial class BitPdfViewer : BitComponentBase
         }
         var store = _fontStore ??= new BitPdfFontStore();
         var page = doc.Pages[index];
-        var renderer = new BitPdfHtmlRenderer(page, doc.XRef, store, _rotation)
+        var renderer = new BitPdfHtmlRenderer(page, doc.XRef, store, rotation)
         {
             DestinationResolver = dest => doc.ResolveDestinationPage(dest),
-            TextCoalescing = TextCoalescing,
-            EmitCanvasOps = RenderMode == BitPdfRenderMode.Canvas,
+            TextCoalescing = textCoalescing,
+            EmitCanvasOps = renderMode == BitPdfRenderMode.Canvas,
         };
         return new BitPdfPageBuild(renderer.Render(), renderer.CanvasOpsJson);
     }
@@ -918,7 +930,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>Renders a single page to its HTML fragment, synchronously on the
     /// calling thread. Used by the thumbnail renderer, which already runs under the
     /// render gate.</summary>
-    private MarkupString RenderPageContent(int index) => CommitPage(index, BuildPage(index));
+    private MarkupString RenderPageContent(int index) => CommitPage(index, BuildPage(index, _rotation, TextCoalescing, RenderMode));
 
     /// <summary>
     /// Renders one page into its slot if it is still a placeholder, serialized
@@ -945,9 +957,16 @@ public partial class BitPdfViewer : BitComponentBase
             if (IsDisposed || index >= _pages.Count || _pages[index] is not null) return false; // filled/disposed while waiting
             int version = _loadVersion, epoch = _renderEpoch;
 
+            // Snapshot the render settings on the UI thread so a background build reads
+            // a consistent set even if _rotation/TextCoalescing/RenderMode change while
+            // it runs; a change also bumps _renderEpoch, so the result is discarded below.
+            int rotation = _rotation;
+            var textCoalescing = TextCoalescing;
+            var renderMode = RenderMode;
+
             BitPdfPageBuild build = BackgroundRendering
-                ? await Task.Run(() => BuildPage(index))
-                : BuildPage(index);
+                ? await Task.Run(() => BuildPage(index, rotation, textCoalescing, renderMode))
+                : BuildPage(index, rotation, textCoalescing, renderMode);
 
             // A reload, rotation, mode change or disposal while the build was in
             // flight invalidated these slots: drop the now-stale fragment.
@@ -1300,6 +1319,10 @@ public partial class BitPdfViewer : BitComponentBase
             }
         }
 
+        // A reload or disposal during the final yield supersedes this search; don't
+        // touch shared state or JS on a torn-down/stale component.
+        if (IsDisposed || version != _loadVersion) return;
+
         _loading = false;
         if (rendered)
         {
@@ -1307,12 +1330,18 @@ public partial class BitPdfViewer : BitComponentBase
             await Task.Delay(1); // let the freshly rendered pages paint before highlighting
         }
 
-        _searchTotal = await _js.BitPdfViewerSearchAll(_containerRef, _searchQuery);
-        _searchIndex = _searchTotal > 0 ? 0 : -1;
-        if (_searchTotal > 0)
+        // Guard the interop against a disposal racing these calls (as
+        // ScrollActiveThumbIntoViewAsync does).
+        try
         {
-            await _js.BitPdfViewerGotoMatch(_containerRef, _searchIndex);
+            _searchTotal = await _js.BitPdfViewerSearchAll(_containerRef, _searchQuery);
+            _searchIndex = _searchTotal > 0 ? 0 : -1;
+            if (_searchTotal > 0)
+            {
+                await _js.BitPdfViewerGotoMatch(_containerRef, _searchIndex);
+            }
         }
+        catch (JSDisconnectedException) { }
     }
 
     private Task SearchNext() => GotoMatch(_searchIndex + 1);
