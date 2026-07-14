@@ -7,10 +7,19 @@
 #else
     var includeWasm = false;
 #endif
+#if DEBUG
+    // While debugging, boot from the framework-served blazor.web.js instead of the ES2019-transpiled
+    // bit.blazor.web.es2019.js variant, which is only needed to support legacy (non-ES2019+) browsers.
+    var blazorWebScript = "_framework/blazor.web.js";
+#else
+    var blazorWebScript = "_framework/bit.blazor.web.es2019.js";
+#endif
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    // Without the WASM client in the build, WebAssembly render modes can't boot, so fall back to Blazor Server
+    // even where AppRenderMode.Current would pick WebAssembly (e.g. Release with IncludeWasm=false).
     var renderMode = noPrerender
         ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
-        : AppRenderMode.Current;
+        : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
 }
 
 <!DOCTYPE html>
@@ -107,15 +116,16 @@
     {
         @if (includeWasm)
         {
-            <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-            <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js"></Script>
+            <Script Src="@blazorWebScript" autostart="false"></Script>
+            <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="@blazorWebScript"></Script>
             <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
             <AppBswupProgressBar />
         }
         else
         {
-            @* No WASM client in this build (Debug renders in Blazor Server mode), so boot blazor directly without Bswup/service-worker. *@
-            <Script Src="_framework/bit.blazor.web.es2019.js"></Script>
+            @* No WASM client in this build (Debug renders in Blazor Server mode), so boot blazor directly without Bswup/service-worker.
+               Uses the framework-served blazor.web.js (always available) rather than the ES2019 variant, which only ships in the WASM build. *@
+            <Script Src="_framework/blazor.web.js"></Script>
         }
         <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>

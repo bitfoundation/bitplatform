@@ -34,8 +34,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-        <!-- Used by the development-only ScssCompilerService to tie the sass watch child process lifetime to the server. -->
-        <PackageReference Include="Meziantou.Framework.Win32.Jobs" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.7.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
@@ -63,23 +61,6 @@
         <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Web.Shared\Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
         <ProjectReference Condition=" '$(IncludeWasm)' == 'true' " Include="..\Client\Bit.BlazorUI.Demo.Client.Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
     </ItemGroup>
-
-    <!-- Bit.BlazorES2019 delivers its scripts as NuGet contentFiles that are only copied to the build/publish
-         output wwwroot, so during development (where static files are served from the source wwwroot) requests
-         to _framework/bit.blazor.*.es2019.js would 404. Copy them into the source wwwroot at build time and
-         keep them out of the Content items (the package's own items already handle output/publish copies). -->
-    <ItemGroup>
-        <!-- Keep the copied scripts out of every item group so builds and dotnet watch ignore them. -->
-        <Content Remove="wwwroot\_framework\*.js" />
-        <None Remove="wwwroot\_framework\*.js" />
-        <!-- The version here must match the Bit.BlazorES2019 PackageReference above. -->
-        <_BitBlazorES2019Scripts Include="$(NuGetPackageRoot)bit.blazores2019\10.5.0-pre-08\contentFiles\any\net10.0\wwwroot\_framework\*.js" />
-    </ItemGroup>
-    <Target Name="CopyBitBlazorES2019ScriptsToWwwroot" BeforeTargets="BeforeBuild"
-            Inputs="@(_BitBlazorES2019Scripts)"
-            Outputs="@(_BitBlazorES2019Scripts->'wwwroot\_framework\%(Filename)%(Extension)')">
-        <Copy SourceFiles="@(_BitBlazorES2019Scripts)" DestinationFolder="wwwroot\_framework" SkipUnchangedFiles="true" />
-    </Target>
 
     <ItemGroup>
         <Content Include=".config\dotnet-tools.json" />
