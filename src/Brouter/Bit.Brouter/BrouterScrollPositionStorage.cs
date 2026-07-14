@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Where saved scroll positions are kept when <see cref="BrouterOptions.RestoreScrollPosition"/> is

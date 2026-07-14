@@ -1,4 +1,4 @@
-namespace Bit.Brouter.Tests;
+﻿namespace Bit.Brouter.Tests;
 
 /// <summary>
 /// Test-controlled behavior for a <see cref="NavigationLockProbe"/>: whether it blocks the pending

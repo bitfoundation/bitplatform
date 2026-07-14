@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 // Parses route templates and extracts parameters from them.
 // Supports:

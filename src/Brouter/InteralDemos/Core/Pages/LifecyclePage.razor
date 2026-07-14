@@ -1,4 +1,4 @@
-@* Route lifecycle demo. This is a singleton Component route (no KeepAlive) whose page implements
+﻿@* Route lifecycle demo. This is a singleton Component route (no KeepAlive) whose page implements
    IBrouterRoute DIRECTLY - the router discovers the interface on the component it instantiates,
    no base class or cascading parameter needed. Switching ids re-commits the SAME instance
    (OnRenavigated); leaving unmounts it (OnDeactivated with reason Disposing). Every callback is

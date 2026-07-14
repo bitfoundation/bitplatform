@@ -1,4 +1,4 @@
-@* Component-level navigation lock demo. The page derives from BrouterRouteBase and overrides the
+﻿@* Component-level navigation lock demo. The page derives from BrouterRouteBase and overrides the
    two awaited, cancellable lock callbacks: OnDeactivatingAsync (leaving the route entirely) and
    OnRenavigatingAsync (the route stays matched - /lock/1 -> /lock/2 - which a route-declared
    LeaveGuard can never veto). While the draft is dirty, both park the pending navigation on a

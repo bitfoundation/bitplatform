@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Why a route's content was deactivated (see <see cref="IBrouterRoute.OnDeactivatedAsync"/>).

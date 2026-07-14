@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Payload of <see cref="IBrouterRoute.OnRenavigatedAsync"/>: a navigation re-committed this route

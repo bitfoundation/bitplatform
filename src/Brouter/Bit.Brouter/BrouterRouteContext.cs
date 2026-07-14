@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Cascaded to every route's rendered content (all routes, not just keep-alive ones) as the
@@ -158,6 +158,16 @@ public sealed class BrouterRouteContext
         // callbacks.
         if (IsActive is false) return;
         IsActive = false;
+        // Never deliver a deactivation to content that never received its activation callback: a
+        // handler pairing acquire-in-OnActivated with release-in-OnDeactivated would otherwise
+        // release what it never acquired. Reachable two ways, and the matching activation was
+        // correctly skipped for both: (1) a commit superseded between its render and the
+        // OnAfterRenderAsync arrival flush - the staged activation is dropped by the generation
+        // filter, so its deactivation must be dropped too; (2) static prerendering, where no
+        // interactive render completes and activation never fires (the documented "never during
+        // prerender" contract). IsActive is still cleared above, so IsFirstActivation stays
+        // truthful when the same instance is later revealed and activates for real.
+        if (HasEverActivated is false) return;
         if (_handlers.Count == 0) return;
 
         var args = new BrouterRouteDeactivation(reason, location);

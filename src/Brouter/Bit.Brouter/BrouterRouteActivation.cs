@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Payload of <see cref="IBrouterRoute.OnActivatedAsync"/>: the navigation that made this

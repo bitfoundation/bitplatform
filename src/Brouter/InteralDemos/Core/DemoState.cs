@@ -1,4 +1,4 @@
-namespace Bit.Brouter.Demos.Core;
+﻿namespace Bit.Brouter.Demos.Core;
 
 /// <summary>
 /// Scoped state shared between demo pages and the routes declared in AppRouter - the realistic

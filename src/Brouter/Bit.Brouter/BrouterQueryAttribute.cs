@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Opt-in alternative to Microsoft's <c>[SupplyParameterFromQuery]</c> for binding a component

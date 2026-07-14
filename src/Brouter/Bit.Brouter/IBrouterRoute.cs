@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Opt-in route lifecycle for components rendered by a <see cref="Broute"/> - every route, not just
