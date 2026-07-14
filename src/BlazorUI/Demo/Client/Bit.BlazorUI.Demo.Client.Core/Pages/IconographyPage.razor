@@ -64,16 +64,19 @@
                     {
                         foreach (var icon in filteredIcons)
                         {
-                            <BitStack Gap="0.5rem"
-                                      Class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")"
-                                      Alignment="BitAlignment.Center"
-                                      @onclick="() => OpenIconPanel(icon)">
-                                <BitIcon IconName="@icon.Value" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
+                            <BitButton Variant="BitVariant.Text" 
+                                       Title="@icon.Value"
+                                       AriaLabel="@icon.Value"
+                                       OnClick="() => OpenIconPanel(icon)"
+                                       Class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")">
+                                <BitStack Gap="0.5rem" Alignment="BitAlignment.Center">
+                                    <BitIcon IconName="@icon.Value" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
 
-                                <BitText Class="icon-name" Typography="BitTypography.Caption1">
-                                    @icon.Value
-                                </BitText>
-                            </BitStack>
+                                    <BitText Class="icon-name" Typography="BitTypography.Caption1">
+                                        @icon.Value
+                                    </BitText>
+                                </BitStack>
+                            </BitButton>
                         }
                     }
                 </BitStack>

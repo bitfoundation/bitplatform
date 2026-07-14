@@ -7,7 +7,9 @@
 
     .icon-box {
         margin: 1px;
+        height: auto;
         width: 5.125rem;
+        min-height: unset;
         cursor: pointer;
         padding: 0.5rem;
         border-radius: $bit-shape-border-radius;
@@ -21,11 +23,17 @@
 
         &:hover,
         &.selected {
+            color: inherit;
             background-color: $bit-color-background-secondary;
 
             .icon-name {
                 opacity: 1;
             }
+        }
+
+        &:active {
+            color: inherit;
+            background-color: $bit-color-background-secondary;
         }
 
         &.selected {
