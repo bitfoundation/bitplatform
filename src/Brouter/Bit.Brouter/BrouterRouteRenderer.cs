@@ -536,6 +536,12 @@ internal class BrouterRouteRenderer
             var found = _route.Brouter?.EffectiveFound;
             if (found is not null)
             {
+                // A route that previously rendered a directly-instantiated Component page (EffectiveFound
+                // was null) can switch to the Found template at runtime if a Found/layout/auth parameter
+                // is set: this render disposes that page, so drop its auto-registration from the surviving
+                // context - same rationale as the error and Content branches (a no-op when the Found
+                // template rendered from the first match).
+                context?.ClearAutoRegistered();
                 b3.AddContent(0, found(GetFrameworkRouteData(routeParams)));
             }
             else

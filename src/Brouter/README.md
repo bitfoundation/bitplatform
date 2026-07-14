@@ -1050,10 +1050,13 @@ next visit to a dropped route recreates it fresh.
 
 > Notes: turning on `KeepAlive` wraps the route's inline content in a `<div>` (the stable element
 > that preserves the subtree), which can affect direct-child CSS selectors. Retention applies to a
-> route's primary content; named-outlet (`BrouterView`) fragments are not separately kept and don't
-> carry the route lifecycle cascade. Instances dropped by LRU eviction or `ClearKeepAlive()` were
-> already deactivated (`Hidden`) when they were hidden, so plain component disposal is their final
-> signal.
+> route's primary content; named-outlet (`BrouterView`) fragments are never independently retained,
+> so they don't ride the keep-alive lifecycle cascade across hide/show - they dispose and recreate
+> with their host. While a named fragment is rendered, though, it still holds its own active
+> lifecycle context: `BrouterRouteBase` descendants inside it register for navigation locks and
+> receive component-level lock dispatch like any routed content. Instances dropped by LRU eviction
+> or `ClearKeepAlive()` were already deactivated (`Hidden`) when they were hidden, so plain component
+> disposal is their final signal.
 
 ## Attribute-route / `@page` discovery
 

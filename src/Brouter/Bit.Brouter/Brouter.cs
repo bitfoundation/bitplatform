@@ -681,11 +681,18 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// like guards and loaders. Must run after the chain's parameters are committed and before the
     /// commit render.
     /// </summary>
-    private static void PrepareArrivals(BrouterNavigationContext ctx, List<Broute> chain)
+    private void PrepareArrivals(BrouterNavigationContext ctx, List<Broute> chain)
     {
+        // A per-parameter keep-alive sibling deactivation fired here runs synchronously into user
+        // code (OnDeactivated), whose prefix can start a new navigation and supersede this one - the
+        // same hazard NotifyChainDepartures guards. Stop the moment that happens so we don't
+        // deactivate siblings on behalf of a target that will never commit; the caller's post-loop
+        // stale-commit check then abandons the rest of the commit.
+        var generation = _lifecycleNavGeneration;
         foreach (var node in chain)
         {
             node.PrepareArrival(ctx);
+            if (ctx.CancellationToken.IsCancellationRequested || generation != _lifecycleNavGeneration) return;
         }
     }
 

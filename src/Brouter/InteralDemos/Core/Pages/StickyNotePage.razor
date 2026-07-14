@@ -102,5 +102,6 @@
     {
         _disposed = true;
         _timer?.Dispose();
+        base.Dispose(disposing);
     }
 }
