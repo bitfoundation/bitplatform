@@ -22,6 +22,12 @@ public partial class IconographyPage
 
     private const double IconPanelSize = 400;
 
+    private const string CopyKeyName = "name";
+    private const string CopyKeyNameRow = "name-row";
+    private const string CopyKeyConstant = "constant";
+    private const string CopyKeyCss = "css";
+    private const string CopyKeyGlyph = "glyph";
+
     private static readonly (string Label, BitColor Value)[] previewColors =
     [
         ("Primary", BitColor.Primary),
@@ -133,7 +139,7 @@ public partial class IconographyPage
         }
     }
 
-    private Task CopyIconName() => CopyToClipboard(selectedIcon!.Value, "name");
+    private Task CopyIconName() => CopyToClipboard(selectedIcon!.Value, CopyKeyName);
 
     private Task HandleDetailCopy((string Text, string Key) args) => CopyToClipboard(args.Text, args.Key);
 

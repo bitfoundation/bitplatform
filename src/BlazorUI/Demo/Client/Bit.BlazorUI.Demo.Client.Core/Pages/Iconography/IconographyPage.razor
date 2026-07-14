@@ -116,9 +116,9 @@
                             </BitTag>
 
                             <BitButton Size="BitSize.Small"
-                                       IconName="@(copyFeedbackKey == "name" ? BitIconName.Accept : BitIconName.Copy)"
+                                       IconName="@(copyFeedbackKey == CopyKeyName ? BitIconName.Accept : BitIconName.Copy)"
                                        OnClick="CopyIconName">
-                                @(copyFeedbackKey == "name" ? "Copied" : "Copy name")
+                                @(copyFeedbackKey == CopyKeyName ? "Copied" : "Copy name")
                             </BitButton>
                         </BitStack>
                     </BitCard>
@@ -175,26 +175,26 @@
                             <BitStack Gap="0">
                                 <IconDetailRow Label="Name"
                                                Value="@selectedIcon.Value"
-                                               CopyKey="name-row"
+                                               CopyKey="@CopyKeyNameRow"
                                                CopyFeedbackKey="@copyFeedbackKey"
                                                OnCopy="HandleDetailCopy" />
                                 <hr style="width: 100%;" />
                                 <IconDetailRow Label="Constant"
                                                Value="@selectedIcon.ConstantReference"
-                                               CopyKey="constant"
+                                               CopyKey="@CopyKeyConstant"
                                                CopyFeedbackKey="@copyFeedbackKey"
                                                OnCopy="HandleDetailCopy" />
                                 <hr style="width: 100%;" />
                                 <IconDetailRow Label="CSS class"
                                                Value="@selectedIcon.CssClass"
-                                               CopyKey="css"
+                                               CopyKey="@CopyKeyCss"
                                                CopyFeedbackKey="@copyFeedbackKey"
                                                OnCopy="HandleDetailCopy" />
                                 @if (string.IsNullOrEmpty(glyphCode) is false)
                                 {
                                     <hr style="width: 100%;" />
                                     <IconDetailRow Label="Glyph"
-                                                   CopyKey="glyph"
+                                                   CopyKey="@CopyKeyGlyph"
                                                    Value="@glyphCode"
                                                    CopyFeedbackKey="@copyFeedbackKey"
                                                    OnCopy="HandleDetailCopy" />
