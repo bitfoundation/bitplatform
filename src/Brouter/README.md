@@ -856,6 +856,10 @@ component-level hooks Angular's `RouteReuseStrategy` never delivered and Ionic's
 
 All callbacks have async variants; returned tasks are observed for errors (surfaced via
 `IBrouter.OnError`) but never delay the navigation. They are not invoked during static prerendering.
+`OnActivated` and `OnDeactivated` are always **paired**: content that never received its activation
+(skipped under static prerender, or a commit superseded before its activation render) is torn down
+through `Dispose` alone and gets no `OnDeactivated`, so acquire-in-`OnActivated` /
+release-in-`OnDeactivated` handlers can never release something they never acquired.
 (The lifecycle also carries two *pre-commit* callbacks that deliberately CAN delay a navigation -
 the navigation lock below.)
 
