@@ -587,7 +587,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private void RefreshOptions()
     {
-        if (Items is null) return;
+        // Only options that render their item in place need the push re-render. In virtualize mode the
+        // options render nothing (the dropdown renders the items from its Items collection), and in the
+        // Items API there are no options at all, so there is nothing to refresh in either case.
+        if (Items is null || Virtualize || (Options ?? ChildContent) is null) return;
 
         foreach (var item in Items)
         {

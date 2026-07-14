@@ -84,7 +84,7 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        Parent.RegisterOptions(this);
+        Parent?.RegisterOptions(this);
 
         base.OnInitialized();
     }
@@ -92,6 +92,8 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     // Renders a hidden marker element in place, whose DOM order (in the hidden options container of
     // the breadcrumb) is used to keep the order of the registered items in sync with the markup order
     // of the options, even when an option is added or removed conditionally later on.
+    // The option renders nothing but this single flat marker, so the breadcrumb's DOM read-back
+    // (Utils.getChildrenAttributes) sees exactly one marker per option, in markup order.
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "span");
@@ -111,7 +113,7 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        Parent.UnregisterOptions(this);
+        Parent?.UnregisterOptions(this);
 
         _disposed = true;
     }

@@ -112,7 +112,7 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        Parent.RegisterOption(this);
+        Parent?.RegisterOption(this);
 
         await base.OnInitializedAsync();
     }
@@ -141,7 +141,7 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        Parent.UnregisterOption(this);
+        Parent?.UnregisterOption(this);
 
         _disposed = true;
     }

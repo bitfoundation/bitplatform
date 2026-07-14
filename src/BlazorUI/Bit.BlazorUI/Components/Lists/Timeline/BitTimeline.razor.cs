@@ -160,12 +160,17 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // timeline's own parameters (Styles, IsEnabled, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
+        return base.OnParametersSetAsync();
+    }
+
+    private void RefreshOptions()
+    {
         foreach (var item in _items)
         {
             (item as BitTimelineOption)?.InternalStateHasChanged();
         }
-
-        return base.OnParametersSetAsync();
     }
 
 

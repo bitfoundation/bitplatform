@@ -259,8 +259,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                     ReorderOptions(orderedOptionIds);
                 }
             }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-            catch (JSException) { } // we can ignore this exception here (e.g. during prerendering)
+            catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to reorder
+            catch (JSException) { } // a JS-side failure while reading the marker order is not fatal, keep the current order
         }
     }
 
