@@ -384,7 +384,10 @@ private async Task OnBasicFileChange(InputFileChangeEventArgs e)
 {
     if (e.FileCount == 0) return;
 
-    using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
+    const long maxSize = 512 * 1024 * 1024;
+    if (e.File.Size <= 0 || e.File.Size > maxSize) return;
+
+    using var stream = e.File.OpenReadStream(maxAllowedSize: maxSize);
     var bytes = new byte[(int)e.File.Size];
     await stream.ReadExactlyAsync(bytes);
 
@@ -413,7 +416,10 @@ private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
 {
     if (e.FileCount == 0) return;
 
-    using var stream = e.File.OpenReadStream(maxAllowedSize: 512 * 1024 * 1024);
+    const long maxSize = 512 * 1024 * 1024;
+    if (e.File.Size <= 0 || e.File.Size > maxSize) return;
+
+    using var stream = e.File.OpenReadStream(maxAllowedSize: maxSize);
     var bytes = new byte[(int)e.File.Size];
     await stream.ReadExactlyAsync(bytes);
 

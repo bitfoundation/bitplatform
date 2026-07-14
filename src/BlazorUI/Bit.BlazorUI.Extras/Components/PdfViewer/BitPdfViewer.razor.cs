@@ -681,20 +681,36 @@ public partial class BitPdfViewer : BitComponentBase
     private async Task LoadAsync()
     {
         int version = ++_loadVersion; // supersedes any load still in flight
-        _pages.Clear();
-        _renderQueue.Clear(); // pending lazy renders belong to the old document
-        _renderQueued.Clear();
-        _thumbQueue.Clear();
-        _thumbQueued.Clear();
-        _pageWidths.Clear();
-        _pageHeights.Clear();
-        _document = null;
-        _fontStore = null; // fresh embedded-font store per document
-        _fontFaceStyle = string.Empty; // its @font-face snapshot belongs to the old document
-        _pageText = null;  // invalidate the search text index
-        _searchTotal = 0;
-        _searchIndex = -1;
-        _outline = [];
+
+        // Reset the shared state under the render gate so an in-flight background
+        // build (which reads _document and lazily (re)creates _fontStore) cannot
+        // repopulate these fields after we clear them.
+        await _renderGate.WaitAsync();
+        try
+        {
+            // A newer load superseded this one while we waited for the gate; let it
+            // own the reset so we don't clobber its freshly parsed state.
+            if (version != _loadVersion) return;
+
+            _pages.Clear();
+            _renderQueue.Clear(); // pending lazy renders belong to the old document
+            _renderQueued.Clear();
+            _thumbQueue.Clear();
+            _thumbQueued.Clear();
+            _pageWidths.Clear();
+            _pageHeights.Clear();
+            _document = null;
+            _fontStore = null; // fresh embedded-font store per document
+            _fontFaceStyle = string.Empty; // its @font-face snapshot belongs to the old document
+            _pageText = null;  // invalidate the search text index
+            _searchTotal = 0;
+            _searchIndex = -1;
+            _outline = [];
+        }
+        finally
+        {
+            _renderGate.Release();
+        }
 
         if (_source is null)
         {
@@ -1032,6 +1048,11 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     private MarkupString RenderThumbContent(int index)
     {
+        // A reload may have cleared _document before this ran under the gate; return
+        // an empty (self-healing) fragment rather than dereferencing a null document.
+        var doc = _document;
+        if (doc is null || index < 0 || index >= doc.Pages.Count) return default;
+
         // Canvas mode: page fragments are canvas placeholders whose pixels are
         // painted by JS into the MAIN surface only — a reused fragment would show
         // a blank thumbnail. Render sidebar thumbnails as self-contained HTML
@@ -1040,7 +1061,7 @@ public partial class BitPdfViewer : BitComponentBase
         {
             _fontStore ??= new BitPdfFontStore();
             var renderer = new BitPdfHtmlRenderer(
-                _document!.Pages[index], _document.XRef, _fontStore, _rotation)
+                doc.Pages[index], doc.XRef, _fontStore, _rotation)
             {
                 TextCoalescing = BitPdfTextCoalescing.Compact,
             };
@@ -1249,12 +1270,16 @@ public partial class BitPdfViewer : BitComponentBase
         StateHasChanged();
         await Task.Delay(1);
 
+        // A reload or disposal during the yield may have cleared _document; bail
+        // before initializing the text index or reading the page count.
+        if (IsDisposed || _document is null) return;
+        int version = _loadVersion; // captured only after confirming the component is still valid
+
         // Search a per-page extracted-text index (built lazily) rather than the
         // rendered DOM, so we only render the pages that actually contain matches
         // — a 500-page document with matches on 3 pages renders 3, not 500.
         _pageText ??= new string?[_document.PageCount];
         string needle = _searchQuery;
-        int version = _loadVersion;        // a reload while yielding supersedes this search
         int pageCount = _document.PageCount; // captured so the loop condition never reads a nulled _document
         bool rendered = false;
         for (int i = 0; i < pageCount; i++)
