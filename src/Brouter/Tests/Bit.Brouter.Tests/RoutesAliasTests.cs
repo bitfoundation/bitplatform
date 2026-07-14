@@ -17,7 +17,7 @@ public class RoutesAliasTests : BunitTestContext
     [TestMethod]
     public void Routes_declared_via_the_alias_register_and_render()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/top");
 
         var cut = RenderComponent<RoutesAliasHost>();
@@ -28,7 +28,7 @@ public class RoutesAliasTests : BunitTestContext
     [TestMethod]
     public void Nested_routes_declared_via_the_alias_on_a_Broute_match_too()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/parent/child");
 
         var cut = RenderComponent<RoutesAliasHost>();

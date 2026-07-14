@@ -11,7 +11,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void Found_receives_a_framework_RouteData_for_a_discovered_page()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/42");
 
         var cut = RenderComponent<FoundHost>();
@@ -30,7 +30,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void Found_wraps_hand_declared_Component_routes_too()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/hand");
 
         var cut = RenderComponent<FoundHost>();
@@ -45,7 +45,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void Content_routes_render_natively_and_ignore_Found()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/content-route");
 
         var cut = RenderComponent<FoundHost>();
@@ -61,7 +61,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void NotFound_fallback_still_renders_when_Found_is_set()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/definitely-missing");
 
         var cut = RenderComponent<FoundHost>();
@@ -76,7 +76,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void Found_updates_across_navigations_between_pages()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/1");
 
         var cut = RenderComponent<FoundHost>();
@@ -96,7 +96,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void Page_layout_attribute_is_honored_by_RouteView_inside_Found()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/layouted");
 
         var cut = RenderComponent<FoundHost>();
@@ -113,7 +113,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void Component_with_multiple_page_directives_contributes_one_route_each()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/multi-a");
 
         var cut = RenderComponent<FoundHost>();
@@ -126,7 +126,7 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void RouteView_clears_an_optional_route_value_left_unfilled_by_the_next_navigation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/opt/saleh");
 
         var cut = RenderComponent<OptionalRouteViewHost>();
@@ -143,10 +143,10 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void AuthorizeRouteView_inside_Found_renders_the_page_when_authorized()
     {
-        var auth = Context!.AddTestAuthorization();
+        var auth = Context!.AddAuthorization();
         auth.SetAuthorized("alice");
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         var cut = RenderComponent<FoundAuthHost>();
@@ -157,10 +157,10 @@ public class FoundTemplateTests : BunitTestContext
     [TestMethod]
     public void AuthorizeRouteView_inside_Found_renders_NotAuthorized_when_denied()
     {
-        var auth = Context!.AddTestAuthorization();
+        var auth = Context!.AddAuthorization();
         auth.SetNotAuthorized();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         var cut = RenderComponent<FoundAuthHost>();

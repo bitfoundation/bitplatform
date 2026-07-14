@@ -134,7 +134,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.Contains("<h1>one</h1>", component.Markup);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Markdown, "# two");
         });
@@ -224,7 +224,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.DoesNotContain("<del>gone</del>", component.Markup);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
@@ -398,7 +398,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         Assert.Contains("<h1>hello world</h1>", component.Markup);
 
         // Tighten ImageRendering and cap the length; the cached AST must be rebuilt.
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
             parameters.Add(p => p.MaxLength, 38); // truncates before "world"
@@ -421,7 +421,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         // Default keeps the bidi control character.
         Assert.Contains("\u202E", component.Markup);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.StripBidiControlCharacters, true);
         });

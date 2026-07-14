@@ -17,7 +17,7 @@ public class NavigationEffectsTests : BunitTestContext
         // fragment to the JS effect so it can scroll #install into view.
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/docs#install");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -39,7 +39,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.ScrollToFragment = false);
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/docs#install");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -56,7 +56,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.FocusOnNavigateSelector = "h1");
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -76,7 +76,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.ScrollBehavior = BrouterScrollMode.ToTop);
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -97,7 +97,7 @@ public class NavigationEffectsTests : BunitTestContext
         // and ScrollToFragment has no fragment to act on. The JS module must not be imported/called.
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -114,7 +114,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.RestoreScrollPosition = true);
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -135,7 +135,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.ScrollBehavior = BrouterScrollMode.ToTop);
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -160,7 +160,7 @@ public class NavigationEffectsTests : BunitTestContext
         });
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -185,7 +185,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.RestoreScrollPosition = true);
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -204,7 +204,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.RestoreScrollPosition = true);
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<NavigationEffectsHost>();
@@ -231,7 +231,7 @@ public class NavigationEffectsTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.ScrollBehavior = BrouterScrollMode.ToTop);
         var module = Context!.JSInterop.SetupModule(ModuleUrl);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/docs#install");
 
         var cut = RenderComponent<NavigationEffectsHost>();

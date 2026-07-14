@@ -37,7 +37,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -75,7 +75,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
 
         var style = "padding: 1rem;";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, style);
         });
@@ -108,7 +108,7 @@ public class BitSeparatorTests : BunitTestContext
 
         var cssClass = "test-class";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, cssClass);
         });
@@ -163,7 +163,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -204,7 +204,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -332,7 +332,7 @@ public class BitSeparatorTests : BunitTestContext
                                       </div>
                                     </div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Vertical, true);
         });
@@ -372,7 +372,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.AutoSize, true);
         });
@@ -413,7 +413,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Background, BitColorKind.Secondary);
         });
@@ -454,7 +454,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Border, BitColorKind.Secondary);
         });
@@ -494,7 +494,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.AutoSize, true);
         });

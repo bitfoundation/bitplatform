@@ -56,7 +56,7 @@ public class ReducedMotionTests
         using var ctx = new BmotionTestContext();
         ctx.Options.ReducedMotion = BmReducedMotionMode.User;
 
-        ctx.RenderComponent<Bmotion>(ps => ps
+        ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(x: 100))
             .Add(p => p.ChildContent, Div));
 
@@ -68,7 +68,7 @@ public class ReducedMotionTests
     {
         using var ctx = new BmotionTestContext(); // default mode = IgnoreUnlessConfigured
 
-        ctx.RenderComponent<Bmotion>(ps => ps
+        ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(x: 100))
             .Add(p => p.ChildContent, Div));
 
@@ -82,7 +82,7 @@ public class ReducedMotionTests
     {
         using var ctx = new BmotionTestContext();
         ctx.Options.ReducedMotion = BmReducedMotionMode.Always;
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.ChildContent, Div));
 

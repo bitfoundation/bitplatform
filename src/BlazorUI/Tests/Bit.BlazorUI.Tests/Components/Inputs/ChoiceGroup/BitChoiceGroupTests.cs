@@ -82,7 +82,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var itemContainers = component.FindAll(".bit-chg-icn", true);
+        var itemContainers = component.FindAll(".bit-chg-icn");
         var index = 0;
         foreach (var itemContainer in itemContainers)
         {
@@ -113,7 +113,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Items, choiceGroupItems);
         });
 
-        var bitChoiceGroupImages = component.FindAll(".bit-chg img", true);
+        var bitChoiceGroupImages = component.FindAll(".bit-chg img");
 
         foreach ((IElement item, int index) element in bitChoiceGroupImages.Select((item, index) => (item, index)))
         {

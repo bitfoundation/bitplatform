@@ -11,7 +11,7 @@ public class RouteDataObserverTests : BunitTestContext
     [TestMethod]
     public void Cascaded_RouteData_carries_the_matched_page_type()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/7");
 
         var cut = RenderComponent<RouteDataObserverHost>();
@@ -23,7 +23,7 @@ public class RouteDataObserverTests : BunitTestContext
     [TestMethod]
     public void Cascaded_RouteData_updates_across_navigations()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/7");
 
         var cut = RenderComponent<RouteDataObserverHost>();
@@ -39,7 +39,7 @@ public class RouteDataObserverTests : BunitTestContext
     [TestMethod]
     public void Cascaded_RouteData_is_null_when_nothing_matches()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/definitely-missing");
 
         var cut = RenderComponent<RouteDataObserverHost>();
@@ -51,7 +51,7 @@ public class RouteDataObserverTests : BunitTestContext
     [TestMethod]
     public void Cascaded_RouteData_resets_to_null_when_a_navigation_fails_into_an_error_boundary()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/ok-observed");
 
         var cut = RenderComponent<RouteDataErrorObserverHost>();

@@ -24,7 +24,7 @@ public class ViewTransitionTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.ViewTransitions = true);
         var module = SetupModule(beginReturns: true);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
         var cut = RenderComponent<NavigationTypeHost>();
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
@@ -55,7 +55,7 @@ public class ViewTransitionTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.ViewTransitions = true);
         var module = SetupModule(beginReturns: false);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
         var cut = RenderComponent<NavigationTypeHost>();
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
@@ -76,7 +76,7 @@ public class ViewTransitionTests : BunitTestContext
     {
         var module = SetupModule(beginReturns: true);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
         var cut = RenderComponent<NavigationTypeHost>();
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));

@@ -11,7 +11,7 @@ public class LoaderCacheTests : BunitTestContext
     [TestMethod]
     public void Fresh_cache_hit_skips_the_loader_on_return_navigation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/cached");
 
         var cut = RenderComponent<CacheHost>(p => p.Add(x => x.StaleTime, TimeSpan.FromMinutes(5)));
@@ -34,7 +34,7 @@ public class LoaderCacheTests : BunitTestContext
     [TestMethod]
     public void Stale_entry_renders_immediately_then_refreshes_in_background()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/cached");
 
         // StaleTime zero: every cached entry is immediately stale -> pure stale-while-revalidate.
@@ -60,7 +60,7 @@ public class LoaderCacheTests : BunitTestContext
     {
         Services.Configure<BrouterOptions>(o => o.StaleReloadMode = BrouterStaleReloadMode.Blocking);
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/cached");
 
         var cut = RenderComponent<CacheHost>(p => p.Add(x => x.StaleTime, TimeSpan.Zero));
@@ -82,7 +82,7 @@ public class LoaderCacheTests : BunitTestContext
     [TestMethod]
     public void No_StaleTime_means_no_caching_loader_reruns_every_navigation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/cached");
 
         var cut = RenderComponent<CacheHost>(); // StaleTime null
@@ -103,7 +103,7 @@ public class LoaderCacheTests : BunitTestContext
     [TestMethod]
     public void ClearLoaderCache_forces_a_fresh_load()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/cached");
 
         var cut = RenderComponent<CacheHost>(p => p.Add(x => x.StaleTime, TimeSpan.FromMinutes(5)));
@@ -126,7 +126,7 @@ public class LoaderCacheTests : BunitTestContext
     [TestMethod]
     public void PreloadAsync_warms_the_cache_so_navigation_skips_the_loader()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/other");
 
         var cut = RenderComponent<CacheHost>();
@@ -155,7 +155,7 @@ public class LoaderCacheTests : BunitTestContext
     [TestMethod]
     public void Render_mode_link_preloads_without_any_navigation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/other");
 
         var cut = RenderComponent<CacheHost>(p => p.Add(x => x.ShowRenderPreloadLink, true));

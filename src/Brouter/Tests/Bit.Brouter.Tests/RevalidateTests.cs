@@ -10,7 +10,7 @@ public class RevalidateTests : BunitTestContext
 {
     private (IRenderedComponent<RevalidateHost> Cut, IBrouter Brouter) RenderAtData()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/data/view");
         var cut = RenderComponent<RevalidateHost>();
         cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1")));
@@ -55,7 +55,7 @@ public class RevalidateTests : BunitTestContext
     [TestMethod]
     public async Task Revalidate_with_no_matched_chain_is_a_noop()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/nowhere");
         var cut = RenderComponent<RevalidateHost>();
 
@@ -69,7 +69,7 @@ public class RevalidateTests : BunitTestContext
     [TestMethod]
     public async Task Routes_without_loaders_revalidate_as_a_noop()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/other");
         var cut = RenderComponent<RevalidateHost>();
         cut.WaitForAssertion(() => cut.Find("[data-testid=other]"));

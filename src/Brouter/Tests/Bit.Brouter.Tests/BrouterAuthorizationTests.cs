@@ -11,10 +11,10 @@ public class BrouterAuthorizationTests : BunitTestContext
     [TestMethod]
     public void Authorize_page_renders_when_authorized_with_no_Found_template()
     {
-        var auth = Context!.AddTestAuthorization();
+        var auth = Context!.AddAuthorization();
         auth.SetAuthorized("alice");
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         var cut = RenderComponent<AutoAuthHost>();
@@ -25,10 +25,10 @@ public class BrouterAuthorizationTests : BunitTestContext
     [TestMethod]
     public void Authorize_page_renders_NotAuthorized_when_denied()
     {
-        var auth = Context!.AddTestAuthorization();
+        var auth = Context!.AddAuthorization();
         auth.SetNotAuthorized();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         var cut = RenderComponent<AutoAuthHost>();
@@ -43,10 +43,10 @@ public class BrouterAuthorizationTests : BunitTestContext
     [TestMethod]
     public void Unprotected_page_renders_even_when_not_authorized()
     {
-        var auth = Context!.AddTestAuthorization();
+        var auth = Context!.AddAuthorization();
         auth.SetNotAuthorized();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/5");
 
         var cut = RenderComponent<AutoAuthHost>();
@@ -60,7 +60,7 @@ public class BrouterAuthorizationTests : BunitTestContext
     [TestMethod]
     public void DefaultLayout_wraps_pages_without_their_own_layout()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/1");
 
         var cut = RenderComponent<AutoAuthLayoutHost>();
@@ -75,10 +75,10 @@ public class BrouterAuthorizationTests : BunitTestContext
     [TestMethod]
     public void Explicit_Found_parameter_wins_over_the_builtin_composition()
     {
-        var auth = Context!.AddTestAuthorization();
+        var auth = Context!.AddAuthorization();
         auth.SetAuthorized("alice");
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/1");
 
         var cut = RenderComponent<FoundOverrideHost>();
@@ -95,7 +95,7 @@ public class BrouterAuthorizationTests : BunitTestContext
     [TestMethod]
     public async Task Authorize_page_fails_closed_under_the_DefaultLayout_only_composition()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         // AutoAuthLayoutHost sets only DefaultLayout, composing the framework RouteView - which
@@ -111,7 +111,7 @@ public class BrouterAuthorizationTests : BunitTestContext
     [TestMethod]
     public async Task Authorize_page_rendered_natively_fails_closed()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         // DiscoveryHost sets no Found and no auth parameters, so SecurePage would render natively -

@@ -50,32 +50,41 @@ public static class Harness
     private static void RenderOnce(int routeCount, bool brouter, string path,
         out double renderMs, out double allocMB, out double retainedKB)
     {
-        using var ctx = new Bunit.TestContext();
-        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
-        ctx.Services.AddBitBrouterServices();
+        // bUnit v2's container may hold IAsyncDisposable-only services, so tear the context down via
+        // the async path (blocking) rather than a synchronous `using`, which would throw on dispose.
+        var ctx = new Bunit.BunitContext();
+        try
+        {
+            ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+            ctx.Services.AddBitBrouterServices();
 
-        var nav = ctx.Services.GetRequiredService<FakeNavigationManager>();
-        nav.NavigateTo("http://localhost" + path);
+            var nav = ctx.Services.GetRequiredService<BunitNavigationManager>();
+            nav.NavigateTo("http://localhost" + path);
 
-        Settle();
-        var memBefore = GC.GetTotalMemory(forceFullCollection: true);
-        var allocBefore = GC.GetTotalAllocatedBytes(precise: true);
+            Settle();
+            var memBefore = GC.GetTotalMemory(forceFullCollection: true);
+            var allocBefore = GC.GetTotalAllocatedBytes(precise: true);
 
-        var sw = Stopwatch.StartNew();
-        object cut = brouter
-            ? ctx.RenderComponent<BrouterBenchHost>(p => p.Add(x => x.RouteCount, routeCount))
-            : ctx.RenderComponent<RouteTableHost>(p => p.Add(x => x.RouteCount, routeCount));
-        sw.Stop();
+            var sw = Stopwatch.StartNew();
+            object cut = brouter
+                ? ctx.Render<BrouterBenchHost>(p => p.Add(x => x.RouteCount, routeCount))
+                : ctx.Render<RouteTableHost>(p => p.Add(x => x.RouteCount, routeCount));
+            sw.Stop();
 
-        var allocAfter = GC.GetTotalAllocatedBytes(precise: true);
-        // Retained: force a collection with the rendered tree still rooted (via `cut`), so only the
-        // memory that survives - the mounted components and renderer bookkeeping - is counted.
-        var memAfter = GC.GetTotalMemory(forceFullCollection: true);
-        GC.KeepAlive(cut);
+            var allocAfter = GC.GetTotalAllocatedBytes(precise: true);
+            // Retained: force a collection with the rendered tree still rooted (via `cut`), so only the
+            // memory that survives - the mounted components and renderer bookkeeping - is counted.
+            var memAfter = GC.GetTotalMemory(forceFullCollection: true);
+            GC.KeepAlive(cut);
 
-        renderMs = sw.Elapsed.TotalMilliseconds;
-        allocMB = (allocAfter - allocBefore) / (1024.0 * 1024.0);
-        retainedKB = Math.Max(0, memAfter - memBefore) / 1024.0;
+            renderMs = sw.Elapsed.TotalMilliseconds;
+            allocMB = (allocAfter - allocBefore) / (1024.0 * 1024.0);
+            retainedKB = Math.Max(0, memAfter - memBefore) / 1024.0;
+        }
+        finally
+        {
+            ctx.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
     }
 
     private static void Settle()

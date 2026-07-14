@@ -42,7 +42,7 @@ public class ParameterBindingTests : BunitTestContext
     [TestMethod]
     public void Route_value_re_binds_when_navigation_changes_the_parameter()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/bind/1/first");
 
         var cut = RenderComponent<BindHost>();

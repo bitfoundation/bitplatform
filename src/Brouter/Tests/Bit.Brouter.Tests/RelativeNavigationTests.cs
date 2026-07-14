@@ -59,7 +59,7 @@ public class RelativeNavigationTests : BunitTestContext
     [TestMethod]
     public void Navigate_resolves_relative_url_against_current_location()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users/42");
 
         var cut = RenderComponent<NamedRouteHost>(p => p
@@ -78,7 +78,7 @@ public class RelativeNavigationTests : BunitTestContext
     [TestMethod]
     public void Guard_redirect_resolves_relative_url_against_the_target_location()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/admin/secret");
 
         var cut = RenderComponent<RelativeRedirectHost>();
@@ -93,7 +93,7 @@ public class RelativeNavigationTests : BunitTestContext
     [TestMethod]
     public void Link_renders_resolved_href_and_re_resolves_after_navigation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users/42");
 
         // RelativeLinkHost's catch-all route matches every path, so each navigation fires

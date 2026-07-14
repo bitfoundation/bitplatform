@@ -13,7 +13,7 @@ public class RouteDataCascadeTests : BunitTestContext
     [TestMethod]
     public void RouteData_and_RouteMeta_cascade_as_typed_wrappers_matched_by_type()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/typed");
 
         var cut = RenderComponent<TypedDataHost>();
