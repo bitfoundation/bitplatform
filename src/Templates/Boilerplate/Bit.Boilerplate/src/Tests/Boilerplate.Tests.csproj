@@ -12,6 +12,7 @@
         <PackageReference Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" />
         <PackageReference Include="Bit.BlazorES2019" />
         <PackageReference Include="FakeItEasy" />
+        <PackageReference Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Microsoft.Extensions.TimeProvider.Testing" />
         <PackageReference Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Otp.NET" />
         <PackageReference Include="Microsoft.Playwright.MSTest.v4" />
         <PackageReference Include="MSTest" />
