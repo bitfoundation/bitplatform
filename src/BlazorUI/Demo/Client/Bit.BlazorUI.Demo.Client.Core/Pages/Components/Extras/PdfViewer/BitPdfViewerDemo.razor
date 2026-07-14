@@ -96,7 +96,8 @@
                 <BitButton OnClick="() => pdfViewerRef.Print()">Print</BitButton>
             </div>
             <br />
-            <BitPdfViewer @ref="pdfViewerRef"
+            @* RenderMode="BitPdfRenderMode.Canvas" *@
+            <BitPdfViewer @ref="pdfViewerRef"  BackgroundRendering
                           Source="publicApiSource"
                           ShowToolbar="false"
                           OnDocumentLoaded="StateHasChanged"

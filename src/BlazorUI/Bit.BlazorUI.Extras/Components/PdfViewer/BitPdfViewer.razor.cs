@@ -17,8 +17,20 @@ public partial class BitPdfViewer : BitComponentBase
     private bool _correctWidthsPending; // run the JS text width-correction after render
     private string?[]? _pageText; // lazily-built per-page text index for search
     private int _loadVersion; // bumped per load; guards against a superseded load committing
+    private int _renderEpoch; // bumped whenever page slots are rebuilt (load, rotation, mode change)
     private string _status = "Idle.";
     private bool _loading;
+
+    // Serializes page/thumbnail renders so a BackgroundRendering build (which may run
+    // on a worker thread) never runs concurrently with another render against the
+    // shared document and font store.
+    private readonly SemaphoreSlim _renderGate = new(1, 1);
+
+    // A UI-thread snapshot of the document-wide @font-face CSS. Rendering mutates the
+    // font store's builder (possibly on a worker thread); the UI reads only this
+    // snapshot, refreshed after each render, so it never reads the builder while a
+    // background render is mutating it.
+    private string _fontFaceStyle = string.Empty;
 
     // One slot per page. A null slot is a not-yet-rendered page shown as a
     // light placeholder; it is rendered on demand when it nears the viewport.
@@ -115,6 +127,19 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public BitPdfRenderMode RenderMode { get; set; } = BitPdfRenderMode.Html;
 
     /// <summary>
+    /// Offloads document parsing and page rendering to a background thread instead of
+    /// running them on the UI thread, so scrolling and navigation stay responsive
+    /// while a complex page is being rendered. This only has an effect when the
+    /// runtime actually provides a spare thread — Blazor Server, or a Blazor
+    /// WebAssembly app built with multi-threading enabled
+    /// (<c>&lt;WasmEnableThreads&gt;true&lt;/WasmEnableThreads&gt;</c>). On the default
+    /// single-threaded WebAssembly runtime it is a safe no-op: the work still runs on
+    /// the one available thread (renders are serialized, so results stay correct).
+    /// Default is <c>false</c>.
+    /// </summary>
+    [Parameter] public bool BackgroundRendering { get; set; }
+
+    /// <summary>
     /// The callback for when a document has finished loading.
     /// </summary>
     [Parameter] public EventCallback OnDocumentLoaded { get; set; }
@@ -190,9 +215,8 @@ public partial class BitPdfViewer : BitComponentBase
 
         // Render the destination before scrolling so jumps (toolbar, thumbnails,
         // outline) land on content instead of a placeholder.
-        if (_pages[target - 1] is null)
+        if (await RenderPageAsync(target - 1))
         {
-            _pages[target - 1] = RenderPageContent(target - 1);
             EvictDistantPages();
             StateHasChanged();
         }
@@ -233,12 +257,12 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// Rotates all pages 90 degrees clockwise.
     /// </summary>
-    public Task RotateClockwise()
+    public async Task RotateClockwise()
     {
         _rotation = (_rotation + 90) % 360;
         PreparePages();
+        await RenderCurrentPageEagerlyAsync();
         _spyPending = true;
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -277,7 +301,7 @@ public partial class BitPdfViewer : BitComponentBase
                     await Task.Delay(1);
                     rendered = true;
                 }
-                _pages[i] = RenderPageContent(i);
+                await RenderPageAsync(i);
             }
         }
         if (rendered)
@@ -367,9 +391,8 @@ public partial class BitPdfViewer : BitComponentBase
                 }
 
                 int idx = _renderQueue.Dequeue();
-                if (idx >= _pages.Count || _pages[idx] is not null) continue;
+                if (await RenderPageAsync(idx) is false) continue;
 
-                _pages[idx] = RenderPageContent(idx);
                 EvictDistantPages();
                 StateHasChanged();
                 // Let the browser apply the diff, paint and process scroll input
@@ -422,9 +445,8 @@ public partial class BitPdfViewer : BitComponentBase
                 }
 
                 int idx = _thumbQueue.Dequeue();
-                if (idx >= _thumbs.Count || _thumbs[idx] is not null) continue;
+                if (await RenderThumbAsync(idx) is false) continue;
 
-                _thumbs[idx] = RenderThumbContent(idx);
                 // Evict around the thumbnail just rendered (what the sidebar is
                 // showing), not the current page — scrolling the sidebar leaves the
                 // current page put, so centering on it would blank the very
@@ -522,6 +544,7 @@ public partial class BitPdfViewer : BitComponentBase
             _textCoalescing = TextCoalescing;
             _renderMode = RenderMode;
             PreparePages();
+            await RenderCurrentPageEagerlyAsync();
         }
     }
 
@@ -617,9 +640,10 @@ public partial class BitPdfViewer : BitComponentBase
 
     // Parse off the UI thread on Blazor Server so a large document doesn't freeze
     // the circuit; on single-threaded WASM this runs inline (Task.Run offers no
-    // parallelism there, and the surrounding Task.Yield already lets the bar paint).
-    private static Task<BitPdfDocument> ParseAsync(byte[] bytes, string? password)
-        => OperatingSystem.IsBrowser()
+    // parallelism there, and the surrounding Task.Delay already lets the bar paint).
+    // BackgroundRendering opts WASM into Task.Run too, for the multi-threaded runtime.
+    private Task<BitPdfDocument> ParseAsync(byte[] bytes, string? password)
+        => OperatingSystem.IsBrowser() && BackgroundRendering is false
             ? Task.FromResult(BitPdfDocument.Load(bytes, password))
             : Task.Run(() => BitPdfDocument.Load(bytes, password));
 
@@ -633,6 +657,7 @@ public partial class BitPdfViewer : BitComponentBase
         _pageHeights.Clear();
         _document = null;
         _fontStore = null; // fresh embedded-font store per document
+        _fontFaceStyle = string.Empty; // its @font-face snapshot belongs to the old document
         _pageText = null;  // invalidate the search text index
         _searchTotal = 0;
         _searchIndex = -1;
@@ -707,6 +732,7 @@ public partial class BitPdfViewer : BitComponentBase
             if (version != _loadVersion) return;
 
             PreparePages();
+            await RenderCurrentPageEagerlyAsync();
             try
             {
                 _outline = _document.Outline;
@@ -742,8 +768,12 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     private void PreparePages()
     {
+        // Invalidate any in-flight background render committing into the old slots.
+        _renderEpoch++;
         _pages.Clear();
         _thumbs.Clear();
+        _renderQueue.Clear();
+        _thumbQueue.Clear();
         _pageWidths.Clear();
         _pageHeights.Clear();
         _canvasOps.Clear();
@@ -759,13 +789,9 @@ public partial class BitPdfViewer : BitComponentBase
             _pageHeights.Add(swap ? page.Width : page.Height);
         }
 
-        // Eagerly render only the current page so something is visible instantly
-        // (page 1 on load, or the viewed page after rotation). Neighbors follow
-        // right after through the lazy-render pump, which yields to the browser
-        // between pages — rendering a whole window here would extend the blocking
-        // stretch on WASM's single thread by one page render per neighbor.
-        int center = Math.Clamp(_currentPage - 1, 0, _pages.Count - 1);
-        _pages[center] = RenderPageContent(center);
+        // The current page is rendered eagerly by the caller (RenderCurrentPageEagerlyAsync)
+        // so something is visible instantly; neighbors follow through the lazy-render
+        // pump, which yields to the browser between pages.
 
         // If the sidebar is open, its slots were just reset; let its spy re-fill
         // the visible thumbnails on the next render.
@@ -776,25 +802,49 @@ public partial class BitPdfViewer : BitComponentBase
     }
 
     /// <summary>The document-wide embedded-font <c>@font-face</c> stylesheet,
-    /// rendered in a persistent element so it survives page eviction.</summary>
-    private MarkupString FontFaceStyleMarkup => new(_fontStore?.FontFaceStyle ?? string.Empty);
+    /// rendered in a persistent element so it survives page eviction. Reads a
+    /// UI-thread snapshot, never the font store's live builder (which a background
+    /// render may be mutating).</summary>
+    private MarkupString FontFaceStyleMarkup => new(_fontFaceStyle);
 
-    /// <summary>Renders a single page to its HTML fragment.</summary>
-    private MarkupString RenderPageContent(int index)
+    /// <summary>The result of the heavy, offloadable part of rendering a page.</summary>
+    private readonly record struct BitPdfPageBuild(string Html, string? Ops);
+
+    /// <summary>
+    /// The heavy, offloadable half of rendering a page: runs the C# renderer and
+    /// returns its HTML plus any canvas display list. May run on a worker thread
+    /// (see <see cref="BackgroundRendering"/>); it touches the shared document and
+    /// font store, so it is only ever called while holding <see cref="_renderGate"/>.
+    /// The document/font-store references are captured into locals so a concurrent
+    /// reload (which nulls the fields) cannot fault this in-flight build — its result
+    /// is discarded by the version/epoch guard instead.
+    /// </summary>
+    private BitPdfPageBuild BuildPage(int index)
     {
-        var page = _document!.Pages[index];
-        _fontStore ??= new BitPdfFontStore();
-        _correctWidthsPending = true; // measure/scale text runs after this render
-        var renderer = new BitPdfHtmlRenderer(page, _document.XRef, _fontStore, _rotation)
+        var doc = _document!;
+        var store = _fontStore ??= new BitPdfFontStore();
+        var page = doc.Pages[index];
+        var renderer = new BitPdfHtmlRenderer(page, doc.XRef, store, _rotation)
         {
-            DestinationResolver = dest => _document.ResolveDestinationPage(dest),
+            DestinationResolver = dest => doc.ResolveDestinationPage(dest),
             TextCoalescing = TextCoalescing,
             EmitCanvasOps = RenderMode == BitPdfRenderMode.Canvas,
         };
-        string html = renderer.Render();
+        return new BitPdfPageBuild(renderer.Render(), renderer.CanvasOpsJson);
+    }
+
+    /// <summary>
+    /// The UI-thread half of rendering a page: records the canvas display list,
+    /// refreshes the font-face snapshot and schedules the post-render width
+    /// correction. Runs on the UI thread so these shared collections and the
+    /// snapshot are only ever written there.
+    /// </summary>
+    private MarkupString CommitPage(int index, BitPdfPageBuild build)
+    {
+        _correctWidthsPending = true; // measure/scale text runs after this render
         // Canvas mode: hold the display list until the fragment's <canvas> exists
         // in the DOM, then OnAfterRenderAsync replays it via JS.
-        if (renderer.CanvasOpsJson is { } ops)
+        if (build.Ops is { } ops)
         {
             _canvasOps[index] = ops;
             if (_canvasDirty.Contains(index) is false)
@@ -802,7 +852,84 @@ public partial class BitPdfViewer : BitComponentBase
                 _canvasDirty.Add(index);
             }
         }
-        return new MarkupString(html);
+        _fontFaceStyle = _fontStore?.FontFaceStyle ?? string.Empty;
+        return new MarkupString(build.Html);
+    }
+
+    /// <summary>Renders a single page to its HTML fragment, synchronously on the
+    /// calling thread. Used by the thumbnail renderer, which already runs under the
+    /// render gate.</summary>
+    private MarkupString RenderPageContent(int index) => CommitPage(index, BuildPage(index));
+
+    /// <summary>
+    /// Renders one page into its slot if it is still a placeholder, serialized
+    /// through <see cref="_renderGate"/> and — when <see cref="BackgroundRendering"/>
+    /// is set and the runtime has a spare thread — with the heavy build hopped off
+    /// the UI thread. Returns <c>true</c> if it actually rendered the page. In the
+    /// default foreground mode the whole method completes synchronously, so callers
+    /// keep their current instant behavior.
+    /// </summary>
+    private async Task<bool> RenderPageAsync(int index)
+    {
+        if (index < 0 || index >= _pages.Count || _pages[index] is not null) return false;
+
+        await _renderGate.WaitAsync();
+        try
+        {
+            if (index >= _pages.Count || _pages[index] is not null) return false; // filled while waiting
+            int version = _loadVersion, epoch = _renderEpoch;
+
+            BitPdfPageBuild build = BackgroundRendering
+                ? await Task.Run(() => BuildPage(index))
+                : BuildPage(index);
+
+            // A reload, rotation or mode change while the build was in flight
+            // invalidated these slots: drop the now-stale fragment.
+            if (version != _loadVersion || epoch != _renderEpoch || index >= _pages.Count || _pages[index] is not null)
+            {
+                return false;
+            }
+            _pages[index] = CommitPage(index, build);
+            return true;
+        }
+        finally
+        {
+            _renderGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Renders one thumbnail into its slot, serialized through the same gate as page
+    /// renders so it never overlaps a background page build against the shared font
+    /// store. The thumbnail build stays on the UI thread (it is the lighter surface
+    /// and is only shown on demand). Returns <c>true</c> if it rendered.
+    /// </summary>
+    private async Task<bool> RenderThumbAsync(int index)
+    {
+        if (index < 0 || index >= _thumbs.Count || _thumbs[index] is not null) return false;
+
+        await _renderGate.WaitAsync();
+        try
+        {
+            if (index >= _thumbs.Count || _thumbs[index] is not null) return false;
+            _thumbs[index] = RenderThumbContent(index);
+            return true;
+        }
+        finally
+        {
+            _renderGate.Release();
+        }
+    }
+
+    /// <summary>Renders the current page up front so something is visible immediately
+    /// after a load, rotation or mode change instead of a placeholder. Completes
+    /// synchronously in the default foreground mode; with <see cref="BackgroundRendering"/>
+    /// the loading shimmer covers the brief hop to a worker thread.</summary>
+    private Task RenderCurrentPageEagerlyAsync()
+    {
+        if (_pages.Count == 0) return Task.CompletedTask;
+        int center = Math.Clamp(_currentPage - 1, 0, _pages.Count - 1);
+        return RenderPageAsync(center);
     }
 
     // Cap how many pages stay materialized so a large document does not grow the
@@ -1077,7 +1204,7 @@ public partial class BitPdfViewer : BitComponentBase
             if (_pageText[i]!.Contains(needle, StringComparison.OrdinalIgnoreCase)
                 && i < _pages.Count && _pages[i] is null)
             {
-                _pages[i] = RenderPageContent(i);
+                await RenderPageAsync(i);
                 rendered = true;
             }
         }
@@ -1149,6 +1276,7 @@ public partial class BitPdfViewer : BitComponentBase
         catch (TaskCanceledException) { } // Disposal raced an in-flight interop call; safe to ignore.
 
         _dotnetObj?.Dispose();
+        _renderGate.Dispose();
 
         await base.DisposeAsync(disposing);
     }

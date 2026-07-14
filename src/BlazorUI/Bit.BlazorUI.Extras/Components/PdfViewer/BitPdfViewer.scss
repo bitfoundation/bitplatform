@@ -45,33 +45,28 @@
 
 /* Placeholder shown while a page is being rendered on demand. Pdf pages paint
    on white regardless of the theme, so the placeholder mimics a white page.
-   The loading pulse animates opacity on a small pseudo-element so it runs on
-   the compositor: animating a gradient's background-position across the whole
-   page box (the previous shimmer) repaints every visible placeholder on the
-   main thread on every frame, which alone causes scroll jank. */
+   The shimmer sweeps a gradient overlay via a transform animation, which runs
+   on the compositor: animating the gradient's background-position instead (as
+   an earlier version did) repaints every visible placeholder on the main
+   thread on every frame, which alone causes scroll jank. */
 .bit-pdv-page-placeholder {
     inset: 0;
     position: absolute;
-    background: #f2f2f2;
+    overflow: hidden;
+    background: #f0f0f0;
 }
 
 .bit-pdv-page-placeholder::after {
     content: "";
-    top: 50%;
-    left: 50%;
-    width: 25%;
-    height: 6px;
-    max-width: 96px;
+    inset: 0;
     position: absolute;
-    border-radius: 3px;
-    background: #d9d9d9;
-    transform: translate(-50%, -50%);
-    animation: bit-pdv-pulse 1.3s ease-in-out infinite;
+    transform: translateX(-100%);
+    background: linear-gradient(100deg, transparent 25%, #dcdcdc 50%, transparent 75%);
+    animation: bit-pdv-shimmer 1.4s linear infinite;
 }
 
-@keyframes bit-pdv-pulse {
-    0%, 100% { opacity: 0.35; }
-    50% { opacity: 1; }
+@keyframes bit-pdv-shimmer {
+    100% { transform: translateX(100%); }
 }
 
 /* Toolbar */
@@ -349,6 +344,16 @@
        evicting one page no longer forces style/layout work across the rest of
        the document surface (or the hosting page). */
     contain: strict;
+}
+
+/* The initial loading placeholder shown before any real page dimensions are
+   known: size it from the surface with a portrait-page aspect ratio. It drops
+   the size containment of .bit-pdv-page (which needs an explicit height) so the
+   aspect-ratio can derive the height. */
+.bit-pdv-page-loading {
+    width: min(100%, 620px);
+    aspect-ratio: 8.5 / 11;
+    contain: layout paint;
 }
 
 .bit-pdv-page .bit-pdv-html-page,

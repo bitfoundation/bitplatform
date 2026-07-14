@@ -81,6 +81,31 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPdfViewerShouldLoadAndRenderWithBackgroundRendering()
+    {
+        var loaded = false;
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
+            parameters.Add(p => p.BackgroundRendering, true);
+            parameters.Add(p => p.OnDocumentLoaded, EventCallback.Factory.Create(this, () => loaded = true));
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(loaded);
+            Assert.AreEqual(1, component.Instance.PageCount);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var page = component.Find("[data-page='1']");
+            Assert.IsTrue(page.InnerHtml.Contains("bit-pdv-html-page"));
+        });
+    }
+
+    [TestMethod]
     public void BitPdfViewerShouldExposeEngineHelpers()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
