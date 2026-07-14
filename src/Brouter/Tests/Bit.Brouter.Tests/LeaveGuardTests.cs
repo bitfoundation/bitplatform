@@ -8,18 +8,11 @@ namespace Bit.Brouter.Tests;
 [TestClass]
 public class LeaveGuardTests : BunitTestContext
 {
-    private IRenderedComponent<LeaveGuardHost> RenderAt(string url)
-    {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
-        nav.NavigateTo(url);
-        return RenderComponent<LeaveGuardHost>();
-    }
-
     [TestMethod]
     public void Cancelling_leave_guard_keeps_url_and_content()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
-        var cut = RenderAt("http://localhost/a");
+        var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/a");
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
 
         cut.Instance.BlockLeavingA = true;
@@ -39,7 +32,7 @@ public class LeaveGuardTests : BunitTestContext
     [TestMethod]
     public void Non_blocking_leave_guard_lets_the_navigation_proceed()
     {
-        var cut = RenderAt("http://localhost/a");
+        var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/a");
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
 
         var brouter = Services.GetRequiredService<IBrouter>();
@@ -56,7 +49,7 @@ public class LeaveGuardTests : BunitTestContext
     public void Leave_guard_can_redirect()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
-        var cut = RenderAt("http://localhost/a");
+        var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/a");
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
 
         cut.Instance.RedirectLeavingATo = "/parent/child2";
@@ -73,7 +66,7 @@ public class LeaveGuardTests : BunitTestContext
     [TestMethod]
     public void Nested_leave_guards_fire_leaf_to_root_when_leaving_the_whole_chain()
     {
-        var cut = RenderAt("http://localhost/parent/child1");
+        var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/parent/child1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=child1]"));
 
         var brouter = Services.GetRequiredService<IBrouter>();
@@ -89,7 +82,7 @@ public class LeaveGuardTests : BunitTestContext
     [TestMethod]
     public void Sibling_navigation_fires_only_the_deactivated_childs_guard()
     {
-        var cut = RenderAt("http://localhost/parent/child1");
+        var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/parent/child1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=child1]"));
 
         var brouter = Services.GetRequiredService<IBrouter>();
@@ -106,7 +99,7 @@ public class LeaveGuardTests : BunitTestContext
     [TestMethod]
     public void Parameter_only_change_on_the_same_route_is_not_a_leave()
     {
-        var cut = RenderAt("http://localhost/users/1");
+        var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/users/1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=user]"));
 
         var brouter = Services.GetRequiredService<IBrouter>();

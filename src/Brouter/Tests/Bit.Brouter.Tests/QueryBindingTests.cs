@@ -8,17 +8,10 @@ namespace Bit.Brouter.Tests;
 [TestClass]
 public class QueryBindingTests : BunitTestContext
 {
-    private IRenderedComponent<QueryHost> RenderAt(string url)
-    {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
-        nav.NavigateTo(url);
-        return RenderComponent<QueryHost>();
-    }
-
     [TestMethod]
     public void Scalar_string_query_binds_to_string_property()
     {
-        var cut = RenderAt("http://localhost/q?name=saleh");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?name=saleh");
 
         cut.WaitForAssertion(() => Assert.AreEqual("saleh", cut.Find("[data-testid=name]").TextContent));
     }
@@ -26,7 +19,7 @@ public class QueryBindingTests : BunitTestContext
     [TestMethod]
     public void Numeric_query_binds_to_int_and_nullable_int()
     {
-        var cut = RenderAt("http://localhost/q?count=7&nullableCount=42");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?count=7&nullableCount=42");
 
         cut.WaitForAssertion(() => Assert.AreEqual("7", cut.Find("[data-testid=count]").TextContent));
         cut.WaitForAssertion(() => Assert.AreEqual("42", cut.Find("[data-testid=ncount]").TextContent));
@@ -35,7 +28,7 @@ public class QueryBindingTests : BunitTestContext
     [TestMethod]
     public void Missing_query_leaves_property_at_default()
     {
-        var cut = RenderAt("http://localhost/q");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q");
 
         // Reference types stay null, value types stay default(T).
         cut.WaitForAssertion(() => Assert.AreEqual("(null)", cut.Find("[data-testid=name]").TextContent));
@@ -48,7 +41,7 @@ public class QueryBindingTests : BunitTestContext
     public void Guid_query_value_converts_correctly()
     {
         var id = Guid.NewGuid();
-        var cut = RenderAt($"http://localhost/q?id={id}");
+        var (cut, _) = RenderAt<QueryHost>($"http://localhost/q?id={id}");
 
         cut.WaitForAssertion(() => Assert.AreEqual(id.ToString(), cut.Find("[data-testid=id]").TextContent));
     }
@@ -60,7 +53,7 @@ public class QueryBindingTests : BunitTestContext
         // the property uses [SupplyParameterFromQuery]); [BrouterQuery] is the opt-in escape hatch -
         // the supplier ignores it, and Brouter's own converter handles the enum. This render (with
         // bUnit's framework supplier active) also proves the supplier leaves the property alone.
-        var cut = RenderAt("http://localhost/q?day=Tuesday");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?day=Tuesday");
 
         cut.WaitForAssertion(() => Assert.AreEqual("Tuesday", cut.Find("[data-testid=day]").TextContent));
     }
@@ -69,7 +62,7 @@ public class QueryBindingTests : BunitTestContext
     public void Enum_query_value_is_parsed_case_insensitively()
     {
         // TryConvert calls Enum.TryParse with ignoreCase: true.
-        var cut = RenderAt("http://localhost/q?day=tuesday");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?day=tuesday");
 
         cut.WaitForAssertion(() => Assert.AreEqual("Tuesday", cut.Find("[data-testid=day]").TextContent));
     }
@@ -79,7 +72,7 @@ public class QueryBindingTests : BunitTestContext
     {
         // The "Aliased" property is annotated with [SupplyParameterFromQuery(Name = "q")];
         // its property name should NOT be matched.
-        var cut = RenderAt("http://localhost/q?q=hello&aliased=ignored");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?q=hello&aliased=ignored");
 
         cut.WaitForAssertion(() => Assert.AreEqual("hello", cut.Find("[data-testid=aliased]").TextContent));
     }
@@ -87,7 +80,7 @@ public class QueryBindingTests : BunitTestContext
     [TestMethod]
     public void Multi_value_query_binds_string_array_in_order()
     {
-        var cut = RenderAt("http://localhost/q?tags=a&tags=b&tags=c");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?tags=a&tags=b&tags=c");
 
         cut.WaitForAssertion(() => Assert.AreEqual("a,b,c", cut.Find("[data-testid=tags]").TextContent));
     }
@@ -98,7 +91,7 @@ public class QueryBindingTests : BunitTestContext
         // Library-wide convention (route params, ResolveUrl dictionaries) is OrdinalIgnoreCase.
         // BrouterLocation.QueryParams now follows the same rule, so "Name" should bind to the
         // property declared as "name".
-        var cut = RenderAt("http://localhost/q?Name=Saleh&COUNT=9");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?Name=Saleh&COUNT=9");
 
         cut.WaitForAssertion(() => Assert.AreEqual("Saleh", cut.Find("[data-testid=name]").TextContent));
         cut.WaitForAssertion(() => Assert.AreEqual("9", cut.Find("[data-testid=count]").TextContent));
@@ -108,7 +101,7 @@ public class QueryBindingTests : BunitTestContext
     public void Percent_encoded_and_plus_separated_query_values_are_decoded()
     {
         // '+' decodes to ' ', and percent-encoded chars are unescaped.
-        var cut = RenderAt("http://localhost/q?name=hello+world&q=a%26b");
+        var (cut, _) = RenderAt<QueryHost>("http://localhost/q?name=hello+world&q=a%26b");
 
         cut.WaitForAssertion(() => Assert.AreEqual("hello world", cut.Find("[data-testid=name]").TextContent));
         cut.WaitForAssertion(() => Assert.AreEqual("a&b", cut.Find("[data-testid=aliased]").TextContent));

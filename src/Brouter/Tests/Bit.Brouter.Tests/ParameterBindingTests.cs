@@ -15,17 +15,10 @@ namespace Bit.Brouter.Tests;
 [TestClass]
 public class ParameterBindingTests : BunitTestContext
 {
-    private IRenderedComponent<BindHost> RenderAt(string url)
-    {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
-        nav.NavigateTo(url);
-        return RenderComponent<BindHost>();
-    }
-
     [TestMethod]
     public void Plain_parameter_binds_route_value_by_name_on_hand_declared_route()
     {
-        var cut = RenderAt("http://localhost/bind/7/anything");
+        var (cut, _) = RenderAt<BindHost>("http://localhost/bind/7/anything");
 
         cut.WaitForAssertion(() => Assert.AreEqual("7", cut.Find("[data-testid=bind-id]").TextContent));
     }
@@ -33,7 +26,7 @@ public class ParameterBindingTests : BunitTestContext
     [TestMethod]
     public void BrouterParameter_name_override_remaps_route_value_to_differently_named_property()
     {
-        var cut = RenderAt("http://localhost/bind/1/saleh");
+        var (cut, _) = RenderAt<BindHost>("http://localhost/bind/1/saleh");
 
         cut.WaitForAssertion(() => Assert.AreEqual("saleh", cut.Find("[data-testid=bind-display]").TextContent));
     }
@@ -41,7 +34,7 @@ public class ParameterBindingTests : BunitTestContext
     [TestMethod]
     public void Parameter_not_in_template_is_left_untouched()
     {
-        var cut = RenderAt("http://localhost/bind/1/x");
+        var (cut, _) = RenderAt<BindHost>("http://localhost/bind/1/x");
 
         cut.WaitForAssertion(() => Assert.AreEqual("(null)", cut.Find("[data-testid=bind-other]").TextContent));
     }

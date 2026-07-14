@@ -649,9 +649,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// willRemainMatched, so retained keep-alive content no-ops while transient content gets its
     /// honest Disposing notification for the instance that render destroys.
     /// </summary>
-    private static void NotifyChainDepartures(BrouterNavigationContext ctx, Broute[] departingChain,
+    private void NotifyChainDepartures(BrouterNavigationContext ctx, Broute[] departingChain,
         List<Broute>? surviving = null, bool notifySurvivorsAsRemaining = false, Broute? contentReplacedNode = null)
     {
+        // A departure callback's synchronous prefix can start a new navigation, superseding this
+        // one. The rest of the chain then belongs to that navigation's own departure phase (which
+        // idempotently skips the nodes already notified here) and must not receive callbacks
+        // describing a target that will never commit. The generation check covers callers whose
+        // context carries no cancellable token (HandleAppNotFoundAsync passes
+        // CancellationToken.None); it only ever changes when a navigation pipeline starts.
+        var generation = _lifecycleNavGeneration;
+
         for (var i = departingChain.Length - 1; i >= 0; i--)
         {
             var node = departingChain[i];
@@ -663,6 +671,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // page, so Hidden would be a lie.
             node.NotifyDeparture(ctx, willRemainMatched: survives,
                 contentReplaced: ReferenceEquals(node, contentReplacedNode));
+            if (ctx.CancellationToken.IsCancellationRequested || generation != _lifecycleNavGeneration) return;
         }
     }
 

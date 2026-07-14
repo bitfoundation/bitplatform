@@ -501,6 +501,11 @@ internal class BrouterRouteRenderer
         }
         else if (_route.Content is not null)
         {
+            // A route that previously rendered a directly-instantiated Component page can be
+            // re-declared with a Content fragment at runtime: this render disposes that page, so
+            // drop its auto-registration from the surviving context - same rationale as the error
+            // branch above (a no-op for routes that always rendered Content).
+            context?.ClearAutoRegistered();
             b3.AddContent(0, _route.Content(routeParams));
         }
         else if (_route.Component is not null)
