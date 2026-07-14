@@ -46,7 +46,7 @@ public static class ScssCompilerService
             "../../../Bit.BlazorUI.Assets/Styles/bit.blazorui.assets.scss:../../../Bit.BlazorUI.Assets/wwwroot/styles/bit.blazorui.assets.css",
         };
 
-        var command = $"{string.Join(" ", sassPathsToWatch)} --style compressed --silence-deprecation=import --update --watch --color";
+        var command = $"{string.Join(" ", sassPathsToWatch)} --load-path=. --style compressed --silence-deprecation=import --update --watch --color";
 
         // Scss watching is best-effort development tooling: any failure below must not fault this task,
         // which would otherwise surface as an unobserved error in Program.cs's Task.WhenAll at shutdown.

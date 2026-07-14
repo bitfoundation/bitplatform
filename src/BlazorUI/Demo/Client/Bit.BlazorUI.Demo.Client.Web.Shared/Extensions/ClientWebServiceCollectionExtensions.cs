@@ -2,7 +2,7 @@ using Bit.BlazorUI.Demo.Client.Web.Shared.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IClientWebServiceCollectionExtensions
+public static class ClientWebServiceCollectionExtensions
 {
     public static IServiceCollection AddClientWebServices(this IServiceCollection services)
     {
