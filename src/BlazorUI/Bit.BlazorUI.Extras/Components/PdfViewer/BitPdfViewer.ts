@@ -23,7 +23,7 @@ namespace BitBlazorUI {
             }
         }
 
-        // Scrolls `target` into view by scrolling ONLY `container` — unlike
+        // Scrolls `target` into view by scrolling ONLY `container` - unlike
         // scrollIntoView, which also scrolls every scrollable ancestor (including
         // the hosting page, yanking the whole document around when the viewer is
         // embedded mid-page).
@@ -393,7 +393,7 @@ namespace BitBlazorUI {
                     clone.style.transformOrigin = "top left";
                     // A cloned <canvas> loses its pixels: substitute a snapshot image so
                     // canvas-mode pages print their painted content. Pages with a cached
-                    // display list re-rasterize at print resolution — the screen-resolution
+                    // display list re-rasterize at print resolution - the screen-resolution
                     // bitmap is sized for on-screen zoom and prints blurry.
                     const srcCanvases = el.querySelectorAll("canvas[data-bit-pdv-canvas]");
                     const dstCanvases = clone.querySelectorAll("canvas[data-bit-pdv-canvas]");
@@ -540,7 +540,7 @@ namespace BitBlazorUI {
                 return;
             }
 
-            // @font-face faces load lazily — only when DOM text uses them — and canvas
+            // @font-face faces load lazily - only when DOM text uses them - and canvas
             // fillText never waits for (or reliably triggers) a load: it draws with the
             // fallback immediately. In canvas mode no DOM references the embedded
             // families, so without an explicit load the FIRST paint renders tofu until
@@ -752,7 +752,7 @@ namespace BitBlazorUI {
             const ranges: Range[] = [];
 
             container.querySelectorAll("[data-page]").forEach((page) => {
-                // Search only the coalesced selection layer ([data-bit-pdv-sel]) — it
+                // Search only the coalesced selection layer ([data-bit-pdv-sel]) - it
                 // holds the real Unicode in reading order. The painted layer beneath is
                 // presentational (real glyphs or Private-Use codepoints) and would
                 // otherwise double-count.

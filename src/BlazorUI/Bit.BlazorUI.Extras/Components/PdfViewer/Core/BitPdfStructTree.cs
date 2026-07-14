@@ -42,7 +42,7 @@ internal static class BitPdfStructTree
 
     private static void AddNode(IBitPdfXRef xref, object? item, List<BitPdfStructElement> result, HashSet<int> visited, int depth)
     {
-        // Marked-content leaves are plain integers or MCR/OBJR dicts; skip them —
+        // Marked-content leaves are plain integers or MCR/OBJR dicts; skip them -
         // the structure tree API exposes the element hierarchy, not content refs.
         if (item is double)
         {

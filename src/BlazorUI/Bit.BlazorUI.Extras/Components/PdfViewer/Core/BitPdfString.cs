@@ -58,7 +58,7 @@ public sealed class BitPdfString
         t[0x1C] = '˝'; t[0x1D] = '˛'; t[0x1E] = '˚'; t[0x1F] = '˜';
         // 0x80–0x9F: punctuation, ligatures, accented capitals.
         t[0x80] = '•'; t[0x81] = '†'; t[0x82] = '‡'; t[0x83] = '…';
-        t[0x84] = '—'; t[0x85] = '–'; t[0x86] = 'ƒ'; t[0x87] = '⁄';
+        t[0x84] = '-'; t[0x85] = '–'; t[0x86] = 'ƒ'; t[0x87] = '⁄';
         t[0x88] = '‹'; t[0x89] = '›'; t[0x8A] = '−'; t[0x8B] = '‰';
         t[0x8C] = '„'; t[0x8D] = '“'; t[0x8E] = '”'; t[0x8F] = '‘';
         t[0x90] = '’'; t[0x91] = '‚'; t[0x92] = '™'; t[0x93] = 'ﬁ';

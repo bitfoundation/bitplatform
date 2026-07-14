@@ -413,7 +413,7 @@ internal sealed class BitPdfType1Font
                     ? Pop(ctx.PostScriptStack)
                     : 0);
                 break;
-            case 6: // seac (accented char) — not composed; ignore base for now
+            case 6: // seac (accented char) - not composed; ignore base for now
             case 7: // sbw
             case 0: // dotsection
             case 1: // vstem3

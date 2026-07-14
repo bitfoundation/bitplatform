@@ -103,7 +103,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
 
         // If the classic/stream path did not yield a usable catalog, brute-force
-        // scan the file for objects and rebuild — matching pdf.js recovery.
+        // scan the file for objects and rebuild - matching pdf.js recovery.
         if (Trailer is null || Root is null)
         {
             RebuildByScanning();

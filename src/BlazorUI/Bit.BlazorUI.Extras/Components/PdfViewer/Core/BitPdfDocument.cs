@@ -209,7 +209,7 @@ public sealed class BitPdfDocument
         }
 
         // A node explicitly typed /Pages but with no usable /Kids is a damaged
-        // interior node — skip it rather than materializing a phantom page.
+        // interior node - skip it rather than materializing a phantom page.
         if (BitPdfPrimitives.IsName(typeObj, "Pages"))
         {
             _xref.Warnings.Add("Interior /Pages node has no valid /Kids; skipping.");

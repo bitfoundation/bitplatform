@@ -8,14 +8,15 @@ namespace Bit.BlazorUI.Demo.Server.Services;
 /// hot-apply style changes to the browser without a rebuild.
 /// (Mirrors the ScssCompilerService of the bit Boilerplate template.)
 /// </summary>
-public class ScssCompilerService
+public static class ScssCompilerService
 {
     internal static async Task WatchScssFiles(WebApplication app)
     {
         if (app.Environment.IsDevelopment() is false)
             return;
 
-        var logger = app.Services.GetRequiredService<ILogger<ScssCompilerService>>();
+        // A static type can't be an ILogger<T> category, so create the logger by name via the factory.
+        var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(ScssCompilerService));
 
         var clientCorePath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "../Client/Bit.BlazorUI.Demo.Client.Core"));
 

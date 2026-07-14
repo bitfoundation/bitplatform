@@ -90,7 +90,7 @@ public partial class BitPdfViewer : BitComponentBase
 
     /// <summary>
     /// How painted text is emitted. <see cref="BitPdfTextCoalescing.Compact"/> merges
-    /// same-line, same-style runs into one span per visual line — far fewer DOM
+    /// same-line, same-style runs into one span per visual line - far fewer DOM
     /// nodes on per-glyph PDFs, with small intra-line position drift (explicit
     /// kerning between runs is approximated). Rotated text always stays exact.
     /// Default is <see cref="BitPdfTextCoalescing.Exact"/>.
@@ -370,7 +370,7 @@ public partial class BitPdfViewer : BitComponentBase
         if (changed)
         {
             // Evict around the range just requested (what is visible in the
-            // sidebar), not the current page — scrolling the sidebar leaves the
+            // sidebar), not the current page - scrolling the sidebar leaves the
             // current page put, so centering on it would blank the very
             // thumbnails the user just scrolled to.
             EvictDistantThumbs(lo, hi);
@@ -784,7 +784,7 @@ public partial class BitPdfViewer : BitComponentBase
     private MarkupString RenderThumbContent(int index)
     {
         // Canvas mode: page fragments are canvas placeholders whose pixels are
-        // painted by JS into the MAIN surface only — a reused fragment would show
+        // painted by JS into the MAIN surface only - a reused fragment would show
         // a blank thumbnail. Render sidebar thumbnails as self-contained HTML
         // (Compact text keeps the tiny fragments light).
         if (RenderMode == BitPdfRenderMode.Canvas)
@@ -1002,7 +1002,7 @@ public partial class BitPdfViewer : BitComponentBase
 
         // Search a per-page extracted-text index (built lazily) rather than the
         // rendered DOM, so we only render the pages that actually contain matches
-        // — a 500-page document with matches on 3 pages renders 3, not 500.
+        // - a 500-page document with matches on 3 pages renders 3, not 500.
         _pageText ??= new string?[_document.PageCount];
         string needle = _searchQuery;
         bool rendered = false;
