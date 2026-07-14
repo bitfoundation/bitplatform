@@ -41,10 +41,12 @@ public partial class BitPdfViewer : BitComponentBase
     // Pages waiting to be lazily rendered, drained one page per event-loop turn
     // by the pump in EnsurePagesRendered so scrolling stays responsive on WASM.
     private readonly Queue<int> _renderQueue = new();
+    private readonly HashSet<int> _renderQueued = new(); // O(1) membership for _renderQueue dedup
     private bool _renderPumpActive;
 
     // The thumbnail sidebar's counterpart of the render queue/pump.
     private readonly Queue<int> _thumbQueue = new();
+    private readonly HashSet<int> _thumbQueued = new(); // O(1) membership for _thumbQueue dedup
     private bool _thumbPumpActive;
 
     // The thumbnail sidebar owns its own render slots, decoupled from _pages, so
@@ -302,6 +304,10 @@ public partial class BitPdfViewer : BitComponentBase
                     rendered = true;
                 }
                 await RenderPageAsync(i);
+                // Yield between page renders so the browser can paint the progress
+                // bar and stay responsive while a large document is prepared on the
+                // single WASM thread (mirrors the lazy-render pumps).
+                await Task.Delay(1);
             }
         }
         if (rendered)
@@ -363,12 +369,12 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task EnsurePagesRendered(int[] pageNumbers)
     {
-        if (_document is null || pageNumbers is null) return;
+        if (_document is null || pageNumbers is null || IsDisposed) return;
 
         foreach (int n in pageNumbers)
         {
             int idx = n - 1;
-            if (idx >= 0 && idx < _pages.Count && _pages[idx] is null && _renderQueue.Contains(idx) is false)
+            if (idx >= 0 && idx < _pages.Count && _pages[idx] is null && _renderQueued.Add(idx))
             {
                 _renderQueue.Enqueue(idx);
             }
@@ -384,13 +390,17 @@ public partial class BitPdfViewer : BitComponentBase
         {
             while (_renderQueue.Count > 0)
             {
-                if (version != _loadVersion)
+                // A reload while yielding invalidates the queue; disposal tears the
+                // component down. Either way, stop rendering into stale/torn slots.
+                if (IsDisposed || version != _loadVersion)
                 {
                     _renderQueue.Clear();
+                    _renderQueued.Clear();
                     return;
                 }
 
                 int idx = _renderQueue.Dequeue();
+                _renderQueued.Remove(idx);
                 if (await RenderPageAsync(idx) is false) continue;
 
                 EvictDistantPages();
@@ -419,12 +429,12 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task EnsureThumbsRendered(int[] pageNumbers)
     {
-        if (_document is null || pageNumbers is null) return;
+        if (_document is null || pageNumbers is null || IsDisposed) return;
 
         foreach (int n in pageNumbers)
         {
             int idx = n - 1;
-            if (idx >= 0 && idx < _thumbs.Count && _thumbs[idx] is null && _thumbQueue.Contains(idx) is false)
+            if (idx >= 0 && idx < _thumbs.Count && _thumbs[idx] is null && _thumbQueued.Add(idx))
             {
                 _thumbQueue.Enqueue(idx);
             }
@@ -438,13 +448,15 @@ public partial class BitPdfViewer : BitComponentBase
         {
             while (_thumbQueue.Count > 0)
             {
-                if (version != _loadVersion)
+                if (IsDisposed || version != _loadVersion)
                 {
                     _thumbQueue.Clear();
+                    _thumbQueued.Clear();
                     return;
                 }
 
                 int idx = _thumbQueue.Dequeue();
+                _thumbQueued.Remove(idx);
                 if (await RenderThumbAsync(idx) is false) continue;
 
                 // Evict around the thumbnail just rendered (what the sidebar is
@@ -652,7 +664,9 @@ public partial class BitPdfViewer : BitComponentBase
         int version = ++_loadVersion; // supersedes any load still in flight
         _pages.Clear();
         _renderQueue.Clear(); // pending lazy renders belong to the old document
+        _renderQueued.Clear();
         _thumbQueue.Clear();
+        _thumbQueued.Clear();
         _pageWidths.Clear();
         _pageHeights.Clear();
         _document = null;
@@ -763,8 +777,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// Measures every page (cheap) and creates an empty render slot for each so
     /// the document surface, scrollbar and page count are correct immediately.
-    /// Only a small window around the current page is rendered up front; the
-    /// rest are rendered on demand as they approach the viewport.
+    /// Only the current page is rendered eagerly (by the caller); the rest are
+    /// rendered later on demand by the lazy-render pump as they approach the viewport.
     /// </summary>
     private void PreparePages()
     {
@@ -773,7 +787,9 @@ public partial class BitPdfViewer : BitComponentBase
         _pages.Clear();
         _thumbs.Clear();
         _renderQueue.Clear();
+        _renderQueued.Clear();
         _thumbQueue.Clear();
+        _thumbQueued.Clear();
         _pageWidths.Clear();
         _pageHeights.Clear();
         _canvasOps.Clear();
@@ -1206,6 +1222,9 @@ public partial class BitPdfViewer : BitComponentBase
             {
                 await RenderPageAsync(i);
                 rendered = true;
+                // Yield between match renders so a large result set doesn't
+                // monopolize the WASM UI thread (mirrors the lazy-render pumps).
+                await Task.Delay(1);
             }
         }
 
@@ -1266,6 +1285,14 @@ public partial class BitPdfViewer : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        // Stop the lazy-render pumps: clear pending work so a pump resuming from its
+        // Task.Delay yield after disposal finds nothing left to render against the
+        // torn-down component.
+        _renderQueue.Clear();
+        _renderQueued.Clear();
+        _thumbQueue.Clear();
+        _thumbQueued.Clear();
 
         try
         {
