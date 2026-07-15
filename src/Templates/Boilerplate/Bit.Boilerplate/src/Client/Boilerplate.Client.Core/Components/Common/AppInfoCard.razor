@@ -1,0 +1,49 @@
+@inherits AppComponentBase
+
+@* Reusable, polished "app & device" panel shared by the About page of every client (Web, MAUI, Windows). *@
+<CascadingValue Value="BitDir.Ltr">
+    <BitCard FullSize Class="app-info-card">
+        <BitStack Gap="1rem">
+            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.85rem" Wrap>
+                <div class="app-monogram">@Monogram</div>
+                <BitStack Gap="0" Grows>
+                    <BitText Typography="BitTypography.H5">@AppName</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">Version @AppVersion</BitText>
+                </BitStack>
+                <BitTag Text="@Environment" Size="BitSize.Small" Variant="BitVariant.Outline" Color="@EnvironmentColor" />
+            </BitStack>
+
+            <BitSeparator />
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Operating system</span>
+                    <span class="info-value">@Platform</span>
+                </div>
+                @if (string.IsNullOrEmpty(WebView) is false)
+                {
+                    <div class="info-item">
+                        <span class="info-label">Web view</span>
+                        <span class="info-value">@WebView</span>
+                    </div>
+                }
+                @if (string.IsNullOrEmpty(Oem) is false)
+                {
+                    <div class="info-item">
+                        <span class="info-label">Manufacturer</span>
+                        <span class="info-value">@Oem</span>
+                    </div>
+                }
+                <div class="info-item">
+                    <span class="info-label">Process ID</span>
+                    <span class="info-value">@ProcessId</span>
+                </div>
+            </div>
+
+            @if (Note is not null)
+            {
+                <BitMessage Color="BitColor.Info" Multiline Class="app-info-note">@Note</BitMessage>
+            }
+        </BitStack>
+    </BitCard>
+</CascadingValue>

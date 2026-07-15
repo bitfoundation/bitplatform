@@ -11,7 +11,7 @@ public class NavigationTypeTests : BunitTestContext
     [TestMethod]
     public void Initial_load_is_reported_as_Push()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<NavigationTypeHost>();
@@ -22,7 +22,7 @@ public class NavigationTypeTests : BunitTestContext
     [TestMethod]
     public void Programmatic_navigate_is_a_Push()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<NavigationTypeHost>();
@@ -41,7 +41,7 @@ public class NavigationTypeTests : BunitTestContext
     [TestMethod]
     public void Programmatic_navigate_with_replace_is_a_Replace()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<NavigationTypeHost>();
@@ -63,7 +63,7 @@ public class NavigationTypeTests : BunitTestContext
         // A raw NavigationManager.NavigateTo that does not go through IBrouter and is not an intercepted
         // link click is indistinguishable, at the framework level, from a browser Back/Forward. It is
         // therefore reported as Pop - the same classification a genuine history traversal receives.
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<NavigationTypeHost>();

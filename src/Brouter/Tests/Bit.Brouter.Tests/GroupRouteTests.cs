@@ -11,7 +11,7 @@ public class GroupRouteTests : BunitTestContext
     [TestMethod]
     public void Group_children_match_at_their_own_paths_and_render_inside_the_group_layout()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/admin-a");
 
         // Two sibling pathless groups coexist without an ambiguity error, and the group adds no
@@ -28,7 +28,7 @@ public class GroupRouteTests : BunitTestContext
     [TestMethod]
     public void Group_guard_and_loader_run_for_child_navigations()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/admin-a");
 
         var cut = RenderComponent<GroupRouteHost>();
@@ -41,7 +41,7 @@ public class GroupRouteTests : BunitTestContext
     [TestMethod]
     public void Group_guard_redirect_protects_every_child()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/public");
 
         var cut = RenderComponent<GroupRouteHost>();
@@ -63,7 +63,7 @@ public class GroupRouteTests : BunitTestContext
     [TestMethod]
     public void Group_is_invisible_to_outlet_resolution()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/shell/inside");
 
         var cut = RenderComponent<GroupRouteHost>();
@@ -81,7 +81,7 @@ public class GroupRouteTests : BunitTestContext
     [TestMethod]
     public void Group_does_not_shadow_sibling_routes()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/public");
 
         var cut = RenderComponent<GroupRouteHost>();

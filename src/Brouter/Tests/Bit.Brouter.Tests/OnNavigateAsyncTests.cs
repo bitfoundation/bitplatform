@@ -11,7 +11,7 @@ public class OnNavigateAsyncTests : BunitTestContext
     [TestMethod]
     public void Assembly_returned_by_the_hook_matches_within_the_same_navigation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<OnNavigateHost>();
@@ -32,7 +32,7 @@ public class OnNavigateAsyncTests : BunitTestContext
     [TestMethod]
     public void Hook_runs_for_the_initial_deep_link_too()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/3");
 
         var cut = RenderComponent<OnNavigateHost>();
@@ -47,7 +47,7 @@ public class OnNavigateAsyncTests : BunitTestContext
     [TestMethod]
     public void Hook_returning_null_changes_nothing()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<OnNavigateHost>();

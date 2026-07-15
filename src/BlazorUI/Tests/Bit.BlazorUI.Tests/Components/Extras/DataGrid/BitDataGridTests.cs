@@ -305,7 +305,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(2, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell").Count);
 
         visible = false;
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ChildContent, Columns()));
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Columns()));
 
         Assert.AreEqual(1, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell").Count);
     }
@@ -1090,7 +1090,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Replace the source with a list that no longer contains Id 1.
         var replacement = CreateRows().Where(r => r.Id != 1).ToList();
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Items, replacement));
+        component.Render(parameters => parameters.Add(p => p.Items, replacement));
 
         Assert.AreEqual(0, selected!.Count, "selection must not keep rows that left the data source");
     }

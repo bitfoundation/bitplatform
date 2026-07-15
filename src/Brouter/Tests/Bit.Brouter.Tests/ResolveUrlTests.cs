@@ -14,7 +14,7 @@ public class ResolveUrlTests : BunitTestContext
     /// </summary>
     private IBrouter MountWithNamedRoute(string name, string path)
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/__test__");
 
         RenderComponent<NamedRouteHost>(p => p

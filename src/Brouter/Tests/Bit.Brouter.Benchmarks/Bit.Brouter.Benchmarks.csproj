@@ -18,7 +18,7 @@
     <!-- bUnit gives us a real Blazor renderer plus the fakes Brouter needs (NavigationManager,
          INavigationInterception, IJSRuntime) with a single line of setup - the same host the unit
          tests use - so the numbers reflect the actual component-instantiation cost. -->
-    <PackageReference Include="bunit.web" Version="1.40.0" />
+    <PackageReference Include="bunit" Version="2.7.2" />
   </ItemGroup>
 
   <ItemGroup>

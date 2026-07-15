@@ -13,7 +13,7 @@ public class BrouterLinkTests : BunitTestContext
     [TestMethod]
     public void Prefix_match_activates_on_exact_path()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users");
 
         var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/users"));
@@ -29,7 +29,7 @@ public class BrouterLinkTests : BunitTestContext
     [TestMethod]
     public void Prefix_match_activates_on_child_path()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users/42");
 
         var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/users"));
@@ -46,7 +46,7 @@ public class BrouterLinkTests : BunitTestContext
     {
         // "/user" is a textual prefix of "/users" but a different segment, so the link
         // must NOT be considered active. Guards the boundary check in UpdateActiveState.
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users");
 
         var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/user"));
@@ -66,7 +66,7 @@ public class BrouterLinkTests : BunitTestContext
         // The classic NavLink footgun: a "home" link (Href="/") under the default Prefix match
         // must NOT be active on every page just because every path starts with '/'. The root is
         // matched exactly even under Prefix (mirrors React Router's NavLink).
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users");
 
         var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/"));
@@ -83,7 +83,7 @@ public class BrouterLinkTests : BunitTestContext
     [TestMethod]
     public void Prefix_match_on_root_href_activates_at_root()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/");
 
         var cut = RenderComponent<LinkHost>(p => p.Add(x => x.Href, "/"));
@@ -99,7 +99,7 @@ public class BrouterLinkTests : BunitTestContext
     [TestMethod]
     public void All_match_only_activates_on_exact_equality()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users/42");
 
         var cut = RenderComponent<LinkHost>(p => p
@@ -129,7 +129,7 @@ public class BrouterLinkTests : BunitTestContext
         // Default options: IgnoreTrailingSlash=true. "/users/" href should be normalized
         // to "/users" inside NormalisePath, so an exact-equality (All) match against
         // current path "/users" succeeds.
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/users");
 
         var cut = RenderComponent<LinkHost>(p => p
@@ -150,7 +150,7 @@ public class BrouterLinkTests : BunitTestContext
         // OnClick short-circuits and the C#-side replace navigation never runs.
         SetupReplaceJsModule();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/start");
 
         var cut = RenderComponent<LinkHost>(p => p
@@ -186,7 +186,7 @@ public class BrouterLinkTests : BunitTestContext
     {
         SetupReplaceJsModule();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/start");
 
         var cut = RenderComponent<LinkHost>(p => p
@@ -222,7 +222,7 @@ public class BrouterLinkTests : BunitTestContext
     {
         SetupReplaceJsModule();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/start");
 
         var cut = RenderComponent<MultiReplaceLinkHost>();
@@ -252,7 +252,7 @@ public class BrouterLinkTests : BunitTestContext
     /// is what flips _replaceWired to true inside BrouterLink. Without this, click tests race
     /// the async wiring and assert against the wrong state.
     /// </summary>
-    private void WaitForReplaceWiring(IRenderedComponentBase<LinkHost> cut)
+    private void WaitForReplaceWiring(IRenderedComponent<LinkHost> cut)
     {
         var jsInvocations = Context!.JSInterop.Invocations;
         cut.WaitForState(() => jsInvocations.Any(i => i.Identifier == "wireConditionalPreventDefault"));

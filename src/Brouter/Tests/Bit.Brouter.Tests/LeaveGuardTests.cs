@@ -11,7 +11,7 @@ public class LeaveGuardTests : BunitTestContext
     [TestMethod]
     public void Cancelling_leave_guard_keeps_url_and_content()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/a");
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
 
@@ -48,7 +48,7 @@ public class LeaveGuardTests : BunitTestContext
     [TestMethod]
     public void Leave_guard_can_redirect()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/a");
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
 

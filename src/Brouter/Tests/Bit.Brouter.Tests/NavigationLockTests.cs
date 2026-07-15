@@ -19,7 +19,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public void Locked_content_cancels_the_navigation_preventively()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
@@ -60,7 +60,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public void Renavigating_lock_vetoes_a_parameter_change_on_the_same_route()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/doc/1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=doc]"));
 
@@ -108,7 +108,7 @@ public class NavigationLockTests : BunitTestContext
         // BrouterOutlet.WrapRouteContext), so a BrouterRouteBase inside a <BrouterView> fragment
         // registers a lock against the CHILD route - without the cascade it would never be
         // consulted and the navigation would sail through.
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/nshell/view");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
@@ -176,7 +176,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public void Lock_can_redirect_the_navigation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
@@ -212,7 +212,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public async Task Async_lock_holds_the_navigation_open_for_a_custom_prompt()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 
@@ -249,7 +249,7 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public async Task A_superseding_navigation_completes_while_the_first_is_parked_and_never_resolves_its_prompt()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/edit");
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
 

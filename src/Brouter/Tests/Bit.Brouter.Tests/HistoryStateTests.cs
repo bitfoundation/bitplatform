@@ -11,7 +11,7 @@ public class HistoryStateTests : BunitTestContext
     [TestMethod]
     public void Navigate_without_state_exposes_null_HistoryState()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<HistoryStateHost>();
@@ -32,7 +32,7 @@ public class HistoryStateTests : BunitTestContext
     [TestMethod]
     public void Navigate_with_state_exposes_it_on_Location_and_hooks()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<HistoryStateHost>();
@@ -52,7 +52,7 @@ public class HistoryStateTests : BunitTestContext
     [TestMethod]
     public void Navigate_with_state_and_replace_replaces_the_entry_and_keeps_the_state()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<HistoryStateHost>();
@@ -67,7 +67,7 @@ public class HistoryStateTests : BunitTestContext
             Assert.AreEqual("replaced-state", brouter.Location.HistoryState);
         });
 
-        // The FakeNavigationManager records the NavigationOptions it was invoked with; verify the
+        // The BunitNavigationManager records the NavigationOptions it was invoked with; verify the
         // replace flag survived the options-based NavigateTo overload used when state is present.
         var last = nav.History.Last();
         Assert.IsTrue(last.Options.ReplaceHistoryEntry);
@@ -77,7 +77,7 @@ public class HistoryStateTests : BunitTestContext
     [TestMethod]
     public void Link_click_with_HistoryState_attaches_the_state()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<HistoryStateHost>(p => p.Add(x => x.LinkState, "from-link"));
@@ -102,7 +102,7 @@ public class HistoryStateTests : BunitTestContext
     [TestMethod]
     public void NavigateToName_forwards_history_state()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<NamedRouteHost>(p => p

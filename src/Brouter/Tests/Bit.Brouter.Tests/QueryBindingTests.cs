@@ -110,7 +110,7 @@ public class QueryBindingTests : BunitTestContext
     [TestMethod]
     public void Query_re_binds_when_navigation_changes_the_query_string()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/q?name=first");
 
         var cut = RenderComponent<QueryHost>();

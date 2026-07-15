@@ -11,7 +11,7 @@ public class DeferredDataTests : BunitTestContext
     [TestMethod]
     public void Route_reveals_immediately_while_deferred_data_is_pending()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/post");
 
         var cut = RenderComponent<DeferredHost>();
@@ -28,7 +28,7 @@ public class DeferredDataTests : BunitTestContext
     [TestMethod]
     public void Deferred_data_streams_in_when_the_task_resolves()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/post");
 
         var cut = RenderComponent<DeferredHost>();
@@ -46,7 +46,7 @@ public class DeferredDataTests : BunitTestContext
     [TestMethod]
     public void Deferred_failure_renders_the_error_fragment()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/post");
 
         var cut = RenderComponent<DeferredHost>();

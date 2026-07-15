@@ -10,7 +10,7 @@ public class NavigateAsyncTests : BunitTestContext
 {
     private (IRenderedComponent<NavigateAsyncHost> Cut, IBrouter Brouter) RenderAtA()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
         var cut = RenderComponent<NavigateAsyncHost>();
         cut.WaitForAssertion(() => cut.Find("[data-testid=a]"));
@@ -42,7 +42,7 @@ public class NavigateAsyncTests : BunitTestContext
     public async Task Guard_cancel_resolves_Cancelled_and_url_stays()
     {
         var (cut, brouter) = RenderAtA();
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
 
         ValueTask<BrouterNavigationOutcome> navigation = default;
         await cut.InvokeAsync(() => { navigation = brouter.NavigateAsync("/blocked"); });

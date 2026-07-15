@@ -15,7 +15,7 @@ public class AmbiguousRouteTests : BunitTestContext
 {
     private IRenderedComponent<AmbiguousRoutesHost> RenderPair(string pathA, string pathB)
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/__test__");
 
         return RenderComponent<AmbiguousRoutesHost>(p => p
@@ -77,7 +77,7 @@ public class AmbiguousRouteTests : BunitTestContext
     [TestMethod]
     public void Parent_and_index_child_share_a_template_without_throwing()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/docs");
 
         var cut = RenderComponent<NestedIndexHost>();
@@ -89,7 +89,7 @@ public class AmbiguousRouteTests : BunitTestContext
     [TestMethod]
     public void Hand_declared_route_may_shadow_a_discovered_page_with_the_same_template()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/7");
 
         // DiscoveryOverrideHost hand-declares "/discovered/{id:int}", the exact template of the
@@ -103,7 +103,7 @@ public class AmbiguousRouteTests : BunitTestContext
     [TestMethod]
     public void Disposing_a_route_frees_its_template_for_re_registration()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/dup");
 
         var cut = RenderComponent<SwapRouteHost>(p => p.Add(h => h.Show, "a"));
@@ -111,8 +111,8 @@ public class AmbiguousRouteTests : BunitTestContext
 
         // Dispose the first route in its own render pass, then mount a second route with the
         // same template: the freed template must be accepted again (no ambiguity exception).
-        cut.SetParametersAndRender(p => p.Add(h => h.Show, "none"));
-        cut.SetParametersAndRender(p => p.Add(h => h.Show, "b"));
+        cut.Render(p => p.Add(h => h.Show, "none"));
+        cut.Render(p => p.Add(h => h.Show, "b"));
 
         // Matching runs per navigation, not on registration, so navigate again to see route b win.
         nav.NavigateTo("http://localhost/elsewhere");

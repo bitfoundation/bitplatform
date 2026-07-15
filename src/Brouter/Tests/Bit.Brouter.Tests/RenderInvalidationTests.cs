@@ -16,7 +16,7 @@ public class RenderInvalidationTests : BunitTestContext
     [TestMethod]
     public void Navigating_between_siblings_unrenders_the_losing_route()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/plain");
 
         var cut = RenderComponent<RenderInvalidationHost>();
@@ -35,7 +35,7 @@ public class RenderInvalidationTests : BunitTestContext
     [TestMethod]
     public void Deep_chain_renders_every_level_after_navigating_in_from_a_sibling()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/plain");
 
         var cut = RenderComponent<RenderInvalidationHost>();
@@ -55,7 +55,7 @@ public class RenderInvalidationTests : BunitTestContext
     [TestMethod]
     public void Deep_chain_re_renders_with_new_parameters_when_only_a_parameter_changes()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/l1/1/l2/l3");
 
         var cut = RenderComponent<RenderInvalidationHost>();

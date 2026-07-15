@@ -11,7 +11,7 @@ public class GuardAndLoaderTests : BunitTestContext
     [TestMethod]
     public void Guard_can_redirect()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secret");
 
         var cut = RenderComponent<GuardHost>();
@@ -22,7 +22,7 @@ public class GuardAndLoaderTests : BunitTestContext
     [TestMethod]
     public void Loader_value_is_exposed_via_RouteData()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/data");
 
         var cut = RenderComponent<LoaderHost>();
@@ -32,7 +32,7 @@ public class GuardAndLoaderTests : BunitTestContext
     [TestMethod]
     public void Chain_loaders_run_sequentially_root_to_leaf_by_default()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/parent/child");
 
         var cut = RenderComponent<SequentialLoadersHost>();
@@ -46,7 +46,7 @@ public class GuardAndLoaderTests : BunitTestContext
     [TestMethod]
     public void ParallelLoaders_runs_chain_loaders_concurrently()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/parent/child");
 
         var cut = RenderComponent<ParallelLoadersHost>();
@@ -60,7 +60,7 @@ public class GuardAndLoaderTests : BunitTestContext
     [TestMethod]
     public void Guard_cancel_prevents_navigation_before_the_url_commits()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<PreventiveGuardHost>();
@@ -87,7 +87,7 @@ public class GuardAndLoaderTests : BunitTestContext
     [TestMethod]
     public void Guard_redirect_prevents_the_original_navigation_and_lands_on_the_target()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<PreventiveGuardHost>();

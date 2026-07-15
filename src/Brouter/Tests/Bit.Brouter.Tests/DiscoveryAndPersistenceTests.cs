@@ -11,7 +11,7 @@ public class DiscoveryAndPersistenceTests : BunitTestContext
     [TestMethod]
     public void Attribute_routed_page_is_discovered_via_AppAssembly()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/42");
 
         var cut = RenderComponent<DiscoveryHost>();
@@ -24,7 +24,7 @@ public class DiscoveryAndPersistenceTests : BunitTestContext
     [TestMethod]
     public void Discovered_route_binds_route_and_query_parameters_conventionally()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/discovered/42?q=hello");
 
         var cut = RenderComponent<DiscoveryHost>();
@@ -38,7 +38,7 @@ public class DiscoveryAndPersistenceTests : BunitTestContext
     [TestMethod]
     public void Hand_declared_routes_still_match_alongside_discovered_ones()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
         var cut = RenderComponent<DiscoveryHost>();

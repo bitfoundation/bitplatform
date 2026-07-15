@@ -11,7 +11,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public void Loader_failure_renders_the_routes_own_ErrorContent_and_still_fires_OnError()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/fail-leaf");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -32,7 +32,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public void Child_failure_without_own_boundary_bubbles_to_the_parents_ErrorContent()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/parent/child");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -51,7 +51,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public void Failure_with_no_route_boundary_falls_back_to_the_router_level_ErrorContent()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/fail-root");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -67,7 +67,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public void Retry_re_runs_the_navigation_and_replaces_the_error_ui_on_success()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/fail-leaf");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -87,7 +87,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public void A_later_successful_navigation_clears_the_error_boundary()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/fail-root");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -106,7 +106,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public void Route_boundary_clears_when_the_same_route_later_matches_successfully()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/fail-leaf");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -134,7 +134,7 @@ public class ErrorContentTests : BunitTestContext
         // to Disposing and ends the content session, so the page's auto-registered lock
         // (ErrorLockPage cancels every deactivation and never unregisters) dies with the page
         // instead of vetoing every later navigation from beyond the grave.
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/elock");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -163,7 +163,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public async Task Error_content_replacing_the_active_per_parameter_entry_reports_disposing()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/kperr/1");
 
         var cut = RenderComponent<ErrorContentHost>();
@@ -189,7 +189,7 @@ public class ErrorContentTests : BunitTestContext
     [TestMethod]
     public async Task Error_content_replacing_keepalive_content_reports_a_disposing_deactivation()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/kerr");
 
         var cut = RenderComponent<ErrorContentHost>();

@@ -58,7 +58,7 @@ public class BitSnackBarTests : BunitTestContext
         var titleElement = com.Find(".bit-snb-ttl");
         Assert.AreEqual(title, titleElement.InnerHtml);
 
-        if (body.IsNullOrEmpty() is false)
+        if (string.IsNullOrEmpty(body) is false)
         {
             var bodyElement = com.Find(".bit-snb-bdy");
             Assert.AreEqual(body, bodyElement.InnerHtml);
@@ -121,7 +121,7 @@ public class BitSnackBarTests : BunitTestContext
             _ => "bit-snb-inf"
         };
 
-        if (colorClass.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(colorClass))
         {
             Assert.AreEqual(1, element.ClassList.Length);
         }

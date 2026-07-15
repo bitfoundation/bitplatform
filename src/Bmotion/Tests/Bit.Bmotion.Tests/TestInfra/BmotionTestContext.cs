@@ -4,11 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Bit.Bmotion.Tests.TestInfra;
 
 /// <summary>
-/// A bUnit <see cref="TestContext"/> pre-wired with the Bmotion engine, layout registry and animate
+/// A bUnit <see cref="BunitContext"/> pre-wired with the Bmotion engine, layout registry and animate
 /// service, all backed by a <see cref="FakeBmotionInterop"/> so component render/interaction logic
 /// can be exercised without a browser. Access the fake through <see cref="Interop"/>.
 /// </summary>
-internal class BmotionTestContext : Bunit.TestContext
+internal class BmotionTestContext : Bunit.BunitContext
 {
     public FakeBmotionInterop Interop { get; } = new();
 
@@ -26,4 +26,15 @@ internal class BmotionTestContext : Bunit.TestContext
     }
 
     public BmotionAnimationEngine Engine => Services.GetRequiredService<BmotionAnimationEngine>();
+
+    // bUnit v2's service container holds IAsyncDisposable-only services (e.g. BmotionAnimationEngine),
+    // which the synchronous Dispose() path cannot tear down (it throws). Tests use `using` (sync), so
+    // route sync disposal through the async path here, blocking on it, to keep call sites unchanged.
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
+    }
 }

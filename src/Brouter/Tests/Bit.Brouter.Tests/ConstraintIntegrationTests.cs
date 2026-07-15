@@ -21,7 +21,7 @@ public class ConstraintIntegrationTests : BunitTestContext
     {
         RegisterSlug();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/posts/hello-world");
 
         var cut = RenderComponent<ConstraintHost>();
@@ -35,7 +35,7 @@ public class ConstraintIntegrationTests : BunitTestContext
     {
         RegisterSlug();
 
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/posts/ab"); // too short: fails the slug constraint
 
         var cut = RenderComponent<ConstraintHost>();
