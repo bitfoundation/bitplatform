@@ -27,6 +27,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, false));
 
         RefreshOptions();
+        StateHasChanged();
     }
 
     /// <summary>
@@ -39,6 +40,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, true));
 
         RefreshOptions();
+        StateHasChanged();
     }
 
     /// <summary>

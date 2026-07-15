@@ -225,6 +225,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     {
         SetSelectedItemByCurrentUrl();
 
+        RefreshOptions();
         StateHasChanged();
     }
 
@@ -262,6 +263,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         await OnSelectItem.InvokeAsync(item);
 
+        RefreshOptions();
         StateHasChanged();
     }
 
