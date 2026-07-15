@@ -1,4 +1,4 @@
-// Built-in glyph-advance metrics for the PDF "Standard 14" fonts, used when a
+﻿// Built-in glyph-advance metrics for the PDF "Standard 14" fonts, used when a
 // non-embedded simple font omits its /Widths array. These are the factual
 // Adobe Core-14 AFM advance widths (1/1000 em) for character codes 32..126.
 
@@ -72,7 +72,7 @@ internal static class BitPdfStandardFonts
 
         if (name.Contains("courier") || name.Contains("mono"))
         {
-            return _ => 600; // Courier is monospaced.
+            return static _ => 600; // Courier is monospaced.
         }
         if (name.Contains("times") || name.Contains("serif") || name.Contains("roman") || name.Contains("georgia"))
         {

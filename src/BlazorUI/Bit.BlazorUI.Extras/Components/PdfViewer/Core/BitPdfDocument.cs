@@ -173,7 +173,7 @@ public sealed class BitPdfDocument
         }
     }
 
-    private void Traverse(BitPdfDict node, InheritedAttributes inherited,
+    private void Traverse(BitPdfDict node, in InheritedAttributes inherited,
         List<BitPdfPage> pages, HashSet<int> visited, int depth)
     {
         if (depth > 64)

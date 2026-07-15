@@ -1,4 +1,4 @@
-// The font model: the parts needed to position and extract text.
+﻿// The font model: the parts needed to position and extract text.
 
 
 namespace Bit.BlazorUI;
@@ -270,7 +270,7 @@ public sealed class BitPdfFont
         }
 
         // CIDToGIDMap: /Identity (gid == CID) or a stream of 2-byte gids per CID.
-        Func<int, int> gidForCid = cid => cid;
+        Func<int, int> gidForCid = static cid => cid;
         if (xref.FetchIfRef(cidFont.Get("CIDToGIDMap")) is BitPdfStream mapStream)
         {
             byte[] d = BitPdfStreamDecoder.Decode(mapStream);
@@ -353,7 +353,7 @@ public sealed class BitPdfFont
     {
         int plus = name.IndexOf('+');
         string n = plus == 6 ? name[(plus + 1)..] : name;
-        var chars = n.Where(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_').ToArray();
+        var chars = n.Where(static c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_').ToArray();
         return chars.Length > 0 ? new string(chars) : "BitPdfType1";
     }
 

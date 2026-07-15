@@ -1,4 +1,4 @@
-// Assembles glyph outlines into an OpenType/CFF font the browser can load via
+﻿// Assembles glyph outlines into an OpenType/CFF font the browser can load via
 // @font-face. Outlines are re-encoded as Type2 charstrings inside a minimal CFF
 // table, wrapped in an sfnt ('OTTO') with the tables OTS requires (cmap, head,
 // hhea, hmtx, maxp, name, OS/2, post). Coordinates are normalized to a 1000-unit
@@ -8,6 +8,7 @@
 // renderer emits (glyph-name → Unicode via the Adobe Glyph List) to glyph IDs.
 
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace Bit.BlazorUI;
 
@@ -84,7 +85,7 @@ internal static class BitPdfCffFontWriter
         (int X, int Y) Map(double x, double y)
             => ((int)Math.Round(x * sx + y * shx), (int)Math.Round(x * shy + y * sy));
 
-        foreach (var seg in outline.Segments)
+        foreach (ref readonly var seg in CollectionsMarshal.AsSpan(outline.Segments))
         {
             switch (seg.Op)
             {
@@ -203,7 +204,7 @@ internal static class BitPdfCffFontWriter
         }
 
         // CharStrings INDEX.
-        byte[] charStringsIndex = BuildIndex(glyphs.Select(g => g.Charstring).ToList());
+        byte[] charStringsIndex = BuildIndex(glyphs.Select(static g => g.Charstring).ToList());
 
         // Private DICT: defaultWidthX (0) nominalWidthX (0). Operators 20 / 21.
         var priv = new List<byte>();
@@ -279,7 +280,7 @@ internal static class BitPdfCffFontWriter
             return outBytes.ToArray();
         }
 
-        int total = items.Sum(x => x.Length);
+        int total = items.Sum(static x => x.Length);
         int offSize = total + 1 <= 0xFF ? 1 : total + 1 <= 0xFFFF ? 2 : total + 1 <= 0xFFFFFF ? 3 : 4;
         outBytes.Add((byte)offSize);
 
@@ -433,7 +434,7 @@ internal static class BitPdfCffFontWriter
 
     private static byte[] AssembleSfnt(List<(string Tag, byte[] Data)> tables)
     {
-        tables.Sort((a, b) => string.CompareOrdinal(a.Tag, b.Tag));
+        tables.Sort(static (a, b) => string.CompareOrdinal(a.Tag, b.Tag));
 
         int numTables = tables.Count;
         int headerSize = 12 + numTables * 16;
@@ -596,7 +597,7 @@ internal static class BitPdfCffFontWriter
 
     private static byte[] BuildHhea(List<Glyph> glyphs)
     {
-        int maxAdv = glyphs.Max(g => g.Advance);
+        int maxAdv = glyphs.Max(static g => g.Advance);
         var b = new byte[36];
         WriteU32(b, 0, 0x00010000);
         WriteI16(b, 4, 800);          // ascent
@@ -639,7 +640,7 @@ internal static class BitPdfCffFontWriter
         // for platform (3,1,0x409). Strings are UTF-16BE.
         string[] vals = { psName, "Regular", psName, psName };
         int[] ids = { 1, 2, 4, 6 };
-        var strings = vals.Select(v => Encoding.BigEndianUnicode.GetBytes(v)).ToArray();
+        var strings = vals.Select(static v => Encoding.BigEndianUnicode.GetBytes(v)).ToArray();
 
         int count = ids.Length;
         var b = new List<byte>();

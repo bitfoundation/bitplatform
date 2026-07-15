@@ -1,4 +1,4 @@
-// A conservative TrueType/OpenType (sfnt) sanitizer. Embedded PDF subset fonts
+﻿// A conservative TrueType/OpenType (sfnt) sanitizer. Embedded PDF subset fonts
 // frequently ship with an unsorted table directory, wrong table checksums, a
 // wrong head.checkSumAdjustment, or unpadded tables — all of which strict font
 // parsers (including the browser's OTS) reject, so the @font-face silently fails
@@ -83,7 +83,7 @@ internal static class BitPdfTrueTypeSanitizer
         // own cmap subtable is often one OTS refuses to load).
         if (replacementCmap is not null)
         {
-            tables.RemoveAll(t => t.Tag == Tag("cmap"));
+            tables.RemoveAll(static t => t.Tag == Tag("cmap"));
             seen.Remove(Tag("cmap"));
             tables.Add((Tag("cmap"), replacementCmap));
             seen.Add(Tag("cmap"));
@@ -95,7 +95,7 @@ internal static class BitPdfTrueTypeSanitizer
         SynthesizeRequired(tables, seen);
 
         // The sfnt spec requires the table directory sorted ascending by tag.
-        tables.Sort((a, b) => a.Tag.CompareTo(b.Tag));
+        tables.Sort(static (a, b) => a.Tag.CompareTo(b.Tag));
 
         return Serialize(version, tables);
     }

@@ -1,10 +1,11 @@
-// HTML renderer. Unlike the SVG backend, this emits plain HTML DOM:
+﻿// HTML renderer. Unlike the SVG backend, this emits plain HTML DOM:
 // <div> with CSS `clip-path: path()` for vector fills and clips, filled <div>
 // outlines for strokes, <img> for rasters, <span> for selectable text and CSS
 // gradients for shadings.
 
-using System.Globalization;
 using System.Text;
+using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace Bit.BlazorUI;
 
@@ -622,7 +623,7 @@ public sealed class BitPdfHtmlRenderer
         if (_ops is not null)
         {
             double[]? dashes = _state.DashArray is { Length: > 0 } da
-                ? Array.ConvertAll(da, v => R(Math.Max(0, v)))
+                ? Array.ConvertAll(da, static v => R(Math.Max(0, v)))
                 : null;
             Op("s", pathData, _state.StrokeColor, R(deviceWidth), _state.LineCap, _state.LineJoin,
                 R(_state.MiterLimit), dashes, R(_state.DashPhase), R(_state.StrokeAlpha), _state.BlendMode);
@@ -1300,7 +1301,7 @@ public sealed class BitPdfHtmlRenderer
         return regions.Count > 0 ? regions : null;
     }
 
-    private static BitPdfMatrix ComputeAppearanceMatrix(double[] bbox, BitPdfMatrix formMatrix, double[] rect)
+    private static BitPdfMatrix ComputeAppearanceMatrix(double[] bbox, in BitPdfMatrix formMatrix, double[] rect)
     {
         // Transform the BBox corners by the form matrix, then map the resulting
         // bounding box onto the annotation Rect (PDF spec §12.5.5).
@@ -1452,7 +1453,7 @@ public sealed class BitPdfHtmlRenderer
         bool glyphMapped = _state.Font.UsesGlyphMap;
         double displacement = 0;
 
-        foreach (var g in glyphs)
+        foreach (ref readonly var g in CollectionsMarshal.AsSpan(glyphs))
         {
             real.Append(g.Unicode);
             int pua = glyphMapped ? _state.Font.GlyphPuaChar(g.Code) : -1;
@@ -1495,7 +1496,7 @@ public sealed class BitPdfHtmlRenderer
         BitPdfMatrix fontMatrix = font.Type3!.FontMatrix;
         bool visible = _state.RenderMode is not (3 or 7);
 
-        foreach (var g in glyphs)
+        foreach (ref readonly var g in CollectionsMarshal.AsSpan(glyphs))
         {
             if (visible && font.Type3.GetGlyphProcedure(g.Code) is { } proc)
             {
@@ -1509,7 +1510,7 @@ public sealed class BitPdfHtmlRenderer
         }
     }
 
-    private void RenderType3Glyph(BitPdfStream proc, BitPdfMatrix fontMatrix, BitPdfDict? glyphResources)
+    private void RenderType3Glyph(BitPdfStream proc, in BitPdfMatrix fontMatrix, BitPdfDict? glyphResources)
     {
         if (_formDepth >= MaxFormDepth)
         {
@@ -1656,7 +1657,7 @@ public sealed class BitPdfHtmlRenderer
     /// and applies scaleX width-correction to <paramref name="targetWidth"/>, the
     /// run's PDF-computed advance (the data-w mechanism, done inline).
     /// </summary>
-    private void EmitCanvasText(string text, BitPdfMatrix trm, double fontHeight, double targetWidth,
+    private void EmitCanvasText(string text, in BitPdfMatrix trm, double fontHeight, double targetWidth,
         bool doFill, bool doStroke)
     {
         BitPdfFont font = _state.Font!;
@@ -1686,7 +1687,7 @@ public sealed class BitPdfHtmlRenderer
     /// paint far from their true positions.
     /// </summary>
     private void AccumulatePaintedRun(string text, bool glyphMapped,
-        BitPdfMatrix trm, double left, double top,
+        in BitPdfMatrix trm, double left, double top,
         double fontHeight, double targetWidth, double xScale, string tail)
     {
         double baseX = trm.E;
@@ -1755,7 +1756,7 @@ public sealed class BitPdfHtmlRenderer
     /// baseline, changes size, or breaks horizontal continuity. Rotated runs are
     /// flushed individually (their geometry can't be reduced to a horizontal line).
     /// </summary>
-    private void AccumulateSelectionText(string text, BitPdfMatrix trm, double left, double top,
+    private void AccumulateSelectionText(string text, in BitPdfMatrix trm, double left, double top,
         double fontHeight, double targetWidth, string linear)
     {
         if (text.Length == 0)
@@ -2002,9 +2003,9 @@ public sealed class BitPdfHtmlRenderer
             if (gs.Get("D") is List<object?> dashSpec && dashSpec.Count >= 1
                 && dashSpec[0] is List<object?> dashArr)
             {
-                var pattern = dashArr.Where(o => o is double).Cast<double>()
+                var pattern = dashArr.Where(static o => o is double).Cast<double>()
                     .Select(v => v * _state.Ctm.ScaleFactor).ToArray();
-                _state.DashArray = pattern.Length > 0 && pattern.Any(v => v > 0) ? pattern : null;
+                _state.DashArray = pattern.Length > 0 && pattern.Any(static v => v > 0) ? pattern : null;
                 _state.DashPhase = dashSpec.Count >= 2 && dashSpec[1] is double ph ? ph * _state.Ctm.ScaleFactor : 0;
             }
             object? bm = gs.Get("BM");
@@ -2093,7 +2094,7 @@ public sealed class BitPdfHtmlRenderer
     /// </summary>
     private static string? ColorViaSpace(BitPdfColorSpace? cs, BitPdfOperation op)
     {
-        var nums = op.Operands.Where(o => o is double).Cast<double>().ToArray();
+        var nums = op.Operands.Where(static o => o is double).Cast<double>().ToArray();
         if (nums.Length == 0)
         {
             return null;
@@ -2113,9 +2114,9 @@ public sealed class BitPdfHtmlRenderer
         _state.DashPhase = 0;
         if (op.Operands.Count >= 1 && op.Operands[0] is List<object?> arr && arr.Count > 0)
         {
-            var pattern = arr.Where(o => o is double).Cast<double>()
+            var pattern = arr.Where(static o => o is double).Cast<double>()
                 .Select(v => v * _state.Ctm.ScaleFactor).ToArray();
-            if (pattern.Length > 0 && pattern.Any(v => v > 0))
+            if (pattern.Length > 0 && pattern.Any(static v => v > 0))
             {
                 _state.DashArray = pattern;
                 if (op.Operands.Count >= 2 && op.Operands[1] is double phase)
@@ -2298,7 +2299,7 @@ public sealed class BitPdfHtmlRenderer
     }
 
     /// <summary>Replays a single tiling-pattern cell at <paramref name="cellCtm"/>, clipped to its BBox.</summary>
-    private void RunPatternCell(BitPdfStream patStream, BitPdfMatrix cellCtm, BitPdfDict? patRes, double[] bbox)
+    private void RunPatternCell(BitPdfStream patStream, in BitPdfMatrix cellCtm, BitPdfDict? patRes, double[] bbox)
     {
         if (_formDepth >= MaxFormDepth)
         {
@@ -2392,7 +2393,7 @@ public sealed class BitPdfHtmlRenderer
 
     private static string? ColorFromComponents(BitPdfOperation op)
     {
-        var nums = op.Operands.Where(o => o is double).Cast<double>().ToList();
+        var nums = op.Operands.Where(static o => o is double).Cast<double>().ToList();
         return nums.Count switch
         {
             1 => Gray(nums[0]),
