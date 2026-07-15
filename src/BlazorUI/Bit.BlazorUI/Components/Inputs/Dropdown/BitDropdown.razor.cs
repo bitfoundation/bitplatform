@@ -12,6 +12,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 {
     private int? _totalItems;
     private string? _searchText;
+    private string? _searchedItemsCacheKey;
+    private HashSet<TItem>? _searchedItemsCache;
     private bool _isResponsiveMode;
     private bool _inputSearchHasFocus;
     private List<TItem> _selectedItems = [];
@@ -561,6 +563,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     internal void RegisterOption(BitDropdownOption<TValue> option)
     {
         Items!.Add((option as TItem)!);
+        _searchedItemsCache = null;
 
         UpdateSelectedItemsFromValues();
 
@@ -574,7 +577,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (_searchText.HasNoValue()) return true;
 
-        if (SearchFunction is not null) return GetSearchedItems().Contains(item);
+        if (SearchFunction is not null)
+        {
+            // SearchFunction runs over the whole item set, so evaluate it once per search text and reuse
+            // the result for every option during the render cycle instead of re-running it for each item.
+            if (_searchedItemsCache is null || _searchedItemsCacheKey != _searchText)
+            {
+                _searchedItemsCacheKey = _searchText;
+                _searchedItemsCache = [.. GetSearchedItems()];
+            }
+
+            return _searchedItemsCache.Contains(item);
+        }
 
         return GetItemType(item) == BitDropdownItemType.Normal &&
                GetText(item)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) is true;
@@ -602,6 +616,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         var item = (option as TItem)!;
         Items!.Remove(item);
+        _searchedItemsCache = null;
 
         if (_selectedItems.Contains(item))
         {
