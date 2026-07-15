@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -125,18 +125,6 @@ public class Broute : ComponentBase, IDisposable
     /// <see cref="IBrouter.OnError"/> hook fires either way.
     /// </summary>
     [Parameter] public RenderFragment<BrouterErrorContext>? ErrorContent { get; set; }
-
-    /// <summary>
-    /// When <c>true</c>, the matched route parameters (and query-string values) are bound to the
-    /// rendered <see cref="Component"/>'s conventional <c>[Parameter]</c> properties <em>by name</em>,
-    /// Blazor-style, in addition to any <c>[BrouterParameter]</c>/<c>[BrouterQuery]</c> annotated
-    /// properties. This is what makes plain <c>@page</c> components (which bind route values to
-    /// <c>[Parameter]</c> properties, and query values via <c>[SupplyParameterFromQuery]</c>) render
-    /// correctly. It is enabled automatically for attribute-discovered routes
-    /// (see <see cref="Brouter.AppAssembly"/> / <see cref="Brouter.AdditionalAssemblies"/>).
-    /// Defaults to <c>false</c> so existing <c>[BrouterParameter]</c>-only components are unaffected.
-    /// </summary>
-    [Parameter] public bool BindComponentParametersByName { get; set; }
 
     /// <summary>Child routes (used for nesting).</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -354,7 +342,7 @@ public class Broute : ComponentBase, IDisposable
 
     /// <summary>
     /// The parameter names declared in this route's template (case-insensitive). Cached at construction
-    /// and consumed by the conventional by-name component binding (<see cref="BindComponentParametersByName"/>).
+    /// and consumed by the by-name component parameter binding (see BrouterRouteRenderer.ApplyTypedParameters).
     /// </summary>
     internal IReadOnlySet<string>? TemplateParameterNames { get; private set; }
 
@@ -442,6 +430,195 @@ public class Broute : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Resolves the ancestor whose outlets host this route's rendered output: normally the
+    /// immediate parent, but pathless Group ancestors without outlets are invisible to layout just
+    /// as they are to the URL - they pass their children through to THEIR parent's outlets. The
+    /// walk stops at the first ancestor with outlets (a group CAN host its own via a layout
+    /// Content) or at the first non-group ancestor either way. The single definition shared by the
+    /// render path (<see cref="BrouterRouteRenderer.RenderRoute"/>) and the lifecycle dispatch
+    /// (<see cref="ResolveContentOutlet"/>), so where content renders and where its lifecycle
+    /// events go can never drift apart.
+    /// </summary>
+    internal Broute? FindOutletHost()
+    {
+        for (var p = Parent; p is not null; p = p.Parent)
+        {
+            if (p.Outlets.Count > 0) return p;
+            if (p.Group is false) return null; // non-group ancestor without outlets: content renders inline
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Resolves where this route's primary content actually renders: the hosting ancestor's primary
+    /// <see cref="BrouterOutlet"/>, or null for inline rendering at the declaration site (which
+    /// includes a host that only declares named outlets - see the render path's
+    /// <c>HasPrimaryOutlet</c> check).
+    /// </summary>
+    private BrouterOutlet? ResolveContentOutlet() => PrimaryOutletOf(FindOutletHost());
+
+    private static BrouterOutlet? PrimaryOutletOf(Broute? outletHost)
+        => outletHost is not null && outletHost.Outlets.TryGetValue(string.Empty, out var primary) ? primary : null;
+
+    // Lifecycle callback failures surface through the same observability channel as loader/guard
+    // failures (IBrouter.OnError), never through the render pipeline.
+    private Action<Exception> CreateLifecycleErrorSink(BrouterNavigationContext ctx) =>
+        ex => Brouter?.ReportLifecycleError(ctx, ex);
+
+    /// <summary>
+    /// Routes the pre-render deactivation notification (see <see cref="IBrouterRoute"/>) to
+    /// whichever owner holds this route's content - the hosting primary outlet or the inline
+    /// renderer - plus the host's named outlets, which render this route's
+    /// <see cref="BrouterView"/> fragments with their own lifecycle contexts. Called by the
+    /// navigation pipeline before the render that hides/unmounts the content; see
+    /// <see cref="BrouterRouteRenderer.NotifyDeparture"/> for the
+    /// <paramref name="willRemainMatched"/> and <paramref name="contentReplaced"/> contracts.
+    /// <paramref name="contentReplaced"/> is only honored by the inline renderer: an outlet-hosted
+    /// error render happens inside the surviving child entry, whose context handles the page swap
+    /// via <see cref="BrouterRouteContext.ClearAutoRegistered"/>.
+    /// </summary>
+    internal void NotifyDeparture(BrouterNavigationContext ctx, bool willRemainMatched, bool contentReplaced = false)
+    {
+        if (_disposed || _renderer is null) return;
+
+        var onError = CreateLifecycleErrorSink(ctx);
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        if (primary is not null)
+        {
+            primary.NotifyDeparture(this, ctx.To, willRemainMatched, onError);
+        }
+        else
+        {
+            _renderer.NotifyDeparture(ctx.To, willRemainMatched, onError, contentReplaced);
+        }
+
+        if (outletHost is null) return;
+        foreach (var (name, outlet) in outletHost.Outlets)
+        {
+            if (name.Length == 0) continue;
+            outlet.NotifyDeparture(this, ctx.To, willRemainMatched, onError);
+        }
+    }
+
+    /// <summary>
+    /// Whether this route's currently visible content has lifecycle handlers registered - the
+    /// pre-flight the navigation pipeline uses to decide whether the pre-commit lock phase
+    /// (<see cref="IBrouterRoute.OnDeactivatingAsync"/> / <see cref="IBrouterRoute.OnRenavigatingAsync"/>)
+    /// has anything to dispatch to for this route.
+    /// </summary>
+    internal bool HasActiveLifecycleHandlers()
+    {
+        if (_disposed || _renderer is null) return false;
+
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        var hasContentHandlers = primary is not null
+            ? primary.HasActiveLifecycleHandlers(this)
+            : _renderer.HasActiveLifecycleHandlers();
+        if (hasContentHandlers) return true;
+
+        if (outletHost is null) return false;
+        foreach (var (name, outlet) in outletHost.Outlets)
+        {
+            if (name.Length == 0) continue;
+            if (outlet.HasActiveLifecycleHandlers(this)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Collects the lifecycle contexts of this route's active (visible) content that have handlers
+    /// registered, from whichever owner holds the content (the hosting primary outlet or the inline
+    /// renderer) and from the host's named outlets (this route's <see cref="BrouterView"/>
+    /// fragments), for the pre-commit navigation-lock dispatch. Primary content votes before
+    /// named views. Returns the index in <paramref name="into"/> where the named-view contexts
+    /// begin: entries from there on are never retained by keep-alive (see
+    /// <see cref="BrouterOutlet.NotifyDeparture"/>), so their deactivation reason is always
+    /// Disposing regardless of the primary content's.
+    /// </summary>
+    internal int CollectActiveRouteContexts(List<BrouterRouteContext> into)
+    {
+        if (_disposed || _renderer is null) return into.Count;
+
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        if (primary is not null)
+        {
+            primary.CollectActiveContexts(this, into);
+        }
+        else
+        {
+            _renderer.CollectActiveContexts(into);
+        }
+        var namedFrom = into.Count;
+
+        if (outletHost is not null)
+        {
+            foreach (var (name, outlet) in outletHost.Outlets)
+            {
+                if (name.Length == 0) continue;
+                outlet.CollectActiveContexts(this, into);
+            }
+        }
+        return namedFrom;
+    }
+
+    /// <summary>
+    /// Routes the pre-render arrival preparation (per-parameter sibling deactivation, see
+    /// <see cref="BrouterRouteRenderer.PrepareArrival"/>) to whichever owner holds this route's
+    /// content. Called by the navigation pipeline at commit, after the route's parameters are
+    /// committed and before the commit render.
+    /// </summary>
+    internal void PrepareArrival(BrouterNavigationContext ctx)
+    {
+        if (_disposed || _renderer is null) return;
+        if (KeepAlive is false || EffectiveKeepAliveMax <= 1) return;
+
+        var onError = CreateLifecycleErrorSink(ctx);
+        var outlet = ResolveContentOutlet();
+        if (outlet is not null)
+        {
+            outlet.PrepareArrival(this, ctx.To, onError);
+        }
+        else
+        {
+            _renderer.PrepareArrival(ctx.To, onError);
+        }
+    }
+
+    /// <summary>
+    /// Routes the post-render arrival (activation or renavigation, see <see cref="IBrouterRoute"/>)
+    /// to whichever owner holds this route's content. Staged by the navigation pipeline at commit
+    /// and invoked from <see cref="Brouter"/>'s OnAfterRender once the commit render has landed -
+    /// so the no-longer-matched guard also neutralizes stale staged arrivals from a navigation that
+    /// was superseded between its render and its flush.
+    /// </summary>
+    internal void FireArrival(BrouterNavigationContext ctx)
+    {
+        if (_disposed || _renderer is null || Matched is false) return;
+
+        var onError = CreateLifecycleErrorSink(ctx);
+        var outletHost = FindOutletHost();
+        var primary = PrimaryOutletOf(outletHost);
+        if (primary is not null)
+        {
+            primary.FireArrival(this, ctx.From, ctx.To, onError);
+        }
+        else
+        {
+            _renderer.FireArrival(ctx.From, ctx.To, onError);
+        }
+
+        if (outletHost is null) return;
+        foreach (var (name, outlet) in outletHost.Outlets)
+        {
+            if (name.Length == 0) continue;
+            outlet.FireArrival(this, ctx.From, ctx.To, onError);
+        }
+    }
+
     internal async ValueTask<bool> InvokeGuardsAsync(BrouterNavigationContext ctx)
     {
         // Walk from root to leaf so parents authorize children, mirroring Angular's hierarchical guards.
@@ -477,14 +654,30 @@ public class Broute : ComponentBase, IDisposable
         if (_disposed) return;
         _disposed = true;
 
+        // Teardown outside a navigation (conditionally-removed route, hosting layout unmount):
+        // any still-active inline content gets its Disposing deactivation before the subtree
+        // unmounts. Outlet-hosted content gets the same treatment via ForgetChild below. Best
+        // effort - a handler component disposed earlier in the same batch has already unregistered
+        // (BrouterRouteBase) or has its failures routed to OnError.
+        if (_renderer is not null && Brouter is { } brouter)
+        {
+            var location = brouter.CurrentLocation;
+            _renderer.NotifyTeardown(location, ex => brouter.ReportLifecycleError(location, ex));
+        }
+
         Brouter?.UnregisterRoute(this);
         Parent?.RemoveChild(this);
 
-        // Drop any kept-alive render entry the parent's outlets hold for this route, so a disposed
-        // (conditionally removed) route can't linger as hidden content.
-        if (Parent is not null)
+        // Drop any kept-alive render entry the hosting outlets hold for this route, so a disposed
+        // (conditionally removed) route can't linger as hidden content. The host is resolved with
+        // the same walk the render path uses (group ancestors pass through to their parent's
+        // outlets), so pass-through-hosted entries are found too.
+        var outletHost = FindOutletHost();
+        if (outletHost is not null)
         {
-            foreach (var outlet in Parent.Outlets.Values)
+            // Snapshot: ForgetChild runs deactivation handlers synchronously, which can re-enter
+            // and mutate the host's outlet registrations mid-iteration.
+            foreach (var outlet in outletHost.Outlets.Values.ToArray())
             {
                 outlet.ForgetChild(this);
             }

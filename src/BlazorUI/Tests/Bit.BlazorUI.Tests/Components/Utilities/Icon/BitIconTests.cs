@@ -39,7 +39,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -72,7 +72,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IconName, "AzureIcon");
         });
@@ -109,7 +109,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, "padding: 1rem;");
         });
@@ -140,7 +140,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, "test-class");
         });
@@ -195,7 +195,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -236,7 +236,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -296,7 +296,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Size, BitSize.Large);
         });
@@ -345,7 +345,7 @@ public class BitIconTests : BunitTestContext
 
         component.MarkupMatches(@$"<i class=""{CLASS}"" role=""img"" id:ignore />");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Color, BitColor.Error);
         });

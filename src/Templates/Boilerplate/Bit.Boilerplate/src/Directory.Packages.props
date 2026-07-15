@@ -118,6 +118,7 @@
         <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.9" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.9" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Locking.Distributed.Redis" Version="2.6.0" />
+        <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Otp.NET" Version="1.4.0" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="3.0.10" />
         <PackageVersion Include="QRCoder" Version="1.8.0" />
@@ -148,6 +149,7 @@
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
         <PackageVersion Include="System.Text.Json" Version="10.0.0" />
         <PackageVersion Include="FakeItEasy" Version="9.0.1" />
+        <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.7.0" />
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.61.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" Version="2.6.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.OpenTelemetry" Version="2.6.0" />

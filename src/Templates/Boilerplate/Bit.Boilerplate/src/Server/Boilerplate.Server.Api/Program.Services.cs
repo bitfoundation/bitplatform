@@ -576,29 +576,18 @@ public static partial class Program
             }
             else
             {
+                var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                Directory.CreateDirectory(appDataDirPath);
                 hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
-                    var keepAliveConnection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source=BoilerplateJobs-{Guid.NewGuid():N};Mode=Memory;Cache=Shared;");
-                    keepAliveConnection.Open();
-                    sp.GetRequiredService<IHostApplicationLifetime>().ApplicationStopped.Register(keepAliveConnection.Dispose);
-
-                    optionsBuilder.UseSqlite(keepAliveConnection.ConnectionString);
+                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(appDataDirPath, "BoilerplateJobDb.db")};");
                 }, new()
                 {
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
                 })
                 .UseDatabaseCreator();
-
-                if (env.IsDevelopment())
-                {
-                    // Hangfire keeps its log provider in a process-wide static (Hangfire.Logging.LogProvider.CurrentLogProvider).
-                    // With several hosts per process, each AddHangfire binds that static to its own (disposable) ILoggerFactory,
-                    // so disposing one host makes every still-running host throw ObjectDisposedException the next time Hangfire
-                    // logs (e.g. while constructing a background job client during a request). Bind logging to the never-disposed
-                    // NullLoggerFactory so the shared static stays valid for the whole lifetime of the process.
-                    hangfireConfiguration.UseLogProvider(new Hangfire.AspNetCore.AspNetCoreLogProvider(Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance));
-                }
             }
 
             hangfireConfiguration.UseRecommendedSerializerSettings();

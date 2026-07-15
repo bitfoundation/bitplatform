@@ -1,4 +1,4 @@
-@* Host for ErrorContentTests: routes with failing loaders at three boundary depths - a leaf route
+﻿@* Host for ErrorContentTests: routes with failing loaders at three boundary depths - a leaf route
    with its own ErrorContent, a nested child bubbling to its parent's ErrorContent, and a route
    with no chain boundary that falls back to the router-level ErrorContent. *@
 
@@ -39,6 +39,38 @@
         <Broute Path="/fail-root" Loader="RootFailLoader">
             <Content><div data-testid="root-content">root ok</div></Content>
         </Broute>
+
+        @* Keep-alive Component route whose lifecycle context survives an error render: the page it
+           instantiates (ErrorLockPage) auto-registers a navigation lock and never unregisters -
+           when ErrorContent replaces it, its stale registration must not outlive it. *@
+        <Broute Path="/elock" KeepAlive="true" Component="@typeof(ErrorLockPage)" Loader="ELockLoader">
+            <ErrorContent Context="err">
+                <div data-testid="elock-boundary">@err.Exception.Message</div>
+            </ErrorContent>
+        </Broute>
+
+        @* Keep-alive route with a lifecycle probe: when its own error boundary replaces the
+           content, the departure must report Disposing (the page is destroyed even though the
+           route is keep-alive), never Hidden. *@
+        <Broute Path="/kerr" KeepAlive="true" Loader="KErrLoader">
+            <Content><LifecycleProbe Log="KErrLog" /></Content>
+            <ErrorContent Context="err">
+                <div data-testid="kerr-boundary">@err.Exception.Message</div>
+            </ErrorContent>
+        </Broute>
+
+        @* Per-parameter keep-alive variant: the boundary render replaces the ACTIVE entry's page -
+           that entry must end with a Disposing deactivation and be dropped, while hidden sibling
+           entries keep their retention. *@
+        <Broute Path="/kperr/{id:int}" KeepAlive="true" KeepAliveMax="3" Loader="KPErrLoader">
+            <Content Context="p">
+                <div data-testid="kperr-page">kperr @p["id"]</div>
+                <LifecycleProbe Log="KPErrLog" />
+            </Content>
+            <ErrorContent Context="err">
+                <div data-testid="kperr-boundary">@err.Exception.Message</div>
+            </ErrorContent>
+        </Broute>
     </ChildContent>
     <ErrorContent Context="err">
         <div data-testid="root-boundary">@err.Exception.Message</div>
@@ -48,6 +80,17 @@
 @code {
     // Toggled by tests: while true, the leaf loader throws; flipping to false lets a retry succeed.
     public bool LeafShouldFail { get; set; } = true;
+
+    // Toggled by tests: lets /elock render fine first, then fail on a later navigation.
+    public bool ELockShouldFail { get; set; }
+
+    // Same toggle for /kerr, plus the lifecycle log its probe reports into.
+    public bool KErrShouldFail { get; set; }
+    public List<string> KErrLog { get; } = [];
+
+    // Per-parameter keep-alive variant (/kperr); all entry probes share the one log.
+    public bool KPErrShouldFail { get; set; }
+    public List<string> KPErrLog { get; } = [];
 
     public int ErrorHookCount { get; private set; }
     public Exception? LastError { get; private set; }
@@ -75,6 +118,21 @@
 
     private ValueTask<object?> RootFailLoader(BrouterNavigationContext ctx)
         => throw new InvalidOperationException("root loader failed");
+
+    private ValueTask<object?> ELockLoader(BrouterNavigationContext ctx)
+        => ELockShouldFail
+            ? throw new InvalidOperationException("elock loader failed")
+            : ValueTask.FromResult<object?>(null);
+
+    private ValueTask<object?> KErrLoader(BrouterNavigationContext ctx)
+        => KErrShouldFail
+            ? throw new InvalidOperationException("kerr loader failed")
+            : ValueTask.FromResult<object?>(null);
+
+    private ValueTask<object?> KPErrLoader(BrouterNavigationContext ctx)
+        => KPErrShouldFail
+            ? throw new InvalidOperationException("kperr loader failed")
+            : ValueTask.FromResult<object?>(null);
 
     public void Dispose()
     {

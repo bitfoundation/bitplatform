@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Bit.Brouter.Benchmarks;
 
 // Route counts to sweep. Override on the command line, e.g.:

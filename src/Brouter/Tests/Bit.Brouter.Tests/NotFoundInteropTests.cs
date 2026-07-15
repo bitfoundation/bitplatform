@@ -1,4 +1,4 @@
-#if NET10_0_OR_GREATER
+﻿#if NET10_0_OR_GREATER
 using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +17,7 @@ public class NotFoundInteropTests : BunitTestContext
     [TestMethod]
     public void NotFound_call_renders_inline_content_without_changing_the_url()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<NotFoundInteropHost>();
@@ -40,7 +40,7 @@ public class NotFoundInteropTests : BunitTestContext
     [TestMethod]
     public void NotFound_call_redirects_to_the_configured_NotFound_url()
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/a");
 
         var cut = RenderComponent<NotFoundInteropHost>(p => p.Add(x => x.NotFoundUrl, "/404"));

@@ -40,7 +40,7 @@ public class BitImageTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -78,7 +78,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
         var style = "padding: 1rem;";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, style);
         });
@@ -109,7 +109,7 @@ public class BitImageTests : BunitTestContext
 
         var rootStyle = "padding: 1rem;";
         var imageStyle = "margin: 1rem;";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Styles, new() { Root = rootStyle, Image = imageStyle });
         });
@@ -142,7 +142,7 @@ public class BitImageTests : BunitTestContext
 
         var cssClass = "test-class";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, cssClass);
         });
@@ -172,7 +172,7 @@ public class BitImageTests : BunitTestContext
 
         var rootClass = "test-root-class";
         var imageClass = "test-image-class";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Classes, new() { Root = rootClass, Image = imageClass });
         });
@@ -227,7 +227,7 @@ public class BitImageTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -264,7 +264,7 @@ public class BitImageTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -364,7 +364,7 @@ public class BitImageTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Height, "85px");
         });
@@ -412,7 +412,7 @@ public class BitImageTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Width, "85px");
         });

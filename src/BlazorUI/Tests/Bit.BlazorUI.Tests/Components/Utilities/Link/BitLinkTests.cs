@@ -133,7 +133,7 @@ public class BitLinkTests : BunitTestContext
 
         MatchSimpleMarkup(component, href);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -190,7 +190,7 @@ public class BitLinkTests : BunitTestContext
 
         MatchSimpleMarkup(component, href);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, "padding: 1rem;");
         });
@@ -247,7 +247,7 @@ public class BitLinkTests : BunitTestContext
 
         MatchSimpleMarkup(component, href);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, "test-class");
         });
@@ -339,7 +339,7 @@ public class BitLinkTests : BunitTestContext
 
         MatchSimpleMarkup(component, href);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -405,7 +405,7 @@ public class BitLinkTests : BunitTestContext
 
         MatchSimpleMarkup(component, href);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -519,7 +519,7 @@ public class BitLinkTests : BunitTestContext
 
         MatchSimpleMarkup(component, href);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Underlined, true);
         });

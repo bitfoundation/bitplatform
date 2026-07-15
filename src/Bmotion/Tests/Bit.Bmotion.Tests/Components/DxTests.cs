@@ -19,7 +19,7 @@ public class DxTests
     public void ChangingIdAfterFirstRender_IsIgnored()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "first")
             .Add(p => p.Animate, Bm.To(opacity: 1))
             .Add(p => p.ChildContent, Div));
@@ -27,7 +27,7 @@ public class DxTests
         Assert.AreEqual("first", cut.Find("div").Id);
 
         // Changing Id after first render must be ignored: the id is the engine identity.
-        cut.SetParametersAndRender(ps => ps.Add(p => p.Id, "second"));
+        cut.Render(ps => ps.Add(p => p.Id, "second"));
         Assert.AreEqual("first", cut.Find("div").Id);
     }
 
@@ -35,7 +35,7 @@ public class DxTests
     public async Task AnimateAsync_PreCancelledToken_DoesNotStartOffload()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.ChildContent, Div));
 
@@ -54,7 +54,7 @@ public class DxTests
     public async Task AnimateAsync_LiveToken_StartsAnimation()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.ChildContent, Div));
 

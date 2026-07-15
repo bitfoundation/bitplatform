@@ -27,7 +27,7 @@ public class GestureCallbackTests
     {
         using var ctx = new BmotionTestContext();
         var started = false;
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.WhileHover, Bm.To(scale: 1.1))
             .Add(p => p.OnHoverStart, EventCallback.Factory.Create(this, () => started = true))
@@ -42,7 +42,7 @@ public class GestureCallbackTests
     {
         using var ctx = new BmotionTestContext();
         bool started = false, ended = false;
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.WhileHover, Bm.To(scale: 1.1))
             .Add(p => p.OnHoverStart, EventCallback.Factory.Create(this, () => started = true))
@@ -59,7 +59,7 @@ public class GestureCallbackTests
     {
         using var ctx = new BmotionTestContext();
         bool tapped = false, cancelled = false;
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.WhileTap, Bm.To(scale: 0.95))
             .Add(p => p.OnTap, EventCallback.Factory.Create(this, () => tapped = true))
@@ -77,7 +77,7 @@ public class GestureCallbackTests
     {
         using var ctx = new BmotionTestContext();
         bool tapped = false, cancelled = false;
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.WhileTap, Bm.To(scale: 0.95))
             .Add(p => p.OnTap, EventCallback.Factory.Create(this, () => tapped = true))
@@ -96,7 +96,7 @@ public class GestureCallbackTests
     {
         using var ctx = new BmotionTestContext();
         var entered = false;
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.WhileInView, Bm.To(opacity: 1))
             .Add(p => p.OnViewportEnter, EventCallback.Factory.Create(this, () => entered = true))

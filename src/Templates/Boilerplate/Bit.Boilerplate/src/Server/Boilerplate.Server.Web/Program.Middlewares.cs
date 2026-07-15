@@ -2,7 +2,6 @@
 using System.Net;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 //#if (api == "Integrated")
@@ -74,17 +73,16 @@ public static partial class Program
             }
         });
 
-        if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
+        // https://yurl.chayev.com/
+        app.UseWhen(context => context.Request.Path.StartsWithSegments("/.well-known"), wellKnownApp =>
         {
-            // https://yurl.chayev.com/
-            app.UseStaticFiles(new StaticFileOptions()
+            wellKnownApp.UseStaticFiles(new StaticFileOptions()
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, @".well-known")),
-                RequestPath = new PathString("/.well-known"),
+                FileProvider = env.WebRootFileProvider,
                 DefaultContentType = "application/json",
                 ServeUnknownFileTypes = true
             });
-        }
+        });
 
         //#if (api == "Integrated")
         app.UseCors();

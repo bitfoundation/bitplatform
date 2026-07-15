@@ -1,0 +1,106 @@
+﻿@* Host for NavigationLockTests: lock probes on a transient route (with a LeaveGuard for ordering),
+   a parameterized singleton route (renavigating locks), a keep-alive route (Hidden reason), and a
+   route with two probes (first cancel wins). *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/edit" LeaveGuard="EditLeaveGuard">
+        <Content><NavigationLockProbe Label="edit" State="EditState" /></Content>
+    </Broute>
+
+    <Broute Path="/doc/{id:int}">
+        <Content Context="p">
+            <div data-testid="doc">doc @(p.Get<int>("id"))</div>
+            <NavigationLockProbe Label="doc" State="DocState" />
+        </Content>
+    </Broute>
+
+    <Broute Path="/kal" KeepAlive="true">
+        <Content><NavigationLockProbe Label="kal" State="KalState" /></Content>
+    </Broute>
+
+    @* Keep-alive child hosted in a transient parent's outlet: retention only survives sibling
+       switches under the parent - leaving the parent tears the kept child down with it, so the
+       lock reason must be Disposing there and Hidden for sibling switches. *@
+    <Broute Path="/shell">
+        <Content><div data-testid="shell"><BrouterOutlet /></div></Content>
+        <ChildContent>
+            <Broute Path="/kalo" KeepAlive="true">
+                <Content><NavigationLockProbe Label="kalo" State="KaloState" /></Content>
+            </Broute>
+            <Broute Path="/sibling">
+                <Content><div data-testid="sibling">sibling</div></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    @* Lock probe living in a NAMED-outlet view fragment: named views carry their own lifecycle
+       context (see BrouterOutlet.WrapRouteContext), so a probe there must register and be able to
+       veto navigations exactly like primary content. *@
+    <Broute Path="/nshell">
+        <Content>
+            <main><BrouterOutlet /></main>
+            <aside data-testid="nside"><BrouterOutlet Name="side" /></aside>
+        </Content>
+        <ChildContent>
+            <Broute Path="/view">
+                <Content><div data-testid="nview-main">view main</div></Content>
+                <ChildContent>
+                    <BrouterView Name="side" Context="p">
+                        <NavigationLockProbe Label="nview" State="NamedViewState" />
+                    </BrouterView>
+                </ChildContent>
+            </Broute>
+            <Broute Path="/plain">
+                <Content><div data-testid="nplain">plain</div></Content>
+            </Broute>
+            @* Keep-alive child with probes in BOTH the primary content and a named view: on a
+               sibling switch retention preserves only the primary content, so its lock sees Hidden
+               while the named view's lock sees Disposing - in the same navigation. *@
+            <Broute Path="/kview" KeepAlive="true">
+                <Content><NavigationLockProbe Label="kview" State="KviewState" /></Content>
+                <ChildContent>
+                    <BrouterView Name="side" Context="p">
+                        <NavigationLockProbe Label="kviewside" State="KviewSideState" />
+                    </BrouterView>
+                </ChildContent>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    <Broute Path="/two">
+        <Content>
+            <NavigationLockProbe Label="two1" State="TwoFirstState" />
+            <NavigationLockProbe Label="two2" State="TwoSecondState" />
+        </Content>
+    </Broute>
+
+    <Broute Path="/other">
+        <Content><div data-testid="other">other</div></Content>
+    </Broute>
+
+    <Broute Path="/target">
+        <Content><div data-testid="target">target</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    public NavigationLockState EditState { get; } = new();
+    public NavigationLockState DocState { get; } = new();
+    public NavigationLockState KalState { get; } = new();
+    public NavigationLockState KaloState { get; } = new();
+    public NavigationLockState NamedViewState { get; } = new();
+    public NavigationLockState KviewState { get; } = new();
+    public NavigationLockState KviewSideState { get; } = new();
+    public NavigationLockState TwoFirstState { get; } = new();
+    public NavigationLockState TwoSecondState { get; } = new();
+
+    private ValueTask EditLeaveGuard(BrouterNavigationContext ctx)
+    {
+        // Ordering probe: the content's own lock must have run (and not cancelled) before the
+        // route-declared guard gets its turn.
+        EditState.Log.Add("edit:leaveguard");
+        return ValueTask.CompletedTask;
+    }
+}

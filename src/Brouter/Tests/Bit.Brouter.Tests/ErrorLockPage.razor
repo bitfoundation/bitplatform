@@ -1,0 +1,18 @@
+﻿@* Regression probe for stale auto-registrations (see ErrorContentTests): implements IBrouterRoute
+   directly - so the router's component reference capture auto-registers it, and (unlike
+   BrouterRouteBase) nothing unregisters it on dispose - and vetoes every deactivation. When an
+   error boundary's render replaces this page, its registration must be dropped with it, or the
+   disposed instance's lock would cancel every later navigation. *@
+
+@using Bit.Brouter
+@implements IBrouterRoute
+
+<div data-testid="elock-page">elock</div>
+
+@code {
+    public ValueTask OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
+    {
+        context.Cancel();
+        return ValueTask.CompletedTask;
+    }
+}

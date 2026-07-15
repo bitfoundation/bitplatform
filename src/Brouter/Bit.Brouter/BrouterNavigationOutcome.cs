@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>How a navigation started with <see cref="IBrouter.NavigateAsync"/> concluded.</summary>
 public enum BrouterNavigationStatus

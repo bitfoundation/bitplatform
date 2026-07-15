@@ -13,7 +13,7 @@ public partial class UITests : AppPageTest
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Settings).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = TimeSpan.FromSeconds(30).Milliseconds });
+        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Settings).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         await Expect(Page)
             .ToHaveTitleAsync(AppStrings.NotAuthorizedPageTitle);
@@ -27,7 +27,7 @@ public partial class UITests : AppPageTest
 
         var serverAddress = server.WebAppServerAddress;
 
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = TimeSpan.FromSeconds(30).Milliseconds });
+        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
 

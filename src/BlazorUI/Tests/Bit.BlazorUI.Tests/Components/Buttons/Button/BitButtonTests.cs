@@ -386,7 +386,7 @@ public class BitButtonTests : BunitTestContext
 
         Assert.AreEqual("-1", bitButton.GetAttribute("tabindex"));
 
-        com.SetParametersAndRender(parameters =>
+        com.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
         });
@@ -518,7 +518,7 @@ public class BitButtonTests : BunitTestContext
 
         Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
 
-        com.SetParametersAndRender(parameters =>
+        com.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });

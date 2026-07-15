@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// When a <see cref="BrouterLink"/> preloads its destination's loader data into the router's cache

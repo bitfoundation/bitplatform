@@ -107,7 +107,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         homeButton.Click();
 
-        var navMan = Services.GetRequiredService<FakeNavigationManager>();
+        var navMan = Services.GetRequiredService<BunitNavigationManager>();
 
         Assert.AreEqual("https://example.com/home", navMan.Uri);
     }
@@ -120,7 +120,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("err"));
         });
 
-        var navMan = Services.GetRequiredService<FakeNavigationManager>();
+        var navMan = Services.GetRequiredService<BunitNavigationManager>();
 
         var initialCount = navMan.History.Count;
 
