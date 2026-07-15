@@ -115,15 +115,15 @@ public class BitNavBarTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "Home", "Settings" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, true));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
         CollectionAssert.AreEqual(new[] { "Home", "Profile", "Settings" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, false));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
         CollectionAssert.AreEqual(new[] { "Home", "Settings" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, true));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
         CollectionAssert.AreEqual(new[] { "Home", "Profile", "Settings" }, GetItemTexts(component));
     }
@@ -154,7 +154,7 @@ public class BitNavBarTests : BunitTestContext
         Assert.IsTrue(items[2].ClassList.Contains("bit-nbr-sel"));
     }
 
-    private static string[] GetItemTexts(IRenderedFragment component)
+    private static string[] GetItemTexts(IRenderedComponent<BitNavBarOptionsTest> component)
     {
         return component.FindAll(".bit-nbr-txt").Select(e => e.TextContent).ToArray();
     }

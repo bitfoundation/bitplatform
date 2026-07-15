@@ -14,16 +14,16 @@ public class BitAccordionListOptionsOrderTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTitles(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, true));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
         CollectionAssert.AreEqual(new[] { "First", "Middle", "Last" }, GetItemTitles(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, false));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
         CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTitles(component));
     }
 
-    private static string[] GetItemTitles(IRenderedFragment component)
+    private static string[] GetItemTitles(IRenderedComponent<BitAccordionListOptionsOrderTest> component)
     {
         return component.FindAll(".bit-acd-ttl").Select(e => e.TextContent).ToArray();
     }

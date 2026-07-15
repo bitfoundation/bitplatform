@@ -14,16 +14,16 @@ public class BitNavOptionsOrderTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "First", "Child1", "Child2", "Last" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, true));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
         CollectionAssert.AreEqual(new[] { "First", "Child1", "ChildMiddle", "Child2", "Middle", "Last" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, false));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
         CollectionAssert.AreEqual(new[] { "First", "Child1", "Child2", "Last" }, GetItemTexts(component));
     }
 
-    private static string[] GetItemTexts(IRenderedFragment component)
+    private static string[] GetItemTexts(IRenderedComponent<BitNavOptionsOrderTest> component)
     {
         return component.FindAll(".bit-nav-itx").Select(e => e.TextContent).ToArray();
     }

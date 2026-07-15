@@ -21,23 +21,23 @@ public class BitBreadcrumbOptionsOrderTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, true));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
         handler.SetResult(GetMarkerIds(component));
 
         component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component)));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, false));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
         component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component)));
     }
 
-    private static string[] GetItemTexts(IRenderedFragment component)
+    private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumbOptionsOrderTest> component)
     {
         return component.FindAll(".bit-brc-itm").Select(e => e.TextContent.Trim()).ToArray();
     }
 
-    private static string[] GetMarkerIds(IRenderedFragment component)
+    private static string[] GetMarkerIds(IRenderedComponent<BitBreadcrumbOptionsOrderTest> component)
     {
         return component.FindAll("[data-bit-brc-opt]").Select(e => e.GetAttribute("data-bit-brc-opt")!).ToArray();
     }

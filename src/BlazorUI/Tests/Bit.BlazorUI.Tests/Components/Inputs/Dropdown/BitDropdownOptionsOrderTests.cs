@@ -14,16 +14,16 @@ public class BitDropdownOptionsOrderTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, true));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
         CollectionAssert.AreEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.ShowMiddle, false));
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
         CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
     }
 
-    private static string[] GetItemTexts(IRenderedFragment component)
+    private static string[] GetItemTexts(IRenderedComponent<BitDropdownOptionsOrderTest> component)
     {
         return component.FindAll(".bit-drp-itm").Select(e => e.TextContent.Trim()).ToArray();
     }
