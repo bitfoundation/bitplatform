@@ -17,7 +17,7 @@
     {
         @foreach (var item in _items)
         {
-            <_BitTimelineItem Timeline="this" Item="item" />
+            <_BitTimelineItem Timeline="this" Item="item" @key="item" />
         }
     }
 </div>

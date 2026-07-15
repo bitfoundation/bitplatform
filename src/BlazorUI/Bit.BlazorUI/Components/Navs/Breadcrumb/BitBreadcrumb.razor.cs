@@ -147,6 +147,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
         _internalItems = [.. _items];
         _optionsOrderDirty = true;
@@ -254,6 +256,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             try
             {
                 var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_optionsContainerId, BitBreadcrumbOption._OPTION_ID_ATTRIBUTE);
+                if (IsDisposed) return;
                 if (orderedOptionIds is not null)
                 {
                     ReorderOptions(orderedOptionIds);

@@ -64,15 +64,15 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 SetItemExpanded(Item, isExpanded);
             }
 
-            RefreshOptions();
-            StateHasChanged();
-
             _currentItem = Item;
         }
         else
         {
             SetItemExpanded(Item, isExpanded);
         }
+
+        RefreshOptions();
+        StateHasChanged();
 
         await OnItemToggle.InvokeAsync(Item);
     }
@@ -327,14 +327,12 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     private void OnSetSelectedItem()
     {
-        // The selection affects the previously and newly selected items, which render themselves in
-        // the options mode, so push a re-render to all of them.
-        RefreshOptions();
-
         if (SelectedItem is null) return;
 
         ToggleItemAndParents(_items, SelectedItem, true);
 
+        // The selection affects the previously and newly selected items, which render themselves in
+        // the options mode, so push a re-render to all of them after the expansion state is updated.
         RefreshOptions();
     }
 
