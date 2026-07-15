@@ -29,6 +29,8 @@ public class BitBreadcrumbOptionsOrderTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
+        handler.SetResult(GetMarkerIds(component));
+
         component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component)));
     }
 

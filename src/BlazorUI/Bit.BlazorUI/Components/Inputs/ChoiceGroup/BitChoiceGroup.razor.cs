@@ -133,6 +133,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         _items.Remove((option as TItem)!);
 
+        SetIndexItems();
+
         StateHasChanged();
     }
 
