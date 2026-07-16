@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace Bit.Brouter;
 
@@ -88,8 +88,8 @@ public sealed class BrouterLocation
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> ParseQuery(string query)
     {
         // Case-insensitive keys mirror ASP.NET Core's IQueryCollection and align with
-        // RouteParameters (OrdinalIgnoreCase), so [BrouterQuery]/GetQuery(...) bind reliably
-        // regardless of the casing used in the URL (e.g. "?Tab=1" vs "?tab=1").
+        // RouteParameters (OrdinalIgnoreCase), so [SupplyParameterFromQuery]/GetQuery(...) bind
+        // reliably regardless of the casing used in the URL (e.g. "?Tab=1" vs "?tab=1").
         var staging = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         if (string.IsNullOrEmpty(query))
             return new ReadOnlyDictionary<string, IReadOnlyList<string>>(
@@ -149,7 +149,7 @@ public sealed class BrouterLocation
         {
             // Mirrors the defensive decoding used for path segments in Brouter.UpdateLocation:
             // malformed percent-encoding (e.g. "%ZZ" or a stray "%") would otherwise throw
-            // UriFormatException and break query parsing / [BrouterQuery] binding the first
+            // UriFormatException and break query parsing / query parameter binding the first
             // time QueryParams is accessed. Fall back to the raw substring (with '+' -> ' '
             // already applied) so navigation keeps working and routes can still match.
             var replaced = s.Replace('+', ' ');

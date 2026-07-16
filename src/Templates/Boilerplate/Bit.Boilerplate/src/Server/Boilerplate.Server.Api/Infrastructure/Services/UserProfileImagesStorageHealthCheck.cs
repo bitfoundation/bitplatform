@@ -1,4 +1,4 @@
-﻿using FluentStorage.Blobs;
+﻿using FluentStorage.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
@@ -8,14 +8,14 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 /// </summary>
 public partial class UserProfileImagesStorageHealthCheck : IHealthCheck
 {
-    [AutoInject] private IBlobStorage blobStorage = default!;
+    [AutoInject] private IStore blobStorage = default!;
     [AutoInject] private ServerApiSettings settings = default!;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await blobStorage.ListAsync(new()
+            var result = await blobStorage.ListObjects(new()
             {
                 FolderPath = settings.UserProfileImagesDir,
                 MaxResults = 1

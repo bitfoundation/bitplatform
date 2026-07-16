@@ -1,6 +1,4 @@
-using Bunit;
-using Bunit.TestDoubles;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Brouter.Tests;
@@ -8,18 +6,10 @@ namespace Bit.Brouter.Tests;
 [TestClass]
 public class KeepAliveTests : BunitTestContext
 {
-    private (IRenderedComponent<KeepAliveHost> Cut, IBrouter Brouter) RenderAt(string url)
-    {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
-        nav.NavigateTo(url);
-        var cut = RenderComponent<KeepAliveHost>();
-        return (cut, Services.GetRequiredService<IBrouter>());
-    }
-
     [TestMethod]
     public async Task KeepAlive_route_preserves_component_state_across_navigations()
     {
-        var (cut, brouter) = RenderAt("http://localhost/ka");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/ka");
         cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
 
         cut.Find("[data-testid=inc]").Click();
@@ -46,7 +36,7 @@ public class KeepAliveTests : BunitTestContext
     [TestMethod]
     public async Task Plain_route_recreates_its_component_on_return()
     {
-        var (cut, brouter) = RenderAt("http://localhost/plain");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/plain");
         cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
 
         cut.Find("[data-testid=inc]").Click();
@@ -68,7 +58,7 @@ public class KeepAliveTests : BunitTestContext
     [TestMethod]
     public async Task KeepAlive_works_through_a_parent_outlet_for_sibling_switches()
     {
-        var (cut, brouter) = RenderAt("http://localhost/parent/k1");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/parent/k1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
 
         cut.Find("[data-testid=inc]").Click();
@@ -93,18 +83,27 @@ public class KeepAliveTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task KeepAlive_context_signals_deactivate_and_reactivate_transitions()
+    public async Task KeepAlive_lifecycle_signals_activate_deactivate_and_reactivate_transitions()
     {
-        var (cut, brouter) = RenderAt("http://localhost/kl");
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=lifecycle]").TextContent, "active:True"));
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/kl");
+        cut.WaitForAssertion(() =>
+        {
+            // Activation fires on the very first show too (Vue/Ionic semantics), flagged as first.
+            var el = cut.Find("[data-testid=lifecycle]");
+            StringAssert.Contains(el.TextContent, "active:True");
+            StringAssert.Contains(el.TextContent, "activated:1");
+            StringAssert.Contains(el.TextContent, "first:1");
+        });
 
         await cut.InvokeAsync(() => brouter.Navigate("/other"));
         cut.WaitForAssertion(() =>
         {
-            // Kept mounted but hidden - and the component was told it is now inactive.
+            // Kept mounted but hidden - and the component was told it is now inactive, with the
+            // Hidden reason (retained, not disposed).
             var el = cut.Find("div[hidden] [data-testid=lifecycle]");
             StringAssert.Contains(el.TextContent, "active:False");
             StringAssert.Contains(el.TextContent, "deactivations:1");
+            StringAssert.Contains(el.TextContent, "reasons:Hidden");
         });
 
         await cut.InvokeAsync(() => brouter.Navigate("/kl"));
@@ -112,16 +111,18 @@ public class KeepAliveTests : BunitTestContext
         {
             var el = cut.Find("[data-testid=lifecycle]");
             StringAssert.Contains(el.TextContent, "active:True");
-            // Same instance survived, so the transition counters accumulated rather than reset.
+            // Same instance survived, so the transition counters accumulated rather than reset -
+            // and the reactivation is not flagged as first.
             StringAssert.Contains(el.TextContent, "deactivations:1");
-            StringAssert.Contains(el.TextContent, "activations:1");
+            StringAssert.Contains(el.TextContent, "activated:2");
+            StringAssert.Contains(el.TextContent, "first:1");
         });
     }
 
     [TestMethod]
     public async Task ClearKeepAlive_drops_retained_state_so_returning_recreates()
     {
-        var (cut, brouter) = RenderAt("http://localhost/ka");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/ka");
         cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
 
         cut.Find("[data-testid=inc]").Click();
@@ -146,7 +147,7 @@ public class KeepAliveTests : BunitTestContext
         // Documents the deliberate DEFAULT (KeepAliveMax unset => 1): a parameterized keep-alive
         // route keeps ONE live instance, reused across parameter values - not a separate cached
         // page per value. Set KeepAliveMax > 1 for per-parameter retention (tests below).
-        var (cut, brouter) = RenderAt("http://localhost/item/1");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/item/1");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "id:1"));
 
         cut.Find("[data-testid=kpinc]").Click();
@@ -170,7 +171,7 @@ public class KeepAliveTests : BunitTestContext
         // Documents the lifetime boundary: keep-alive survives sibling switches under a layout, but
         // not the layout's own unmount. Leaving /parent disposes the outlet-hosted k1, so returning
         // rebuilds it fresh (count back to 0) rather than restoring the count:1 we left with.
-        var (cut, brouter) = RenderAt("http://localhost/parent/k1");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/parent/k1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
 
         cut.Find("[data-testid=inc]").Click();
@@ -192,7 +193,7 @@ public class KeepAliveTests : BunitTestContext
     [TestMethod]
     public async Task KeepAliveMax_keeps_separate_state_per_parameter_value()
     {
-        var (cut, brouter) = RenderAt("http://localhost/multi/1");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/multi/1");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(VisibleKp).TextContent, "id:1"));
 
         cut.Find(VisibleInc).Click();
@@ -231,7 +232,7 @@ public class KeepAliveTests : BunitTestContext
     [TestMethod]
     public async Task KeepAliveMax_evicts_the_least_recently_used_entry_beyond_the_budget()
     {
-        var (cut, brouter) = RenderAt("http://localhost/multi/1");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/multi/1");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(VisibleKp).TextContent, "id:1"));
         cut.Find(VisibleInc).Click();
 
@@ -265,7 +266,7 @@ public class KeepAliveTests : BunitTestContext
     [TestMethod]
     public async Task KeepAliveMax_keeps_per_parameter_state_through_a_parent_outlet()
     {
-        var (cut, brouter) = RenderAt("http://localhost/mparent/mi/1");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/mparent/mi/1");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(VisibleKp).TextContent, "id:1"));
         cut.Find(VisibleInc).Click();
         StringAssert.Contains(cut.Find(VisibleKp).TextContent, "count:1");
@@ -292,7 +293,7 @@ public class KeepAliveTests : BunitTestContext
     [TestMethod]
     public async Task ClearKeepAlive_drops_hidden_per_parameter_entries_but_keeps_the_active_one()
     {
-        var (cut, brouter) = RenderAt("http://localhost/multi/1");
+        var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/multi/1");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(VisibleKp).TextContent, "id:1"));
         cut.Find(VisibleInc).Click();
 

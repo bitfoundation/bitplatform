@@ -48,10 +48,6 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
 
-    // If a PDF reader (https://blazorui.bitplatform.dev/components/pdfreader) is needed in the PWA, remove these two lines:
-    /pdfjs-4\.7\.76\.js$/,
-    /pdfjs-4\.7\.76-worker\.js$/,
-
     // country flags
     /_content\/Bit\.BlazorUI\.Extras\/flags/
 ];

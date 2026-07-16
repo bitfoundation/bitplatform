@@ -1,4 +1,4 @@
-// Core PDF object primitives: names, commands, references and dictionaries.
+﻿// Core PDF object primitives: names, commands, references and dictionaries.
 
 using System.Collections.Concurrent;
 
@@ -63,5 +63,5 @@ public sealed class BitPdfDict
     /// <summary>Gets a strongly typed value, or <c>default</c> if absent / wrong type.</summary>
     public T? GetValue<T>(string key) => Get(key) is T t ? t : default;
 
-    public override string ToString() => $"<< {string.Join(" ", _map.Keys.Select(k => "/" + k))} >>";
+    public override string ToString() => $"<< {string.Join(" ", _map.Keys.Select(static k => "/" + k))} >>";
 }

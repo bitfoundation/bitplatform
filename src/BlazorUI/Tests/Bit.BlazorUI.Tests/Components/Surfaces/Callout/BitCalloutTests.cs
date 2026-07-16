@@ -17,7 +17,7 @@ public class BitCalloutTests : BunitTestContext
 
         var anchor = component.Find(".bit-clo-acn");
         Assert.IsNotNull(anchor);
-        Assert.IsTrue(anchor.ToMarkup().Contains("Anchor"));
+        Assert.IsTrue(anchor.OuterHtml.Contains("Anchor"));
     }
 
     [TestMethod]
@@ -37,7 +37,7 @@ public class BitCalloutTests : BunitTestContext
 
         var content = component.Find(".bit-clo-cal");
         Assert.IsNotNull(content);
-        Assert.IsTrue(content.ToMarkup().Contains("Hello"));
+        Assert.IsTrue(content.OuterHtml.Contains("Hello"));
     }
 
     [TestMethod]
@@ -67,7 +67,7 @@ public class BitCalloutTests : BunitTestContext
 
         var content = component.Find(".bit-clo-cal");
         Assert.IsNotNull(content);
-        Assert.IsTrue(content.ToMarkup().Contains("ContentFragment"));
-        Assert.IsFalse(content.ToMarkup().Contains("ChildContent"));
+        Assert.IsTrue(content.OuterHtml.Contains("ContentFragment"));
+        Assert.IsFalse(content.OuterHtml.Contains("ChildContent"));
     }
 }

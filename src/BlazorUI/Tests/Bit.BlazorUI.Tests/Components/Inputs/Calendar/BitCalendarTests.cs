@@ -1050,7 +1050,7 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.IsEmpty(component.FindAll(".bit-cal-evi"));
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
             parameters.Add(p => p.Events, [

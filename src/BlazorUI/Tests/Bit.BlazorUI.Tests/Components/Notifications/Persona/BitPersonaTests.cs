@@ -420,7 +420,7 @@ public class BitPersonaTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.ImageUrl, "image-2.png");
         });

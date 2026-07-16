@@ -117,7 +117,7 @@ public class BitProModalServiceTests : BunitTestContext
         container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-pmd").Count));
 
         // Simulate a container remount: a closed persistent modal must not reappear.
-        Context.DisposeComponents();
+        await Context.DisposeComponentsAsync();
         var container2 = RenderComponent<BitProModalContainer>();
 
         container2.WaitForAssertion(() =>

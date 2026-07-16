@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// The scoped stale-while-revalidate store for route <see cref="Broute.Loader"/> results (see

@@ -22,7 +22,7 @@ public sealed class BitPdfType3FontData
     /// <summary>The glyph resource dictionary, if the font supplies one.</summary>
     public BitPdfDict? Resources { get; }
 
-    internal BitPdfType3FontData(BitPdfMatrix fontMatrix, BitPdfDict? charProcs, BitPdfDict? resources,
+    internal BitPdfType3FontData(in BitPdfMatrix fontMatrix, BitPdfDict? charProcs, BitPdfDict? resources,
         string[]? encoding, IBitPdfXRef xref)
     {
         FontMatrix = fontMatrix;

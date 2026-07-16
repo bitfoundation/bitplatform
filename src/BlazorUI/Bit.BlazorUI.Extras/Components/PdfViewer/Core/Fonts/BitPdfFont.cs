@@ -1,5 +1,7 @@
-// The font model: the parts needed to position and extract text.
+﻿// The font model: the parts needed to position and extract text.
 
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 
 namespace Bit.BlazorUI;
 
@@ -270,7 +272,7 @@ public sealed class BitPdfFont
         }
 
         // CIDToGIDMap: /Identity (gid == CID) or a stream of 2-byte gids per CID.
-        Func<int, int> gidForCid = cid => cid;
+        Func<int, int> gidForCid = static cid => cid;
         if (xref.FetchIfRef(cidFont.Get("CIDToGIDMap")) is BitPdfStream mapStream)
         {
             byte[] d = BitPdfStreamDecoder.Decode(mapStream);
@@ -353,7 +355,7 @@ public sealed class BitPdfFont
     {
         int plus = name.IndexOf('+');
         string n = plus == 6 ? name[(plus + 1)..] : name;
-        var chars = n.Where(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_').ToArray();
+        var chars = n.Where(static c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_').ToArray();
         return chars.Length > 0 ? new string(chars) : "BitPdfType1";
     }
 
@@ -688,35 +690,71 @@ public sealed class BitPdfFont
         return null;
     }
 
-    /// <summary>Decodes a show-text operand into a sequence of glyphs.</summary>
-    public IEnumerable<BitPdfGlyph> Decode(byte[] bytes)
+    /// <summary>
+    /// Decodes a show-text operand into its glyphs. The glyph count is known up
+    /// front (one per byte for simple fonts, one per <c>step</c> bytes for Type0),
+    /// so the result is materialized into an exactly-sized list filled through a
+    /// span — no lazy iterator state machine and no intermediate re-grows.
+    /// </summary>
+    public List<BitPdfGlyph> Decode(byte[] bytes)
     {
+        var src = new ReadOnlySpan<byte>(bytes);
+
         if (_isType0)
         {
             int step = _cidEncoding.CodeLength >= 1 ? _cidEncoding.CodeLength : 2;
-            for (int i = 0; i + step <= bytes.Length; i += step)
+            var glyphs = NewList(src.Length / step, out var dst);
+
+            if (step == 2)
             {
-                long code = 0;
-                for (int k = 0; k < step; k++)
+                // Dominant case (Identity-H/V and most CMaps): read the big-endian
+                // code in one shot instead of shifting byte-by-byte.
+                for (int i = 0, n = 0; i + 2 <= src.Length; i += 2, n++)
                 {
-                    code = (code << 8) | bytes[i + k];
+                    int code = BinaryPrimitives.ReadUInt16BigEndian(src.Slice(i));
+                    int cid = _cidEncoding.Lookup(code);
+                    // Text is keyed by the original code for ToUnicode lookup.
+                    dst[n] = new BitPdfGlyph(code, UnicodeFor(code), WidthForCid(cid), isSpace: false);
                 }
-                int cid = _cidEncoding.Lookup(code);
-                double width = _cidWidths.TryGetValue(cid, out var w) ? w : _defaultWidth;
-                // Text is keyed by the original code for ToUnicode lookup.
-                yield return new BitPdfGlyph((int)code, UnicodeFor((int)code), width, isSpace: false);
             }
+            else
+            {
+                for (int i = 0, n = 0; i + step <= src.Length; i += step, n++)
+                {
+                    long code = 0;
+                    for (int k = 0; k < step; k++)
+                    {
+                        code = (code << 8) | src[i + k];
+                    }
+                    int cid = _cidEncoding.Lookup(code);
+                    dst[n] = new BitPdfGlyph((int)code, UnicodeFor((int)code), WidthForCid(cid), isSpace: false);
+                }
+            }
+            return glyphs;
         }
         else
         {
-            foreach (byte b in bytes)
+            var glyphs = NewList(src.Length, out var dst);
+            for (int i = 0; i < src.Length; i++)
             {
-                int code = b;
-                double width = WidthFor(code);
-                yield return new BitPdfGlyph(code, UnicodeFor(code), width, isSpace: code == 0x20);
+                int code = src[i];
+                dst[i] = new BitPdfGlyph(code, UnicodeFor(code), WidthFor(code), isSpace: code == 0x20);
             }
+            return glyphs;
         }
     }
+
+    // A list pre-sized to exactly count elements, exposing its backing storage as
+    // a span so callers fill by index without per-item Add bounds/grow checks.
+    private static List<BitPdfGlyph> NewList(int count, out Span<BitPdfGlyph> storage)
+    {
+        var list = new List<BitPdfGlyph>(count);
+        CollectionsMarshal.SetCount(list, count);
+        storage = CollectionsMarshal.AsSpan(list);
+        return list;
+    }
+
+    private double WidthForCid(int cid) => _cidWidths.TryGetValue(cid, out var w) ? w : _defaultWidth;
 
     private double WidthFor(int code)
     {

@@ -1,0 +1,44 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.app-monogram {
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    font-size: 1.5rem;
+    font-weight: 700;
+    user-select: none;
+    border-radius: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    color: $bit-color-primary-text;
+    background: linear-gradient(135deg, $bit-color-primary, $bit-color-info);
+}
+
+.info-grid {
+    display: grid;
+    gap: 0.85rem 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+.info-item {
+    gap: 0.15rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: $bit-color-foreground-secondary;
+}
+
+.info-value {
+    font-weight: 500;
+    overflow-wrap: anywhere;
+    color: $bit-color-foreground-primary;
+}

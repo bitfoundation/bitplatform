@@ -1,6 +1,7 @@
-﻿using Boilerplate.Server.Api.Features.Identity.Services;
+﻿using Boilerplate.Tests.Services;
 using Boilerplate.Shared.Features.Statistics;
 using Boilerplate.Tests.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Infrastructure;
 
@@ -24,6 +25,15 @@ public static class TestServiceCollectionExtensions
 
             services.RemoveAll<IStatisticsController>();
             services.AddScoped(_ => statisticsController);
+
+            return services;
+        }
+
+        public IServiceCollection AddIntegrationApiOnlyTestsServices()
+        {
+            // Real implementation wanna read the token from local storage, but during integration tests, there is no access to localStorage or the stored cookies.
+            services.AddScoped<IStorageService, TestStorageService>();
+            services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
 
             return services;
         }

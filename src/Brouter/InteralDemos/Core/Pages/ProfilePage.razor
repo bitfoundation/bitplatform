@@ -1,4 +1,4 @@
-<div class="bb-intro">
+﻿<div class="bb-intro">
     <h1>Profile</h1>
     <p class="bb-subtitle">An optional route parameter - the page handles both the empty and populated cases.</p>
 </div>
@@ -22,6 +22,6 @@ else
 }
 
 @code {
-    // Optional parameter: bound when the URL provides one, otherwise null.
-    [Parameter, BrouterParameter] public string? Username { get; set; }
+    // Optional parameter: bound by name when the URL provides one, otherwise null.
+    [Parameter] public string? Username { get; set; }
 }

@@ -1,4 +1,4 @@
-// Wires a capture-phase click listener on the given anchor that calls preventDefault
+﻿// Wires a capture-phase click listener on the given anchor that calls preventDefault
 // ONLY for unmodified primary clicks. Modified clicks (Ctrl/Cmd/Shift/Alt) and non-
 // primary buttons keep their native browser behavior (e.g., "open in new tab").
 //

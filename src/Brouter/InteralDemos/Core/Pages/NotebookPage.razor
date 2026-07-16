@@ -1,4 +1,4 @@
-@* Per-parameter keep-alive demo. The /notes/{id:int} route is declared with
+﻿@* Per-parameter keep-alive demo. The /notes/{id:int} route is declared with
    KeepAlive KeepAliveMax="2": each visited id keeps its OWN live instance (draft, clicks and all),
    up to the budget - beyond it the least-recently-used hidden note is evicted (disposed).
    Also demos IBrouter.ClearKeepAlive(), which drops every retained page on demand. *@
@@ -57,7 +57,7 @@
 </div>
 
 @code {
-    [Parameter, BrouterParameter] public int Id { get; set; }
+    [Parameter] public int Id { get; set; }
 
     private int _clicks;
     private string _draft = string.Empty;

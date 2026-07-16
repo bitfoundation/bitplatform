@@ -1,4 +1,5 @@
-﻿using Boilerplate.Tests.Infrastructure.Services;
+﻿using Boilerplate.Tests.Infrastructure.Components;
+using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Identity;
 
@@ -26,6 +27,17 @@ public static class MagicLinkSignInUtils
         await page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
+        await RequestMagicLinkAndOtpOnCurrentPanel(page, email);
+    }
+
+    /// <summary>
+    /// Requests a magic link / OTP for <paramref name="email"/> through the <c>SignInPanel</c> that is already visible on
+    /// the current page - e.g. the <c>SignInModal</c> that <c>SignInModalService</c> pops up over a public page such as
+    /// the product page - without navigating to the Sign in page first. A brand-new e-mail makes the server register the
+    /// (still unconfirmed) account, e-mail the confirmation link + OTP and reveal the OTP panel.
+    /// </summary>
+    public static async Task RequestMagicLinkAndOtpOnCurrentPanel(IPage page, string email)
+    {
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
 
         // The button stays disabled until the debounced e-mail value is committed, so Playwright waits for it to enable.
@@ -50,18 +62,6 @@ public static class MagicLinkSignInUtils
         return (confirmUrl, captured.Token!);
     }
 
-    /// <summary>Types <paramref name="code"/> into the boxes of the currently visible <c>BitOtpInput</c>.</summary>
-    public static async Task FillOtpInputs(IPage page, string code)
-    {
-        var inputs = page.Locator(".bit-otp-inp");
-        await inputs.First.WaitForAsync();
-
-        for (var i = 0; i < code.Length; i++)
-        {
-            await inputs.Nth(i).FillAsync(code[i].ToString());
-        }
-    }
-
     /// <summary>
     /// Signs <paramref name="email"/> in end-to-end using the magic link OTP: requests it, reads the code from the
     /// captured confirmation e-mail, types it into the OTP panel and waits for the resulting redirect to the home page.
@@ -72,9 +72,31 @@ public static class MagicLinkSignInUtils
 
         var (_, otpCode) = await ReadConfirmationEmail(server, email, cancellationToken);
 
-        await FillOtpInputs(page, otpCode);
+        await BitOtpInputUtils.FillOtpInputs(page, otpCode);
 
         // Filling the last digit confirms the e-mail, signs the user in and redirects to the home page.
+        await page.WaitForURLAsync(server.WebAppServerAddress.ToString());
+    }
+
+    /// <summary>
+    /// Signs an <b>already confirmed</b> account in again through the magic link OTP flow - i.e. any sign-in after the
+    /// very first one. A repeat sign-in differs from <see cref="SignInViaMagicLinkOtp"/> only in the e-mail the server
+    /// sends: since the account is already confirmed there is nothing left to confirm, so the code arrives as a plain
+    /// OTP (<see cref="CapturedEmailKind.Otp"/>) rather than the confirmation code (<see cref="CapturedEmailKind.EmailToken"/>)
+    /// a brand-new account receives. Each call creates a brand-new <c>UserSession</c> for the account.
+    /// </summary>
+    public static async Task SignInAgainViaMagicLinkOtp(IPage page, AppTestServer server, string email, CancellationToken cancellationToken)
+    {
+        await RequestMagicLinkAndOtp(page, server.WebAppServerAddress, email);
+
+        // Waiting for the OTP panel above guarantees SendOtp has already finished (and captured this e-mail), so the
+        // newest captured OTP is the code this sign-in just triggered, not a leftover one from an earlier sign-in.
+        var captured = await server.WaitForCapturedEmail(email,
+            capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, cancellationToken);
+
+        await BitOtpInputUtils.FillOtpInputs(page, captured.Token!);
+
+        // Filling the last digit signs the account in and redirects to the home page.
         await page.WaitForURLAsync(server.WebAppServerAddress.ToString());
     }
 }

@@ -1,4 +1,4 @@
-<div class="bb-intro">
+﻿<div class="bb-intro">
     <h1>Hello, Brouter!</h1>
     <p class="bb-subtitle">A tour of <code>Bit.Brouter</code> routing features. Pick any link below to see it in action.</p>
 </div>
@@ -73,6 +73,7 @@
             <li><BrouterLink Href="/g1">/g1 - allowed when <code>second % 2 == 0</code></BrouterLink></li>
             <li><BrouterLink Href="/g2">/g2 - allowed when <code>minute % 2 == 0</code></BrouterLink></li>
             <li><BrouterLink Href="/editor">Leave guard - unsaved-changes editor</BrouterLink></li>
+            <li><BrouterLink Href="/lock/1"><strong>Navigation lock</strong> - the page vetoes with a custom dialog</BrouterLink></li>
         </ul>
     </section>
 
@@ -113,11 +114,27 @@
             Layout &amp; state
             <span class="bb-badge bb-badge-success">layout</span>
         </h3>
-        <p class="bb-card-desc">Named outlets, pathless groups, keep-alive routes, and animated page changes via the View Transitions API.</p>
+        <p class="bb-card-desc">Named outlets, pathless groups, and animated page changes via the View Transitions API.</p>
         <ul class="bb-link-list">
             <li><BrouterLink Href="/gallery"><strong>View Transitions gallery</strong> - shared-element morphs between routes</BrouterLink></li>
             <li><BrouterLink Href="/dashboard/stats">Named outlets + pathless group (dashboard)</BrouterLink></li>
-            <li><BrouterLink Href="/sticky">Keep-alive route + activate/deactivate lifecycle</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-primary"></span>
+            Route lifecycle &amp; keep-alive
+            <span class="bb-badge">lifecycle</span>
+        </h3>
+        <p class="bb-card-desc">
+            <code>OnActivated</code> / <code>OnRenavigated</code> / <code>OnDeactivated</code> callbacks on
+            routed components (via <code>IBrouterRoute</code> or <code>BrouterRouteBase</code>), plus
+            keep-alive retention.
+        </p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/lifecycle/1"><strong>Lifecycle event log</strong> - renavigation + Disposing (<code>IBrouterRoute</code>)</BrouterLink></li>
+            <li><BrouterLink Href="/sticky">Keep-alive route - pause/resume via <code>BrouterRouteBase</code></BrouterLink></li>
             <li><BrouterLink Href="/fleeting">Transient control route (state resets)</BrouterLink></li>
             <li><BrouterLink Href="/notes/1">Per-parameter keep-alive (<code>KeepAliveMax</code>) + <code>ClearKeepAlive()</code></BrouterLink></li>
         </ul>

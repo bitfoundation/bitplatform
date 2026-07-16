@@ -721,7 +721,15 @@ public class BitActionButtonTests : BunitTestContext
     ]
     public void BitActionButtonShouldRespectArbitraryHtmlAttributes(string name, string value)
     {
-        var component = RenderComponent<BitActionButton>((name, value));
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so
+        // supply them as raw component attributes (as real markup would) rather than via the builder,
+        // which rejects unmatched params on components without [Parameter(CaptureUnmatchedValues)].
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitActionButton>(0);
+            builder.AddAttribute(1, name, value);
+            builder.CloseComponent();
+        });
 
         var button = component.Find(".bit-acb");
 
@@ -826,7 +834,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsFalse(button.ClassList.Contains("bit-dis"));
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--Add"));
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
             parameters.Add(p => p.IconName, "Delete");
@@ -849,12 +857,12 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Href, "#section-one"));
+        component.Render(parameters => parameters.Add(p => p.Href, "#section-one"));
 
         anchor = component.Find(".bit-acb");
         Assert.IsFalse(anchor.HasAttribute("rel"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Href, "/resources"));
+        component.Render(parameters => parameters.Add(p => p.Href, "/resources"));
 
         anchor = component.Find(".bit-acb");
         Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
@@ -876,7 +884,7 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual("-1", button.GetAttribute("tabindex"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
 
         Assert.AreEqual(tabIndex, button.GetAttribute("tabindex"));
     }
@@ -1319,7 +1327,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsFalse(button.ClassList.Contains("bit-acb-lod"));
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.IsLoading, true));
+        component.Render(parameters => parameters.Add(p => p.IsLoading, true));
 
         Assert.IsTrue(button.ClassList.Contains("bit-acb-lod"));
         Assert.HasCount(1, component.FindAll(".bit-acb-spn"));

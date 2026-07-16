@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit.web" Version="1.40.0" />
+        <PackageReference Include="bunit" Version="2.7.2" />
         <PackageReference Include="MSTest" Version="4.3.0" />
     </ItemGroup>
 
