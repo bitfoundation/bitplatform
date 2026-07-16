@@ -308,10 +308,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             await buttonGroupOption.OnClick.InvokeAsync(buttonGroupOption);
         }
-        else
+        else if (NameSelectors is not null)
         {
-            if (NameSelectors is null) return;
-
             if (NameSelectors.OnClick.Selector is not null)
             {
                 NameSelectors.OnClick.Selector!(item)?.Invoke(item);
