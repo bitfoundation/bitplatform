@@ -570,9 +570,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         StateHasChanged();
     }
 
-    // The search text and the selected items change in many different places, so instead of pushing a
-    // re-render to the options at each of those sites, refresh them after every render of the dropdown
-    // itself (Blazor skips re-rendering them otherwise, since their own parameters do not change).
+    // Each option calls this during the dropdown's render cycle to decide whether its item is visible
+    // for the current search. Options are refreshed explicitly (RefreshOptions in OnParametersSet and
+    // after the search/selection mutations), and the search results are cached per search text; that
+    // cache is reset in OnParametersSet so a change to Items cannot reuse results from a previous set.
     internal bool ShouldRenderOptionItem(TItem item)
     {
         if (_searchText.HasNoValue()) return true;
@@ -614,6 +615,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     internal void UnregisterOption(BitDropdownOption<TValue> option)
     {
+        if (IsDisposed) return;
+
         var item = (option as TItem)!;
         Items!.Remove(item);
         _searchedItemsCache = null;
@@ -1069,6 +1072,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // dropdown's own parameters (Styles, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
+
+        // Items (or the search inputs) may have changed with this parameter set, so drop any cached
+        // search results computed for the previous one; ShouldRenderOptionItem rebuilds them on demand.
+        _searchedItemsCache = null;
 
         base.OnParametersSet();
     }
