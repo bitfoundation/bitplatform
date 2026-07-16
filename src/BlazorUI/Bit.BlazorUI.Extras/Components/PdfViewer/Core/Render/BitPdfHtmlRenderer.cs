@@ -106,17 +106,6 @@ public sealed class BitPdfHtmlRenderer
     // backend by emitting from the same paint funnels.
     private List<object?[]>? _ops;
 
-    // Operators a pending coalesced painted line may safely survive across: text
-    // positioning/state ops touch nothing painted, and the show-text ops manage
-    // the pending line themselves inside EmitText. Every other operator might
-    // paint or mutate _html (rects, images, q/Q group divs, BDC/EMC diversion),
-    // so it flushes the pending line first to preserve paint order.
-    private static readonly HashSet<string> TextOnlyOperators = new()
-    {
-        "BT", "ET", "Tj", "TJ", "'", "\"", "Td", "TD", "Tm", "T*",
-        "Tf", "Tc", "Tw", "Tz", "TL", "Ts", "Tr",
-    };
-
     /// <summary>
     /// Appends one display-list op (canvas mode). Content inside a hidden
     /// optional-content group is dropped, mirroring the HTML backend's buffer
@@ -322,40 +311,42 @@ public sealed class BitPdfHtmlRenderer
         };
     }
 
-    private static bool IsColorOperator(string op) => op is
-        "g" or "G" or "rg" or "RG" or "k" or "K" or
-        "cs" or "CS" or "sc" or "scn" or "SC" or "SCN";
-
     private void Execute(BitPdfOperation op)
     {
-        // Inside a Type3 `d1` glyph, colour-setting operators have no effect.
-        if (_type3ColorLocked && IsColorOperator(op.Operator))
+        BitPdfOpCode code = op.Code;
+
+        // Inside a Type3 `d1` glyph, colour-setting operators have no effect. The
+        // colour operators are one contiguous enum block, so this is a range test.
+        if (_type3ColorLocked && code is >= BitPdfOpCode.FillGray and <= BitPdfOpCode.StrokeColorN)
         {
             return;
         }
         // Anything that could paint or mutate _html ends the pending coalesced
         // painted line so it lands in correct paint order. Because the flush
         // happens before the dispatch below, it also writes to the correct buffer
-        // around a BDC/EMC optional-content diversion.
-        if (_paintActive && !TextOnlyOperators.Contains(op.Operator))
+        // around a BDC/EMC optional-content diversion. Text operators (a
+        // contiguous enum block) are exactly the ones it may survive across: they
+        // touch nothing painted, and the show-text ops manage the pending line
+        // themselves inside EmitText.
+        if (_paintActive && code is not (>= BitPdfOpCode.BeginText and <= BitPdfOpCode.NextLineShowTextSpacing))
         {
             FlushPaintedLine();
         }
-        switch (op.Operator)
+        switch (code)
         {
             // Graphics state.
-            case "q":
+            case BitPdfOpCode.SaveState:
                 _stack.Push(_state.Clone());
                 _groupDepthStack.Push(_openGroups);
                 break;
-            case "Q":
+            case BitPdfOpCode.RestoreState:
                 if (_stack.Count > 0)
                 {
                     _state = _stack.Pop();
                     CloseGroupsTo(_groupDepthStack.Count > 0 ? _groupDepthStack.Pop() : 0);
                 }
                 break;
-            case "cm":
+            case BitPdfOpCode.ConcatMatrix:
                 // Require all six operands: a short/garbled cm would otherwise
                 // build an all-zero singular matrix and blank everything after it.
                 if (op.Operands.Count >= 6)
@@ -364,93 +355,90 @@ public sealed class BitPdfHtmlRenderer
                         new BitPdfMatrix(op.Num(0), op.Num(1), op.Num(2), op.Num(3), op.Num(4), op.Num(5)));
                 }
                 break;
-            case "w": _state.LineWidth = op.Num(0); break;
-            case "d": SetDash(op); break;
-            case "J": _state.LineCap = (int)op.Num(0); break;
-            case "j": _state.LineJoin = (int)op.Num(0); break;
-            case "M": _state.MiterLimit = op.Num(0); break;
-            case "ri": case "i": break; // rendering intent / flatness: no-op
-            case "gs": ApplyExtGState(op); break;
+            case BitPdfOpCode.LineWidth: _state.LineWidth = op.Num(0); break;
+            case BitPdfOpCode.Dash: SetDash(op); break;
+            case BitPdfOpCode.LineCap: _state.LineCap = (int)op.Num(0); break;
+            case BitPdfOpCode.LineJoin: _state.LineJoin = (int)op.Num(0); break;
+            case BitPdfOpCode.MiterLimit: _state.MiterLimit = op.Num(0); break;
+            case BitPdfOpCode.RenderingIntent: case BitPdfOpCode.Flatness: break; // no-op
+            case BitPdfOpCode.ExtGState: ApplyExtGState(op); break;
 
             // Colors.
-            case "cs": _state.FillColorSpace = ResolveColorSpace(op); SetDefaultColor(false); break;
-            case "CS": _state.StrokeColorSpace = ResolveColorSpace(op); SetDefaultColor(true); break;
-            case "g": _state.FillColorSpace = BitPdfColorSpace.Gray; _state.FillColor = Gray(op.Num(0)); _state.FillPattern = null; break;
-            case "G": _state.StrokeColorSpace = BitPdfColorSpace.Gray; _state.StrokeColor = Gray(op.Num(0)); break;
-            case "rg": _state.FillColorSpace = BitPdfColorSpace.Rgb; _state.FillColor = Rgb(op.Num(0), op.Num(1), op.Num(2)); _state.FillPattern = null; break;
-            case "RG": _state.StrokeColorSpace = BitPdfColorSpace.Rgb; _state.StrokeColor = Rgb(op.Num(0), op.Num(1), op.Num(2)); break;
-            case "k": _state.FillColorSpace = BitPdfColorSpace.Cmyk; _state.FillColor = Cmyk(op.Num(0), op.Num(1), op.Num(2), op.Num(3)); _state.FillPattern = null; break;
-            case "K": _state.StrokeColorSpace = BitPdfColorSpace.Cmyk; _state.StrokeColor = Cmyk(op.Num(0), op.Num(1), op.Num(2), op.Num(3)); break;
-            case "sc":
-            case "scn": SetFillColorN(op); break;
-            case "SC":
-            case "SCN": SetStrokeColorN(op); break;
+            case BitPdfOpCode.FillColorSpace: _state.FillColorSpace = ResolveColorSpace(op); SetDefaultColor(false); break;
+            case BitPdfOpCode.StrokeColorSpace: _state.StrokeColorSpace = ResolveColorSpace(op); SetDefaultColor(true); break;
+            case BitPdfOpCode.FillGray: _state.FillColorSpace = BitPdfColorSpace.Gray; _state.FillColor = Gray(op.Num(0)); _state.FillPattern = null; break;
+            case BitPdfOpCode.StrokeGray: _state.StrokeColorSpace = BitPdfColorSpace.Gray; _state.StrokeColor = Gray(op.Num(0)); break;
+            case BitPdfOpCode.FillRgb: _state.FillColorSpace = BitPdfColorSpace.Rgb; _state.FillColor = Rgb(op.Num(0), op.Num(1), op.Num(2)); _state.FillPattern = null; break;
+            case BitPdfOpCode.StrokeRgb: _state.StrokeColorSpace = BitPdfColorSpace.Rgb; _state.StrokeColor = Rgb(op.Num(0), op.Num(1), op.Num(2)); break;
+            case BitPdfOpCode.FillCmyk: _state.FillColorSpace = BitPdfColorSpace.Cmyk; _state.FillColor = Cmyk(op.Num(0), op.Num(1), op.Num(2), op.Num(3)); _state.FillPattern = null; break;
+            case BitPdfOpCode.StrokeCmyk: _state.StrokeColorSpace = BitPdfColorSpace.Cmyk; _state.StrokeColor = Cmyk(op.Num(0), op.Num(1), op.Num(2), op.Num(3)); break;
+            case BitPdfOpCode.FillColorN: SetFillColorN(op); break;
+            case BitPdfOpCode.StrokeColorN: SetStrokeColorN(op); break;
 
             // Path construction.
-            case "m": MoveTo(op.Num(0), op.Num(1)); break;
-            case "l": LineTo(op.Num(0), op.Num(1)); break;
-            case "c": CurveTo(op.Num(0), op.Num(1), op.Num(2), op.Num(3), op.Num(4), op.Num(5)); break;
-            case "v": CurveTo(_curX, _curY, op.Num(0), op.Num(1), op.Num(2), op.Num(3)); break;
-            case "y": CurveTo(op.Num(0), op.Num(1), op.Num(2), op.Num(3), op.Num(2), op.Num(3)); break;
-            case "re": Rectangle(op.Num(0), op.Num(1), op.Num(2), op.Num(3)); break;
-            case "h": ClosePath(); break;
+            case BitPdfOpCode.MoveTo: MoveTo(op.Num(0), op.Num(1)); break;
+            case BitPdfOpCode.LineTo: LineTo(op.Num(0), op.Num(1)); break;
+            case BitPdfOpCode.CurveTo: CurveTo(op.Num(0), op.Num(1), op.Num(2), op.Num(3), op.Num(4), op.Num(5)); break;
+            case BitPdfOpCode.CurveToV: CurveTo(_curX, _curY, op.Num(0), op.Num(1), op.Num(2), op.Num(3)); break;
+            case BitPdfOpCode.CurveToY: CurveTo(op.Num(0), op.Num(1), op.Num(2), op.Num(3), op.Num(2), op.Num(3)); break;
+            case BitPdfOpCode.Rectangle: Rectangle(op.Num(0), op.Num(1), op.Num(2), op.Num(3)); break;
+            case BitPdfOpCode.ClosePath: ClosePath(); break;
 
             // Path painting.
-            case "S": PaintPath(true, false, false); break;
-            case "s": ClosePath(); PaintPath(true, false, false); break;
-            case "f":
-            case "F": PaintPath(false, true, false); break;
-            case "f*": PaintPath(false, true, true); break;
-            case "B": PaintPath(true, true, false); break;
-            case "B*": PaintPath(true, true, true); break;
-            case "b": ClosePath(); PaintPath(true, true, false); break;
-            case "b*": ClosePath(); PaintPath(true, true, true); break;
-            case "n": EndPathNoPaint(); break;
-            case "W": _pendingClipEvenOdd = false; break;
-            case "W*": _pendingClipEvenOdd = true; break;
+            case BitPdfOpCode.Stroke: PaintPath(true, false, false); break;
+            case BitPdfOpCode.CloseStroke: ClosePath(); PaintPath(true, false, false); break;
+            case BitPdfOpCode.Fill: PaintPath(false, true, false); break;
+            case BitPdfOpCode.FillEvenOdd: PaintPath(false, true, true); break;
+            case BitPdfOpCode.FillStroke: PaintPath(true, true, false); break;
+            case BitPdfOpCode.FillStrokeEvenOdd: PaintPath(true, true, true); break;
+            case BitPdfOpCode.CloseFillStroke: ClosePath(); PaintPath(true, true, false); break;
+            case BitPdfOpCode.CloseFillStrokeEvenOdd: ClosePath(); PaintPath(true, true, true); break;
+            case BitPdfOpCode.EndPath: EndPathNoPaint(); break;
+            case BitPdfOpCode.Clip: _pendingClipEvenOdd = false; break;
+            case BitPdfOpCode.ClipEvenOdd: _pendingClipEvenOdd = true; break;
 
             // Shadings and XObjects.
-            case "sh": PaintShading(op); break;
-            case "Do": DoXObject(op); break;
-            case "INLINE_IMAGE": DrawInlineImage(op); break;
+            case BitPdfOpCode.Shading: PaintShading(op); break;
+            case BitPdfOpCode.XObject: DoXObject(op); break;
+            case BitPdfOpCode.InlineImage: DrawInlineImage(op); break;
 
             // Type3 glyph metrics. `d0` sets the advance only; `d1` also declares a
             // colour-independent glyph, so later colour operators are suppressed.
-            case "d0": break;
-            case "d1": _type3ColorLocked = true; break;
+            case BitPdfOpCode.Type3Width: break;
+            case BitPdfOpCode.Type3WidthBox: _type3ColorLocked = true; break;
 
             // Marked content / optional content groups.
-            case "BDC": BeginMarkedContent(op); break;
-            case "BMC": _mcDepth++; break;
-            case "EMC": EndMarkedContent(); break;
+            case BitPdfOpCode.BeginMarkedContentDict: BeginMarkedContent(op); break;
+            case BitPdfOpCode.BeginMarkedContent: _mcDepth++; break;
+            case BitPdfOpCode.EndMarkedContent: EndMarkedContent(); break;
 
             // Text objects.
-            case "BT":
+            case BitPdfOpCode.BeginText:
                 _textMatrix = BitPdfMatrix.Identity;
                 _textLineMatrix = BitPdfMatrix.Identity;
                 break;
-            case "ET": break;
-            case "Tc": _state.CharSpacing = op.Num(0); break;
-            case "Tw": _state.WordSpacing = op.Num(0); break;
-            case "Tz": _state.HorizScale = op.Num(0) / 100.0; break;
-            case "TL": _state.Leading = op.Num(0); break;
-            case "Ts": _state.TextRise = op.Num(0); break;
-            case "Tr": _state.RenderMode = (int)op.Num(0); break;
-            case "Tf": SetFont(op); break;
-            case "Td": TextMove(op.Num(0), op.Num(1)); break;
-            case "TD": _state.Leading = -op.Num(1); TextMove(op.Num(0), op.Num(1)); break;
-            case "Tm":
+            case BitPdfOpCode.EndText: break;
+            case BitPdfOpCode.CharSpacing: _state.CharSpacing = op.Num(0); break;
+            case BitPdfOpCode.WordSpacing: _state.WordSpacing = op.Num(0); break;
+            case BitPdfOpCode.HorizScale: _state.HorizScale = op.Num(0) / 100.0; break;
+            case BitPdfOpCode.Leading: _state.Leading = op.Num(0); break;
+            case BitPdfOpCode.TextRise: _state.TextRise = op.Num(0); break;
+            case BitPdfOpCode.RenderMode: _state.RenderMode = (int)op.Num(0); break;
+            case BitPdfOpCode.SetFont: SetFont(op); break;
+            case BitPdfOpCode.TextMove: TextMove(op.Num(0), op.Num(1)); break;
+            case BitPdfOpCode.TextMoveSetLeading: _state.Leading = -op.Num(1); TextMove(op.Num(0), op.Num(1)); break;
+            case BitPdfOpCode.TextMatrix:
                 _textLineMatrix = new BitPdfMatrix(op.Num(0), op.Num(1), op.Num(2), op.Num(3), op.Num(4), op.Num(5));
                 _textMatrix = _textLineMatrix;
                 break;
-            case "T*": TextMove(0, -_state.Leading); break;
-            case "Tj": ShowText(op.Operands.Count > 0 ? op.Operands[0] : null); break;
-            case "TJ": ShowTextArray(op.Operands.Count > 0 ? op.Operands[0] as List<object?> : null); break;
-            case "'":
+            case BitPdfOpCode.TextNextLine: TextMove(0, -_state.Leading); break;
+            case BitPdfOpCode.ShowText: ShowText(op.Operands.Count > 0 ? op.Operands[0] : null); break;
+            case BitPdfOpCode.ShowTextArray: ShowTextArray(op.Operands.Count > 0 ? op.Operands[0] as List<object?> : null); break;
+            case BitPdfOpCode.NextLineShowText:
                 TextMove(0, -_state.Leading);
                 ShowText(op.Operands.Count > 0 ? op.Operands[0] : null);
                 break;
-            case "\"":
+            case BitPdfOpCode.NextLineShowTextSpacing:
                 _state.WordSpacing = op.Num(0);
                 _state.CharSpacing = op.Num(1);
                 TextMove(0, -_state.Leading);
@@ -1434,7 +1422,7 @@ public sealed class BitPdfHtmlRenderer
             return;
         }
 
-        var glyphs = _state.Font.Decode(s.Bytes).ToList();
+        var glyphs = _state.Font.Decode(s.Bytes);
 
         // Type3 glyphs are content-stream procedures, drawn as graphics rather
         // than emitted as selectable text.
