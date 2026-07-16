@@ -32,10 +32,13 @@ public static partial class WebApplicationBuilderExtensions
             services.AddTransient<HttpClient>(sp =>
             {
                 var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
-                return new HttpClient(handlerFactory.Invoke())
+                var serverAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetServerAddress(), UriKind.Absolute);
+                var httpClient = new HttpClient(handlerFactory.Invoke())
                 {
-                    BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetServerAddress(), UriKind.Absolute)
+                    BaseAddress = serverAddress
                 };
+                httpClient.DefaultRequestHeaders.Add("X-Origin", serverAddress.ToString());
+                return httpClient;
             });
 
             services.AddHangfire((sp, hangfireConfiguration) =>
