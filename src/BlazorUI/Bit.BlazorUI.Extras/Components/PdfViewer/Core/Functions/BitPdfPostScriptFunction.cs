@@ -120,7 +120,9 @@ internal sealed class BitPdfPostScriptFunction : BitPdfFunction
                 case "and": Bin(stack, static (a, b) => (double)((long)a & (long)b)); break;
                 case "or": Bin(stack, static (a, b) => (double)((long)a | (long)b)); break;
                 case "xor": Bin(stack, static (a, b) => (double)((long)a ^ (long)b)); break;
-                case "bitshift": Bin(stack, static (a, b) => { int s = (int)b; long v = (long)a; return s >= 0 ? (double)(v << s) : (double)(v >> -s); }); break;
+                // A negative shift is a LOGICAL right shift (zeros fill the vacated
+                // bits regardless of sign, PLRM bitshift) — shift unsigned, not v >> -s.
+                case "bitshift": Bin(stack, static (a, b) => { int s = (int)b; long v = (long)a; return s >= 0 ? (double)(v << s) : (double)(long)((ulong)v >> -s); }); break;
                 case "not": Un(stack, static a => a != 0 ? 0 : 1); break;
                 case "true": stack.Push(1); break;
                 case "false": stack.Push(0); break;
