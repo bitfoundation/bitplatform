@@ -84,6 +84,7 @@ self.serverHandledUrls = [
     /\/products.xml/,
     //#endif
     /\/sitemap_index.xml/,
+    /\/llms.txt/,
     /\/web-interop-app.html/
 ];
 

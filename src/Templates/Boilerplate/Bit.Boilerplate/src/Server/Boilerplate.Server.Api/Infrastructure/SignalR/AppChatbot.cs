@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using System.Text;
 using System.Threading.Channels;
+using Boilerplate.Shared;
 using Microsoft.Agents.AI;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Server.Api.Infrastructure.Services;
@@ -159,6 +160,7 @@ public partial class AppChatbot
         {
             AIFunctionFactory.Create(GetCurrentDateTime),
             AIFunctionFactory.Create(SaveUserEmailAndConversationHistory),
+            AIFunctionFactory.Create(GetAppPages),
             AIFunctionFactory.Create(NavigateToPage),
             AIFunctionFactory.Create(ShowSignInModal),
             AIFunctionFactory.Create(SetApplicationCulture),
@@ -203,9 +205,15 @@ public partial class AppChatbot
         chatOptions.ResponseFormat = ChatResponseFormat.Json;
         chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
 
+        // The follow-up agent responds in a strict JSON format and must not perform tool round-trips,
+        // so instead of letting it call the GetAppPages tool we inject the list of pages directly as context.
+        var appPagesPrompt = @$"### Available pages (useful for navigation/discovery follow-up suggestions):
+{PageUrls.GetPagesMarkdown()}";
+
         var followUpItems = await followUpSuggestionsAgent.RunAsync<AiChatFollowUpList>(
             messages: [
                 new (ChatRole.System, variablesDefault),
+                new (ChatRole.System, appPagesPrompt),
                 new(ChatRole.User, incomingMessage),
                 new(ChatRole.Assistant, assistantResponse)
             ],

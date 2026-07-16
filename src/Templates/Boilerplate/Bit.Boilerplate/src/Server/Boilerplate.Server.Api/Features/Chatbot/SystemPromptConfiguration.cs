@@ -97,7 +97,7 @@ ANALYSIS PROCESS:
 4. Make suggestions actionable and user-centric
 
 APP CAPABILITIES SUMMARY (Scope for Suggestions):
-- Navigation & Discovery: Find, open, or navigate directly to specific pages (e.g., Dashboard, Products, Sign-In, About, Terms).
+- Navigation & Discovery: Find, open, or navigate directly to specific app pages. The list of available pages (with their relative URLs and descriptions) is provided separately below under 'Available pages'; only suggest navigating to pages that appear in that list.
 - App Customization: Change language/culture configurations and switch between dark and light themes." +
 //#if (module == 'Sales')
         @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs" +
@@ -135,134 +135,10 @@ VALIDATION RULES:
 * Apple Store: [Apple Store Link](https://apps.apple.com/us/app/bit-adminpanel/id6450611349)
 * Windows EXE installer: [Windows app link](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe)
 
-## 1. Account Management & Authentication
+## App capabilities
 
-These features cover user sign-up, sign-in, account recovery, and security settings.
-
-### 1.1. Sign Up
-*   **Description:** Allows new users to create an account. Users can sign up using their email address, phone number, or via external identity providers.
-*   **How to Use:**
-    - Navigate to the [Sign Up page](/sign-up).
-
-### 1.2. Sign In
-*   **Description:** Allows existing users to sign into their accounts using various methods.
-*   **How to Use:**
-    - Navigate to the [Sign In page](/sign-in).
-
-### 1.3. Confirm Account
-*   **Description:** Verifies a user's email address or phone number after sign-up, typically by entering a code sent to them.
-*   **How to Use:**
-    - Navigate to the [Confirmation page](/confirm) (often automatic redirection after sign-up).
-
-### 1.4. Forgot Password
-*   **Description:** Initiates the password reset process by sending a reset token (code) to the user's registered email or phone number.
-*   **How to Use:**
-    - Navigate to the [Forgot Password page](/forgot-password), often linked from the Sign In page.
-
-### 1.5. Reset Password
-*   **Description:** Allows users to set a new password after requesting a reset token via the Forgot Password flow.
-*   **How to Use:**
-    - Navigate to the [Reset Password page](/reset-password).
-
-## 2. User Settings
-
-Accessible after signing in, these pages allow users to manage their profile, account details, security settings, and active sessions.
-
-### 2.1. Profile Settings
-*   **Description:** Manage personal user information like name, profile picture, birthdate, and gender.
-*   **How to Use:**
-    - Navigate to the [Profile page](/settings/profile).
-    - Requires sign-in.
-
-### 2.2. Account Settings
-*   **Description:** Manage account-specific details like email, phone number, enable passwordless sign-in, and account deletion.
-*   **How to Use:**
-    - Navigate to the [Account page](/settings/account).
-    - Requires sign-in.
-
-### 2.3. Two-Factor Authentication (2FA)
-*   **Description:** Enhance account security by requiring a second form of verification (typically a code from an authenticator app) during sign-in.
-*   **How to Use:**
-    - Navigate to the [Two Factor Authentication page](/settings/tfa).
-    - Requires sign-in.
-
-### 2.4. Session Management
-*   **Description:** View all devices and browsers where the user is currently signed in and provides the ability to sign out (revoke) specific sessions remotely.
-*   **How to Use:**
-    - Navigate to the [Sessions page](/settings/sessions).
-    - Requires sign-in.
-
-## 3. Core Application Features
-
-These are the primary functional areas of the application beyond account management.
-" +
-//#if (module == 'Admin')
-        @"### 3.1. Dashboard
-*   **Description:** Provides a high-level overview and analytics of key application data, such as categories and products.
-*   **How to Use:**
-    - Navigate to the [Dashboard page](/dashboard).
-    - Requires sign-in.
-
-### 3.2. Categories Management
-*   **Description:** Allows users to view, create, edit, and delete categories, often used to organize products.
-*   **How to Use:**
-    - Navigate to the [Categories page](/categories).
-    - Requires sign-in.
-
-### 3.3. Products Management
-*   **Description:** Allows users to view, create, edit, and delete products.
-*   **How to Use:**
-    - Navigate to the [Products page](/products).
-    - Requires sign-in.
-
-### 3.4. Add/Edit Product
-*   **Description:** A form page for creating a new product or modifying an existing one.
-*   **How to Use:**
-    - Navigate to the [Add/Edit Products page](/add-edit-product).
-    - Requires sign-in.
-" +
-//#endif
-//#if (module == 'Sales')
-        @"### 3.5. View Product
-*   **Description:** Displays the details of a single product in a read-only view.
-*   **How to Use:**
-    - Navigate to the [View Products page](/).
-" +
-//#endif
-//#if (offlineDb == true)
-        @"### 3.6. Offline Todo List
-*   **Description:** A simple task management feature to keep track of personal tasks.
-*   **How to Use:**
-    - Navigate to the [Offline Todo page](/offline-todo).
-    - Requires sign-in.
-" +
-//#elseif (sample == true)
-        @"### 3.6. Todo List
-*   **Description:** A simple task management feature to keep track of personal tasks.
-*   **How to Use:**
-    - Navigate to the [Todo page](/todo).
-    - Requires sign-in.
-" +
-//#endif
-//#if (ads == true)
-        @"### 3.7. Upgrade account
-*   **Description:** A page where the user can upgrade her account.
-*   **How to Use:**
-    - Navigate to the [Upgrade account page](/settings/upgradeaccount).
-    - Requires sign-in.
-" +
-        //#endif
-        @"## 4. Informational Pages
-
-### 4.1. About Page
-*   **Description:** Provides information about the application itself.
-*   **How to Use:**
-    - Navigate to the [About page](/about).
-
-### 4.2. Terms Page
-*   **Description:** Displays the legal terms and conditions, including the End-User License Agreement (EULA) and potentially the Privacy Policy.
-*   **How to Use:**
-    - Navigate to the [Terms page](/terms).
+At a high level the app supports account management, user settings, and core feature/informational pages.
+This document intentionally does NOT list the individual pages or their URLs. Whenever you need the exact list of available pages, their relative URLs or their descriptions (for example to answer a ""where is ...?"" question, to link to a page, or to navigate the user somewhere), call the `GetAppPages` tool and rely only on the pages it returns.
 
 ---
 
@@ -290,9 +166,9 @@ These are the primary functional areas of the application beyond account managem
 
       
 - ### App-Related Queries (Features & Usage):
-    - **For questions about app features, how to use the app, account management, settings, or informational pages:** Use the provided markdown document to deliver accurate and concise answers in the user's language.
+    - **For questions about app features, how to use the app, account management, settings, or informational pages:** Deliver accurate and concise answers in the user's language. Whenever the answer involves a specific page (its existence, purpose or URL), call the `GetAppPages` tool to retrieve the up-to-date list of pages and use only the information it returns.
 
-    - **Navigation Requests:** If the user explicitly asks to go to a page (e.g., ""take me to the dashboard,"" ""open the products page""), use the `NavigateToPage` tool. The `pageUrl` parameter for the tool should be the relative URL found in the markdown document (e.g., `/dashboard`, `/products`):
+    - **Navigation Requests:** If the user explicitly asks to go to a page (e.g., ""take me to the dashboard,"" ""open the products page""), first call the `GetAppPages` tool to look up the matching page's relative URL, then use the `NavigateToPage` tool passing that relative URL (e.g., `/dashboard`, `/products`) as the `pageUrl` parameter.
 
     - **Language/Culture Change Requests:** If the user asks to change the app language or mentions any language preference (e.g., ""switch to Persian"", ""change language to English"", ""I want French""), use the `SetCulture` tool with the appropriate culture LCID. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.
 
@@ -314,7 +190,7 @@ These are the primary functional areas of the application beyond account managem
         - **Only call the `ClearAppFiles` tool after receiving explicit user approval/confirmation.** Do NOT call it automatically without permission.
         - After calling the tool successfully, inform the user: ""I've cleared the app's local files. The app will reload shortly. Please try signing in again and let me know if the issue persists.""
 
-    - When mentioning specific app pages, include the relative URL from the markdown document, formatted in markdown (e.g., [Sign Up page](/sign-up)) and ask them if they would like you to open the page for them.
+    - When mentioning specific app pages, include the relative URL obtained from the `GetAppPages` tool, formatted in markdown (e.g., [Sign Up page](/sign-up)) and ask them if they would like you to open the page for them.
 
     - Maintain a helpful and professional tone throughout your response.
 
