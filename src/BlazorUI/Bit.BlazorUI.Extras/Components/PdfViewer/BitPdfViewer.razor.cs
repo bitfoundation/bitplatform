@@ -767,9 +767,10 @@ public partial class BitPdfViewer : BitComponentBase
 
         try
         {
+            BitPdfDocument document;
             try
             {
-                _document = await ParseAsync(bytes, _source.Password);
+                document = await ParseAsync(bytes, _source.Password);
             }
             catch (BitPdfPasswordException) when (OnPasswordRequested is not null)
             {
@@ -780,10 +781,12 @@ public partial class BitPdfViewer : BitComponentBase
                 {
                     throw;
                 }
-                _document = await ParseAsync(bytes, entered);
+                document = await ParseAsync(bytes, entered);
             }
-            // A password prompt may have awaited long enough for a newer Source.
+            // A password prompt (or the parse itself) may have awaited long enough
+            // for a newer Source; don't clobber the newer load's document.
             if (version != _loadVersion) return;
+            _document = document;
 
             PreparePages();
             await RenderCurrentPageEagerlyAsync();
@@ -811,12 +814,20 @@ public partial class BitPdfViewer : BitComponentBase
         }
         catch (Exception ex)
         {
+            // A superseded load's failure is not this document's failure: don't
+            // publish a stale error over the newer load's state.
+            if (version != _loadVersion) return;
             _status = $"Error: {ex.Message}";
             await OnError.InvokeAsync(ex.Message);
         }
         finally
         {
-            _loading = false;
+            // Only the load that still owns _loadVersion may clear the progress
+            // bar; a superseded load finishing late must not hide the newer one's.
+            if (version == _loadVersion)
+            {
+                _loading = false;
+            }
         }
     }
 
@@ -1085,7 +1096,9 @@ public partial class BitPdfViewer : BitComponentBase
             {
                 TextCoalescing = BitPdfTextCoalescing.Compact,
             };
-            return new MarkupString(renderer.Render());
+            // Commit through the shared path so fonts the thumbnail discovered
+            // land in the @font-face snapshot.
+            return CommitPage(index, new BitPdfPageBuild(renderer.Render(), null));
         }
         return _pages[index] ?? RenderPageContent(index);
     }

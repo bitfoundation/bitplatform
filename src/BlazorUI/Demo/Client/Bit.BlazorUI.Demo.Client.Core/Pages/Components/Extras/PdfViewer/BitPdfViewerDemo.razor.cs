@@ -371,9 +371,7 @@ public partial class BitPdfViewerDemo
     private readonly string example1RazorCode = @"
 <InputFile OnChange=""OnBasicFileChange"" accept="".pdf,application/pdf"" />
 
-@* BackgroundRendering offloads parse/render to a worker thread when the runtime
-   has one (Blazor Server, or a WASM app built with WasmEnableThreads). *@
-<BitPdfViewer Source=""basicSource"" BackgroundRendering />";
+<BitPdfViewer Source=""basicSource"" />";
     private readonly string example1CsharpCode = @"
 private BitPdfSource basicSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
 
@@ -463,7 +461,9 @@ private readonly List<string> eventsLog = [];";
     <BitButton OnClick=""() => pdfViewerRef.Print()"">Print</BitButton>
 </div>
 
-<BitPdfViewer @ref=""pdfViewerRef""
+@* BackgroundRendering offloads parse/render to a worker thread when the runtime
+   has one (Blazor Server, or a WASM app built with WasmEnableThreads). *@
+<BitPdfViewer @ref=""pdfViewerRef"" BackgroundRendering
               Source=""publicApiSource""
               ShowToolbar=""false""
               OnDocumentLoaded=""StateHasChanged""
