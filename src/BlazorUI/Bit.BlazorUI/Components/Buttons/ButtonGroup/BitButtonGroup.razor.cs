@@ -248,7 +248,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ChildContent is null && Items is not null && Items.Any())
+        if (ChildContent is null && Options is null && Items is not null && Items.Any())
         {
             if (_oldItems is null || Items.SequenceEqual(_oldItems) is false)
             {
@@ -257,9 +257,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
                 for (int i = 0; i < _items.Count; i++)
                 {
-                    if (GetItemKey(_items.ElementAt(i)).HasValue()) continue;
+                    if (GetItemKey(_items[i]).HasValue()) continue;
 
-                    SetItemKey(_items.ElementAt(i), i.ToString());
+                    SetItemKey(_items[i], i.ToString());
                 }
             }
         }
