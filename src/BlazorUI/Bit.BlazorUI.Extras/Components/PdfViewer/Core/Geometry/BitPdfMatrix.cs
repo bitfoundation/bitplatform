@@ -29,7 +29,7 @@ public readonly struct BitPdfMatrix
     /// Concatenates two transforms so that the result applies <paramref name="inner"/>
     /// first and <paramref name="outer"/> second.
     /// </summary>
-    public static BitPdfMatrix Concat(in BitPdfMatrix outer, in BitPdfMatrix inner) => new(
+    public static BitPdfMatrix Concat(BitPdfMatrix outer, BitPdfMatrix inner) => new(
         outer.A * inner.A + outer.C * inner.B,
         outer.B * inner.A + outer.D * inner.B,
         outer.A * inner.C + outer.C * inner.D,

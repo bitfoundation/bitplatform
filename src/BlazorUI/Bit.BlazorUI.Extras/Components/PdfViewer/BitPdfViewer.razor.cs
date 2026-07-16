@@ -296,6 +296,9 @@ public partial class BitPdfViewer : BitComponentBase
     public async Task Print()
     {
         if (_document is null || _pages.Count == 0) return;
+        // A print pass is already catching up (its yields let this reentrant call
+        // in); a second one would race it and clear _printing while it still runs.
+        if (_printing) return;
 
         // Render every page before printing so the output includes all pages, not
         // just the ones scrolled into view. Show progress while catching up. A new
@@ -849,6 +852,10 @@ public partial class BitPdfViewer : BitComponentBase
             if (_document.Warnings.Count > 0 && OnWarnings.HasDelegate)
             {
                 await OnWarnings.InvokeAsync(_document.Warnings);
+                // The warnings callback is user code: it may have awaited long
+                // enough for a newer Source (or even set one) or a disposal —
+                // don't announce a superseded document as loaded.
+                if (IsDisposed || version != _loadVersion) return;
             }
             await OnDocumentLoaded.InvokeAsync();
         }
