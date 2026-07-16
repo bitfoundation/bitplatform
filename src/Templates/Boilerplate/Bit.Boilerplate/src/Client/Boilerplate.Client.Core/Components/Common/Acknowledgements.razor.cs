@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Components.Common;
 /// A tip of the hat to the open-source projects, tools, and services this app is built with.
 /// It also doubles as the third-party attribution / license notice required by many of those licenses.
 /// The lists below mirror the actual dependencies of the generated project: entries wrapped in the
-/// template's conditional markers (e.g. //#if (redis == true)) only ship when the matching option is selected.
+/// template's conditional markers (e.g. //if (redis == true)) only ship when the matching option is selected.
 /// No localization on purpose: product names and license identifiers are proper nouns that stay in English.
 /// </summary>
 public partial class Acknowledgements
