@@ -1440,8 +1440,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
 
         UpdateSelectedItemsFromValues();
-
-        RefreshOptions();
     }
 
     private async Task HandleOnAddItemComboClick()
