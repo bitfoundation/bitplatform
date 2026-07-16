@@ -1064,10 +1064,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnParametersSet()
     {
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // dropdown's own parameters (Styles, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
@@ -1172,6 +1179,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
 
         SetIsSelectedForSelectedItems();
+        RefreshOptions();
         await OnValuesChange.InvokeAsync([.. (Values ?? [])!]);
     }
 
@@ -1226,6 +1234,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         ClassBuilder.Reset();
         SetIsSelectedForSelectedItems();
+        RefreshOptions();
     }
 
     private async Task CloseCallout()
@@ -1298,6 +1307,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         _searchText = e.Value?.ToString();
 
+        RefreshOptions();
+
         await OnSearch.InvokeAsync(_searchText);
         await SearchVirtualized();
     }
@@ -1311,6 +1322,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _rateLimiter.Reset();
 
         _searchText = null;
+
+        RefreshOptions();
 
         await OnSearch.InvokeAsync(_searchText);
         await SearchVirtualized();
@@ -1341,6 +1354,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _rateLimiter.Reset();
 
         _searchText = null;
+
+        RefreshOptions();
     }
 
     private async ValueTask FocusOnComboBoxInput()
@@ -1418,6 +1433,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
 
         UpdateSelectedItemsFromValues();
+
+        RefreshOptions();
     }
 
     private async Task HandleOnAddItemComboClick()

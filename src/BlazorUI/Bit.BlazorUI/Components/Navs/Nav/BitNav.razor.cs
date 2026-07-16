@@ -92,6 +92,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOption(BitNavOption option)
     {
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
 
         StateHasChanged();

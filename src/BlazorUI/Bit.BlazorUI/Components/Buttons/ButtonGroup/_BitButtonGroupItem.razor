@@ -6,7 +6,8 @@
     var template = ButtonGroup.GetTemplate(Item);
 }
 
-<button @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+<button type="button"
+        @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
         tabindex="@(isEnabled ? 0 : -1)"
         disabled="@(isEnabled is false)"
         aria-disabled="@(isEnabled is false)"

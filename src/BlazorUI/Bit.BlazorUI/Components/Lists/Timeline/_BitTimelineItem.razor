@@ -17,7 +17,7 @@
      tabindex="@(isEnabled ? 0 : -1)"
      disabled="@(isEnabled is false)"
      aria-disabled="@(isEnabled is false)"
-     style="@Timeline.GetStyle(Item) @Timeline.Styles?.Item"
+     style="@Timeline.GetStyle(Item);@Timeline.Styles?.Item"
      class="bit-tln-itm@(Timeline.GetItemClasses(Item)) @Timeline.Classes?.Item">
     <div style="@Timeline.Styles?.PrimaryContent" class="bit-tln-pcn @Timeline.Classes?.PrimaryContent">
         @if (primaryContent is not null)

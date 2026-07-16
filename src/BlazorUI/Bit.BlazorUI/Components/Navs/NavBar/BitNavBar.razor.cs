@@ -122,13 +122,17 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     {
         _items.Add((option as TItem)!);
         SetSelectedItemByCurrentUrl();
+        RefreshOptions();
         StateHasChanged();
     }
 
     internal void UnregisterOption(BitNavBarOption option)
     {
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
         SetSelectedItemByCurrentUrl();
+        RefreshOptions();
         StateHasChanged();
     }
 
