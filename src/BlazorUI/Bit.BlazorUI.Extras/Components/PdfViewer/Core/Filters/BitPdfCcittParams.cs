@@ -1,4 +1,4 @@
-// C# implementation of the CCITTFaxDecode filter (ITU-T T.4 / T.6), following
+﻿// C# implementation of the CCITTFaxDecode filter (ITU-T T.4 / T.6), following
 // the standard specification. The Huffman code tables below are factual values
 // from the ITU recommendations.
 

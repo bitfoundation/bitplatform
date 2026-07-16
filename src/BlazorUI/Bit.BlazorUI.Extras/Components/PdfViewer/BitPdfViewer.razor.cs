@@ -1,4 +1,4 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -96,10 +96,11 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public BitPdfSource? Source { get; set; }
 
     /// <summary>
-    /// The CSS height of the viewer container.
+    /// The CSS height of the viewer container. When not set, the viewer height is
+    /// responsive: capped at 780px and shrinking to fit the viewport on small screens.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public string? Height { get; set; } = "780px";
+    public string? Height { get; set; }
 
     /// <summary>
     /// Whether the toolbar is shown.

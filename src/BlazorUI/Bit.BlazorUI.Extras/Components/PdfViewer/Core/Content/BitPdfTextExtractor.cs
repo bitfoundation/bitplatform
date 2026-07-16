@@ -1,4 +1,4 @@
-// Plain-text extraction from a page's content stream, without emitting HTML.
+﻿// Plain-text extraction from a page's content stream, without emitting HTML.
 // Used for search indexing and the public text-extraction API.
 
 using System.Text;

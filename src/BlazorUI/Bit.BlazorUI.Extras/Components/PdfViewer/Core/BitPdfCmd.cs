@@ -1,4 +1,4 @@
-// Core PDF object primitives: names, commands, references and dictionaries.
+﻿// Core PDF object primitives: names, commands, references and dictionaries.
 
 using System.Collections.Concurrent;
 

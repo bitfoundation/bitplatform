@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class PdfViewer {
         private static _rezoomTimers = new WeakMap<HTMLElement, number>();
         private static readonly _CAPS: CanvasLineCap[] = ["butt", "round", "square"];

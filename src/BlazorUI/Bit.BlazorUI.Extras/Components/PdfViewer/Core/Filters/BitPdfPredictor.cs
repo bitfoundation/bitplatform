@@ -1,4 +1,4 @@
-// C# implementation of the PNG/TIFF predictors used by FlateDecode /
+﻿// C# implementation of the PNG/TIFF predictors used by FlateDecode /
 // LZWDecode, following the PDF specification.
 
 namespace Bit.BlazorUI;

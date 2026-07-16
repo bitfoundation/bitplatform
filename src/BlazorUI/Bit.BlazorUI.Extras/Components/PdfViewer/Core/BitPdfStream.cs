@@ -1,4 +1,4 @@
-// An in-memory PDF stream.
+﻿// An in-memory PDF stream.
 
 namespace Bit.BlazorUI;
 

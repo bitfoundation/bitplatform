@@ -1,4 +1,4 @@
-// Type1 (PostScript) font-program parsing and charstring interpretation.
+﻿// Type1 (PostScript) font-program parsing and charstring interpretation.
 // Embedded Type1 fonts (/FontFile) can't be loaded by a browser directly, so we
 // parse the program, interpret each glyph's Type1 charstring into an absolute
 // outline, and hand the outlines to CffFontWriter to build an OpenType/CFF font.

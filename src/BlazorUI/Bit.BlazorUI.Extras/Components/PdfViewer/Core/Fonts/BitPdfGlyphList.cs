@@ -1,4 +1,4 @@
-// Glyph-name to Unicode resolution based on the Adobe Glyph List. Covers the
+﻿// Glyph-name to Unicode resolution based on the Adobe Glyph List. Covers the
 // glyph names referenced by the standard Latin encodings plus the algorithmic
 // "uniXXXX"/"uXXXXXX" forms.
 

@@ -1,4 +1,4 @@
-// Minimal PNG encoder used to emit decoded raster images as HTML <img> data
+﻿// Minimal PNG encoder used to emit decoded raster images as HTML <img> data
 // URIs. Original C# implementation following the PNG specification (RFC 2083).
 
 using System.IO.Compression;

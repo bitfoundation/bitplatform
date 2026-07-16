@@ -84,14 +84,14 @@
             <br />
             <BitButton IsEnabled="publicApiSource is null" OnClick="() => publicApiSource = CreateArticleSource()">Load document</BitButton>
             <br /><br />
-            <div>
-                <BitButton OnClick="() => pdfViewerRef.GoToPage(1)">First</BitButton>&nbsp;
-                <BitButton OnClick="() => pdfViewerRef.PrevPage()">Prev</BitButton>&nbsp;
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+                <BitButton OnClick="() => pdfViewerRef.GoToPage(1)">First</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.PrevPage()">Prev</BitButton>
                 <BitTag Variant="BitVariant.Outline" Text="@($"{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}")" Color="BitColor.Info" />
-                <BitButton OnClick="() => pdfViewerRef.NextPage()">Next</BitButton>&nbsp;
-                <BitButton OnClick="() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)">Last</BitButton>&nbsp;|
+                <BitButton OnClick="() => pdfViewerRef.NextPage()">Next</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)">Last</BitButton>
                 <BitButton OnClick="() => pdfViewerRef.ZoomOut()">Zoom -</BitButton>
-                <BitButton OnClick="() => pdfViewerRef.ZoomIn()">Zoom +</BitButton>&nbsp;|
+                <BitButton OnClick="() => pdfViewerRef.ZoomIn()">Zoom +</BitButton>
                 <BitButton OnClick="() => pdfViewerRef.RotateClockwise()">Rotate</BitButton>
                 <BitButton OnClick="() => pdfViewerRef.Print()">Print</BitButton>
             </div>

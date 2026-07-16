@@ -1,4 +1,4 @@
-// The font model: the parts needed to position and extract text.
+﻿// The font model: the parts needed to position and extract text.
 
 
 namespace Bit.BlazorUI;

@@ -19,8 +19,8 @@ public partial class BitPdfViewerDemo
         {
             Name = "Height",
             Type = "string?",
-            DefaultValue = "780px",
-            Description = "The CSS height of the viewer container.",
+            DefaultValue = "null",
+            Description = "The CSS height of the viewer container. When not set, the viewer height is responsive: capped at 780px and shrinking to fit the viewport on small screens.",
         },
         new()
         {
@@ -451,15 +451,17 @@ private readonly List<string> eventsLog = [];";
 <BitButton IsEnabled=""publicApiSource is null""
            OnClick='() => publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
-<BitButton OnClick=""() => pdfViewerRef.GoToPage(1)"">First</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.PrevPage()"">Prev</BitButton>
-<BitTag Variant=""BitVariant.Outline"" Text=""@($""{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}"")"" Color=""BitColor.Info"" />
-<BitButton OnClick=""() => pdfViewerRef.NextPage()"">Next</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)"">Last</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.ZoomOut()"">Zoom -</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.ZoomIn()"">Zoom +</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.RotateClockwise()"">Rotate</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.Print()"">Print</BitButton>
+<div style=""display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center"">
+    <BitButton OnClick=""() => pdfViewerRef.GoToPage(1)"">First</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.PrevPage()"">Prev</BitButton>
+    <BitTag Variant=""BitVariant.Outline"" Text=""@($""{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}"")"" Color=""BitColor.Info"" />
+    <BitButton OnClick=""() => pdfViewerRef.NextPage()"">Next</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)"">Last</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.ZoomOut()"">Zoom -</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.ZoomIn()"">Zoom +</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.RotateClockwise()"">Rotate</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.Print()"">Print</BitButton>
+</div>
 
 <BitPdfViewer @ref=""pdfViewerRef""
               Source=""publicApiSource""

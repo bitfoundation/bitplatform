@@ -1,4 +1,4 @@
-// The object parser for PDF token streams.
+﻿// The object parser for PDF token streams.
 
 namespace Bit.BlazorUI;
 

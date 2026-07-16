@@ -1,4 +1,4 @@
-// Content-stream operators resolved to a compact dispatch code.
+﻿// Content-stream operators resolved to a compact dispatch code.
 
 namespace Bit.BlazorUI;
 

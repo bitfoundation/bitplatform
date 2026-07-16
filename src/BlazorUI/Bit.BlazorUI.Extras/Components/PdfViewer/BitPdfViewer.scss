@@ -1,4 +1,4 @@
-@import "../../Styles/extra-variables.scss";
+﻿@import "../../Styles/extra-variables.scss";
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
 .bit-pdv {
@@ -6,6 +6,11 @@
     overflow: hidden;
     position: relative;
     flex-direction: column;
+    /* Default height adapts to the viewport so the viewer stays usable on small
+       screens; the Height parameter overrides it via an inline style. The vh
+       line is a fallback for browsers without dvh support. */
+    height: min(#{rem2(780px)}, 85vh);
+    height: min(#{rem2(780px)}, 85dvh);
     background: $clr-bg-sec-dark;
     font-family: $tg-font-family;
     border-radius: $shp-border-radius;

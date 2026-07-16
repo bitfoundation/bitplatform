@@ -1,4 +1,4 @@
-// Document parsing: cross-reference resolution, the catalog and page-tree traversal.
+﻿// Document parsing: cross-reference resolution, the catalog and page-tree traversal.
 
 namespace Bit.BlazorUI;
 

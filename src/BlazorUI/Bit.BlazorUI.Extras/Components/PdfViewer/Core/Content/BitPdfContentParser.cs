@@ -1,4 +1,4 @@
-// Content-stream preprocessing into operations.
+﻿// Content-stream preprocessing into operations.
 
 namespace Bit.BlazorUI;
 

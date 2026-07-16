@@ -1,4 +1,4 @@
-// Explicit-destination parsing and normalization.
+﻿// Explicit-destination parsing and normalization.
 // A destination array is [pageRef /Type args...]; see PDF 32000-1:2008 §12.3.2.
 
 namespace Bit.BlazorUI;

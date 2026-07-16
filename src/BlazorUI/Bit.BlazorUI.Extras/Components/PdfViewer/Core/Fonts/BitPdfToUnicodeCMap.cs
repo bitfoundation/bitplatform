@@ -1,4 +1,4 @@
-// ToUnicode CMap reader (bfchar / bfrange handling).
+﻿// ToUnicode CMap reader (bfchar / bfrange handling).
 
 using System.Text;
 

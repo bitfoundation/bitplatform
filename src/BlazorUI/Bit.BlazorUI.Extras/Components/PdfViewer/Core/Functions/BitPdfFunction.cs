@@ -1,4 +1,4 @@
-// PDF function evaluation (Types 0, 2, 3, 4).
+﻿// PDF function evaluation (Types 0, 2, 3, 4).
 
 
 namespace Bit.BlazorUI;

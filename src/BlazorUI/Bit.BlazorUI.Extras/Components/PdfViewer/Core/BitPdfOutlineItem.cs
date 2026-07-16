@@ -1,4 +1,4 @@
-// Document outline (bookmarks) parsing. Resolves the /Outlines tree and maps
+﻿// Document outline (bookmarks) parsing. Resolves the /Outlines tree and maps
 // each item's destination to a page index.
 
 namespace Bit.BlazorUI;

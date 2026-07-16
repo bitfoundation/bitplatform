@@ -21,7 +21,8 @@ public class BitPdfViewerTests : BunitTestContext
 
         Assert.IsTrue(root.TextContent.Contains("No document loaded."));
         Assert.IsNotNull(component.Find(".bit-pdv-toolbar"));
-        Assert.IsTrue((root.GetAttribute("style") ?? string.Empty).Contains("height:780px"));
+        // No inline height by default; the responsive height comes from the stylesheet.
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("height:"));
     }
 
     [TestMethod]

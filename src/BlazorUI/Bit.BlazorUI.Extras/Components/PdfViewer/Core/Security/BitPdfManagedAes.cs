@@ -1,4 +1,4 @@
-// A small managed AES (FIPS-197) with CBC mode, no padding. Used so encrypted
+﻿// A small managed AES (FIPS-197) with CBC mode, no padding. Used so encrypted
 // PDFs (AESV2/AESV3) open in the browser WebAssembly sandbox, where the platform
 // Aes implementation throws PlatformNotSupportedException.
 
