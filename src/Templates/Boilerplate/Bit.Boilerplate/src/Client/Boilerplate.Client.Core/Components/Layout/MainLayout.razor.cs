@@ -11,7 +11,8 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MainLayout : IAsyncDisposable
 {
-    private static readonly BitProModalParameters ModalParameters = new() { Classes = new() { Root = "modal" } };
+    private static readonly BitModalParameters ModalParameters = new() { Classes = new() { Root = "modal" } };
+    private static readonly BitProModalParameters ProModalParameters = new() { Classes = new() { Root = "modal" } };
 
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
