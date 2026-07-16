@@ -104,9 +104,10 @@
         }
         else
         {
-            @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+            @for (int i = 0; i < _items.Count; i++)
             {
-                <_BitMenuButtonItem @key="@GetItemKey(item, idx.ToString())" MenuButton="this" Item="item" />
+                var item = _items[i];
+                <_BitMenuButtonItem @key="@GetItemKey(item, i.ToString())" MenuButton="this" Item="item" />
             }
         }
     </ul>

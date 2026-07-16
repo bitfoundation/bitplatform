@@ -18,7 +18,7 @@
     {
         @foreach (var item in _items)
         {
-            <_BitButtonGroupItem @key="item" ButtonGroup="this" Item="item" />
+            <_BitButtonGroupItem @key="@GetItemKey(item)" ButtonGroup="this" Item="item" />
         }
     }
 </div>
