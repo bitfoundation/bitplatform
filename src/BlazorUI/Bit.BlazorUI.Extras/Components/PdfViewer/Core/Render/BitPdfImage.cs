@@ -460,7 +460,7 @@ internal static class BitPdfImage
         {
             for (int y = 0; y < height; y++)
             {
-                int rowStart = (mh == height ? y : y * mh / height) * rowBytes;
+                int rowStart = (mh == height ? y : (int)((long)y * mh / height)) * rowBytes;
                 int o = y * width;
                 for (int x = 0; x < width; x++)
                 {
@@ -511,7 +511,7 @@ internal static class BitPdfImage
         var map = new int[dstLen];
         for (int i = 0; i < dstLen; i++)
         {
-            map[i] = i * srcLen / dstLen;
+            map[i] = (int)((long)i * srcLen / dstLen); // 64-bit product: huge claimed sizes must not overflow
         }
         return map;
     }

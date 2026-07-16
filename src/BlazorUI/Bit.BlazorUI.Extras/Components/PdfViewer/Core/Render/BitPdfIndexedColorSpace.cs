@@ -22,7 +22,8 @@ internal sealed class BitPdfIndexedColorSpace : BitPdfColorSpace
     public static BitPdfIndexedColorSpace Build(List<object?> arr, IBitPdfXRef xref, BitPdfDict? resources)
     {
         var baseCs = Create(arr.Count > 1 ? arr[1] : null, xref, resources);
-        int hival = xref.FetchIfRef(arr.Count > 2 ? arr[2] : null) is double d ? (int)d : 0;
+        // A (broken) negative hival would invert GetRgb's clamp bounds and throw.
+        int hival = xref.FetchIfRef(arr.Count > 2 ? arr[2] : null) is double d ? Math.Max(0, (int)d) : 0;
         byte[] lookup;
         object? lookupObj = xref.FetchIfRef(arr.Count > 3 ? arr[3] : null);
         if (lookupObj is BitPdfString s)

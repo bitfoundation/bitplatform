@@ -294,35 +294,53 @@ public partial class BitPdfViewer : BitComponentBase
         if (_document is null || _pages.Count == 0) return;
 
         // Render every page before printing so the output includes all pages, not
-        // just the ones scrolled into view. Show progress while catching up.
+        // just the ones scrolled into view. Show progress while catching up. A new
+        // Source arriving while this pass yields supersedes it: bail at every yield
+        // so a stale print never renders against, or prints, the newer document.
+        int version = _loadVersion;
         bool rendered = false;
-        for (int i = 0; i < _pages.Count; i++)
+        try
         {
-            if (_pages[i] is null)
+            for (int i = 0; i < _pages.Count; i++)
             {
-                if (!rendered)
+                if (_pages[i] is null)
                 {
-                    _loading = true;
-                    _status = "Preparing all pages for printing…";
-                    StateHasChanged();
+                    if (!rendered)
+                    {
+                        _loading = true;
+                        _status = "Preparing all pages for printing…";
+                        StateHasChanged();
+                        await Task.Delay(1);
+                        if (IsDisposed || version != _loadVersion) return;
+                        rendered = true;
+                    }
+                    await RenderPageAsync(i);
+                    // Yield between page renders so the browser can paint the progress
+                    // bar and stay responsive while a large document is prepared on the
+                    // single WASM thread (mirrors the lazy-render pumps).
                     await Task.Delay(1);
-                    rendered = true;
+                    if (IsDisposed || version != _loadVersion) return;
                 }
-                await RenderPageAsync(i);
-                // Yield between page renders so the browser can paint the progress
-                // bar and stay responsive while a large document is prepared on the
-                // single WASM thread (mirrors the lazy-render pumps).
-                await Task.Delay(1);
+            }
+            if (rendered)
+            {
+                _loading = false;
+                StateHasChanged();
+                await Task.Delay(1); // let the DOM paint the freshly rendered pages
+                if (IsDisposed || version != _loadVersion) return;
+            }
+
+            await _js.BitPdfViewerPrint(_containerRef);
+        }
+        finally
+        {
+            // Only the print that still owns _loadVersion may clear the progress
+            // bar; a superseded one must not hide the newer load's.
+            if (version == _loadVersion)
+            {
+                _loading = false;
             }
         }
-        if (rendered)
-        {
-            _loading = false;
-            StateHasChanged();
-            await Task.Delay(1); // let the DOM paint the freshly rendered pages
-        }
-
-        await _js.BitPdfViewerPrint(_containerRef);
     }
 
     /// <summary>
@@ -711,6 +729,10 @@ public partial class BitPdfViewer : BitComponentBase
             _searchTotal = 0;
             _searchIndex = -1;
             _outline = [];
+            // A superseded load's finally won't clear the progress bar (it no longer
+            // owns _loadVersion); reset it here so e.g. Source = null while a load is
+            // in flight doesn't leave the bar up forever.
+            _loading = false;
         }
         finally
         {

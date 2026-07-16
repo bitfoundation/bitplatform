@@ -60,7 +60,7 @@
                 return;
             }
             (container as any).__bitPdvRenderScheduled = true;
-            requestAnimationFrame(() => {
+            (container as any).__bitPdvRenderFrame = requestAnimationFrame(() => {
                 (container as any).__bitPdvRenderScheduled = false;
                 PdfViewer.renderVisiblePages(container, dotnetRef);
             });
@@ -238,6 +238,12 @@
             clearTimeout(c.__bitPdvRenderDebounce);
             c.__bitPdvRenderDebounce = null;
             c.__bitPdvLastRenderPass = 0;
+            // A render pass queued for the next animation frame would invoke the
+            // (about to be disposed) .NET reference; cancel it and clear the flag so
+            // a re-registration can schedule its initial render normally.
+            cancelAnimationFrame(c.__bitPdvRenderFrame);
+            c.__bitPdvRenderFrame = null;
+            c.__bitPdvRenderScheduled = false;
             if (c.__bitPdvClick) {
                 container.removeEventListener("click", c.__bitPdvClick);
                 c.__bitPdvClick = null;
