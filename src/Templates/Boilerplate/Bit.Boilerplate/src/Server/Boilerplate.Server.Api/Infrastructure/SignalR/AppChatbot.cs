@@ -27,6 +27,7 @@ public partial class AppChatbot
     [AutoInject] private TimeProvider timeProvider = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ApiServerExceptionHandler exceptionHandler = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
@@ -107,7 +108,8 @@ public partial class AppChatbot
 ### Variables:
 {variablesDefault}
 {{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}""}} 
-{{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}""
+{{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}"",
+{{{{WebAppUrl}}}}: ""{(httpContextAccessor.HttpContext!.Request.GetWebAppUrl())}"",
 ";
 
             await foreach (var response in supportAgent.RunStreamingAsync([

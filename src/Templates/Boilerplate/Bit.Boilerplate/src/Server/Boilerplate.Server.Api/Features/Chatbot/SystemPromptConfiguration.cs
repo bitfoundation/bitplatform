@@ -130,7 +130,7 @@ VALIDATION RULES:
 
 *   **Platforms:** The application is available on Android, iOS, Windows, macOS, and as a Web (PWA) application.
 
-* Website address: [Website address](https://sales.bitplatform.dev/)
+* Website address: [Website address]({{WebAppUrl}})
 * Google Play: [Google Play Link](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template)
 * Apple Store: [Apple Store Link](https://apps.apple.com/us/app/bit-adminpanel/id6450611349)
 * Windows EXE installer: [Windows app link](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe)
