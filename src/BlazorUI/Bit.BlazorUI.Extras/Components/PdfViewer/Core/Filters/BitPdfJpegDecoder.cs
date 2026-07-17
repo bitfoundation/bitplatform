@@ -543,15 +543,14 @@ internal static class BitPdfJpegDecoder
 
         Span<float> src = stackalloc float[64];
         Span<float> a = stackalloc float[64];
-        Span<float> b = stackalloc float[64];
         for (int i = 0; i < 64; i++)
         {
             src[i] = block[i];
         }
 
         RowIdct(src, a);          // transform each row
-        Transpose(a, b);          // columns become rows
-        RowIdct(b, a);            // transform the (original) columns
+        Transpose(a, src);        // columns become rows (src is free after the pass above)
+        RowIdct(src, a);          // transform the (original) columns
         TransposeToInt(a, block); // restore orientation and round back to the caller's buffer
     }
 

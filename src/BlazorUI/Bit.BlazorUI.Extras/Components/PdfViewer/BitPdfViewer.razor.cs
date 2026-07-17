@@ -337,12 +337,22 @@ public partial class BitPdfViewer : BitComponentBase
                         if (IsDisposed || version != _loadVersion) return;
                         rendered = true;
                     }
-                    await RenderPageAsync(i);
+                    bool ok = await RenderPageAsync(i);
                     // Yield between page renders so the browser can paint the progress
                     // bar and stay responsive while a large document is prepared on the
                     // single WASM thread (mirrors the lazy-render pumps).
                     await Task.Delay(1);
                     if (IsDisposed || version != _loadVersion) return;
+                    // A page that failed to build (e.g. malformed) leaves its slot empty
+                    // and RenderPageAsync returns false; the failure is surfaced via
+                    // OnError. Abort rather than open the print dialog with a blank page
+                    // mid-document. A false result whose slot was meanwhile filled by the
+                    // lazy pump is fine — only a still-empty slot means a real failure.
+                    if (!ok && _pages[i] is null)
+                    {
+                        _status = "Printing aborted: a page failed to render.";
+                        return;
+                    }
                 }
             }
             if (rendered)
@@ -448,14 +458,19 @@ public partial class BitPdfViewer : BitComponentBase
         {
             while (_renderQueue.Count > 0)
             {
-                // A reload while yielding invalidates the queue; disposal tears the
-                // component down. Either way, stop rendering into stale/torn slots.
-                if (IsDisposed || version != _loadVersion)
+                // Disposal tears the component down: stop and drop the queue.
+                if (IsDisposed)
                 {
                     _renderQueue.Clear();
                     _renderQueued.Clear();
                     return;
                 }
+                // A reload replaced the document while this pump yielded. LoadAsync
+                // already cleared the queue, so any entries here were enqueued by the
+                // new load (whose EnsurePagesRendered saw this pump still active and
+                // returned without starting its own). Adopt the current version and
+                // keep draining rather than discarding the replacement's pending work.
+                if (version != _loadVersion) version = _loadVersion;
 
                 int idx = _renderQueue.First!.Value;
                 _renderQueue.RemoveFirst();
@@ -465,12 +480,13 @@ public partial class BitPdfViewer : BitComponentBase
                 // RenderPageAsync may have yielded (background build / gate wait); a
                 // reload or disposal in that window means the slots are torn down —
                 // don't evict or re-render against them.
-                if (IsDisposed || version != _loadVersion)
+                if (IsDisposed)
                 {
                     _renderQueue.Clear();
                     _renderQueued.Clear();
                     return;
                 }
+                if (version != _loadVersion) version = _loadVersion;
 
                 EvictDistantPages();
                 StateHasChanged();
@@ -524,12 +540,17 @@ public partial class BitPdfViewer : BitComponentBase
         {
             while (_thumbQueue.Count > 0)
             {
-                if (IsDisposed || version != _loadVersion)
+                if (IsDisposed)
                 {
                     _thumbQueue.Clear();
                     _thumbQueued.Clear();
                     return;
                 }
+                // A reload replaced the document while this pump yielded; the queue was
+                // cleared and refilled by the new load. Adopt its version and keep
+                // draining rather than discarding the replacement's pending thumbnails
+                // (mirrors the page pump in EnsurePagesRendered).
+                if (version != _loadVersion) version = _loadVersion;
 
                 int idx = _thumbQueue.First!.Value;
                 _thumbQueue.RemoveFirst();
@@ -538,12 +559,13 @@ public partial class BitPdfViewer : BitComponentBase
 
                 // A reload or disposal during RenderThumbAsync's gate wait tears the
                 // slots down; stop before touching them.
-                if (IsDisposed || version != _loadVersion)
+                if (IsDisposed)
                 {
                     _thumbQueue.Clear();
                     _thumbQueued.Clear();
                     return;
                 }
+                if (version != _loadVersion) version = _loadVersion;
 
                 // Evict around the thumbnail just rendered (what the sidebar is
                 // showing), not the current page — scrolling the sidebar leaves the
