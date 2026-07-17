@@ -286,6 +286,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     private void RefreshOptions()
     {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
         foreach (var item in _items)
         {
             (item as BitButtonGroupOption)?.InternalStateHasChanged();

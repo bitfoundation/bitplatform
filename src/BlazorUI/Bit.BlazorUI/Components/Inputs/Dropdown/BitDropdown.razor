@@ -11,7 +11,7 @@
     var searchBoxIconCss = BitIconInfo.From(SearchBoxIcon, SearchBoxIconName ?? "Search")?.GetCssClasses();
     var searchBoxClearIconCss = BitIconInfo.From(SearchBoxClearIcon, SearchBoxClearIconName ?? "Cancel")?.GetCssClasses();
     var comboBoxAddButtonIconCss = BitIconInfo.From(ComboBoxAddButtonIcon, ComboBoxAddButtonIconName ?? "Add")?.GetCssClasses();
-    var itemCheckIconCss = BitIconInfo.From(ItemCheckIcon, ItemCheckIconName ?? "Accept")?.GetCssClasses();
+    var itemCheckIconCss = GetItemCheckIconCss();
 }
 
 @if (Virtualize && (Options ?? ChildContent) is not null)

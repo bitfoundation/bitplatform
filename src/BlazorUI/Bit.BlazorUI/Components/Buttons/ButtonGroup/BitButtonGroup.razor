@@ -16,9 +16,10 @@
     }
     else
     {
-        @foreach (var item in _items)
+        @for (int i = 0; i < _items.Count; i++)
         {
-            <_BitButtonGroupItem @key="@GetItemKey(item)" ButtonGroup="this" Item="item" />
+            var item = _items[i];
+            <_BitButtonGroupItem @key="@($"{UniqueId}-{i}")" ButtonGroup="this" Item="item" />
         }
     }
 </div>

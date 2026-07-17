@@ -12,6 +12,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 {
     private int? _totalItems;
     private string? _searchText;
+    private int _optionsVersion;
+    private int _searchedItemsCacheVersion = -1;
     private string? _searchedItemsCacheKey;
     private HashSet<TItem>? _searchedItemsCache;
     private bool _isResponsiveMode;
@@ -563,6 +565,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     internal void RegisterOption(BitDropdownOption<TValue> option)
     {
         Items!.Add((option as TItem)!);
+        _totalItems = null;
         _searchedItemsCache = null;
 
         UpdateSelectedItemsFromValues();
@@ -578,26 +581,35 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (_searchText.HasNoValue()) return true;
 
-        if (SearchFunction is not null)
+        // The search runs over the whole item set (and may be a user-provided SearchFunction), so
+        // evaluate it once per search text and reuse the result for every option during the render
+        // cycle instead of re-running it for each item. The cache is also keyed on _optionsVersion,
+        // which the options bump when their own parameters change, so an option whose data changed
+        // (e.g. its Text) without the dropdown itself re-rendering cannot be matched against a stale
+        // result. Because Blazor sets every sibling option's parameters before any of them render,
+        // the version is stable during the option render pass and the set is rebuilt at most once.
+        if (_searchedItemsCache is null ||
+            _searchedItemsCacheKey != _searchText ||
+            _searchedItemsCacheVersion != _optionsVersion)
         {
-            // SearchFunction runs over the whole item set, so evaluate it once per search text and reuse
-            // the result for every option during the render cycle instead of re-running it for each item.
-            if (_searchedItemsCache is null || _searchedItemsCacheKey != _searchText)
-            {
-                _searchedItemsCacheKey = _searchText;
-                _searchedItemsCache = [.. GetSearchedItems()];
-            }
-
-            return _searchedItemsCache.Contains(item);
+            _searchedItemsCacheKey = _searchText;
+            _searchedItemsCacheVersion = _optionsVersion;
+            _searchedItemsCache = [.. GetSearchedItems()];
         }
 
-        return GetItemType(item) == BitDropdownItemType.Normal &&
-               GetText(item)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) is true;
+        return _searchedItemsCache.Contains(item);
     }
 
     internal string? GetItemCheckIconCss()
     {
         return BitIconInfo.From(ItemCheckIcon, ItemCheckIconName ?? "Accept")?.GetCssClasses();
+    }
+
+    // Called by an option when its own parameters change, so the cached search results (which hold
+    // the option instances themselves) cannot be reused after the data they were computed from changed.
+    internal void NotifyOptionParametersChanged()
+    {
+        _optionsVersion++;
     }
 
     private void RefreshOptions()
@@ -619,6 +631,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         var item = (option as TItem)!;
         Items!.Remove(item);
+        _totalItems = null;
         _searchedItemsCache = null;
 
         if (_selectedItems.Contains(item))
@@ -1074,7 +1087,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         RefreshOptions();
 
         // Items (or the search inputs) may have changed with this parameter set, so drop any cached
-        // search results computed for the previous one; ShouldRenderOptionItem rebuilds them on demand.
+        // search results (and item count) computed for the previous one; they get rebuilt on demand.
+        _totalItems = null;
         _searchedItemsCache = null;
 
         base.OnParametersSet();
@@ -1451,6 +1465,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         _searchText = string.Empty;
 
+        RefreshOptions();
+
         if (_isResponsiveMode && MultiSelect)
         {
             await _comboBoxInputResponsiveRef.FocusAsync();
@@ -1555,6 +1571,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             _searchText = string.Empty;
 
+            RefreshOptions();
+
             await CloseCallout();
         }
         else if (eventArgs.Key == "Enter")
@@ -1564,6 +1582,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await AddDynamicItem();
 
             _searchText = string.Empty;
+
+            RefreshOptions();
 
             if (_isResponsiveMode && MultiSelect) return;
 
@@ -1587,6 +1607,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         _searchText = e.Value?.ToString();
 
+        RefreshOptions();
+
         if (Immediate is false) return;
 
         await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
@@ -1606,6 +1628,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task SearchComboItems(ChangeEventArgs e)
     {
         _searchText = e.Value?.ToString();
+
+        RefreshOptions();
+
         await SearchVirtualized();
 
         await OpenCallout();

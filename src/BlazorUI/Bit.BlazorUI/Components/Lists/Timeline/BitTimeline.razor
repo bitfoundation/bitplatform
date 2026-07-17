@@ -15,9 +15,10 @@
     }
     else
     {
-        @foreach (var item in _items)
+        @for (int i = 0; i < _items.Count; i++)
         {
-            <_BitTimelineItem Timeline="this" Item="item" @key="item" />
+            var item = _items[i];
+            <_BitTimelineItem Timeline="this" Item="item" @key="@GetItemKey(item, i.ToString())" />
         }
     }
 </div>

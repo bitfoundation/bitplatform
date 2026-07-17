@@ -152,7 +152,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
     protected override Task OnParametersSetAsync()
     {
-        if (ChildContent is null && Items.Any() && Items != _oldItems)
+        if (ChildContent is null && Options is null && Items.Any() && Items != _oldItems)
         {
             _oldItems = Items;
             _items = Items.ToList();
@@ -167,10 +167,44 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
     private void RefreshOptions()
     {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
         foreach (var item in _items)
         {
             (item as BitTimelineOption)?.InternalStateHasChanged();
         }
+    }
+
+    // Honors the item's own Key when provided (stable identity across reordering) and otherwise falls
+    // back to a per-component, position-based key so that duplicate/equal items cannot collide.
+    private string GetItemKey(TItem item, string defaultKey)
+    {
+        return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
+    }
+
+    private string? GetKey(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.Key;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.Key;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Key.Selector is not null)
+        {
+            return NameSelectors.Key.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
 

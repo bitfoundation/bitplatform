@@ -28,6 +28,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
 
     /// <summary>
+    /// Keeps the rendered order of the items in sync with the markup order of the options even when
+    /// existing options are only reordered (not added or removed) — for example when the options are
+    /// produced by a keyed loop whose source collection gets re-sorted. This is achieved by reading the
+    /// DOM order of the options after each render, so it adds a JS interop call per render and is opt-in.
+    /// It only affects the options API (ChildContent/Options); the items API already follows the order
+    /// of the Items collection. Adding or removing options is always kept in order regardless of this flag.
+    /// </summary>
+    [Parameter] public bool AutoReorderOptions { get; set; }
+
+    /// <summary>
     /// The content of the BitBreadcrumb, that are BitBreadOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -215,6 +225,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         if (ChildContent is null && Options is null)
         {
             _items = Items is not null ? [.. Items] : [];
+        }
+        else if (AutoReorderOptions)
+        {
+            // Opt-in: re-read the DOM order of the options after this render so a pure reorder of
+            // existing options (which registers/unregisters nothing) is picked up. ReorderOptions
+            // only mutates when the order actually changed, so a stable order costs one DOM read.
+            _optionsOrderDirty = true;
         }
 
         if (_items.Any() is false) return;

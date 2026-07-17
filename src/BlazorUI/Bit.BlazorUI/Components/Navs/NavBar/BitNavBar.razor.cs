@@ -219,6 +219,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     private void RefreshOptions()
     {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
         foreach (var item in _items)
         {
             (item as BitNavBarOption)?.InternalStateHasChanged();
