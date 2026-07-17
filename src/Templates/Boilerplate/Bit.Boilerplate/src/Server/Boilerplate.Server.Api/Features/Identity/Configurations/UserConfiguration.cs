@@ -94,30 +94,8 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
         }]);
         //#endif
 
-        //#if (database != "PostgreSQL")
-        builder
-            .HasIndex(b => b.Email)
-            .HasFilter($"[{nameof(User.Email)}] IS NOT NULL")
-            .IsUnique();
+        builder.HasUniqueIndexOnNullable(b => b.Email);
 
-        builder
-            .HasIndex(b => b.PhoneNumber)
-            .HasFilter($"[{nameof(User.PhoneNumber)}] IS NOT NULL")
-            .IsUnique();
-        //#endif
-        //#if (IsInsideProjectTemplate == true)
-        return;
-        //#endif
-        //#if (database == "PostgreSQL")
-        builder
-            .HasIndex(b => b.Email)
-            .HasFilter($"'{nameof(User.Email)}' IS NOT NULL")
-            .IsUnique();
-
-        builder
-            .HasIndex(b => b.PhoneNumber)
-            .HasFilter($"'{nameof(User.PhoneNumber)}' IS NOT NULL")
-            .IsUnique();
-        //#endif
+        builder.HasUniqueIndexOnNullable(b => b.PhoneNumber);
     }
 }

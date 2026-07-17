@@ -1437,6 +1437,18 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>Introduce el título del inquilino</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Dominio</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Introduce el dominio personalizado del inquilino (p. ej. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} debe ser un nombre de dominio válido sin esquema ni ruta (p. ej. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>El dominio '{0}' ya está en uso.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Aún no has seleccionado ningún inquilino. Cambia a uno de tus inquilinos o crea uno nuevo para comenzar.</value>
   </data>

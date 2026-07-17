@@ -9,8 +9,6 @@ public partial class SharedSettings : IValidatableObject
     public ApplicationInsightsOptions? ApplicationInsights { get; set; }
     //#endif
 
-    public MemoryCacheOptions MemoryCache { get; set; } = default!;
-
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = new List<ValidationResult>();

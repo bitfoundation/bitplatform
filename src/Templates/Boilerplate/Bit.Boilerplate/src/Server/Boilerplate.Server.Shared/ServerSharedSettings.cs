@@ -6,8 +6,6 @@ namespace Boilerplate.Server.Shared;
 
 public partial class ServerSharedSettings : SharedSettings
 {
-    public ForwardedHeadersOptions? ForwardedHeaders { get; set; } = default!;
-
     /// <summary>
     /// Specifies the allowed origins for CORS requests, URLs returned after external sign-in and email confirmation, and permitted origins for Web Auth, as well as forwarded headers middleware in ASP.NET Core.
     /// Each entry may contain the <c>*</c> wildcard (e.g. <c>https://*.myapp.com</c>) so a single entry can trust every tenant subdomain.
@@ -20,11 +18,6 @@ public partial class ServerSharedSettings : SharedSettings
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
-
-        if (ForwardedHeaders is not null)
-        {
-            Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
-        }
 
         if (ResponseCaching is not null)
         {

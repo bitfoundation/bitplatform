@@ -24,7 +24,7 @@ public static partial class Program
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
         //#if (sentry == true)
-        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.Bind("Logging:Sentry", options));
+        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.DynamicBind("Logging:Sentry", options));
         //#endif
 
         builder.AddServerWebProjectServices();

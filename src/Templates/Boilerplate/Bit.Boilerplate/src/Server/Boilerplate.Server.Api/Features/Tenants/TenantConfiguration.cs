@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Server.Api.Features.Tenants;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Server.Api.Features.Tenants;
 
 public partial class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 {
@@ -20,5 +21,7 @@ public partial class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             IsActive = true,
             Version = 1
         });
+
+        builder.HasUniqueIndexOnNullable(tenant => tenant.Domain);
     }
 }

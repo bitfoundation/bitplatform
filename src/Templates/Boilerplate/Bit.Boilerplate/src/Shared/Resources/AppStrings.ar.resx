@@ -1437,6 +1437,18 @@
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>أدخل عنوان المستأجر</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>النطاق</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>أدخل النطاق المخصص للمستأجر (مثل myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>يجب أن يكون {0} اسم نطاق صالحًا بدون مخطط أو مسار (مثل myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>النطاق '{0}' مستخدم بالفعل.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>لم تقم بتحديد أي مستأجر بعد. بدّل إلى أحد مستأجريك أو أنشئ مستأجرًا جديدًا للبدء.</value>
   </data>

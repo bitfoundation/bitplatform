@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Server.Shared;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Http;
@@ -55,19 +55,22 @@ public static class WebApplicationExtensions
         {
             var configuration = app.Configuration;
 
+            var forwardedHeadersConfig = configuration.GetSection("ForwardedHeaders");
+            if (forwardedHeadersConfig.Exists() is false)
+                return app;
+            // If the ForwardedHeaders section is missing, we will not apply any forwarded headers configuration.
+            // This is a security measure to prevent misconfiguration that could allow spoofing of links generated for reset password, etc.
+
             ServerSharedSettings settings = new();
             configuration.Bind(settings);
 
-            var forwardedHeadersOptions = settings.ForwardedHeaders;
-            if (forwardedHeadersOptions != null)
-            {
-                forwardedHeadersOptions.AllowedHosts = [.. (forwardedHeadersOptions.AllowedHosts ?? []).Union(settings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost))];
+            var forwardedHeadersOptions = forwardedHeadersConfig.DynamicBind<ForwardedHeadersOptions>();
+            forwardedHeadersOptions.AllowedHosts = [.. (forwardedHeadersOptions.AllowedHosts ?? []).Union(settings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost))];
 
-                if (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any())
-                {
-                    // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
-                    app.UseForwardedHeaders(forwardedHeadersOptions);
-                }
+            if (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any())
+            {
+                // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
+                app.UseForwardedHeaders(forwardedHeadersOptions);
             }
 
             return app;

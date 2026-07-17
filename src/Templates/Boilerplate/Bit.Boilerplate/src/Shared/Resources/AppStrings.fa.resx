@@ -1437,6 +1437,18 @@
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>عنوان مستأجر را وارد کنید</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>دامنه</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>دامنه اختصاصی مستأجر را وارد کنید (مثلا myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} باید یک نام دامنه معتبر بدون طرح (scheme) یا مسیر باشد (مثلا myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>دامنه '{0}' تکراری است.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>شما هنوز مستأجری را انتخاب نکرده‌اید. به یکی از مستأجران خود تغییر دهید یا مستأجر جدیدی ایجاد کنید تا شروع کنید.</value>
   </data>

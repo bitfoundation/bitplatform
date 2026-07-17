@@ -1437,6 +1437,18 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>Enter tenant title</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Domain</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Enter tenant custom domain (e.g. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} must be a valid domain name with no scheme or path (e.g. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>The domain '{0}' is already taken.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>You haven't selected a tenant yet. Switch to one of your tenants or create a new one to get started.</value>
   </data>

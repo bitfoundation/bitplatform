@@ -10,20 +10,6 @@ public class PushNotificationSubscriptionConfiguration : IEntityTypeConfiguratio
             .HasForeignKey<PushNotificationSubscription>(sub => sub.UserSessionId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        //#if (database != "PostgreSQL")
-        builder
-            .HasIndex(b => b.UserSessionId)
-            .HasFilter($"[{nameof(PushNotificationSubscription.UserSessionId)}] IS NOT NULL")
-            .IsUnique();
-        //#endif
-        //#if (IsInsideProjectTemplate == true)
-        return;
-        //#endif
-        //#if (database == "PostgreSQL")
-        builder
-            .HasIndex(b => b.UserSessionId)
-            .HasFilter($"'{nameof(PushNotificationSubscription.UserSessionId)}' IS NOT NULL")
-            .IsUnique();
-        //#endif
+        builder.HasUniqueIndexOnNullable(b => b.UserSessionId);
     }
 }

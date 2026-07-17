@@ -76,7 +76,7 @@ public static partial class Program
                 {
                     options.Debug = AppEnvironment.IsDevelopment();
                     options.Environment = AppEnvironment.Current;
-                    configuration.Bind("Logging:Sentry", options);
+                    configuration.DynamicBind("Logging:Sentry", options);
                 });
                 //#endif
 

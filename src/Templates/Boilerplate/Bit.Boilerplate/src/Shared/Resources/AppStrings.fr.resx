@@ -1437,6 +1437,18 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>Saisissez le titre du locataire</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Domaine</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Saisissez le domaine personnalisé du locataire (par ex. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} doit être un nom de domaine valide sans schéma ni chemin (par ex. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>Le domaine '{0}' est déjà utilisé.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Vous n'avez pas encore sélectionné de locataire. Passez à l'un de vos locataires ou créez-en un nouveau pour commencer.</value>
   </data>

@@ -96,8 +96,16 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
     {
         var entry = DbContext.Entry(tenant);
 
+        // The custom domain is matched against the request host (case-insensitive), so it's stored as a lowercase host; a blank one becomes null.
+        tenant.Domain = string.IsNullOrWhiteSpace(tenant.Domain) ? null : tenant.Domain.Trim().ToLowerInvariant();
+
         if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
             && await DbContext.Tenants.AnyAsync(t => t.Id != tenant.Id && t.Name == tenant.Name, cancellationToken))
             throw new ResourceValidationException((nameof(TenantDto.Name), [Localizer[nameof(AppStrings.DuplicateTenantName), tenant.Name!]]));
+
+        if (tenant.Domain is not null
+            && (entry.State is EntityState.Added || entry.Property(t => t.Domain).IsModified)
+            && await DbContext.Tenants.AnyAsync(t => t.Id != tenant.Id && t.Domain == tenant.Domain, cancellationToken))
+            throw new ResourceValidationException((nameof(TenantDto.Domain), [Localizer[nameof(AppStrings.DuplicateTenantDomain), tenant.Domain]]));
     }
 }

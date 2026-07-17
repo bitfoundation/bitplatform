@@ -26,30 +26,15 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
         // 1. The role name must be unique within the tenant (When TenantId is not null).
         // 2. The role name must be unique among the global roles (When TenantId is null).
         builder.HasIndex(role => role.NormalizedName).IsUnique(false);
-        //#if (database != "PostgreSQL")
-        builder.HasIndex(role => new { role.Name, role.TenantId })
-            .HasFilter($"[{nameof(Role.TenantId)}] IS NOT NULL")
-            .IsUnique();
+        builder.HasUniqueIndexOnNullable(role => new { role.Name, role.TenantId }, role => role.TenantId);
 
         builder.HasIndex(role => role.Name)
-            .HasFilter($"[{nameof(Role.TenantId)}] IS NULL")
-            .IsUnique();
-        //#endif
-        //#if (IsInsideProjectTemplate == true)
-        /*
-        //#endif
-        //#if (database == "PostgreSQL")
-        builder.HasIndex(role => new { role.Name, role.TenantId })
-            .HasFilter($"\"{nameof(Role.TenantId)}\" IS NOT NULL")
-            .IsUnique();
-
-        builder.HasIndex(role => role.Name)
+            //#if (database == "PostgreSQL")
             .HasFilter($"\"{nameof(Role.TenantId)}\" IS NULL")
+            //#else
+            .HasFilter($"[{nameof(Role.TenantId)}] IS NULL")
+            //#endif
             .IsUnique();
-        //#endif
-        //#if (IsInsideProjectTemplate == true)
-        */
-        //#endif
         //#endif
         //#if (IsInsideProjectTemplate == true)
         /*

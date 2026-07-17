@@ -43,6 +43,11 @@
                                       Placeholder="@Localizer[nameof(AppStrings.EnterTenantTitle)]" />
                         <ValidationMessage For="() => tenant.Title" />
                         <br />
+                        <BitTextField @bind-Value="tenant.Domain"
+                                      Label="@Localizer[nameof(AppStrings.Domain)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.EnterTenantDomain)]" />
+                        <ValidationMessage For="() => tenant.Domain" />
+                        <br />
                         @if (tenant.Id != default)
                         {
                             @* Deactivating a tenant kicks out all of its accepted users immediately. *@

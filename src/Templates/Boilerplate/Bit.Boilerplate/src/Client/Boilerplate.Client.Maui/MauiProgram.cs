@@ -43,7 +43,7 @@ public static partial class MauiProgram
             //#if (sentry == true)
             .UseSentry(options =>
             {
-                builder.Configuration.Bind("Logging:Sentry", options);
+                builder.Configuration.DynamicBind("Logging:Sentry", options);
             })
             //#endif
             ;

@@ -199,9 +199,19 @@ public partial class TenantController : AppControllerBase, ITenantController
     {
         var entry = DbContext.Entry(tenant);
 
+        // The custom domain is matched against the request host (case-insensitive), so it's stored as a lowercase host; a blank one becomes null.
+        // SECURITY: this endpoint is self-service (tenant admins), and a custom domain wins over the sub domain during resolution.
+        // Enforcing uniqueness alone is NOT enough for production - verify domain ownership and add it to TrustedOrigins first.
+        tenant.Domain = string.IsNullOrWhiteSpace(tenant.Domain) ? null : tenant.Domain.Trim().ToLowerInvariant();
+
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
         if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
             && await DbContext.Tenants.AnyAsync(t => t.Id != tenant.Id && t.Name == tenant.Name, cancellationToken))
             throw new ResourceValidationException((nameof(TenantDto.Name), [Localizer[nameof(AppStrings.DuplicateTenantName), tenant.Name!]]));
+
+        if (tenant.Domain is not null
+            && (entry.State is EntityState.Added || entry.Property(t => t.Domain).IsModified)
+            && await DbContext.Tenants.AnyAsync(t => t.Id != tenant.Id && t.Domain == tenant.Domain, cancellationToken))
+            throw new ResourceValidationException((nameof(TenantDto.Domain), [Localizer[nameof(AppStrings.DuplicateTenantDomain), tenant.Domain]]));
     }
 }

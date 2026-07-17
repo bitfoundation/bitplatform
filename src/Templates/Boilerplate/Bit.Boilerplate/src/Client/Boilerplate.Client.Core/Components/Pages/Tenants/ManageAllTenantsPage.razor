@@ -41,6 +41,10 @@
                                        Width="240px"
                                        Filterable="false" />
 
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Domain)]"
+                                       Property="t => t.Domain"
+                                       Width="240px" />
+
                     <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Active)]"
                                        Align="BitDataGridColumnAlign.Center"
                                        Width="150px"

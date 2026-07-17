@@ -1437,6 +1437,18 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>Voer de tenanttitel in</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Domein</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Voer het aangepaste domein van de tenant in (bijv. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} moet een geldige domeinnaam zijn zonder schema of pad (bijv. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>Het domein '{0}' is al in gebruik.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Je hebt nog geen tenant geselecteerd. Wissel naar een van je tenants of maak een nieuwe aan om te beginnen.</value>
   </data>

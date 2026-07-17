@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
 //#else
@@ -151,7 +152,8 @@ public static partial class Program
                 BaseAddress = serverAddress
             };
 
-            var forwardedHeadersOptions = sp.GetRequiredService<ServerWebSettings>().ForwardedHeaders;
+            var forwardedHeadersSection = configuration.GetSection("ForwardedHeaders");
+            var forwardedHeadersOptions = forwardedHeadersSection.Exists() ? forwardedHeadersSection.DynamicBind<ForwardedHeadersOptions>() : null;
 
             foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)))
             {

@@ -20,6 +20,10 @@
                       Label="@Localizer[nameof(AppStrings.Title)]"
                       Placeholder="@Localizer[nameof(AppStrings.EnterTenantTitle)]" />
         <ValidationMessage For="() => model.Title" />
+        <BitTextField @bind-Value="model.Domain" FullWidth
+                      Label="@Localizer[nameof(AppStrings.Domain)]"
+                      Placeholder="@Localizer[nameof(AppStrings.EnterTenantDomain)]" />
+        <ValidationMessage For="() => model.Domain" />
     </BitStack>;
 }
 
@@ -144,6 +148,10 @@
                                 <BitStack Gap="0.125rem" Grows>
                                     <BitText Typography="BitTypography.Subtitle1">@(string.IsNullOrEmpty(tenant.Title) ? tenant.Name : tenant.Title)</BitText>
                                     <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@tenant.Name</BitText>
+                                    @if (string.IsNullOrEmpty(tenant.Domain) is false)
+                                    {
+                                        <BitText Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground">@tenant.Domain</BitText>
+                                    }
                                 </BitStack>
 
                                 @* IsActive is read-only here; it can only be toggled from the tenant management page. *@
