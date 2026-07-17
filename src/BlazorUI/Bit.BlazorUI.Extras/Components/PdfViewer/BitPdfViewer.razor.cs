@@ -798,6 +798,10 @@ public partial class BitPdfViewer : BitComponentBase
             }
             catch (Exception ex)
             {
+                // A newer Source superseded this load while the fetch was in flight;
+                // its failure is not the current document's, so don't publish a stale
+                // error or hide the newer load's progress bar (mirrors the parse catch).
+                if (version != _loadVersion) return;
                 _status = $"Failed to fetch document: {ex.Message}";
                 _loading = false;
                 await OnError.InvokeAsync(_status);

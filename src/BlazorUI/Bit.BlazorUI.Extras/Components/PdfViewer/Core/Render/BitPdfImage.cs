@@ -170,7 +170,11 @@ internal static class BitPdfImage
         BitPdfColorSpace cs, byte[] rgba, double[]? decode, int[]? colorKey = null)
     {
         int nComps = cs.Components;
-        int rowBytes = (width * nComps * bpc + 7) / 8;
+        // 64-bit product: width alone can approach the pixel budget (~268 M) while
+        // nComps * bpc pushes the bit count past int.MaxValue for a malicious image,
+        // silently wrapping rowBytes negative. The checked narrowing turns a genuinely
+        // oversized row into a catchable overflow (the caller skips the bad image).
+        int rowBytes = checked((int)(((long)width * nComps * bpc + 7) / 8));
 
         // Fast path A — single-component spaces at <=8 bpc. Every output pixel is a
         // pure function of one sample value, of which there are at most 256, so bake
@@ -480,7 +484,7 @@ internal static class BitPdfImage
         var m = matte.Value;
         for (int y = 0; y < height; y++)
         {
-            int rowStart = (mh == height ? y : y * mh / height) * rowBytes;
+            int rowStart = (mh == height ? y : (int)((long)y * mh / height)) * rowBytes;
             for (int x = 0; x < width; x++)
             {
                 int mx = xMap is null ? x : xMap[x];
