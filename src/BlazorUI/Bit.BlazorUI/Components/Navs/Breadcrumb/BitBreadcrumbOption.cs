@@ -8,6 +8,8 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
 
     private bool _disposed;
     private string? _lastParametersSignature;
+    private RenderFragment<BitBreadcrumbOption>? _lastTemplate;
+    private RenderFragment<BitBreadcrumbOption>? _lastOverflowTemplate;
 
 
 
@@ -97,14 +99,21 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
         // Notify it only when a rendered parameter actually changes; the guard avoids a render loop
         // since OnParametersSet runs on every parent render. Reference-type params are folded into a
         // value-based signature (e.g. the icon's CSS classes) so an equal-but-new instance won't churn.
+        // Template/OverflowTemplate are compared by reference identity since the parent renders them too.
         var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsEnabled, IsSelected, Class, Style, ReversedIcon, Key);
 
-        if (_lastParametersSignature is not null && _lastParametersSignature != signature)
+        var changed = _lastParametersSignature != signature ||
+                      ReferenceEquals(_lastTemplate, Template) is false ||
+                      ReferenceEquals(_lastOverflowTemplate, OverflowTemplate) is false;
+
+        if (_lastParametersSignature is not null && changed)
         {
             Parent?.NotifyOptionParametersChanged();
         }
 
         _lastParametersSignature = signature;
+        _lastTemplate = Template;
+        _lastOverflowTemplate = OverflowTemplate;
 
         base.OnParametersSet();
     }
