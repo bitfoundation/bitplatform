@@ -321,6 +321,10 @@ public partial class BitPdfViewer : BitComponentBase
         // Source arriving while this pass yields supersedes it: bail at every yield
         // so a stale print never renders against, or prints, the newer document.
         int version = _loadVersion;
+        // A rotation or render-mode change rebuilds the page slots (bumping _renderEpoch)
+        // without changing _loadVersion; capture the epoch too so such a change aborts
+        // the print rather than letting it render into — or print — cleared slots.
+        int epoch = _renderEpoch;
         bool rendered = false;
         // Suspend eviction while catching up: the lazy-render pump can run during
         // the yields below and would otherwise evict pages this pass has already
@@ -338,7 +342,7 @@ public partial class BitPdfViewer : BitComponentBase
                         _status = "Preparing all pages for printing…";
                         StateHasChanged();
                         await Task.Delay(1);
-                        if (IsDisposed || version != _loadVersion) return;
+                        if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
                         rendered = true;
                     }
                     bool ok = await RenderPageAsync(i);
@@ -346,7 +350,7 @@ public partial class BitPdfViewer : BitComponentBase
                     // bar and stay responsive while a large document is prepared on the
                     // single WASM thread (mirrors the lazy-render pumps).
                     await Task.Delay(1);
-                    if (IsDisposed || version != _loadVersion) return;
+                    if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
                     // A page that failed to build (e.g. malformed) leaves its slot empty
                     // and RenderPageAsync returns false; the failure is surfaced via
                     // OnError. Abort rather than open the print dialog with a blank page
@@ -376,9 +380,13 @@ public partial class BitPdfViewer : BitComponentBase
                     StateHasChanged();
                     await Task.Delay(1); // let the DOM paint the freshly rendered pages
                 }
-                if (IsDisposed || version != _loadVersion) return;
+                if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
             }
 
+            // Re-validate immediately before printing: a rotation or mode change during
+            // the canvas-paint wait above (which has no other checkpoint) must not print
+            // cleared slots.
+            if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
             await _js.BitPdfViewerPrint(_containerRef);
         }
         finally

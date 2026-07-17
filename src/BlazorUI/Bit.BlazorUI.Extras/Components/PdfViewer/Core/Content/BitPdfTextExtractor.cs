@@ -65,10 +65,10 @@ public static class BitPdfTextExtractor
                         }
                         break;
                     case BitPdfOpCode.NextLineShowText:
-                        sb.Append('\n');
-                        AppendShow(sb, font, op.Operands.Count > 0 ? op.Operands[^1] : null);
-                        break;
                     case BitPdfOpCode.NextLineShowTextSpacing:
+                        // Both move to the next line then show the string (the last
+                        // operand); the spacing variant's word/char spacing operands
+                        // don't affect extracted text.
                         sb.Append('\n');
                         AppendShow(sb, font, op.Operands.Count > 0 ? op.Operands[^1] : null);
                         break;
