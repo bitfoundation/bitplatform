@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MessageBox;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MessageBox;
 
 public partial class BitMessageBoxDemo
 {
@@ -31,14 +31,12 @@ private bool isProModalOpen;";
 [AutoInject] private BitModalService modalService { get; set; } = default!;
 private async Task ShowMessageBox()
 {
-    BitModalReference modalRef = default!;
-    Dictionary<string, object> parameters = new()
+    await modalService.Show<BitMessageBox>(modalRef => new()
     {
         { nameof(BitMessageBox.Title), ""This is a title"" },
         { nameof(BitMessageBox.Body), ""This is a body."" },
-        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
-    };
-    modalRef = await modalService.Show<BitMessageBox>(parameters);
+        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, modalRef.Close) }
+    });
 }";
 
     private readonly string example5RazorCode = @"
@@ -49,18 +47,20 @@ private async Task ShowMessageBox()
 [AutoInject] private BitProModalService proModalService { get; set; } = default!;
 private async Task ShowProMessageBox()
 {
-    BitProModalReference modalRef = default!;
-    Dictionary<string, object> parameters = new()
+    await proModalService.Show<BitMessageBox>(modalRef => new()
     {
         { nameof(BitMessageBox.Title), ""This is a title"" },
         { nameof(BitMessageBox.Body), ""This is a body."" },
-        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
-    };
-    modalRef = await proModalService.Show<BitMessageBox>(parameters);
+        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, modalRef.Close) }
+    });
 }";
 
     private readonly string example6RazorCode = @"
-<BitButton OnClick=""ShowMessageBoxService"">Show MessageBox</BitButton>";
+<BitButton OnClick=""ShowMessageBoxService"">Show MessageBox</BitButton>
+
+@* The service uses the BitProModalService when available, otherwise the BitModalService. *@
+@* Mount the matching container: BitProModalContainer for the pro modal, BitModalContainer otherwise. *@
+<BitProModalContainer />";
     private readonly string example6CsharpCode = @"
 [AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
 private async Task ShowMessageBoxService()
