@@ -522,15 +522,7 @@ internal static class BitPdfJpegDecoder
     {
         // DC-only blocks (all AC coefficients zero) IDCT to a flat plane of DC/8. This is the
         // common case for smooth image regions, so short-circuit before touching either pass.
-        bool acZero = true;
-        for (int i = 1; i < 64; i++)
-        {
-            if (block[i] != 0)
-            {
-                acZero = false;
-                break;
-            }
-        }
+        bool acZero = block.AsSpan(1, 63).IndexOfAnyExcept(0) < 0;
         if (acZero)
         {
             int dc = (int)MathF.Round(block[0] * 0.125f);

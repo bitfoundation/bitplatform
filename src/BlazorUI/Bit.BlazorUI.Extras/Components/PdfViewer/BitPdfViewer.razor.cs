@@ -74,6 +74,10 @@ public partial class BitPdfViewer : BitComponentBase
     private readonly Dictionary<int, string> _canvasOps = [];
     private readonly List<int> _canvasDirty = [];
     private double _paintedZoom = 1; // zoom the canvases were last rasterized at
+    // A canvas-mode print parks here until OnAfterRenderAsync has actually painted the
+    // freshly rendered canvases, so the print dialog never opens over blank pages. Also
+    // completed on disposal so a parked print can't hang.
+    private TaskCompletionSource? _canvasPaintSignal;
     private bool _showThumbnails;
     private bool _showOutline;
     private IReadOnlyList<BitPdfOutlineItem> _outline = [];
@@ -358,8 +362,20 @@ public partial class BitPdfViewer : BitComponentBase
             if (rendered)
             {
                 _loading = false;
-                StateHasChanged();
-                await Task.Delay(1); // let the DOM paint the freshly rendered pages
+                if (RenderMode == BitPdfRenderMode.Canvas)
+                {
+                    // Canvas pixels are painted by JS in OnAfterRenderAsync, which a
+                    // fixed delay cannot reliably outwait while a large document paints.
+                    // Park until that paint pass signals completion so no page prints blank.
+                    _canvasPaintSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    StateHasChanged();
+                    await _canvasPaintSignal.Task;
+                }
+                else
+                {
+                    StateHasChanged();
+                    await Task.Delay(1); // let the DOM paint the freshly rendered pages
+                }
                 if (IsDisposed || version != _loadVersion) return;
             }
 
@@ -369,11 +385,18 @@ public partial class BitPdfViewer : BitComponentBase
         {
             // Resume eviction even for superseded or failed prints.
             _printing = false;
-            // Only the print that still owns _loadVersion may clear the progress
-            // bar; a superseded one must not hide the newer load's.
+            // Print rendered ALL pages with eviction suspended; trim them back to the
+            // normal window now that the snapshot is built (EvictDistantPages no-ops
+            // until _printing is cleared above). Runs for superseded and failed prints
+            // too, so a large document doesn't stay fully materialized in the DOM.
+            EvictDistantPages();
+            // Only the print that still owns _loadVersion may clear the progress bar
+            // and request the trim render; a superseded one must not touch the newer
+            // load's state (it repaints on its own).
             if (version == _loadVersion)
             {
                 _loading = false;
+                StateHasChanged();
             }
         }
     }
@@ -754,6 +777,14 @@ public partial class BitPdfViewer : BitComponentBase
             }
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
         }
+
+        // The canvases dirtied above have now been painted; release a print flow
+        // parked on the barrier so it can open the dialog over fully painted pages.
+        if (_canvasPaintSignal is { } paintSignal)
+        {
+            _canvasPaintSignal = null;
+            paintSignal.TrySetResult();
+        }
     }
 
 
@@ -869,6 +900,10 @@ public partial class BitPdfViewer : BitComponentBase
             }
             catch (BitPdfPasswordException) when (OnPasswordRequested is not null)
             {
+                // The parse awaited (Task.Run / gate) long enough for a newer Source
+                // or a disposal; don't prompt the host for a password on a load that
+                // is already superseded — that user code would run for nothing.
+                if (IsDisposed || version != _loadVersion) return;
                 // Ask the host for a password and retry once. The callback returns
                 // null to cancel.
                 string? entered = await OnPasswordRequested();
@@ -1615,6 +1650,12 @@ public partial class BitPdfViewer : BitComponentBase
         _renderQueued.Clear();
         _thumbQueue.Clear();
         _thumbQueued.Clear();
+
+        // Release a print parked on the canvas-paint barrier: OnAfterRenderAsync won't
+        // run again to complete it once disposal starts. The print resumes, sees the
+        // bumped version / IsDisposed, and bails.
+        _canvasPaintSignal?.TrySetResult();
+        _canvasPaintSignal = null;
 
         // Wait for any in-flight render to release the gate before disposing it, so a
         // background build that is mid-flight can run its finally (Release) without
