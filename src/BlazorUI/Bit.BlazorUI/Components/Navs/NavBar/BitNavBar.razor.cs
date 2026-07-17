@@ -266,6 +266,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         _items = Items?.ToList() ?? [];
         _oldItems = Items;
+
+        SetSelectedItemByCurrentUrl();
     }
 
     private void OnSetMode()

@@ -7,6 +7,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
+    private int _optionKeySeed;
     private TItem? _toggleItem;
     private List<TItem> _items = [];
     private string? _internalToggleKey;
@@ -127,7 +128,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (option.Key.HasNoValue())
         {
-            option.Key = _items.Count.ToString();
+            // Use a monotonic seed so keys stay unique even after removals (a _items.Count-based key can
+            // collide with an existing one once an option is removed), and guard against colliding with
+            // any explicitly supplied keys.
+            var key = (_optionKeySeed++).ToString();
+            while (_items.Any(i => GetItemKey(i) == key))
+            {
+                key = (_optionKeySeed++).ToString();
+            }
+            option.Key = key;
         }
 
         var item = (option as TItem)!;
@@ -158,7 +167,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal void UnregisterOption(BitButtonGroupOption option)
     {
-        _items.Remove((option as TItem)!);
+        var item = (option as TItem)!;
+
+        // When the removed option is the currently toggled one, clear the toggle state and the bound
+        // key so they don't keep referencing an option that no longer exists.
+        if (_toggleItem == item)
+        {
+            _toggleItem = null;
+            _ = AssignToggleKey(null);
+        }
+
+        _items.Remove(item);
         StateHasChanged();
     }
 
@@ -220,7 +239,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnInitializedAsync()
     {
-        _items = Items is not null ? [.. Items] : [];
+        // Only seed _items from Items for the Items API; in the options/child-content path the options
+        // register themselves, so it must start empty.
+        _items = (ChildContent is null && Options is null && Items is not null) ? [.. Items] : [];
 
         if (Toggle && Items is not null && Items.Any())
         {
@@ -250,17 +271,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (ChildContent is null && Options is null && Items is not null && Items.Any())
         {
-            if (_oldItems is null || Items.SequenceEqual(_oldItems) is false)
+            if (_oldItems is null || (ReferenceEquals(Items, _oldItems) is false && Items.SequenceEqual(_oldItems) is false))
             {
                 _oldItems = Items;
                 _items = [.. Items];
 
-                for (int i = 0; i < _items.Count; i++)
-                {
-                    if (GetItemKey(_items[i]).HasValue()) continue;
-
-                    SetItemKey(_items[i], i.ToString());
-                }
+                AssignItemKeys();
             }
         }
 
@@ -292,6 +308,35 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         foreach (var item in _items)
         {
             (item as BitButtonGroupOption)?.InternalStateHasChanged();
+        }
+    }
+
+    private void AssignItemKeys()
+    {
+        // Collect the explicit keys first so the auto-generated keys never collide with them.
+        var usedKeys = new HashSet<string>();
+        foreach (var item in _items)
+        {
+            var key = GetItemKey(item);
+            if (key.HasValue()) usedKeys.Add(key!);
+        }
+
+        for (int i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            if (GetItemKey(item).HasValue()) continue;
+
+            // Start from the loop index and increment until a non-colliding key is found so the
+            // result stays deterministic across renders while remaining unique.
+            var suffix = i;
+            var candidate = suffix.ToString();
+            while (usedKeys.Contains(candidate))
+            {
+                candidate = (++suffix).ToString();
+            }
+
+            SetItemKey(item, candidate);
+            usedKeys.Add(candidate);
         }
     }
 

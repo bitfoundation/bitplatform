@@ -611,6 +611,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         await CloseCallout();
 
+        // CloseCallout changes IsOpen but does not re-render the root itself, so refresh now to update
+        // the open-state classes even when the Sticky branch below returns early.
+        StateHasChanged();
+
         if (Sticky)
         {
             if (await AssignSelectedItem(item) is false) return;

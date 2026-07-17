@@ -155,6 +155,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         StateHasChanged();
     }
 
+    // The breadcrumb renders the visible items itself from the registered options (they only render a
+    // hidden marker), reading each option's data during its own render. So when an option's parameters
+    // change, the breadcrumb must re-render to pick up the new values.
+    internal void NotifyOptionParametersChanged()
+    {
+        if (IsDisposed) return;
+
+        StateHasChanged();
+    }
+
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
         if (IsDisposed) return;

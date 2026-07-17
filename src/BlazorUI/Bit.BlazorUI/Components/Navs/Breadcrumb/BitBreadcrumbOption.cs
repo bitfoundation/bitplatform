@@ -7,6 +7,7 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     internal string _OptionId { get; } = BitShortId.NewId();
 
     private bool _disposed;
+    private string? _lastParametersSignature;
 
 
 
@@ -87,6 +88,25 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
         Parent?.RegisterOptions(this);
 
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        // The parent renders the visible items from the options and reads their data during its own
+        // render, so a change to an option's parameters isn't reflected until the parent re-renders.
+        // Notify it only when a rendered parameter actually changes; the guard avoids a render loop
+        // since OnParametersSet runs on every parent render. Reference-type params are folded into a
+        // value-based signature (e.g. the icon's CSS classes) so an equal-but-new instance won't churn.
+        var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsEnabled, IsSelected, Class, Style, ReversedIcon, Key);
+
+        if (_lastParametersSignature is not null && _lastParametersSignature != signature)
+        {
+            Parent?.NotifyOptionParametersChanged();
+        }
+
+        _lastParametersSignature = signature;
+
+        base.OnParametersSet();
     }
 
     // Renders a hidden marker element in place, whose DOM order (in the hidden options container of

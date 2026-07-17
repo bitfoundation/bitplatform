@@ -4,7 +4,7 @@
 @if (MenuButton.Sticky is false || Item != MenuButton.SelectedItem)
 {
     var template = MenuButton.GetTemplate(Item);
-    var isEnabled = MenuButton.GetIsEnabled(Item);
+    var isEnabled = MenuButton.IsEnabled && MenuButton.GetIsEnabled(Item);
 
     <li role="presentation" style="@MenuButton.Styles?.ItemWrapper" class="@MenuButton.Classes?.ItemWrapper">
         <button @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
