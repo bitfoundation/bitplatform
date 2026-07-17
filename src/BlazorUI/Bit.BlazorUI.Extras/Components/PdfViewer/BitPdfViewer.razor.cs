@@ -1041,10 +1041,11 @@ public partial class BitPdfViewer : BitComponentBase
             return false; // disposal disposed the gate while we waited for it
         }
         string? buildError = null;
+        int version = 0, epoch = 0;
         try
         {
             if (IsDisposed || index >= _pages.Count || _pages[index] is not null) return false; // filled/disposed while waiting
-            int version = _loadVersion, epoch = _renderEpoch;
+            version = _loadVersion; epoch = _renderEpoch;
 
             // Snapshot the render settings on the UI thread so a background build reads
             // a consistent set even if _rotation/TextCoalescing/RenderMode change while
@@ -1083,8 +1084,11 @@ public partial class BitPdfViewer : BitComponentBase
         {
             _renderGate.Release();
             // OnError is user code; invoke it only after releasing the gate so a
-            // handler that triggers a reload or render cannot deadlock on it.
-            if (buildError is not null)
+            // handler that triggers a reload or render cannot deadlock on it. And
+            // only for a build that still owns the current load/epoch on a live
+            // component: a build that threw because a reload superseded it (which
+            // can null _document mid-build) is not this document's failure.
+            if (buildError is not null && !IsDisposed && version == _loadVersion && epoch == _renderEpoch)
             {
                 await OnError.InvokeAsync(buildError);
             }
@@ -1112,6 +1116,7 @@ public partial class BitPdfViewer : BitComponentBase
             return false; // disposal disposed the gate while we waited for it
         }
         string? buildError = null;
+        int version = 0, epoch = 0;
         try
         {
             if (IsDisposed || index >= _thumbs.Count || _thumbs[index] is not null) return false;
@@ -1127,7 +1132,7 @@ public partial class BitPdfViewer : BitComponentBase
                 return true;
             }
 
-            int version = _loadVersion, epoch = _renderEpoch;
+            version = _loadVersion; epoch = _renderEpoch;
             int rotation = _rotation;
             var textCoalescing = TextCoalescing;
             var renderMode = RenderMode;
@@ -1161,7 +1166,9 @@ public partial class BitPdfViewer : BitComponentBase
         finally
         {
             _renderGate.Release();
-            if (buildError is not null)
+            // As RenderPageAsync: report only an active build's failure, never one
+            // from a build superseded by a reload/epoch change or a torn-down component.
+            if (buildError is not null && !IsDisposed && version == _loadVersion && epoch == _renderEpoch)
             {
                 await OnError.InvokeAsync(buildError);
             }
@@ -1533,6 +1540,12 @@ public partial class BitPdfViewer : BitComponentBase
 
     private async Task ClearSearchAsync()
     {
+        // Shared invalidation for every "clear" path (empty query, closing the box):
+        // bump the generation so any search still in flight abandons at its next
+        // checkpoint, and clear its progress bar here — the abandoning run returns
+        // early via the generation guard and so never runs its own `_loading = false`.
+        _searchGeneration++;
+        _loading = false;
         _searchTotal = 0;
         _searchIndex = -1;
         await _js.BitPdfViewerClearSearch(_containerRef);

@@ -450,8 +450,12 @@ internal static class BitPdfImage
         int rowBytes = (mw * mbpc + 7) / 8;
 
         // Horizontal scale is fixed per column, so precompute the source x for each
-        // destination x once instead of dividing per pixel. Null means 1:1 (no scale).
-        int[]? xMap = mw == width ? null : BuildScaleMap(width, mw);
+        // destination x once instead of dividing per pixel. Only worth (and safe) to
+        // precompute for reasonably wide rows: a pathological width (up to the pixel
+        // budget when height is tiny) would make the width-sized map a ~1 GB allocation
+        // on top of the RGBA buffer, so above the threshold each mx is computed inline.
+        bool scaleX = mw != width;
+        int[]? xMap = scaleX && width <= ScaleMapMaxWidth ? BuildScaleMap(width, mw) : null;
 
         // The alpha byte is a pure function of the mask sample (sample -> /maxVal ->
         // optional invert -> round to 0..255). For the usual bit depths (<=16) bake
@@ -468,7 +472,7 @@ internal static class BitPdfImage
                 int o = y * width;
                 for (int x = 0; x < width; x++)
                 {
-                    int mx = xMap is null ? x : xMap[x];
+                    int mx = xMap is not null ? xMap[x] : (scaleX ? (int)((long)x * mw / width) : x);
                     int sample = ReadBits(mdata, rowStart, mx * mbpc, mbpc);
                     rgba[(o + x) * 4 + 3] = alphaLut is not null
                         ? alphaLut[sample]
@@ -487,7 +491,7 @@ internal static class BitPdfImage
             int rowStart = (mh == height ? y : (int)((long)y * mh / height)) * rowBytes;
             for (int x = 0; x < width; x++)
             {
-                int mx = xMap is null ? x : xMap[x];
+                int mx = xMap is not null ? xMap[x] : (scaleX ? (int)((long)x * mw / width) : x);
                 int sample = ReadBits(mdata, rowStart, mx * mbpc, mbpc);
                 double alpha = sample / maxVal;
                 if (invert)
@@ -507,6 +511,11 @@ internal static class BitPdfImage
             }
         }
     }
+
+    // Above this destination width the per-column source-x map (4 bytes/entry) is not
+    // precomputed — each mx is derived inline instead — so a pathologically wide image
+    // cannot force a huge array allocation. 65536 keeps the fast path for any real image.
+    private const int ScaleMapMaxWidth = 1 << 16;
 
     // Maps a destination coordinate to its nearest source coordinate for a mask that
     // differs in size from the base image (matches the inline `i * srcLen / dstLen`).
