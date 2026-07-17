@@ -182,7 +182,9 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
             if (Nav.Mode == BitNavMode.Automatic)
             {
-                Nav.SetSelectedItemByCurrentUrl();
+                // Defer the URL match to a single pass after this registration batch renders, instead
+                // of matching here per option (which would flatten and scan the whole tree each time).
+                Nav.MarkSelectionDirty();
             }
         }
 

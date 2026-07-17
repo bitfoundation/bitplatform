@@ -9,6 +9,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 {
     internal TItem? _currentItem;
     internal List<TItem> _items = [];
+    private bool _selectionDirty;
     private IEnumerable<TItem>? _oldItems;
 
 
@@ -121,8 +122,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     internal void RegisterOption(BitNavBarOption option)
     {
         _items.Add((option as TItem)!);
-        SetSelectedItemByCurrentUrl();
-        RefreshOptions();
+        _selectionDirty = true;
         StateHasChanged();
     }
 
@@ -131,8 +131,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (IsDisposed) return;
 
         _items.Remove((option as TItem)!);
-        SetSelectedItemByCurrentUrl();
-        RefreshOptions();
+        _selectionDirty = true;
         StateHasChanged();
     }
 
@@ -208,6 +207,20 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         RefreshOptions();
 
         base.OnParametersSet();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Each option flags a selection recompute as it registers instead of matching immediately, so
+        // registering n options collapses into a single match pass here rather than one O(n) pass each.
+        if (_selectionDirty)
+        {
+            _selectionDirty = false;
+            SetSelectedItemByCurrentUrl();
+            RefreshOptions();
+        }
+
+        base.OnAfterRender(firstRender);
     }
 
 

@@ -10,6 +10,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 {
     internal TItem? _currentItem;
     internal List<TItem> _items = [];
+    private bool _selectionDirty;
     private IEnumerable<TItem>? _oldItems;
     internal Dictionary<TItem, bool> _itemExpandStates = [];
 
@@ -205,6 +206,20 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         base.OnParametersSet();
     }
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // In Automatic mode each option requests a URL match as it registers. Running the match per
+        // option is O(n^2) (each pass flattens the whole tree and matches every item), so the options
+        // only flag it and the match runs once here, after the registration batch has rendered.
+        if (_selectionDirty)
+        {
+            _selectionDirty = false;
+            SetSelectedItemByCurrentUrl();
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
 
 
     internal void SetItemExpanded(TItem item, bool value)
@@ -255,6 +270,14 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     internal string GetItemKey(TItem item, string defaultKey)
     {
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
+    }
+
+    // Flags that the Automatic-mode selection needs to be recomputed. Called by options as they register
+    // instead of matching immediately, so a batch of registrations collapses into a single match pass
+    // in OnAfterRender rather than one O(n) pass per option.
+    internal void MarkSelectionDirty()
+    {
+        _selectionDirty = true;
     }
 
     internal void SetSelectedItemByCurrentUrl()
