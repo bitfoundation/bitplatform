@@ -1,4 +1,4 @@
-// Graphics-state tracking for content-stream rendering.
+﻿// Graphics-state tracking for content-stream rendering.
 
 
 namespace Bit.BlazorUI;

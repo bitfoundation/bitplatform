@@ -16,6 +16,8 @@ public partial class _BitNavChild<TItem> where TItem : class
 
     [Parameter] public int Depth { get; set; }
 
+    [Parameter] public RenderFragment? ChildrenFragment { get; set; }
+
 
 
     private async Task HandleOnClick(bool renderLink)

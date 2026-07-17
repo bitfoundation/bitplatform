@@ -1,4 +1,4 @@
-// Color-space handling: the device, ICC-by-component, indexed and separation cases.
+﻿// Color-space handling: the device, ICC-by-component, indexed and separation cases.
 
 
 namespace Bit.BlazorUI;

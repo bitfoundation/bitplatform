@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitTimeline TItem="BitTimelineOption">
+    <BitTimelineOption PrimaryText="First" />
+    @if (ShowMiddle)
+    {
+        <BitTimelineOption PrimaryText="Middle" />
+    }
+    <BitTimelineOption PrimaryText="Last" />
+</BitTimeline>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+}

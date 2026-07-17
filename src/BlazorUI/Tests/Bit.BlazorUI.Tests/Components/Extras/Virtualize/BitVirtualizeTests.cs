@@ -230,7 +230,7 @@ public class BitVirtualizeTests : BunitTestContext
 
         // Mutate the same list instance (add 10 items) and re-render with the same reference.
         list.AddRange(Enumerable.Range(10, 10));
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Items, list));
+        component.Render(parameters => parameters.Add(p => p.Items, list));
 
         Assert.AreEqual("height:1000px", component.Find(".bit-vir-spc").GetAttribute("style"));
     }

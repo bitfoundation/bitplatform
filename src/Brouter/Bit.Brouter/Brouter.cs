@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -617,6 +617,99 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // navigation-state fields above.
     private Broute[] _committedChain = [];
 
+    // Route-lifecycle arrivals (IBrouterRoute activation/renavigation) staged by a commit and fired
+    // from OnAfterRenderAsync once the commit render has landed - the content must be mounted (so
+    // handlers are registered) and the DOM available before the callbacks run. Deactivations are
+    // never staged: they fire synchronously in the pipeline BEFORE the render that hides/unmounts
+    // the departing content. Each entry carries the lifecycle navigation generation of the commit
+    // that staged it so the flush can drop arrivals from a commit that was superseded before its
+    // flush ran (the newer commit staged its own; firing the stale ones would deliver arrivals -
+    // resolved against the routes' CURRENT parameters - for a location that never settled). Plain
+    // tuples rather than closures: nothing captured, inspectable in a debugger. Same
+    // single-dispatcher discipline as the surrounding fields. Note this staging also makes the
+    // lifecycle a no-op under static prerendering (OnAfterRenderAsync never runs there), mirroring
+    // Vue's "not called during SSR" contract.
+    private readonly List<(Broute Node, BrouterNavigationContext Ctx, long Version)> _pendingLifecycleFlush = [];
+
+    // Generation counter for _pendingLifecycleFlush: increments only when a NAVIGATION pipeline
+    // starts. Deliberately distinct from _navVersion, which revalidation also bumps for
+    // supersession - a revalidation running between a commit and its OnAfterRenderAsync flush is
+    // not a navigation (it stages no arrivals of its own) and must not invalidate the arrivals the
+    // commit staged. Same single-dispatcher discipline as the surrounding fields.
+    private long _lifecycleNavGeneration;
+
+    /// <summary>
+    /// Fires the route-lifecycle departures for the routes an imminent render will remove from the
+    /// screen - leaf -> root, mirroring leave-guard order, so a child can flush state before its
+    /// parent's deactivation tears shared context down. Must run BEFORE the render that unmounts
+    /// the departing content (see <see cref="IBrouterRoute"/>'s Disposing contract). When
+    /// <paramref name="surviving"/> is set, routes it contains are skipped - unless
+    /// <paramref name="notifySurvivorsAsRemaining"/> is true (the pending-UI render, which unmounts
+    /// EVERYTHING for the duration of the load): then survivors are notified with
+    /// willRemainMatched, so retained keep-alive content no-ops while transient content gets its
+    /// honest Disposing notification for the instance that render destroys.
+    /// </summary>
+    private void NotifyChainDepartures(BrouterNavigationContext ctx, Broute[] departingChain,
+        List<Broute>? surviving = null, bool notifySurvivorsAsRemaining = false, Broute? contentReplacedNode = null)
+    {
+        // A departure callback's synchronous prefix can start a new navigation, superseding this
+        // one. The rest of the chain then belongs to that navigation's own departure phase (which
+        // idempotently skips the nodes already notified here) and must not receive callbacks
+        // describing a target that will never commit. The generation check covers callers whose
+        // context carries no cancellable token (HandleAppNotFoundAsync passes
+        // CancellationToken.None); it only ever changes when a navigation pipeline starts.
+        var generation = _lifecycleNavGeneration;
+
+        for (var i = departingChain.Length - 1; i >= 0; i--)
+        {
+            var node = departingChain[i];
+            var survives = surviving is not null && surviving.Contains(node);
+            if (survives && notifySurvivorsAsRemaining is false) continue;
+            // contentReplacedNode is the error-boundary route whose committed content the coming
+            // render REPLACES with its ErrorContent (see RenderNavigationError): its departure is
+            // forced to Disposing - keep-alive retention keeps a subtree that no longer holds the
+            // page, so Hidden would be a lie.
+            node.NotifyDeparture(ctx, willRemainMatched: survives,
+                contentReplaced: ReferenceEquals(node, contentReplacedNode));
+            if (ctx.CancellationToken.IsCancellationRequested || generation != _lifecycleNavGeneration) return;
+        }
+    }
+
+    /// <summary>
+    /// Runs the pre-render arrival preparation for a chain about to be committed (per-parameter
+    /// keep-alive sibling deactivation - see <see cref="Broute.PrepareArrival"/>). Root -> leaf,
+    /// like guards and loaders. Must run after the chain's parameters are committed and before the
+    /// commit render.
+    /// </summary>
+    private void PrepareArrivals(BrouterNavigationContext ctx, List<Broute> chain)
+    {
+        // A per-parameter keep-alive sibling deactivation fired here runs synchronously into user
+        // code (OnDeactivated), whose prefix can start a new navigation and supersede this one - the
+        // same hazard NotifyChainDepartures guards. Stop the moment that happens so we don't
+        // deactivate siblings on behalf of a target that will never commit; the caller's post-loop
+        // stale-commit check then abandons the rest of the commit.
+        var generation = _lifecycleNavGeneration;
+        foreach (var node in chain)
+        {
+            node.PrepareArrival(ctx);
+            if (ctx.CancellationToken.IsCancellationRequested || generation != _lifecycleNavGeneration) return;
+        }
+    }
+
+    /// <summary>
+    /// Stages the route-lifecycle arrivals for a committed chain (root -> leaf), to be fired by
+    /// OnAfterRenderAsync once the commit render has landed. Stamped with the current lifecycle
+    /// navigation generation; see <see cref="_pendingLifecycleFlush"/>.
+    /// </summary>
+    private void StageArrivals(BrouterNavigationContext ctx, List<Broute> chain)
+    {
+        var version = _lifecycleNavGeneration;
+        foreach (var node in chain)
+        {
+            _pendingLifecycleFlush.Add((node, ctx, version));
+        }
+    }
+
     // Awaited-navigation bookkeeping (IBrouter.NavigateAsync). At most one navigation outcome is
     // pending at a time: registering a new one supersedes the old (that IS the Superseded outcome).
     // Resolution is keyed on the target's absolute URI so a pipeline for some other navigation can
@@ -920,65 +1013,105 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender)
+        // Claim this render pass's staged route-lifecycle arrivals up front, before any await
+        // below can yield the dispatcher. The interop awaits in this method can overlap a newer
+        // navigation's commit, and the arrivals that commit stages must wait for ITS render's
+        // OnAfterRenderAsync: draining them from this older invocation would fire activations
+        // before their content has mounted (handlers not registered, per-parameter kept entries
+        // not materialized yet), silently losing them. Entries staged while this flush is in
+        // flight stay queued for the invocation that matches their render; the generation filter
+        // in the finally below still drops entries whose commit a newer navigation superseded.
+        var staged = Array.Empty<(Broute Node, BrouterNavigationContext Ctx, long Version)>();
+        if (_pendingLifecycleFlush.Count > 0)
         {
-            // Enabling navigation interception genuinely requires an interactive runtime, so it stays
-            // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
-            // this method doesn't run at all - that's fine: the initial match already happened in
-            // OnInitializedAsync, and interception is enabled here once the component goes interactive.
-            //
-            // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
-            // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
-            // interactivity handoff) does not depend on it succeeding right now. Mirror the defensive
-            // style used in BrouterLink and BrouterService.BackAsync so a transient failure here can't
-            // kill navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
-            // attachment naturally on the next user click via NavigationManager fallback paths.
-            try
-            {
-                await _navInterception.EnableNavigationInterceptionAsync();
-            }
-            catch (JSDisconnectedException) { /* circuit disconnected before/during interop */ }
-            catch (JSException) { /* JS interop failure; non-fatal */ }
-            catch (InvalidOperationException) { /* interop unavailable during prerender */ }
-            catch (TaskCanceledException) { /* component disposed mid-call */ }
-
-            // Arm the always-on external-navigation confirmation once interactive (the JS side is
-            // idempotent; runtime toggling goes through IBrouter.SetConfirmExternalNavigationAsync).
-            if (Options.ConfirmExternalNavigation)
-            {
-                await _brouterService.SetConfirmExternalNavigationAsync(true);
-            }
-
-            // Register the preventive navigation handler now that the runtime is interactive.
-            // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
-            // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
-            // (LocationChangingContext.PreventNavigation) instead of reactively "undoing" a URL change
-            // that already happened. This is what makes guards preventive rather than reactive: no
-            // address-bar flicker, no corrupted history on a cancelled Back, and real "unsaved changes"
-            // prompts become possible. LocationChanged is kept only for the commit phase (loaders +
-            // render). During static prerender this method never runs, so the handler simply isn't
-            // registered there - which is correct, since there is no interactive navigation to guard.
-            _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
+            staged = _pendingLifecycleFlush.ToArray();
+            _pendingLifecycleFlush.Clear();
         }
 
-        // Apply any post-navigation DOM effects (fragment/top scroll, focus) staged by the last
-        // committed navigation. Running here - after the render batch has been applied to the DOM -
-        // is what lets fragment (#section) and focus selectors resolve against the newly rendered
-        // route instead of the previous page. Exchange to null so each staged navigation's effects
-        // run exactly once; a navigation with nothing pending is a no-op. During static prerender
-        // this method never runs, so effects are correctly skipped server-side (no DOM/JS there).
-        var pending = Interlocked.Exchange(ref _pendingEffectsLocation, null);
-        if (pending is not null)
+        // Everything below can await JS interop and throw (a dropped circuit failing the
+        // first-render SetConfirmExternalNavigationAsync, the effects/view-transition interop):
+        // the finally flushes the arrivals claimed above either way, so the committed
+        // navigation's activation callbacks are never stranded by a setup or effects failure.
+        try
         {
-            await _brouterService.ApplyNavigationEffectsAsync(pending);
-        }
+            if (firstRender)
+            {
+                // Enabling navigation interception genuinely requires an interactive runtime, so it stays
+                // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
+                // this method doesn't run at all - that's fine: the initial match already happened in
+                // OnInitializedAsync, and interception is enabled here once the component goes interactive.
+                //
+                // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
+                // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
+                // interactivity handoff) does not depend on it succeeding right now. Mirror the defensive
+                // style used in BrouterLink and BrouterService.BackAsync so a transient failure here can't
+                // kill navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
+                // attachment naturally on the next user click via NavigationManager fallback paths.
+                try
+                {
+                    await _navInterception.EnableNavigationInterceptionAsync();
+                }
+                catch (JSDisconnectedException) { /* circuit disconnected before/during interop */ }
+                catch (JSException) { /* JS interop failure; non-fatal */ }
+                catch (InvalidOperationException) { /* interop unavailable during prerender */ }
+                catch (TaskCanceledException) { /* component disposed mid-call */ }
 
-        // Complete the navigation's View Transition after the effects above, so the incoming
-        // snapshot the browser animates to already reflects the final scroll/focus state.
-        if (_pendingViewTransitionCompletion)
+                // Arm the always-on external-navigation confirmation once interactive (the JS side is
+                // idempotent; runtime toggling goes through IBrouter.SetConfirmExternalNavigationAsync).
+                if (Options.ConfirmExternalNavigation)
+                {
+                    await _brouterService.SetConfirmExternalNavigationAsync(true);
+                }
+
+                // Register the preventive navigation handler now that the runtime is interactive.
+                // RegisterLocationChangingHandler (NET 7+) runs BEFORE the URL commits to history, so a
+                // guard / OnNavigating hook that cancels or redirects prevents the navigation outright
+                // (LocationChangingContext.PreventNavigation) instead of reactively "undoing" a URL change
+                // that already happened. This is what makes guards preventive rather than reactive: no
+                // address-bar flicker, no corrupted history on a cancelled Back, and real "unsaved changes"
+                // prompts become possible. LocationChanged is kept only for the commit phase (loaders +
+                // render). During static prerender this method never runs, so the handler simply isn't
+                // registered there - which is correct, since there is no interactive navigation to guard.
+                _locationChangingRegistration ??= _navManager.RegisterLocationChangingHandler(OnLocationChanging);
+            }
+
+            // Apply any post-navigation DOM effects (fragment/top scroll, focus) staged by the last
+            // committed navigation. Running here - after the render batch has been applied to the DOM -
+            // is what lets fragment (#section) and focus selectors resolve against the newly rendered
+            // route instead of the previous page. Exchange to null so each staged navigation's effects
+            // run exactly once; a navigation with nothing pending is a no-op. During static prerender
+            // this method never runs, so effects are correctly skipped server-side (no DOM/JS there).
+            var pending = Interlocked.Exchange(ref _pendingEffectsLocation, null);
+            if (pending is not null)
+            {
+                await _brouterService.ApplyNavigationEffectsAsync(pending);
+            }
+
+            // Complete the navigation's View Transition after the effects above, so the incoming
+            // snapshot the browser animates to already reflects the final scroll/focus state.
+            if (_pendingViewTransitionCompletion)
+            {
+                _pendingViewTransitionCompletion = false;
+                await _brouterService.CompleteViewTransitionAsync();
+            }
+        }
+        finally
         {
-            _pendingViewTransitionCompletion = false;
-            await _brouterService.CompleteViewTransitionAsync();
+            // Fire the route-lifecycle arrivals (IBrouterRoute activation/renavigation) claimed at
+            // the top of this method, now that the commit render is on screen - after the DOM
+            // effects and view-transition completion above, so lifecycle callbacks never delay the
+            // visual navigation. Entries staged by a commit that has since been superseded are
+            // dropped: the newer commit staged its own, and firing stale ones would resolve
+            // against the routes' current state with a location that never settled. The callbacks
+            // themselves are started-but-not-awaited (see BrouterRouteContext.Invoke); handler
+            // failures surface via ReportLifecycleError, never out of this method.
+            foreach (var (node, ctx, version) in staged)
+            {
+                // Live read per entry (not captured before the loop): a callback's synchronous
+                // prefix can start a new navigation mid-flush, superseding the remaining entries.
+                if (version != _lifecycleNavGeneration) continue;
+                node.FireArrival(ctx);
+            }
         }
     }
 
@@ -1051,7 +1184,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         b1.SetKey(discovered);
                         b1.AddAttribute(seq++, nameof(Broute.Path), discovered.Template);
                         b1.AddAttribute(seq++, nameof(Broute.Component), discovered.ComponentType);
-                        b1.AddAttribute(seq++, nameof(Broute.BindComponentParametersByName), true);
                         b1.CloseComponent();
                     }
                 }));
@@ -1213,16 +1345,41 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         {
             await InvokeAsync(async () =>
             {
+                // Captured to detect a navigation starting while OnNotFound is awaited below (the
+                // generation only ever changes when a navigation pipeline starts, never for
+                // revalidation - see _lifecycleNavGeneration).
+                var generation = _lifecycleNavGeneration;
+
                 // Unmatch the currently rendered chain so the fallback replaces the page content -
                 // the URL deliberately stays put (the resource at this URL is what's missing).
                 foreach (var r in GetRoutesSnapshot()) r.Matched = false;
                 _noRouteMatched = true;
+                // Everything routed leaves the screen (the fallback replaces it): notify the
+                // route-lifecycle departures while the departing content is still alive, before the
+                // render below (or the NotFoundUrl redirect's eventual commit) unmounts it. There is
+                // no navigation here - the URL stays put - so the context describes a same-location
+                // "navigation".
+                NotifyChainDepartures(
+                    new BrouterNavigationContext(location, location, CancellationToken.None),
+                    _committedChain);
+                // A departure callback's synchronous prefix can start a new navigation (same
+                // re-entrancy FlushPendingLifecycle guards against) - that navigation owns the
+                // router state now; clearing the committed chain below would skip its leave guards
+                // for content still on screen.
+                if (generation != _lifecycleNavGeneration) return;
                 // The fallback replaces the routed content, so nothing routed is on screen anymore -
                 // a later navigation must not run leave guards for the replaced chain.
                 _committedChain = [];
                 _currentRouteData = null;
 
-                if (OnNotFound is not null) await OnNotFound(location);
+                if (OnNotFound is not null)
+                {
+                    await OnNotFound(location);
+                    // A navigation that started while OnNotFound was awaited owns the router state
+                    // now (committed chain, route data, URL): redirecting to the fallback or
+                    // re-rendering the unmatched state here would hijack it.
+                    if (generation != _lifecycleNavGeneration) return;
+                }
 
                 if (string.IsNullOrEmpty(NotFoundUrl) is false && IsSamePath(location.Path, NotFoundUrl) is false)
                 {
@@ -1445,6 +1602,21 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         catch { /* OnError must never crash the navigation handler */ }
     }
 
+    // Observability sink for route-lifecycle callback failures (IBrouterRoute handlers): surfaced
+    // through IBrouter.OnError like loader/guard failures, fire-and-forget because lifecycle
+    // callbacks must never block or fail the navigation (see BrouterRouteContext.Invoke).
+    internal void ReportLifecycleError(BrouterNavigationContext ctx, Exception ex)
+    {
+        _ = SafeInvokeOnError(ctx.From, ctx.To, ex).AsTask();
+    }
+
+    // Same sink for lifecycle work that happens outside any navigation (teardown notifications:
+    // route removal, outlet unmount), where only the current location is meaningful.
+    internal void ReportLifecycleError(BrouterLocation location, Exception ex)
+    {
+        _ = SafeInvokeOnError(location, location, ex).AsTask();
+    }
+
     /// <summary>
     /// Pure: builds a <see cref="BrouterLocation"/> from the current <c>NavigationManager.Uri</c>
     /// (and the current entry's <c>HistoryEntryState</c>). Does not mutate
@@ -1615,6 +1787,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         // Supersede any in-flight navigation work.
         var version = Interlocked.Increment(ref _navVersion);
+        // A navigation (never a revalidation) starting is what invalidates staged lifecycle
+        // arrivals - see _lifecycleNavGeneration.
+        _lifecycleNavGeneration++;
         var newCts = new CancellationTokenSource();
         var oldCts = Interlocked.Exchange(ref _navCts, newCts);
         // Cancel the previous navigation if any. We do NOT dispose oldCts here: the
@@ -1719,6 +1894,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // Nothing routed is on screen once the fallback renders below; leave guards of the
                 // previous chain already ran for this navigation. Either way this navigation's
                 // awaited outcome is NotFound (resolved before any NotFoundUrl redirect fires).
+                //
+                // Everything routed leaves the screen (the fallback - or the NotFoundUrl redirect's
+                // eventual commit - replaces it): notify route-lifecycle departures while the
+                // departing content is still alive, before any render unmounts it.
+                NotifyChainDepartures(ctx, _committedChain);
+                // Departure callbacks run synchronously into user code and can start a new
+                // navigation; when that happened, the newer pipeline owns the committed state now.
+                if (token.IsCancellationRequested || version != _navVersion) return;
                 _committedChain = [];
                 _currentRouteData = null;
                 ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.NotFound());
@@ -1905,6 +2088,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 pendingLoaders.Add((node, chainIndex));
             }
 
+            // Set when a render in THIS pipeline has already unmounted the departing content and the
+            // route-lifecycle departures were notified ahead of it; the commit point below then must
+            // not notify them again.
+            var departuresNotified = false;
+
             if (pendingLoaders.Count > 0)
             {
                 // Reveal the pending-navigation UI lazily - only now that a loader is actually about to
@@ -1914,6 +2102,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // duration of the await(s), then it's cleared before SetMatched reveals the new route.
                 if (Navigating is not null && _navigating is false)
                 {
+                    // This render unmounts the whole committed chain (everything is unmatched for the
+                    // duration of the load), so route-lifecycle departures fire now, while the content
+                    // is still alive. Routes staying in the new chain are notified with
+                    // willRemainMatched: retained keep-alive content merely hides for the duration
+                    // (no event - it resolves as a renavigation at commit), while transient content
+                    // really is disposed by this render and gets its Disposing notification.
+                    NotifyChainDepartures(ctx, _committedChain, matchedChain, notifySurvivorsAsRemaining: true);
+                    departuresNotified = true;
+
+                    // A departure callback's synchronous prefix may have started a new navigation;
+                    // don't reveal pending UI (or run loaders) on behalf of a superseded one.
+                    if (token.IsCancellationRequested || version != _navVersion) return;
+
                     _navigating = true;
                     StateHasChanged();
                 }
@@ -2049,6 +2250,27 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 if (token.IsCancellationRequested || version != _navVersion) return;
             }
 
+            // Route-lifecycle departures for the routes this commit removes from the screen. They
+            // must fire BEFORE SetMatched: its StateHasChanged renders synchronously on this
+            // dispatcher, unmounting (and disposing) the departing content - and the Disposing
+            // notification's contract is that its synchronous part runs first. Routes present in
+            // both chains aren't notified here: their content survives the commit untouched (the
+            // no-pending-render path never unmounted it) and resolves as a renavigation below.
+            if (departuresNotified is false)
+            {
+                NotifyChainDepartures(ctx, _committedChain, matchedChain);
+                // Departure callbacks run synchronously into user code and can start a new
+                // navigation; abandon this commit before it mutates state the newer one owns.
+                if (token.IsCancellationRequested || version != _navVersion) return;
+            }
+
+            // Pre-render arrival preparation: per-parameter keep-alive routes deactivate the
+            // outgoing sibling entry now, while its instance is guaranteed alive - the commit
+            // render below may LRU-evict it, and an evicted entry must never die still-active.
+            PrepareArrivals(ctx, matchedChain);
+            // Same synchronous-supersession hazard as the departures above.
+            if (token.IsCancellationRequested || version != _navVersion) return;
+
             // Loaders are done: hide the pending-navigation UI. SetMatched marks the whole chain and
             // issues one render request at its topmost route, which renders the now-matched route in
             // the pending UI's place, so clearing the flag first avoids showing both at once.
@@ -2083,6 +2305,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // them once that render lands. Only the latest staged location is ever applied, so a
             // superseded navigation can't scroll/focus on behalf of the page the user left.
             _pendingEffectsLocation = to;
+
+            // Stage the route-lifecycle arrivals (activation / renavigation per route; see
+            // IBrouterRoute). OnAfterRenderAsync fires them once the render below has landed: only
+            // then is the new content mounted (so freshly created components have registered their
+            // handlers) and the DOM available to activation callbacks. Staged after the last
+            // supersession bail-outs above so an abandoned pipeline never strands stale arrivals.
+            StageArrivals(ctx, matchedChain);
 
             StateHasChanged();
 
@@ -2257,25 +2486,31 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Runs the <see cref="Broute.LeaveGuard"/>s of every currently committed route that the pending
-    /// navigation to <paramref name="to"/> would deactivate, leaf -> root (children veto before their
-    /// parents, mirroring Angular's CanDeactivate order). A route that stays matched under the new
-    /// URL - same route instance in both chains, e.g. only a parameter or a descendant changed - is
-    /// not "left" and its guard does not fire. Returns false when a guard cancelled/redirected (the
-    /// decision is on <paramref name="ctx"/> for the caller to apply) or the navigation was
-    /// superseded; true to continue the pipeline.
+    /// The leave phase of the pending navigation to <paramref name="to"/>, leaf -> root (children
+    /// veto before their parents, mirroring Angular's CanDeactivate order). For every currently
+    /// committed route it runs, in order: the component-level navigation locks of its active
+    /// content (<see cref="IBrouterRoute.OnDeactivatingAsync"/> when the route is being left,
+    /// <see cref="IBrouterRoute.OnRenavigatingAsync"/> when it stays matched - so parameter changes
+    /// are voteable too), then - only for routes actually being left - the route-declared
+    /// <see cref="Broute.LeaveGuard"/>. Locks are awaited, so they can hold the navigation open for
+    /// user input. Returns false when a lock/guard cancelled/redirected (the decision is on
+    /// <paramref name="ctx"/> for the caller to apply) or the navigation was superseded; true to
+    /// continue the pipeline. A throwing lock/guard propagates to the caller, which fails closed.
     /// </summary>
     private async ValueTask<bool> InvokeLeaveGuardsAsync(BrouterLocation to, BrouterNavigationContext ctx)
     {
         var committed = _committedChain;
         if (committed.Length == 0) return true;
 
-        var anyLeaveGuard = false;
+        // Anything to do at all? Route-declared LeaveGuards and component-level locks (content
+        // with registered lifecycle handlers, see IBrouterRoute.OnDeactivatingAsync) share this
+        // phase; with neither present the (pure but non-free) SelectWinner below is skipped.
+        var anyWork = false;
         foreach (var node in committed)
         {
-            if (node.LeaveGuard is not null) { anyLeaveGuard = true; break; }
+            if (node.LeaveGuard is not null || node.HasActiveLifecycleHandlers()) { anyWork = true; break; }
         }
-        if (anyLeaveGuard is false) return true;
+        if (anyWork is false) return true;
 
         // Which committed routes survive the new URL? Match it (SelectWinner is pure, so this is
         // safe pre-commit) and collect the new chain; committed routes present in it are updated,
@@ -2287,11 +2522,63 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             for (var node = newMatch.Route; node is not null; node = node.Parent) staying.Add(node);
         }
 
+        // Leaf -> root, and per route the content's own locks run before the route-declared
+        // LeaveGuard - innermost first, so the code closest to the state at risk gets the first
+        // veto. Locks are awaited (they may hold the navigation open for a custom confirmation
+        // dialog); the first cancel/redirect anywhere settles the phase and skips everything else.
+        List<BrouterRouteContext>? lockContexts = null;
+        BrouterRouteRenavigatingContext? renavigating = null;
+
         for (var i = committed.Length - 1; i >= 0; i--)
         {
             var node = committed[i];
-            if (node.LeaveGuard is null) continue;
-            if (staying is not null && staying.Contains(node)) continue;
+            var stays = staying is not null && staying.Contains(node);
+
+            // 1. Component-level locks. A route being left dispatches OnDeactivatingAsync to its
+            // active content; a route that stays matched dispatches OnRenavigatingAsync instead
+            // (a parameter change is not a "leave", but a dirty form must still be able to veto
+            // it - Vue's beforeRouteUpdate). The Hidden/Disposing reason mirrors the retention
+            // that would follow the commit: keep-alive content is Hidden only when its retained
+            // subtree actually survives the leave - a kept child whose outlet host is itself being
+            // torn down dies with the host and honestly reports Disposing (see
+            // KeptContentSurvivesLeave). One pre-commit nuance: on a per-parameter keep-alive
+            // route (KeepAliveMax > 1) that stays matched across a parameter change, the active
+            // entry receives OnRenavigating here even though the commit then surfaces as a Hidden
+            // deactivation + sibling activation - the new parameter key isn't known until the
+            // navigation's parameters commit. The reason is per-context: retention only ever
+            // preserves primary content, so a keep-alive route's named-view contexts (collected
+            // after the primary content's, see Broute.CollectActiveRouteContexts) always report
+            // Disposing even when the primary content reports Hidden.
+            if (node.HasActiveLifecycleHandlers())
+            {
+                lockContexts ??= [];
+                lockContexts.Clear();
+                var namedFrom = node.CollectActiveRouteContexts(lockContexts);
+
+                for (var c = 0; c < lockContexts.Count; c++)
+                {
+                    var context = lockContexts[c];
+                    if (ctx.CancellationToken.IsCancellationRequested) return false;
+                    if (stays)
+                    {
+                        renavigating ??= new BrouterRouteRenavigatingContext(ctx);
+                        await context.FireRenavigatingAsync(renavigating);
+                    }
+                    else
+                    {
+                        var reason = c < namedFrom
+                            && node.KeepAlive && KeptContentSurvivesLeave(node, staying)
+                            ? BrouterRouteDeactivationReason.Hidden
+                            : BrouterRouteDeactivationReason.Disposing;
+                        await context.FireDeactivatingAsync(new BrouterRouteDeactivatingContext(ctx, reason));
+                    }
+                    if (ctx.CancellationToken.IsCancellationRequested) return false;
+                    if (ctx.IsCancelled || ctx.RedirectUrl is not null) return false;
+                }
+            }
+
+            // 2. The route-declared LeaveGuard, only when the route is actually being left.
+            if (stays || node.LeaveGuard is null) continue;
 
             if (ctx.CancellationToken.IsCancellationRequested) return false;
             // Expose the route being left for the duration of its own guard call only.
@@ -2308,6 +2595,27 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (ctx.IsCancelled || ctx.RedirectUrl is not null) return false;
         }
 
+        return true;
+    }
+
+    /// <summary>
+    /// Whether a keep-alive route's content actually survives being left, for the lock phase's
+    /// Hidden/Disposing reason: retention keeps the subtree mounted (hidden) inside its outlet
+    /// host's content, so the retained content only lives while every hosting content stays
+    /// mounted. Walking the hosting chain: a host that stays matched keeps its content (and
+    /// outlets) mounted; a keep-alive host being left keeps hosting from its own retained hidden
+    /// content, so the walk continues at ITS host; a transient host being left unmounts everything
+    /// inside it, kept children included (see
+    /// <c>KeepAliveTests.KeepAlive_state_is_lost_across_the_hosting_layout_unmount</c>). Inline
+    /// content renders at the route's declaration site, which stays mounted regardless of matching.
+    /// </summary>
+    private static bool KeptContentSurvivesLeave(Broute node, HashSet<Broute>? staying)
+    {
+        for (var host = node.FindOutletHost(); host is not null; host = host.FindOutletHost())
+        {
+            if (staying is not null && staying.Contains(host)) return true;
+            if (host.KeepAlive is false) return false;
+        }
         return true;
     }
 
@@ -2330,18 +2638,43 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         {
             if (node.ErrorContent is not null)
             {
+                // The boundary and its ancestors are what's on screen after this commit; compute the
+                // chain first so route-lifecycle departures can fire for everything it evicts -
+                // BEFORE SetMatched's synchronous render unmounts/disposes that content. A pipeline
+                // whose pending-navigation render already notified them is fine: departures are
+                // idempotent. The boundary node itself is deliberately NOT treated as surviving:
+                // when it was on screen, the CurrentError render REPLACES its committed content
+                // with ErrorContent - disposing the old page even when the route is keep-alive -
+                // so it gets an honest, forced-Disposing departure (ending its content session;
+                // the error UI then activates as a fresh one) instead of a renavigation or Hidden
+                // notification delivered to a destroyed instance.
+                var chain = new List<Broute>();
+                for (var n = node; n is not null; n = n.Parent) chain.Add(n);
+                chain.Reverse();
+
+                var surviving = new List<Broute>(chain);
+                surviving.Remove(node);
+                NotifyChainDepartures(ctx, _committedChain, surviving, contentReplacedNode: node);
+
+                // Departure callbacks run synchronously into user code and can start a new
+                // navigation (cancelling this one's token); the newer pipeline owns the
+                // committed/error state then - don't paint the boundary over it.
+                if (ctx.CancellationToken.IsCancellationRequested) return;
+
                 node.CurrentError = errorContext;
                 // SetMatched marks node + ancestors and issues the render; node's renderer emits
                 // ErrorContent instead of Content/Component while CurrentError is set. Descendants
                 // of the boundary stay unmatched (the winner was never SetMatched on this path).
                 node.SetMatched();
 
-                // The boundary and its ancestors are what's on screen now; record them so a later
-                // navigation still runs their leave guards.
-                var chain = new List<Broute>();
-                for (var n = node; n is not null; n = n.Parent) chain.Add(n);
-                chain.Reverse();
+                // Record the boundary chain so a later navigation still runs their leave guards.
                 _committedChain = chain.ToArray();
+
+                // Stage the route-lifecycle arrivals for the boundary chain (ancestor layouts that
+                // stayed resolve as renavigations; a freshly mounted layout - or the boundary's
+                // error content itself - activates). Flushed from OnAfterRenderAsync like a normal
+                // commit's arrivals.
+                StageArrivals(ctx, chain);
 
                 // The failed target's page never rendered - the boundary is on screen in its place -
                 // so the observer cascade must stop publishing the previous page's RouteData.
@@ -2354,6 +2687,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         if (ErrorContent is not null)
         {
+            // The router-level boundary evicts everything routed: notify departures while the
+            // departing content is still alive, before the render below unmounts it.
+            NotifyChainDepartures(ctx, _committedChain);
+
+            // Same synchronous-supersession hazard as the route-boundary branch above.
+            if (ctx.CancellationToken.IsCancellationRequested) return;
+
             _navError = errorContext;
             _committedChain = [];
             _currentRouteData = null;
@@ -2753,6 +3093,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         if (_disposed) return;
         _disposed = true;
+
+        // Drop any staged route-lifecycle arrivals: with the router torn down there is no commit
+        // render left to anchor them (each staged FireArrival also self-guards on route state).
+        _pendingLifecycleFlush.Clear();
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
 #if NET10_0_OR_GREATER

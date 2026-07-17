@@ -1,0 +1,43 @@
+@namespace Bit.BlazorUI
+@typeparam TItem where TItem : class
+
+@{
+    var url = NavBar.GetUrl(Item);
+    var template = NavBar.GetTemplate(Item);
+    var isEnabled = NavBar.GetIsEnabled(Item);
+    var href = (isEnabled && (NavBar.SelectedItem != Item || NavBar.Reselectable)) ? url : null;
+}
+
+<_BitNavBarChild Href="@href"
+                 Title="@NavBar.GetTitle(Item)"
+                 Target="@NavBar.GetTarget(Item)"
+                 Style="@NavBar.GetItemCssStyle(Item)"
+                 Disabled="@(isEnabled is false)"
+                 OnClick="() => NavBar.HandleOnClick(Item)"
+                 Class="@NavBar.GetItemCssClass(Item, isEnabled)">
+    @if (template is not null)
+    {
+        @template(Item)
+    }
+    else if (NavBar.ItemTemplate is not null)
+    {
+        @NavBar.ItemTemplate(Item)
+    }
+    else
+    {
+        var icon = NavBar.GetIcon(Item);
+        var iconName = NavBar.GetIconName(Item);
+
+        icon = BitIconInfo.From(icon, iconName);
+
+        @if (icon is not null)
+        {
+            <i style="@NavBar.Styles?.ItemIcon" class="bit-nbr-ico @icon.GetCssClasses() @NavBar.Classes?.ItemIcon" />
+        }
+
+        @if (NavBar.IconOnly is false)
+        {
+            <span style="@NavBar.Styles?.ItemText" class="bit-nbr-txt @NavBar.Classes?.ItemText">@NavBar.GetText(Item)</span>
+        }
+    }
+</_BitNavBarChild>

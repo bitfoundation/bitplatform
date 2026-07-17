@@ -1,4 +1,4 @@
-// Document information dictionary (/Info) and XMP metadata reading.
+﻿// Document information dictionary (/Info) and XMP metadata reading.
 
 using System.Globalization;
 

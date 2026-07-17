@@ -1,4 +1,4 @@
-// C# implementation of the PDF standard security handler, following the
+﻿// C# implementation of the PDF standard security handler, following the
 // algorithms in the PDF specification (ISO 32000, §7.6). Supports
 // empty-user-password decryption for revisions 2–6 (RC4, AESV2/AES-128,
 // AESV3/AES-256).
@@ -436,7 +436,7 @@ public sealed class BitPdfStandardSecurityHandler
 
     private static byte[] Concat(params byte[][] parts)
     {
-        int total = parts.Sum(p => p.Length);
+        int total = parts.Sum(static p => p.Length);
         var result = new byte[total];
         int offset = 0;
         foreach (var p in parts)

@@ -1,4 +1,4 @@
-// The stream filter pipeline: decode-stream factories.
+﻿// The stream filter pipeline: decode-stream factories.
 
 using System.IO.Compression;
 

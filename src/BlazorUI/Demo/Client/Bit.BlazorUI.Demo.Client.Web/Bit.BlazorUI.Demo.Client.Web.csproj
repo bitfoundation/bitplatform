@@ -15,7 +15,12 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <WasmEnableSIMD>true</WasmEnableSIMD>
+        <!-- Multi-threaded WebAssembly runtime: lets BitPdfViewer's BackgroundRendering
+             offload parsing/rendering to a worker thread. Requires the hosting server to
+             send the COOP/COEP cross-origin-isolation headers (see the demo server's
+             Middlewares.cs) so the runtime can use SharedArrayBuffer. -->
+        <WasmEnableThreads>true</WasmEnableThreads>
     </PropertyGroup>
 
     <ItemGroup>

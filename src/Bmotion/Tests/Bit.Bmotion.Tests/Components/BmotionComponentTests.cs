@@ -26,7 +26,7 @@ public class BmotionComponentTests
     public void Injects_Id_And_InitialStyle_IntoFirstRootElement()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(opacity: 0))
             .Add(p => p.ChildContent, Div()));
@@ -41,7 +41,7 @@ public class BmotionComponentTests
     public void Adopts_AuthoredId_WhenNoIdParameter()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(opacity: 1))
             .Add(p => p.ChildContent, Div(id: "authored")));
 
@@ -54,7 +54,7 @@ public class BmotionComponentTests
     public void RegistersElement_WithEngine_OnFirstRender()
     {
         using var ctx = new BmotionTestContext();
-        ctx.RenderComponent<Bmotion>(ps => ps
+        ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Animate, Bm.To(x: 100))
             .Add(p => p.ChildContent, Div()));
@@ -66,7 +66,7 @@ public class BmotionComponentTests
     public void GeneratesStableId_WhenNoneAuthored()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(opacity: 1))
             .Add(p => p.ChildContent, Div()));
 
@@ -79,7 +79,7 @@ public class BmotionComponentTests
     {
         using var ctx = new BmotionTestContext();
         Assert.ThrowsExactly<InvalidOperationException>(() =>
-            ctx.RenderComponent<Bmotion>(ps => ps.Add(p => p.Animate, Bm.To(x: 1))));
+            ctx.Render<Bmotion>(ps => ps.Add(p => p.Animate, Bm.To(x: 1))));
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public class BmotionComponentTests
     {
         using var ctx = new BmotionTestContext();
         Assert.ThrowsExactly<InvalidOperationException>(() =>
-            ctx.RenderComponent<Bmotion>(ps => ps
+            ctx.Render<Bmotion>(ps => ps
                 .Add(p => p.Animate, Bm.To(x: 1))
                 .Add(p => p.ChildContent, b => b.AddContent(0, "just text"))));
     }
@@ -96,7 +96,7 @@ public class BmotionComponentTests
     public void AuthoredStyle_WinsOver_MotionStyle_OnConflict()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps
+        var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(opacity: 0))
             .Add(p => p.ChildContent, Div(style: "opacity:0.7;")));

@@ -37,7 +37,7 @@ public class BitOverlayTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -75,7 +75,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
         var style = "padding: 1rem;";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, style);
         });
@@ -108,7 +108,7 @@ public class BitOverlayTests : BunitTestContext
 
         var cssClass = "test-class";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, cssClass);
         });
@@ -163,7 +163,7 @@ public class BitOverlayTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -200,7 +200,7 @@ public class BitOverlayTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -318,7 +318,7 @@ public class BitOverlayTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.AbsolutePosition, true);
         });
@@ -364,7 +364,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
         isOpen = true;
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });

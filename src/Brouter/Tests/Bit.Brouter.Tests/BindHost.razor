@@ -1,0 +1,6 @@
+﻿@* Hosts a single hand-declared route bound to BindConsumer so tests can drive the
+   unified by-name route parameter binding (no opt-in flag involved). *@
+
+<Brouter>
+    <Broute Path="/bind/{id:int}/{name}" Component="@typeof(BindConsumer)" />
+</Brouter>

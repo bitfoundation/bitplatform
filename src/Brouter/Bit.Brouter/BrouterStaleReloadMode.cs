@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>How a stale cached loader result is served (see <see cref="BrouterOptions.StaleReloadMode"/>).</summary>
 public enum BrouterStaleReloadMode

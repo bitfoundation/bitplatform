@@ -1,4 +1,4 @@
-// AcroForm field extraction. Exposes the interactive form fields (/AcroForm
+﻿// AcroForm field extraction. Exposes the interactive form fields (/AcroForm
 // /Fields) as a flat list of name/type/value so a consumer can build form UI or
 // read submitted data. This does not yet render widgets as live inputs.
 

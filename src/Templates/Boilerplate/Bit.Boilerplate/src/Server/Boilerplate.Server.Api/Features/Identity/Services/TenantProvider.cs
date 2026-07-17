@@ -49,7 +49,7 @@ public partial class TenantProvider
         // Protecting endpoints by AuthPolicies.TENANT_SELECTED would guarantee that the tenant id is always present in the claims, so this code would never be reached for these endpoints.
 
         // 2. The tenant whose name matches the request sub domain (for anonymous requests such as the sales pages).
-        var host = httpContext.Request.Host.Host;
+        var host = httpContext.Request.GetWebAppUrl().Host;
 
         if (string.IsNullOrEmpty(host) is false && host.Split('.') is { Length: > 2 } hostSegments)
         {

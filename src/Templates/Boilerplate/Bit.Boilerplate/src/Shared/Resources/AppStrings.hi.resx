@@ -774,6 +774,15 @@
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>एक बार QR कोड स्कैन या ऊपर कुंजी इनपुट करने के बाद, आपका दो-कारक प्रमाणीकरण ऐप आपको अद्वितीय कोड प्रदान करेगा। नीचे पुष्टि बॉक्स में कोड दर्ज करें।</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>आपकी सुरक्षा के लिए, कुछ ही मिनटों में इस डिवाइस सहित आपके सभी डिवाइसों से आपको साइन आउट कर दिया जाएगा। कृपया फिर से साइन इन करें।</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>पासवर्ड बदलें</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>आपका पासवर्ड सफलतापूर्वक बदल दिया गया है।</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>दो-कारक प्रमाणीकरण सक्षम हो गया है।</value>
   </data>

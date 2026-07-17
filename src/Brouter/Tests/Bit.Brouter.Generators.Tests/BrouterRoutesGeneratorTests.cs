@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Bit.Brouter.Generators.Tests.GeneratorTestHarness;
 
 namespace Bit.Brouter.Generators.Tests;

@@ -85,11 +85,43 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
 
 
 
+    internal void InternalStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
-        Parent.RegisterOption(this);
+        Parent?.RegisterOption(this);
 
         await base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        // The parent caches search results keyed on the option instances; when this option's own
+        // parameters change (e.g. Text) the parent must drop that cache so the new data is searched.
+        Parent?.NotifyOptionParametersChanged();
+
+        base.OnParametersSet();
+    }
+
+    // Renders the option's item in place, so the rendered order of the items always follows the
+    // markup order of the options, even when an option is added or removed conditionally later on.
+    // In virtualize mode the dropdown itself renders the items out of its Items collection, so the
+    // option renders nothing (it only registers itself).
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (Parent is null || Parent.Virtualize) return;
+        if (Parent.ShouldRenderOptionItem(this) is false) return;
+
+        builder.OpenComponent<_BitDropdownItem<BitDropdownOption<TValue>, TValue>>(0);
+        builder.AddComponentParameter(1, nameof(_BitDropdownItem<BitDropdownOption<TValue>, TValue>.Dropdown), Parent);
+        builder.AddComponentParameter(2, nameof(_BitDropdownItem<BitDropdownOption<TValue>, TValue>.Item), this);
+        builder.AddComponentParameter(3, nameof(_BitDropdownItem<BitDropdownOption<TValue>, TValue>.ItemCheckIconCss), Parent.GetItemCheckIconCss());
+        builder.CloseComponent();
     }
 
 
@@ -104,7 +136,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        Parent.UnregisterOption(this);
+        Parent?.UnregisterOption(this);
 
         _disposed = true;
     }

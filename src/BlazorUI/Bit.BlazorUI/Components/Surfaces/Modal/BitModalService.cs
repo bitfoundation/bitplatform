@@ -1,8 +1,14 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A core service to show any content inside a centralized <see cref="BitModal"/> using <see cref="BitModalContainer"/>.
 /// </summary>
+/// <remarks>
+/// A <see cref="BitModalContainer"/> must be mounted in the layout for shown modals to render: a non-persistent modal
+/// shown while no container is mounted is silently not rendered (see the base type remarks). Use
+/// <see cref="BitModalServiceBase{TReference, TParameters}.IsContainerAvailable"/> to check whether a container is
+/// currently mounted before showing a modal.
+/// </remarks>
 public class BitModalService : BitModalServiceBase<BitModalReference, BitModalParameters>
 {
     protected override BitModalReference CreateReference(bool persistent)

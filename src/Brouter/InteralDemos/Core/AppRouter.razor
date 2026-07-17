@@ -390,6 +390,12 @@
             </Content>
         </Broute>
 
+        @* Component-level navigation lock: the PAGE holds the veto (OnDeactivating/OnRenavigating
+       on BrouterRouteBase) and shows a custom confirmation dialog - including for /lock/1 ->
+       /lock/2 parameter changes, which the route-declared LeaveGuard above can never see. *@
+        <Broute Path="/lock" RedirectTo="/lock/1" />
+        <Broute Path="/lock/{id:int}" Component="@typeof(NavigationLockPage)" />
+
         <Broute Path="/history-state">
             <Content>
                 <HistoryStatePage />
@@ -410,9 +416,9 @@
 
         @*============================================================================*@
         @* Keep-alive: /sticky vs the /fleeting control shows singleton retention plus the
-       activate/deactivate lifecycle (BrouterKeepAliveContext pauses the page's timer while
-       hidden); /notes/{id} shows per-parameter caching (KeepAliveMax) with LRU eviction and
-       IBrouter.ClearKeepAlive(). *@
+       route lifecycle (StickyNotePage derives from BrouterRouteBase and pauses its timer in
+       OnDeactivated / resumes it in OnActivated); /notes/{id} shows per-parameter caching
+       (KeepAliveMax) with LRU eviction and IBrouter.ClearKeepAlive(). *@
 
         <Broute Path="/sticky" KeepAlive="true">
             <Content>
@@ -428,6 +434,16 @@
 
         <Broute Name="notes" Path="/notes/{id:int}" KeepAlive="true" KeepAliveMax="2"
                 Component="@typeof(NotebookPage)" />
+
+        @*============================================================================*@
+        @* Route lifecycle: /lifecycle/{id} is a singleton Component route whose page implements
+       IBrouterRoute directly (auto-discovered by the router - no base class needed). The same
+       instance is re-committed across id/query changes (OnRenavigated); leaving fires
+       OnDeactivated with reason Disposing. Contrast with /sticky above, where keep-alive
+       retention makes the reason Hidden. *@
+
+        <Broute Path="/lifecycle" RedirectTo="/lifecycle/1" />
+        <Broute Path="/lifecycle/{id:int}" Component="@typeof(LifecyclePage)" />
 
         @*============================================================================*@
         @* View Transitions showcase: shared-element morphs between the gallery grid and the item

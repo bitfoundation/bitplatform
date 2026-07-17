@@ -1,4 +1,4 @@
-// Builds a well-formed OpenType 'cmap' table (a single Windows Unicode BMP
+﻿// Builds a well-formed OpenType 'cmap' table (a single Windows Unicode BMP
 // (3,1) format-4 subtable) from a Unicode→glyph-id map. Used both by the CFF
 // font writer and the TrueType synthetic-cmap path so the browser's OTS always
 // sees a supported subtable.

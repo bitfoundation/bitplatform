@@ -774,6 +774,15 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
   </data>
+    <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>For your security, you'll be signed out of all your devices, including this one, within a few minutes. Please sign in again.</value>
+  </data>
+    <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+    <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Your password has been changed successfully.</value>
+  </data>
     <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Two-factor authentication has been enabled.</value>
   </data>

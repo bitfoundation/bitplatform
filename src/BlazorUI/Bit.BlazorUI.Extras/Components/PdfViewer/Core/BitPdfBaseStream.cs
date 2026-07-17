@@ -1,4 +1,4 @@
-// Abstract byte source for the lexer and parser.
+﻿// Abstract byte source for the lexer and parser.
 
 namespace Bit.BlazorUI;
 

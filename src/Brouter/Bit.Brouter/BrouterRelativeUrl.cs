@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Resolves route-relative URLs (<c>.</c>, <c>..</c>, <c>./x</c>, <c>../x</c>) against a current

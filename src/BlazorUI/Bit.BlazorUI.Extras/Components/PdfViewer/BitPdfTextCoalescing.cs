@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>How painted text runs are emitted into the page HTML.</summary>
 public enum BitPdfTextCoalescing

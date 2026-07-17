@@ -182,7 +182,17 @@
         }
     }
 
-    @if ((childItems.Any()) && (isExpanded))
+    @if (ChildrenFragment is not null)
+    {
+        @* The nav options render their children in place, so the children have to stay rendered (but
+           hidden) while collapsed to keep their registrations (and expand/collapse chevron) alive. *@
+        <ul role="list" style="@(childItems.Any() && isExpanded ? null : "display:none")">
+            <CascadingValue Value="this" IsFixed="true">
+                @ChildrenFragment
+            </CascadingValue>
+        </ul>
+    }
+    else if ((childItems.Any()) && (isExpanded))
     {
         <ul role="list">
             <CascadingValue Value="this" IsFixed="true">

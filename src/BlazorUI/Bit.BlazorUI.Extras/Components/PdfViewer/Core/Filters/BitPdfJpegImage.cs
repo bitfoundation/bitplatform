@@ -1,4 +1,4 @@
-// A baseline (sequential DCT, Huffman) JPEG decoder. Ported to the scope needed
+﻿// A baseline (sequential DCT, Huffman) JPEG decoder. Ported to the scope needed
 // by the PDF image pipeline: it lets us decode CMYK/YCCK JPEGs (which browsers
 // render wrong) and apply /SMask, /Mask and /Decode to DCT images. Progressive
 // JPEGs are not handled here (the caller keeps browser passthrough for those).

@@ -1,4 +1,4 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -17,14 +17,44 @@ public partial class BitPdfViewer : BitComponentBase
     private bool _correctWidthsPending; // run the JS text width-correction after render
     private string?[]? _pageText; // lazily-built per-page text index for search
     private int _loadVersion; // bumped per load; guards against a superseded load committing
+    private int _renderEpoch; // bumped whenever page slots are rebuilt (load, rotation, mode change)
     private string _status = "Idle.";
     private bool _loading;
+
+    // Serializes page/thumbnail renders so a BackgroundRendering build (which may run
+    // on a worker thread) never runs concurrently with another render against the
+    // shared document and font store.
+    private readonly SemaphoreSlim _renderGate = new(1, 1);
+
+    // A UI-thread snapshot of the document-wide @font-face CSS. Rendering mutates the
+    // font store's builder (possibly on a worker thread); the UI reads only this
+    // snapshot, refreshed after each render, so it never reads the builder while a
+    // background render is mutating it.
+    private string _fontFaceStyle = string.Empty;
 
     // One slot per page. A null slot is a not-yet-rendered page shown as a
     // light placeholder; it is rendered on demand when it nears the viewport.
     private readonly List<MarkupString?> _pages = [];
     private readonly List<double> _pageWidths = [];  // points, display orientation
     private readonly List<double> _pageHeights = [];
+
+    // Pages waiting to be lazily rendered, drained one page per event-loop turn
+    // by the pump in EnsurePagesRendered so scrolling stays responsive on WASM.
+    // A linked list (not a Queue) so each incoming viewport batch can be inserted
+    // ahead of older pending work: the newest batch reflects where the viewport is
+    // NOW and must not wait behind pages queued for a viewport already scrolled past.
+    private readonly LinkedList<int> _renderQueue = new();
+    // Maps a queued index to its list node so a page re-appearing in a newer viewport
+    // batch can be promoted (removed from its stale position and re-inserted at the
+    // front) in O(1), not just deduplicated in place.
+    private readonly Dictionary<int, LinkedListNode<int>> _renderQueued = new();
+    private bool _renderPumpActive;
+    private bool _printing; // suspends page eviction while Print() catches up all pages
+
+    // The thumbnail sidebar's counterpart of the render queue/pump.
+    private readonly LinkedList<int> _thumbQueue = new();
+    private readonly Dictionary<int, LinkedListNode<int>> _thumbQueued = new(); // index -> node, as _renderQueued
+    private bool _thumbPumpActive;
 
     // The thumbnail sidebar owns its own render slots, decoupled from _pages, so
     // it can lazy-render only the thumbnails scrolled into the sidebar viewport
@@ -44,6 +74,18 @@ public partial class BitPdfViewer : BitComponentBase
     private readonly Dictionary<int, string> _canvasOps = [];
     private readonly List<int> _canvasDirty = [];
     private double _paintedZoom = 1; // zoom the canvases were last rasterized at
+    // A canvas-mode print parks here until OnAfterRenderAsync has actually painted the
+    // freshly rendered canvases, so the print dialog never opens over blank pages. Also
+    // completed on disposal so a parked print can't hang.
+    private TaskCompletionSource? _canvasPaintSignal;
+    // Generation of canvas-paint work: CommitPage bumps _canvasDirtyGen when a canvas is
+    // dirtied; OnAfterRenderAsync advances _canvasPaintedGen to the generation it
+    // snapshotted only after that paint's interop completes. The parked print records the
+    // generation it needs in _canvasPaintSignalGen, so an earlier or empty render pass
+    // (which never advances _canvasPaintedGen) can't release it before its canvases land.
+    private int _canvasDirtyGen;
+    private int _canvasPaintedGen;
+    private int _canvasPaintSignalGen;
     private bool _showThumbnails;
     private bool _showOutline;
     private IReadOnlyList<BitPdfOutlineItem> _outline = [];
@@ -52,6 +94,7 @@ public partial class BitPdfViewer : BitComponentBase
     private string _searchQuery = "";
     private int _searchTotal;
     private int _searchIndex = -1;
+    private int _searchGeneration; // bumped per query so an in-flight search abandons when a newer query starts
 
     private DotNetObjectReference<BitPdfViewer>? _dotnetObj;
     private ElementReference _containerRef;
@@ -73,10 +116,11 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public BitPdfSource? Source { get; set; }
 
     /// <summary>
-    /// The CSS height of the viewer container.
+    /// The CSS height of the viewer container. When not set, the viewer height is
+    /// responsive: capped at 780px and shrinking to fit the viewport on small screens.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public string? Height { get; set; } = "780px";
+    public string? Height { get; set; }
 
     /// <summary>
     /// Whether the toolbar is shown.
@@ -104,6 +148,19 @@ public partial class BitPdfViewer : BitComponentBase
     /// (the default) renders prerenderable positioned DOM.
     /// </summary>
     [Parameter] public BitPdfRenderMode RenderMode { get; set; } = BitPdfRenderMode.Html;
+
+    /// <summary>
+    /// Offloads document parsing and page rendering to a background thread instead of
+    /// running them on the UI thread, so scrolling and navigation stay responsive
+    /// while a complex page is being rendered. This only has an effect when the
+    /// runtime actually provides a spare thread — Blazor Server, or a Blazor
+    /// WebAssembly app built with multi-threading enabled
+    /// (<c>&lt;WasmEnableThreads&gt;true&lt;/WasmEnableThreads&gt;</c>). On the default
+    /// single-threaded WebAssembly runtime it is a safe no-op: the work still runs on
+    /// the one available thread (renders are serialized, so results stay correct).
+    /// Default is <c>false</c>.
+    /// </summary>
+    [Parameter] public bool BackgroundRendering { get; set; }
 
     /// <summary>
     /// The callback for when a document has finished loading.
@@ -172,14 +229,34 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (_pages.Count == 0) return;
 
+        int version = _loadVersion; // a reload during the awaits below supersedes this navigation
         int target = Math.Clamp(pageNumber, 1, _pages.Count);
         if (target != _currentPage)
         {
             _currentPage = target;
             await OnPageChanged.InvokeAsync(_currentPage);
+            // OnPageChanged is user code: a reload (or new Source) during it makes
+            // this navigation stale, and a newer GoToPage or a scroll-spy update
+            // (OnPageVisible) may have moved _currentPage on — either way this
+            // navigation is superseded, so don't render or scroll for it.
+            if (version != _loadVersion || _currentPage != target) return;
         }
 
-        await _js.BitPdfViewerScrollToPage(_containerRef, _currentPage);
+        // Render the destination before scrolling so jumps (toolbar, thumbnails,
+        // outline) land on content instead of a placeholder.
+        if (await RenderPageAsync(target - 1) && version == _loadVersion && _currentPage == target)
+        {
+            EvictDistantPages();
+            StateHasChanged();
+        }
+
+        // RenderPageAsync may have yielded; if the component was disposed, this load
+        // was superseded, or a newer navigation moved on in that window, don't drive
+        // JS for this stale target. Scroll to the captured target, not the mutable
+        // _currentPage, so a concurrent update can't redirect this call's scroll.
+        if (IsDisposed || version != _loadVersion || _currentPage != target) return;
+
+        await _js.BitPdfViewerScrollToPage(_containerRef, target);
         if (_showThumbnails)
         {
             await ScrollActiveThumbIntoViewAsync();
@@ -215,12 +292,12 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// Rotates all pages 90 degrees clockwise.
     /// </summary>
-    public Task RotateClockwise()
+    public async Task RotateClockwise()
     {
         _rotation = (_rotation + 90) % 360;
         PreparePages();
+        await RenderCurrentPageEagerlyAsync();
         _spyPending = true;
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -243,33 +320,104 @@ public partial class BitPdfViewer : BitComponentBase
     public async Task Print()
     {
         if (_document is null || _pages.Count == 0) return;
+        // A print pass is already catching up (its yields let this reentrant call
+        // in); a second one would race it and clear _printing while it still runs.
+        if (_printing) return;
 
         // Render every page before printing so the output includes all pages, not
-        // just the ones scrolled into view. Show progress while catching up.
+        // just the ones scrolled into view. Show progress while catching up. A new
+        // Source arriving while this pass yields supersedes it: bail at every yield
+        // so a stale print never renders against, or prints, the newer document.
+        int version = _loadVersion;
+        // A rotation or render-mode change rebuilds the page slots (bumping _renderEpoch)
+        // without changing _loadVersion; capture the epoch too so such a change aborts
+        // the print rather than letting it render into — or print — cleared slots.
+        int epoch = _renderEpoch;
         bool rendered = false;
-        for (int i = 0; i < _pages.Count; i++)
+        // Suspend eviction while catching up: the lazy-render pump can run during
+        // the yields below and would otherwise evict pages this pass has already
+        // rendered (the loop only moves forward), printing placeholders.
+        _printing = true;
+        try
         {
-            if (_pages[i] is null)
+            for (int i = 0; i < _pages.Count; i++)
             {
-                if (!rendered)
+                if (_pages[i] is null)
                 {
-                    _loading = true;
-                    _status = "Preparing all pages for printing…";
-                    StateHasChanged();
-                    await Task.Yield();
-                    rendered = true;
+                    if (!rendered)
+                    {
+                        _loading = true;
+                        _status = "Preparing all pages for printing…";
+                        StateHasChanged();
+                        await Task.Delay(1);
+                        if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
+                        rendered = true;
+                    }
+                    bool ok = await RenderPageAsync(i);
+                    // Yield between page renders so the browser can paint the progress
+                    // bar and stay responsive while a large document is prepared on the
+                    // single WASM thread (mirrors the lazy-render pumps).
+                    await Task.Delay(1);
+                    if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
+                    // A page that failed to build (e.g. malformed) leaves its slot empty
+                    // and RenderPageAsync returns false; the failure is surfaced via
+                    // OnError. Abort rather than open the print dialog with a blank page
+                    // mid-document. A false result whose slot was meanwhile filled by the
+                    // lazy pump is fine — only a still-empty slot means a real failure.
+                    if (!ok && _pages[i] is null)
+                    {
+                        _status = "Printing aborted: a page failed to render.";
+                        return;
+                    }
                 }
-                _pages[i] = RenderPageContent(i);
+            }
+            if (rendered)
+            {
+                _loading = false;
+                int paintTarget = _canvasDirtyGen;
+                if (RenderMode == BitPdfRenderMode.Canvas && _canvasPaintedGen < paintTarget)
+                {
+                    // Canvas pixels are painted by JS in OnAfterRenderAsync, which a
+                    // fixed delay cannot reliably outwait while a large document paints.
+                    // Park until the paint pass for this exact generation completes, so
+                    // no page prints blank (and an earlier/empty pass can't release us).
+                    _canvasPaintSignalGen = paintTarget;
+                    _canvasPaintSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    StateHasChanged();
+                    await _canvasPaintSignal.Task;
+                }
+                else
+                {
+                    StateHasChanged();
+                    await Task.Delay(1); // let the DOM paint the freshly rendered pages
+                }
+                if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
+            }
+
+            // Re-validate immediately before printing: a rotation or mode change during
+            // the canvas-paint wait above (which has no other checkpoint) must not print
+            // cleared slots.
+            if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
+            await _js.BitPdfViewerPrint(_containerRef);
+        }
+        finally
+        {
+            // Resume eviction even for superseded or failed prints.
+            _printing = false;
+            // Print rendered ALL pages with eviction suspended; trim them back to the
+            // normal window now that the snapshot is built (EvictDistantPages no-ops
+            // until _printing is cleared above). Runs for superseded and failed prints
+            // too, so a large document doesn't stay fully materialized in the DOM.
+            EvictDistantPages();
+            // Only the print that still owns _loadVersion may clear the progress bar
+            // and request the trim render; a superseded one must not touch the newer
+            // load's state (it repaints on its own).
+            if (version == _loadVersion)
+            {
+                _loading = false;
+                StateHasChanged();
             }
         }
-        if (rendered)
-        {
-            _loading = false;
-            StateHasChanged();
-            await Task.Yield(); // let the DOM paint the freshly rendered pages
-        }
-
-        await _js.BitPdfViewerPrint(_containerRef);
     }
 
     /// <summary>
@@ -313,68 +461,173 @@ public partial class BitPdfViewer : BitComponentBase
 
     /// <summary>
     /// Invoked from JavaScript as pages approach the viewport. Renders any of
-    /// the requested pages that have not been rendered yet.
+    /// the requested pages that have not been rendered yet, one page per
+    /// event-loop turn: on single-threaded WASM rendering a whole batch in one
+    /// go would block scrolling and painting for the entire batch, which shows
+    /// up as freezes while scrolling through the document.
     /// </summary>
     [JSInvokable]
-    public void EnsurePagesRendered(int[] pageNumbers)
+    public async Task EnsurePagesRendered(int[] pageNumbers)
     {
-        if (_document is null || pageNumbers is null) return;
+        if (_document is null || pageNumbers is null || IsDisposed) return;
 
-        bool changed = false;
+        // Insert this batch ahead of older pending work (preserving its own order):
+        // it reflects what is near the viewport now, so it must not wait behind
+        // pages queued for a viewport the user has already scrolled away from. A page
+        // already queued from an older batch is promoted (moved to this front group),
+        // not skipped, so a still-visible page never stays stuck behind off-screen work.
+        LinkedListNode<int>? tail = null;
         foreach (int n in pageNumbers)
         {
             int idx = n - 1;
-            if (idx >= 0 && idx < _pages.Count && _pages[idx] is null)
+            if (idx < 0 || idx >= _pages.Count || _pages[idx] is not null) continue;
+            if (_renderQueued.TryGetValue(idx, out var existing))
             {
-                _pages[idx] = RenderPageContent(idx);
-                changed = true;
+                if (existing == tail) continue; // already placed at this batch's front tip
+                _renderQueue.Remove(existing);
             }
+            tail = tail is null ? _renderQueue.AddFirst(idx) : _renderQueue.AddAfter(tail, idx);
+            _renderQueued[idx] = tail;
         }
 
-        if (changed)
+        // A pump is already draining the queue (scroll events keep arriving
+        // while it yields); the pages just enqueued are picked up by it.
+        if (_renderPumpActive) return;
+
+        _renderPumpActive = true;
+        int version = _loadVersion; // a reload while yielding invalidates the queue
+        try
         {
-            EvictDistantPages();
-            StateHasChanged();
+            while (_renderQueue.Count > 0)
+            {
+                // Disposal tears the component down: stop and drop the queue.
+                if (IsDisposed)
+                {
+                    _renderQueue.Clear();
+                    _renderQueued.Clear();
+                    return;
+                }
+                // A reload replaced the document while this pump yielded. LoadAsync
+                // already cleared the queue, so any entries here were enqueued by the
+                // new load (whose EnsurePagesRendered saw this pump still active and
+                // returned without starting its own). Adopt the current version and
+                // keep draining rather than discarding the replacement's pending work.
+                if (version != _loadVersion) version = _loadVersion;
+
+                int idx = _renderQueue.First!.Value;
+                _renderQueue.RemoveFirst();
+                _renderQueued.Remove(idx);
+                if (await RenderPageAsync(idx))
+                {
+                    // RenderPageAsync may have yielded (background build / gate wait); a
+                    // reload or disposal in that window means the slots are torn down —
+                    // don't evict or re-render against them.
+                    if (IsDisposed)
+                    {
+                        _renderQueue.Clear();
+                        _renderQueued.Clear();
+                        return;
+                    }
+                    if (version != _loadVersion) version = _loadVersion;
+
+                    EvictDistantPages();
+                    StateHasChanged();
+                }
+                // Let the browser apply the diff, paint and process scroll input
+                // before the next (expensive) page render. Task.Delay (unlike
+                // Task.Yield, whose continuation may run before the browser gets
+                // control back) guarantees a real event-loop turn on WASM. Runs after a
+                // failed render too, so a run of unbuildable pages can't monopolize the
+                // UI thread without ever yielding.
+                await Task.Delay(1);
+            }
+        }
+        finally
+        {
+            _renderPumpActive = false;
         }
     }
 
     /// <summary>
     /// Invoked from JavaScript as thumbnails approach the sidebar viewport.
-    /// Renders any requested thumbnails that are still placeholders. This is the
-    /// sidebar's counterpart to <see cref="EnsurePagesRendered"/> and runs on the
-    /// sidebar's own scroll, so opening the panel on a 500-page document renders
-    /// only the handful of thumbnails on screen.
+    /// Renders any requested thumbnails that are still placeholders, one per
+    /// event-loop turn (a thumbnail fragment is as heavy as a full page). This is
+    /// the sidebar's counterpart to <see cref="EnsurePagesRendered"/> and runs on
+    /// the sidebar's own scroll, so opening the panel on a 500-page document
+    /// renders only the handful of thumbnails on screen.
     /// </summary>
     [JSInvokable]
-    public void EnsureThumbsRendered(int[] pageNumbers)
+    public async Task EnsureThumbsRendered(int[] pageNumbers)
     {
-        if (_document is null || pageNumbers is null) return;
+        if (_document is null || pageNumbers is null || IsDisposed) return;
 
-        bool changed = false;
-        int lo = int.MaxValue, hi = int.MinValue;
+        // Newest sidebar batch first, promoting already-queued thumbnails, mirroring
+        // EnsurePagesRendered's prioritization.
+        LinkedListNode<int>? tail = null;
         foreach (int n in pageNumbers)
         {
             int idx = n - 1;
-            if (idx >= 0 && idx < _thumbs.Count)
+            if (idx < 0 || idx >= _thumbs.Count || _thumbs[idx] is not null) continue;
+            if (_thumbQueued.TryGetValue(idx, out var existing))
             {
-                lo = Math.Min(lo, idx);
-                hi = Math.Max(hi, idx);
-                if (_thumbs[idx] is null)
-                {
-                    _thumbs[idx] = RenderThumbContent(idx);
-                    changed = true;
-                }
+                if (existing == tail) continue; // already placed at this batch's front tip
+                _thumbQueue.Remove(existing);
             }
+            tail = tail is null ? _thumbQueue.AddFirst(idx) : _thumbQueue.AddAfter(tail, idx);
+            _thumbQueued[idx] = tail;
         }
 
-        if (changed)
+        if (_thumbPumpActive) return;
+
+        _thumbPumpActive = true;
+        int version = _loadVersion;
+        try
         {
-            // Evict around the range just requested (what is visible in the
-            // sidebar), not the current page - scrolling the sidebar leaves the
-            // current page put, so centering on it would blank the very
-            // thumbnails the user just scrolled to.
-            EvictDistantThumbs(lo, hi);
-            StateHasChanged();
+            while (_thumbQueue.Count > 0)
+            {
+                if (IsDisposed)
+                {
+                    _thumbQueue.Clear();
+                    _thumbQueued.Clear();
+                    return;
+                }
+                // A reload replaced the document while this pump yielded; the queue was
+                // cleared and refilled by the new load. Adopt its version and keep
+                // draining rather than discarding the replacement's pending thumbnails
+                // (mirrors the page pump in EnsurePagesRendered).
+                if (version != _loadVersion) version = _loadVersion;
+
+                int idx = _thumbQueue.First!.Value;
+                _thumbQueue.RemoveFirst();
+                _thumbQueued.Remove(idx);
+                if (await RenderThumbAsync(idx))
+                {
+                    // A reload or disposal during RenderThumbAsync's gate wait tears the
+                    // slots down; stop before touching them.
+                    if (IsDisposed)
+                    {
+                        _thumbQueue.Clear();
+                        _thumbQueued.Clear();
+                        return;
+                    }
+                    if (version != _loadVersion) version = _loadVersion;
+
+                    // Evict around the thumbnail just rendered (what the sidebar is
+                    // showing), not the current page — scrolling the sidebar leaves the
+                    // current page put, so centering on it would blank the very
+                    // thumbnails the user just scrolled to.
+                    EvictDistantThumbs(idx, idx);
+                    StateHasChanged();
+                }
+                // Yield a real event-loop turn even after a failed thumbnail build so a
+                // run of unbuildable pages can't monopolize the UI thread (mirrors the
+                // page pump).
+                await Task.Delay(1);
+            }
+        }
+        finally
+        {
+            _thumbPumpActive = false;
         }
     }
 
@@ -460,6 +713,7 @@ public partial class BitPdfViewer : BitComponentBase
             _textCoalescing = TextCoalescing;
             _renderMode = RenderMode;
             PreparePages();
+            await RenderCurrentPageEagerlyAsync();
         }
     }
 
@@ -518,6 +772,9 @@ public partial class BitPdfViewer : BitComponentBase
         // runs after any render that added pages.
         if (_canvasDirty.Count > 0)
         {
+            // Snapshot the generation this pass flushes before clearing the dirty set,
+            // so _canvasPaintedGen only advances once *this* paint's interop completes.
+            int paintGen = _canvasDirtyGen;
             var payload = _canvasDirty
                 .Where(i => _canvasOps.ContainsKey(i) && i < _pageWidths.Count)
                 .Select(i => new BitPdfViewerCanvasPage { Page = i + 1, W = _pageWidths[i], H = _pageHeights[i], Ops = _canvasOps[i] })
@@ -532,6 +789,9 @@ public partial class BitPdfViewer : BitComponentBase
                 }
                 catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
             }
+            // Painted through paintGen (guard against out-of-order completion of an
+            // overlapping pass that snapshotted a later generation).
+            if (paintGen > _canvasPaintedGen) _canvasPaintedGen = paintGen;
         }
 
         // Canvas mode: when the zoom changed, re-rasterize the already-painted
@@ -549,30 +809,68 @@ public partial class BitPdfViewer : BitComponentBase
             }
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
         }
+
+        // Release a print parked on the barrier only once the generation it needs has
+        // actually been painted (above). An empty pass never advances _canvasPaintedGen,
+        // so it leaves the signal pending for the real paint to complete.
+        if (_canvasPaintSignal is { } paintSignal && _canvasPaintedGen >= _canvasPaintSignalGen)
+        {
+            _canvasPaintSignal = null;
+            paintSignal.TrySetResult();
+        }
     }
 
 
 
     // Parse off the UI thread on Blazor Server so a large document doesn't freeze
     // the circuit; on single-threaded WASM this runs inline (Task.Run offers no
-    // parallelism there, and the surrounding Task.Yield already lets the bar paint).
-    private static Task<BitPdfDocument> ParseAsync(byte[] bytes, string? password)
-        => OperatingSystem.IsBrowser()
+    // parallelism there, and the surrounding Task.Delay already lets the bar paint).
+    // BackgroundRendering opts WASM into Task.Run too, for the multi-threaded runtime.
+    private Task<BitPdfDocument> ParseAsync(byte[] bytes, string? password)
+        => OperatingSystem.IsBrowser() && BackgroundRendering is false
             ? Task.FromResult(BitPdfDocument.Load(bytes, password))
             : Task.Run(() => BitPdfDocument.Load(bytes, password));
 
     private async Task LoadAsync()
     {
         int version = ++_loadVersion; // supersedes any load still in flight
-        _pages.Clear();
-        _pageWidths.Clear();
-        _pageHeights.Clear();
-        _document = null;
-        _fontStore = null; // fresh embedded-font store per document
-        _pageText = null;  // invalidate the search text index
-        _searchTotal = 0;
-        _searchIndex = -1;
-        _outline = [];
+
+        // Reset the shared state under the render gate so an in-flight background
+        // build (which reads _document and lazily (re)creates _fontStore) cannot
+        // repopulate these fields after we clear them.
+        await _renderGate.WaitAsync();
+        try
+        {
+            // A newer load superseded this one while we waited for the gate; let it
+            // own the reset so we don't clobber its freshly parsed state.
+            if (version != _loadVersion) return;
+
+            _pages.Clear();
+            _thumbs.Clear();       // sidebar fragments belong to the old document
+            _canvasOps.Clear();    // canvas display lists (with their base64 images) too
+            _canvasDirty.Clear();
+            _renderQueue.Clear(); // pending lazy renders belong to the old document
+            _renderQueued.Clear();
+            _thumbQueue.Clear();
+            _thumbQueued.Clear();
+            _pageWidths.Clear();
+            _pageHeights.Clear();
+            _document = null;
+            _fontStore = null; // fresh embedded-font store per document
+            _fontFaceStyle = string.Empty; // its @font-face snapshot belongs to the old document
+            _pageText = null;  // invalidate the search text index
+            _searchTotal = 0;
+            _searchIndex = -1;
+            _outline = [];
+            // A superseded load's finally won't clear the progress bar (it no longer
+            // owns _loadVersion); reset it here so e.g. Source = null while a load is
+            // in flight doesn't leave the bar up forever.
+            _loading = false;
+        }
+        finally
+        {
+            _renderGate.Release();
+        }
 
         if (_source is null)
         {
@@ -582,10 +880,11 @@ public partial class BitPdfViewer : BitComponentBase
 
         // Show the progress bar and let it paint before the synchronous parse
         // work begins. The bar animates on the compositor so it keeps moving
-        // even while the WASM thread is busy parsing.
+        // even while the WASM thread is busy parsing. Task.Delay guarantees the
+        // browser gets an event-loop turn to paint (Task.Yield does not on WASM).
         _loading = true;
         StateHasChanged();
-        await Task.Yield();
+        await Task.Delay(1);
 
         // A newer Source arrived while we yielded: abandon this stale load.
         if (version != _loadVersion) return;
@@ -607,6 +906,10 @@ public partial class BitPdfViewer : BitComponentBase
             }
             catch (Exception ex)
             {
+                // A newer Source superseded this load while the fetch was in flight;
+                // its failure is not the current document's, so don't publish a stale
+                // error or hide the newer load's progress bar (mirrors the parse catch).
+                if (version != _loadVersion) return;
                 _status = $"Failed to fetch document: {ex.Message}";
                 _loading = false;
                 await OnError.InvokeAsync(_status);
@@ -623,12 +926,17 @@ public partial class BitPdfViewer : BitComponentBase
 
         try
         {
+            BitPdfDocument document;
             try
             {
-                _document = await ParseAsync(bytes, _source.Password);
+                document = await ParseAsync(bytes, _source.Password);
             }
             catch (BitPdfPasswordException) when (OnPasswordRequested is not null)
             {
+                // The parse awaited (Task.Run / gate) long enough for a newer Source
+                // or a disposal; don't prompt the host for a password on a load that
+                // is already superseded — that user code would run for nothing.
+                if (IsDisposed || version != _loadVersion) return;
                 // Ask the host for a password and retry once. The callback returns
                 // null to cancel.
                 string? entered = await OnPasswordRequested();
@@ -636,12 +944,25 @@ public partial class BitPdfViewer : BitComponentBase
                 {
                     throw;
                 }
-                _document = await ParseAsync(bytes, entered);
+                // The prompt is user code that may have awaited long enough for a
+                // newer Source or a disposal; don't parse (or later publish) a
+                // superseded document — the retry parse is the expensive part.
+                if (IsDisposed || version != _loadVersion) return;
+                document = await ParseAsync(bytes, entered);
             }
-            // A password prompt may have awaited long enough for a newer Source.
+            // A password prompt (or the parse itself) may have awaited long enough
+            // for a newer Source; don't clobber the newer load's document.
             if (version != _loadVersion) return;
+            _document = document;
 
             PreparePages();
+            await RenderCurrentPageEagerlyAsync();
+
+            // A newer Source may have superseded this load while the eager render
+            // awaited (or the component was disposed); stop before touching _document
+            // or publishing stale outline/status/callbacks.
+            if (IsDisposed || version != _loadVersion) return;
+
             try
             {
                 _outline = _document.Outline;
@@ -655,30 +976,48 @@ public partial class BitPdfViewer : BitComponentBase
             if (_document.Warnings.Count > 0 && OnWarnings.HasDelegate)
             {
                 await OnWarnings.InvokeAsync(_document.Warnings);
+                // The warnings callback is user code: it may have awaited long
+                // enough for a newer Source (or even set one) or a disposal —
+                // don't announce a superseded document as loaded.
+                if (IsDisposed || version != _loadVersion) return;
             }
             await OnDocumentLoaded.InvokeAsync();
         }
         catch (Exception ex)
         {
+            // A superseded load's failure is not this document's failure: don't
+            // publish a stale error over the newer load's state.
+            if (version != _loadVersion) return;
             _status = $"Error: {ex.Message}";
             await OnError.InvokeAsync(ex.Message);
         }
         finally
         {
-            _loading = false;
+            // Only the load that still owns _loadVersion may clear the progress
+            // bar; a superseded load finishing late must not hide the newer one's.
+            if (version == _loadVersion)
+            {
+                _loading = false;
+            }
         }
     }
 
     /// <summary>
     /// Measures every page (cheap) and creates an empty render slot for each so
     /// the document surface, scrollbar and page count are correct immediately.
-    /// Only a small window around the current page is rendered up front; the
-    /// rest are rendered on demand as they approach the viewport.
+    /// Only the current page is rendered eagerly (by the caller); the rest are
+    /// rendered later on demand by the lazy-render pump as they approach the viewport.
     /// </summary>
     private void PreparePages()
     {
+        // Invalidate any in-flight background render committing into the old slots.
+        _renderEpoch++;
         _pages.Clear();
         _thumbs.Clear();
+        _renderQueue.Clear();
+        _renderQueued.Clear();
+        _thumbQueue.Clear();
+        _thumbQueued.Clear();
         _pageWidths.Clear();
         _pageHeights.Clear();
         _canvasOps.Clear();
@@ -694,13 +1033,9 @@ public partial class BitPdfViewer : BitComponentBase
             _pageHeights.Add(swap ? page.Width : page.Height);
         }
 
-        // Eagerly render a small window around the current page so something is
-        // visible instantly (page 1 on load, or the viewed page after rotation).
-        int center = Math.Clamp(_currentPage - 1, 0, _pages.Count - 1);
-        for (int i = Math.Max(0, center - 1); i <= Math.Min(_pages.Count - 1, center + 1); i++)
-        {
-            _pages[i] = RenderPageContent(i);
-        }
+        // The current page is rendered eagerly by the caller (RenderCurrentPageEagerlyAsync)
+        // so something is visible instantly; neighbors follow through the lazy-render
+        // pump, which yields to the browser between pages.
 
         // If the sidebar is open, its slots were just reset; let its spy re-fill
         // the visible thumbnails on the next render.
@@ -711,33 +1046,235 @@ public partial class BitPdfViewer : BitComponentBase
     }
 
     /// <summary>The document-wide embedded-font <c>@font-face</c> stylesheet,
-    /// rendered in a persistent element so it survives page eviction.</summary>
-    private MarkupString FontFaceStyleMarkup => new(_fontStore?.FontFaceStyle ?? string.Empty);
+    /// rendered in a persistent element so it survives page eviction. Reads a
+    /// UI-thread snapshot, never the font store's live builder (which a background
+    /// render may be mutating).</summary>
+    private MarkupString FontFaceStyleMarkup => new(_fontFaceStyle);
 
-    /// <summary>Renders a single page to its HTML fragment.</summary>
-    private MarkupString RenderPageContent(int index)
+    /// <summary>The result of the heavy, offloadable part of rendering a page.</summary>
+    private readonly record struct BitPdfPageBuild(string Html, string? Ops);
+
+    /// <summary>
+    /// The heavy, offloadable half of rendering a page: runs the C# renderer and
+    /// returns its HTML plus any canvas display list. May run on a worker thread
+    /// (see <see cref="BackgroundRendering"/>); it touches the shared document and
+    /// font store, so it is only ever called while holding <see cref="_renderGate"/>.
+    /// The document reference is captured into a local so a concurrent reload (which
+    /// nulls the field) cannot fault an in-flight build: if the field is already null
+    /// when captured, it bails with a discardable result that <see cref="RenderPageAsync"/>'s
+    /// version/epoch guard drops; if it is nulled after capture, the local keeps the
+    /// old document alive and the result is likewise discarded. The render settings are
+    /// passed in as a UI-thread snapshot so a background build reads a consistent set
+    /// even if the component's state changes while it runs.
+    /// </summary>
+    private BitPdfPageBuild BuildPage(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode)
     {
-        var page = _document!.Pages[index];
-        _fontStore ??= new BitPdfFontStore();
-        _correctWidthsPending = true; // measure/scale text runs after this render
-        var renderer = new BitPdfHtmlRenderer(page, _document.XRef, _fontStore, _rotation)
+        var doc = _document;
+        if (doc is null || index < 0 || index >= doc.Pages.Count)
         {
-            DestinationResolver = dest => _document.ResolveDestinationPage(dest),
-            TextCoalescing = TextCoalescing,
-            EmitCanvasOps = RenderMode == BitPdfRenderMode.Canvas,
+            // A reload nulled _document before this (possibly background) build ran;
+            // return an empty, discardable result — the caller's guard drops it.
+            return new BitPdfPageBuild(string.Empty, null);
+        }
+        var store = _fontStore ??= new BitPdfFontStore();
+        var page = doc.Pages[index];
+        var renderer = new BitPdfHtmlRenderer(page, doc.XRef, store, rotation)
+        {
+            DestinationResolver = dest => doc.ResolveDestinationPage(dest),
+            TextCoalescing = textCoalescing,
+            EmitCanvasOps = renderMode == BitPdfRenderMode.Canvas,
         };
-        string html = renderer.Render();
+        return new BitPdfPageBuild(renderer.Render(), renderer.CanvasOpsJson);
+    }
+
+    /// <summary>
+    /// The UI-thread half of rendering a page: records the canvas display list,
+    /// refreshes the font-face snapshot and schedules the post-render width
+    /// correction. Runs on the UI thread so these shared collections and the
+    /// snapshot are only ever written there.
+    /// </summary>
+    private MarkupString CommitPage(int index, BitPdfPageBuild build)
+    {
+        _correctWidthsPending = true; // measure/scale text runs after this render
         // Canvas mode: hold the display list until the fragment's <canvas> exists
         // in the DOM, then OnAfterRenderAsync replays it via JS.
-        if (renderer.CanvasOpsJson is { } ops)
+        if (build.Ops is { } ops)
         {
             _canvasOps[index] = ops;
             if (_canvasDirty.Contains(index) is false)
             {
                 _canvasDirty.Add(index);
             }
+            _canvasDirtyGen++; // new paint work; a parked print waits for this generation
         }
-        return new MarkupString(html);
+        _fontFaceStyle = _fontStore?.FontFaceStyle ?? string.Empty;
+        return new MarkupString(build.Html);
+    }
+
+    /// <summary>
+    /// Renders one page into its slot if it is still a placeholder, serialized
+    /// through <see cref="_renderGate"/> and — when <see cref="BackgroundRendering"/>
+    /// is set and the runtime has a spare thread — with the heavy build hopped off
+    /// the UI thread. Returns <c>true</c> if it actually rendered the page. In the
+    /// default foreground mode the whole method completes synchronously, so callers
+    /// keep their current instant behavior.
+    /// </summary>
+    private async Task<bool> RenderPageAsync(int index)
+    {
+        if (index < 0 || index >= _pages.Count || _pages[index] is not null || IsDisposed) return false;
+
+        try
+        {
+            await _renderGate.WaitAsync();
+        }
+        catch (ObjectDisposedException)
+        {
+            return false; // disposal disposed the gate while we waited for it
+        }
+        string? buildError = null;
+        int version = 0, epoch = 0;
+        try
+        {
+            if (IsDisposed || index >= _pages.Count || _pages[index] is not null) return false; // filled/disposed while waiting
+            version = _loadVersion; epoch = _renderEpoch;
+
+            // Snapshot the render settings on the UI thread so a background build reads
+            // a consistent set even if _rotation/TextCoalescing/RenderMode change while
+            // it runs; a change also bumps _renderEpoch, so the result is discarded below.
+            int rotation = _rotation;
+            var textCoalescing = TextCoalescing;
+            var renderMode = RenderMode;
+
+            BitPdfPageBuild build;
+            try
+            {
+                build = BackgroundRendering
+                    ? await Task.Run(() => BuildPage(index, rotation, textCoalescing, renderMode))
+                    : BuildPage(index, rotation, textCoalescing, renderMode);
+            }
+            catch (Exception ex)
+            {
+                // A malformed page must not fault the JS-invokable render pump (an
+                // unhandled exception there tears down the Blazor Server circuit).
+                // Skip it, leaving its placeholder, and surface the failure via
+                // OnError once the gate is released (below).
+                buildError = ex.Message;
+                return false;
+            }
+
+            // A reload, rotation, mode change or disposal while the build was in
+            // flight invalidated these slots: drop the now-stale fragment.
+            if (IsDisposed || version != _loadVersion || epoch != _renderEpoch || index >= _pages.Count || _pages[index] is not null)
+            {
+                return false;
+            }
+            _pages[index] = CommitPage(index, build);
+            return true;
+        }
+        finally
+        {
+            _renderGate.Release();
+            // OnError is user code; invoke it only after releasing the gate so a
+            // handler that triggers a reload or render cannot deadlock on it. And
+            // only for a build that still owns the current load/epoch on a live
+            // component: a build that threw because a reload superseded it (which
+            // can null _document mid-build) is not this document's failure.
+            if (buildError is not null && !IsDisposed && version == _loadVersion && epoch == _renderEpoch)
+            {
+                await OnError.InvokeAsync(buildError);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Renders one thumbnail into its slot, serialized through the same gate as page
+    /// renders so it never overlaps a background page build against the shared font
+    /// store. A thumbnail fragment is as heavy as a full page, so an uncached build
+    /// follows the same <see cref="BackgroundRendering"/> path as page renders;
+    /// stale results are dropped by the same version/epoch guard before committing.
+    /// Returns <c>true</c> if it rendered.
+    /// </summary>
+    private async Task<bool> RenderThumbAsync(int index)
+    {
+        if (index < 0 || index >= _thumbs.Count || _thumbs[index] is not null || IsDisposed) return false;
+
+        try
+        {
+            await _renderGate.WaitAsync();
+        }
+        catch (ObjectDisposedException)
+        {
+            return false; // disposal disposed the gate while we waited for it
+        }
+        string? buildError = null;
+        int version = 0, epoch = 0;
+        try
+        {
+            if (IsDisposed || index >= _thumbs.Count || _thumbs[index] is not null) return false;
+
+            // The markup is identical to the full page (only the enclosing
+            // --bit-pdv-scale differs), so reuse the main surface's immutable
+            // fragment when it is already rendered. Not in canvas mode: page
+            // fragments there are placeholders whose pixels JS paints into the
+            // MAIN surface only — a reused fragment would show a blank thumbnail.
+            if (RenderMode != BitPdfRenderMode.Canvas && index < _pages.Count && _pages[index] is { } cached)
+            {
+                _thumbs[index] = cached;
+                return true;
+            }
+
+            version = _loadVersion; epoch = _renderEpoch;
+            int rotation = _rotation;
+            var textCoalescing = TextCoalescing;
+            var renderMode = RenderMode;
+
+            BitPdfPageBuild build;
+            try
+            {
+                build = BackgroundRendering
+                    ? await Task.Run(() => BuildThumb(index, rotation, textCoalescing, renderMode))
+                    : BuildThumb(index, rotation, textCoalescing, renderMode);
+            }
+            catch (Exception ex)
+            {
+                // As RenderPageAsync: a malformed page must not fault the JS-invokable
+                // thumbnail pump. Skip it and surface via OnError after releasing the gate.
+                buildError = ex.Message;
+                return false;
+            }
+
+            // A reload, rotation, mode change or disposal while the build was in
+            // flight invalidated these slots: drop the now-stale fragment.
+            if (IsDisposed || version != _loadVersion || epoch != _renderEpoch || index >= _thumbs.Count || _thumbs[index] is not null)
+            {
+                return false;
+            }
+            // Commit through the shared path so fonts the thumbnail discovered
+            // land in the @font-face snapshot.
+            _thumbs[index] = CommitPage(index, build);
+            return true;
+        }
+        finally
+        {
+            _renderGate.Release();
+            // As RenderPageAsync: report only an active build's failure, never one
+            // from a build superseded by a reload/epoch change or a torn-down component.
+            if (buildError is not null && !IsDisposed && version == _loadVersion && epoch == _renderEpoch)
+            {
+                await OnError.InvokeAsync(buildError);
+            }
+        }
+    }
+
+    /// <summary>Renders the current page up front so something is visible immediately
+    /// after a load, rotation or mode change instead of a placeholder. Completes
+    /// synchronously in the default foreground mode; with <see cref="BackgroundRendering"/>
+    /// the loading shimmer covers the brief hop to a worker thread.</summary>
+    private Task RenderCurrentPageEagerlyAsync()
+    {
+        if (_pages.Count == 0) return Task.CompletedTask;
+        int center = Math.Clamp(_currentPage - 1, 0, _pages.Count - 1);
+        return RenderPageAsync(center);
     }
 
     // Cap how many pages stay materialized so a large document does not grow the
@@ -747,6 +1284,10 @@ public partial class BitPdfViewer : BitComponentBase
 
     private void EvictDistantPages()
     {
+        // Print() is rendering ALL pages for the print dialog; evicting any of
+        // them now would print placeholders. Print resumes eviction when done.
+        if (_printing) return;
+
         int rendered = 0;
         foreach (var p in _pages)
         {
@@ -775,29 +1316,31 @@ public partial class BitPdfViewer : BitComponentBase
     }
 
     /// <summary>
-    /// Renders the fragment shown in a thumbnail. The markup is identical to the
-    /// full page (only the enclosing <c>--bit-pdv-scale</c> differs), so when the main
-    /// surface has already rendered this page we reuse its immutable fragment;
-    /// otherwise we render one just for the sidebar. Either way the thumbnail is
-    /// cached in its own slot and survives the main page's eviction.
+    /// The heavy, offloadable half of rendering a thumbnail — <see cref="BuildPage"/>'s
+    /// sidebar counterpart, with the same reload-safety contract (a null-document
+    /// build returns an empty, discardable result the caller's guard drops).
+    /// Canvas mode renders self-contained HTML instead of the page's canvas
+    /// placeholder — the JS paint targets the MAIN surface only, so a placeholder
+    /// would show a blank thumbnail (Compact text keeps the tiny fragments light).
     /// </summary>
-    private MarkupString RenderThumbContent(int index)
+    private BitPdfPageBuild BuildThumb(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode)
     {
-        // Canvas mode: page fragments are canvas placeholders whose pixels are
-        // painted by JS into the MAIN surface only - a reused fragment would show
-        // a blank thumbnail. Render sidebar thumbnails as self-contained HTML
-        // (Compact text keeps the tiny fragments light).
-        if (RenderMode == BitPdfRenderMode.Canvas)
+        if (renderMode != BitPdfRenderMode.Canvas)
         {
-            _fontStore ??= new BitPdfFontStore();
-            var renderer = new BitPdfHtmlRenderer(
-                _document!.Pages[index], _document.XRef, _fontStore, _rotation)
-            {
-                TextCoalescing = BitPdfTextCoalescing.Compact,
-            };
-            return new MarkupString(renderer.Render());
+            return BuildPage(index, rotation, textCoalescing, renderMode);
         }
-        return _pages[index] ?? RenderPageContent(index);
+
+        var doc = _document;
+        if (doc is null || index < 0 || index >= doc.Pages.Count)
+        {
+            return new BitPdfPageBuild(string.Empty, null);
+        }
+        var store = _fontStore ??= new BitPdfFontStore();
+        var renderer = new BitPdfHtmlRenderer(doc.Pages[index], doc.XRef, store, rotation)
+        {
+            TextCoalescing = BitPdfTextCoalescing.Compact,
+        };
+        return new BitPdfPageBuild(renderer.Render(), null);
     }
 
     // Bound how many thumbnails stay materialized. A thumbnail fragment is as
@@ -990,6 +1533,11 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (_document is null) return;
 
+        // Supersede any search still in flight: OnSearchInput fires per change and an
+        // earlier RunSearchAsync may still be mid-await. Bump the generation so that
+        // older run abandons at its next checkpoint instead of publishing stale counts.
+        int generation = ++_searchGeneration;
+
         if (string.IsNullOrEmpty(_searchQuery))
         {
             await ClearSearchAsync();
@@ -998,38 +1546,75 @@ public partial class BitPdfViewer : BitComponentBase
 
         _loading = true;
         StateHasChanged();
-        await Task.Yield();
+        await Task.Delay(1);
+
+        // A reload or disposal during the yield may have cleared _document; bail
+        // before initializing the text index or reading the page count.
+        if (IsDisposed || _document is null || generation != _searchGeneration) return;
+        int version = _loadVersion; // captured only after confirming the component is still valid
 
         // Search a per-page extracted-text index (built lazily) rather than the
         // rendered DOM, so we only render the pages that actually contain matches
         // - a 500-page document with matches on 3 pages renders 3, not 500.
         _pageText ??= new string?[_document.PageCount];
         string needle = _searchQuery;
+        int pageCount = _document.PageCount; // captured so the loop condition never reads a nulled _document
         bool rendered = false;
-        for (int i = 0; i < _document.PageCount; i++)
+        for (int i = 0; i < pageCount; i++)
         {
+            // A reload, disposal or newer query during a yield supersedes this run;
+            // stop before touching shared state (mirrors the render pumps' guard).
+            if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
+
             _pageText[i] ??= _document.Pages[i].ExtractText();
             if (_pageText[i]!.Contains(needle, StringComparison.OrdinalIgnoreCase)
                 && i < _pages.Count && _pages[i] is null)
             {
-                _pages[i] = RenderPageContent(i);
+                await RenderPageAsync(i);
                 rendered = true;
+                // Yield between match renders so a large result set doesn't
+                // monopolize the WASM UI thread (mirrors the lazy-render pumps).
+                await Task.Delay(1);
+            }
+            else if ((i & 31) == 31)
+            {
+                // No render happened this page, but the first search over a large
+                // document extracts text for every page synchronously; yield every
+                // 32 pages so that extraction sweep doesn't freeze the UI thread.
+                await Task.Delay(1);
             }
         }
+
+        // A reload, disposal or newer query during the final yield supersedes this
+        // search; don't touch shared state or JS on a torn-down/stale component.
+        if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
 
         _loading = false;
         if (rendered)
         {
             StateHasChanged();
-            await Task.Yield(); // let the freshly rendered pages paint before highlighting
+            await Task.Delay(1); // let the freshly rendered pages paint before highlighting
+            // A reload, disposal or newer query during the paint delay supersedes
+            // this search; don't highlight the newer state for the old query.
+            if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
         }
 
-        _searchTotal = await _js.BitPdfViewerSearchAll(_containerRef, _searchQuery);
-        _searchIndex = _searchTotal > 0 ? 0 : -1;
-        if (_searchTotal > 0)
+        // Guard the interop against a disposal racing these calls (as
+        // ScrollActiveThumbIntoViewAsync does).
+        try
         {
-            await _js.BitPdfViewerGotoMatch(_containerRef, _searchIndex);
+            int total = await _js.BitPdfViewerSearchAll(_containerRef, _searchQuery);
+            // The interop awaited: re-validate ownership before publishing the
+            // (now possibly stale) result or scrolling a torn-down viewer.
+            if (IsDisposed || version != _loadVersion || generation != _searchGeneration) return;
+            _searchTotal = total;
+            _searchIndex = total > 0 ? 0 : -1;
+            if (total > 0)
+            {
+                await _js.BitPdfViewerGotoMatch(_containerRef, _searchIndex);
+            }
         }
+        catch (JSDisconnectedException) { }
     }
 
     private Task SearchNext() => GotoMatch(_searchIndex + 1);
@@ -1046,6 +1631,12 @@ public partial class BitPdfViewer : BitComponentBase
 
     private async Task ClearSearchAsync()
     {
+        // Shared invalidation for every "clear" path (empty query, closing the box):
+        // bump the generation so any search still in flight abandons at its next
+        // checkpoint, and clear its progress bar here — the abandoning run returns
+        // early via the generation guard and so never runs its own `_loading = false`.
+        _searchGeneration++;
+        _loading = false;
         _searchTotal = 0;
         _searchIndex = -1;
         await _js.BitPdfViewerClearSearch(_containerRef);
@@ -1075,6 +1666,40 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
+        // Prevent any new render work from starting: the pumps and the render methods
+        // all bail on IsDisposed. base.DisposeAsync sets this too, but only at the end
+        // of this method — set it up front so those guards take effect during disposal.
+        IsDisposed = true;
+
+        // Supersede any load still in flight: several LoadAsync continuations resume
+        // from an await and check only `version != _loadVersion` (not IsDisposed)
+        // before publishing state or invoking callbacks. Bumping the version here
+        // invalidates all of them at once, so none commits against a torn-down component.
+        _loadVersion++;
+
+        // Stop the lazy-render pumps: clear pending work so a pump resuming from its
+        // Task.Delay yield after disposal finds nothing left to render against the
+        // torn-down component.
+        _renderQueue.Clear();
+        _renderQueued.Clear();
+        _thumbQueue.Clear();
+        _thumbQueued.Clear();
+
+        // Release a print parked on the canvas-paint barrier: OnAfterRenderAsync won't
+        // run again to complete it once disposal starts. The print resumes, sees the
+        // bumped version / IsDisposed, and bails.
+        _canvasPaintSignal?.TrySetResult();
+        _canvasPaintSignal = null;
+
+        // Wait for any in-flight render to release the gate before disposing it, so a
+        // background build that is mid-flight can run its finally (Release) without
+        // faulting on a disposed semaphore. New renders are already blocked above.
+        try
+        {
+            await _renderGate.WaitAsync();
+        }
+        catch (ObjectDisposedException) { } // Already disposed; nothing to drain.
+
         try
         {
             await _js.BitPdfViewerDisposeScrollSpy(_containerRef);
@@ -1084,6 +1709,7 @@ public partial class BitPdfViewer : BitComponentBase
         catch (TaskCanceledException) { } // Disposal raced an in-flight interop call; safe to ignore.
 
         _dotnetObj?.Dispose();
+        _renderGate.Dispose();
 
         await base.DisposeAsync(disposing);
     }

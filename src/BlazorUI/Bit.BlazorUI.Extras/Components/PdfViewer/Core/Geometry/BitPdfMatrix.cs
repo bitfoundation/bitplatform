@@ -1,4 +1,4 @@
-// Affine-transform helpers for PDF coordinate spaces.
+﻿// Affine-transform helpers for PDF coordinate spaces.
 
 using System.Globalization;
 

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
-namespace Bit.BlazorUI.Tests.Components.Buttons;
+namespace Bit.BlazorUI.Tests.Components.Buttons.Button;
 
 [TestClass]
 public class BitButtonTests : BunitTestContext
@@ -386,7 +386,7 @@ public class BitButtonTests : BunitTestContext
 
         Assert.AreEqual("-1", bitButton.GetAttribute("tabindex"));
 
-        com.SetParametersAndRender(parameters =>
+        com.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
         });
@@ -518,7 +518,7 @@ public class BitButtonTests : BunitTestContext
 
         Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
 
-        com.SetParametersAndRender(parameters =>
+        com.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });

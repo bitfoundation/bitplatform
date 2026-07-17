@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// How the current navigation was initiated. Exposed on <see cref="BrouterNavigationContext.NavigationType"/>

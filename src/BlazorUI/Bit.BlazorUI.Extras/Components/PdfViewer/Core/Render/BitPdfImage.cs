@@ -1,5 +1,7 @@
-// Image decoding: the raster cases needed to produce displayable pixels.
+﻿// Image decoding: the raster cases needed to produce displayable pixels.
 
+using System.Runtime.Intrinsics;
+using System.Runtime.InteropServices;
 
 namespace Bit.BlazorUI;
 
@@ -168,10 +170,48 @@ internal static class BitPdfImage
         BitPdfColorSpace cs, byte[] rgba, double[]? decode, int[]? colorKey = null)
     {
         int nComps = cs.Components;
+        // 64-bit product: width alone can approach the pixel budget (~268 M) while
+        // nComps * bpc pushes the bit count past int.MaxValue for a malicious image,
+        // silently wrapping rowBytes negative. The checked narrowing turns a genuinely
+        // oversized row into a catchable overflow (the caller skips the bad image).
+        int rowBytes = checked((int)(((long)width * nComps * bpc + 7) / 8));
+
+        // Fast path A — single-component spaces at <=8 bpc. Every output pixel is a
+        // pure function of one sample value, of which there are at most 256, so bake
+        // an RGBA lookup table once (one GetRgb per distinct sample) and collapse the
+        // per-pixel work to a single table read + 32-bit store. This removes the
+        // per-pixel virtual GetRgb dispatch for the Gray / Indexed / 1-colorant
+        // Separation cases — and for Indexed, lifts its per-pixel palette scaling and
+        // double[] allocation out of the hot loop entirely.
+        if (nComps == 1 && bpc <= 8)
+        {
+            uint[] lut = BuildSampleLut(cs, bpc, decode, colorKey);
+            DecodeViaSampleLut(data, width, height, bpc, rowBytes, lut, rgba);
+            return;
+        }
+
+        // Fast path B — 8-bpc DeviceRGB (ICCBased-N3 / CalRGB resolve to the same
+        // singleton) with no /Decode or colour-key mask is already packed RGB bytes.
+        // The scalar path round-trips each sample through /255 then *255 and a virtual
+        // call; instead widen RGB->RGBA directly, SIMD-accelerated where available.
+        if (bpc == 8 && decode is null && colorKey is null && ReferenceEquals(cs, BitPdfColorSpace.Rgb))
+        {
+            DecodeDeviceRgb8(data, width, height, rgba);
+            return;
+        }
+
+        DecodeColorImageGeneric(data, width, height, bpc, nComps, cs, rgba, decode, colorKey, rowBytes);
+    }
+
+    // The general per-component path: reads each sample, applies /Decode or colour-key
+    // masking, and converts through the colour space. Handles the multi-component
+    // (RGB-with-Decode, CMYK, Lab, DeviceN) and high-bit-depth cases the fast paths
+    // above deliberately skip.
+    private static void DecodeColorImageGeneric(byte[] data, int width, int height, int bpc,
+        int nComps, BitPdfColorSpace cs, byte[] rgba, double[]? decode, int[]? colorKey, int rowBytes)
+    {
         bool indexed = cs is BitPdfIndexedColorSpace;
         double maxVal = (1 << bpc) - 1;
-        int rowBits = width * nComps * bpc;
-        int rowBytes = (rowBits + 7) / 8;
         var comps = new double[nComps];
 
         // A /Decode entry must supply a [min max] pair per component to be usable.
@@ -216,6 +256,138 @@ internal static class BitPdfImage
                 rgba[p + 2] = b;
                 rgba[p + 3] = (byte)(masked ? 0 : 255);
             }
+        }
+    }
+
+    // Bakes an RGBA-per-sample lookup for a single-component space (bpc <= 8, so at
+    // most 256 entries). Mirrors the general path's /Decode, indexed and colour-key
+    // handling exactly, evaluated once per sample value instead of once per pixel.
+    // Each entry is packed little-endian (R | G<<8 | B<<16 | A<<24) so it can be
+    // stored to the RGBA buffer as one 32-bit word.
+    private static uint[] BuildSampleLut(BitPdfColorSpace cs, int bpc, double[]? decode, int[]? colorKey)
+    {
+        int count = 1 << bpc;
+        double maxVal = count - 1;
+        bool indexed = cs is BitPdfIndexedColorSpace;
+        bool hasDecode = decode is not null && decode.Length >= 2;
+        bool hasColorKey = colorKey is not null && colorKey.Length >= 2;
+        var comps = new double[1];
+        var lut = new uint[count];
+
+        for (int s = 0; s < count; s++)
+        {
+            if (hasDecode)
+            {
+                comps[0] = decode![0] + s * (decode[1] - decode[0]) / maxVal;
+            }
+            else
+            {
+                comps[0] = indexed ? s : s / maxVal;
+            }
+            var (r, g, b) = cs.GetRgb(comps);
+            int a = hasColorKey && s >= colorKey![0] && s <= colorKey[1] ? 0 : 255;
+            lut[s] = (uint)(r | (g << 8) | (b << 16) | (a << 24));
+        }
+        return lut;
+    }
+
+    private static void DecodeViaSampleLut(byte[] data, int width, int height, int bpc,
+        int rowBytes, uint[] lut, byte[] rgba)
+    {
+        // The packed LUT words are little-endian RGBA, so on a little-endian runtime
+        // (every target here: Blazor WASM, x86, ARM) the fast path is a straight
+        // 32-bit store per pixel over the buffer reinterpreted as uint.
+        if (BitConverter.IsLittleEndian)
+        {
+            Span<uint> dst = MemoryMarshal.Cast<byte, uint>(rgba.AsSpan());
+            int srcLen = data.Length;
+            if (bpc == 8)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    int rowStart = y * rowBytes;
+                    int o = y * width;
+                    for (int x = 0; x < width; x++)
+                    {
+                        int idx = rowStart + x;
+                        // Out-of-range samples read as 0, matching ReadBits' bounds guard.
+                        dst[o + x] = idx < srcLen ? lut[data[idx]] : lut[0];
+                    }
+                }
+            }
+            else
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    int rowStart = y * rowBytes;
+                    int bitPos = 0;
+                    int o = y * width;
+                    for (int x = 0; x < width; x++)
+                    {
+                        dst[o + x] = lut[ReadBits(data, rowStart, bitPos, bpc)];
+                        bitPos += bpc;
+                    }
+                }
+            }
+            return;
+        }
+
+        // Big-endian fallback: unpack each LUT word into bytes explicitly.
+        for (int y = 0; y < height; y++)
+        {
+            int rowStart = y * rowBytes;
+            int bitPos = 0;
+            for (int x = 0; x < width; x++)
+            {
+                uint px = lut[ReadBits(data, rowStart, bitPos, bpc)];
+                bitPos += bpc;
+                int p = (y * width + x) * 4;
+                rgba[p] = (byte)px;
+                rgba[p + 1] = (byte)(px >> 8);
+                rgba[p + 2] = (byte)(px >> 16);
+                rgba[p + 3] = (byte)(px >> 24);
+            }
+        }
+    }
+
+    // RGB (3 src bytes) -> RGBA (4 dst bytes) expansion mask: each pixel's R,G,B move
+    // into the low three lanes of its output word; the 0x80 index zeroes the alpha
+    // lane, which the alpha vector then fills with 0xFF. Four pixels per 128-bit op.
+    private static readonly Vector128<byte> RgbToRgbaShuffle = Vector128.Create(
+        (byte)0, 1, 2, 0x80, 3, 4, 5, 0x80, 6, 7, 8, 0x80, 9, 10, 11, 0x80);
+    private static readonly Vector128<byte> RgbaAlpha = Vector128.Create(
+        (byte)0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255);
+
+    private static void DecodeDeviceRgb8(byte[] data, int width, int height, byte[] rgba)
+    {
+        // rowBytes == width*3 for 8-bpc RGB (no row padding), so the samples are one
+        // contiguous run and rows can be ignored entirely.
+        int totalPixels = width * height;
+        int srcLen = data.Length;
+        int i = 0;
+
+        if (Vector128.IsHardwareAccelerated)
+        {
+            // Each iteration loads 16 bytes (needs the full 16 in bounds), shuffles the
+            // first 12 into 4 RGBA pixels, OR-s in opaque alpha, and stores 16 bytes.
+            for (; i + 4 <= totalPixels && i * 3 + 16 <= srcLen; i += 4)
+            {
+                Vector128<byte> src = Vector128.LoadUnsafe(ref data[i * 3]);
+                Vector128<byte> pixels = Vector128.Shuffle(src, RgbToRgbaShuffle) | RgbaAlpha;
+                pixels.StoreUnsafe(ref rgba[i * 4]);
+            }
+        }
+
+        // Scalar tail — also the whole loop on non-accelerated runtimes and for any
+        // pixels whose source bytes run past a truncated stream (read as 0).
+        for (; i < totalPixels; i++)
+        {
+            int s = i * 3;
+            int p = i * 4;
+            rgba[p] = s < srcLen ? data[s] : (byte)0;
+            rgba[p + 1] = s + 1 < srcLen ? data[s + 1] : (byte)0;
+            rgba[p + 2] = s + 2 < srcLen ? data[s + 2] : (byte)0;
+            rgba[p + 3] = 255;
         }
     }
 
@@ -276,13 +448,60 @@ internal static class BitPdfImage
 
         double maxVal = (1 << mbpc) - 1;
         int rowBytes = (mw * mbpc + 7) / 8;
+
+        // Horizontal scale is fixed per column, so precompute the source x for each
+        // destination x once instead of dividing per pixel. Only worth (and safe) to
+        // precompute for reasonably wide rows: a pathological width (up to the pixel
+        // budget when height is tiny) would make the width-sized map a ~1 GB allocation
+        // on top of the RGBA buffer, so above the threshold each mx is computed inline.
+        bool scaleX = mw != width;
+        int[]? xMap = scaleX && width <= ScaleMapMaxWidth ? BuildScaleMap(width, mw) : null;
+
+        // The alpha byte is a pure function of the mask sample (sample -> /maxVal ->
+        // optional invert -> round to 0..255). For the usual bit depths (<=16) bake
+        // that whole chain into a lookup so the hot loop drops its per-pixel divide,
+        // round and clamp. The matte path additionally needs the fractional alpha,
+        // which stays cheap to derive from the same sample.
+        byte[]? alphaLut = mbpc <= 16 ? BuildAlphaLut(mbpc, invert) : null;
+
+        if (matte is null)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                // Widen before multiplying by rowBytes: a mask with a huge declared
+                // width makes rowBytes large enough that (srcRow * rowBytes) overflows
+                // int and wraps negative, which ReadBits would turn into a data[<0]
+                // out-of-range read. Clamp past the buffer so ReadBits just yields 0.
+                long srcRow = mh == height ? y : (long)y * mh / height;
+                long rowStartL = srcRow * rowBytes;
+                int rowStart = rowStartL >= mdata.Length ? mdata.Length : (int)rowStartL;
+                int o = y * width;
+                for (int x = 0; x < width; x++)
+                {
+                    int mx = xMap is not null ? xMap[x] : (scaleX ? (int)((long)x * mw / width) : x);
+                    int sample = ReadBits(mdata, rowStart, mx * mbpc, mbpc);
+                    rgba[(o + x) * 4 + 3] = alphaLut is not null
+                        ? alphaLut[sample]
+                        : AlphaByte(sample / maxVal, invert);
+                }
+            }
+            return;
+        }
+
+        // /Matte: the base colour was pre-blended against this matte, so un-premultiply
+        // each channel as alpha is applied (PDF 32000-1 §11.6.5.3). Rare, so kept off
+        // the fast path above; still uses the precomputed scale map and alpha LUT.
+        var m = matte.Value;
         for (int y = 0; y < height; y++)
         {
-            int my = mh == height ? y : y * mh / height;
-            int rowStart = my * rowBytes;
+            // Widen before multiplying by rowBytes so a huge declared mask width can't
+            // overflow int to a negative rowStart (see the matte-free path above).
+            long srcRow = mh == height ? y : (long)y * mh / height;
+            long rowStartL = srcRow * rowBytes;
+            int rowStart = rowStartL >= mdata.Length ? mdata.Length : (int)rowStartL;
             for (int x = 0; x < width; x++)
             {
-                int mx = mw == width ? x : x * mw / width;
+                int mx = xMap is not null ? xMap[x] : (scaleX ? (int)((long)x * mw / width) : x);
                 int sample = ReadBits(mdata, rowStart, mx * mbpc, mbpc);
                 double alpha = sample / maxVal;
                 if (invert)
@@ -290,15 +509,56 @@ internal static class BitPdfImage
                     alpha = 1 - alpha;
                 }
                 int p = (y * width + x) * 4;
-                if (matte is { } m && alpha > 0)
+                if (alpha > 0)
                 {
                     rgba[p] = Unmatte(rgba[p], m.R, alpha);
                     rgba[p + 1] = Unmatte(rgba[p + 1], m.G, alpha);
                     rgba[p + 2] = Unmatte(rgba[p + 2], m.B, alpha);
                 }
-                rgba[p + 3] = (byte)Math.Clamp((int)Math.Round(alpha * 255), 0, 255);
+                rgba[p + 3] = alphaLut is not null
+                    ? alphaLut[sample]
+                    : (byte)Math.Clamp((int)Math.Round(alpha * 255), 0, 255);
             }
         }
+    }
+
+    // Above this destination width the per-column source-x map (4 bytes/entry) is not
+    // precomputed — each mx is derived inline instead — so a pathologically wide image
+    // cannot force a huge array allocation. 65536 keeps the fast path for any real image.
+    private const int ScaleMapMaxWidth = 1 << 16;
+
+    // Maps a destination coordinate to its nearest source coordinate for a mask that
+    // differs in size from the base image (matches the inline `i * srcLen / dstLen`).
+    private static int[] BuildScaleMap(int dstLen, int srcLen)
+    {
+        var map = new int[dstLen];
+        for (int i = 0; i < dstLen; i++)
+        {
+            map[i] = (int)((long)i * srcLen / dstLen); // 64-bit product: huge claimed sizes must not overflow
+        }
+        return map;
+    }
+
+    // sample (0..2^bpc-1) -> 8-bit alpha, honouring an inverted /Decode [1 0].
+    private static byte[] BuildAlphaLut(int bpc, bool invert)
+    {
+        int count = 1 << bpc;
+        double maxVal = count - 1;
+        var lut = new byte[count];
+        for (int s = 0; s < count; s++)
+        {
+            lut[s] = AlphaByte(s / maxVal, invert);
+        }
+        return lut;
+    }
+
+    private static byte AlphaByte(double alpha, bool invert)
+    {
+        if (invert)
+        {
+            alpha = 1 - alpha;
+        }
+        return (byte)Math.Clamp((int)Math.Round(alpha * 255), 0, 255);
     }
 
     // Recovers a colour component pre-blended against a matte: c = m + (c' - m)/a.

@@ -146,27 +146,46 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
 
 
+    internal int Depth => Parent is null ? 0 : Parent.Depth + 1;
+
+    internal void InternalRecursiveStateHasChanged()
+    {
+        StateHasChanged();
+
+        foreach (var child in ChildItems)
+        {
+            child.InternalRecursiveStateHasChanged();
+        }
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
         if (Parent is null)
         {
-            Nav.RegisterOption(this);
+            Nav?.RegisterOption(this);
         }
         else
         {
             Parent.ChildItems.Add(this);
         }
 
-        if (Nav.AllExpanded)
+        if (Nav is not null)
         {
-            Nav.SetIsExpanded(this, true);
-        }
+            if (Nav.AllExpanded)
+            {
+                Nav.SetIsExpanded(this, true);
+            }
 
-        Nav.SetItemExpanded(this, Nav.GetIsExpanded(this) ?? false);
+            Nav.SetItemExpanded(this, Nav.GetIsExpanded(this) ?? false);
 
-        if (Nav.Mode == BitNavMode.Automatic)
-        {
-            Nav.SetSelectedItemByCurrentUrl();
+            if (Nav.Mode == BitNavMode.Automatic)
+            {
+                // Defer the URL match to a single pass after this registration batch renders, instead
+                // of matching here per option (which would flatten and scan the whole tree each time).
+                Nav.MarkSelectionDirty();
+            }
         }
 
         Parent?.StateHasChanged();
@@ -188,14 +207,14 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
         if (Parent is null)
         {
-            Nav.UnregisterOption(this);
+            Nav?.UnregisterOption(this);
         }
         else
         {
             Parent.ChildItems.Remove(this);
         }
 
-        Nav.SetSelectedItemByCurrentUrl();
+        Nav?.SetSelectedItemByCurrentUrl();
 
         Parent?.StateHasChanged();
 

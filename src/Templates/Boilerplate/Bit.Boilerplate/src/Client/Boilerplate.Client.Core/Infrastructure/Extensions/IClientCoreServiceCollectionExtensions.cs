@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 //#if (offlineDb == true)
 using Microsoft.EntityFrameworkCore;
 using Boilerplate.Client.Core.Infrastructure.Data;
@@ -161,6 +161,9 @@ public static partial class IClientCoreServiceCollectionExtensions
                 var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
                 var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
 
+                // The X-Origin is already has been set while Client.Web, Client.Maui, Client.Windows and Server.Web
+                var xOrigin = sp.GetRequiredService<HttpClient>().DefaultRequestHeaders.Single(h => h.Key is "X-Origin").Value.Single();
+
                 var hubConnection = new HubConnectionBuilder()
                     .WithStatefulReconnect()
                     .AddJsonProtocol(options =>
@@ -171,7 +174,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                         }
                     })
                     .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
-                    .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
+                    .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub?origin=" + Uri.EscapeDataString(xOrigin)), options =>
                     {
                         options.SkipNegotiation = false; // Required for Azure SignalR.
                         options.Transports = HttpTransportType.WebSockets;

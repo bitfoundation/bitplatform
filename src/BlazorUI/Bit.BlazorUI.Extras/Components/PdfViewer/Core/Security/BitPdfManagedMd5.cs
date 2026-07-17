@@ -1,4 +1,4 @@
-// A small managed MD5 (RFC 1321) implementation. System.Security.Cryptography's
+﻿// A small managed MD5 (RFC 1321) implementation. System.Security.Cryptography's
 // MD5 throws PlatformNotSupportedException in the browser WebAssembly sandbox;
 // this pure-managed version lets encrypted PDFs open there too.
 

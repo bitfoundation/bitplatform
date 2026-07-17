@@ -114,4 +114,12 @@ public partial class ClientAppMessages
     /// When a user completes external sign-in in a separate window, this message is published to notify the app.
     /// </summary>
     public const string EXTERNAL_SIGN_IN_CALLBACK = nameof(EXTERNAL_SIGN_IN_CALLBACK);
+
+//#if (multitenant == true)
+    /// <summary>
+    /// A publisher that publishes this message notifies that the user's current tenant has changed (switched, renamed, created or left).
+    /// The payload is the new current tenant (a <c>TenantDto</c>) or null when the user no longer has a tenant selected.
+    /// </summary>
+    public const string CURRENT_TENANT_CHANGED = nameof(CURRENT_TENANT_CHANGED);
+//#endif
 }

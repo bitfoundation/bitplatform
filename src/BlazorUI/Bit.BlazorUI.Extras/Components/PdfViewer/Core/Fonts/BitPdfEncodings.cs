@@ -1,4 +1,4 @@
-// Standard PDF base encodings (code -> glyph name) per PDF 32000-1:2008 Annex D.
+﻿// Standard PDF base encodings (code -> glyph name) per PDF 32000-1:2008 Annex D.
 // Used to resolve simple-font character codes to glyph names (and thence to
 // Unicode) when a font supplies a base encoding and/or a /Differences array.
 

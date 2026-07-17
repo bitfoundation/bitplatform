@@ -20,6 +20,12 @@ public partial class TestsAssemblyInitializer
 {
     //#if (aspire == true)
     private static DistributedApplication? aspireApp;
+
+    /// <summary>
+    /// The running Aspire host - with real backing containers such as Redis
+    /// Started by <see cref="RunAspireHost"/> during assembly initialization.
+    /// </summary>
+    internal static DistributedApplication AspireApp => aspireApp ?? throw new InvalidOperationException();
     //#endif
 
     [AssemblyInitialize]

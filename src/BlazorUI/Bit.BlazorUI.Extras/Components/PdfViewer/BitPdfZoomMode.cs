@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>How the viewer scales pages to the available space.</summary>
 public enum BitPdfZoomMode

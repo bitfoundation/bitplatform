@@ -1,4 +1,4 @@
-// Plain-text extraction from a page's content stream, without emitting HTML.
+﻿// Plain-text extraction from a page's content stream, without emitting HTML.
 // Used for search indexing and the public text-extraction API.
 
 using System.Text;
@@ -37,18 +37,18 @@ public static class BitPdfTextExtractor
             BitPdfFont? font = null;
             foreach (var op in ops)
             {
-                switch (op.Operator)
+                switch (op.Code)
                 {
-                    case "Tf":
+                    case BitPdfOpCode.SetFont:
                         if (op.Operands.Count >= 1 && op.Operands[0] is BitPdfName fn)
                         {
                             font = ResolveFont(fn.Value, resources, xref, fontCache);
                         }
                         break;
-                    case "Tj":
+                    case BitPdfOpCode.ShowText:
                         AppendShow(sb, font, op.Operands.Count > 0 ? op.Operands[0] : null);
                         break;
-                    case "TJ":
+                    case BitPdfOpCode.ShowTextArray:
                         if (op.Operands.Count > 0 && op.Operands[0] is List<object?> arr)
                         {
                             foreach (var item in arr)
@@ -64,16 +64,16 @@ public static class BitPdfTextExtractor
                             }
                         }
                         break;
-                    case "'":
+                    case BitPdfOpCode.NextLineShowText:
+                    case BitPdfOpCode.NextLineShowTextSpacing:
+                        // Both move to the next line then show the string (the last
+                        // operand); the spacing variant's word/char spacing operands
+                        // don't affect extracted text.
                         sb.Append('\n');
                         AppendShow(sb, font, op.Operands.Count > 0 ? op.Operands[^1] : null);
                         break;
-                    case "\"":
-                        sb.Append('\n');
-                        AppendShow(sb, font, op.Operands.Count > 0 ? op.Operands[^1] : null);
-                        break;
-                    case "Td":
-                    case "TD":
+                    case BitPdfOpCode.TextMove:
+                    case BitPdfOpCode.TextMoveSetLeading:
                         // A vertical move implies a new line; a purely horizontal move a space.
                         if (Math.Abs(op.Num(1)) > 0.01)
                         {
@@ -84,10 +84,10 @@ public static class BitPdfTextExtractor
                             sb.Append(' ');
                         }
                         break;
-                    case "T*":
+                    case BitPdfOpCode.TextNextLine:
                         sb.Append('\n');
                         break;
-                    case "Do":
+                    case BitPdfOpCode.XObject:
                         // Recurse into a form XObject so its text is captured too.
                         if (op.Operands.Count > 0 && op.Operands[0] is BitPdfName xn
                             && resources?.Get("XObject") is BitPdfDict xobjs

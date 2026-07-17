@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement"
@@ -139,7 +139,20 @@
             }
             else if (_pages.Count == 0)
             {
-                <div class="bit-pdv-empty">@_status</div>
+                @if (_loading)
+                {
+                    @* While fetching/parsing, show a page-shaped shimmer instead of a
+                       status line, matching the per-page loading placeholder. *@
+                    <div class="bit-pdv-pages">
+                        <div class="bit-pdv-page bit-pdv-page-loading">
+                            <div class="bit-pdv-page-placeholder"></div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="bit-pdv-empty">@_status</div>
+                }
             }
             else
             {

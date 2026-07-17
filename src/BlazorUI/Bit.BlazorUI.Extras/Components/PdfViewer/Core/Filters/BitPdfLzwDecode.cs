@@ -1,4 +1,4 @@
-// C# implementation of the LZWDecode filter, following the variable width LZW
+﻿// C# implementation of the LZWDecode filter, following the variable width LZW
 // scheme described in the PDF specification.
 
 namespace Bit.BlazorUI;

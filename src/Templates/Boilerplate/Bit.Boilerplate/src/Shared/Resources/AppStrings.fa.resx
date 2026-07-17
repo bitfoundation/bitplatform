@@ -774,6 +774,15 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>هنگامی که کد QR را اسکن کردید یا کلید بالا را وارد کردید، برنامه احراز هویت دو عاملی شما یک کد منحصر به فرد را در اختیار شما قرار می دهد. کد را در کادر تایید زیر وارد کنید.</value>
   </data>
+    <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>به‌دلیل مسائل امنیتی، طی چند دقیقه‌ی آینده از همه‌ی دستگاه‌های شما، از جمله همین دستگاه، خارج خواهید شد. لطفاً دوباره وارد شوید.</value>
+  </data>
+    <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>تغییر گذرواژه</value>
+  </data>
+    <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>گذرواژه‌ی شما با موفقیت تغییر کرد.</value>
+  </data>
     <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>احراز هویت دو مرحله‌ای فعال شد.</value>
   </data>

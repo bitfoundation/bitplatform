@@ -2,42 +2,22 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (ChildContent is not null || Options is not null)
-{
-    <CascadingValue Value="this" IsFixed="true">
-        <div style="display:none" hidden>@(Options ?? ChildContent)</div>
-    </CascadingValue>
-}
-
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @foreach (var item in _items)
+    @if (ChildContent is not null || Options is not null)
     {
-        var key = GetItemKey(item);
-        var isEnabled = IsEnabled && GetIsEnabled(item);
-        var headerTemplate = GetItemHeaderTemplate(item);
-
-        <BitAccordion @key="@key"
-                      Background="Background"
-                      Border="Border"
-                      Class="@GetClass(item)"
-                      Style="@GetStyle(item)"
-                      Classes="_itemClasses"
-                      Styles="_itemStyles"
-                      Dir="Dir"
-                      IsEnabled="isEnabled"
-                      NoBorder="NoBorder"
-                      Title="@GetTitle(item)"
-                      Description="@GetDescription(item)"
-                      ExpanderIcon="GetItemExpanderIcon(item)"
-                      ExpanderIconName="@GetItemExpanderIconName(item)"
-                      HeaderTemplate="headerTemplate"
-                      IsExpanded="IsItemExpanded(item)"
-                      OnClick="() => HandleOnItemClick(item)">
-            @GetItemBody(item)
-        </BitAccordion>
+        <CascadingValue Value="this" IsFixed="true">
+            @(Options ?? ChildContent)
+        </CascadingValue>
+    }
+    else
+    {
+        @foreach (var item in _items)
+        {
+            <_BitAccordionListItem @key="@GetItemKey(item)" AccordionList="this" Item="item" />
+        }
     }
 </div>

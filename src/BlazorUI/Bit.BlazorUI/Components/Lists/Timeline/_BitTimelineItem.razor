@@ -1,0 +1,63 @@
+@namespace Bit.BlazorUI
+@typeparam TItem where TItem : class
+
+@{
+    var icon = Timeline.GetIcon(Item);
+    var hideDot = Timeline.GetHideDot(Item);
+    var iconName = Timeline.GetIconName(Item);
+    var dotTemplate = Timeline.GetDotTemplate(Item);
+    var primaryContent = Timeline.GetPrimaryContent(Item);
+    var isEnabled = Timeline.IsEnabled && Timeline.GetIsEnabled(Item);
+    var secondaryContent = Timeline.GetSecondaryContent(Item);
+
+    icon = BitIconInfo.From(icon, iconName);
+}
+
+<div @onclick="() => Timeline.HandleOnItemClick(Item)"
+     @onkeydown="HandleOnItemKeyDown"
+     @onkeydown:preventDefault="_preventKeyDownDefault"
+     role="button"
+     tabindex="@(isEnabled ? 0 : -1)"
+     disabled="@(isEnabled is false)"
+     aria-disabled="@(isEnabled is false)"
+     style="@Timeline.GetStyle(Item);@Timeline.Styles?.Item"
+     class="bit-tln-itm@(Timeline.GetItemClasses(Item)) @Timeline.Classes?.Item">
+    <div style="@Timeline.Styles?.PrimaryContent" class="bit-tln-pcn @Timeline.Classes?.PrimaryContent">
+        @if (primaryContent is not null)
+        {
+            @primaryContent(Item)
+        }
+        else
+        {
+            <span style="@Timeline.Styles?.PrimaryText" class="bit-tln-ttx @Timeline.Classes?.PrimaryText">@Timeline.GetPrimaryText(Item)</span>
+        }
+    </div>
+    <div style="@Timeline.Styles?.Divider" class="bit-tln-dvd @Timeline.Classes?.Divider">
+        @if (hideDot is false)
+        {
+            @if (dotTemplate is not null)
+            {
+                @dotTemplate(Item)
+            }
+            else
+            {
+                <div style="@Timeline.Styles?.Dot" class="bit-tln-dot @Timeline.Classes?.Dot">
+                    @if (icon is not null)
+                    {
+                        <i style="@Timeline.Styles?.Icon" class="bit-tln-ico @icon.GetCssClasses() @Timeline.Classes?.Icon" />
+                    }
+                </div>
+            }
+        }
+    </div>
+    <div style="@Timeline.Styles?.SecondaryContent" class="bit-tln-scn @Timeline.Classes?.SecondaryContent">
+        @if (secondaryContent is not null)
+        {
+            @secondaryContent(Item)
+        }
+        else
+        {
+            <span style="@Timeline.Styles?.SecondaryText" class="bit-tln-ttx @Timeline.Classes?.SecondaryText">@Timeline.GetSecondaryText(Item)</span>
+        }
+    </div>
+</div>
