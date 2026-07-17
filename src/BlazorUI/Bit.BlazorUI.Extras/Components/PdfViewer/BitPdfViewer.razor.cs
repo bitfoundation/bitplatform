@@ -832,6 +832,10 @@ public partial class BitPdfViewer : BitComponentBase
                 {
                     throw;
                 }
+                // The prompt is user code that may have awaited long enough for a
+                // newer Source or a disposal; don't parse (or later publish) a
+                // superseded document — the retry parse is the expensive part.
+                if (IsDisposed || version != _loadVersion) return;
                 document = await ParseAsync(bytes, entered);
             }
             // A password prompt (or the parse itself) may have awaited long enough
@@ -1492,6 +1496,12 @@ public partial class BitPdfViewer : BitComponentBase
         // all bail on IsDisposed. base.DisposeAsync sets this too, but only at the end
         // of this method — set it up front so those guards take effect during disposal.
         IsDisposed = true;
+
+        // Supersede any load still in flight: several LoadAsync continuations resume
+        // from an await and check only `version != _loadVersion` (not IsDisposed)
+        // before publishing state or invoking callbacks. Bumping the version here
+        // invalidates all of them at once, so none commits against a torn-down component.
+        _loadVersion++;
 
         // Stop the lazy-render pumps: clear pending work so a pump resuming from its
         // Task.Delay yield after disposal finds nothing left to render against the
