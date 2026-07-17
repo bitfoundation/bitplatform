@@ -148,6 +148,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     internal void UnregisterOption(BitChoiceGroupOption<TValue> option)
     {
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
         _optionsOrderDirty = true;
 

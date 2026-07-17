@@ -152,7 +152,9 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
     protected override Task OnParametersSetAsync()
     {
-        if (ChildContent is null && Options is null && Items.Any() &&
+        // Note: no Items.Any() guard here, so a transition from a populated collection to an empty one
+        // still runs the comparison and clears _items instead of leaving the previous items rendered.
+        if (ChildContent is null && Options is null &&
             (_oldItems is null || Items.SequenceEqual(_oldItems) is false))
         {
             _items = Items.ToList();
