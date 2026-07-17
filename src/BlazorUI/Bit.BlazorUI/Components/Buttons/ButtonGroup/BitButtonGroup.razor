@@ -19,7 +19,7 @@
         @for (int i = 0; i < _items.Count; i++)
         {
             var item = _items[i];
-            <_BitButtonGroupItem @key="@($"{UniqueId}-{i}")" ButtonGroup="this" Item="item" />
+            <_BitButtonGroupItem @key="@(GetItemKey(item) ?? $"{UniqueId}-{i}")" ButtonGroup="this" Item="item" />
         }
     }
 </div>

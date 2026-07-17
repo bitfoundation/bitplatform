@@ -152,10 +152,13 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
     protected override Task OnParametersSetAsync()
     {
-        if (ChildContent is null && Options is null && Items.Any() && Items != _oldItems)
+        if (ChildContent is null && Options is null && Items.Any() &&
+            (_oldItems is null || Items.SequenceEqual(_oldItems) is false))
         {
-            _oldItems = Items;
             _items = Items.ToList();
+            // Store an independent snapshot so a later in-place mutation of the same Items instance is
+            // still detected (a reference copy would compare the collection against itself).
+            _oldItems = _items.ToList();
         }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
@@ -260,7 +263,9 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
     internal async Task HandleOnItemClick(TItem item)
     {
-        if (GetIsEnabled(item) is false) return;
+        // The item renders as a div, where the disabled attribute is ineffective, so gate the handler
+        // with the combined enabled state (timeline-level and item-level) to match the rendered state.
+        if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
         await OnItemClick.InvokeAsync(item);
 
