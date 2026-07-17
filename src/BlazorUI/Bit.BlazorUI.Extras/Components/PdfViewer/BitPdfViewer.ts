@@ -271,7 +271,7 @@
                 return;
             }
             (container as any).__bitPdvThumbScheduled = true;
-            requestAnimationFrame(() => {
+            (container as any).__bitPdvThumbFrame = requestAnimationFrame(() => {
                 (container as any).__bitPdvThumbScheduled = false;
                 PdfViewer.renderVisibleThumbs(container, dotnetRef);
             });
@@ -331,6 +331,11 @@
                 container.removeEventListener("scroll", c.__bitPdvThumbScroll);
                 c.__bitPdvThumbScroll = null;
             }
+            // A thumb render queued for the next animation frame would invoke the
+            // (about to be disposed) .NET reference; cancel it and clear the flag
+            // so a re-registration can schedule its initial fill normally.
+            cancelAnimationFrame(c.__bitPdvThumbFrame);
+            c.__bitPdvThumbFrame = null;
             c.__bitPdvThumbDotnet = null;
             c.__bitPdvThumbScheduled = false;
         }

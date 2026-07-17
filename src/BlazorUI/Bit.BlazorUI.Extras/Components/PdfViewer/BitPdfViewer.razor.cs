@@ -213,24 +213,28 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (_pages.Count == 0) return;
 
+        int version = _loadVersion; // a reload during the awaits below supersedes this navigation
         int target = Math.Clamp(pageNumber, 1, _pages.Count);
         if (target != _currentPage)
         {
             _currentPage = target;
             await OnPageChanged.InvokeAsync(_currentPage);
+            // OnPageChanged is user code: a reload (or new Source) during it makes
+            // this navigation stale — don't render or scroll the newer document.
+            if (version != _loadVersion) return;
         }
 
         // Render the destination before scrolling so jumps (toolbar, thumbnails,
         // outline) land on content instead of a placeholder.
-        if (await RenderPageAsync(target - 1))
+        if (await RenderPageAsync(target - 1) && version == _loadVersion)
         {
             EvictDistantPages();
             StateHasChanged();
         }
 
-        // RenderPageAsync may have yielded; if the component was disposed in that
-        // window, don't drive JS against the torn-down viewer.
-        if (IsDisposed) return;
+        // RenderPageAsync may have yielded; if the component was disposed (or this
+        // navigation superseded) in that window, don't drive JS against the viewer.
+        if (IsDisposed || version != _loadVersion) return;
 
         await _js.BitPdfViewerScrollToPage(_containerRef, _currentPage);
         if (_showThumbnails)
