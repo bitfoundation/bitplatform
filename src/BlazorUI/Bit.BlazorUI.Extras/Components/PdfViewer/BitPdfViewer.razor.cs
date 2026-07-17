@@ -78,6 +78,14 @@ public partial class BitPdfViewer : BitComponentBase
     // freshly rendered canvases, so the print dialog never opens over blank pages. Also
     // completed on disposal so a parked print can't hang.
     private TaskCompletionSource? _canvasPaintSignal;
+    // Generation of canvas-paint work: CommitPage bumps _canvasDirtyGen when a canvas is
+    // dirtied; OnAfterRenderAsync advances _canvasPaintedGen to the generation it
+    // snapshotted only after that paint's interop completes. The parked print records the
+    // generation it needs in _canvasPaintSignalGen, so an earlier or empty render pass
+    // (which never advances _canvasPaintedGen) can't release it before its canvases land.
+    private int _canvasDirtyGen;
+    private int _canvasPaintedGen;
+    private int _canvasPaintSignalGen;
     private bool _showThumbnails;
     private bool _showOutline;
     private IReadOnlyList<BitPdfOutlineItem> _outline = [];
@@ -366,11 +374,14 @@ public partial class BitPdfViewer : BitComponentBase
             if (rendered)
             {
                 _loading = false;
-                if (RenderMode == BitPdfRenderMode.Canvas)
+                int paintTarget = _canvasDirtyGen;
+                if (RenderMode == BitPdfRenderMode.Canvas && _canvasPaintedGen < paintTarget)
                 {
                     // Canvas pixels are painted by JS in OnAfterRenderAsync, which a
                     // fixed delay cannot reliably outwait while a large document paints.
-                    // Park until that paint pass signals completion so no page prints blank.
+                    // Park until the paint pass for this exact generation completes, so
+                    // no page prints blank (and an earlier/empty pass can't release us).
+                    _canvasPaintSignalGen = paintTarget;
                     _canvasPaintSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     StateHasChanged();
                     await _canvasPaintSignal.Task;
@@ -506,25 +517,28 @@ public partial class BitPdfViewer : BitComponentBase
                 int idx = _renderQueue.First!.Value;
                 _renderQueue.RemoveFirst();
                 _renderQueued.Remove(idx);
-                if (await RenderPageAsync(idx) is false) continue;
-
-                // RenderPageAsync may have yielded (background build / gate wait); a
-                // reload or disposal in that window means the slots are torn down —
-                // don't evict or re-render against them.
-                if (IsDisposed)
+                if (await RenderPageAsync(idx))
                 {
-                    _renderQueue.Clear();
-                    _renderQueued.Clear();
-                    return;
-                }
-                if (version != _loadVersion) version = _loadVersion;
+                    // RenderPageAsync may have yielded (background build / gate wait); a
+                    // reload or disposal in that window means the slots are torn down —
+                    // don't evict or re-render against them.
+                    if (IsDisposed)
+                    {
+                        _renderQueue.Clear();
+                        _renderQueued.Clear();
+                        return;
+                    }
+                    if (version != _loadVersion) version = _loadVersion;
 
-                EvictDistantPages();
-                StateHasChanged();
+                    EvictDistantPages();
+                    StateHasChanged();
+                }
                 // Let the browser apply the diff, paint and process scroll input
                 // before the next (expensive) page render. Task.Delay (unlike
                 // Task.Yield, whose continuation may run before the browser gets
-                // control back) guarantees a real event-loop turn on WASM.
+                // control back) guarantees a real event-loop turn on WASM. Runs after a
+                // failed render too, so a run of unbuildable pages can't monopolize the
+                // UI thread without ever yielding.
                 await Task.Delay(1);
             }
         }
@@ -586,24 +600,28 @@ public partial class BitPdfViewer : BitComponentBase
                 int idx = _thumbQueue.First!.Value;
                 _thumbQueue.RemoveFirst();
                 _thumbQueued.Remove(idx);
-                if (await RenderThumbAsync(idx) is false) continue;
-
-                // A reload or disposal during RenderThumbAsync's gate wait tears the
-                // slots down; stop before touching them.
-                if (IsDisposed)
+                if (await RenderThumbAsync(idx))
                 {
-                    _thumbQueue.Clear();
-                    _thumbQueued.Clear();
-                    return;
-                }
-                if (version != _loadVersion) version = _loadVersion;
+                    // A reload or disposal during RenderThumbAsync's gate wait tears the
+                    // slots down; stop before touching them.
+                    if (IsDisposed)
+                    {
+                        _thumbQueue.Clear();
+                        _thumbQueued.Clear();
+                        return;
+                    }
+                    if (version != _loadVersion) version = _loadVersion;
 
-                // Evict around the thumbnail just rendered (what the sidebar is
-                // showing), not the current page — scrolling the sidebar leaves the
-                // current page put, so centering on it would blank the very
-                // thumbnails the user just scrolled to.
-                EvictDistantThumbs(idx, idx);
-                StateHasChanged();
+                    // Evict around the thumbnail just rendered (what the sidebar is
+                    // showing), not the current page — scrolling the sidebar leaves the
+                    // current page put, so centering on it would blank the very
+                    // thumbnails the user just scrolled to.
+                    EvictDistantThumbs(idx, idx);
+                    StateHasChanged();
+                }
+                // Yield a real event-loop turn even after a failed thumbnail build so a
+                // run of unbuildable pages can't monopolize the UI thread (mirrors the
+                // page pump).
                 await Task.Delay(1);
             }
         }
@@ -754,6 +772,9 @@ public partial class BitPdfViewer : BitComponentBase
         // runs after any render that added pages.
         if (_canvasDirty.Count > 0)
         {
+            // Snapshot the generation this pass flushes before clearing the dirty set,
+            // so _canvasPaintedGen only advances once *this* paint's interop completes.
+            int paintGen = _canvasDirtyGen;
             var payload = _canvasDirty
                 .Where(i => _canvasOps.ContainsKey(i) && i < _pageWidths.Count)
                 .Select(i => new BitPdfViewerCanvasPage { Page = i + 1, W = _pageWidths[i], H = _pageHeights[i], Ops = _canvasOps[i] })
@@ -768,6 +789,9 @@ public partial class BitPdfViewer : BitComponentBase
                 }
                 catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
             }
+            // Painted through paintGen (guard against out-of-order completion of an
+            // overlapping pass that snapshotted a later generation).
+            if (paintGen > _canvasPaintedGen) _canvasPaintedGen = paintGen;
         }
 
         // Canvas mode: when the zoom changed, re-rasterize the already-painted
@@ -786,9 +810,10 @@ public partial class BitPdfViewer : BitComponentBase
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
         }
 
-        // The canvases dirtied above have now been painted; release a print flow
-        // parked on the barrier so it can open the dialog over fully painted pages.
-        if (_canvasPaintSignal is { } paintSignal)
+        // Release a print parked on the barrier only once the generation it needs has
+        // actually been painted (above). An empty pass never advances _canvasPaintedGen,
+        // so it leaves the signal pending for the real paint to complete.
+        if (_canvasPaintSignal is { } paintSignal && _canvasPaintedGen >= _canvasPaintSignalGen)
         {
             _canvasPaintSignal = null;
             paintSignal.TrySetResult();
@@ -1080,6 +1105,7 @@ public partial class BitPdfViewer : BitComponentBase
             {
                 _canvasDirty.Add(index);
             }
+            _canvasDirtyGen++; // new paint work; a parked print waits for this generation
         }
         _fontFaceStyle = _fontStore?.FontFaceStyle ?? string.Empty;
         return new MarkupString(build.Html);

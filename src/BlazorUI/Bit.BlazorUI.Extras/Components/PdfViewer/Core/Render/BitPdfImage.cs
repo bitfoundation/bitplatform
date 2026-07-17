@@ -468,7 +468,13 @@ internal static class BitPdfImage
         {
             for (int y = 0; y < height; y++)
             {
-                int rowStart = (mh == height ? y : (int)((long)y * mh / height)) * rowBytes;
+                // Widen before multiplying by rowBytes: a mask with a huge declared
+                // width makes rowBytes large enough that (srcRow * rowBytes) overflows
+                // int and wraps negative, which ReadBits would turn into a data[<0]
+                // out-of-range read. Clamp past the buffer so ReadBits just yields 0.
+                long srcRow = mh == height ? y : (long)y * mh / height;
+                long rowStartL = srcRow * rowBytes;
+                int rowStart = rowStartL >= mdata.Length ? mdata.Length : (int)rowStartL;
                 int o = y * width;
                 for (int x = 0; x < width; x++)
                 {
@@ -488,7 +494,11 @@ internal static class BitPdfImage
         var m = matte.Value;
         for (int y = 0; y < height; y++)
         {
-            int rowStart = (mh == height ? y : (int)((long)y * mh / height)) * rowBytes;
+            // Widen before multiplying by rowBytes so a huge declared mask width can't
+            // overflow int to a negative rowStart (see the matte-free path above).
+            long srcRow = mh == height ? y : (long)y * mh / height;
+            long rowStartL = srcRow * rowBytes;
+            int rowStart = rowStartL >= mdata.Length ? mdata.Length : (int)rowStartL;
             for (int x = 0; x < width; x++)
             {
                 int mx = xMap is not null ? xMap[x] : (scaleX ? (int)((long)x * mw / width) : x);
