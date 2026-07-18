@@ -10,12 +10,12 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="ByThreshold()" Options="_noLegend" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Radius by value" RazorCode="@radiusByValueRazorCode" CsharpCode="@radiusByValueCsharpCode" Id="scriptable-radius-by-value">
+<DemoExample Title="Radius by value" RazorCode="@radiusByValueRazorCode" CsharpCode="@radiusByValueCsharpCode" Id="scriptable-radius-by-value" PreventRenderForMcpClient>
     <div class="example-desc">The point radius scales with the value via <code>PointRadiusFn</code>.</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="RadiusByValue()" Options="_noLegend" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Style by parity" RazorCode="@styleByParityRazorCode" CsharpCode="@styleByParityCsharpCode" Id="scriptable-style-by-parity">
+<DemoExample Title="Style by parity" RazorCode="@styleByParityRazorCode" CsharpCode="@styleByParityCsharpCode" Id="scriptable-style-by-parity" PreventRenderForMcpClient>
     <div class="example-desc">Alternating point styles chosen per index via <code>PointStyleFn</code>.</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="StyleByParity()" Options="_noLegend" /></div></div>
 </DemoExample>

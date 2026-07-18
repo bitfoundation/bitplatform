@@ -1,0 +1,39 @@
+@namespace Bit.BlazorUI
+@typeparam TItem where TItem : class
+
+@{
+    var isEnabled = ButtonGroup.IsEnabled && ButtonGroup.GetIsEnabled(Item);
+    var template = ButtonGroup.GetTemplate(Item);
+}
+
+<button type="button"
+        @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+        tabindex="@(isEnabled ? 0 : -1)"
+        disabled="@(isEnabled is false)"
+        aria-disabled="@(isEnabled is false)"
+        title="@ButtonGroup.GetItemTitle(Item)"
+        style="@ButtonGroup.GetItemStyle(Item)"
+        class="@ButtonGroup.GetItemClass(Item)">
+    @if (template is not null)
+    {
+        @template(Item)
+    }
+    else if (ButtonGroup.ItemTemplate is not null)
+    {
+        @ButtonGroup.ItemTemplate(Item)
+    }
+    else
+    {
+        var icon = ButtonGroup.GetItemIcon(Item);
+        @if (icon is not null)
+        {
+            <i style="@ButtonGroup.Styles?.Icon" class="@icon.GetCssClasses() @ButtonGroup.Classes?.Icon" />
+        }
+
+        var text = ButtonGroup.GetItemText(Item);
+        if (text.HasValue())
+        {
+            <span style="@ButtonGroup.Styles?.Text" class="bit-btg-btx @ButtonGroup.Classes?.Text">@text</span>
+        }
+    }
+</button>

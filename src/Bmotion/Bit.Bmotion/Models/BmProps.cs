@@ -80,9 +80,55 @@ public class BmProps
     /// <summary>Spacing between dash/gap pairs (0-1).</summary>
     public BmKeyframes? PathSpacing { get; set; }
 
+    // ── Layout / box-model (bare numbers default to px; CSS strings pass through) ──
+    public BmStringKeyframes? Top { get; set; }
+    public BmStringKeyframes? Left { get; set; }
+    public BmStringKeyframes? Right { get; set; }
+    public BmStringKeyframes? Bottom { get; set; }
+    public BmStringKeyframes? Margin { get; set; }
+    public BmStringKeyframes? Padding { get; set; }
+    public BmStringKeyframes? Gap { get; set; }
+
+    // ── Typography ─────────────────────────────────────────────────────────────
+    public BmStringKeyframes? LetterSpacing { get; set; }
+    public BmStringKeyframes? LineHeight { get; set; }
+    public BmStringKeyframes? FontSize { get; set; }
+
+    // ── Misc CSS ───────────────────────────────────────────────────────────────
+    public BmStringKeyframes? ClipPath { get; set; }
+    public BmStringKeyframes? BackgroundPosition { get; set; }
+    public BmStringKeyframes? BackgroundSize { get; set; }
+
+    // ── Motion path (CSS offset-*) ─────────────────────────────────────────────
+    /// <summary>
+    /// The path an element travels along, mapping to CSS <c>offset-path</c>, e.g.
+    /// <c>OffsetPath = "path('M0,0 C50,100 150,-50 200,50')"</c>. Usually set once; animate
+    /// <see cref="OffsetDistance"/> to move the element along it (both are compositor-friendly).
+    /// </summary>
+    public BmStringKeyframes? OffsetPath { get; set; }
+
+    /// <summary>Position along <see cref="OffsetPath"/> (CSS <c>offset-distance</c>), e.g. <c>"0%"</c> → <c>"100%"</c>.</summary>
+    public BmStringKeyframes? OffsetDistance { get; set; }
+
+    // ── SVG shape morphing ─────────────────────────────────────────────────────
+    /// <summary>
+    /// The SVG path <c>d</c> attribute, for shape morphing on a <c>&lt;path&gt;</c> element. Two
+    /// paths with the <b>same command structure</b> morph smoothly (control points interpolate);
+    /// incompatible paths snap. Put the <c>&lt;path&gt;</c> directly inside the Bmotion so it is the
+    /// animated element: <c>&lt;Bmotion Animate="Bm.To(d: "…")"&gt;&lt;path d="…" /&gt;&lt;/Bmotion&gt;</c>.
+    /// </summary>
+    public BmStringKeyframes? D { get; set; }
+
     // ── CSS custom properties (e.g. "--my-var") ───────────────────────────────
     /// <summary>Animate arbitrary CSS custom properties. Keys must start with "--".</summary>
     public Dictionary<string, string>? CssVars { get; set; }
+
+    /// <summary>
+    /// Animate any CSS property not covered by a typed member (motion.dev's <c>animate()</c> escape
+    /// hatch), e.g. <c>Css = new() { ["gap"] = "2rem", ["letter-spacing"] = "0.1em" }</c>. Keys accept
+    /// dash-case or camelCase. Layout-triggering properties won't be compositor-accelerated.
+    /// </summary>
+    public Dictionary<string, BmStringKeyframes>? Css { get; set; }
 
     // ── Embedded transition ───────────────────────────────────────────────────
     /// <summary>
@@ -90,6 +136,57 @@ public class BmProps
     /// <c>Transition</c>. Lets variants and one-off targets carry their own timing/physics.
     /// </summary>
     public BmTransition? Transition { get; set; }
+
+    // The extended string-valued props (layout/typography/misc), listed once so the runtime,
+    // initial-style and instant-set paths all emit them consistently. EngineKey is the camelCase
+    // key JS applies via style[key]; CssProp is the dash-case name for the initial inline style.
+    private IEnumerable<(string EngineKey, string CssProp, BmStringKeyframes? Value)> ExtendedStringProps()
+    {
+        yield return ("top", "top", Top);
+        yield return ("left", "left", Left);
+        yield return ("right", "right", Right);
+        yield return ("bottom", "bottom", Bottom);
+        yield return ("margin", "margin", Margin);
+        yield return ("padding", "padding", Padding);
+        yield return ("gap", "gap", Gap);
+        yield return ("letterSpacing", "letter-spacing", LetterSpacing);
+        yield return ("lineHeight", "line-height", LineHeight);
+        yield return ("fontSize", "font-size", FontSize);
+        yield return ("clipPath", "clip-path", ClipPath);
+        yield return ("backgroundPosition", "background-position", BackgroundPosition);
+        yield return ("backgroundSize", "background-size", BackgroundSize);
+        yield return ("offsetPath", "offset-path", OffsetPath);
+        yield return ("offsetDistance", "offset-distance", OffsetDistance);
+        yield return ("d", "d", D);
+    }
+
+    // "background-position" → "backgroundPosition"; leaves camelCase and "--custom" keys untouched.
+    internal static string ToCamelCase(string prop)
+    {
+        if (prop.StartsWith("--", StringComparison.Ordinal) || !prop.Contains('-')) return prop;
+        var sb = new System.Text.StringBuilder(prop.Length);
+        bool upper = false;
+        foreach (var c in prop)
+        {
+            if (c == '-') { upper = true; continue; }
+            sb.Append(upper ? char.ToUpperInvariant(c) : c);
+            upper = false;
+        }
+        return sb.ToString();
+    }
+
+    // "letterSpacing" → "letter-spacing"; leaves dash-case and "--custom" keys untouched.
+    internal static string ToDashCase(string prop)
+    {
+        if (prop.StartsWith("--", StringComparison.Ordinal)) return prop;
+        var sb = new System.Text.StringBuilder(prop.Length + 4);
+        foreach (var c in prop)
+        {
+            if (char.IsUpper(c)) { sb.Append('-'); sb.Append(char.ToLowerInvariant(c)); }
+            else sb.Append(c);
+        }
+        return sb.ToString();
+    }
 
     /// <summary>
     /// Serialise to a plain dictionary the animation engine understands: single values as
@@ -129,6 +226,13 @@ public class BmProps
         if (PathOffset is not null) d["pathOffset"] = PathOffset.ToEngineValue();
         if (PathSpacing is not null) d["pathSpacing"] = PathSpacing.ToEngineValue();
 
+        foreach (var (engineKey, _, value) in ExtendedStringProps())
+            if (value is not null) d[engineKey] = value.ToEngineValue();
+
+        if (Css != null)
+            foreach (var kv in Css)
+                if (kv.Value is not null) d[ToCamelCase(kv.Key)] = kv.Value.ToEngineValue();
+
         if (CssVars != null)
             foreach (var kv in CssVars)
             {
@@ -137,6 +241,43 @@ public class BmProps
             }
 
         return d;
+    }
+
+    /// <summary>
+    /// Enumerates every string-valued CSS declaration this target carries (all keyframes of each
+    /// string prop, plus CSS-var values) as <c>(prop, value)</c> pairs. Used by the opt-in
+    /// CSS-injection safe mode to validate values written verbatim into inline style.
+    /// </summary>
+    internal IEnumerable<(string Prop, string Value)> EnumerateCssStringValues()
+    {
+        foreach (var pair in Frames("backgroundColor", BackgroundColor)) yield return pair;
+        foreach (var pair in Frames("color", Color)) yield return pair;
+        foreach (var pair in Frames("borderColor", BorderColor)) yield return pair;
+        foreach (var pair in Frames("outlineColor", OutlineColor)) yield return pair;
+        foreach (var pair in Frames("fill", Fill)) yield return pair;
+        foreach (var pair in Frames("stroke", Stroke)) yield return pair;
+        foreach (var pair in Frames("width", Width)) yield return pair;
+        foreach (var pair in Frames("height", Height)) yield return pair;
+        foreach (var pair in Frames("borderRadius", BorderRadius)) yield return pair;
+        foreach (var pair in Frames("boxShadow", BoxShadow)) yield return pair;
+        foreach (var pair in Frames("filter", Filter)) yield return pair;
+
+        foreach (var (engineKey, _, value) in ExtendedStringProps())
+            foreach (var pair in Frames(engineKey, value)) yield return pair;
+
+        if (Css != null)
+            foreach (var kv in Css)
+                foreach (var pair in Frames(kv.Key, kv.Value)) yield return pair;
+
+        if (CssVars != null)
+            foreach (var kv in CssVars)
+                yield return (kv.Key, kv.Value);
+
+        static IEnumerable<(string, string)> Frames(string prop, BmStringKeyframes? k)
+        {
+            if (k is null) yield break;
+            foreach (var f in k.Frames) yield return (prop, f);
+        }
     }
 
     // ── First-frame accessors for the initial inline style ────────────────────
@@ -154,6 +295,38 @@ public class BmProps
     private string TransformOriginCss()
         => $"{BmotionCssFormat.Num((OriginX ?? 0.5) * 100)}% {BmotionCssFormat.Num((OriginY ?? 0.5) * 100)}%";
 
+    // Collects the present + finite transform components into the engine's transform-component
+    // dictionary, then lets BmotionTransformComposer.Build own the ordering/aliasing/formatting.
+    // This is the single source of truth for transform syntax: the runtime per-frame path already
+    // calls Build directly, and both initial-style (ToCssStyleString) and instant-set
+    // (ToCssStyleDictionary) now route through it too - no more hand-synced duplicate logic.
+    // <paramref name="useLast"/> selects which keyframe to sample: the first frame for the initial
+    // inline style (where the animation starts) or the last frame for an instant set (where it settles).
+    private Dictionary<string, double> CollectTransformComponents(bool useLast)
+    {
+        var t = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        void Add(string key, BmKeyframes? k)
+        {
+            if (k is null) return;
+            if (useLast)
+            {
+                var v = k.Last;
+                if (double.IsFinite(v)) t[key] = v;
+            }
+            else if (k.TryGetCssNumber(out var v))
+            {
+                t[key] = v;
+            }
+        }
+
+        Add("perspective", Perspective);
+        Add("x", X); Add("y", Y); Add("z", Z);
+        Add("scale", Scale); Add("scaleX", ScaleX); Add("scaleY", ScaleY);
+        Add("rotate", Rotate); Add("rotateZ", RotateZ); Add("rotateX", RotateX); Add("rotateY", RotateY);
+        Add("skewX", SkewX); Add("skewY", SkewY);
+        return t;
+    }
+
     /// <summary>
     /// Render these props as an inline CSS style string - used server-side to avoid a
     /// flash of un-styled content before the JS interop layer initialises.
@@ -162,36 +335,9 @@ public class BmProps
     {
         var sb = new System.Text.StringBuilder();
 
-        var transforms = new List<string>();
-        bool hasX = CssNum(X, out double x), hasY = CssNum(Y, out double y), hasZ = CssNum(Z, out double z);
-        if (hasX || hasY || hasZ)
-        {
-            if (z != 0)
-                transforms.Add($"translate3d({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px,{BmotionCssFormat.Num(z)}px)");
-            else
-                transforms.Add($"translate({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px)");
-        }
-        if (CssNum(Scale, out double scale) && scale != 1)
-        {
-            transforms.Add($"scale({BmotionCssFormat.Num(scale)})");
-        }
-        else
-        {
-            if (CssNum(ScaleX, out double sx) && sx != 1) transforms.Add($"scaleX({BmotionCssFormat.Num(sx)})");
-            if (CssNum(ScaleY, out double sy) && sy != 1) transforms.Add($"scaleY({BmotionCssFormat.Num(sy)})");
-        }
-        // Prefer a non-zero rotateZ, otherwise fall back to rotate, so an explicit RotateZ = 0
-        // doesn't mask a meaningful Rotate value (matches BmotionTransformComposer).
-        CssNum(Rotate, out double rot);
-        double rotateZ = CssNum(RotateZ, out double rz) && rz != 0 ? rz : rot;
-        if (rotateZ != 0) transforms.Add($"rotate({BmotionCssFormat.Num(rotateZ)}deg)");
-        if (CssNum(RotateX, out double rx) && rx != 0) transforms.Add($"rotateX({BmotionCssFormat.Num(rx)}deg)");
-        if (CssNum(RotateY, out double ry) && ry != 0) transforms.Add($"rotateY({BmotionCssFormat.Num(ry)}deg)");
-        if (CssNum(SkewX, out double kx) && kx != 0) transforms.Add($"skewX({BmotionCssFormat.Num(kx)}deg)");
-        if (CssNum(SkewY, out double ky) && ky != 0) transforms.Add($"skewY({BmotionCssFormat.Num(ky)}deg)");
-        if (CssNum(Perspective, out double persp)) transforms.Insert(0, $"perspective({BmotionCssFormat.Num(persp)}px)");
-
-        if (transforms.Count > 0) sb.Append($"transform:{string.Join(" ", transforms)};");
+        // The initial inline style renders each transform component's FIRST keyframe.
+        var transform = BmotionTransformComposer.Build(CollectTransformComponents(useLast: false));
+        if (transform.Length > 0) sb.Append($"transform:{transform};");
         if (OriginX.HasValue || OriginY.HasValue) sb.Append($"transform-origin:{TransformOriginCss()};");
 
         if (CssNum(Opacity, out double opacity)) sb.Append($"opacity:{BmotionCssFormat.Num(opacity)};");
@@ -214,6 +360,20 @@ public class BmProps
             sb.Append($"stroke-dasharray:{BmotionCssFormat.Num(clamped)} {BmotionCssFormat.Num(spacing)};");
             sb.Append($"stroke-dashoffset:{BmotionCssFormat.Num(1 - clamped - offset)};");
         }
+
+        foreach (var (_, cssProp, value) in ExtendedStringProps())
+        {
+            // `d` is an SVG geometry attribute, not a CSS property: an inline `d:<path>` needs a
+            // path() wrapper and isn't universally supported, so JS applies it via setAttribute
+            // (see _svgGeomAttrs in bit-bmotion.js). The element's own `d` attribute already
+            // renders it server-side, so omit it from the initial inline-style string.
+            if (cssProp == "d") continue;
+            if (CssStr(value) is { } s) sb.Append($"{cssProp}:{s};");
+        }
+
+        if (Css != null)
+            foreach (var kv in Css)
+                if (kv.Value?.First is { } s) sb.Append($"{ToDashCase(kv.Key)}:{s};");
 
         if (CssVars != null)
             foreach (var kv in CssVars)
@@ -247,34 +407,9 @@ public class BmProps
 
         var d = new Dictionary<string, string>();
 
-        var transforms = new List<string>();
-        if (Num(Perspective, out double persp)) transforms.Add($"perspective({BmotionCssFormat.Num(persp)}px)");
-        bool hasX = Num(X, out double x), hasY = Num(Y, out double y), hasZ = Num(Z, out double z);
-        if (hasX || hasY || hasZ)
-        {
-            transforms.Add(z != 0
-                ? $"translate3d({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px,{BmotionCssFormat.Num(z)}px)"
-                : $"translate({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px)");
-        }
-        if (Num(Scale, out double scale) && scale != 1)
-        {
-            transforms.Add($"scale({BmotionCssFormat.Num(scale)})");
-        }
-        else
-        {
-            if (Num(ScaleX, out double sx) && sx != 1) transforms.Add($"scaleX({BmotionCssFormat.Num(sx)})");
-            if (Num(ScaleY, out double sy) && sy != 1) transforms.Add($"scaleY({BmotionCssFormat.Num(sy)})");
-        }
-        // Prefer a non-zero rotateZ, otherwise fall back to rotate, so an explicit RotateZ = 0
-        // doesn't mask a meaningful Rotate value (matches BmotionTransformComposer).
-        Num(Rotate, out double rot);
-        double rotateZ = Num(RotateZ, out double rz) && rz != 0 ? rz : rot;
-        if (rotateZ != 0) transforms.Add($"rotate({BmotionCssFormat.Num(rotateZ)}deg)");
-        if (Num(RotateX, out double rx) && rx != 0) transforms.Add($"rotateX({BmotionCssFormat.Num(rx)}deg)");
-        if (Num(RotateY, out double ry) && ry != 0) transforms.Add($"rotateY({BmotionCssFormat.Num(ry)}deg)");
-        if (Num(SkewX, out double kx) && kx != 0) transforms.Add($"skewX({BmotionCssFormat.Num(kx)}deg)");
-        if (Num(SkewY, out double ky) && ky != 0) transforms.Add($"skewY({BmotionCssFormat.Num(ky)}deg)");
-        if (transforms.Count > 0) d["transform"] = string.Join(" ", transforms);
+        // For an instant Set, each transform component collapses to its LAST keyframe.
+        var transform = BmotionTransformComposer.Build(CollectTransformComponents(useLast: true));
+        if (transform.Length > 0) d["transform"] = transform;
         if (OriginX.HasValue || OriginY.HasValue) d["transformOrigin"] = TransformOriginCss();
 
         if (Num(Opacity, out double opacity)) d["opacity"] = BmotionCssFormat.Num(opacity);
@@ -297,6 +432,13 @@ public class BmProps
             d["strokeDasharray"] = $"{BmotionCssFormat.Num(clamped)} {BmotionCssFormat.Num(spacing)}";
             d["strokeDashoffset"] = BmotionCssFormat.Num(1 - clamped - offset);
         }
+
+        foreach (var (engineKey, _, value) in ExtendedStringProps())
+            if (Str(value) is { } s) d[engineKey] = s;
+
+        if (Css != null)
+            foreach (var kv in Css)
+                if (kv.Value?.Last is { } s) d[ToCamelCase(kv.Key)] = s;
 
         if (CssVars != null)
             foreach (var kv in CssVars)
@@ -329,9 +471,15 @@ public class BmProps
             Equals(BackgroundColor, o.BackgroundColor) && Equals(Color, o.Color) && Equals(BorderColor, o.BorderColor) &&
             Equals(OutlineColor, o.OutlineColor) && Equals(Fill, o.Fill) && Equals(Stroke, o.Stroke) &&
             Equals(Width, o.Width) && Equals(Height, o.Height) && Equals(BorderRadius, o.BorderRadius) && Equals(BoxShadow, o.BoxShadow) && Equals(Filter, o.Filter) &&
+            Equals(Top, o.Top) && Equals(Left, o.Left) && Equals(Right, o.Right) && Equals(Bottom, o.Bottom) &&
+            Equals(Margin, o.Margin) && Equals(Padding, o.Padding) && Equals(Gap, o.Gap) &&
+            Equals(LetterSpacing, o.LetterSpacing) && Equals(LineHeight, o.LineHeight) && Equals(FontSize, o.FontSize) &&
+            Equals(ClipPath, o.ClipPath) && Equals(BackgroundPosition, o.BackgroundPosition) && Equals(BackgroundSize, o.BackgroundSize) &&
+            Equals(OffsetPath, o.OffsetPath) && Equals(OffsetDistance, o.OffsetDistance) && Equals(D, o.D) &&
             Equals(PathLength, o.PathLength) && Equals(PathOffset, o.PathOffset) && Equals(PathSpacing, o.PathSpacing);
 
-        return values && DictEquals(CssVars, o.CssVars) && BmTransition.AreEquivalent(Transition, o.Transition);
+        return values && DictEquals(CssVars, o.CssVars) && StringKeyframesDictEquals(Css, o.Css)
+            && BmTransition.AreEquivalent(Transition, o.Transition);
     }
 
     private static bool DictEquals(Dictionary<string, string>? a, Dictionary<string, string>? b)
@@ -340,6 +488,15 @@ public class BmProps
         if (a is null || b is null || a.Count != b.Count) return false;
         foreach (var kv in a)
             if (!b.TryGetValue(kv.Key, out var v) || v != kv.Value) return false;
+        return true;
+    }
+
+    private static bool StringKeyframesDictEquals(Dictionary<string, BmStringKeyframes>? a, Dictionary<string, BmStringKeyframes>? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null || a.Count != b.Count) return false;
+        foreach (var kv in a)
+            if (!b.TryGetValue(kv.Key, out var v) || !Equals(v, kv.Value)) return false;
         return true;
     }
 }

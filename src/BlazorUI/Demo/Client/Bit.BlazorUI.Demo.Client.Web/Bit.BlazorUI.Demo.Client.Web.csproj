@@ -15,7 +15,12 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <WasmEnableSIMD>true</WasmEnableSIMD>
+        <!-- Multi-threaded WebAssembly runtime: lets BitPdfViewer's BackgroundRendering
+             offload parsing/rendering to a worker thread. Requires the hosting server to
+             send the COOP/COEP cross-origin-isolation headers (see the demo server's
+             Middlewares.cs) so the runtime can use SharedArrayBuffer. -->
+        <WasmEnableThreads>true</WasmEnableThreads>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,12 +33,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="10.5.0-pre-05" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-05">
+        <PackageReference Include="Bit.Bswup" Version="10.5.0-pre-08" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0-pre-05">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

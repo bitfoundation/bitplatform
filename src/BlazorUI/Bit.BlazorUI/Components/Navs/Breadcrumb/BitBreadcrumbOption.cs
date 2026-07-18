@@ -2,7 +2,14 @@
 
 public partial class BitBreadcrumbOption : ComponentBase, IDisposable
 {
+    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-brc-opt";
+
+    internal string _OptionId { get; } = BitShortId.NewId();
+
     private bool _disposed;
+    private string? _lastParametersSignature;
+    private RenderFragment<BitBreadcrumbOption>? _lastTemplate;
+    private RenderFragment<BitBreadcrumbOption>? _lastOverflowTemplate;
 
 
 
@@ -80,9 +87,47 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        Parent.RegisterOptions(this);
+        Parent?.RegisterOptions(this);
 
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        // The parent renders the visible items from the options and reads their data during its own
+        // render, so a change to an option's parameters isn't reflected until the parent re-renders.
+        // Notify it only when a rendered parameter actually changes; the guard avoids a render loop
+        // since OnParametersSet runs on every parent render. Reference-type params are folded into a
+        // value-based signature (e.g. the icon's CSS classes) so an equal-but-new instance won't churn.
+        // Template/OverflowTemplate are compared by reference identity since the parent renders them too.
+        var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsEnabled, IsSelected, Class, Style, ReversedIcon, Key);
+
+        var changed = _lastParametersSignature != signature ||
+                      ReferenceEquals(_lastTemplate, Template) is false ||
+                      ReferenceEquals(_lastOverflowTemplate, OverflowTemplate) is false;
+
+        if (_lastParametersSignature is not null && changed)
+        {
+            Parent?.NotifyOptionParametersChanged();
+        }
+
+        _lastParametersSignature = signature;
+        _lastTemplate = Template;
+        _lastOverflowTemplate = OverflowTemplate;
+
+        base.OnParametersSet();
+    }
+
+    // Renders a hidden marker element in place, whose DOM order (in the hidden options container of
+    // the breadcrumb) is used to keep the order of the registered items in sync with the markup order
+    // of the options, even when an option is added or removed conditionally later on.
+    // The option renders nothing but this single flat marker, so the breadcrumb's DOM read-back
+    // (Utils.getChildrenAttributes) sees exactly one marker per option, in markup order.
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, _OPTION_ID_ATTRIBUTE, _OptionId);
+        builder.CloseElement();
     }
 
 
@@ -97,7 +142,7 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        Parent.UnregisterOptions(this);
+        Parent?.UnregisterOptions(this);
 
         _disposed = true;
     }

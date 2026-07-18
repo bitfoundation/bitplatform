@@ -9,6 +9,8 @@
            (via SetNullable), while still parsing "true"/"false" through the accessor like Set does. *@
         <select class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
                 aria-label="@EditorLabel"
+                aria-invalid="@(Error is null ? null : "true")"
+                aria-describedby="@ErrorId"
                 @onchange="e => SetNullable(e.Value)">
             <option value="">@string.Empty</option>
             <option value="true">True</option>
@@ -20,6 +22,8 @@
         <input type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
                checked="@(GetBool())"
                aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
                @onchange="e => Set(e.Value)" />
         break;
 
@@ -27,33 +31,47 @@
         <input type="number" class="bit-dtg-editor" step="any"
                value="@(GetNumberString())"
                aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
                @oninput="e => SetNullable(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.Date:
-        <input type="date" class="bit-dtg-editor"
+        @* Native date/datetime inputs blank out any value they can't parse, so the raw string that
+           GetDate/GetDateTime echo back for a conversion-rejected edit would never be shown. Fall
+           back to a text input while the buffer holds raw text so the user's entry stays visible
+           alongside the error; a successful parse flips the control back to its native type. *@
+        <input type="@(Value is string ? "text" : "date")" class="bit-dtg-editor"
                value="@(GetDate())"
                aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
                @onchange="e => SetNullable(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.DateTime:
-        <input type="datetime-local" class="bit-dtg-editor"
+        <input type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
                value="@(GetDateTime())"
                aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
                @onchange="e => SetDateTime(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.DateTimeOffset:
-        <input type="datetime-local" class="bit-dtg-editor"
+        <input type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
                value="@(GetDateTime())"
                aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
                @onchange="e => SetDateTimeOffset(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
         <select class="bit-dtg-editor" value="@(GetString())"
                 aria-label="@EditorLabel"
+                aria-invalid="@(Error is null ? null : "true")"
+                aria-describedby="@ErrorId"
                 @onchange="e => Set(string.IsNullOrEmpty(e.Value as string) ? null : e.Value)">
             @if (IsNullableEnum || Value is null)
             {
@@ -70,8 +88,15 @@
         <input type="text" class="bit-dtg-editor"
                value="@(GetString())"
                aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
                @oninput="e => Set(e.Value)" />
         break;
+}
+
+@if (Error is not null)
+{
+    <span id="@_errorId" class="bit-dtg-editor-error" role="alert">@Error</span>
 }
 
 @code {
@@ -79,13 +104,23 @@
     [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
     [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
 
-    private object? Value => Column.GetValue(Item);
+    // The pending buffered edit when one exists, else the row's current value. Editors must render
+    // the buffer, not the item: the item stays untouched until the edit is committed.
+    private object? Value => Grid.GetEditValue(Column, Item);
+    private string? Error => Grid.GetEditError(Column);
     private string GetString() => Value?.ToString() ?? string.Empty;
 
     // Each built-in editor renders a bare control with no visible <label>, so screen readers would
     // announce it without any field context. Expose the column's title as the accessible name so the
     // focused editor announces which column is being edited.
     private string EditorLabel => Column.DisplayTitle;
+
+    // The error span is a sibling with no structural tie to the input, so aria-invalid alone tells
+    // assistive tech *that* the value is wrong but not *why*. Give the span a per-instance id and
+    // reference it from every editor (only while an error exists) so the message is also exposed as
+    // the field's accessible description, not just a one-shot alert announcement.
+    private readonly string _errorId = $"bit-dtg-editor-error-{Guid.NewGuid():N}";
+    private string? ErrorId => Error is null ? null : _errorId;
 
     // HTML <input type="number"> always expects a period as the decimal separator regardless of the
     // browser locale, so format numeric values with the invariant culture to avoid emitting a comma
@@ -111,6 +146,9 @@
             DateTime dt => dt.ToString("yyyy-MM-dd", inv),
             DateOnly d => d.ToString("yyyy-MM-dd", inv),
             DateTimeOffset dto => dto.ToString("yyyy-MM-dd", inv),
+            // A conversion-rejected edit is buffered as its raw input string; echo it back so the
+            // user's entry isn't wiped while the error is displayed.
+            string s => s,
             _ => string.Empty
         };
     }
@@ -124,6 +162,8 @@
         {
             DateTime dt => dt.ToString("yyyy-MM-ddTHH:mm", inv),
             DateTimeOffset dto => dto.ToString("yyyy-MM-ddTHH:mm", inv),
+            // Echo back a conversion-rejected raw input (see GetDate).
+            string s => s,
             _ => string.Empty
         };
     }

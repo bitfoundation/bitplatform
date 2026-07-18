@@ -7,14 +7,17 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class IWindowsServiceCollectionExtensions
 {
-    public static IServiceCollection AddClientMauiProjectWindowsServices(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        // Services being registered here can get injected in Maui/windows.
+        public IServiceCollection AddClientMauiProjectWindowsServices(IConfiguration configuration)
+        {
+            // Services being registered here can get injected in Maui/windows.
 
-        //#if (notification == true)
-        services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
-        //#endif
+            //#if (notification == true)
+            services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
+            //#endif
 
-        return services;
+            return services;
+        }
     }
 }

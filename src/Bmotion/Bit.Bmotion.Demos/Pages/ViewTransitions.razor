@@ -1,0 +1,67 @@
+@page "/view-transitions"
+@inject BmotionViewTransition ViewTransition
+
+<h1>View Transitions</h1>
+
+<div class="demo-section">
+    <h2>Native View Transitions API</h2>
+    <p>
+        <strong>BmotionViewTransition</strong> wraps <code>document.startViewTransition</code> around a
+        Blazor state change - the browser snapshots before/after and cross-fades. It's the
+        standards-based complement to <code>LayoutId</code> FLIP, and degrades gracefully (the state
+        change just applies without a transition) where the API isn't supported.
+    </p>
+
+    <div class="tab-bar">
+        @foreach (var t in _tabs)
+        {
+            <button class="tab @(t == _active ? "active" : "")" @onclick="@(() => SwitchAsync(t))">@t</button>
+        }
+    </div>
+
+    <div class="panel" style="view-transition-name: vt-panel">
+        <h3>@_active</h3>
+        <p>@_copy[_active]</p>
+    </div>
+
+    <CodeSnippet Code="@_code" />
+</div>
+
+<style>
+    .tab-bar { display: flex; gap: .5rem; margin-bottom: 1rem; }
+    .tab { background: #2a2a3a; color: #ccc; border: none; border-radius: 8px; padding: .5rem 1rem; cursor: pointer; }
+    .tab.active { background: #6c47ff; color: #fff; }
+    .panel { background: #1e1e2e; border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 2rem; min-height: 120px; }
+    ::view-transition-old(vt-panel), ::view-transition-new(vt-panel) { animation-duration: .4s; }
+</style>
+
+@code {
+    private readonly string[] _tabs = ["Overview", "Features", "Pricing"];
+    private string _active = "Overview";
+
+    private readonly Dictionary<string, string> _copy = new()
+    {
+        ["Overview"] = "A high-level tour. Switching tabs cross-fades this panel via the native View Transitions API.",
+        ["Features"] = "Independent transforms, springs, drag, layout FLIP, motion values and more.",
+        ["Pricing"] = "Free and open-source. Bring your own creativity.",
+    };
+
+    private async Task SwitchAsync(string tab)
+    {
+        if (tab == _active) return;
+        await ViewTransition.StartAsync(() => { _active = tab; StateHasChanged(); });
+    }
+
+    private const string _code = """
+        @inject BmotionViewTransition ViewTransition
+
+        <div class="panel" style="view-transition-name: vt-panel">@_active</div>
+
+        @code {
+            private string _active = "Overview";
+
+            private async Task SwitchAsync(string tab) =>
+                await ViewTransition.StartAsync(() => { _active = tab; StateHasChanged(); });
+        }
+        """;
+}

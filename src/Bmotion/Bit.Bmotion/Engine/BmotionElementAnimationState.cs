@@ -70,6 +70,11 @@ internal sealed class BmotionElementAnimationState
 
     public bool HasActiveAnimations => _activeAnims.Count > 0 || _isDragging;
 
+    // Read-only diagnostics surface (consumed by BmotionInspector via the engine).
+    internal int ActiveDriverCount => _activeAnims.Count;
+    internal IReadOnlyCollection<string> ActiveDriverKeys => _activeAnims.Keys;
+    internal bool IsDragging => _isDragging;
+
     /// <summary>
     /// Optional per-frame callback invoked with the CSS declarations flushed this frame
     /// (the <c>Bmotion.OnUpdate</c> parameter).
@@ -850,6 +855,22 @@ internal sealed class BmotionElementAnimationState
         public required int Iterations { get; init; }       // -1 = infinite
         public required bool Mirror { get; init; }          // alternate direction per iteration
 
+        // Per-key keyframe values (uniform offsets, one entry per animated key) when the offload is a
+        // multi-keyframe animation. Null for a simple two-endpoint tween/spring. WAAPI warps the
+        // timeline by the eased Progress and interpolates linearly between keyframes, so the C# mirror
+        // reproduces the same value with KeyframeLerp(frames, easedProgress) - see RealizePlanValues.
+        public Dictionary<string, double[]>? Frames { get; init; }
+
+        /// <summary>Linear interpolation across uniformly-spaced keyframes at eased progress <paramref name="p"/>.</summary>
+        internal static double KeyframeLerp(double[] frames, double p)
+        {
+            if (frames.Length == 1) return frames[0];
+            double pos = Math.Clamp(p, 0, 1) * (frames.Length - 1);
+            int i = (int)pos;
+            if (i >= frames.Length - 1) return frames[^1];
+            return frames[i] + (frames[i + 1] - frames[i]) * (pos - i);
+        }
+
         public bool AnimatesTransform
         {
             get
@@ -1012,7 +1033,12 @@ internal sealed class BmotionElementAnimationState
     {
         var (progress, _) = plan.SampleAt(nowMs);
         foreach (var (key, (from, to)) in plan.Values)
-            WriteRealizedValue(key, from + (to - from) * progress, markDirty: true);
+        {
+            double value = plan.Frames != null && plan.Frames.TryGetValue(key, out var frames)
+                ? WaapiPlan.KeyframeLerp(frames, progress)
+                : from + (to - from) * progress;
+            WriteRealizedValue(key, value, markDirty: true);
+        }
     }
 
     private void WriteRealizedValue(string key, double value, bool markDirty)

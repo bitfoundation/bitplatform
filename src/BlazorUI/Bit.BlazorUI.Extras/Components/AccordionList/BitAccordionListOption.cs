@@ -79,6 +79,13 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     [Parameter] public string? Title { get; set; }
 
 
+    internal void InternalStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
          if (Parent is not null)
@@ -87,6 +94,18 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
          }
 
         await base.OnInitializedAsync();
+    }
+
+    // Renders the option's item in place, so the rendered order of the items always follows the
+    // markup order of the options, even when an option is added or removed conditionally later on.
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (Parent is null) return;
+
+        builder.OpenComponent<_BitAccordionListItem<BitAccordionListOption>>(0);
+        builder.AddComponentParameter(1, nameof(_BitAccordionListItem<BitAccordionListOption>.AccordionList), Parent);
+        builder.AddComponentParameter(2, nameof(_BitAccordionListItem<BitAccordionListOption>.Item), this);
+        builder.CloseComponent();
     }
 
     public async ValueTask DisposeAsync()

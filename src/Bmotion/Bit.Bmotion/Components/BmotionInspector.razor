@@ -1,0 +1,144 @@
+@namespace Bit.Bmotion
+@implements IAsyncDisposable
+@inject BmotionAnimationEngine Engine
+
+@* A debug overlay that lists every element registered with the engine and its live animation state
+   (active drivers, transform / numeric / string values). Drop it anywhere in a dev build:
+   <BmotionInspector /> - it polls the engine a few times a second and renders a floating panel. *@
+
+<div class="bm-inspector @(_open ? "open" : "closed")">
+    <div class="bm-insp-bar" @onclick="Toggle" role="button" tabindex="0"
+         @onkeydown="@(e => { if (e.Key is "Enter" or " ") Toggle(); })">
+        <span class="bm-insp-title">Bmotion</span>
+        <span class="bm-insp-count">@_snapshot.Count el · @_activeTotal active</span>
+        <span class="bm-insp-caret">@(_open ? "▾" : "▸")</span>
+    </div>
+
+    @if (_open)
+    {
+        <div class="bm-insp-body">
+            @if (_snapshot.Count == 0)
+            {
+                <div class="bm-insp-empty">No elements registered.</div>
+            }
+            @foreach (var d in _snapshot)
+            {
+                <div class="bm-insp-el @(d.HasActiveAnimations ? "live" : null)">
+                    <div class="bm-insp-elhead">
+                        <code class="bm-insp-id">@d.Id</code>
+                        @if (d.ActiveDriverCount > 0)
+                        {
+                            <span class="bm-insp-badge">@d.ActiveDriverCount driver@(d.ActiveDriverCount == 1 ? "" : "s")</span>
+                        }
+                        @if (d.IsDragging)
+                        {
+                            <span class="bm-insp-badge drag">drag</span>
+                        }
+                    </div>
+                    @if (d.ActiveProperties.Count > 0)
+                    {
+                        <div class="bm-insp-props">@string.Join(", ", d.ActiveProperties)</div>
+                    }
+                    <div class="bm-insp-vals">
+                        @foreach (var kv in d.Transforms)
+                        {
+                            <span class="bm-insp-chip">@kv.Key <b>@Fmt(kv.Value)</b></span>
+                        }
+                        @foreach (var kv in d.NumericValues)
+                        {
+                            <span class="bm-insp-chip">@kv.Key <b>@Fmt(kv.Value)</b></span>
+                        }
+                        @foreach (var kv in d.StringValues)
+                        {
+                            <span class="bm-insp-chip">@kv.Key <b>@kv.Value</b></span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .bm-inspector {
+        position: fixed; bottom: 12px; right: 12px; z-index: 2147483000;
+        width: 320px; max-height: 60vh; display: flex; flex-direction: column;
+        font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: rgba(20, 20, 30, .92); color: #e6e6f0; border: 1px solid rgba(255,255,255,.12);
+        border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.45); backdrop-filter: blur(6px);
+        overflow: hidden;
+    }
+    .bm-insp-bar {
+        display: flex; align-items: center; gap: .5rem; padding: .5rem .7rem; cursor: pointer;
+        background: rgba(108,71,255,.18); border-bottom: 1px solid rgba(255,255,255,.08); user-select: none;
+    }
+    .bm-insp-title { font-weight: 700; }
+    .bm-insp-count { margin-left: auto; opacity: .7; font-size: 11px; }
+    .bm-insp-caret { opacity: .8; }
+    .bm-insp-body { overflow-y: auto; padding: .35rem; display: flex; flex-direction: column; gap: .35rem; }
+    .bm-insp-empty { opacity: .6; padding: .6rem; text-align: center; }
+    .bm-insp-el { border: 1px solid rgba(255,255,255,.07); border-radius: 7px; padding: .4rem .5rem; background: rgba(255,255,255,.02); }
+    .bm-insp-el.live { border-color: rgba(108,71,255,.5); }
+    .bm-insp-elhead { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+    .bm-insp-id { color: #b9a7ff; }
+    .bm-insp-badge { font-size: 10px; background: rgba(108,71,255,.3); border-radius: 999px; padding: 0 .45rem; }
+    .bm-insp-badge.drag { background: rgba(255,71,133,.35); }
+    .bm-insp-props { opacity: .65; margin: .2rem 0; }
+    .bm-insp-vals { display: flex; flex-wrap: wrap; gap: .25rem; }
+    .bm-insp-chip { background: rgba(255,255,255,.06); border-radius: 5px; padding: .05rem .35rem; opacity: .9; }
+    .bm-insp-chip b { color: #fff; font-weight: 600; }
+</style>
+
+@code {
+    /// <summary>How often (ms) the panel polls the engine for live values. Clamped to ≥ 50 ms. Default 200.</summary>
+    [Parameter] public int RefreshMs { get; set; } = 200;
+
+    /// <summary>Whether the panel starts expanded. Default true.</summary>
+    [Parameter] public bool StartOpen { get; set; } = true;
+
+    private bool _open;
+    private IReadOnlyList<BmotionElementDiagnostics> _snapshot = [];
+    private int _activeTotal;
+    private PeriodicTimer? _timer;
+    private CancellationTokenSource? _cts;
+
+    protected override void OnInitialized() => _open = StartOpen;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender) return;
+        _cts = new CancellationTokenSource();
+        _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(Math.Max(50, RefreshMs)));
+        _ = PollAsync(_cts.Token);
+    }
+
+    private async Task PollAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync(ct))
+            {
+                _snapshot = Engine.GetDiagnostics();
+                _activeTotal = _snapshot.Count(d => d.HasActiveAnimations);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        // Disposal races the poll loop: the timer/CTS may be disposed, or the renderer torn down,
+        // between a tick and the StateHasChanged. Both are expected during teardown - swallow them
+        // so this fire-and-forget task never surfaces an unobserved exception.
+        catch (OperationCanceledException) { /* disposed */ }
+        catch (ObjectDisposedException) { /* disposed mid-tick */ }
+    }
+
+    private void Toggle() => _open = !_open;
+
+    private static string Fmt(double v) => BmotionCssFormat.Num(v);
+
+    public ValueTask DisposeAsync()
+    {
+        _cts?.Cancel();
+        _timer?.Dispose();
+        _cts?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

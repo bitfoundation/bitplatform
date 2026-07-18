@@ -1,0 +1,204 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (_loading)
+    {
+        <div class="bit-pdv-progress" role="progressbar" aria-label="Loading document">
+            <div class="bit-pdv-progress-bar"></div>
+        </div>
+    }
+    @if (ShowToolbar)
+    {
+        <div class="bit-pdv-toolbar" role="toolbar" aria-label="PDF viewer toolbar">
+            <div class="bit-pdv-group">
+                <button type="button" class="bit-pdv-btn @(_showThumbnails ? "bit-pdv-act" : "")" title="Pages" aria-label="Toggle page thumbnails" aria-pressed="@_showThumbnails" @onclick="ToggleThumbnails" disabled="@(_pages.Count == 0)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
+                </button>
+                <button type="button" class="bit-pdv-btn @(_showOutline ? "bit-pdv-act" : "")" title="Bookmarks" aria-label="Toggle bookmarks" aria-pressed="@_showOutline" @onclick="ToggleOutline" disabled="@(!HasOutline)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+                </button>
+            </div>
+
+            <div class="bit-pdv-group">
+                <button type="button" class="bit-pdv-btn" title="Previous page" aria-label="Previous page" @onclick="PrevPage" disabled="@(_currentPage <= 1)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <input class="bit-pdv-page-input" type="number" min="1" max="@_pages.Count" aria-label="Page number"
+                       value="@_currentPage" @onchange="OnPageInput" disabled="@(_pages.Count == 0)" />
+                <span class="bit-pdv-page-total">/ @_pages.Count</span>
+                @if (CurrentPageLabel is { } lbl)
+                {
+                    <span class="bit-pdv-page-label" title="Page label">(@lbl)</span>
+                }
+                <button type="button" class="bit-pdv-btn" title="Next page" aria-label="Next page" @onclick="NextPage" disabled="@(_currentPage >= _pages.Count)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+
+            <div class="bit-pdv-group">
+                <button type="button" class="bit-pdv-btn" title="Zoom out" aria-label="Zoom out" @onclick="ZoomOut" disabled="@(_pages.Count == 0)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+                </button>
+                <span class="bit-pdv-zoom" aria-live="polite">@((int)Math.Round(_zoom * 100))%</span>
+                <button type="button" class="bit-pdv-btn" title="Zoom in" aria-label="Zoom in" @onclick="ZoomIn" disabled="@(_pages.Count == 0)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+                <select class="bit-pdv-select" aria-label="Zoom level" @onchange="OnFitChanged" disabled="@(_pages.Count == 0)">
+                    @if (_zoomMode == BitPdfZoomMode.Custom)
+                    {
+                        <option value="Custom" selected>@((int)Math.Round(_zoom * 100))%</option>
+                    }
+                    <option value="FitWidth" selected="@(_zoomMode == BitPdfZoomMode.FitWidth)">Fit width</option>
+                    <option value="FitPage" selected="@(_zoomMode == BitPdfZoomMode.FitPage)">Fit page</option>
+                    <option value="ActualSize" selected="@(_zoomMode == BitPdfZoomMode.ActualSize)">100%</option>
+                </select>
+            </div>
+
+            <div class="bit-pdv-title">@_source?.FileName</div>
+
+            <div class="bit-pdv-group bit-pdv-right">
+                @if (_showSearch)
+                {
+                    <div class="bit-pdv-search-box">
+                        <input class="bit-pdv-search-input" type="search" placeholder="Find in document"
+                               value="@_searchQuery" @onchange="OnSearchInput" @onkeydown="OnSearchKeyDown"
+                               disabled="@(_pages.Count == 0)" />
+                        <span class="bit-pdv-search-count">@SearchLabel</span>
+                        <button type="button" class="bit-pdv-btn" title="Previous match" @onclick="SearchPrev" disabled="@(_searchTotal <= 0)">
+                            <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
+                        </button>
+                        <button type="button" class="bit-pdv-btn" title="Next match" @onclick="SearchNext" disabled="@(_searchTotal <= 0)">
+                            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                    </div>
+                }
+                <button type="button" class="bit-pdv-btn @(_showSearch ? "bit-pdv-act" : "")" title="Find" aria-label="Find in document" aria-pressed="@_showSearch" @onclick="ToggleSearch" disabled="@(_pages.Count == 0)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.9-4.9"/></svg>
+                </button>
+                <button type="button" class="bit-pdv-btn" title="Rotate" aria-label="Rotate clockwise" @onclick="RotateClockwise" disabled="@(_pages.Count == 0)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
+                </button>
+                <button type="button" class="bit-pdv-btn" title="Download" aria-label="Download document" @onclick="Download" disabled="@(_source?.Bytes is null)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                </button>
+                <button type="button" class="bit-pdv-btn" title="Print" aria-label="Print document" @onclick="Print" disabled="@(_pages.Count == 0)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>
+                </button>
+                <button type="button" class="bit-pdv-btn" title="Fullscreen" aria-label="Toggle fullscreen" @onclick="ToggleFullscreen">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                </button>
+            </div>
+        </div>
+    }
+
+    <div class="bit-pdv-body">
+        @if (_showOutline && HasOutline)
+        {
+            <div class="bit-pdv-outline">
+                @RenderOutline(_outline)
+            </div>
+        }
+        @if (_showThumbnails && _thumbs.Count > 0)
+        {
+            <div class="bit-pdv-thumbs" role="listbox" aria-label="Page thumbnails" @ref="_thumbsRef">
+                @for (int i = 0; i < _thumbs.Count; i++)
+                {
+                    int pageNo = i + 1;
+                    <div class="bit-pdv-thumb @(pageNo == _currentPage ? "bit-pdv-act" : "")" data-thumb="@pageNo"
+                         role="option" tabindex="0" aria-label="Page @pageNo" aria-selected="@(pageNo == _currentPage)"
+                         @onclick="() => GoToPage(pageNo)" @onkeydown="e => OnActivateKey(e, () => GoToPage(pageNo))">
+                        <div class="bit-pdv-thumb-svg" style="@ThumbStyle(i)">
+                            @if (_thumbs[i] is { } thumb)
+                            {
+                                @thumb
+                            }
+                            else
+                            {
+                                <div class="bit-pdv-page-placeholder"></div>
+                            }
+                        </div>
+                        <span class="bit-pdv-thumb-label">@pageNo</span>
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="bit-pdv-surface" @ref="_containerRef">
+            @* Document-wide @@font-face rules, kept here (not per page) so they
+               survive page eviction while scrolling. *@
+            @FontFaceStyleMarkup
+            @if (_source is null)
+            {
+                <div class="bit-pdv-empty">No document loaded.</div>
+            }
+            else if (_pages.Count == 0)
+            {
+                @if (_loading)
+                {
+                    @* While fetching/parsing, show a page-shaped shimmer instead of a
+                       status line, matching the per-page loading placeholder. *@
+                    <div class="bit-pdv-pages">
+                        <div class="bit-pdv-page bit-pdv-page-loading">
+                            <div class="bit-pdv-page-placeholder"></div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="bit-pdv-empty">@_status</div>
+                }
+            }
+            else
+            {
+                <div class="bit-pdv-pages">
+                    @for (int i = 0; i < _pages.Count; i++)
+                    {
+                        <div class="bit-pdv-page" data-page="@(i + 1)" style="@PageStyle(i)">
+                            @if (_pages[i] is { } content)
+                            {
+                                @content
+                            }
+                            else
+                            {
+                                <div class="bit-pdv-page-placeholder"></div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task OnFitChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<BitPdfZoomMode>(e.Value?.ToString(), out var mode))
+        {
+            await SetZoomMode(mode);
+        }
+    }
+
+    private RenderFragment RenderOutline(IReadOnlyList<BitPdfOutlineItem> items) =>
+        @<ul class="bit-pdv-outline-list">
+            @foreach (var item in items)
+            {
+                <li>
+                    <div class="bit-pdv-outline-item @(item.PageNumber is null ? "bit-pdv-dis" : "")"
+                         role="button" tabindex="0" aria-label="@item.Title"
+                         title="@item.Title" @onclick="@(() => OnOutlineClick(item))"
+                         @onkeydown="@(e => OnActivateKey(e, () => OnOutlineClick(item)))">@item.Title</div>
+                    @if (item.Children.Count > 0)
+                    {
+                        @RenderOutline(item.Children)
+                    }
+                </li>
+            }
+        </ul>;
+}

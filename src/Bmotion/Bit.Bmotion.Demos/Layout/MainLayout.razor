@@ -1,20 +1,53 @@
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
 
-<nav class="bm-nav" aria-label="Bmotion demos">
+<nav class="bm-nav @(_open ? "open" : null)" aria-label="Bmotion demos">
     <span class="logo">Bmotion</span>
-    <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
-    <NavLink href="basic">Basics</NavLink>
-    <NavLink href="springs">Springs</NavLink>
-    <NavLink href="gestures">Gestures</NavLink>
-    <NavLink href="variants">Variants</NavLink>
-    <NavLink href="keyframes">Keyframes</NavLink>
-    <NavLink href="presence">AnimatePresence</NavLink>
-    <NavLink href="drag">Drag</NavLink>
-    <NavLink href="reorder">Reorder</NavLink>
-    <NavLink href="scroll">Scroll</NavLink>
-    <NavLink href="layout">Layout</NavLink>
+    <button type="button" class="bm-nav-burger" @onclick="Toggle" aria-label="Toggle navigation"
+            aria-expanded="@(_open ? "true" : "false")" aria-controls="bm-nav-links">
+        <span></span><span></span><span></span>
+    </button>
+    <div id="bm-nav-links" class="bm-nav-links">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink href="basic">Basics</NavLink>
+        <NavLink href="springs">Springs</NavLink>
+        <NavLink href="easing">Easing</NavLink>
+        <NavLink href="gestures">Gestures</NavLink>
+        <NavLink href="variants">Variants</NavLink>
+        <NavLink href="keyframes">Keyframes</NavLink>
+        <NavLink href="presence">AnimatePresence</NavLink>
+        <NavLink href="drag">Drag</NavLink>
+        <NavLink href="reorder">Reorder</NavLink>
+        <NavLink href="scroll">Scroll</NavLink>
+        <NavLink href="layout">Layout</NavLink>
+        <NavLink href="color">Color</NavLink>
+        <NavLink href="motion-path">Motion Path</NavLink>
+        <NavLink href="view-transitions">View Transitions</NavLink>
+        <NavLink href="css-props">CSS Props</NavLink>
+    </div>
 </nav>
 
 <main class="bm-page">
     @Body
 </main>
+
+@* Live engine debug overlay (plan item 3.5) - starts collapsed; click to expand. *@
+<BmotionInspector StartOpen="false" />
+
+@code {
+    private bool _open;
+
+    private void Toggle() => _open = !_open;
+
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (!_open) return;
+        _open = false;
+        StateHasChanged();
+    }
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

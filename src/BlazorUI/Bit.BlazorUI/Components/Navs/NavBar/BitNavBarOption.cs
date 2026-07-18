@@ -92,11 +92,30 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
 
 
 
+    internal void InternalStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
         NavBar?.RegisterOption(this);
 
         await base.OnInitializedAsync();
+    }
+
+    // Renders the option's item in place, so the rendered order of the items always follows the
+    // markup order of the options, even when an option is added or removed conditionally later on.
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (NavBar is null) return;
+
+        builder.OpenComponent<_BitNavBarItem<BitNavBarOption>>(0);
+        builder.AddComponentParameter(1, nameof(_BitNavBarItem<BitNavBarOption>.NavBar), NavBar);
+        builder.AddComponentParameter(2, nameof(_BitNavBarItem<BitNavBarOption>.Item), this);
+        builder.CloseComponent();
     }
 
 

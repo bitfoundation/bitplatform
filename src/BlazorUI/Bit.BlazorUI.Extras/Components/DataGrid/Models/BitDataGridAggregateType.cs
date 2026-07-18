@@ -8,5 +8,9 @@ public enum BitDataGridAggregateType
     Average,
     Count,
     Min,
-    Max
+    Max,
+
+    /// <summary>The value was produced by the column's custom AggregateBy delegate rather than a
+    /// built-in function, so footer consumers can tell custom aggregation apart from no aggregation.</summary>
+    Custom
 }

@@ -2,50 +2,24 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
-</CascadingValue>
-
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="group"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @for (int i = 0; i < _items.Count; i++)
+    @if (Options is not null || ChildContent is not null)
     {
-        var item = _items[i];
-        var isEnabled = IsEnabled && GetIsEnabled(item);
-        var template = GetTemplate(item);
-        <button @onclick="() => HandleOnItemClick(item)"
-                tabindex="@(isEnabled ? 0 : -1)"
-                disabled="@(isEnabled is false)"
-                aria-disabled="@(isEnabled is false)"
-                title="@GetItemTitle(item)"
-                style="@GetItemStyle(item)"
-                class="@GetItemClass(item)">
-            @if (template is not null)
-            {
-                @template(item)
-            }
-            else if (ItemTemplate is not null)
-            {
-                @ItemTemplate(item)
-            }
-            else
-            {
-                var icon = GetItemIcon(item);
-                @if (icon is not null)
-                {
-                    <i style="@Styles?.Icon" class="@icon.GetCssClasses() @Classes?.Icon" />
-                }
-
-                var text = GetItemText(item);
-                if (text.HasValue())
-                {
-                    <span style="@Styles?.Text" class="bit-btg-btx @Classes?.Text">@text</span>
-                }
-            }
-        </button>
+        <CascadingValue Value="this" IsFixed="true">
+            @(Options ?? ChildContent)
+        </CascadingValue>
+    }
+    else
+    {
+        @for (int i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            <_BitButtonGroupItem @key="@(GetItemKey(item) ?? $"{UniqueId}-{i}")" ButtonGroup="this" Item="item" />
+        }
     }
 </div>

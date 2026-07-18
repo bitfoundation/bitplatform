@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 {
     private List<TItem> _items = [];
-    private BitButtonType _buttonType;
+    internal BitButtonType _buttonType;
     private string _calloutId = default!;
     private string _overlayId = default!;
     private IEnumerable<TItem> _oldItems = default!;
@@ -162,6 +162,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// Determines the current selected item that acts as the header item.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
+    [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
 
     /// <summary>
@@ -331,7 +332,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
-        if (ChildContent is not null || Items.Any() is false || Items == _oldItems) return;
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // menu button's own parameters (Styles, Sticky, ItemTemplate, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
+        if (ChildContent is not null || Options is not null || Items.Any() is false || Items == _oldItems) return;
 
         _oldItems = Items;
         _items = [.. Items];
@@ -365,7 +370,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
 
 
-    private string? GetClass(TItem? item)
+    internal string? GetClass(TItem? item)
     {
         if (item is null) return null;
 
@@ -389,7 +394,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
-    private BitIconInfo? GetIcon(TItem? item)
+    internal BitIconInfo? GetIcon(TItem? item)
     {
         if (item is null) return null;
 
@@ -428,7 +433,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return BitIconInfo.From(icon, iconName);
     }
 
-    private bool GetIsEnabled(TItem? item)
+    internal bool GetIsEnabled(TItem? item)
     {
         if (item is null) return false;
 
@@ -498,7 +503,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
-    private string? GetStyle(TItem? item)
+    internal string? GetStyle(TItem? item)
     {
         if (item is null) return null;
 
@@ -522,7 +527,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private RenderFragment<TItem>? GetTemplate(TItem? item)
+    internal RenderFragment<TItem>? GetTemplate(TItem? item)
     {
         if (item is null) return null;
 
@@ -546,7 +551,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
-    private string? GetText(TItem? item)
+    internal string? GetText(TItem? item)
     {
         if (item is null) return null;
 
@@ -600,11 +605,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private async Task HandleOnItemClick(TItem item)
+    internal async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
         await CloseCallout();
+
+        // CloseCallout changes IsOpen but does not re-render the root itself, so refresh now to update
+        // the open-state classes even when the Sticky branch below returns early.
+        StateHasChanged();
 
         if (Sticky)
         {
@@ -618,6 +627,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
             await InvokeItemClick(item);
         }
+
+        // The click handler runs on the clicked item's renderer, so the root element (open state
+        // classes) needs an explicit re-render here.
+        StateHasChanged();
     }
 
     private async Task InvokeItemClick(TItem item)
@@ -686,6 +699,25 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     private void OnSetIsOpen()
     {
         _ = ToggleCallout();
+    }
+
+    private void OnSetSelectedItem()
+    {
+        // The selected item affects both the sticky header (rendered by this component) and the
+        // items rendered by the options themselves, so re-render all of them.
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    private void RefreshOptions()
+    {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
+        foreach (var item in _items)
+        {
+            (item as BitMenuButtonOption)?.InternalStateHasChanged();
+        }
     }
 
     private string GetItemKey(TItem item, string defaultKey)

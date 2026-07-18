@@ -27,7 +27,7 @@ using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
 using FluentEmail.Core;
-using FluentStorage.Blobs;
+using FluentStorage.Storage;
 using Hangfire.EntityFrameworkCore;
 //#if (redis == true)
 using StackExchange.Redis;
@@ -98,20 +98,20 @@ public static partial class Program
         }
 
         services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
-        services.AddSingleton<IBlobStorage>(sp =>
+        services.AddSingleton<IStore>(sp =>
         {
             //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
             Directory.CreateDirectory(appDataDirPath);
-            return StorageFactory.Blobs.DirectoryFiles(appDataDirPath);
+            return StorageFactory.Disk(appDataDirPath);
             //#elif (filesStorage == "AzureBlobStorage")
             var azureBlobStorageConnectionString = configuration.GetRequiredConnectionString("azureblobstorage")!;
             var blobServiceClient = new BlobServiceClient(azureBlobStorageConnectionString);
             string accountName = blobServiceClient.AccountName;
             string accountKey = azureBlobStorageConnectionString is "UseDevelopmentStorage=true" ? "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==" // https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#well-known-storage-account-and-key
                 : GetConnectionStringValue(azureBlobStorageConnectionString, "AccountKey");
-            return StorageFactory.Blobs.AzureBlobStorageWithSharedKey(accountName, accountKey, blobServiceClient.Uri);
+            return AzureBlobStorage.FromSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
             // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
             // Open MinIO console at http://127.0.0.1:9001/browser
@@ -123,7 +123,7 @@ public static partial class Program
                 ForcePathStyle = true,
                 HttpClientFactory = sp.GetRequiredService<S3HttpClientFactory>()
             };
-            return StorageFactory.Blobs.AwsS3(accessKeyId: GetConnectionStringValue(s3ConnectionString, "AccessKey"),
+            return AwsS3Storage.FromThirdPartyCredentials(accessKeyId: GetConnectionStringValue(s3ConnectionString, "AccessKey"),
                 secretAccessKey: GetConnectionStringValue(s3ConnectionString, "SecretKey"),
                 sessionToken: null!,
                 bucketName: GetConnectionStringValue(s3ConnectionString, "BucketName", defaultValue: "files"),
@@ -294,8 +294,22 @@ public static partial class Program
         //#endif
         //#endif
 
+        //#if (multitenant == true)
+        // The AppDbContext requires the scoped TenantProvider service to apply tenant based row level security,
+        // so DbContext pooling (AddDbContextPool/AddPooledDbContextFactory) can't be used, because pooled contexts only accept DbContextOptions in their constructor.
+        services.AddDbContextFactory<AppDbContext>(AddDbContext, ServiceLifetime.Scoped);
+        services.AddDbContext<AppDbContext>(AddDbContext);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (multitenant != true)
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
         services.AddDbContextPool<AppDbContext>(AddDbContext);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
 
         void AddDbContext(DbContextOptionsBuilder options)
         {
@@ -562,13 +576,12 @@ public static partial class Program
             }
             else
             {
+                var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+                var appDataDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                Directory.CreateDirectory(appDataDirPath);
                 hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
-                    var connectionString = "Data Source=BoilerplateJobs.db;Mode=Memory;Cache=Shared;";
-                    var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
-                    connection.Open();
-                    AppContext.SetData("ReferenceTheKeepTheInMemorySQLiteDatabaseAlive", connection);
-                    optionsBuilder.UseSqlite(connectionString);
+                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(appDataDirPath, "BoilerplateJobDb.db")};");
                 }, new()
                 {
                     Schema = "jobs",
@@ -597,11 +610,24 @@ public static partial class Program
         {
             var cache = sp.GetRequiredService<IFusionCache>();
             var dbContext = sp.GetRequiredService<AppDbContext>();
+            //#if (multitenant == true)
+            var tenantId = sp.GetRequiredService<TenantProvider>().GetCurrentTenantId();
+            var cacheKey = $"SystemPrompt_{tenantId}_{promptKind}";
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+            //#if (multitenant != true)
+            var cacheKey = $"SystemPrompt_{promptKind}";
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
             var result = cache.GetOrSet(
-                $"SystemPrompt_{promptKind}", _ =>
+                cacheKey, _ =>
                 {
                     var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
-                    return prompt?.Markdown ?? throw new ResourceNotFoundException();
+                    return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
                 },
                 options => options.Duration = TimeSpan.FromHours(1));
             return result;
@@ -647,6 +673,11 @@ public static partial class Program
             .AddApiEndpoints();
 
         services.AddScoped<UserClaimsService>();
+        //#if (multitenant == true)
+        services.AddScoped<TenantProvider>();
+        // Replaces the default RoleValidator to scope the role name uniqueness by the role's TenantId.
+        services.Replace(ServiceDescriptor.Scoped<IRoleValidator<Features.Identity.Models.Role>, AppRoleValidator>());
+        //#endif
         services.AddScoped<IUserConfirmation<User>, AppUserConfirmation>();
         services.AddScoped(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
         services.AddScoped(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());

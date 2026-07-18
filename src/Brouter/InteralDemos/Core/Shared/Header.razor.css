@@ -1,10 +1,16 @@
-.bb-header {
+﻿.bb-header {
     background: #ffffff;
     border-bottom: 1px solid var(--bb-border);
     box-shadow: var(--bb-shadow-sm);
     position: sticky;
     top: 0;
     z-index: 10;
+    /* Everything without a view-transition-name is captured into the root snapshot, so the
+       header would glide/fade along with the page on every navigation even though it lives
+       outside the router. Naming it gives it its own transition group: old and new header
+       snapshots are (near-)identical, so it stays visually pinned while only the page content
+       animates - the standard way to exclude persistent chrome from view transitions. */
+    view-transition-name: bb-header;
 }
 
 .bb-header-inner {

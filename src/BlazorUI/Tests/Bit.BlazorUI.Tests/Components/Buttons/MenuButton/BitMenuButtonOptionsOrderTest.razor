@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitMenuButton TItem="BitMenuButtonOption" Text="Menu">
+    <BitMenuButtonOption Text="First" />
+    @if (ShowMiddle)
+    {
+        <BitMenuButtonOption Text="Middle" />
+    }
+    <BitMenuButtonOption Text="Last" />
+</BitMenuButton>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+}

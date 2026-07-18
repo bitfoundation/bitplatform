@@ -57,4 +57,58 @@ internal static class BmotionTransformComposer
 
         return string.Join(" ", parts);
     }
+
+    // Components that map cleanly to the individual CSS transform properties (Transforms Level 2:
+    // `translate`, `scale`, `rotate`), letting the compositor animate them independently without
+    // fighting over one `transform` string. The rest (rotateX/Y, skew, perspective) have no
+    // individual property and stay composed in `transform`.
+    private static readonly HashSet<string> _individualProps = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "x", "y", "z", "scale", "scaleX", "scaleY", "rotate", "rotateZ",
+    };
+
+    /// <summary>Whether <paramref name="key"/> can be emitted as an individual CSS transform property.</summary>
+    public static bool IsIndividualProp(string key) => _individualProps.Contains(key);
+
+    /// <summary>
+    /// Emits the transform components as the individual CSS <c>translate</c>/<c>scale</c>/<c>rotate</c>
+    /// properties where possible (so each can animate independently on the compositor), with any
+    /// remaining components (rotateX/Y, skew, perspective) left in a composed <c>transform</c> entry.
+    /// This is the reusable core for independent transforms (plan item 2.1); identity components are
+    /// omitted so callers only write what actually changed.
+    /// </summary>
+    public static Dictionary<string, string> BuildIndividual(Dictionary<string, double> t)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (t.Count == 0) return result;
+
+        double x = t.GetValueOrDefault("x"), y = t.GetValueOrDefault("y"), z = t.GetValueOrDefault("z");
+        if (x != 0 || y != 0 || z != 0)
+            result["translate"] = z != 0
+                ? $"{BmotionCssFormat.Num(x)}px {BmotionCssFormat.Num(y)}px {BmotionCssFormat.Num(z)}px"
+                : $"{BmotionCssFormat.Num(x)}px {BmotionCssFormat.Num(y)}px";
+
+        // scale: uniform wins; otherwise per-axis (CSS `scale` takes `sx sy`).
+        if (t.TryGetValue("scale", out double s) && s != 1)
+            result["scale"] = BmotionCssFormat.Num(s);
+        else
+        {
+            double sx = t.GetValueOrDefault("scaleX", 1), sy = t.GetValueOrDefault("scaleY", 1);
+            if (sx != 1 || sy != 1) result["scale"] = $"{BmotionCssFormat.Num(sx)} {BmotionCssFormat.Num(sy)}";
+        }
+
+        double rz = t.TryGetValue("rotateZ", out double rz2) && rz2 != 0 ? rz2 : t.GetValueOrDefault("rotate");
+        if (rz != 0) result["rotate"] = $"{BmotionCssFormat.Num(rz)}deg";
+
+        // Anything without an individual property stays in a composed transform string.
+        var composed = new List<string>(4);
+        if (t.TryGetValue("perspective", out double persp) && persp != 0) composed.Add($"perspective({BmotionCssFormat.Num(persp)}px)");
+        if (t.TryGetValue("rotateX", out double rx) && rx != 0) composed.Add($"rotateX({BmotionCssFormat.Num(rx)}deg)");
+        if (t.TryGetValue("rotateY", out double ry) && ry != 0) composed.Add($"rotateY({BmotionCssFormat.Num(ry)}deg)");
+        if (t.TryGetValue("skewX", out double skx) && skx != 0) composed.Add($"skewX({BmotionCssFormat.Num(skx)}deg)");
+        if (t.TryGetValue("skewY", out double sky) && sky != 0) composed.Add($"skewY({BmotionCssFormat.Num(sky)}deg)");
+        if (composed.Count > 0) result["transform"] = string.Join(" ", composed);
+
+        return result;
+    }
 }

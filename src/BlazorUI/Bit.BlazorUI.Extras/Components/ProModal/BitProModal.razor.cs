@@ -403,7 +403,7 @@ public partial class BitProModal : BitComponentBase
 
 
     private string _modalId => Id ?? UniqueId;
-    private string _containerSelector => $"#{_modalId} .bit-mdl-ctn";
+    private string _containerSelector => $"[id=\"{_modalId}\"] .bit-mdl-ctn";
     private string _dragElementSelector => _params.DragElementSelector ?? _containerSelector;
 
     private async Task HandleInnerIsOpenChanged(bool open)

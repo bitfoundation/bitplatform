@@ -774,6 +774,15 @@
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>एक बार QR कोड स्कैन या ऊपर कुंजी इनपुट करने के बाद, आपका दो-कारक प्रमाणीकरण ऐप आपको अद्वितीय कोड प्रदान करेगा। नीचे पुष्टि बॉक्स में कोड दर्ज करें।</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>आपकी सुरक्षा के लिए, कुछ ही मिनटों में इस डिवाइस सहित आपके सभी डिवाइसों से आपको साइन आउट कर दिया जाएगा। कृपया फिर से साइन इन करें।</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>पासवर्ड बदलें</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>आपका पासवर्ड सफलतापूर्वक बदल दिया गया है।</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>दो-कारक प्रमाणीकरण सक्षम हो गया है।</value>
   </data>
@@ -982,18 +991,18 @@
     <value>वैकल्पिक पाठ</value>
   </data>
   <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>पृष्ठ</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>में से</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>प्रशासक पैनल</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} आइटम</value>
-  </data>
-  <data name="Page" xml:space="preserve">
-    <value>पृष्ठ</value>
-  </data>
-  <data name="Of" xml:space="preserve">
-    <value>में से</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>पिछले 30 दिनों में उत्पादों की संख्या</value>
@@ -1364,4 +1373,102 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>प्रदान की गई छवि में कार नहीं है।</value>
   </data>
+    <!--#if (multitenant == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>टेनेंट</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>सभी टेनेंट्स प्रबंधित करें</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>सभी टेनेंट्स प्रबंधित करें</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>मेरे टेनेंट्स प्रबंधित करें</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>मेरे टेनेंट्स प्रबंधित करें</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>नया टेनेंट बनाएं</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>टेनेंट जोड़ें</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>टेनेंट संपादित करें</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>टेनेंट छोड़ें</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>क्या आप वाकई {0} टेनेंट छोड़ना चाहते हैं?</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>आपने टेनेंट सफलतापूर्वक छोड़ दिया है।</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>टेनेंट बदलें</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>{0} में उपयोगकर्ता को आमंत्रित करें</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>आमंत्रित करें</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>उपयोगकर्ता को सफलतापूर्वक आमंत्रित किया गया है।</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>यह उपयोगकर्ता पहले से ही टेनेंट का सदस्य है।</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>टेनेंट नाम '{0}' पहले से उपयोग में है।</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>टेनेंट नहीं मिला।</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} एक मान्य सब-डोमेन नाम होना चाहिए जिसमें छोटे अक्षर, अंक और हाइफ़न हों (जैसे my-tenant)।</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>टेनेंट नाम दर्ज करें</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>टेनेंट शीर्षक दर्ज करें</value>
+  </data>
+    <data name="Domain" xml:space="preserve">
+    <value>डोमेन</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>टेनेंट का कस्टम डोमेन दर्ज करें (जैसे myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} एक मान्य डोमेन नाम होना चाहिए जिसमें कोई स्कीम या पाथ न हो (जैसे myapp.com)।</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>डोमेन '{0}' पहले से उपयोग में है।</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>आपने अभी तक कोई टेनेंट नहीं चुना है। शुरू करने के लिए अपने किसी टेनेंट पर स्विच करें या एक नया टेनेंट बनाएं।</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} ने आपको {1} में शामिल होने के लिए आमंत्रित किया है। {2} खोलें और उस टेनेंट में रहने के लिए साइन इन करें।</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>बदलें</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>स्वीकार करें</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>लंबित आमंत्रण</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>वर्तमान टेनेंट</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>निष्क्रिय</value>
+  </data>
+    <!--#endif-->
 </root>

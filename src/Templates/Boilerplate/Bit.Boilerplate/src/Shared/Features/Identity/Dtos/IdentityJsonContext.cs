@@ -25,6 +25,7 @@ namespace Boilerplate.Shared.Features.Identity;
 [JsonSerializable(typeof(SendPhoneTokenRequestDto))]
 [JsonSerializable(typeof(ConfirmEmailRequestDto))]
 [JsonSerializable(typeof(ChangeEmailRequestDto))]
+[JsonSerializable(typeof(ChangePasswordRequestDto))]
 [JsonSerializable(typeof(ConfirmPhoneRequestDto))]
 [JsonSerializable(typeof(ChangePhoneNumberRequestDto))]
 [JsonSerializable(typeof(SendResetPasswordTokenRequestDto))]

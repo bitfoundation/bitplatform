@@ -7,6 +7,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
+    private int _optionKeySeed;
     private TItem? _toggleItem;
     private List<TItem> _items = [];
     private string? _internalToggleKey;
@@ -127,7 +128,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (option.Key.HasNoValue())
         {
-            option.Key = _items.Count.ToString();
+            // Use a monotonic seed so keys stay unique even after removals (a _items.Count-based key can
+            // collide with an existing one once an option is removed), and guard against colliding with
+            // any explicitly supplied keys.
+            var key = (_optionKeySeed++).ToString();
+            while (_items.Any(i => GetItemKey(i) == key))
+            {
+                key = (_optionKeySeed++).ToString();
+            }
+            option.Key = key;
         }
 
         var item = (option as TItem)!;
@@ -158,7 +167,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal void UnregisterOption(BitButtonGroupOption option)
     {
-        _items.Remove((option as TItem)!);
+        var item = (option as TItem)!;
+
+        // When the removed option is the currently toggled one, clear the toggle state and the bound
+        // key so they don't keep referencing an option that no longer exists.
+        if (_toggleItem == item)
+        {
+            _toggleItem = null;
+            _ = AssignToggleKey(null);
+        }
+
+        _items.Remove(item);
         StateHasChanged();
     }
 
@@ -220,7 +239,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnInitializedAsync()
     {
-        _items = Items is not null ? [.. Items] : [];
+        // Only seed _items from Items for the Items API; in the options/child-content path the options
+        // register themselves, so it must start empty.
+        _items = (ChildContent is null && Options is null && Items is not null) ? [.. Items] : [];
 
         if (Toggle && Items is not null && Items.Any())
         {
@@ -248,19 +269,14 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnParametersSetAsync()
     {
-        if (ChildContent is null && Items is not null && Items.Any())
+        if (ChildContent is null && Options is null && Items is not null && Items.Any())
         {
-            if (_oldItems is null || Items.SequenceEqual(_oldItems) is false)
+            if (_oldItems is null || (ReferenceEquals(Items, _oldItems) is false && Items.SequenceEqual(_oldItems) is false))
             {
                 _oldItems = Items;
                 _items = [.. Items];
 
-                for (int i = 0; i < _items.Count; i++)
-                {
-                    if (GetItemKey(_items.ElementAt(i)).HasValue()) continue;
-
-                    SetItemKey(_items.ElementAt(i), i.ToString());
-                }
+                AssignItemKeys();
             }
         }
 
@@ -275,12 +291,58 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // button group's own parameters (Styles, Toggle, IconOnly, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
         await base.OnParametersSetAsync();
     }
 
 
 
-    private async Task HandleOnItemClick(TItem item)
+    private void RefreshOptions()
+    {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
+        foreach (var item in _items)
+        {
+            (item as BitButtonGroupOption)?.InternalStateHasChanged();
+        }
+    }
+
+    private void AssignItemKeys()
+    {
+        // Collect the explicit keys first so the auto-generated keys never collide with them.
+        var usedKeys = new HashSet<string>();
+        foreach (var item in _items)
+        {
+            var key = GetItemKey(item);
+            if (key.HasValue()) usedKeys.Add(key!);
+        }
+
+        for (int i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            if (GetItemKey(item).HasValue()) continue;
+
+            // Start from the loop index and increment until a non-colliding key is found so the
+            // result stays deterministic across renders while remaining unique.
+            var suffix = i;
+            var candidate = suffix.ToString();
+            while (usedKeys.Contains(candidate))
+            {
+                candidate = (++suffix).ToString();
+            }
+
+            SetItemKey(item, candidate);
+            usedKeys.Add(candidate);
+        }
+    }
+
+
+
+    internal async Task HandleOnItemClick(TItem item)
     {
         if (GetIsEnabled(item) is false) return;
 
@@ -294,10 +356,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             await buttonGroupOption.OnClick.InvokeAsync(buttonGroupOption);
         }
-        else
+        else if (NameSelectors is not null)
         {
-            if (NameSelectors is null) return;
-
             if (NameSelectors.OnClick.Selector is not null)
             {
                 NameSelectors.OnClick.Selector!(item)?.Invoke(item);
@@ -311,7 +371,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         await UpdateItemToggle(item);
     }
 
-    private string? GetItemClass(TItem item)
+    internal string? GetItemClass(TItem item)
     {
         List<string> classes = ["bit-btg-itm"];
 
@@ -344,7 +404,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return string.Join(' ', classes);
     }
 
-    private string? GetItemStyle(TItem item)
+    internal string? GetItemStyle(TItem item)
     {
         List<string> styles = [];
 
@@ -367,7 +427,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return string.Join(';', styles);
     }
 
-    private string? GetItemText(TItem item)
+    internal string? GetItemText(TItem item)
     {
         if (IconOnly) return null;
 
@@ -394,7 +454,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetText(item);
     }
 
-    private string? GetItemTitle(TItem item)
+    internal string? GetItemTitle(TItem item)
     {
         if (Toggle)
         {
@@ -419,7 +479,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetTitle(item);
     }
 
-    private BitIconInfo? GetItemIcon(TItem item)
+    internal BitIconInfo? GetItemIcon(TItem item)
     {
         if (Toggle)
         {
@@ -475,6 +535,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         await AssignToggleKey(toggleKey);
         await OnToggleChange.InvokeAsync(item);
+
+        // A toggle change affects the rendering of the previously and newly toggled items, but the click
+        // handler now runs on the clicked item's renderer, so both the parent (Items API) and the
+        // registered options need an explicit re-render.
+        RefreshOptions();
+        StateHasChanged();
     }
 
     private bool IsItemToggled(TItem item)
@@ -708,7 +774,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty<string?>(NameSelectors.OffIconName.Name);
     }
 
-    private bool GetIsEnabled(TItem? item)
+    internal bool GetIsEnabled(TItem? item)
     {
         if (item is null) return false;
 
@@ -756,7 +822,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private RenderFragment<TItem>? GetTemplate(TItem? item)
+    internal RenderFragment<TItem>? GetTemplate(TItem? item)
     {
         if (item is null) return null;
 

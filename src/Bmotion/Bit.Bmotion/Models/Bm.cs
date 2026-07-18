@@ -42,10 +42,26 @@ public static class Bm
         BmStringKeyframes? width = null, BmStringKeyframes? height = null,
         BmStringKeyframes? borderRadius = null, BmStringKeyframes? boxShadow = null,
         BmStringKeyframes? filter = null,
+        // ── Layout / box-model ──
+        BmStringKeyframes? top = null, BmStringKeyframes? left = null,
+        BmStringKeyframes? right = null, BmStringKeyframes? bottom = null,
+        BmStringKeyframes? margin = null, BmStringKeyframes? padding = null,
+        BmStringKeyframes? gap = null,
+        // ── Typography ──
+        BmStringKeyframes? letterSpacing = null, BmStringKeyframes? lineHeight = null,
+        BmStringKeyframes? fontSize = null,
+        // ── Misc CSS ──
+        BmStringKeyframes? clipPath = null,
+        BmStringKeyframes? backgroundPosition = null, BmStringKeyframes? backgroundSize = null,
+        // ── Motion path ──
+        BmStringKeyframes? offsetPath = null, BmStringKeyframes? offsetDistance = null,
+        // ── SVG shape morph ──
+        BmStringKeyframes? d = null,
         // ── SVG path drawing ──
         BmKeyframes? pathLength = null, BmKeyframes? pathOffset = null, BmKeyframes? pathSpacing = null,
         // ── Extras ──
         Dictionary<string, string>? cssVars = null,
+        Dictionary<string, BmStringKeyframes>? css = null,
         BmTransition? transition = null)
         => new()
         {
@@ -62,8 +78,15 @@ public static class Bm
             Width = width, Height = height,
             BorderRadius = borderRadius, BoxShadow = boxShadow,
             Filter = filter,
+            Top = top, Left = left, Right = right, Bottom = bottom,
+            Margin = margin, Padding = padding, Gap = gap,
+            LetterSpacing = letterSpacing, LineHeight = lineHeight, FontSize = fontSize,
+            ClipPath = clipPath, BackgroundPosition = backgroundPosition, BackgroundSize = backgroundSize,
+            OffsetPath = offsetPath, OffsetDistance = offsetDistance,
+            D = d,
             PathLength = pathLength, PathOffset = pathOffset, PathSpacing = pathSpacing,
             CssVars = cssVars,
+            Css = css,
             Transition = transition,
         };
 
@@ -76,12 +99,14 @@ public static class Bm
         double stiffness = 100, double damping = 10, double mass = 1,
         double? bounce = null, double? duration = null,
         double velocity = 0, double delay = 0, BmRepeat? repeat = null,
+        BmColorSpace? colorSpace = null,
         double? staggerChildren = null, double? delayChildren = null)
         => new()
         {
             Stiffness = stiffness, Damping = damping, Mass = mass,
             Bounce = bounce, Duration = duration,
             Velocity = velocity, Delay = delay, Repeat = repeat,
+            ColorSpace = colorSpace,
             StaggerChildren = staggerChildren, DelayChildren = delayChildren,
         };
 
@@ -90,12 +115,16 @@ public static class Bm
         double duration = 0.3, BmEase ease = BmEase.Out,
         double delay = 0, BmRepeat? repeat = null,
         double[]? times = null, double[]? bezier = null, BmEase[]? eases = null,
+        int steps = 0, BmStepJump stepJump = BmStepJump.End,
+        BmColorSpace? colorSpace = null,
         double? staggerChildren = null, double? delayChildren = null)
         => new()
         {
             Duration = duration, Ease = ease,
             Delay = delay, Repeat = repeat,
             Times = times, Bezier = bezier, Eases = eases,
+            Steps = steps, StepJump = stepJump,
+            ColorSpace = colorSpace,
             StaggerChildren = staggerChildren, DelayChildren = delayChildren,
         };
 
@@ -103,8 +132,16 @@ public static class Bm
     /// A stagger delay generator for multi-element animations:
     /// <c>Motion.AnimateAsync(".item", Bm.To(y: 0), stagger: Bm.Stagger(0.08, from: BmStaggerFrom.Center))</c>.
     /// </summary>
-    public static BmStagger Stagger(double each, BmStaggerFrom from = BmStaggerFrom.First, double startDelay = 0)
-        => new(each, from, startDelay);
+    public static BmStagger Stagger(double each, BmStaggerFrom from = BmStaggerFrom.First, double startDelay = 0,
+        (int Cols, int Rows)? grid = null)
+        => new(each, from, startDelay, grid);
+
+    /// <summary>
+    /// A stagger driven entirely by a custom <c>(index, total) =&gt; delaySeconds</c> function:
+    /// <c>Bm.Stagger((i, total) =&gt; i * 0.05)</c>.
+    /// </summary>
+    public static BmStagger Stagger(Func<int, int, double> custom)
+        => new(custom);
 
     /// <summary>
     /// Creates a reactive motion value (motion.dev's <c>motionValue()</c>) that can be bound to

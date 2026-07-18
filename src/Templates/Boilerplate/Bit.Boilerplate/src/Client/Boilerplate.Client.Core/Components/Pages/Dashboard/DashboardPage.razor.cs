@@ -1,13 +1,8 @@
 ﻿//+:cnd:noEmit
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-
 namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 
 public partial class DashboardPage
 {
-    [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
-
-    private bool isLoadingAssemblies = true;
     //#if (signalR == true)
     private Action? unsubscribe;
     //#endif
@@ -19,26 +14,9 @@ public partial class DashboardPage
         //#if (signalR == true)
         unsubscribe = PubSubService.Subscribe(SharedAppMessages.DASHBOARD_DATA_CHANGED, async _ =>
         {
-            NavigationManager.NavigateTo(PageUrls.Dashboard, replace: true);
+            NavigationManager.RefreshCurrentPage();
         });
         //#endif
-        try
-        {
-            if (AppPlatform.IsBrowser)
-            {
-                await lazyAssemblyLoader.LoadAssembliesAsync([
-                    //#if (offlineDb == false)
-                    "System.Data.Common.wasm",
-                    //#endif
-                    "Newtonsoft.Json.wasm",
-                    "System.Private.Xml.wasm"]
-                    );
-            }
-        }
-        finally
-        {
-            isLoadingAssemblies = false;
-        }
     }
 
     //#if (signalR == true)

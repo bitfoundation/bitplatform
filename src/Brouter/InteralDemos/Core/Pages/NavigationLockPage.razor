@@ -1,0 +1,141 @@
+﻿@* Component-level navigation lock demo. The page derives from BrouterRouteBase and overrides the
+   two awaited, cancellable lock callbacks: OnDeactivatingAsync (leaving the route entirely) and
+   OnRenavigatingAsync (the route stays matched - /lock/1 -> /lock/2 - which a route-declared
+   LeaveGuard can never veto). While the draft is dirty, both park the pending navigation on a
+   TaskCompletionSource and render a custom in-page confirmation dialog showing the pending target;
+   the user's answer then cancels the navigation or lets it proceed. Compare /editor, where the
+   equivalent (deactivation-only) veto lives on the route declaration and uses no custom UI. *@
+
+@inherits BrouterRouteBase
+
+<div class="bb-intro">
+    <h1>Navigation lock <span class="bb-badge">/lock/@Id</span></h1>
+    <p class="bb-subtitle">
+        The page itself vetoes navigation from <code>OnDeactivating</code> / <code>OnRenavigating</code> -
+        awaited lock callbacks on <code>BrouterRouteBase</code> - with a custom dialog instead of
+        <code>window.confirm</code>. The URL never changes while the dialog is open (preventive, no
+        history corruption).
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Draft for item @Id</h3>
+    <input class="form-control" style="max-width: 28rem;" @bind="_draft" @bind:event="oninput"
+           placeholder="Type to make the draft dirty…" />
+    <p class="bb-card-desc" style="margin-top: .5rem;">
+        Status:
+        @if (IsDirty)
+        {
+            <span class="bb-badge bb-badge-warn">dirty - navigation is locked</span>
+        }
+        else
+        {
+            <span class="bb-badge bb-badge-success">saved - navigation is free</span>
+        }
+    </p>
+    <button class="btn btn-primary" @onclick="Save" disabled="@(IsDirty is false)">Save draft</button>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try to leave</h3>
+    <ul class="bb-link-list">
+        <li><BrouterLink Href="/lock/1">/lock/1</BrouterLink> <em>(renavigation - same route, same instance)</em></li>
+        <li><BrouterLink Href="/lock/2">/lock/2</BrouterLink> <em>(renavigation)</em></li>
+        <li><BrouterLink Href="/home">Home</BrouterLink> <em>(deactivation - the page would be disposed)</em></li>
+    </ul>
+    <p class="bb-card-desc">
+        A parameter change (<code>/lock/1 → /lock/2</code>) keeps this route matched, so a
+        route-declared <code>LeaveGuard</code> would never fire - <code>OnRenavigating</code> is what
+        protects the dirty draft there.
+    </p>
+</div>
+
+@if (_prompt is not null)
+{
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 1000;">
+        <div class="bb-card" style="max-width: 26rem; margin: 0;"
+             role="dialog" aria-modal="true" aria-labelledby="lock-prompt-title"
+             tabindex="-1" @ref="_promptDialog">
+            <h3 id="lock-prompt-title" class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Unsaved changes</h3>
+            <p class="bb-card-desc">
+                Your draft for item @Id isn't saved. Leave for <code>@_promptTarget</code> anyway?
+            </p>
+            <div style="display: flex; gap: .5rem;">
+                <button class="btn btn-primary" @onclick="@(() => AnswerPrompt(stay: true))">Stay here</button>
+                <button class="btn btn-secondary" @onclick="@(() => AnswerPrompt(stay: false))">Leave &amp; discard</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private string _saved = string.Empty;
+    private string _draft = string.Empty;
+    private bool IsDirty => string.Equals(_draft, _saved, StringComparison.Ordinal) is false;
+
+    // The parked decision of the currently open dialog: the lock callback awaits it, the dialog
+    // buttons complete it. Non-null exactly while the dialog is rendered. The result encodes the
+    // outcome: true = stay, false = leave & discard, null = dismissed by a superseding navigation
+    // (the token registration below), which must neither cancel nor touch the draft.
+    private TaskCompletionSource<bool?>? _prompt;
+    private string? _promptTarget;
+    private ElementReference _promptDialog;
+    private bool _focusPrompt;
+
+    private void Save() => _saved = _draft;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Move keyboard focus into the just-opened dialog so screen readers announce it and
+        // keyboard users aren't left focused on the link that triggered the parked navigation.
+        if (_focusPrompt)
+        {
+            _focusPrompt = false;
+            await _promptDialog.FocusAsync();
+        }
+    }
+
+    private void AnswerPrompt(bool stay) => _prompt?.TrySetResult(stay);
+
+    protected override Task OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
+        => ConfirmLeaveAsync(context.To, context.CancellationToken, context.Cancel);
+
+    protected override Task OnRenavigatingAsync(BrouterRouteRenavigatingContext context)
+        => ConfirmLeaveAsync(context.To, context.CancellationToken, context.Cancel);
+
+    private async Task ConfirmLeaveAsync(BrouterLocation to, System.Threading.CancellationToken token, Action cancel)
+    {
+        if (IsDirty is false) return;
+
+        // Everything below binds to THIS prompt instance: a superseding navigation's own lock can
+        // open a replacement dialog (reassigning _prompt) before this parked await has finished
+        // unwinding, and the unwind must not touch the replacement.
+        var prompt = new TaskCompletionSource<bool?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _prompt = prompt;
+        _promptTarget = to.Path + to.Query;
+        _focusPrompt = true;
+        StateHasChanged(); // show the dialog; the navigation stays parked on the await below
+
+        // A superseding navigation cancels the token: dismiss the dialog (null - no user decision)
+        // and let the router move on.
+        await using var dismiss = token.Register(() => prompt.TrySetResult(null));
+        var stay = await prompt.Task;
+
+        // Close the dialog only while it is still this prompt's; a newer prompt owns the UI otherwise.
+        if (ReferenceEquals(_prompt, prompt))
+        {
+            _prompt = null;
+            _promptTarget = null;
+            StateHasChanged();
+        }
+
+        // Dismissed by a superseding navigation, not the user: no decision was made, so keep the
+        // dirty draft (the newer navigation runs its own lock and prompts again if needed).
+        if (stay is null) return;
+
+        if (stay.Value) cancel();
+        else _draft = _saved; // leaving: drop the draft so a kept/renavigated instance isn't still dirty
+    }
+}

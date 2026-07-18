@@ -1,7 +1,9 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class BitChartDemo
 {
+    [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

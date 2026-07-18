@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Dashboard;
+using Boilerplate.Shared.Features.Dashboard;
 
 namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 
@@ -7,17 +7,21 @@ public partial class ProductsPercentageWidget
     [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
-    private BitChartPieConfig config = default!;
+    private BitChartConfig config = default!;
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
-        config = new BitChartPieConfig
+        config = new BitChartConfig
         {
-            Options = new BitChartPieOptions
+            Type = BitChartType.Pie,
+            Options = new BitChartOptions
             {
-                Responsive = true,
+                Plugins = new BitChartPluginOptions
+                {
+                    Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }
+                }
             }
         };
 
@@ -32,10 +36,12 @@ public partial class ProductsPercentageWidget
         {
             var data = await dashboardController.GetProductsPercentagePerCategoryStats(CurrentCancellationToken);
 
-            BitChartPieDataset<float> chartDataSet = [.. data!.Select(d => d.ProductPercentage)];
-            chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
-            config.Data.Datasets.Add(chartDataSet);
             config.Data.Labels.AddRange(data.Select(d => d.CategoryName ?? string.Empty));
+            config.Data.Datasets.Add(new BitChartDataset
+            {
+                Data = [.. data.Select(d => (double?)d.ProductPercentage)],
+                BackgroundColors = [.. data.Select(d => d.CategoryColor ?? string.Empty)]
+            });
         }
         finally
         {

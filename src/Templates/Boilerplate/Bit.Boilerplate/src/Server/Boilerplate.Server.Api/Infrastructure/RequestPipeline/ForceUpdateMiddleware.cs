@@ -15,7 +15,7 @@ public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings setti
             var minVersion = settings.SupportedAppVersions!.GetMinimumSupportedAppVersion(appPlatformType);
             if (minVersion != null && Version.Parse(appVersion) < minVersion)
             {
-                throw new ClientNotSupportedException();
+                throw new ClientNotSupportedException().WithData("Reason", $"The client version '{appVersion}' is not supported. Minimum supported version is '{minVersion}'.");
             }
         }
 

@@ -1,0 +1,108 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.acknowledgements {
+    width: 100%;
+    min-width: 0;
+}
+
+.ack-section {
+    gap: 0.6rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.ack-section-head {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+}
+
+.ack-count {
+    flex: none;
+    line-height: 1.4;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.05rem 0.45rem;
+    border-radius: 1rem;
+    color: $bit-color-foreground-secondary;
+    background-color: $bit-color-background-tertiary;
+}
+
+.dep-card {
+    gap: 0.5rem;
+    display: flex;
+    min-width: 0;
+    // Wrap-panel item: grow to fill the row, wrap to the next line when out of room, shrink on small screens.
+    flex: 1 1 15rem;
+    flex-direction: column;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.5rem;
+    justify-content: space-between;
+    border: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+        transform: translateY(-0.0625rem);
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+    }
+}
+
+.dep-top {
+    gap: 0.5rem;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+}
+
+::deep {
+    .ack-intro {
+        max-width: 70ch;
+    }
+
+    .ack-section-title {
+        font-weight: 600;
+    }
+
+    .ack-section-sub {
+        flex: none;
+    }
+
+    .dep-name {
+        min-width: 0;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+        color: $bit-color-foreground-primary;
+    }
+
+    .dep-source {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        color: $bit-color-foreground-secondary;
+
+        &:hover {
+            color: $bit-color-primary;
+        }
+
+        svg {
+            width: 1rem;
+            height: 1rem;
+        }
+    }
+
+    // Let long license identifiers wrap instead of forcing the card wider.
+    .dep-license {
+        height: auto;
+        max-width: 100%;
+        align-self: flex-start;
+
+        span {
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+    }
+}

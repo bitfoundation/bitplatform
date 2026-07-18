@@ -1,24 +1,17 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
-/// Marks a component property as bound to a route parameter. The matched value
+/// Optional override for how a component property binds to a route parameter. Route parameters
+/// bind to <c>[Parameter]</c> properties by name automatically (Blazor-style); apply this
+/// attribute when the property name and the route parameter name differ (<see cref="Name"/>),
+/// or to bind a property whose name doesn't appear in the route's template. The matched value
 /// is converted (if needed) to the property's type before assignment.
-/// Inspired by Microsoft's <c>SupplyParameterFromQuery</c>/<c>SupplyParameterFromForm</c>.
+/// Query-string values bind via Microsoft's <c>[SupplyParameterFromQuery]</c> (or Brouter's
+/// opt-in <see cref="BrouterQueryAttribute"/>) instead.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class BrouterParameterAttribute : Attribute
 {
     /// <summary>Optional override for the parameter name. Defaults to the property name (case-insensitive).</summary>
-    public string? Name { get; set; }
-}
-
-/// <summary>
-/// Marks a component property as bound to a query string parameter. Multi-value
-/// query parameters are exposed as <c>string[]</c> when the property is array-typed.
-/// </summary>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class BrouterQueryAttribute : Attribute
-{
-    /// <summary>Optional override for the query key. Defaults to the property name.</summary>
     public string? Name { get; set; }
 }

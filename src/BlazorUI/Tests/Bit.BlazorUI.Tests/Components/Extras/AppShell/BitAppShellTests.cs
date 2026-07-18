@@ -101,7 +101,7 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.IsFalse(root.ClassList.Contains("bit-dis"));
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -143,7 +143,7 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.Contains("color: red", root.GetAttribute("style") ?? string.Empty);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, "color: blue;");
         });
@@ -186,7 +186,7 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("first-class"));
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, "second-class");
         });
@@ -264,7 +264,7 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.IsNull(root.GetAttribute("dir"));
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -287,7 +287,7 @@ public class BitAppShellTests : BunitTestContext
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -333,7 +333,15 @@ public class BitAppShellTests : BunitTestContext
     ]
     public void BitAppShellShouldRespectHtmlAttributes(string name, string value)
     {
-        var component = RenderComponent<BitAppShell>((name, value));
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so
+        // supply them as raw component attributes (as real markup would) rather than via the builder,
+        // which rejects unmatched params on components without [Parameter(CaptureUnmatchedValues)].
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAppShell>(0);
+            builder.AddAttribute(1, name, value);
+            builder.CloseComponent();
+        });
 
         var root = component.Find(".bit-ash");
 
@@ -464,7 +472,7 @@ public class BitAppShellTests : BunitTestContext
         Assert.DoesNotContain("visibility:hidden", root.GetAttribute("style") ?? string.Empty);
         Assert.DoesNotContain("display:none", root.GetAttribute("style") ?? string.Empty);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Hidden);
         });
@@ -473,7 +481,7 @@ public class BitAppShellTests : BunitTestContext
 
         Assert.Contains("visibility:hidden", root.GetAttribute("style") ?? string.Empty);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -745,8 +753,8 @@ public class BitAppShellTests : BunitTestContext
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.initScroll");
 
-        // Dispose component through bUnit's DisposeComponents to trigger proper lifecycle
-        Context.DisposeComponents();
+        // Dispose component through bUnit's DisposeComponentsAsync to trigger proper lifecycle
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.disposeScroll");
     }
@@ -901,12 +909,18 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldHandleMultipleHtmlAttributes()
     {
-        var component = RenderComponent<BitAppShell>(
-            ("data-id", "test-id"),
-            ("data-type", "app-shell"),
-            ("aria-hidden", "false"),
-            ("title", "App Shell Title")
-        );
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so
+        // supply them as raw component attributes (as real markup would) rather than via the builder,
+        // which rejects unmatched params on components without [Parameter(CaptureUnmatchedValues)].
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAppShell>(0);
+            builder.AddAttribute(1, "data-id", "test-id");
+            builder.AddAttribute(2, "data-type", "app-shell");
+            builder.AddAttribute(3, "aria-hidden", "false");
+            builder.AddAttribute(4, "title", "App Shell Title");
+            builder.CloseComponent();
+        });
 
         var root = component.Find(".bit-ash");
 
@@ -997,7 +1011,7 @@ public class BitAppShellTests : BunitTestContext
         });
 
         // Should not throw when disposing without PersistScroll
-        Context.DisposeComponents();
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
 
         // Verify no JS calls were made for scroll
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.AppShell.disposeScroll");

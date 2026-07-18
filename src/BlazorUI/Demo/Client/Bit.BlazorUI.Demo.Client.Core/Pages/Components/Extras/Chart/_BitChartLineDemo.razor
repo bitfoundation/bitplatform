@@ -5,12 +5,12 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Filled()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Straight lines" RazorCode="@straightRazorCode" CsharpCode="@straightCsharpCode" Id="line-straight">
+<DemoExample Title="Straight lines" RazorCode="@straightRazorCode" CsharpCode="@straightCsharpCode" Id="line-straight" PreventRenderForMcpClient>
     <div class="example-desc">Two series without smoothing (tension 0).</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Stepped line" RazorCode="@steppedRazorCode" CsharpCode="@steppedCsharpCode" Id="line-stepped">
+<DemoExample Title="Stepped line" RazorCode="@steppedRazorCode" CsharpCode="@steppedCsharpCode" Id="line-stepped" PreventRenderForMcpClient>
     <div class="example-desc">A stepped line interpolates between points as steps (<code>Stepped = BitChartSteppedLine.Before</code>).</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Stepped()" Options="_legendBottom" /></div></div>
 </DemoExample>
@@ -30,7 +30,7 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Segmented()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Monotone smoothing" RazorCode="@monotoneRazorCode" CsharpCode="@monotoneCsharpCode" Id="line-monotone">
+<DemoExample Title="Monotone smoothing" RazorCode="@monotoneRazorCode" CsharpCode="@monotoneCsharpCode" Id="line-monotone" PreventRenderForMcpClient>
     <div class="example-desc">Monotone cubic interpolation smooths the line without overshooting the data points.</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Monotone()" Options="_legendBottom" /></div></div>
 </DemoExample>

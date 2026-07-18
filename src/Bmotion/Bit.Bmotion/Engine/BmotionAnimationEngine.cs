@@ -25,7 +25,7 @@ namespace Bit.Bmotion;
 /// </remarks>
 public sealed class BmotionAnimationEngine : IAsyncDisposable
 {
-    private readonly BmotionInterop _interop;
+    private readonly IBmotionInterop _interop;
     private readonly ILogger<BmotionAnimationEngine>? _logger;
     private readonly Dictionary<string, BmotionElementAnimationState> _elements = new();
     private DotNetObjectReference<BmotionAnimationEngine>? _dotnet;
@@ -41,7 +41,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     // Marshaled synchronously to JS before the next ComputeFrame runs (single-threaded Blazor WASM).
     private readonly Dictionary<string, Dictionary<string, string>> _frameResult = new();
 
-    public BmotionAnimationEngine(BmotionInterop interop, ILogger<BmotionAnimationEngine>? logger = null)
+    public BmotionAnimationEngine(IBmotionInterop interop, ILogger<BmotionAnimationEngine>? logger = null)
     {
         _interop = interop;
         _logger = logger;
@@ -196,6 +196,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             return;
         }
 
+        // No compositor offload was possible: on Blazor Server (no frame loop) this animation
+        // collapses to an instant change. Warn once so the degradation is diagnosable instead of
+        // silent - see BmotionCapabilities.SupportsFrameLoop.
+        WarnIfDegradingOnServer(elementId, values, transition);
+
         // The awaits above can interleave with a concurrent caller that registered a compositor
         // plan on the same keys after this call's interrupt pass (see RegisterWaapiPlan, which
         // closes the same race for the WAAPI branch). Sweep again synchronously so the rAF
@@ -226,6 +231,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             await tcs.Task;
             return;
         }
+
+        // No compositor offload: on Blazor Server this collapses to an instant change. Warn once
+        // so the degradation is diagnosable instead of silent (matches AnimateToAsync).
+        WarnIfDegradingOnServer(elementId, values, transition);
 
         // Same concurrent-plan sweep as AnimateToAsync's rAF branch (see comment there).
         InterruptWaapiOverlapsSync(elementId, state, values.Keys);
@@ -272,6 +281,29 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
     /// <summary>Returns <c>true</c> if an element is currently registered with the engine.</summary>
     public bool IsRegistered(string elementId) => _elements.ContainsKey(elementId);
+
+    /// <summary>
+    /// A read-only snapshot of every registered element's live animation state, for the
+    /// <c>&lt;BmotionInspector&gt;</c> debug overlay. Each element reports its active drivers and
+    /// current transform / numeric / string values. Call from the UI thread (like all engine APIs).
+    /// </summary>
+    public IReadOnlyList<BmotionElementDiagnostics> GetDiagnostics()
+    {
+        var list = new List<BmotionElementDiagnostics>(_elements.Count);
+        foreach (var (id, state) in _elements)
+        {
+            list.Add(new BmotionElementDiagnostics(
+                id,
+                state.ActiveDriverCount,
+                state.HasActiveAnimations,
+                state.IsDragging,
+                state.ActiveDriverKeys.ToArray(),
+                new Dictionary<string, double>(state.Transforms),
+                new Dictionary<string, double>(state.NumericValues),
+                new Dictionary<string, string>(state.StringValues)));
+        }
+        return list;
+    }
 
     /// <summary>
     /// Sets (or clears) a per-frame callback invoked with the CSS declarations flushed to the
@@ -498,6 +530,25 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// <summary>Whether this environment can run the per-frame rAF loop (Blazor WebAssembly).</summary>
     internal bool SupportsFrameLoop => _interop.IsInProcess;
 
+    private bool _serverDegradationWarned;
+
+    // Warns once (per engine) when a non-offloadable animation degrades to an instant change on
+    // Blazor Server. Skips genuinely-instant transitions (duration-0 tweens) so a set()-like call
+    // doesn't produce a false positive.
+    private void WarnIfDegradingOnServer(
+        string elementId, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
+    {
+        if (_interop.IsInProcess || _serverDegradationWarned || _logger is null) return;
+        bool instant = transition is { Type: BmotionTransitionType.Tween, Duration: <= 0 };
+        if (instant || values.Count == 0) return;
+        _serverDegradationWarned = true;
+        _logger.LogWarning(
+            "Bit.Bmotion: an animation on '{ElementId}' collapsed to an instant change on Blazor Server "
+            + "(no per-frame loop; properties {Properties} are not compositor-eligible). Inject "
+            + "BmotionCapabilities to detect this - SupportsFrameLoop is false here.",
+            elementId, string.Join(", ", values.Keys));
+    }
+
     /// <summary>
     /// rAF-loop start on WebAssembly; on Blazor Server (no sync interop) drives the element's
     /// zero-duration drivers to completion and flushes the result through async interop instead.
@@ -594,32 +645,57 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         // Every animated property must be a transform component or opacity with a single
         // finite numeric target.
         var targets = new Dictionary<string, (double From, double To)>(StringComparer.OrdinalIgnoreCase);
+        // Per-key frames (uniform offsets). Scalars become [from, to]; keyframe arrays keep their
+        // frames. All keyframe keys must share one length (mixed lengths ⇒ rAF) so the WAAPI
+        // keyframes and the C# interruption mirror stay on one aligned, exact grid.
+        var frameArrays = new Dictionary<string, double[]>(StringComparer.OrdinalIgnoreCase);
         bool touchesTransform = false;
+        int keyframeLen = 0;
         foreach (var (key, raw) in values)
         {
             if (raw == null) continue;
             bool isTransform = BmotionTransformComposer.IsTransformProp(key);
             if (!isTransform && !string.Equals(key, "opacity", StringComparison.OrdinalIgnoreCase)) return null;
 
-            double to;
-            switch (raw)
-            {
-                case double d: to = d; break;
-                case int i: to = i; break;
-                case float f: to = f; break;
-                case long l: to = l; break;
-                default: return null; // keyframe arrays / strings stay on the rAF path
-            }
-            if (!double.IsFinite(to)) return null;
-
             double from = isTransform
                 ? state.Transforms.GetValueOrDefault(key,
                     key is "scale" or "scaleX" or "scaleY" ? 1.0 : 0.0)
                 : state.NumericValues.GetValueOrDefault(key, 1.0); // opacity defaults to 1
-            targets[key] = (from, to);
+
+            double[] frames;
+            switch (raw)
+            {
+                case double d: frames = [from, d]; break;
+                case int i: frames = [from, i]; break;
+                case float f: frames = [from, f]; break;
+                case long l: frames = [from, l]; break;
+                case double[] { Length: >= 2 } arr:
+                    frames = (double[])arr.Clone();
+                    // A leading Bm.Current (NaN) wildcard resolves to the element's current value.
+                    if (double.IsNaN(frames[0])) frames[0] = from;
+                    foreach (var v in frames) if (!double.IsFinite(v)) return null;
+                    if (keyframeLen == 0) keyframeLen = frames.Length;
+                    else if (keyframeLen != frames.Length) return null; // mixed keyframe lengths ⇒ rAF
+                    break;
+                case double[] { Length: 1 } one: frames = [from, one[0]]; break;
+                default: return null; // string keyframes stay on the rAF path
+            }
+            if (!double.IsFinite(frames[^1])) return null;
+            targets[key] = (frames[0], frames[^1]);
+            frameArrays[key] = frames;
             touchesTransform |= isTransform;
         }
         if (targets.Count == 0) return null;
+
+        // Per-segment eases can't be expressed by a single WAAPI timeline easing.
+        if (keyframeLen > 0 && config.Eases is { Length: > 0 }) return null;
+
+        // Resample every key onto a common uniform grid of N frames (identity for keys already at N;
+        // scalars/2-frame keys expand linearly). N stays 2 for a plain tween (the fast endpoint path).
+        int frameCount = Math.Max(2, keyframeLen);
+        if (frameCount > 2)
+            foreach (var key in frameArrays.Keys.ToArray())
+                frameArrays[key] = ResampleUniform(frameArrays[key], frameCount);
 
         // transform is a single CSS property: the compositor can't own it while rAF drivers
         // are animating other transform components on the same element.
@@ -642,33 +718,41 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         {
             samples = SampleTweenProgress(config);
             durationMs = config.Duration * 1000;
-            easing = await LinearEasingSupportedAsync()
-                ? BuildLinearEasing(samples)
-                : BmEaseFunctions.ToCssString(config);
+            if (await LinearEasingSupportedAsync())
+            {
+                easing = BuildLinearEasing(samples);
+            }
+            else if (BmEaseFunctions.HasFaithfulCssEasing(config))
+            {
+                easing = BmEaseFunctions.ToCssString(config);
+            }
+            else
+            {
+                // Elastic/bounce can't be expressed as a CSS curve and the browser lacks linear()
+                // support - run it exactly on the rAF engine instead of shipping a wrong easing.
+                return null;
+            }
         }
 
-        // Two keyframes composed from the FULL transform state so untouched components persist,
-        // with identical function order in both frames (required for piecewise interpolation).
-        var fromStyles = new Dictionary<string, object>();
-        var toStyles = new Dictionary<string, object>();
-        if (touchesTransform)
+        // N keyframes composed from the FULL transform state so untouched components persist, with
+        // identical function order across frames (required for piecewise interpolation). frameCount
+        // is 2 for a plain tween (from/to) and the keyframe length otherwise.
+        var frameStyles = new Dictionary<string, object>[frameCount];
+        var opacityKey = targets.Keys.FirstOrDefault(k => k.Equals("opacity", StringComparison.OrdinalIgnoreCase));
+        for (int j = 0; j < frameCount; j++)
         {
-            var fromT = new Dictionary<string, double>(state.Transforms, StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, (from, _)) in targets)
-                if (BmotionTransformComposer.IsTransformProp(key)) fromT[key] = from;
-            var toT = new Dictionary<string, double>(fromT, StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, (_, to)) in targets)
-                if (BmotionTransformComposer.IsTransformProp(key)) toT[key] = to;
-
-            var fromStr = BmotionTransformComposer.Build(fromT);
-            var toStr = BmotionTransformComposer.Build(toT);
-            fromStyles["transform"] = string.IsNullOrEmpty(fromStr) ? "none" : fromStr;
-            toStyles["transform"] = string.IsNullOrEmpty(toStr) ? "none" : toStr;
-        }
-        if (targets.TryGetValue("opacity", out var opacity))
-        {
-            fromStyles["opacity"] = BmotionCssFormat.Num(opacity.From);
-            toStyles["opacity"] = BmotionCssFormat.Num(opacity.To);
+            var frame = new Dictionary<string, object>();
+            if (touchesTransform)
+            {
+                var tj = new Dictionary<string, double>(state.Transforms, StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, frames) in frameArrays)
+                    if (BmotionTransformComposer.IsTransformProp(key)) tj[key] = frames[j];
+                var str = BmotionTransformComposer.Build(tj);
+                frame["transform"] = string.IsNullOrEmpty(str) ? "none" : str;
+            }
+            if (opacityKey != null)
+                frame["opacity"] = BmotionCssFormat.Num(frameArrays[opacityKey][j]);
+            frameStyles[j] = frame;
         }
 
         bool infinite = config.IsInfiniteRepeat;
@@ -683,6 +767,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             DurationMs = durationMs,
             Progress = samples,
             Values = targets,
+            Frames = frameCount > 2 ? frameArrays : null,
             Iterations = infinite ? -1 : config.Repeat,
             Mirror = direction == "alternate",
         };
@@ -696,7 +781,19 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             ["direction"] = direction,
         };
 
-        return new WaapiOffload(plan, [fromStyles, toStyles], timing);
+        return new WaapiOffload(plan, frameStyles, timing);
+    }
+
+    // Resamples a keyframe array onto <paramref name="n"/> uniformly-spaced points via linear
+    // interpolation. Identity for arrays already at n uniform frames; expands a 2-frame [from,to]
+    // to n linear points. Keeps every animated key on one aligned grid for the WAAPI keyframes.
+    private static double[] ResampleUniform(double[] frames, int n)
+    {
+        if (frames.Length == n) return frames;
+        var result = new double[n];
+        for (int j = 0; j < n; j++)
+            result[j] = BmotionElementAnimationState.WaapiPlan.KeyframeLerp(frames, (double)j / (n - 1));
+        return result;
     }
 
     /// <summary>

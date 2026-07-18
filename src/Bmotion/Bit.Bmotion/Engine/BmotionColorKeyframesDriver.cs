@@ -11,6 +11,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
     private readonly bool _isInfinite;
     private readonly BmRepeatType _repeatType;
     private readonly double _repeatDelayMs;
+    private readonly BmColorSpace _colorSpace;
     private readonly Action<string> _apply;
 
     private double _startTime = -1;
@@ -63,6 +64,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         _isInfinite = config.IsInfiniteRepeat;
         _repeatType = config.RepeatType;
         _repeatDelayMs = config.RepeatDelay * 1000;
+        _colorSpace = config.ColorSpace;
         _apply = apply;
 
         int n = frames.Length;
@@ -103,7 +105,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         // Fall back to the raw target frame string when a color couldn't be parsed
         // (matches the string Lerp returning 'to' for unparseable input).
         _apply(ca != null && cb != null
-            ? BmotionColorInterpolator.Lerp(ca, cb, easedT)
+            ? BmotionColorInterpolator.Lerp(ca, cb, easedT, _colorSpace)
             : _curFrames[seg + 1]);
 
         if (t >= 1.0)

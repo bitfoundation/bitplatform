@@ -2,10 +2,6 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
-</CascadingValue>
-
 @{
     var _selectedItem = Sticky ? SelectedItem : null;
 }
@@ -100,44 +96,19 @@
      style="@Styles?.Callout"
      class="bit-mnb-cal @GetCalloutCss() @Classes?.Callout">
     <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
-        @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+        @if (Options is not null || ChildContent is not null)
         {
-            var isSelected = item == SelectedItem;
-            if (Sticky && isSelected) continue;
-
-            var template = GetTemplate(item);
-            var isEnabled = GetIsEnabled(item);
-
-            <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
-                <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
-                        role="menuitem"
-                        type="@_buttonType.GetValue()"
-                        tabindex="@(isEnabled ? 0 : -1)"
-                        disabled="@(isEnabled is false)"
-                        aria-disabled="@(isEnabled is false)"
-                        style="@GetStyle(item);@Styles?.ItemButton"
-                        class="bit-mnb-itm @GetClass(item) @Classes?.ItemButton">
-                    @if (template is not null)
-                    {
-                        @template(item)
-                    }
-                    else if (ItemTemplate is not null)
-                    {
-                        @ItemTemplate(item)
-                    }
-                    else
-                    {
-                        var itemIcon = GetIcon(item);
-                        @if (itemIcon is not null)
-                        {
-                            <i style="@Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @Classes?.ItemIcon" />
-                        }
-                        <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
-                            @GetText(item)
-                        </span>
-                    }
-                </button>
-            </li>
+            <CascadingValue Value="this" IsFixed="true">
+                @(Options ?? ChildContent)
+            </CascadingValue>
+        }
+        else
+        {
+            @for (int i = 0; i < _items.Count; i++)
+            {
+                var item = _items[i];
+                <_BitMenuButtonItem @key="@GetItemKey(item, i.ToString())" MenuButton="this" Item="item" />
+            }
         }
     </ul>
 </div>

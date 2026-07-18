@@ -36,7 +36,7 @@
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
 
-        <EnableConfigurationBindingGenerator>false</EnableConfigurationBindingGenerator>
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 

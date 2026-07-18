@@ -3,10 +3,6 @@
 @typeparam TItem
 @typeparam TValue
 
-<CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
-</CascadingValue>
-
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="radiogroup"
@@ -30,10 +26,20 @@
         }
     </label>
 
-    <div style="@Styles?.Container" class="bit-chg-cnt @Classes?.Container">
-        @foreach (var item in _items)
+    <div id="@_optionsContainerId" style="@Styles?.Container" class="bit-chg-cnt @Classes?.Container">
+        @if (Options is not null || ChildContent is not null)
         {
-            <_BitChoiceGroupItem Item="item" ChoiceGroup="this" />
+            <CascadingValue Value="this" IsFixed="true">
+                @(Options ?? ChildContent)
+            </CascadingValue>
+        }
+        else
+        {
+            @for (int i = 0; i < _items.Count; i++)
+            {
+                var item = _items[i];
+                <_BitChoiceGroupItem @key="@($"{UniqueId}-{i}")" Item="item" ChoiceGroup="this" />
+            }
         }
     </div>
 

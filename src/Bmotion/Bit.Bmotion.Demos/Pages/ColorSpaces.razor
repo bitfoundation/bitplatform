@@ -1,0 +1,61 @@
+@page "/color"
+
+<h1>Color spaces</h1>
+
+<div class="demo-section">
+    <h2>Perceptual OKLab vs sRGB</h2>
+    <p>
+        By default colors interpolate per-channel in <strong>sRGB</strong> (Framer Motion's default),
+        which drags complementary transitions through a muddy grey. Opt into
+        <strong>BmColorSpace.Oklab</strong> per-transition (or globally on
+        <code>&lt;BmotionConfig ColorSpace="…"&gt;</code>) to keep mid-points vivid.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span style="font-size:.78rem; color:#888">sRGB - blue → yellow</span>
+            <Bmotion Animate="@(_on ? _yellow : _blue)"
+                     Transition="Bm.Tween(1.6)">
+                <div class="swatch" style="background:#0000ff" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span style="font-size:.78rem; color:#888">OKLab - blue → yellow</span>
+            <Bmotion Animate="@(_on ? _yellow : _blue)"
+                     Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
+                <div class="swatch" style="background:#0000ff" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
+        @(_on ? "Back to blue" : "To yellow")
+    </button>
+
+    <CodeSnippet Code="@_code" />
+</div>
+
+<style>
+    .swatch { width: 160px; height: 80px; border-radius: 10px; }
+</style>
+
+@code {
+    private bool _on;
+
+    private static readonly BmProps _blue = Bm.To(backgroundColor: "#0000ff");
+    private static readonly BmProps _yellow = Bm.To(backgroundColor: "#ffdd00");
+
+    private const string _code = """
+        @* Per-transition color space (sRGB is the default) *@
+        <Bmotion Animate="Bm.To(backgroundColor: "#ffdd00")"
+                 Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
+            <div class="swatch" />
+        </Bmotion>
+
+        @* …or globally for a whole subtree *@
+        <BmotionConfig ColorSpace="BmColorSpace.Oklab">
+            ...
+        </BmotionConfig>
+        """;
+}

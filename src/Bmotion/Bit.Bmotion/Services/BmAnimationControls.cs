@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Bit.Bmotion;
 /// <summary>
 /// Controls for an in-flight programmatic animation started by
-/// <see cref="BmotionAnimateService.AnimateAsync(string,BmProps,BmTransition?,BmStagger?)"/>.
+/// <see cref="BmotionAnimateService"/>.
 /// <para>The object is directly awaitable - <c>await controls</c> waits for the animation to complete.</para>
 /// <para>
 /// <see cref="Stop"/> freezes the animation at its current (intermediate) values; <see cref="Complete"/>

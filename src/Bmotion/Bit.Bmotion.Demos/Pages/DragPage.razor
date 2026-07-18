@@ -127,12 +127,80 @@
     <CodeSnippet Code="@_dragEventsCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Nested drag &amp; propagation</h2>
+    <p>
+        By default a drag <strong>stops propagation</strong>, so dragging a nested element doesn't also
+        drag its draggable parent (motion.dev's default). Set <strong>DragPropagation="true"</strong> on
+        the child to let both move together. Constraints are also re-measured live if the container
+        resizes mid-drag.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="height:240px;">
+            <span style="position:absolute;top:.5rem;left:.75rem;font-size:.72rem;color:#888">child isolates (default)</span>
+            <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()" DragElastic="0.2">
+                <div class="drag-parent">
+                    <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+                        <div class="drag-child" />
+                    </Bmotion>
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="height:240px;">
+            <span style="position:absolute;top:.5rem;left:.75rem;font-size:.72rem;color:#888">child propagates</span>
+            <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()" DragElastic="0.2">
+                <div class="drag-parent">
+                    <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmDragConstraints.Parent()">
+                        <div class="drag-child" />
+                    </Bmotion>
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_nestedCode" />
+</div>
+
+<style>
+    .drag-parent {
+        width: 150px; height: 150px; border-radius: 12px; cursor: grab;
+        background: rgba(108,71,255,.12); border: 1px solid rgba(108,71,255,.3);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .drag-child {
+        width: 54px; height: 54px; border-radius: 10px; cursor: grab;
+        background: linear-gradient(135deg, #6c47ff, #ff4785);
+    }
+</style>
+
 @code {
     private string _dragInfo = "Drag the box";
     private readonly BmDragControls _thumbControls = new();
 
     void HandleDragStart() => _dragInfo = "Dragging…";
     void HandleDragEnd()   => _dragInfo = "Released";
+
+    private const string _nestedCode = """
+        @* Default: child drag stops propagation - only the child moves, parent stays put *@
+        <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+            <div class="drag-parent">
+                <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+                    <div class="drag-child" />
+                </Bmotion>
+            </div>
+        </Bmotion>
+
+        @* Opt in with DragPropagation="true" - dragging the child moves both *@
+        <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+            <div class="drag-parent">
+                <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmDragConstraints.Parent()">
+                    <div class="drag-child" />
+                </Bmotion>
+            </div>
+        </Bmotion>
+        """;
 
     private const string _handleControlsCode = """
         @using Bit.Bmotion

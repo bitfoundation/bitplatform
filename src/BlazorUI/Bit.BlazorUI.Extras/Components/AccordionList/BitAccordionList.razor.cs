@@ -13,8 +13,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     private string? _internalExpandedKey;
     private List<string> _internalExpandedKeys = [];
     private readonly HashSet<string> _expandedKeys = [];
-    private BitAccordionClassStyles? _itemClasses;
-    private BitAccordionClassStyles? _itemStyles;
+    internal BitAccordionClassStyles? _itemClasses;
+    internal BitAccordionClassStyles? _itemStyles;
 
 
 
@@ -157,6 +157,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         }
 
         await UpdateBoundKeys();
+        RefreshOptions();
         StateHasChanged();
     }
 
@@ -177,6 +178,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         }
 
         await UpdateBoundKeys();
+        RefreshOptions();
         StateHasChanged();
     }
 
@@ -325,6 +327,10 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             }
         }
 
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // accordion list's own parameters (Styles, ExpandedKey(s), ...) change, so push a re-render to each one.
+        RefreshOptions();
+
         await base.OnParametersSetAsync();
     }
 
@@ -470,7 +476,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         _internalExpandedKeys = GetOrderedExpandedKeys();
     }
 
-    private async Task HandleOnItemClick(TItem item)
+    internal async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
@@ -522,6 +528,23 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         await OnToggle.InvokeAsync(item);
 
         await UpdateBoundKeys();
+
+        // A toggle can affect other items too (single-expand mode collapses the previously expanded
+        // item), and the click handler runs on the clicked item's renderer, so both the registered
+        // options and the accordion list itself need an explicit re-render.
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    private void RefreshOptions()
+    {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
+        foreach (var item in _items)
+        {
+            (item as BitAccordionListOption)?.InternalStateHasChanged();
+        }
     }
 
     private async Task UpdateBoundKeys()
@@ -571,13 +594,13 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         };
     }
 
-    private bool IsItemExpanded(TItem item)
+    internal bool IsItemExpanded(TItem item)
     {
         var key = GetItemKey(item);
         return key.HasValue() && _expandedKeys.Contains(key!);
     }
 
-    private RenderFragment<bool>? GetItemHeaderTemplate(TItem item)
+    internal RenderFragment<bool>? GetItemHeaderTemplate(TItem item)
     {
         var itemTemplate = GetHeaderTemplate(item);
         if (itemTemplate is not null) return _ => itemTemplate(item);
@@ -590,7 +613,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return null;
     }
 
-    private RenderFragment? GetItemBody(TItem item)
+    internal RenderFragment? GetItemBody(TItem item)
     {
         // The option's plain inline content (ChildContent) is rendered as-is.
         if (item is BitAccordionListOption listOption && listOption.ChildContent is not null)
@@ -609,19 +632,19 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return null;
     }
 
-    private BitIconInfo? GetItemExpanderIcon(TItem item)
+    internal BitIconInfo? GetItemExpanderIcon(TItem item)
     {
         return GetExpanderIcon(item) ?? ExpanderIcon;
     }
 
-    private string? GetItemExpanderIconName(TItem item)
+    internal string? GetItemExpanderIconName(TItem item)
     {
         return GetExpanderIconName(item) ?? ExpanderIconName;
     }
 
 
 
-    private string? GetItemKey(TItem? item)
+    internal string? GetItemKey(TItem? item)
     {
         if (item is null) return null;
 
@@ -664,7 +687,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         item.SetValueToProperty(NameSelectors.Key.Name, value);
     }
 
-    private string? GetClass(TItem? item)
+    internal string? GetClass(TItem? item)
     {
         if (item is null) return null;
 
@@ -688,7 +711,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
-    private string? GetStyle(TItem? item)
+    internal string? GetStyle(TItem? item)
     {
         if (item is null) return null;
 
@@ -712,7 +735,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private string? GetTitle(TItem? item)
+    internal string? GetTitle(TItem? item)
     {
         if (item is null) return null;
 
@@ -736,7 +759,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
     }
 
-    private string? GetDescription(TItem? item)
+    internal string? GetDescription(TItem? item)
     {
         if (item is null) return null;
 
@@ -760,7 +783,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return item.GetValueFromProperty<string?>(NameSelectors.Description.Name);
     }
 
-    private bool GetIsEnabled(TItem? item)
+    internal bool GetIsEnabled(TItem? item)
     {
         if (item is null) return false;
 

@@ -774,6 +774,15 @@
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>扫描二维码或输入上述密钥后，您的两因素认证应用将为您提供唯一代码。请在下面的确认框中输入代码。</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>出于安全考虑，几分钟后您将从包括本设备在内的所有设备上退出登录。请重新登录。</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>修改密码</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>您的密码已成功修改。</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>两因素认证已启用。</value>
   </data>
@@ -982,18 +991,18 @@
     <value>替代文本</value>
   </data>
   <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>页</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>共</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>管理面板</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} 项</value>
-  </data>
-  <data name="Page" xml:space="preserve">
-    <value>页</value>
-  </data>
-  <data name="Of" xml:space="preserve">
-    <value>共</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>过去 30 天产品数量</value>
@@ -1364,4 +1373,102 @@
   <data name="ImageNotCarError" xml:space="preserve">
     <value>提供的图像不包含汽车。</value>
   </data>
+    <!--#if (multitenant == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>租户</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>管理所有租户</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>管理所有租户</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>管理我的租户</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>管理我的租户</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>新建租户</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>添加租户</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>编辑租户</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>离开租户</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>您确定要离开 {0} 租户吗？</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>您已成功离开该租户。</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>切换租户</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>邀请用户加入 {0}</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>邀请</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>已成功邀请该用户。</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>该用户已是此租户的成员。</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>租户名称 '{0}' 已被占用。</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>未找到租户。</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} 必须是由小写字母、数字和连字符组成的有效子域名（例如 my-tenant）。</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>输入租户名称</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>输入租户标题</value>
+  </data>
+    <data name="Domain" xml:space="preserve">
+    <value>域名</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>输入租户自定义域名（例如 myapp.com）</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} 必须是不含协议或路径的有效域名（例如 myapp.com）。</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>域名 '{0}' 已被占用。</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>您尚未选择任何租户。切换到您的某个租户，或创建一个新租户即可开始。</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} 邀请您加入 {1}。打开 {2} 并登录即可进入该租户。</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>切换</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>接受</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>待处理的邀请</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>当前租户</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>未激活</value>
+  </data>
+    <!--#endif-->
 </root>

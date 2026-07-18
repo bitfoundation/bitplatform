@@ -62,7 +62,7 @@ public partial class IdentityController
         var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
 
         var user = await userManager.FindByIdAsync(credential.UserId.ToString())
-                    ?? throw new ResourceNotFoundException();
+                    ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
 
@@ -82,7 +82,7 @@ public partial class IdentityController
         var (verifyResult, credential) = await Verify(clientResponse, cancellationToken);
 
         var user = await userManager.FindByIdAsync(credential.UserId.ToString())
-                    ?? throw new ResourceNotFoundException();
+                    ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
 
@@ -97,7 +97,7 @@ public partial class IdentityController
 
         var key = new string([.. response.Challenge.Select(b => (char)b)]);
         var options = await cache.GetOrSetAsync<AssertionOptions>(key,
-            async _ => throw new ResourceNotFoundException(),
+            async _ => throw new ResourceNotFoundException().WithData("Reason", "Assertion options not found in cache."),
             token: cancellationToken);
 
 
@@ -105,7 +105,7 @@ public partial class IdentityController
         // await cache.RemoveAsync(key, token: cancellationToken);
 
         var credential = (await DbContext.WebAuthnCredential.FirstOrDefaultAsync(c => c.Id == clientResponse.RawId, cancellationToken))
-                            ?? throw new ResourceNotFoundException();
+                            ?? throw new ResourceNotFoundException().WithData("Reason", "WebAuthn credential not found.");
 
         var verifyResult = await fido2.MakeAssertionAsync(new MakeAssertionParams
         {

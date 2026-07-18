@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+@* The Boilerplate-style Found block: the built-in AuthorizeRouteView consumes the RouteData
+   Brouter supplies, providing [Authorize] handling and the NotAuthorized/Authorizing UI slots. *@
+<Brouter AppAssembly="@typeof(FoundAuthHost).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData">
+            <NotAuthorized><div data-testid="not-authorized">denied</div></NotAuthorized>
+            <Authorizing><div data-testid="authorizing">authorizing</div></Authorizing>
+        </AuthorizeRouteView>
+    </Found>
+</Brouter>

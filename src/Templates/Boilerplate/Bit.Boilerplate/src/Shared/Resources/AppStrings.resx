@@ -774,6 +774,15 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
   </data>
+    <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>For your security, you'll be signed out of all your devices, including this one, within a few minutes. Please sign in again.</value>
+  </data>
+    <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+    <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Your password has been changed successfully.</value>
+  </data>
     <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Two-factor authentication has been enabled.</value>
   </data>
@@ -982,18 +991,18 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Alt text</value>
   </data>
     <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>of</value>
+  </data>
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
   </data>
     <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} items</value>
-  </data>
-    <data name="Page" xml:space="preserve">
-    <value>Page</value>
-  </data>
-    <data name="Of" xml:space="preserve">
-    <value>of</value>
   </data>
     <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Last 30 days product count</value>
@@ -1364,4 +1373,102 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="ImageNotCarError" xml:space="preserve">
     <value>The provided image does not contain a car.</value>
   </data>
+    <!--#if (multitenant == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>Tenant</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>Manage all tenants</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>Manage all tenants</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>Manage my tenants</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>Manage my tenants</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>Create new tenant</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>Add tenant</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>Edit tenant</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>Leave tenant</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>Are you sure you want to leave the {0} tenant?</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>You have left the tenant successfully.</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>Switch tenant</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>Invite user to {0}</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>Invite</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>The user has been invited successfully.</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>This user is already a member of the tenant.</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>The tenant name '{0}' is already taken.</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>Tenant could not be found.</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} must be a valid sub domain name consisting of lowercase letters, digits and hyphens (e.g. my-tenant).</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>Enter tenant name</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>Enter tenant title</value>
+  </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Domain</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Enter tenant custom domain (e.g. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} must be a valid domain name with no scheme or path (e.g. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>The domain '{0}' is already taken.</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>You haven't selected a tenant yet. Switch to one of your tenants or create a new one to get started.</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} has invited you to join {1}. Open {2} and sign in to be in that tenant.</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>Switch</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>Pending invitation</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>Current tenant</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+    <!--#endif-->
 </root>

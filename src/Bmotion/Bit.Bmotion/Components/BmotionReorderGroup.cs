@@ -20,7 +20,7 @@ namespace Bit.Bmotion;
 public sealed class BmotionReorderGroup<TItem> : ComponentBase
 {
     [Inject] private BmotionAnimationEngine Engine { get; set; } = null!;
-    [Inject] private BmotionInterop Interop { get; set; } = null!;
+    [Inject] private IBmotionInterop Interop { get; set; } = null!;
 
     /// <summary>The list being reordered. Supports <c>@bind-Items</c>.</summary>
     [Parameter, EditorRequired] public List<TItem> Items { get; set; } = null!;

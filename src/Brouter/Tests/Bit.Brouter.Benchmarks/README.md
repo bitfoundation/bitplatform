@@ -1,4 +1,4 @@
-# Bit.Brouter route-scalability benchmark
+﻿# Bit.Brouter route-scalability benchmark
 
 A dedicated console harness for the one scalability question the code review raised:
 

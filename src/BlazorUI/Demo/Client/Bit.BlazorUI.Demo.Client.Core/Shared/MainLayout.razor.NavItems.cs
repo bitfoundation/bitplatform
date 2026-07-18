@@ -71,7 +71,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = ["/components/basic-list"] },
-                new() { Text = "Carousel", Url = "/components/carousel", Description = "Slideshow" },
+                new() { Text = "Carousel", Url = "/components/carousel", Description = "SlideShow" },
                 new() { Text = "Swiper", Url = "/components/swiper", Description = "TouchSlider" },
                 new() { Text = "Timeline", Url = "/components/timeline" },
             ]
@@ -169,12 +169,14 @@ public partial class MainLayout
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
-                new() { Text = "PdfReader", Url = "/components/pdfreader" },
+                new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "ProModal", Url = "/components/promodal" },
                 new() { Text = "ProModalService", Url = "/components/promodalservice" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
+                new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "Skeleton, Loading, AI" },
+                new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

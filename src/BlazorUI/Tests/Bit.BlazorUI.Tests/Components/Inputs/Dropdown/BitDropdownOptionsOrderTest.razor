@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitDropdown TItem="BitDropdownOption<string>" TValue="string">
+    <BitDropdownOption TValue="string" Text="First" Value="@("1")" />
+    @if (ShowMiddle)
+    {
+        <BitDropdownOption TValue="string" Text="Middle" Value="@("2")" />
+    }
+    <BitDropdownOption TValue="string" Text="Last" Value="@("3")" />
+</BitDropdown>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+}

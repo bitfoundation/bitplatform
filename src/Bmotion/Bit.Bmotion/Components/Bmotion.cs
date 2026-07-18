@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmotion;
@@ -17,8 +18,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 {
     // ── Injected services ──────────────────────────────────────────────────────
     [Inject] private BmotionAnimationEngine Engine { get; set; } = null!;
-    [Inject] private BmotionInterop Interop { get; set; } = null!;
+    [Inject] private IBmotionInterop Interop { get; set; } = null!;
     [Inject] private BmotionLayoutRegistry LayoutRegistry { get; set; } = null!;
+    [Inject] private BitBmotionOptions Options { get; set; } = null!;
+    [Inject] private ILogger<Bmotion>? Logger { get; set; }
 
     // ── Cascaded contexts ──────────────────────────────────────────────────────
     [CascadingParameter] private BmotionPresenceContext? PresenceCtx { get; set; }
@@ -160,13 +163,21 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// <summary>Lock the drag to the dominant movement axis once detected.</summary>
     [Parameter] public bool DragDirectionLock { get; set; }
 
+    /// <summary>
+    /// Whether a drag on this element also propagates to draggable ancestors. Default <c>false</c>
+    /// (motion.dev's default): the drag stops propagation so a nested draggable doesn't also drag its
+    /// draggable parent. Set <c>true</c> to let both move together.
+    /// </summary>
+    [Parameter] public bool DragPropagation { get; set; }
+
     /// <summary>Transition used for constraint snap-back / snap-to-origin. Defaults to a spring.</summary>
     [Parameter] public BmTransition? DragTransition { get; set; }
 
     // ── Layout ─────────────────────────────────────────────────────────────────
     /// <summary>
-    /// Automatic FLIP layout animation: <c>Layout="true"</c> (position + size) or
-    /// <c>Layout="BmLayout.Position"</c> (position only, no scale distortion).
+    /// Automatic FLIP layout animation: <c>Layout="true"</c> (position + size, with direct children
+    /// counter-scaled and border-radius corrected so nothing distorts) or
+    /// <c>Layout="BmLayout.Position"</c> (position only, the cheapest option).
     /// </summary>
     [Parameter] public BmLayout Layout { get; set; }
 
@@ -210,6 +221,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private string _id = $"bm-{Guid.NewGuid():N}";
     private DotNetObjectReference<Bmotion>? _dotnet;
     private bool _initialized;
+    private bool _idChangeWarned;
     private bool _isExiting;
     private BmTarget? _prevAnimate;
     private BmotionVariantContext? _ownVariantCtx;
@@ -425,9 +437,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     private async Task InitialiseAsync()
     {
-        // Reduced-motion is opt-in: only probe the OS preference when this element is
-        // inside a <BmotionConfig>. Elements without a config always animate normally.
-        if (ConfigCtx is not null)
+        // Probe the OS preference only when it can actually change ShouldReduceMotion()'s result:
+        // a local <BmotionConfig ReduceMotion> wins outright, and Always/Never ignore the OS - so
+        // detection there is a wasted interop round-trip. This mirrors ShouldReduceMotion().
+        bool osPreferenceMatters = ConfigCtx?.ReduceMotion is null && Options.ReducedMotion switch
+        {
+            BmReducedMotionMode.User => true,
+            BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,
+            _ => ConfigCtx is not null, // IgnoreUnlessConfigured: OS matters only inside a config
+        };
+        if (osPreferenceMatters)
             await Engine.EnsureReducedMotionDetectedAsync();
 
         // Register with C# engine (applies initial values synchronously)
@@ -489,6 +508,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private async Task HandleParameterUpdateAsync()
     {
         if (_isExiting) return;
+
+        // The id is the element's engine identity, adopted once at first render; changing the Id
+        // parameter afterwards is unsupported and silently misbehaves. Warn once so it's diagnosable.
+        if (!_idChangeWarned && !string.IsNullOrWhiteSpace(Id) && Id != _id)
+        {
+            _idChangeWarned = true;
+            Logger?.LogWarning(
+                "Bit.Bmotion: the Id parameter changed from '{OldId}' to '{NewId}' after first render. " +
+                "The id is the element's immutable engine identity; the change is ignored.", _id, Id);
+        }
 
         // Recovery: if the engine evicted this element after a driver fault (see
         // BmotionAnimationEngine.ComputeFrame), it silently stopped animating. Re-register and
@@ -651,16 +680,37 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // Programmatic API
     // ════════════════════════════════════════════════════════════════════════════
 
-    public async ValueTask AnimateAsync(BmProps props, BmTransition? transition = null)
+    public async ValueTask AnimateAsync(BmProps props, BmTransition? transition = null, CancellationToken cancellationToken = default)
     {
-        var config = transition?.ToConfig() ?? BuildEffectiveTransition(props);
-        await Engine.AnimateToAsync(_id, props.ToJsDictionary(), config);
+        ArgumentNullException.ThrowIfNull(props);
+        if (cancellationToken.IsCancellationRequested) return;
+        // Apply CSS safe mode to the imperative API too, matching the declarative ResolveProps path.
+        props = GuardCss(props)!;
+        var values = props.ToJsDictionary();
+        // Route the explicit transition through the same pipeline as the declarative path so it
+        // inherits the global color space AND respects reduced motion / TransitionSpeed - a raw
+        // transition.ToConfig() would bypass ShouldReduceMotion() and animate when it shouldn't.
+        var config = BuildEffectiveTransition(props, transition);
+        // Cancellation stops just the properties this call animates (Stop with null keys would
+        // clobber unrelated animations on the same element). The registration is scoped to this
+        // call so repeated calls with a long-lived token don't accumulate callbacks.
+        using var registration = cancellationToken.CanBeCanceled
+            ? cancellationToken.Register(() => Engine.Stop(_id, values.Keys.ToArray()))
+            : default;
+        await Engine.AnimateToAsync(_id, values, config);
     }
 
-    public void Set(BmProps props) => Engine.SetInstant(_id, props.ToJsDictionary());
-
-    public async ValueTask SetAsync(BmProps props)
+    public void Set(BmProps props)
     {
+        ArgumentNullException.ThrowIfNull(props);
+        Engine.SetInstant(_id, GuardCss(props)!.ToJsDictionary());
+    }
+
+    public async ValueTask SetAsync(BmProps props, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(props);
+        if (cancellationToken.IsCancellationRequested) return;
+        props = GuardCss(props)!;
         Engine.SetInstant(_id, props.ToJsDictionary());
         // Flush synchronous style update to DOM as individual declarations (never via cssText,
         // which would replace the element's entire inline style).
@@ -867,13 +917,35 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private BmProps? ResolveProps(BmTarget? target)
     {
         if (target == null || target.IsDisabled) return null;
-        if (target.HasProps) return target.Props;
+        if (target.HasProps) return GuardCss(target.Props);
         if (target.IsVariant)
         {
             var name = target.Variant!;
-            return Variants?.Get(name, Custom) ?? VariantCtx?.Variants?.Get(name, Custom);
+            return GuardCss(Variants?.Get(name, Custom) ?? VariantCtx?.Variants?.Get(name, Custom));
         }
         return null;
+    }
+
+    /// <summary>
+    /// Opt-in CSS-injection safe mode (<see cref="BitBmotionOptions.CssSafeMode"/>): validates every
+    /// string-valued CSS declaration a target carries, warning or throwing on a rejected value. A
+    /// no-op (returns immediately) when the mode is Off, so the default path pays nothing.
+    /// </summary>
+    private BmProps? GuardCss(BmProps? props)
+    {
+        if (props is null || Options.CssSafeMode == BmCssSafeMode.Off) return props;
+        foreach (var (prop, value) in props.EnumerateCssStringValues())
+        {
+            if (BmotionCssValidator.IsSafe(value)) continue;
+            if (Options.CssSafeMode == BmCssSafeMode.Throw)
+                throw new InvalidOperationException(
+                    $"Bit.Bmotion CSS safe mode rejected the value for '{prop}': \"{value}\". " +
+                    "It contains characters/sequences that could break out of the inline style.");
+            Logger?.LogWarning(
+                "Bit.Bmotion CSS safe mode: rejected value for '{Prop}' on element '{Id}': {Value}",
+                prop, _id, value);
+        }
+        return props;
     }
 
     /// <summary>
@@ -889,25 +961,64 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private bool ShouldReduceMotion()
     {
-        if (ConfigCtx is null) return false;
-        return ConfigCtx.ReduceMotion ?? Engine.OsPrefersReducedMotion;
+        // A local <BmotionConfig ReduceMotion="true|false"> is always an explicit override.
+        if (ConfigCtx?.ReduceMotion is bool configReduce) return configReduce;
+
+        return Options.ReducedMotion switch
+        {
+            BmReducedMotionMode.Always => true,
+            BmReducedMotionMode.Never => false,
+            BmReducedMotionMode.User => Engine.OsPrefersReducedMotion,
+            // IgnoreUnlessConfigured (back-compat): OS preference matters only inside a config.
+            _ => ConfigCtx is not null && Engine.OsPrefersReducedMotion,
+        };
     }
+
+    // Under reduced motion we keep opacity and color animating (Motion's "user" semantics) while
+    // transform/layout/dimension changes snap instantly. These are the properties that survive.
+    private static readonly string[] _reducedRetainedProps =
+        ["opacity", "backgroundColor", "color", "borderColor", "outlineColor", "fill", "stroke"];
 
     /// <summary>An instant (zero-duration) transition used when motion is reduced.</summary>
     private static BmotionTransitionConfig InstantTransition()
         => new() { Type = BmotionTransitionType.Tween, Duration = 0, Delay = 0 };
 
-    private BmotionTransitionConfig? BuildEffectiveTransition(BmProps? props = null)
+    /// <summary>
+    /// Builds the reduced-motion transition: an instant base (so transforms/layout/dimensions snap)
+    /// with per-property overrides that let opacity and color keep animating with their normal
+    /// transition. This is softer and more correct than collapsing every property to instant.
+    /// </summary>
+    internal static BmotionTransitionConfig BuildReducedTransition(BmotionTransitionConfig? normal)
     {
-        // Reduced motion: collapse every animation to an instant state change.
-        if (ShouldReduceMotion()) return InstantTransition();
+        // A default-constructed config matches the engine's null-transition fallback (see
+        // BmotionElementAnimationState.AnimateTo), so retained props animate with normal timing.
+        var retained = normal ?? new BmotionTransitionConfig();
+        var reduced = InstantTransition();
+        reduced.Properties = new Dictionary<string, BmotionTransitionConfig>(StringComparer.Ordinal);
+        foreach (var key in _reducedRetainedProps)
+            reduced.Properties[key] = retained;
+        return reduced;
+    }
 
-        // Resolution order: transition embedded in the target itself, then the component's
-        // Transition parameter, then the surrounding <BmotionConfig> default.
-        var t = props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
+    private BmotionTransitionConfig? BuildEffectiveTransition(BmProps? props = null, BmTransition? explicitTransition = null)
+    {
+        var normal = BuildNormalTransition(props, explicitTransition);
+        // Reduced motion: snap transforms/layout but keep opacity/color animating.
+        return ShouldReduceMotion() ? BuildReducedTransition(normal) : normal;
+    }
+
+    private BmotionTransitionConfig? BuildNormalTransition(BmProps? props, BmTransition? explicitTransition = null)
+    {
+        // Resolution order: an explicit transition (programmatic AnimateAsync) wins, then the one
+        // embedded in the target, then the component's Transition, then the <BmotionConfig> default.
+        var t = explicitTransition ?? props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
         if (t == null) return null;
-        // ToConfig always returns a fresh instance, so it is safe to mutate below.
-        var config = t.ToConfig();
+        // ToConfig returns a fresh instance (safe to mutate below) and inherits the global
+        // <BmotionConfig> color space wherever this transition - or any per-property override -
+        // didn't set its own, so a per-property color override doesn't silently fall back to sRGB
+        // under a global OKLab config (the engine uses the per-key config verbatim, see
+        // BmotionElementAnimationState.AnimateTo).
+        var config = t.ToConfig(ConfigCtx?.ColorSpace);
         if (ConfigCtx?.TransitionSpeed is double speed && speed != 1.0)
         {
             // TransitionSpeed is a rate: 2 = twice as fast, 0.5 = half speed, <= 0 = instant.
@@ -934,11 +1045,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     private BmotionTransitionConfig BuildEffectiveTransitionWithDelay(double extraDelay, BmProps? props = null)
     {
-        // Reduced motion stays instant - stagger delays are skipped too.
-        if (ShouldReduceMotion()) return InstantTransition();
+        // Reduced motion: keep opacity/color animating but skip the stagger delay (accessibility).
+        if (ShouldReduceMotion()) return BuildReducedTransition(BuildNormalTransition(props));
 
-        // BuildEffectiveTransition returns a fresh instance (or none existed), so mutating is safe.
-        var t = BuildEffectiveTransition(props) ?? new BmotionTransitionConfig();
+        // BuildNormalTransition returns a fresh instance (or none existed), so mutating is safe.
+        var t = BuildNormalTransition(props) ?? new BmotionTransitionConfig();
         if (extraDelay > 0) t.Delay += extraDelay;
         return t;
     }
@@ -959,6 +1070,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             d["dragElastic"] = DragElastic.ToJsObject();
             if (DragConstraints != null) d["dragConstraints"] = DragConstraints.ToJsObject();
             if (DragDirectionLock) d["dragDirectionLock"] = true;
+            if (DragPropagation) d["dragPropagation"] = true;
             if (!string.IsNullOrWhiteSpace(DragHandle)) d["dragHandle"] = DragHandle;
             if (!DragListener) d["dragListener"] = false;
         }

@@ -229,7 +229,7 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [Fr
     
     Support for Open Telemetry means that all telemetry platforms (Including but not limited to Sentry, Azure Application Insights, Datadog, New Relic etc.) can be used to collect and visualize logs, traces and metrics.
 
-    **Sampling** is enabled to reduce costs: unknown/unhandled exceptions are always captured (100%), while known/transient exceptions, warnings, and info logs are sampled at **5%**. See [`AppOpenTelemetryProcessor.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppOpenTelemetryProcessor.cs) and [`AppLoggingSampler.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppLoggingSampler.cs).
+    **Sampling** is enabled to reduce costs: unknown/unhandled exceptions and slow activities are always captured (100%), while known/transient exceptions, warnings, and info logs are sampled at **5%**. See [`AppOpenTelemetryProcessor.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppOpenTelemetryProcessor.cs) and [`AppLoggingSampler.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppLoggingSampler.cs).
 
 * **Server.Web**
 
@@ -244,7 +244,6 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [Fr
 * **Client.Maui**
 
     Client.Maui uses **OpenTelemetry** for distributed tracing and metrics, and uses Azure Application Insights JavaScript SDK for Blazor Hybrid WebView JavaScript errors, navigation tracking etc.
-    It also leverages `Sentry.Maui` to capture native crashes.
 
 * **Client.Web (Blazor WebAssembly)**
 

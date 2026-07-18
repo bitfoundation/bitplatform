@@ -24,9 +24,9 @@ namespace Bit.Bmotion;
 public sealed class BmotionAnimateService
 {
     private readonly BmotionAnimationEngine _engine;
-    private readonly BmotionInterop _interop;
+    private readonly IBmotionInterop _interop;
 
-    public BmotionAnimateService(BmotionAnimationEngine engine, BmotionInterop interop)
+    public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop)
     {
         ArgumentNullException.ThrowIfNull(engine);
         ArgumentNullException.ThrowIfNull(interop);
@@ -48,9 +48,10 @@ public sealed class BmotionAnimateService
     /// Falls back to the global <see cref="BmotionConfig"/> default when omitted.
     /// </param>
     /// <param name="stagger">
-    /// Optional per-element start-delay generator (see <see cref="Bm.Stagger"/>) applied in
+    /// Optional per-element start-delay generator (see <see cref="BmStagger"/>) applied in
     /// document order across the matched elements.
     /// </param>
+    /// <param name="cancellationToken">Cancelling stops the animation and resolves the controls.</param>
     /// <returns>
     /// An <see cref="BmAnimationControls"/> that can be <c>await</c>ed or stopped early.
     /// </returns>
@@ -58,13 +59,31 @@ public sealed class BmotionAnimateService
         string selector,
         BmProps keyframes,
         BmTransition? transition = null,
-        BmStagger? stagger = null)
+        BmStagger? stagger = null,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(selector))
             throw new ArgumentException("Selector must not be null or whitespace.", nameof(selector));
         ArgumentNullException.ThrowIfNull(keyframes);
+        // Skip interop + engine registration when already cancelled (see Bmotion.AnimateAsync).
+        if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var ids = await _interop.ResolveOrRegisterBySelectorAsync(selector);
-        return StartAnimations(ids, keyframes, transition, stagger);
+        return WithCancellation(StartAnimations(ids, keyframes, transition, stagger), cancellationToken);
+    }
+
+    // A resolved, no-op controls for a pre-cancelled call: no elements registered, already settled.
+    private BmAnimationControls CancelledControls()
+        => new(Array.Empty<string>(), _engine, Task.CompletedTask, static () => { });
+
+    // Wires a CancellationToken to an in-flight animation: cancelling stops it (and resolves the
+    // controls). The registration is disposed once the animation settles so it doesn't leak.
+    private static BmAnimationControls WithCancellation(BmAnimationControls controls, CancellationToken cancellationToken)
+    {
+        if (!cancellationToken.CanBeCanceled) return controls;
+        if (cancellationToken.IsCancellationRequested) { controls.Stop(); return controls; }
+        var registration = cancellationToken.Register(controls.Stop);
+        controls.WhenCompleteAsync().ContinueWith(_ => registration.Dispose(), TaskScheduler.Default);
+        return controls;
     }
 
     /// <summary>
@@ -76,17 +95,20 @@ public sealed class BmotionAnimateService
     /// </param>
     /// <param name="keyframes">Target animation properties.</param>
     /// <param name="transition">Optional transition configuration.</param>
+    /// <param name="cancellationToken">Cancelling stops the animation and resolves the controls.</param>
     /// <returns>
     /// An <see cref="BmAnimationControls"/> that can be <c>await</c>ed or stopped early.
     /// </returns>
     public async ValueTask<BmAnimationControls> AnimateAsync(
         ElementReference elementReference,
         BmProps keyframes,
-        BmTransition? transition = null)
+        BmTransition? transition = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(keyframes);
+        if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var id = await _interop.ResolveOrRegisterByRefAsync(elementReference);
-        return StartAnimations([id], keyframes, transition, stagger: null);
+        return WithCancellation(StartAnimations([id], keyframes, transition, stagger: null), cancellationToken);
     }
 
     /// <summary>
@@ -173,9 +195,10 @@ public sealed class BmotionAnimateService
     /// Runs a multi-step <see cref="BmSequence"/> timeline. Segments start at their computed
     /// timeline positions; the returned controls can await, stop, pause or speed up the whole run.
     /// </summary>
-    public async ValueTask<BmAnimationControls> RunAsync(BmSequence sequence)
+    public async ValueTask<BmAnimationControls> RunAsync(BmSequence sequence, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sequence);
+        if (cancellationToken.IsCancellationRequested) return CancelledControls();
 
         // Resolve every segment's targets up front so registration/refcounting is symmetric.
         var starts = new List<(string[] ids, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)>();
@@ -233,7 +256,7 @@ public sealed class BmotionAnimateService
             _ => controls.OnCompletionSettled(),
             TaskScheduler.Default);
 
-        return controls;
+        return WithCancellation(controls, cancellationToken);
     }
 
     // ────────────────────────────────────────────────────────────────────────────

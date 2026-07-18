@@ -1,6 +1,6 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
 
-<DemoExample Title="Gradient fill" RazorCode="@gradientRazorCode" CsharpCode="@gradientCsharpCode" Id="area-gradient">
+<DemoExample Title="Gradient fill" RazorCode="@gradientRazorCode" CsharpCode="@gradientCsharpCode" Id="area-gradient" PreventRenderForMcpClient>
     <div class="example-desc">vertical gradient under a smooth line</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Gradient()" Options="_noLegend" /></div></div>
 </DemoExample>
@@ -20,7 +20,7 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@Boundaries()" Options="_legendBottom" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Radial gradient" RazorCode="@radialFillRazorCode" CsharpCode="@radialFillCsharpCode" Id="area-radial">
+<DemoExample Title="Radial gradient" RazorCode="@radialFillRazorCode" CsharpCode="@radialFillCsharpCode" Id="area-radial" PreventRenderForMcpClient>
     <div class="example-desc">center→edge radial fill under the line</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="@RadialFill()" Options="_noLegend" /></div></div>
 </DemoExample>

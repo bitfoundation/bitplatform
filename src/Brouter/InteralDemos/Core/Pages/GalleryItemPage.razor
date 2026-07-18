@@ -1,4 +1,4 @@
-@* Detail page of the View Transitions gallery. The hero re-declares the clicked tile's
+﻿@* Detail page of the View Transitions gallery. The hero re-declares the clicked tile's
    view-transition-name, completing the shared-element morph (see GalleryPage). *@
 
 @if (Item is null)
@@ -33,7 +33,7 @@ else
 }
 
 @code {
-    [Parameter, BrouterParameter] public int Id { get; set; }
+    [Parameter] public int Id { get; set; }
 
     private GalleryItem? Item => GalleryCatalog.Find(Id);
     private GalleryItem? Prev => GalleryCatalog.Find(Id - 1);

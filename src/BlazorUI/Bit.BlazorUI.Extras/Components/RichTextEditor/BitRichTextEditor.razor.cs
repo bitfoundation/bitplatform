@@ -126,6 +126,22 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     /// <summary>
+    /// Returns the current content of the editor as plain text: visible text only, with block
+    /// boundaries and line breaks rendered as newlines and all markup removed.
+    /// </summary>
+    public async ValueTask<string> GetTextAsync()
+    {
+        // Before the JS bridge is set up there is no editor DOM to read and interop may not be
+        // available (prerendering); the cached content is empty at that point, so return empty.
+        if (_initialized is false) return "";
+        // While source view is active the WYSIWYG element is detached/hidden and the raw-HTML
+        // textarea (_sourceText) drives the live content, so extract the text from the source
+        // buffer instead of the stale editor DOM in that mode.
+        if (_inSourceView) return await _js.BitRichTextEditorHtmlToText(_editorRef, _sourceText);
+        return await _js.BitRichTextEditorGetText(_editorRef);
+    }
+
+    /// <summary>
     /// Runs a raw editing command against the editor.
     /// </summary>
     public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);

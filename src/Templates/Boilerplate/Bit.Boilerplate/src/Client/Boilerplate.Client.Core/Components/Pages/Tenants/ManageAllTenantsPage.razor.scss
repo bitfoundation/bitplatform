@@ -1,0 +1,29 @@
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    width: 100%;
+}
+
+.grid-container {
+    overflow: auto;
+    height: calc(#{$bit-env-height-available} - 12.1rem);
+
+    @include lt-md {
+        height: calc(#{$bit-env-height-available} - 17rem);
+    }
+
+    @include lt-sm {
+        height: calc(#{$bit-env-height-available} - 16rem);
+    }
+}
+
+::deep .tenants-grid {
+    width: 100%;
+
+    // The grid's inner track container is width:fit-content by default; stretch it so the
+    // flexible (unwidthed) columns fill the viewport instead of collapsing to their minimum.
+    .bit-dtg-table {
+        width: 100%;
+    }
+}

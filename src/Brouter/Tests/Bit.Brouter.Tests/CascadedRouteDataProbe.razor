@@ -1,0 +1,7 @@
+﻿@* An observer of Brouter's cascaded framework RouteData - the pattern for route-data publishers,
+   breadcrumbs and telemetry components that need the matched page type without a Found template. *@
+<div data-testid="probe">@(RouteData?.PageType.Name ?? "null")</div>
+
+@code {
+    [CascadingParameter] public RouteData? RouteData { get; set; }
+}

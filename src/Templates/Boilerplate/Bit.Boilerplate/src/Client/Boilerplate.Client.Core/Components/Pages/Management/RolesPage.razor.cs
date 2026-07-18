@@ -34,7 +34,11 @@ public partial class RolesPage
     {
         await base.OnInitAsync();
 
-        featureNavItems = [.. AppFeatures.GetAll().GroupBy(p => p.Group).Select(g => new BitNavItem
+        // Only surface the features the current user actually holds
+        var authState = await AuthenticationStateTask;
+        var features = AppFeatures.GetGlobalAdminFeatures().Where(f => authState.User.HasFeature(f.Value));
+
+        featureNavItems = [.. features.GroupBy(p => p.Group).Select(g => new BitNavItem
         {
             Text = g.Key.Name,
             ChildItems = [.. g.Select(p => new BitNavItem

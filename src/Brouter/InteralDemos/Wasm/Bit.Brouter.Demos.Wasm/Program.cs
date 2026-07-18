@@ -1,4 +1,4 @@
-using Bit.Brouter.Demos.Wasm.Components;
+﻿using Bit.Brouter.Demos.Wasm.Components;
 using Bit.Brouter.Demos.Wasm.Client;
 
 var builder = WebApplication.CreateBuilder(args);

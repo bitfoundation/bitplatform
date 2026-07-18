@@ -1,0 +1,7 @@
+﻿@* The flat, zero-template authorization setup: NotAuthorized/Authorizing directly on the Brouter
+   make [Authorize] pages work through the framework's AuthorizeRouteView - no Found template, no
+   RouteView/AuthorizeRouteView in the app's routing markup. *@
+<Brouter AppAssembly="@typeof(AutoAuthHost).Assembly">
+    <NotAuthorized><div data-testid="auto-denied">denied</div></NotAuthorized>
+    <Authorizing><div data-testid="auto-authorizing">authorizing</div></Authorizing>
+</Brouter>

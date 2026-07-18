@@ -16,8 +16,10 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 
     [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
+    [AutoInject] protected TimeProvider TimeProvider = default!;
+
     /// <summary>
-    /// <inheritdoc cref="Services.PubSubService"/>
+    /// <inheritdoc cref="Infrastructure.Services.PubSubService"/>
     /// </summary>
     [AutoInject] protected PubSubService PubSubService = default!;
 
@@ -54,7 +56,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         get
         {
             if (cts == null)
-                throw new OperationCanceledException(); // Component already disposed.
+                throw new OperationCanceledException("Component already disposed.");
             cts.Token.ThrowIfCancellationRequested();
             return cts.Token;
         }
