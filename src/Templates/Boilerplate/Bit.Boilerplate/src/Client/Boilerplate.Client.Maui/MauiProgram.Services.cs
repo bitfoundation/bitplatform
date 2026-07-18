@@ -114,7 +114,7 @@ public static partial class MauiProgram
 
             //-:cnd:noEmit
 #if Android
-        services.AddClientMauiProjectAndroidServices(builder.Configuration);
+            services.AddClientMauiProjectAndroidServices(builder.Configuration);
 #elif iOS
         services.AddClientMauiProjectIosServices(builder.Configuration);
 #elif Mac

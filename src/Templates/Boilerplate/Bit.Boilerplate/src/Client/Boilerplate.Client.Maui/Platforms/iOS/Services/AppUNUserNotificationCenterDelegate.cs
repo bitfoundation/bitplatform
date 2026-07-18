@@ -2,6 +2,7 @@ using Foundation;
 using UserNotifications;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
+
 public partial class AppUNUserNotificationCenterDelegate : UNUserNotificationCenterDelegate
 {
     public override void DidReceiveNotificationResponse(UNUserNotificationCenter center, UNNotificationResponse response, Action completionHandler)
