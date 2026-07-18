@@ -8,8 +8,11 @@ public sealed class BitThemeProvider : ComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The element used for the root node. Ignored when no wrapping element is needed
-    /// (i.e. when both <see cref="Theme"/> and <see cref="ParentTheme"/> are <see langword="null"/>).
+    /// The element used for the root node. Ignored whenever no wrapping element is rendered - that is,
+    /// when there is nothing to apply at this layer: both <see cref="Theme"/> and
+    /// <see cref="ParentTheme"/> are <see langword="null"/>, or <see cref="Theme"/> is
+    /// <see langword="null"/> and an unnamed <see cref="ParentTheme"/> is passed through directly
+    /// (no <see cref="ThemeName"/> to re-expose it under).
     /// </summary>
     /// <remarks>
     /// When a wrapping element is rendered it defaults to <c>display:contents</c> so it produces no

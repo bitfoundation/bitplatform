@@ -141,8 +141,10 @@ public sealed class BitThemeSsrTests
     [TestMethod]
     public void BuildRootThemeAttributesIgnoresTamperedDefaultButKeepsValidPreference()
     {
-        // An invalid default is ignored; a valid concrete preference is still emitted safely.
-        Assert.AreEqual("bit-theme=\"dark\"",
-            BitThemeSsr.BuildRootThemeAttributes("dark", defaultTheme: "\"><b>"));
+        // A "system" preference exercises the default-theme emission path (the branch that consults
+        // the fallback). A tampered default must be rejected there too, leaving the safe system
+        // marker with no injected attribute or markup - never the tampered value.
+        Assert.AreEqual("bit-theme-system",
+            BitThemeSsr.BuildRootThemeAttributes("system", defaultTheme: "\"><b>"));
     }
 }

@@ -51,6 +51,9 @@ public sealed class BitThemeColorDerivationTests
         Assert.IsNull(v.DarkActive,  "DarkActive");
         Assert.IsNull(v.LightHover,  "LightHover");
         Assert.IsNull(v.LightActive, "LightActive");
+        Assert.IsNull(v.Disabled,     "Disabled");
+        Assert.IsNull(v.DisabledText, "DisabledText");
+        Assert.IsNull(v.Focus,        "Focus");
     }
 
     [TestMethod]

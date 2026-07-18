@@ -167,7 +167,9 @@ public class BitThemeManager : IAsyncDisposable
     {
         if (_jsNotifierRegistered) return;
         if (_jsNotifierReceiver is null) return; // no-op when constructed without a receiver
-        if (_disposed) return; // semaphore has been disposed; do not attempt to wait on it.
+        // Fail fast so public operations (which all funnel through here) do not proceed into JS
+        // interop after the manager has been disposed.
+        ObjectDisposedException.ThrowIf(_disposed, this);
         if (_js.IsRuntimeInvalid()) return; // e.g. prerendering / disconnected circuit; retry on next call.
 
         // Serialize concurrent callers (e.g. Task.WhenAll over multiple manager methods) so only one
@@ -177,7 +179,7 @@ public class BitThemeManager : IAsyncDisposable
         try
         {
             if (_jsNotifierRegistered) return;
-            if (_disposed) return; // disposal raced ahead while we were waiting on the semaphore.
+            ObjectDisposedException.ThrowIf(_disposed, this); // disposal raced ahead while we were waiting on the semaphore.
             if (_js.IsRuntimeInvalid()) return;
 
             _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver!);

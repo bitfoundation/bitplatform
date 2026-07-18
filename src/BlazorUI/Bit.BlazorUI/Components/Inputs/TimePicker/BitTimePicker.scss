@@ -42,7 +42,13 @@
             border-color: $clr-err;
         }
 
-        &.bit-tpc-foc .bit-tpc-icn {
+        &.bit-tpc-und .bit-tpc-wrp {
+            // Underlined variant drops the icon border, so surface the error cue on the
+            // underline itself to keep the invalid state visible before focus.
+            border-bottom-color: $clr-err;
+        }
+
+        &.bit-tpc-foc:not(.bit-tpc-und) .bit-tpc-icn {
             @include focus-ring($clr-err-focus);
         }
 
@@ -136,7 +142,7 @@
     }
 }
 
-.bit-tpc-foc {
+.bit-tpc-foc:not(.bit-tpc-und) {
     .bit-tpc-icn {
         @include focus-ring;
     }

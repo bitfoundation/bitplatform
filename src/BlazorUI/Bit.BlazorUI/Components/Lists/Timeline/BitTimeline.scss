@@ -17,9 +17,9 @@
     --bit-tln-dvd-top: 0;
     --bit-tln-dvd-height: 100%;
     --bit-tln-dvd-width: #{spacing(0.25)};
-    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text);
-    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg);
-    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg);
+    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
+    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
+    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
 
     &.bit-dis {
         cursor: default;
@@ -49,7 +49,7 @@
         user-select: none;
         pointer-events: none;
         color: var(--bit-tln-clr-dis);
-        --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis-text);
+        --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
     }
 }
 

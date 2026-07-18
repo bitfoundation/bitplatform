@@ -90,9 +90,10 @@ namespace BitBlazorUI {
 
             // Cookie mirroring is independent of localStorage persistence: an SSR app may want the
             // server to read the preference cookie without necessarily enabling localStorage.
-            if (Theme._initOptions.persistCookie) {
-                Theme._persistCookie = true;
-            }
+            // Derive from the merged _initOptions on every call (not just when truthy) so a later
+            // init({ persistCookie: false }) can clear the flag, while an init that omits the key
+            // keeps the previously merged value.
+            Theme._persistCookie = !!Theme._initOptions.persistCookie;
 
             let theme = Theme._initOptions.theme || Theme._initOptions.default || Theme._lightTheme;
 
@@ -110,9 +111,9 @@ namespace BitBlazorUI {
                 theme = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
             }
 
-            if (Theme._initOptions.persist) {
-                Theme._persist = true;
-            }
+            // Derive on every call (see persistCookie note above) so a later init({ persist: false })
+            // clears the flag, while an omitted key preserves the merged value.
+            Theme._persist = !!Theme._initOptions.persist;
 
             // Restore a previously persisted preference. getPersisted() reads localStorage first and
             // falls back to the preference cookie, so this also covers a cookie-only setup
