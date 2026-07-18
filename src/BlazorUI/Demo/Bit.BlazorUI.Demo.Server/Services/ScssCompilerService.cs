@@ -46,7 +46,29 @@ public static class ScssCompilerService
             "../../../Bit.BlazorUI.Assets/Styles/bit.blazorui.assets.scss:../../../Bit.BlazorUI.Assets/wwwroot/styles/bit.blazorui.assets.css",
         };
 
-        var command = $"{string.Join(" ", sassPathsToWatch)} --load-path=. --style compressed --silence-deprecation=import --update --watch --color";
+        // dart-sass --watch only watches files that live under a watched root: the directory of each
+        // compiled entry point plus every --load-path directory. The library bundle entry points sit in
+        // each project's Styles/ folder, but their component partials are imported from a sibling
+        // Components/ tree (e.g. bit.blazorui.scss -> ... -> Styles/components.scss -> ../Components/Buttons/
+        // ActionButton/BitActionButton.scss). Those partials are outside every watched root, so editing one
+        // would NOT retrigger a compile and the css would go stale on hot reload. Adding each Components/
+        // folder as a load-path brings it under a watched root. Do not remove these: without them, editing a
+        // component's scss (BitButton.scss, etc.) silently stops hot-reloading its styles.
+        var loadPaths = new List<string>
+        {
+            "--load-path=.",
+            "--load-path=../../../Bit.BlazorUI/Components",
+            "--load-path=../../../Bit.BlazorUI.Extras/Components",
+        };
+
+        // --no-source-map is required for style hot reload to work. dart-sass emits a *.css.map next to
+        // every *.css; dotnet watch watches those too and pushes each change to the browser. The injected
+        // aspnetcore-browser-refresh.js only does a live, in-place stylesheet swap for paths ending in
+        // ".css" - for any other static file (including ".css.map") it falls back to a full location.reload().
+        // With source maps on, every scss edit therefore fires a burst of full-page reloads that race with
+        // (and clobber) the clean css swaps, so the page never reliably shows the change. Dropping the maps
+        // leaves only ".css" updates, which hot-swap cleanly without reloading the page.
+        var command = $"{string.Join(" ", sassPathsToWatch)} {string.Join(" ", loadPaths)} --style compressed --no-source-map --silence-deprecation=import --update --watch --color";
 
         // Scss watching is best-effort development tooling: any failure below must not fault this task,
         // which would otherwise surface as an unobserved error in Program.cs's Task.WhenAll at shutdown.
