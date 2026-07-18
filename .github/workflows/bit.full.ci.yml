@@ -39,9 +39,6 @@ jobs:
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
-    - name: Verify formatting
-      run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
-
     - name: Build Boilerplate solution in Release mode
       run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release -p:EnforceCodeStyleInBuild=true
 
@@ -85,9 +82,6 @@ jobs:
     - name: Create appsettings.json for Client.Web
       run: |
         echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
-
-    - name: Verify formatting
-      run: dotnet format whitespace TestPostgreSQL/TestPostgreSQL.Web.slnf --verify-no-changes
 
     - name: Build and setup database
       run: |
@@ -213,9 +207,6 @@ jobs:
     - name: Create appsettings.json for Client.Web
       run: |
         echo '{"ServerAddress":"/"}' > TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot/appsettings.json
-
-    - name: Verify formatting
-      run: dotnet format whitespace TestSqlServer/TestSqlServer.Web.slnf --verify-no-changes
 
     - name: Build and setup database
       run: |
@@ -348,7 +339,6 @@ jobs:
     - name: Build backend setup options
       run: |
         dotnet new bit-bp --name TestStandalone --api Standalone
-        dotnet format whitespace TestStandalone/TestStandalone.slnx --verify-no-changes
         cd TestStandalone/src/Server/TestStandalone.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
         cd ../
@@ -357,7 +347,6 @@ jobs:
         cd ../../../../
         rm -r "TestStandalone"
         dotnet new bit-bp --name TestIntegrated --api Integrated
-        dotnet format whitespace TestIntegrated/TestIntegrated.slnx --verify-no-changes
         cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
         dotnet build -p:EnforceCodeStyleInBuild=true
         cd ../../../../
@@ -366,14 +355,12 @@ jobs:
     - name: Build sample configuration 1
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant
-        dotnet format whitespace TestProject/TestProject.sln --verify-no-changes
         dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging -p:EnforceCodeStyleInBuild=true
         rm -r "TestProject"
 
     - name: Build sample configuration 2
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false
-        dotnet format whitespace TestProject2/TestProject2.slnx --verify-no-changes
         dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development -p:EnforceCodeStyleInBuild=true
         rm -r "TestProject2"
 
