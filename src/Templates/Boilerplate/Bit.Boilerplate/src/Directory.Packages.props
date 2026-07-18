@@ -14,7 +14,7 @@
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.1" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.892" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.34" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.35" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="4.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
@@ -50,7 +50,7 @@
         <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.16.0-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.3" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.16.12" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.16.15" />
         <PackageVersion Include="Velopack" Version="1.2.0" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.10" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.10" />
@@ -74,17 +74,17 @@
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
         <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.8.0" />
         <PackageVersion Include="Microsoft.Extensions.Telemetry" Version="10.8.0" />
-        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.16.0" />
-        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.16.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.16.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.16.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.16.0" />
-        <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.23" />
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.17.0" />
+        <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.24" />
         <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.9.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="6.6.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="6.6.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="6.6.0" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="125.1.0.1" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="6.7.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="6.7.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="6.7.0" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="125.1.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="14.1.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" Version="10.1.2" />
@@ -106,9 +106,9 @@
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.10" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="8.0.0" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="8.0.1" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.100.5" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="8.0.6" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="8.0.6" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.100.6" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.4.6" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Azure.Redis" Version="13.4.6" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.4.6" />
@@ -124,7 +124,7 @@
         <PackageVersion Include="QRCoder" Version="1.8.0" />
         <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.15.0" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
-        <PackageVersion Include="FluentStorage" Version="8.0.0" />
+        <PackageVersion Include="FluentStorage" Version="8.0.8" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
@@ -132,7 +132,7 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="4.13.1" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="4.13.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.10" />
@@ -150,6 +150,7 @@
         <PackageVersion Include="FakeItEasy" Version="9.0.1" />
         <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.8.0" />
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.61.0" />
+        <PackageVersion Include="bunit" Version="2.7.2" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" Version="2.6.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.OpenTelemetry" Version="2.6.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.6.0" />

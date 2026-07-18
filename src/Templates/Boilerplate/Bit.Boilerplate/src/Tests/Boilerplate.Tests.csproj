@@ -15,6 +15,7 @@
         <PackageReference Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Microsoft.Extensions.TimeProvider.Testing" />
         <PackageReference Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Otp.NET" />
         <PackageReference Include="Microsoft.Playwright.MSTest.v4" />
+        <PackageReference Include="bunit" />
         <PackageReference Include="MSTest" />
     </ItemGroup>
 

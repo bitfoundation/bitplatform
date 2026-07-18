@@ -1,11 +1,14 @@
+using Bunit;
 using Hangfire;
 using System.Net;
 using System.Net.Sockets;
-using Boilerplate.Server.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
 using Boilerplate.Tests.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Infrastructure;
 
@@ -15,6 +18,7 @@ namespace Boilerplate.Tests.Infrastructure;
 public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null) : IAsyncDisposable
 {
     private WebApplication? webApp;
+    private WebApplicationBuilder? builder;
 
     public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
     public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
@@ -25,7 +29,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
 
-        var builder = WebApplication.CreateBuilder(options: new()
+        builder = WebApplication.CreateBuilder(options: new()
         {
             EnvironmentName = Environments.Development,
             ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
@@ -113,6 +117,45 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
 
             await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Creates a bUnit <see cref="BunitContext"/> for rendering the client app's pages/components in-memory
+    /// (no browser and no WebAssembly runtime) while still talking to this running test server for real HTTP calls,
+    /// which is dramatically faster than a full Playwright end-to-end run and lets a test focus on a single
+    /// page/component.
+    /// </summary>
+    public BunitContext CreateBunitContext()
+    {
+        var ctx = new BunitContext();
+
+        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // These bUnit services will be replaced with the real server services below, so remove them first to avoid duplicates.
+        ctx.Services.RemoveAll<HttpClient>();
+        ctx.Services.RemoveAll<IAuthorizationService>();
+        ctx.Services.RemoveAll<AuthenticationStateProvider>();
+        ctx.Services.RemoveAll<IAuthorizationPolicyProvider>();
+
+        var currentBunitServices = ctx.Services.ToList();
+
+        // Share the whole server container (same as Blazor Server), except the services that only work with a
+        // live Blazor circuit - bUnit already registered its own working test doubles for these.
+        foreach (var descriptor in builder!.Services)
+        {
+            if (currentBunitServices.Any(s => s.ServiceType == descriptor.ServiceType))
+                continue;
+
+            ctx.Services.Add(descriptor);
+        }
+
+        // There is no browser storage (nor HttpContext) in bUnit, so fake it in-memory (also used by the API
+        // integration tests). Registered last so it wins over the server-side storage copied above.
+        ctx.Services.AddScoped<IStorageService, TestStorageService>();
+
+        ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        return ctx;
     }
 
     public async ValueTask DisposeAsync()
