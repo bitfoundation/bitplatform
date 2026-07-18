@@ -17,13 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- dotnet watch: watch the scss sources so edits trigger the sass target on rebuilds. Rooted with
-             $(MSBuildProjectDirectory) because dotnet watch resolves relative Watch items of referenced
-             projects against the startup project's directory. -->
-        <Watch Include="$(MSBuildProjectDirectory)\**\*.scss" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 

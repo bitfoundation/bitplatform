@@ -39,12 +39,12 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Models" />
 
-        <!-- dotnet watch: watch the scss/ts sources (so edits trigger the sass/tsc targets on rebuilds) AND
-             the generated .razor.css files (so dotnet watch's scoped-css hot reload pushes style changes to
+        <!-- dotnet watch: watch the ts sources (so edits trigger the tsc target on rebuilds) AND the
+             generated .razor.css files (so dotnet watch's scoped-css hot reload pushes style changes to
              the browser when the in-app scss compiler regenerates them - see ScssCompilerService in the demo
-             server project). Paths are rooted with $(MSBuildProjectDirectory) because dotnet watch resolves
-             relative Watch items of referenced projects against the startup project's directory. -->
-        <Watch Include="$(MSBuildProjectDirectory)\**\*.scss" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
+             server project). Scss sources are intentionally not watched here: the in-app compiler recompiles
+             them without a rebuild. Paths are rooted with $(MSBuildProjectDirectory) because dotnet watch
+             resolves relative Watch items of referenced projects against the startup project's directory. -->
         <Watch Include="$(MSBuildProjectDirectory)\**\*.ts" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\**\*.d.ts" />
         <Watch Include="$(MSBuildProjectDirectory)\**\*.razor.css" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
     </ItemGroup>
