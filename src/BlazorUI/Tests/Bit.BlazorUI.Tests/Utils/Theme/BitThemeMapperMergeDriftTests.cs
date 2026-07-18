@@ -50,6 +50,21 @@ public sealed class BitThemeMapperMergeDriftTests
         AssertNoDrift(direct, merged, "empty-over-parent");
     }
 
+    [TestMethod]
+    public void ChildWinsOverParentForEveryMappedTokenWhenBothPopulated()
+    {
+        // Both sides fully populated with DISTINCT sentinels: the merge must take the child's value
+        // for every mapped token. The empty-side tests above only prove a populated side survives a
+        // merge against an empty one - they never exercise the child-wins-on-conflict precedence.
+        var child = BuildSentinelTheme("child");
+        var parent = BuildSentinelTheme("parent");
+
+        var childDirect = BitThemeUtilities.ToCssVariables(child);
+        var merged = BitThemeUtilities.ToCssVariables(BitThemeUtilities.Merge(child, parent));
+
+        AssertNoDrift(childDirect, merged, "child-wins-over-parent");
+    }
+
     private static void AssertNoDrift(IReadOnlyDictionary<string, string> direct, IReadOnlyDictionary<string, string> merged, string scenario)
     {
         var missing = direct
@@ -76,16 +91,16 @@ public sealed class BitThemeMapperMergeDriftTests
     /// unique sentinel value. We populate every reachable string slot, not just the ones the mapper
     /// emits - Merge needs to handle the full model graph in case the mapper is later extended.
     /// </summary>
-    private static BitTheme BuildSentinelTheme()
+    private static BitTheme BuildSentinelTheme(string prefix = "sentinel")
     {
         var theme = new BitTheme();
         var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
         var counter = 0;
 
-        Walk(theme, visited, ref counter);
+        Walk(theme, prefix, visited, ref counter);
         return theme;
 
-        static void Walk(object obj, HashSet<object> visited, ref int counter)
+        static void Walk(object obj, string prefix, HashSet<object> visited, ref int counter)
         {
             if (!visited.Add(obj)) return;
 
@@ -97,7 +112,7 @@ public sealed class BitThemeMapperMergeDriftTests
 
                 if (pt == typeof(string))
                 {
-                    prop.SetValue(obj, $"sentinel-{counter++}");
+                    prop.SetValue(obj, $"{prefix}-{counter++}");
                 }
                 else if (!pt.IsValueType)
                 {
@@ -117,7 +132,7 @@ public sealed class BitThemeMapperMergeDriftTests
                         if (val is null) continue;
                         prop.SetValue(obj, val);
                     }
-                    Walk(val, visited, ref counter);
+                    Walk(val, prefix, visited, ref counter);
                 }
             }
         }

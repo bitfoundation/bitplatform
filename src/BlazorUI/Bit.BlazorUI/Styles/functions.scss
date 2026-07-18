@@ -63,4 +63,10 @@ $html-font-size: 16px;
 @mixin focus-underline-ring($color: $clr-pri-focus) {
     outline: none;
     box-shadow: inset 0 calc(-1 * #{$shp-focus-ring-width}) 0 0 #{$color};
+
+    // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
+    // focused input with no visible indicator. Restore a real outline so focus stays perceivable.
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+    }
 }

@@ -75,13 +75,29 @@ public partial class BitMediaQuery : BitComponentBase
         // A custom Query takes precedence; otherwise defer to the predefined ScreenQuery, whose
         // media query is built on the JS side from the live --bit-bp-* theme breakpoints so a
         // customized BitTheme.Layout.Breakpoints is honored (rather than baking fixed px here).
-        var screenQuery = Query is null ? ScreenQuery?.ToString() : null;
-        var effectiveKey = Query ?? screenQuery;
+        // A blank Query is treated as absent so a bound-but-empty value still lets ScreenQuery win.
+        var customQuery = Query.HasValue() ? Query : null;
+        var screenQuery = customQuery is null ? ScreenQuery?.ToString() : null;
+        var effectiveKey = customQuery ?? screenQuery;
 
-        if (effectiveKey.HasValue() && effectiveKey != _query)
+        if (effectiveKey.HasValue())
         {
-            _query = effectiveKey;
-            await _js.BitMediaQuerySetup(_Id, Query, screenQuery, _dotnetObj);
+            if (effectiveKey != _query)
+            {
+                _query = effectiveKey;
+                await _js.BitMediaQuerySetup(_Id, customQuery, screenQuery, _dotnetObj);
+            }
+        }
+        else if (_query is not null)
+        {
+            // Neither a Query nor a ScreenQuery resolves anymore: tear down the previous listener
+            // and reset so a later (re)assignment sets up cleanly.
+            _query = null;
+            try
+            {
+                await _js.BitMediaQueryDispose(_Id);
+            }
+            catch (JSDisconnectedException) { } // circuit gone; nothing to tear down
         }
     }
 

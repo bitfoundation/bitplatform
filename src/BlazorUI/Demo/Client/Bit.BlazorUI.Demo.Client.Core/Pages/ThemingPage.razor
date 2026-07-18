@@ -599,11 +599,15 @@ public void Dispose()
 
             <br />
 
-            <CodeBox Language="csharp">// On the server (Razor / middleware): read the cookie and emit the attribute.
-var preference = Context.Request.Cookies[BitThemeCookie.PreferenceCookieName] ?? "system";
+            <CodeBox Language="csharp">// On the server (Razor / middleware): read the cookie and let the helper build the attributes.
+var preference = Context.Request.Cookies[BitThemeCookie.PreferenceCookieName];
 
-// In your root document:
-&lt;html bit-theme="@@preference" bit-theme-system bit-theme-persist&gt;</CodeBox>
+// BuildRootThemeAttributes emits bit-theme="…" for a concrete preference (correct first paint),
+// or bit-theme-system for "system"/no preference (deferring light/dark to the client script) -
+// so you never emit a contradictory bit-theme + bit-theme-system pair by hand.
+
+// In your root document, render the generated attributes on the &lt;html&gt; element:
+&lt;html @@((MarkupString)BitThemeSsr.BuildRootThemeAttributes(preference)) bit-theme-persist&gt;</CodeBox>
 
             <br />
 
@@ -648,7 +652,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
             <br />
 
-            <CodeBox Language="csharp">var ratio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", "#1A86D8"); // 3.74
+            <CodeBox Language="csharp">var ratio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", "#1A86D8"); // 3.86
 
 bool passesNormal = BitThemeColorContrast.MeetsWcagAaNormalText(ratio); // false
 bool passesLarge  = BitThemeColorContrast.MeetsWcagAaLargeText(ratio);  // true</CodeBox>

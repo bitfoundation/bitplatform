@@ -242,6 +242,8 @@ public sealed class BitThemeProviderTests : BunitTestContext
         });
 
         Assert.AreEqual("#111111", component.Find("span").GetAttribute("data-primary"));
+        // The inline CSS variables (the other propagation surface) must reflect the first theme too.
+        StringAssert.Contains(component.Find("div").GetAttribute("style"), "--bit-clr-pri:#111111");
 
         // A new reference is a real change even when Frozen: the provider must rebuild and propagate.
         var second = new BitTheme();
@@ -253,6 +255,8 @@ public sealed class BitThemeProviderTests : BunitTestContext
         });
 
         Assert.AreEqual("#222222", component.Find("span").GetAttribute("data-primary"));
+        // Both surfaces must update on the reference change, not just the cascade.
+        StringAssert.Contains(component.Find("div").GetAttribute("style"), "--bit-clr-pri:#222222");
     }
 
     [TestMethod]
@@ -270,6 +274,8 @@ public sealed class BitThemeProviderTests : BunitTestContext
         });
 
         StringAssert.Contains(component.Find("section").GetAttribute("style"), "--bit-clr-pri:#111111");
+        // The cascade (the other propagation surface) must also reflect the first value.
+        Assert.AreEqual("#111111", component.Find("span").GetAttribute("data-primary"));
 
         // With Frozen, mutating the held instance in place is intentionally NOT detected: the
         // reference is unchanged so the cached merge + CSS string are reused. Callers opting into
@@ -287,6 +293,9 @@ public sealed class BitThemeProviderTests : BunitTestContext
         StringAssert.Contains(style, "--bit-clr-pri:#111111");
         Assert.IsFalse(style.Contains("--bit-clr-pri:#222222", StringComparison.Ordinal),
             $"Frozen provider should not pick up in-place mutations. Actual: {style}");
+        // The cascade must likewise keep serving the original value; the frozen reference is unchanged
+        // so descendants are never re-cascaded with the mutated token.
+        Assert.AreEqual("#111111", component.Find("span").GetAttribute("data-primary"));
     }
 
     /// <summary>

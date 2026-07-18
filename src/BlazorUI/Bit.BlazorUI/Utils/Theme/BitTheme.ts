@@ -377,7 +377,11 @@ namespace BitBlazorUI {
         }
 
         private static dispatchThemeChange(newTheme: string, oldTheme: string) {
-            Theme._onThemeChange?.(newTheme, oldTheme);
+            // Isolate the application callback: a throwing _onThemeChange must not abort the
+            // _dotnetNotifier notification below (nor the Theme.set flow into syncSystemThemeListener()).
+            try {
+                Theme._onThemeChange?.(newTheme, oldTheme);
+            } catch { /* application callback failed; not actionable here */ }
             const n = Theme._dotnetNotifier;
             if (n) {
                 // Swallow rejections so a disposed circuit / receiver does not surface as an
@@ -438,9 +442,11 @@ namespace BitBlazorUI {
                 existing?.remove();
                 link = document.createElement('link');
                 link.id = linkId;
-                link.rel = 'stylesheet';
                 document.head.appendChild(link);
             }
+            // Set rel on both the reuse and creation paths so a reused <link> that was created with a
+            // different rel is corrected before we point it at the stylesheet href.
+            link.rel = 'stylesheet';
             link.href = href;
         }
 

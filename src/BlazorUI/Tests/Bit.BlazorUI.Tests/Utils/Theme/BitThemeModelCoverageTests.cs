@@ -52,6 +52,21 @@ public sealed class BitThemeModelCoverageTests
             "to exactly one unique CSS variable. If you added a token, add the matching addCssVar(...) entry " +
             "(and the null-coalesce in BitThemeMapper.Merge). A shortfall also occurs when two tokens map to " +
             "the same CSS variable name.");
+
+        // Each sentinel is unique ("sentinel-0" ... "sentinel-{n-1}") and passes through the mapper
+        // verbatim, so the emitted value SET must equal the assigned sentinel set. Comparing the sets
+        // (not just the counts) additionally catches a token routed to the wrong CSS variable or a
+        // hard-coded/constant emit that a count-only check would let slip through.
+        var expectedValues = Enumerable.Range(0, leafCount).Select(i => $"sentinel-{i}").ToHashSet(StringComparer.Ordinal);
+        var emittedValues = emitted.Values.ToHashSet(StringComparer.Ordinal);
+
+        Assert.IsTrue(expectedValues.SetEquals(emittedValues),
+            "The CSS-variable values emitted by BitThemeMapper.MapToCssVariables do not match the unique " +
+            "per-token sentinels; a token is mapped to the wrong CSS variable, emits a constant, or is dropped:\n" +
+            "  missing (assigned but not emitted): " +
+            string.Join(", ", expectedValues.Except(emittedValues).OrderBy(v => v, StringComparer.Ordinal)) + "\n" +
+            "  unexpected (emitted but not assigned): " +
+            string.Join(", ", emittedValues.Except(expectedValues).OrderBy(v => v, StringComparer.Ordinal)));
     }
 
     [TestMethod]
