@@ -774,6 +774,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>När du har skannat QR-koden eller angett nyckeln ovan kommer din tvåfaktorsautentiseringsapp att ge dig en unik kod. Ange koden i bekräftelsefältet nedan.</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>Av säkerhetsskäl loggas du ut från alla dina enheter, inklusive den här, inom några minuter. Logga in igen.</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>Ändra lösenord</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Ditt lösenord har ändrats.</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Tvåfaktorsautentisering har aktiverats.</value>
   </data>

@@ -21,7 +21,8 @@ public class BitPdfViewerTests : BunitTestContext
 
         Assert.IsTrue(root.TextContent.Contains("No document loaded."));
         Assert.IsNotNull(component.Find(".bit-pdv-toolbar"));
-        Assert.IsTrue((root.GetAttribute("style") ?? string.Empty).Contains("height:780px"));
+        // No inline height by default; the responsive height comes from the stylesheet.
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("height:"));
     }
 
     [TestMethod]
@@ -78,6 +79,31 @@ public class BitPdfViewerTests : BunitTestContext
         Assert.AreEqual(1, component.Instance.CurrentPage);
         Assert.IsTrue(component.Instance.HasOutline);
         Assert.IsTrue(component.Find(".bit-pdv-title").TextContent.Contains("hello.pdf"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldLoadAndRenderWithBackgroundRendering()
+    {
+        var loaded = false;
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
+            parameters.Add(p => p.BackgroundRendering, true);
+            parameters.Add(p => p.OnDocumentLoaded, EventCallback.Factory.Create(this, () => loaded = true));
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(loaded);
+            Assert.AreEqual(1, component.Instance.PageCount);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var page = component.Find("[data-page='1']");
+            Assert.IsTrue(page.InnerHtml.Contains("bit-pdv-html-page"));
+        });
     }
 
     [TestMethod]

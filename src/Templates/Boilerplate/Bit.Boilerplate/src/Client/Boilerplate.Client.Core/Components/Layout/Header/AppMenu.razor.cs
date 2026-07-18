@@ -95,7 +95,8 @@ public partial class AppMenu
         if (await AuthManager.SwitchTenant(newTenantId, CurrentCancellationToken))
         {
             NavigationManager.RefreshCurrentPage(); // Re-renders the current page so it reflects the new tenant's data.
-            // If you've changed the layout to show tenant information somewwhere, you may need to use PubSub to notify the layout to re-render.
+            // The layout's tenant display (next to the app version) updates on its own: switching changes the tenant claim, which
+            // triggers the authentication-state change that MainLayout re-resolves the current tenant from (See MainLayout.SetCurrentTenantIfNeeded).
         }
     }
     //#endif

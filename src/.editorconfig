@@ -1,15 +1,16 @@
-# To learn more about .editorconfig see https://aka.ms/editorconfigdocs
+﻿# To learn more about .editorconfig see https://aka.ms/editorconfigdocs
 ###############################
 # Core EditorConfig Options   #
 ###############################
 # All files
 [*]
-indent_style = space
 indent_size = 4
-# Code files
-[*.{cs,csx,vb,vbx}]
-insert_final_newline = true
 charset = utf-8-bom
+indent_style = space
+insert_final_newline = true
+# Shell scripts must not have a BOM: a leading BOM breaks the shebang line and script execution.
+[*.sh]
+charset = utf-8
 ###############################
 # .NET Coding Conventions     #
 ###############################

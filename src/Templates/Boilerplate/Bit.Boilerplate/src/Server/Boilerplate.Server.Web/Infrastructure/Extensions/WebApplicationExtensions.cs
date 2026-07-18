@@ -66,6 +66,30 @@ public static partial class WebApplicationExtensions
                 await context.Response.WriteAsync(siteMap, context.RequestAborted);
             }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
+            // https://llmstxt.org - a markdown file that helps LLMs discover the app's pages.
+            // Unlike sitemap.xml (which has no description element), llms.txt is where the page
+            // descriptions declared in PageUrls actually belong.
+            app.MapGet("/llms.txt", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)] async (context) =>
+            {
+                var baseUrl = context.Request.GetBaseUrl();
+
+                var pages = string.Join(Environment.NewLine, PageUrls.GetPages()
+                    .Select(page => $"- [{page.Url}]({new Uri(baseUrl, page.Url)}): {page.Description}"));
+
+                var llms = @$"# Boilerplate
+
+> Boilerplate is a cross-platform application available on Android, iOS, Windows, macOS and as a Web (PWA) app.
+
+## Pages
+
+{pages}
+";
+
+                context.Response.Headers.ContentType = "text/plain; charset=utf-8";
+
+                await context.Response.WriteAsync(llms, context.RequestAborted);
+            }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
+
             //#if(module == "Sales")
             app.MapGet("/products.xml", [AppResponseCache(SharedMaxAge = 60 * 5)] async (IProductViewController controller, HttpContext context) =>
             {

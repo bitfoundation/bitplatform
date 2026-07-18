@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
@@ -18,7 +19,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
-    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress = default!;
 
     public void OnInit()
     {

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A single content-stream instruction: an operator keyword together with the
@@ -12,9 +12,22 @@ public readonly struct BitPdfOperation
     /// <summary>The operands collected before the operator.</summary>
     public IReadOnlyList<object?> Operands { get; }
 
+    /// <summary>The operator resolved to a compact code for jump-table dispatch.</summary>
+    internal BitPdfOpCode Code { get; }
+
     public BitPdfOperation(string op, IReadOnlyList<object?> operands)
+        : this(op, BitPdfOpCodes.Resolve(op), operands)
+    {
+    }
+
+    /// <summary>
+    /// Fast path for the parser, which already holds the resolved code from the
+    /// interned <see cref="BitPdfCmd"/> and so avoids re-resolving the keyword.
+    /// </summary>
+    internal BitPdfOperation(string op, BitPdfOpCode code, IReadOnlyList<object?> operands)
     {
         Operator = op;
+        Code = code;
         Operands = operands;
     }
 

@@ -1,4 +1,4 @@
-// Color-space handling: the device, ICC-by-component, indexed and separation cases.
+﻿// Color-space handling: the device, ICC-by-component, indexed and separation cases.
 
 
 namespace Bit.BlazorUI;
@@ -22,7 +22,10 @@ internal sealed class BitPdfIndexedColorSpace : BitPdfColorSpace
     public static BitPdfIndexedColorSpace Build(List<object?> arr, IBitPdfXRef xref, BitPdfDict? resources)
     {
         var baseCs = Create(arr.Count > 1 ? arr[1] : null, xref, resources);
-        int hival = xref.FetchIfRef(arr.Count > 2 ? arr[2] : null) is double d ? (int)d : 0;
+        // Indexed hival is a single-byte sample index, so the spec bounds it to 0..255.
+        // Clamp to that range: a negative value would invert GetRgb's clamp bounds (throw),
+        // and a huge one would let index * n overflow. Non-double falls back to 0.
+        int hival = xref.FetchIfRef(arr.Count > 2 ? arr[2] : null) is double d ? Math.Clamp((int)d, 0, 255) : 0;
         byte[] lookup;
         object? lookupObj = xref.FetchIfRef(arr.Count > 3 ? arr[3] : null);
         if (lookupObj is BitPdfString s)

@@ -55,7 +55,7 @@ public class CssValidatorTests
         ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
 
         Assert.ThrowsExactly<InvalidOperationException>(() =>
-            ctx.RenderComponent<Bmotion>(ps => ps
+            ctx.Render<Bmotion>(ps => ps
                 .Add(p => p.Animate, Bm.To(backgroundColor: "red; } body{display:none"))
                 .Add(p => p.ChildContent, Div)));
     }
@@ -65,7 +65,7 @@ public class CssValidatorTests
     {
         using var ctx = new BmotionTestContext(); // default Off
         // Should not throw even with a dangerous value.
-        ctx.RenderComponent<Bmotion>(ps => ps
+        ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(backgroundColor: "red; } body{display:none"))
             .Add(p => p.ChildContent, Div));
     }
@@ -76,7 +76,7 @@ public class CssValidatorTests
         using var ctx = new BmotionTestContext();
         ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
         // A legitimate color must pass.
-        ctx.RenderComponent<Bmotion>(ps => ps
+        ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Animate, Bm.To(backgroundColor: "#ff0000"))
             .Add(p => p.ChildContent, Div));
     }
@@ -86,7 +86,7 @@ public class CssValidatorTests
     {
         using var ctx = new BmotionTestContext();
         ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
-        var cut = ctx.RenderComponent<Bmotion>(ps => ps.Add(p => p.ChildContent, Div));
+        var cut = ctx.Render<Bmotion>(ps => ps.Add(p => p.ChildContent, Div));
 
         // The imperative API must enforce safe mode just like the declarative Animate path.
         Assert.ThrowsExactly<InvalidOperationException>(() =>

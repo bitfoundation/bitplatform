@@ -1,4 +1,4 @@
-// Document parsing: cross-reference resolution, the catalog and page-tree traversal.
+﻿// Document parsing: cross-reference resolution, the catalog and page-tree traversal.
 
 namespace Bit.BlazorUI;
 
@@ -173,7 +173,7 @@ public sealed class BitPdfDocument
         }
     }
 
-    private void Traverse(BitPdfDict node, InheritedAttributes inherited,
+    private void Traverse(BitPdfDict node, in InheritedAttributes inherited,
         List<BitPdfPage> pages, HashSet<int> visited, int depth)
     {
         if (depth > 64)

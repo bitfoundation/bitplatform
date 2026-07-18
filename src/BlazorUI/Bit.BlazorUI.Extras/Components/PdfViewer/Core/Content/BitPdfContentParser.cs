@@ -1,4 +1,4 @@
-// Content-stream preprocessing into operations.
+﻿// Content-stream preprocessing into operations.
 
 namespace Bit.BlazorUI;
 
@@ -50,7 +50,7 @@ public sealed class BitPdfContentParser
                     continue;
                 }
 
-                operations.Add(new BitPdfOperation(op, operands));
+                operations.Add(new BitPdfOperation(op, cmd.OpCode, operands));
                 operands = new List<object?>();
                 continue;
             }
@@ -155,7 +155,7 @@ public sealed class BitPdfContentParser
         }
 
         byte[] data = ReadInlineImageData(dict);
-        return new BitPdfOperation("INLINE_IMAGE", new List<object?> { dict, data });
+        return new BitPdfOperation("INLINE_IMAGE", BitPdfOpCode.InlineImage, new List<object?> { dict, data });
     }
 
     private byte[] ReadInlineImageData(BitPdfDict dict)

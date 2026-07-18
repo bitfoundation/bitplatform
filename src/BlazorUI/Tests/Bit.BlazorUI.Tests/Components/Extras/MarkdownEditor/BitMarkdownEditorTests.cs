@@ -90,7 +90,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         Assert.AreEqual("initial", component.Instance.Value);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Value, "updated");
         });

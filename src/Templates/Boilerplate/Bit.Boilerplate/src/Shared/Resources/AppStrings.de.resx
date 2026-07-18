@@ -774,6 +774,15 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Sobald Sie den QR-Code gescannt oder den obigen Schlüssel eingegeben haben, stellt Ihre Zwei-Faktor-Authentifizierungs-App Ihnen einen eindeutigen Code zur Verfügung. Geben Sie den Code in das Bestätigungsfeld unten ein.</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>Aus Sicherheitsgründen werden Sie innerhalb weniger Minuten auf allen Ihren Geräten, einschließlich diesem, abgemeldet. Bitte melden Sie sich erneut an.</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>Passwort ändern</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Ihr Passwort wurde erfolgreich geändert.</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Zwei-Faktor-Authentifizierung wurde aktiviert.</value>
   </data>

@@ -1,4 +1,4 @@
-using Bit.Brouter.Demos.Server.Components;
+﻿using Bit.Brouter.Demos.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 

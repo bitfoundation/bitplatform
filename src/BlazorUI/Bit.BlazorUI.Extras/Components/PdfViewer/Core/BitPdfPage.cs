@@ -1,4 +1,4 @@
-// The page model: inherited attributes, boxes, rotation and content streams.
+﻿// The page model: inherited attributes, boxes, rotation and content streams.
 
 
 namespace Bit.BlazorUI;

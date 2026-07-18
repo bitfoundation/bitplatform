@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Brouter;
@@ -27,12 +27,12 @@ internal class BrouterRouteRenderer
     private BrouterRouteMeta? _cachedRouteMeta;
     private object? _cachedMetaRef;
 
-    // Keep-alive lifecycle context (see BrouterKeepAliveContext) for the singleton mode
-    // (EffectiveKeepAliveMax <= 1). A fresh instance is handed out only when the active/hidden state
-    // flips, so consumers reading IsActive in OnParametersSet are notified on every transition while
-    // unchanged renders stay allocation-free and quiet.
-    private bool _keepAliveActive;
-    private BrouterKeepAliveContext? _keepAliveContext;
+    // Route lifecycle context (see BrouterRouteContext) for inline content in the singleton modes:
+    // transient (non-keep-alive) routes and KeepAlive routes with EffectiveKeepAliveMax <= 1. One
+    // stable instance per content session - created when the content mounts (see RenderRoute) and
+    // discarded when the session ends (NotifyDeparture for transient routes, DropKeptContent for
+    // cleared keep-alive content), so IsFirstActivation is accurate per component instance.
+    private BrouterRouteContext? _context;
 
     // Set by DropKeptContent (IBrouter.ClearKeepAlive) to stop rendering this route's kept-but-hidden
     // content, so its component is disposed and its retained state released. Reset the moment the
@@ -51,22 +51,12 @@ internal class BrouterRouteRenderer
         public BrouterRouteParameters Parameters { get; set; } = BrouterRouteParameters.Empty;
         public BrouterRouteData Data { get; set; } = BrouterRouteData.Empty;
 
-        // Per-entry lifecycle context, minted only on an active/hidden flip (same contract as the
-        // renderer-level singleton context above).
-        private bool _active;
-        private BrouterKeepAliveContext? _context;
+        // Per-entry lifecycle context: stable for the entry's whole life, so a kept instance's
+        // handlers stay registered across hide/show flips and eviction disposes them with the
+        // entry. Born active: entries are only ever created for the current match.
+        public BrouterRouteContext Context { get; } = new(initiallyActive: true);
 
         public KeptEntry(string key) => Key = key;
-
-        public BrouterKeepAliveContext GetKeepAliveContext(bool active)
-        {
-            if (_context is null || _active != active)
-            {
-                _context = new BrouterKeepAliveContext(active);
-                _active = active;
-            }
-            return _context;
-        }
     }
 
     public BrouterRouteRenderer(Broute route)
@@ -89,17 +79,179 @@ internal class BrouterRouteRenderer
         }
 
         // Singleton mode: only kept-but-hidden content is dropped; an active route stays rendered.
-        if (routeIsMatched is false) _keptDropped = true;
+        // The lifecycle context dies with the dropped content so a later visit starts a fresh
+        // session (IsFirstActivation true again) instead of reusing state that belonged to the
+        // disposed instance.
+        if (routeIsMatched is false)
+        {
+            _keptDropped = true;
+            _context = null;
+        }
     }
 
-    private BrouterKeepAliveContext GetKeepAliveContext(bool active)
+    /// <summary>
+    /// Fires the deactivation side of the route lifecycle for this route's inline-rendered content,
+    /// called by the navigation pipeline BEFORE the render that hides or unmounts it (so a
+    /// <see cref="BrouterRouteDeactivationReason.Disposing"/> callback's synchronous part runs while
+    /// the components are still alive). <paramref name="willRemainMatched"/> is true when the route
+    /// stays in the new committed chain but an intermediate render (pending-navigation UI) is about
+    /// to unmount its content anyway: retained keep-alive content skips the event (it merely hides
+    /// for the duration and resolves as a renavigation at commit), while transient content really is
+    /// torn down and gets its Disposing notification plus a fresh session.
+    /// <paramref name="contentReplaced"/> is true when the coming render replaces this route's
+    /// committed content in place (an error boundary painting its ErrorContent, see
+    /// <see cref="Brouter.RenderNavigationError"/>): the page is disposed even on a keep-alive
+    /// route, so the departure is forced to Disposing and the session ends - the replacement
+    /// output then activates as a fresh one.
+    /// </summary>
+    public void NotifyDeparture(BrouterLocation to, bool willRemainMatched, Action<Exception> onError, bool contentReplaced = false)
     {
-        if (_keepAliveContext is null || _keepAliveActive != active)
+        if (_route.KeepAlive && _route.EffectiveKeepAliveMax > 1)
         {
-            _keepAliveContext = new BrouterKeepAliveContext(active);
-            _keepAliveActive = active;
+            // The error-boundary render replaces the ACTIVE entry's page with ErrorContent: that
+            // entry's session honestly ends (Disposing) and the entry is dropped, so the
+            // replacement output renders with a fresh context (RenderKeptEntries recreates the
+            // missing active entry). Hidden siblings keep their retention - they already received
+            // their Hidden deactivation when they were hidden.
+            if (contentReplaced)
+            {
+                foreach (var entry in _keptEntries.ToArray())
+                {
+                    if (entry.Context.IsActive is false) continue;
+                    entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
+                    _keptEntries.Remove(entry);
+                }
+                return;
+            }
+
+            // Per-parameter entries are always retained; a transient hide is a no-op for them.
+            if (willRemainMatched) return;
+            // Snapshot: deactivation handlers run synchronously and can mutate _keptEntries
+            // (e.g. via IBrouter.ClearKeepAlive -> DropKeptContent).
+            foreach (var entry in _keptEntries.ToArray())
+            {
+                entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
+            }
+            return;
         }
-        return _keepAliveContext;
+
+        if (_route.KeepAlive && _keptDropped is false && contentReplaced is false)
+        {
+            if (willRemainMatched) return;
+            _context?.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
+            return;
+        }
+
+        // Transient content - or content an error boundary's render is about to replace
+        // (contentReplaced, keep-alive included): the departing render unmounts and disposes it,
+        // ending the session.
+        _context?.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
+        _context = null;
+    }
+
+    /// <summary>
+    /// Pre-render half of an arrival for per-parameter keep-alive: deactivates (Hidden) the
+    /// previously active sibling entries of the incoming parameter key. Called by the pipeline at
+    /// commit, BEFORE the render - so an entry the commit render is about to LRU-evict has always
+    /// received its Hidden deactivation first, and never dies silently while still marked active.
+    /// Singleton and transient modes have no sibling entries; their arrival resolves entirely at
+    /// flush time. The key reads the route's just-committed parameters (assigned before this runs).
+    /// </summary>
+    public void PrepareArrival(BrouterLocation to, Action<Exception> onError)
+    {
+        if (_route.KeepAlive is false || _route.EffectiveKeepAliveMax <= 1) return;
+
+        var key = _route.ComputeKeepAliveKey();
+        // Snapshot: deactivation handlers run synchronously and can mutate _keptEntries
+        // (e.g. via IBrouter.ClearKeepAlive -> DropKeptContent).
+        foreach (var entry in _keptEntries.ToArray())
+        {
+            if (string.Equals(entry.Key, key, StringComparison.Ordinal)) continue;
+            entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
+        }
+    }
+
+    /// <summary>
+    /// Fires a Disposing deactivation on any still-active inline content when this route itself is
+    /// being torn down outside a navigation (conditionally-removed route, hosting layout unmount) -
+    /// so active content never dies without its deactivation callback. Already-hidden retained
+    /// content was deactivated when it was hidden; disposal is its final signal.
+    /// </summary>
+    public void NotifyTeardown(BrouterLocation location, Action<Exception> onError)
+    {
+        // Snapshot: deactivation handlers run synchronously and can mutate _keptEntries
+        // (e.g. via IBrouter.ClearKeepAlive -> DropKeptContent).
+        foreach (var entry in _keptEntries.ToArray())
+        {
+            entry.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, location, onError);
+        }
+        _context?.FireDeactivated(BrouterRouteDeactivationReason.Disposing, location, onError);
+        _context = null;
+    }
+
+    /// <summary>
+    /// Whether any of this route's inline-rendered content is active (visible) AND has lifecycle
+    /// handlers registered - the pre-flight for the navigation-lock phase (see
+    /// <see cref="CollectActiveContexts"/>), so navigations away from handler-less content skip
+    /// the lock walk entirely.
+    /// </summary>
+    public bool HasActiveLifecycleHandlers()
+    {
+        foreach (var entry in _keptEntries)
+        {
+            if (entry.Context is { IsActive: true, HasHandlers: true }) return true;
+        }
+        return _context is { IsActive: true, HasHandlers: true };
+    }
+
+    /// <summary>
+    /// Collects the lifecycle contexts of this route's active (visible) inline content that have
+    /// handlers registered, for the pre-commit navigation-lock dispatch (see
+    /// <see cref="BrouterRouteContext.FireDeactivatingAsync"/>). Hidden kept entries are excluded -
+    /// they aren't being deactivated by the pending navigation and get no vote. At most one context
+    /// is active per renderer (the singleton context or the active per-parameter entry).
+    /// </summary>
+    public void CollectActiveContexts(List<BrouterRouteContext> into)
+    {
+        foreach (var entry in _keptEntries)
+        {
+            if (entry.Context is { IsActive: true, HasHandlers: true }) into.Add(entry.Context);
+        }
+        if (_context is { IsActive: true, HasHandlers: true }) into.Add(_context);
+    }
+
+    /// <summary>
+    /// Fires the arrival side of the route lifecycle for this route's inline-rendered content,
+    /// called by the navigation pipeline AFTER the commit render has landed (content mounted,
+    /// handlers registered, DOM available): an activation when the content wasn't active before,
+    /// a renavigation when the same instance stayed active through the commit. In per-parameter
+    /// mode the previously active sibling entry is deactivated (Hidden) here too - its instance is
+    /// retained, so the post-render timing is safe - which is how a parameter change surfaces as an
+    /// activate/deactivate pair instead of a renavigation (see <see cref="Broute.KeepAliveMax"/>).
+    /// </summary>
+    public void FireArrival(BrouterLocation from, BrouterLocation to, Action<Exception> onError)
+    {
+        if (_route.KeepAlive && _route.EffectiveKeepAliveMax > 1)
+        {
+            var key = _route.ComputeKeepAliveKey();
+            var entry = _keptEntries.Find(e => string.Equals(e.Key, key, StringComparison.Ordinal));
+            if (entry is null) return; // defensive: the commit render materializes the entry first
+
+            // Sibling entries were already deactivated pre-render by PrepareArrival; this sweep is
+            // a cheap idempotent backstop (FireDeactivated no-ops on inactive contexts). Snapshot:
+            // handlers run synchronously and can mutate _keptEntries (e.g. via ClearKeepAlive).
+            foreach (var other in _keptEntries.ToArray())
+            {
+                if (ReferenceEquals(other, entry) is false)
+                {
+                    other.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
+                }
+            }
+            entry.Context.FireArrival(from, to, onError);
+            return;
+        }
+
+        _context?.FireArrival(from, to, onError);
     }
 
     public void BuildRenderTree(RenderTreeBuilder builder, bool matched)
@@ -193,21 +345,10 @@ internal class BrouterRouteRenderer
                 b2.AddAttribute(1, "Value", routeMeta);
                 b2.AddAttribute(2, "ChildContent", (RenderFragment)(b3 =>
                 {
-                    // Resolve the outlet host: normally the immediate parent, but pathless Group
-                    // ancestors are invisible to layout just as they are to the URL - a group that
-                    // hosts no outlets of its own passes its children through to ITS parent's
-                    // outlets. The walk stops at the first ancestor with outlets (a group CAN host
-                    // its own via a layout Content) or at the first non-group ancestor either way.
-                    Broute? outletHost = null;
-                    for (var p = _route.Parent; p is not null; p = p.Parent)
-                    {
-                        if (p.Outlets.Count > 0)
-                        {
-                            outletHost = p;
-                            break;
-                        }
-                        if (p.Group is false) break; // non-group ancestor without outlets: render inline
-                    }
+                    // Resolve the outlet host (see Broute.FindOutletHost - the shared walk also
+                    // used by the lifecycle dispatch, so where content renders and where its
+                    // lifecycle events go can never drift apart).
+                    var outletHost = _route.FindOutletHost();
 
                     // Hand the matched child to the host's outlets (the primary outlet renders its
                     // content/error UI, named outlets its BrouterView fragments). Only a *matched*
@@ -226,29 +367,37 @@ internal class BrouterRouteRenderer
                             // recently-visited parameter set, LRU-evicted over the route's budget.
                             RenderKeptEntries(b3, matched, routeParams, routeData);
                         }
-                        else if (_route.KeepAlive)
-                        {
-                            // Singleton retention: one instance that re-binds across parameter
-                            // changes. The stable wrapper element is what preserves the component
-                            // subtree across matched <-> hidden flips; only its hidden attribute
-                            // toggles.
-                            var keepAlive = GetKeepAliveContext(matched);
-                            b3.OpenElement(0, "div");
-                            if (matched is false) b3.AddAttribute(1, "hidden", true);
-                            b3.OpenRegion(2);
-                            // Cascade the activate/deactivate signal to the kept content so it can
-                            // pause/resume work while hidden (see BrouterKeepAliveContext).
-                            b3.OpenComponent<CascadingValue<BrouterKeepAliveContext>>(0);
-                            b3.AddAttribute(1, "Value", keepAlive);
-                            b3.AddAttribute(2, "IsFixed", false);
-                            b3.AddAttribute(3, "ChildContent", (RenderFragment)(bk => EmitContent(bk, routeParams)));
-                            b3.CloseComponent();
-                            b3.CloseRegion();
-                            b3.CloseElement();
-                        }
                         else
                         {
-                            EmitContent(b3, routeParams);
+                            // Both singleton modes share one stable per-session lifecycle context
+                            // (see BrouterRouteContext): keep-alive keeps it across hide/show flips,
+                            // transient content gets a fresh one per session (NotifyDeparture resets
+                            // it when a navigation unmounts the content) - the route lifecycle is
+                            // universal, keep-alive only changes what follows deactivation. Contexts
+                            // are created by the pass that mounts the content, so `matched` is the
+                            // accurate initial IsActive (a keep-alive route re-rendering hidden
+                            // never creates one: its context already exists or its content is
+                            // dropped).
+                            _context ??= new BrouterRouteContext(matched);
+                            var context = _context;
+
+                            if (_route.KeepAlive)
+                            {
+                                // Singleton retention: one instance that re-binds across parameter
+                                // changes. The stable wrapper element is what preserves the
+                                // component subtree across matched <-> hidden flips; only its
+                                // hidden attribute toggles.
+                                b3.OpenElement(0, "div");
+                                if (matched is false) b3.AddAttribute(1, "hidden", true);
+                                b3.OpenRegion(2);
+                                EmitContextCascade(b3, context, routeParams);
+                                b3.CloseRegion();
+                                b3.CloseElement();
+                            }
+                            else
+                            {
+                                EmitContextCascade(b3, context, routeParams);
+                            }
                         }
                     }
                 }));
@@ -256,6 +405,19 @@ internal class BrouterRouteRenderer
             }));
             b1.CloseComponent();
         }));
+        builder.CloseComponent();
+    }
+
+    // The one definition of the lifecycle cascade contract for inline content: an unnamed, FIXED
+    // CascadingValue<BrouterRouteContext> (the instance never changes for its content's lifetime;
+    // lifecycle flows through IBrouterRoute callbacks, not cascade updates) wrapping the route's
+    // content trio. Sequence numbers live in the caller's current scope (0..3).
+    private void EmitContextCascade(RenderTreeBuilder builder, BrouterRouteContext context, BrouterRouteParameters routeParams)
+    {
+        builder.OpenComponent<CascadingValue<BrouterRouteContext>>(0);
+        builder.AddAttribute(1, "Value", context);
+        builder.AddAttribute(2, "IsFixed", true);
+        builder.AddAttribute(3, "ChildContent", (RenderFragment)(bk => EmitContent(bk, routeParams, context)));
         builder.CloseComponent();
     }
 
@@ -309,18 +471,18 @@ internal class BrouterRouteRenderer
             b3.SetKey(entry);
             if (isActive is false) b3.AddAttribute(1, "hidden", true);
             b3.OpenRegion(2);
-            RenderKeptEntry(b3, entry, isActive);
+            RenderKeptEntry(b3, entry);
             b3.CloseRegion();
             b3.CloseElement();
         }
     }
 
     // One kept entry's subtree: shadows the outer RouteParameters/RouteData cascades with the
-    // entry's own (frozen-while-hidden) values, then cascades the activate/deactivate signal, then
-    // emits the route content bound to the entry's parameters.
-    private void RenderKeptEntry(RenderTreeBuilder b, KeptEntry entry, bool isActive)
+    // entry's own (frozen-while-hidden) values, then cascades the entry's stable lifecycle context,
+    // then emits the route content bound to the entry's parameters.
+    private void RenderKeptEntry(RenderTreeBuilder b, KeptEntry entry)
     {
-        var context = entry.GetKeepAliveContext(isActive);
+        var context = entry.Context;
         var parameters = entry.Parameters;
         var data = entry.Data;
 
@@ -332,14 +494,7 @@ internal class BrouterRouteRenderer
         {
             b1.OpenComponent<CascadingValue<BrouterRouteData>>(0);
             b1.AddAttribute(1, "Value", data);
-            b1.AddAttribute(2, "ChildContent", (RenderFragment)(b2 =>
-            {
-                b2.OpenComponent<CascadingValue<BrouterKeepAliveContext>>(0);
-                b2.AddAttribute(1, "Value", context);
-                b2.AddAttribute(2, "IsFixed", false);
-                b2.AddAttribute(3, "ChildContent", (RenderFragment)(bk => EmitContent(bk, parameters)));
-                b2.CloseComponent();
-            }));
+            b1.AddAttribute(2, "ChildContent", (RenderFragment)(b2 => EmitContextCascade(b2, context, parameters)));
             b1.CloseComponent();
         }));
         b.CloseComponent();
@@ -348,16 +503,25 @@ internal class BrouterRouteRenderer
     // The route's error-boundary/content/component trio for inline (non-outlet) rendering.
     // Same sequence number across the mutually-exclusive branches is fine - only one renders
     // per pass and they diff cleanly across renders.
-    private void EmitContent(RenderTreeBuilder b3, BrouterRouteParameters routeParams)
+    private void EmitContent(RenderTreeBuilder b3, BrouterRouteParameters routeParams, BrouterRouteContext? context)
     {
         // Active error boundary: the error UI replaces this route's content while the
         // surrounding cascades (parameters/data/meta) stay available to the fragment.
         if (_route.CurrentError is not null && _route.ErrorContent is not null)
         {
+            // This render disposes the directly-instantiated page (if any) that the error UI
+            // replaces; drop its auto-registration from the (possibly surviving keep-alive)
+            // context - see BrouterRouteContext.ClearAutoRegistered.
+            context?.ClearAutoRegistered();
             b3.AddContent(0, _route.ErrorContent(_route.CurrentError));
         }
         else if (_route.Content is not null)
         {
+            // A route that previously rendered a directly-instantiated Component page can be
+            // re-declared with a Content fragment at runtime: this render disposes that page, so
+            // drop its auto-registration from the surviving context - same rationale as the error
+            // branch above (a no-op for routes that always rendered Content).
+            context?.ClearAutoRegistered();
             b3.AddContent(0, _route.Content(routeParams));
         }
         else if (_route.Component is not null)
@@ -372,14 +536,30 @@ internal class BrouterRouteRenderer
             var found = _route.Brouter?.EffectiveFound;
             if (found is not null)
             {
+                // A route that previously rendered a directly-instantiated Component page (EffectiveFound
+                // was null) can switch to the Found template at runtime if a Found/layout/auth parameter
+                // is set: this render disposes that page, so drop its auto-registration from the surviving
+                // context - same rationale as the error and Content branches (a no-op when the Found
+                // template rendered from the first match).
+                context?.ClearAutoRegistered();
                 b3.AddContent(0, found(GetFrameworkRouteData(routeParams)));
             }
             else
             {
                 EnsureNoAuthorizationRequirements(_route.Component);
                 b3.OpenComponent(0, _route.Component);
-                ApplyTypedParameters(b3, _route.Component, routeParams, _route.Brouter?.CurrentLocation,
-                    _route.BindComponentParametersByName ? _route.TemplateParameterNames : null);
+                var seq = ApplyTypedParameters(b3, _route.Component, routeParams, _route.Brouter?.CurrentLocation,
+                    _route.TemplateParameterNames);
+                // Auto-register the page instance for the route lifecycle when it implements
+                // IBrouterRoute - the router instantiates the component here, so this is the one
+                // render path where interface discovery needs no cooperation from the page (the
+                // AntDesign ReuseTabs / framework IHandleAfterRender idiom). Content fragments and
+                // Found-template pages register through the cascaded context instead. The sequence
+                // number follows the parameter frames and is stable per component type.
+                if (context is not null)
+                {
+                    b3.AddComponentReferenceCapture(seq, context.AutoRegisterDelegate);
+                }
                 b3.CloseComponent();
             }
         }
@@ -466,31 +646,30 @@ internal class BrouterRouteRenderer
         return augmented ?? values;
     }
 
-    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location, IReadOnlySet<string>? conventionalTemplateParameters = null)
+    // Returns the next free sequence number after the emitted parameter frames, so callers can
+    // append further frames (e.g. a component reference capture) at a stable position.
+    internal static int ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location, IReadOnlySet<string>? templateParameterNames)
     {
         // Reflect once per type. Simple, correct, allocates only on first hit per type.
         // Trimming: Component is annotated DynamicallyAccessedMemberTypes.All so its members are preserved.
         //
-        // Two binding modes:
-        //   - Default (conventionalTemplateParameters is null): bind only [BrouterParameter]/[BrouterQuery]
-        //     annotated properties. This is the original, opt-in Brouter model.
-        //   - Conventional (BindComponentParametersByName / attribute-discovered @page routes): additionally
-        //     bind plain [Parameter] properties by name and [SupplyParameterFromQuery] properties from the
-        //     query, Blazor-style. Plain [Parameter] properties that don't correspond to a route parameter
-        //     in this route's template are skipped so unrelated component parameters aren't clobbered.
-        var conventional = conventionalTemplateParameters is not null;
-        var bindings = conventional
-            ? BrouterTypedParameterCache.GetConventionalBindings(componentType)
-            : BrouterTypedParameterCache.GetBindings(componentType);
+        // One binding mode, Blazor-style: plain [Parameter] properties bind route parameters by name
+        // (filtered to the names in this route's template so unrelated component inputs aren't
+        // clobbered), and [SupplyParameterFromQuery] (or opt-in [BrouterQuery]) properties bind from
+        // the query string. [BrouterParameter] optionally remaps a route parameter to a
+        // differently-named property; such explicitly annotated properties bypass the template-name
+        // filter (the annotation is the developer's stated intent that the route drives this property).
+        var bindings = BrouterTypedParameterCache.GetBindings(componentType);
         // Sequence numbers for dynamic parameter attributes start after the OpenComponent (0).
         // These are stable per render because the same bindings are iterated in the same order.
         var seq = 1;
         foreach (var b in bindings)
         {
-            // In conventional mode, a non-query binding whose name isn't one of this route's template
+            // A convention-bound (non-annotated) binding whose name isn't one of this route's template
             // parameters is a plain component input, not a route value: leave it untouched. (The skip set
             // is deterministic for a given type+template, so sequence numbers stay stable across renders.)
-            if (conventional && b.IsQuery is false && conventionalTemplateParameters!.Contains(b.ParameterName) is false)
+            if (b.IsQuery is false && b.IsExplicit is false
+                && (templateParameterNames is null || templateParameterNames.Contains(b.ParameterName) is false))
                 continue;
 
             // Always emit an attribute frame per binding, even when the binding is missing or
@@ -526,6 +705,8 @@ internal class BrouterRouteRenderer
 
             builder.AddAttribute(seq++, b.PropertyName, value);
         }
+
+        return seq;
     }
 
     // Cache boxed default(T) per value type so we don't allocate a fresh single-element array
@@ -567,7 +748,7 @@ internal class BrouterRouteRenderer
 
         var propType = binding.PropertyType;
 
-        // Multi-value support: per BrouterQueryAttribute docs, string[]-typed properties receive every value.
+        // Multi-value support: string[]-typed query-bound properties receive every value.
         if (propType == typeof(string[]))
         {
             var arr = new string[values.Count];
@@ -590,8 +771,8 @@ internal class BrouterRouteRenderer
         }
 
         // Convert.ChangeType doesn't support string -> Guid or string -> Enum, so handle them
-        // explicitly before falling back. Mirrors RouteParameters.TryGetWeak so [BrouterQuery]
-        // bindings accept the same scalar types as [BrouterParameter]. Nullable<T> is honored
+        // explicitly before falling back. Mirrors RouteParameters.TryGetWeak so query bindings
+        // accept the same scalar types as route parameter bindings. Nullable<T> is honored
         // because we resolved the underlying type above.
         if (underlying == typeof(Guid))
         {
@@ -648,16 +829,19 @@ internal class BrouterRouteRenderer
 internal static class BrouterTypedParameterCache
 {
     // ConcurrentDictionary lets cold-start renders run reflection in parallel instead of
-    // serializing on a single lock. The cache is read every render of every component that
-    // uses [BrouterParameter] / [BrouterQuery], so contention on a coarse lock matters when
-    // many such components are mounted at once (e.g. a list page with many cards).
+    // serializing on a single lock. The cache is read every render of every routed component,
+    // so contention on a coarse lock matters when many such components are mounted at once
+    // (e.g. a list page with many cards).
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, BrouterParameterBinding[]> _cache = new();
 
-    // Separate cache for the conventional (by-name) binding set used by attribute-discovered / @page
-    // routes. Kept apart from _cache because the two produce different binding sets for the same type
-    // (conventional covers every [Parameter] property; the default covers only annotated ones).
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, BrouterParameterBinding[]> _conventionalCache = new();
-
+    /// <summary>
+    /// Builds the binding set for a routed component. Every public <c>[Parameter]</c> property is
+    /// considered: query-supplied ones (<c>[SupplyParameterFromQuery]</c> or <c>[BrouterQuery]</c>)
+    /// become query bindings, the rest become route-parameter bindings keyed by property name
+    /// (honoring a <c>[BrouterParameter(Name = ...)]</c> override). The caller filters the
+    /// convention-bound route bindings down to the parameters actually present in the route template;
+    /// explicitly annotated ones (<see cref="BrouterParameterBinding.IsExplicit"/>) are always applied.
+    /// </summary>
     public static BrouterParameterBinding[] GetBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
         // Fast path: hit the cached value without going through the factory delegate.
@@ -682,100 +866,70 @@ internal static class BrouterTypedParameterCache
         var bindings = new List<BrouterParameterBinding>();
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            var paramAttr = prop.GetCustomAttribute<BrouterParameterAttribute>();
-            var queryAttr = prop.GetCustomAttribute<BrouterQueryAttribute>();
-            if (paramAttr is null && queryAttr is null) continue;
-
-            // Reject ambiguous annotations up front: a property carrying both attributes
-            // would silently bind as one or the other, leaving the developer unaware that
-            // half of their intent was dropped. Fail fast with a clear message that names
-            // the offending property and both attribute names.
-            if (paramAttr is not null && queryAttr is not null)
-                throw new InvalidOperationException(
-                    $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
-                    $"[{nameof(BrouterParameterAttribute)}] and [{nameof(BrouterQueryAttribute)}]. " +
-                    "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
-
-            // [BrouterParameter] / [BrouterQuery] only have an effect when Blazor recognises
-            // the property as a component parameter, i.e. it's annotated with [Parameter]
-            // (or [CascadingParameter], which Brouter doesn't drive) and has a public setter.
-            // Without that, AddAttribute below would feed an unknown attribute into the
-            // component and Blazor would throw a generic exception the moment the route
-            // matches. Failing here gives the developer a clear, actionable message.
-            var attrName = paramAttr is not null ? nameof(BrouterParameterAttribute) : nameof(BrouterQueryAttribute);
-            if (prop.GetCustomAttribute<ParameterAttribute>() is null)
-                throw new InvalidOperationException(
-                    $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but is missing [Parameter]. " +
-                    "Add [Parameter] (or remove the Brouter binding attribute).");
-            if (prop.SetMethod is null || prop.SetMethod.IsPublic is false)
-                throw new InvalidOperationException(
-                    $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but has no public setter. " +
-                    "Add a public setter so the router can assign the bound value.");
-
-            if (paramAttr is not null)
-            {
-                bindings.Add(new BrouterParameterBinding(prop.Name, paramAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
-            }
-            else
-            {
-                bindings.Add(new BrouterParameterBinding(prop.Name, queryAttr!.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
-            }
-        }
-
-        return bindings.ToArray();
-    }
-
-    /// <summary>
-    /// Builds the binding set for conventional (Blazor-style) route components - those rendered by an
-    /// attribute-discovered route or with <see cref="Broute.BindComponentParametersByName"/> set. Every
-    /// public <c>[Parameter]</c> property is considered: query-supplied ones (<c>[SupplyParameterFromQuery]</c>
-    /// or <c>[BrouterQuery]</c>) become query bindings, the rest become route-parameter bindings keyed by
-    /// property name (honoring a <c>[BrouterParameter(Name = ...)]</c> override). The caller filters the
-    /// route bindings down to the parameters actually present in the route template.
-    /// </summary>
-    public static BrouterParameterBinding[] GetConventionalBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
-    {
-        if (_conventionalCache.TryGetValue(type, out var cached)) return cached;
-
-        var bindings = BuildConventionalBindings(type);
-        _conventionalCache.TryAdd(type, bindings);
-        return _conventionalCache.TryGetValue(type, out var stored) ? stored : bindings;
-    }
-
-    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2067",
-        Justification = "type flows from GetConventionalBindings whose parameter is annotated with " +
-                        "DynamicallyAccessedMemberTypes.PublicProperties; the factory only reads public properties.")]
-    private static BrouterParameterBinding[] BuildConventionalBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
-    {
-        var bindings = new List<BrouterParameterBinding>();
-        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-        {
-            // Only Blazor component parameters participate. [CascadingParameter] properties are driven by
-            // the framework, not by route values, so they're intentionally excluded.
-            if (prop.GetCustomAttribute<ParameterAttribute>() is null) continue;
-            if (prop.SetMethod is null || prop.SetMethod.IsPublic is false) continue;
-
             var brouterParam = prop.GetCustomAttribute<BrouterParameterAttribute>();
             var brouterQuery = prop.GetCustomAttribute<BrouterQueryAttribute>();
+            var brouterAttrName = brouterParam is not null ? nameof(BrouterParameterAttribute)
+                : brouterQuery is not null ? nameof(BrouterQueryAttribute) : null;
+
+            // Only Blazor component parameters participate. [CascadingParameter] properties are driven by
+            // the framework, not by route values, so they're intentionally excluded. For plain properties
+            // that's a silent skip (standard Blazor semantics); for Brouter-annotated ones it's a
+            // developer error - the annotation states binding intent that can never take effect - so
+            // fail fast with an actionable message instead of leaving the property mysteriously unbound.
+            if (prop.GetCustomAttribute<ParameterAttribute>() is null)
+            {
+                if (brouterAttrName is not null)
+                    throw new InvalidOperationException(
+                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{brouterAttrName}] but is missing [Parameter]. " +
+                        "Add [Parameter] (or remove the Brouter binding attribute).");
+                continue;
+            }
+            if (prop.SetMethod is null || prop.SetMethod.IsPublic is false)
+            {
+                if (brouterAttrName is not null)
+                    throw new InvalidOperationException(
+                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{brouterAttrName}] but has no public setter. " +
+                        "Add a public setter so the router can assign the bound value.");
+                continue;
+            }
+
+            var supplyFromQuery = prop.GetCustomAttribute<SupplyParameterFromQueryAttribute>();
+
+            // Reject ambiguous annotation pairs up front: a property carrying two binding attributes
+            // would silently bind as one or the other, leaving the developer unaware that half of their
+            // intent was dropped. [BrouterQuery] + [SupplyParameterFromQuery] is additionally
+            // self-defeating: the framework's query supplier reacts to its own attribute regardless of
+            // Brouter, so combining them re-introduces the framework's type restrictions that
+            // [BrouterQuery] exists to escape. Fail fast with a clear message naming the property.
             if (brouterParam is not null && brouterQuery is not null)
                 throw new InvalidOperationException(
                     $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
                     $"[{nameof(BrouterParameterAttribute)}] and [{nameof(BrouterQueryAttribute)}]. " +
                     "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
-
-            var supplyFromQuery = prop.GetCustomAttribute<SupplyParameterFromQueryAttribute>();
+            if (brouterParam is not null && supplyFromQuery is not null)
+                throw new InvalidOperationException(
+                    $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
+                    $"[{nameof(BrouterParameterAttribute)}] and [{nameof(SupplyParameterFromQueryAttribute)}]. " +
+                    "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
+            if (brouterQuery is not null && supplyFromQuery is not null)
+                throw new InvalidOperationException(
+                    $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
+                    $"[{nameof(BrouterQueryAttribute)}] and [{nameof(SupplyParameterFromQueryAttribute)}]. " +
+                    "Pick exactly one: they are alternative ways to bind the same query value, and " +
+                    "[SupplyParameterFromQuery] additionally subjects the property to the framework " +
+                    "query supplier's type restrictions.");
 
             if (brouterQuery is not null)
             {
-                bindings.Add(new BrouterParameterBinding(prop.Name, brouterQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
+                bindings.Add(new BrouterParameterBinding(prop.Name, brouterQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true, IsExplicit: true));
             }
             else if (supplyFromQuery is not null)
             {
-                bindings.Add(new BrouterParameterBinding(prop.Name, supplyFromQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
+                bindings.Add(new BrouterParameterBinding(prop.Name, supplyFromQuery.Name ?? prop.Name, prop.PropertyType, IsQuery: true, IsExplicit: true));
             }
             else
             {
-                bindings.Add(new BrouterParameterBinding(prop.Name, brouterParam?.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
+                bindings.Add(new BrouterParameterBinding(prop.Name, brouterParam?.Name ?? prop.Name, prop.PropertyType, IsQuery: false, IsExplicit: brouterParam is not null));
             }
         }
 
@@ -783,4 +937,4 @@ internal static class BrouterTypedParameterCache
     }
 }
 
-internal readonly record struct BrouterParameterBinding(string PropertyName, string ParameterName, Type PropertyType, bool IsQuery);
+internal readonly record struct BrouterParameterBinding(string PropertyName, string ParameterName, Type PropertyType, bool IsQuery, bool IsExplicit);

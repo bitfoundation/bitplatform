@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using ImageMagick;
-using FluentStorage.Blobs;
+using FluentStorage.Storage;
 using System.Diagnostics.Metrics;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -18,7 +18,7 @@ namespace Boilerplate.Server.Api.Features.Attachments;
 [Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class AttachmentController : AppControllerBase, IAttachmentController
 {
-    [AutoInject] private IBlobStorage blobStorage = default!;
+    [AutoInject] private IStore blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;
 
     //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
@@ -82,7 +82,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
         var filePath = GetFilePath(attachmentId, kind);
 
-        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
+        if (await blobStorage.ObjectExists(filePath, cancellationToken) is false)
             throw new ResourceNotFoundException().WithData("Reason", "The attachment does not exist.");
 
         var mimeType = kind switch
@@ -90,7 +90,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             _ => "image/webp" // Currently, all attachment types are images.
         };
 
-        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
+        return File(await blobStorage.OpenRead(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
     }
 
     [HttpDelete]
@@ -150,10 +150,10 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         {
             var filePath = attachment.Path;
 
-            if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
+            if (await blobStorage.ObjectExists(filePath, cancellationToken) is false)
                 throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ImageCouldNotBeFound)]);
 
-            await blobStorage.DeleteAsync(filePath, cancellationToken);
+            await blobStorage.DeleteObject(filePath, cancellationToken);
 
             //#if (module == "Sales" || module == "Admin")
             if (attachment.Kind is AttachmentKind.ProductPrimaryImageOriginal)
@@ -206,9 +206,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 Path = GetFilePath(attachmentId, kind, file.FileName),
             };
 
-            if (await blobStorage.ExistsAsync(attachment.Path, cancellationToken))
+            if (await blobStorage.ObjectExists(attachment.Path, cancellationToken))
             {
-                await blobStorage.DeleteAsync(attachment.Path, cancellationToken);
+                await blobStorage.DeleteObject(attachment.Path, cancellationToken);
             }
 
             (bool NeedsResize, uint Width, uint Height) imageResizeContext = kind switch
@@ -232,13 +232,13 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
                 sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height));
 
-                await blobStorage.WriteAsync(attachment.Path, imageBytes = sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
+                await blobStorage.SetBytes(attachment.Path, imageBytes = sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
 
                 updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
             }
             else
             {
-                await blobStorage.WriteAsync(attachment.Path, file.OpenReadStream(), cancellationToken: cancellationToken);
+                await blobStorage.SetObject(attachment.Path, file.OpenReadStream(), cancellationToken: cancellationToken);
             }
 
             await DbContext.Attachments.AddAsync(attachment, cancellationToken);

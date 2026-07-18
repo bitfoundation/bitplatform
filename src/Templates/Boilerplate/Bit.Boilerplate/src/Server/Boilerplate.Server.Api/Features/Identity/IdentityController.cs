@@ -395,7 +395,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
-            await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
+            await SendConfirmationToken(user, request.ReturnUrl ?? returnUrl, cancellationToken);
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
         }
 
@@ -404,7 +404,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", resendDelay);
 
-        var (magicLinkToken, url) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Email");
+        var (magicLinkToken, url) = await GenerateAutomaticSignInLink(user, request.ReturnUrl ?? returnUrl, originalAuthenticationMethod: "Email");
 
         var link = new Uri(HttpContext.Request.GetWebAppUrl(), url);
 

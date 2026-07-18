@@ -60,7 +60,7 @@ public class BitProModalTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++));
         });
 
-        com.SetParametersAndRender(parameters => parameters.Add(p => p.IsOpen, false));
+        com.Render(parameters => parameters.Add(p => p.IsOpen, false));
 
         com.WaitForAssertion(() =>
         {

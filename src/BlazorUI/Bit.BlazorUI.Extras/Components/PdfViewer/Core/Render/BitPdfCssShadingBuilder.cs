@@ -1,4 +1,4 @@
-// Axial/radial shading handling, emitted as CSS gradients for the HTML renderer.
+﻿// Axial/radial shading handling, emitted as CSS gradients for the HTML renderer.
 
 using System.Globalization;
 using System.Text;
@@ -19,7 +19,7 @@ internal static class BitPdfCssShadingBuilder
     /// Builds a CSS background value for <paramref name="shading"/>, or
     /// <c>null</c> if the shading type is unsupported.
     /// </summary>
-    public static string? Build(BitPdfDict shading, IBitPdfXRef xref, BitPdfDict? resources, BitPdfMatrix ctm,
+    public static string? Build(BitPdfDict shading, IBitPdfXRef xref, BitPdfDict? resources, in BitPdfMatrix ctm,
         double viewW, double viewH)
     {
         int type = shading.Get("ShadingType") is double d ? (int)d : 0;
@@ -60,7 +60,7 @@ internal static class BitPdfCssShadingBuilder
     /// solid fallback (<c>coords = null</c>, stops = the color string). Returns
     /// <c>null</c> when nothing can be painted.
     /// </summary>
-    public static object?[]? BuildCanvasOp(BitPdfDict shading, IBitPdfXRef xref, BitPdfDict? resources, BitPdfMatrix ctm)
+    public static object?[]? BuildCanvasOp(BitPdfDict shading, IBitPdfXRef xref, BitPdfDict? resources, in BitPdfMatrix ctm)
     {
         int type = shading.Get("ShadingType") is double d ? (int)d : 0;
         var cs = BitPdfColorSpace.Create(shading.Get("ColorSpace"), xref, resources);
@@ -163,7 +163,7 @@ internal static class BitPdfCssShadingBuilder
     }
 
     private static string BuildAxial(double[] c, double[] domain, BitPdfColorSpace cs, BitPdfFunction? fn,
-        BitPdfMatrix ctm, double viewW, double viewH, bool extendBefore, bool extendAfter)
+        in BitPdfMatrix ctm, double viewW, double viewH, bool extendBefore, bool extendAfter)
     {
         var (x0, y0) = ctm.Apply(c[0], c[1]);
         var (x1, y1) = ctm.Apply(c[2], c[3]);
@@ -201,7 +201,7 @@ internal static class BitPdfCssShadingBuilder
             var (r, g, b) = SampleRgb(domain, frac, cs, fn);
             stops.Add((pos, r, g, b));
         }
-        stops.Sort((l, r) => l.Pos.CompareTo(r.Pos));
+        stops.Sort(static (l, r) => l.Pos.CompareTo(r.Pos));
 
         var sb = new StringBuilder();
         sb.Append(string.Create(CultureInfo.InvariantCulture, $"linear-gradient({angleDeg:0.##}deg"));
@@ -228,7 +228,7 @@ internal static class BitPdfCssShadingBuilder
     }
 
     private static string BuildRadial(double[] c, double[] domain, BitPdfColorSpace cs, BitPdfFunction? fn,
-        BitPdfMatrix ctm, bool extendBefore, bool extendAfter)
+        in BitPdfMatrix ctm, bool extendBefore, bool extendAfter)
     {
         double scale = ctm.ScaleFactor;
         var (cx, cy) = ctm.Apply(c[3], c[4]);

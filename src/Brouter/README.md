@@ -70,6 +70,7 @@ render modes.
 - Nested routes via `Broute` children or `BrouterOutlet`
 - Async `Guard` with cancel/redirect via `BrouterNavigationContext`
 - **Per-route `LeaveGuard`** (Angular `CanDeactivate` / Vue `beforeRouteLeave` style): runs preventively, leaf → root, only for routes the navigation actually deactivates - real per-route "unsaved changes" prompts
+- **Component-level navigation lock**: the routed component itself vetoes navigation from `OnDeactivating` / `OnRenavigating` (React Router `useBlocker` / Vue `onBeforeRouteLeave`+`beforeRouteUpdate` style) - awaited, cancellable lock callbacks on the route lifecycle that can hold the navigation open for a **custom confirmation dialog** and cover the case `LeaveGuard` can't: parameter changes on the same route
 - **External-navigation confirmation**: `o.ConfirmExternalNavigation` (always-on) or `brouter.SetConfirmExternalNavigationAsync(...)` (runtime toggle) arms the browser's `beforeunload` dialog for tab-close/reload/external links
 - **Per-route error boundaries**: `ErrorContent` on a `Broute` (nearest boundary wins, bubbling leaf → root) or on the `Brouter` (root fallback), with typed `BrouterErrorContext` carrying the exception and a `RetryAsync()`
 - **Awaitable navigation**: `NavigateAsync` resolves with how the navigation actually ended - `Succeeded` / `Cancelled` / `Redirected` / `NotFound` / `Failed` / `Superseded` (Vue Router navigation-failures style)
@@ -86,7 +87,8 @@ render modes.
 - **Functional query updates**: `brouter.NavigateWithQuery(q => q.Set("page", 2))` updates one parameter and preserves the rest (typed values, multi-value support, replace-by-default)
 - **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
 - **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
-- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget); a cascaded `BrouterKeepAliveContext` signals activate/deactivate so pages can pause background work while hidden, and `brouter.ClearKeepAlive()` evicts retained pages on demand
+- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand
+- **Route lifecycle**: every routed component (keep-alive or not, at any depth) can receive `OnActivated` / `OnDeactivated` / `OnRenavigated` callbacks - implement `IBrouterRoute` on a page (auto-discovered) or derive from `BrouterRouteBase` (the Ionic `ionViewWillEnter` / Vue `onActivated` idea, with async support and a Disposing-vs-Hidden reason) - plus the pre-commit `OnDeactivating` / `OnRenavigating` lock callbacks above
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
@@ -94,7 +96,7 @@ render modes.
 - Router-level hooks: `OnMatch` (a route matched) and `OnNotFound` (nothing matched), alongside the global `IBrouter` events
 - `NotFoundUrl` redirect or inline `NotFound` content
 - **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
-- **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
+- **Auto-binding** to plain `[Parameter]` properties by name (Blazor-style) and `[SupplyParameterFromQuery]` for query values, plus two opt-in Brouter attributes that extend the built-in tools: `[BrouterParameter(Name = ...)]` remaps a route parameter to a differently-named property, and `[BrouterQuery]` binds query values of types the framework supplier can't parse (e.g. enums)
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
 - **Relative navigation**: `./edit` and `../sibling` resolve against the current location (segment math, React Router style) in `Navigate`, guard redirects and `<BrouterLink>`
@@ -136,14 +138,46 @@ render modes.
 
 ## Auto-bound parameters
 
+Route parameters bind to `[Parameter]` properties by name, exactly like the built-in Blazor
+`Router` - no extra attribute needed:
+
 ```razor
 <Broute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
 ```
 
 ```razor
 @code {
-    [Parameter, BrouterParameter] public string? Username { get; set; }
+    [Parameter] public string? Username { get; set; }
+}
+```
+
+When the property name and the route parameter name differ, remap with
+`[BrouterParameter(Name = ...)]` (a feature the built-in Router doesn't have). It also serves as
+the escape hatch when an unrelated `[Parameter]` property collides with a route parameter name:
+
+```razor
+<Broute Path="/users/{id:int}" Component="@typeof(UserPage)" />
+```
+
+```razor
+@code {
     [Parameter, BrouterParameter(Name = "id")] public int UserId { get; set; }
+}
+```
+
+Only `[Parameter]` properties whose names match a parameter in the route's template (or that carry
+`[BrouterParameter]`) are driven by the router; other component parameters are left untouched.
+
+Query values bind the standard Blazor way, via `[Parameter, SupplyParameterFromQuery]`. When the
+property's type falls outside what the framework's query supplier can parse - enums, for example -
+switch that property to Brouter's opt-in `[BrouterQuery]`: the framework supplier ignores it (it only
+reacts to its own attribute), and Brouter converts the value itself (any `Convert.ChangeType`-compatible
+scalar, `Guid`, enums, nullables, and `string[]` for multi-value keys):
+
+```razor
+@code {
+    [Parameter, SupplyParameterFromQuery] public string? Tab { get; set; }   // ?tab=..., framework-supported type
+    [Parameter, BrouterQuery] public DayOfWeek? Day { get; set; }            // ?day=tuesday - enums need [BrouterQuery]
 }
 ```
 
@@ -198,6 +232,11 @@ Leaving the SPA entirely (tab close, reload, external link) can't run C# - for t
 browser's generic confirmation dialog: `o.ConfirmExternalNavigation = true` at startup, or toggle it
 at runtime with `brouter.SetConfirmExternalNavigationAsync(isDirty)` from a dirty-form tracker.
 (Browser rules: the dialog needs prior user interaction and its text is not customizable.)
+
+`LeaveGuard` lives on the route declaration; when the veto belongs to the *component* - it knows
+whether its form is dirty - use the [component-level navigation lock](#navigation-lock-blocking-from-the-component-itself)
+instead, which also covers parameter changes on the same route (a case `LeaveGuard` deliberately
+never fires for).
 
 ## Error boundaries
 
@@ -559,6 +598,24 @@ element morph between them (see the demo's `/gallery` page for a tile-to-hero sh
 .post-title { view-transition-name: post-title; }
 ```
 
+The same mechanism **excludes persistent chrome** from the page animation. Anything without a
+`view-transition-name` is captured into the `root` snapshot, so a layout header/sidebar would glide
+along with the page even though it lives outside the router. Give it its own name and it gets its
+own transition group - old and new snapshots are identical, so it stays visually pinned while only
+the page content animates:
+
+```css
+.app-header { view-transition-name: app-header; }
+```
+
+One follow-up gotcha: if some pages scroll and others don't, classic scrollbars (Windows) change
+the viewport width between snapshots, so even a named header animates a ~17px resize. Reserve the
+gutter to keep the layout width constant:
+
+```css
+html { scrollbar-gutter: stable; }
+```
+
 Brouter splits the transition around Blazor's async render: the outgoing page is snapshotted (and
 the snapshot is awaited - critical for correct morphs) right before the new route renders, and the
 transition completes once the new DOM (including scroll/focus effects) has landed. On browsers
@@ -778,29 +835,174 @@ of being disposed; navigating back flips it visible again with all its state int
 through a parent's `BrouterOutlet` when switching between sibling routes. Opt-in per route; combine
 with `StaleTime` for instant, fully-warm Back navigation.
 
-### Activate / deactivate lifecycle
+### Route lifecycle: activate / deactivate / renavigate
 
-A kept component keeps *running* while hidden - timers, polling and live subscriptions all keep
-firing, and any `StateHasChanged` re-renders it off-screen (on Blazor Server that is a diff over the
-wire for a page nobody is looking at). Consume the cascaded `BrouterKeepAliveContext` to pause that
-work while inactive and resume (or refresh) when the page is shown again - the equivalent of Vue's
-`onActivated`/`onDeactivated`:
+Every routed component - keep-alive or not - can receive discrete lifecycle callbacks, the
+component-level hooks Angular's `RouteReuseStrategy` never delivered and Ionic's
+`ionViewWillEnter`/`ionViewDidLeave` proved right:
+
+- **`OnActivated`** - the content just became the visible route content: on the first show (with
+  `activation.IsFirstActivation` set, Vue-style superset-of-mount semantics) and again every time a
+  kept-alive instance is revealed. Runs after the commit render, so the DOM is available.
+- **`OnDeactivated`** - it just stopped being visible, with a reason: `Hidden` (kept mounted,
+  keep-alive) or `Disposing` (about to be torn down - the synchronous part runs *before* `Dispose`,
+  and unlike `Dispose` it carries the destination location). `KeepAlive` only changes which reason
+  you get; pages written against the lifecycle keep working when the route's retention changes.
+- **`OnRenavigated`** - a navigation re-committed this route while the *same instance* stayed
+  visible (`/item/1 → /item/2` on a singleton route, or a query-only change): the "user arrived
+  here again" moment that `OnInitialized` misses on instance reuse. On a per-parameter keep-alive
+  route (`KeepAliveMax` > 1) a parameter change mounts a separate instance instead, so it surfaces
+  as an activate/deactivate pair rather than a renavigation.
+
+All callbacks have async variants; returned tasks are observed for errors (surfaced via
+`IBrouter.OnError`) but never delay the navigation. They are not invoked during static prerendering.
+`OnActivated` and `OnDeactivated` are always **paired**: content that never received its activation
+(skipped under static prerender, or a commit superseded before its activation render) is torn down
+through `Dispose` alone and gets no `OnDeactivated`, so acquire-in-`OnActivated` /
+release-in-`OnDeactivated` handlers can never release something they never acquired.
+(The lifecycle also carries two *pre-commit* callbacks that deliberately CAN delay a navigation -
+the navigation lock below.)
+
+The easiest consumption is `BrouterRouteBase` - it works for any component under the routed content
+(any depth, any render path) and repaints automatically after activation/renavigation:
 
 ```razor
-@implements IDisposable
+@inherits BrouterRouteBase
 @code {
-    [CascadingParameter] BrouterKeepAliveContext? KeepAlive { get; set; }
     private Timer? _poll;
 
-    protected override void OnParametersSet()
+    protected override void OnActivated(BrouterRouteActivation activation)
     {
-        // A fresh context instance is cascaded on every activate/deactivate flip, so this runs on
-        // each transition. Pause background work while hidden; resume/refresh when shown again.
-        if (KeepAlive?.IsActive == false) _poll?.Change(Timeout.Infinite, Timeout.Infinite);
-        else _poll?.Change(0, 5000);
+        // First show AND every reveal from keep-alive retention: resume/refresh here.
+        _poll ??= new Timer(_ => Refresh(), null, 0, 5000);
+        _poll.Change(0, 5000);
     }
 
-    public void Dispose() => _poll?.Dispose();
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+    {
+        // Hidden (kept) or Disposing (leaving for real) - pause background work either way.
+        _poll?.Change(Timeout.Infinite, Timeout.Infinite);
+    }
+
+    protected override void Dispose(bool disposing) => _poll?.Dispose();
+}
+```
+
+A page component instantiated by the router itself (a `Component=` route or a discovered `@page`
+route) can skip the base class and just implement the interface - the router discovers it
+automatically:
+
+```razor
+@implements IBrouterRoute
+@code {
+    public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
+        => RefreshAsync(); // e.g. /item/1 -> /item/2 reused this instance; OnInitialized won't re-run
+}
+```
+
+(All `IBrouterRoute` members have no-op defaults - implement only what you need.) For full manual
+control - or for content the router doesn't instantiate (`Content` fragments, `Found`-template
+pages) when not using the base class - take the cascaded context and register any handler:
+
+```razor
+@code {
+    [CascadingParameter] BrouterRouteContext? RouteContext { get; set; }
+    // RouteContext.Register(handler) / Unregister(handler); RouteContext.IsActive for current state.
+}
+```
+
+Why it matters for keep-alive in particular: a kept component keeps *running* while hidden - timers,
+polling and live subscriptions all keep firing, and any `StateHasChanged` re-renders it off-screen
+(on Blazor Server that is a diff over the wire for a page nobody is looking at). Pause that work in
+`OnDeactivated` and resume (or refresh) in `OnActivated`.
+
+### Navigation lock: blocking from the component itself
+
+The lifecycle's two *pre-commit* callbacks let the routed component - the code that actually knows
+whether its form is dirty or its save is still in flight - veto a pending navigation (React Router's
+`useBlocker`, Vue's `onBeforeRouteLeave` + `beforeRouteUpdate`, Angular's `CanDeactivate`, delivered
+component-side):
+
+- **`OnDeactivating`** - a pending navigation would deactivate this content. Carries the pending
+  target (`context.To`), the `NavigationType`, and the retention that would follow
+  (`context.Reason`: `Hidden` for keep-alive - state survives, so you may skip the prompt
+  entirely - or `Disposing`).
+- **`OnRenavigating`** - a pending navigation keeps this route matched (a route/query parameter
+  change, or moving between its descendants). This is the case `LeaveGuard` deliberately never
+  fires for - without it, a dirty edit form on `/item/1` couldn't veto going to `/item/2`.
+
+Both are **awaited** by the pipeline (unlike the notify-only lifecycle callbacks) and run inside
+the preventive phase, so `context.Cancel()` / `context.Redirect(...)` stop the URL from ever
+changing - no address-bar flicker, no corrupted Back stack. Because they're awaited, a lock can
+hold the navigation open and show a **custom confirmation dialog** instead of `window.confirm`:
+
+```razor
+@inherits BrouterRouteBase
+
+@if (_prompt is not null)
+{
+    <div class="modal">
+        Unsaved changes - leave for @_target anyway?
+        <button @onclick="@(() => _prompt.TrySetResult(true))">Stay</button>
+        <button @onclick="@(() => _prompt.TrySetResult(false))">Leave</button>
+    </div>
+}
+
+@code {
+    private TaskCompletionSource<bool>? _prompt;
+    private string? _target;
+
+    protected override async Task OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
+    {
+        if (_isDirty is false) return;
+
+        _prompt = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        _target = context.To.Path;
+        StateHasChanged();                       // show the dialog; the navigation stays parked
+
+        // A superseding navigation cancels the token: dismiss the prompt, the answer no longer matters.
+        await using var dismiss = context.CancellationToken.Register(() => _prompt?.TrySetResult(false));
+        var stay = await _prompt.Task;
+
+        _prompt = null;
+        StateHasChanged();
+        if (stay) context.Cancel();              // preventive: the URL never changed
+    }
+}
+```
+
+Semantics worth knowing:
+
+- **Ordering.** Locks run in the leave phase, leaf → root, and per route the content's own locks run
+  *before* the route-declared `LeaveGuard` (innermost first - the code closest to the state at risk
+  gets the first veto), all before `OnNavigating` and any enter guards.
+- **First decision wins.** Handlers on the same content run in registration order; the first
+  `Cancel()`/`Redirect()` anywhere settles the phase and skips every remaining lock and leave
+  guard - no stacked prompts.
+- **Only visible content votes.** Hidden kept-alive instances aren't being deactivated by the
+  navigation and are not consulted.
+- **Fail closed.** A lock that throws blocks the navigation (like a guard) and surfaces via
+  `IBrouter.OnError`.
+- **Supersession.** A newer navigation cancels `context.CancellationToken`; a parked lock should
+  observe it (as above) so a stale prompt can't decide a dead navigation - the pipeline ignores its
+  outcome either way.
+- **Per-parameter keep-alive nuance.** On a `KeepAliveMax > 1` route that stays matched across a
+  parameter change, the active entry receives `OnRenavigating` (pre-commit, the new parameter key
+  isn't known yet) even though the commit then surfaces as a `Hidden` deactivation + sibling
+  activation.
+- **Platform boundary.** Locks cover in-app navigations only. Tab close, reload and external links
+  can't run C# - arm the browser's generic dialog via `o.ConfirmExternalNavigation` /
+  `brouter.SetConfirmExternalNavigationAsync(...)` for those (see
+  [Leave guards](#leave-guards-unsaved-changes)).
+
+Any component under the routed content can hold a lock - derive from `BrouterRouteBase` (as above),
+implement `IBrouterRoute` on a router-instantiated page (auto-discovered), or `Register` a handler
+on the cascaded `BrouterRouteContext`. Simple non-interactive locks are one line:
+
+```csharp
+protected override void OnDeactivating(BrouterRouteDeactivatingContext context)
+{
+    if (_isDirty) context.Cancel();
 }
 ```
 
@@ -852,7 +1054,13 @@ next visit to a dropped route recreates it fresh.
 
 > Notes: turning on `KeepAlive` wraps the route's inline content in a `<div>` (the stable element
 > that preserves the subtree), which can affect direct-child CSS selectors. Retention applies to a
-> route's primary content; named-outlet (`BrouterView`) fragments are not separately kept.
+> route's primary content; named-outlet (`BrouterView`) fragments are never independently retained,
+> so they don't ride the keep-alive lifecycle cascade across hide/show - they dispose and recreate
+> with their host. While a named fragment is rendered, though, it still holds its own active
+> lifecycle context: `BrouterRouteBase` descendants inside it register for navigation locks and
+> receive component-level lock dispatch like any routed content. Instances dropped by LRU eviction
+> or `ClearKeepAlive()` were already deactivated (`Hidden`) when they were hidden, so plain component
+> disposal is their final signal.
 
 ## Attribute-route / `@page` discovery
 
@@ -890,9 +1098,17 @@ A hand-declared `<Broute>` with the exact template of a discovered `@page` shado
 `Guard`/`Loader` to an existing page) - this is the one duplicate-template pairing that isn't rejected as
 ambiguous. Duplicating a template across two `@page` components, or across two hand-declared routes, throws.
 
-Discovered routes bind their `[Parameter]` properties by name (Blazor-style) - route segments to plain
-`[Parameter]` properties and query values to `[SupplyParameterFromQuery]` (or `[BrouterQuery]`). To get the
-same by-name binding on a hand-declared route, set `BindComponentParametersByName="true"` on the `<Broute>`.
+Discovered and hand-declared routes bind component parameters identically: route segments to `[Parameter]`
+properties by name (Blazor-style) and query values to `[Parameter, SupplyParameterFromQuery]` properties.
+Brouter binds the query values itself, so this works even where the framework's own query supplier isn't
+registered; where it is registered, the framework prefers the router-supplied value by design.
+Two framework rules to keep in mind: a `[SupplyParameterFromQuery]` property *without* `[Parameter]` is
+left to the framework's supplier (Blazor forbids setting it explicitly), so pair the two attributes on
+routed components; and `[SupplyParameterFromQuery]` property types must stay within the set the framework
+supplier can parse - string, numerics, bool, Guid, DateTime/DateOnly/TimeOnly, plus nullables and arrays
+of those (notably *not* enums) - because the supplier evaluates every annotated property and throws for
+anything else. For types outside that set, use Brouter's opt-in `[BrouterQuery]` instead (see
+[Auto-bound parameters](#auto-bound-parameters)).
 
 > Discovery reflects over the given assemblies, so - like the built-in Blazor `Router` - keep your routable
 > components preserved when trimming.

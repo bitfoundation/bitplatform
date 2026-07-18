@@ -44,7 +44,7 @@ public partial class OfflineTodoTests : AppPageTest
         await Expect(Page.GetByPlaceholder(AppStrings.TodoAddPlaceholder)).ToBeVisibleAsync();
         await AddTodoItem(secondTodoTitle);
 
-        var syncedTitles = await GetTodoItemTitlesFromServerDatabase(server, [firstTodoTitle, secondTodoTitle], TimeSpan.FromSeconds(30));
+        var syncedTitles = await GetTodoItemTitlesFromServerDatabase(server, [firstTodoTitle, secondTodoTitle]);
 
         Assert.Contains(firstTodoTitle, syncedTitles, "The todo item added while offline was not synced to the server database.");
         Assert.Contains(secondTodoTitle, syncedTitles, "The todo item added while online was not synced to the server database.");
@@ -78,9 +78,9 @@ public partial class OfflineTodoTests : AppPageTest
         await Expect(Page.GetByText(title)).ToBeVisibleAsync();
     }
 
-    private async Task<List<string?>> GetTodoItemTitlesFromServerDatabase(AppTestServer server, string[] titles, TimeSpan timeout)
+    private async Task<List<string?>> GetTodoItemTitlesFromServerDatabase(AppTestServer server, string[] titles)
     {
-        var deadline = DateTimeOffset.UtcNow + timeout;
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(30);
 
         while (true)
         {

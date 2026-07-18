@@ -1,4 +1,4 @@
-// The lexer tokenizing PDF byte streams.
+﻿// The lexer tokenizing PDF byte streams.
 
 using System.Text;
 

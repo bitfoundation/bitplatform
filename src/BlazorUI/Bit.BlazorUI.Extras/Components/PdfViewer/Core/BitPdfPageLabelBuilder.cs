@@ -1,4 +1,4 @@
-// Page-label (/PageLabels) number-tree parsing.
+﻿// Page-label (/PageLabels) number-tree parsing.
 
 using System.Text;
 

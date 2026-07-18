@@ -89,7 +89,7 @@ public partial class ManageMyTenantsPage
 
         if (await AuthManager.SwitchTenant(tenant.Id, CurrentCancellationToken))
         {
-            NavigationManager.RefreshCurrentPage(); // Re-renders the current page so it reflects the new tenant's data.
+            await Refresh();
         }
     }
 
@@ -109,7 +109,7 @@ public partial class ManageMyTenantsPage
 
             if (await AuthManager.SwitchTenant(createdTenant.Id, CurrentCancellationToken))
             {
-                NavigationManager.RefreshCurrentPage();
+                await Refresh();
                 return;
             }
 
@@ -180,7 +180,7 @@ public partial class ManageMyTenantsPage
 
             SnackBarService.Success(Localizer[nameof(AppStrings.LeftTenantSuccessfullyMessage)]);
 
-            NavigationManager.RefreshCurrentPage();
+            await Refresh();
         }
         catch (KnownException e)
         {
@@ -220,5 +220,11 @@ public partial class ManageMyTenantsPage
         {
             isInviting = false;
         }
+    }
+
+    private async Task Refresh()
+    {
+        await LoadTenants();
+        PubSubService.Publish(ClientAppMessages.CURRENT_TENANT_CHANGED, currentTenant);
     }
 }

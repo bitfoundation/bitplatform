@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Tests.Features.Identity;
+using Boilerplate.Tests.Infrastructure.Components;
+using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Tenants;
 
@@ -41,7 +43,7 @@ public partial class TenantInvitationUITests : AppPageTest
         await InviteUserToCurrentTenant(Page, server, invitedEmail);
 
         // ---- Browser 2: the invited user, in her own isolated browser context ----
-        await using var invitedContext = await Browser.NewContextAsync();
+        await using var invitedContext = await Browser.NewContextAsync(ContextOptions());
         await SetBlazorWebAssemblyServerAddress(serverAddress, invitedContext);
         var invitedPage = await invitedContext.NewPageAsync();
         invitedPage.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
@@ -111,11 +113,13 @@ public partial class TenantInvitationUITests : AppPageTest
 
         // Creating a tenant needs elevated access: an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
-        var elevatedToken = await server.ReadElevatedAccessToken(StoreAdminEmail, TestContext.CancellationToken);
-        await MagicLinkSignInUtils.FillOtpInputs(page, elevatedToken);
+
+        var captured = await server.WaitForCapturedEmail(StoreAdminEmail, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
+        var elevatedToken = captured.Token!;
+        await BitOtpInputUtils.FillOtpInputs(page, elevatedToken);
 
         // After elevation the tenant gets created and she is switched into it, so it shows up as her current tenant.
-        await Expect(page.GetByText(tenantName).First).ToBeVisibleAsync(new() { Timeout = 30_000 });
+        await Expect(page.GetByText(tenantName).First).ToBeVisibleAsync();
     }
 
     private async Task InviteUserToCurrentTenant(IPage page, AppTestServer server, string email)
@@ -150,12 +154,12 @@ public partial class TenantInvitationUITests : AppPageTest
 
         if (shouldExist)
         {
-            await Expect(userItem.First).ToBeVisibleAsync(new() { Timeout = 15_000 });
+            await Expect(userItem.First).ToBeVisibleAsync();
         }
         else
         {
             // With the pending/absent user filtered out, the list is empty and shows the "no users" message.
-            await Expect(page.GetByText(AppStrings.NoUserMessage)).ToBeVisibleAsync(new() { Timeout = 15_000 });
+            await Expect(page.GetByText(AppStrings.NoUserMessage)).ToBeVisibleAsync();
             await Expect(userItem).ToHaveCountAsync(0);
         }
     }
@@ -173,7 +177,7 @@ public partial class TenantInvitationUITests : AppPageTest
         // Accepting switches her into the tenant (no elevated access needed for switching), so it becomes her current
         // tenant and the "Accept" action disappears from its card.
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.AcceptInvitation }))
-            .ToHaveCountAsync(0, new() { Timeout = 30_000 });
+            .ToHaveCountAsync(0);
     }
 
     private async Task LeaveTenant(IPage page, AppTestServer server, string tenantName, string email)
@@ -186,13 +190,15 @@ public partial class TenantInvitationUITests : AppPageTest
 
         // Leaving needs elevated access; she has none, so an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
-        var elevatedToken = await server.ReadElevatedAccessToken(email, TestContext.CancellationToken);
-        await MagicLinkSignInUtils.FillOtpInputs(page, elevatedToken);
+
+        var captured = await server.WaitForCapturedEmail(email, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
+        var elevatedToken = captured.Token!;
+        await BitOtpInputUtils.FillOtpInputs(page, elevatedToken);
 
         // Leaving resets her membership to "not accepted", so the tenant reverts to a pending invitation (its "Accept"
         // action reappears) and she is no longer signed into it.
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.AcceptInvitation }))
-            .ToBeVisibleAsync(new() { Timeout = 30_000 });
+            .ToBeVisibleAsync();
     }
 
     //#if (module == "Admin")

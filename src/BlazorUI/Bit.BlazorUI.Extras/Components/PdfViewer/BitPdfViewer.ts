@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class PdfViewer {
         private static _rezoomTimers = new WeakMap<HTMLElement, number>();
         private static readonly _CAPS: CanvasLineCap[] = ["butt", "round", "square"];
@@ -60,14 +60,37 @@ namespace BitBlazorUI {
                 return;
             }
             (container as any).__bitPdvRenderScheduled = true;
-            requestAnimationFrame(() => {
+            (container as any).__bitPdvRenderFrame = requestAnimationFrame(() => {
                 (container as any).__bitPdvRenderScheduled = false;
                 PdfViewer.renderVisiblePages(container, dotnetRef);
             });
         }
 
+        // Scroll-driven rendering: rendering a page runs .NET on the UI thread (on
+        // WASM there is only one thread), so a render pass on every scroll frame
+        // freezes the scroll itself. Instead, while the user is actively scrolling,
+        // allow at most one pass every 300ms, plus one trailing pass shortly after
+        // scrolling settles — placeholders stay smooth mid-fling and fill in the
+        // moment the user slows down (the behavior of native pdf viewers).
+        private static throttleRender(container: HTMLElement, dotnetRef: any) {
+            const c = container as any;
+            clearTimeout(c.__bitPdvRenderDebounce);
+            const now = performance.now();
+            if (now - (c.__bitPdvLastRenderPass || 0) >= 300) {
+                c.__bitPdvLastRenderPass = now;
+                PdfViewer.scheduleRender(container, dotnetRef);
+            } else {
+                c.__bitPdvRenderDebounce = setTimeout(() => {
+                    c.__bitPdvLastRenderPass = performance.now();
+                    PdfViewer.scheduleRender(container, dotnetRef);
+                }, 100);
+            }
+        }
+
         // Computes which pages intersect the viewport (expanded by a buffer) and asks
-        // .NET to render any that are not rendered yet.
+        // .NET to render any that are not rendered yet. Only pages still showing a
+        // placeholder are reported, so scrolling across already-rendered pages costs
+        // no interop round-trip at all (on WASM every call runs on the UI thread).
         private static renderVisiblePages(container: HTMLElement, dotnetRef: any) {
             const pages = container.querySelectorAll("[data-page]");
             if (!pages.length) {
@@ -78,16 +101,33 @@ namespace BitBlazorUI {
             const lo = rect.top - buffer;
             const hi = rect.bottom + buffer;
 
-            const needed: number[] = [];
-            pages.forEach(page => {
+            // Pages actually on screen are requested before buffer pages (which are
+            // ordered by distance from the viewport) — pages render one at a time on
+            // the .NET side, so this ordering is what the user perceives as speed.
+            const visible: number[] = [];
+            const buffered: { n: number, d: number }[] = [];
+            const mid = (rect.top + rect.bottom) / 2;
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
                 const r = page.getBoundingClientRect();
-                if (r.bottom >= lo && r.top <= hi) {
-                    const n = parseInt(page.getAttribute("data-page") || "", 10);
-                    if (!Number.isNaN(n)) {
-                        needed.push(n);
-                    }
+                if (r.top > hi) {
+                    break; // pages are stacked in order; everything after is further down
                 }
-            });
+                if (r.bottom < lo || !page.querySelector(".bit-pdv-page-placeholder")) {
+                    continue;
+                }
+                const n = parseInt(page.getAttribute("data-page") || "", 10);
+                if (Number.isNaN(n)) {
+                    continue;
+                }
+                if (r.bottom >= rect.top && r.top <= rect.bottom) {
+                    visible.push(n);
+                } else {
+                    buffered.push({ n, d: Math.abs((r.top + r.bottom) / 2 - mid) });
+                }
+            }
+            buffered.sort((a, b) => a.d - b.d);
+            const needed = visible.concat(buffered.map(b => b.n));
             if (needed.length) {
                 dotnetRef.invokeMethodAsync("EnsurePagesRendered", needed);
             }
@@ -116,7 +156,11 @@ namespace BitBlazorUI {
                     });
                     if (best) {
                         const n = parseInt((best as Element).getAttribute("data-page") || "", 10);
-                        if (!Number.isNaN(n)) {
+                        // Only cross the interop boundary when the focused page actually
+                        // changed — the observer fires on every threshold crossing while
+                        // scrolling, and each call would otherwise run .NET on the UI thread.
+                        if (!Number.isNaN(n) && (container as any).__bitPdvLastPage !== n) {
+                            (container as any).__bitPdvLastPage = n;
                             dotnetRef.invokeMethodAsync("OnPageVisible", n);
                         }
                     }
@@ -134,7 +178,7 @@ namespace BitBlazorUI {
             // document up front. A geometry check is used (rather than a second
             // IntersectionObserver with rootMargin) because it fires reliably on every
             // scroll for an element scroll-container.
-            const onScroll = () => PdfViewer.scheduleRender(container, dotnetRef);
+            const onScroll = () => PdfViewer.throttleRender(container, dotnetRef);
             container.addEventListener("scroll", onScroll, { passive: true });
             (container as any).__bitPdvScroll = onScroll;
             PdfViewer.scheduleRender(container, dotnetRef); // initial fill
@@ -148,6 +192,7 @@ namespace BitBlazorUI {
                     if (!Number.isNaN(n)) {
                         e.preventDefault();
                         PdfViewer.scrollToPage(container, n);
+                        (container as any).__bitPdvLastPage = n;
                         dotnetRef.invokeMethodAsync("OnPageVisible", n);
                     }
                 }
@@ -190,6 +235,15 @@ namespace BitBlazorUI {
                 container.removeEventListener("scroll", c.__bitPdvScroll);
                 c.__bitPdvScroll = null;
             }
+            clearTimeout(c.__bitPdvRenderDebounce);
+            c.__bitPdvRenderDebounce = null;
+            c.__bitPdvLastRenderPass = 0;
+            // A render pass queued for the next animation frame would invoke the
+            // (about to be disposed) .NET reference; cancel it and clear the flag so
+            // a re-registration can schedule its initial render normally.
+            cancelAnimationFrame(c.__bitPdvRenderFrame);
+            c.__bitPdvRenderFrame = null;
+            c.__bitPdvRenderScheduled = false;
             if (c.__bitPdvClick) {
                 container.removeEventListener("click", c.__bitPdvClick);
                 c.__bitPdvClick = null;
@@ -199,6 +253,7 @@ namespace BitBlazorUI {
                 c.__bitPdvWheel = null;
             }
             c.__bitPdvDotnet = null;
+            c.__bitPdvLastPage = null;
             if (c.__bitPdvResize) {
                 c.__bitPdvResize.disconnect();
                 c.__bitPdvResize = null;
@@ -216,7 +271,7 @@ namespace BitBlazorUI {
                 return;
             }
             (container as any).__bitPdvThumbScheduled = true;
-            requestAnimationFrame(() => {
+            (container as any).__bitPdvThumbFrame = requestAnimationFrame(() => {
                 (container as any).__bitPdvThumbScheduled = false;
                 PdfViewer.renderVisibleThumbs(container, dotnetRef);
             });
@@ -235,15 +290,21 @@ namespace BitBlazorUI {
             const hi = rect.bottom + buffer;
 
             const needed: number[] = [];
-            thumbs.forEach(thumb => {
+            for (let i = 0; i < thumbs.length; i++) {
+                const thumb = thumbs[i];
                 const r = thumb.getBoundingClientRect();
-                if (r.bottom >= lo && r.top <= hi) {
-                    const n = parseInt(thumb.getAttribute("data-thumb") || "", 10);
-                    if (!Number.isNaN(n)) {
-                        needed.push(n);
-                    }
+                if (r.top > hi) {
+                    break; // thumbnails are stacked in order; everything after is further down
                 }
-            });
+                // Only thumbnails still showing a placeholder need .NET.
+                if (r.bottom < lo || !thumb.querySelector(".bit-pdv-page-placeholder")) {
+                    continue;
+                }
+                const n = parseInt(thumb.getAttribute("data-thumb") || "", 10);
+                if (!Number.isNaN(n)) {
+                    needed.push(n);
+                }
+            }
             if (needed.length) {
                 dotnetRef.invokeMethodAsync("EnsureThumbsRendered", needed);
             }
@@ -270,6 +331,11 @@ namespace BitBlazorUI {
                 container.removeEventListener("scroll", c.__bitPdvThumbScroll);
                 c.__bitPdvThumbScroll = null;
             }
+            // A thumb render queued for the next animation frame would invoke the
+            // (about to be disposed) .NET reference; cancel it and clear the flag
+            // so a re-registration can schedule its initial fill normally.
+            cancelAnimationFrame(c.__bitPdvThumbFrame);
+            c.__bitPdvThumbFrame = null;
             c.__bitPdvThumbDotnet = null;
             c.__bitPdvThumbScheduled = false;
         }
@@ -321,14 +387,23 @@ namespace BitBlazorUI {
                 }
             } catch { /* ignore */ }
 
-            const spans = Array.prototype.slice.call(container.querySelectorAll("span[data-w]")) as HTMLElement[];
+            // Only spans not corrected yet: this runs after every lazily-rendered page,
+            // and re-measuring the (up to tens of thousands of) spans of every already
+            // rendered page on each pass would stall the UI thread while scrolling.
+            // Evicted pages re-render fresh markup, so their spans re-qualify naturally.
+            const spans = Array.prototype.slice.call(container.querySelectorAll("span[data-w]:not([data-bit-pdv-wc])")) as HTMLElement[];
             // Batch all reads before all writes to avoid layout thrashing.
             const naturalWidths = spans.map((s) => s.offsetWidth);
             for (let i = 0; i < spans.length; i++) {
                 const target = parseFloat(spans[i].getAttribute("data-w") || "");
                 const natural = naturalWidths[i];
-                if (natural > 0 && target > 0) {
-                    spans[i].style.setProperty("--bit-pdv-sx", (target / natural).toString());
+                // A zero natural width means the span wasn't laid out (e.g. hidden);
+                // leave it unmarked so a later pass can retry the measurement.
+                if (natural > 0) {
+                    spans[i].setAttribute("data-bit-pdv-wc", "");
+                    if (target > 0) {
+                        spans[i].style.setProperty("--bit-pdv-sx", (target / natural).toString());
+                    }
                 }
             }
         }

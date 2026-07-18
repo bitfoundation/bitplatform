@@ -1,4 +1,4 @@
-namespace Bit.Brouter.Demos.Core;
+﻿namespace Bit.Brouter.Demos.Core;
 
 /// <summary>One tile/hero of the View Transitions gallery demo (see GalleryPage / GalleryItemPage).</summary>
 public sealed record GalleryItem(int Id, string Emoji, string Name, string Gradient, string Blurb);

@@ -1,0 +1,43 @@
+﻿@* Probe for the component-level navigation lock (see NavigationLockTests): inherits
+   BrouterRouteBase and decides each pending navigation's fate from its NavigationLockState -
+   cancel, redirect, or await a prompt first (the custom "unsaved changes" dialog flow). *@
+
+@using System.Threading
+@inherits BrouterRouteBase
+
+<div data-testid="lockprobe">@Label</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "probe";
+    [Parameter] public NavigationLockState State { get; set; } = default!;
+
+    protected override async Task OnDeactivatingAsync(BrouterRouteDeactivatingContext context)
+    {
+        State.Log.Add($"{Label}:deactivating:{context.Reason}:to={context.To.Path}");
+        await DecideAsync(context.Cancel, context.Redirect, context.CancellationToken);
+    }
+
+    protected override async Task OnRenavigatingAsync(BrouterRouteRenavigatingContext context)
+    {
+        State.Log.Add($"{Label}:renavigating:to={context.To.Path}");
+        await DecideAsync(context.Cancel, context.Redirect, context.CancellationToken);
+    }
+
+    private async Task DecideAsync(Action cancel, Action<string> redirect, CancellationToken token)
+    {
+        if (State.Prompt is { } prompt)
+        {
+            // Simulated dialog: the navigation stays pending until the test answers the prompt -
+            // or a superseding navigation cancels the token, which releases the parked await
+            // WITHOUT resolving the prompt itself (mirroring a real dialog being dismissed).
+            var dismissed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            await using var dismiss = token.Register(() => dismissed.TrySetResult());
+            var winner = await Task.WhenAny(prompt.Task, dismissed.Task);
+            if (winner == prompt.Task && await prompt.Task) cancel();
+            return;
+        }
+
+        if (State.RedirectTo is not null) redirect(State.RedirectTo);
+        else if (State.Locked) cancel();
+    }
+}

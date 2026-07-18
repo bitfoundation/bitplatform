@@ -200,7 +200,7 @@ public class BitRichTextEditorTests : BunitTestContext
         var before = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
 
         // A value change after initialization routes through the sanitization bridge.
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>");
         });
@@ -221,7 +221,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var before = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>");
         });

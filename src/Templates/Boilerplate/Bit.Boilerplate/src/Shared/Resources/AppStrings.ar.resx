@@ -774,6 +774,15 @@
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>بعد مسح رمز QR أو إدخال المفتاح أعلاه، سيوفر تطبيق المصادقة عاملين كودًا فريدًا. أدخل الكود في مربع التأكيد أدناه</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>لأسباب أمنية، سيتم تسجيل خروجك من جميع أجهزتك، بما في ذلك هذا الجهاز، خلال بضع دقائق. يُرجى تسجيل الدخول مرة أخرى.</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>تغيير كلمة المرور</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>تم تغيير كلمة المرور الخاصة بك بنجاح.</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>تم تفعيل المصادقة عاملين</value>
   </data>

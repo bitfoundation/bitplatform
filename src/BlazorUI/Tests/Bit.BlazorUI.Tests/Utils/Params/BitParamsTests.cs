@@ -132,7 +132,7 @@ public class BitParamsTests : BunitTestContext
             });
         });
 
-        component.SetParametersAndRender(builder => builder.Add(p => p.Parameters, [second]));
+        component.Render(builder => builder.Add(p => p.Parameters, [second]));
 
         component.MarkupMatches("-Hello");
     }

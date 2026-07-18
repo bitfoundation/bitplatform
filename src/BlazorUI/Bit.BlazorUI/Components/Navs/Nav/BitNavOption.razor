@@ -1,7 +1,21 @@
 @namespace Bit.BlazorUI
 
-<CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>
-        @ChildContent
-    </div>
-</CascadingValue>
+@* Renders the option's item in place, so the rendered order of the items always follows the markup
+   order of the options, even when an option is added or removed conditionally later on. *@
+@if (Nav is not null)
+{
+    @if (ChildContent is null)
+    {
+        <_BitNavChild TItem="BitNavOption" Item="this" Depth="@Depth" />
+    }
+    else
+    {
+        <_BitNavChild TItem="BitNavOption" Item="this" Depth="@Depth">
+            <ChildrenFragment>
+                <CascadingValue Value="this" IsFixed="true">
+                    @ChildContent
+                </CascadingValue>
+            </ChildrenFragment>
+        </_BitNavChild>
+    }
+}

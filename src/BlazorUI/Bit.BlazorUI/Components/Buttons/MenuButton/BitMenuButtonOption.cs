@@ -68,11 +68,30 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? Text { get; set; }
 
 
+    internal void InternalStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
-        Parent.RegisterOption(this);
+        Parent?.RegisterOption(this);
 
         await base.OnInitializedAsync();
+    }
+
+    // Renders the option's item in place, so the rendered order of the items always follows the
+    // markup order of the options, even when an option is added or removed conditionally later on.
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (Parent is null) return;
+
+        builder.OpenComponent<_BitMenuButtonItem<BitMenuButtonOption>>(0);
+        builder.AddComponentParameter(1, nameof(_BitMenuButtonItem<BitMenuButtonOption>.MenuButton), Parent);
+        builder.AddComponentParameter(2, nameof(_BitMenuButtonItem<BitMenuButtonOption>.Item), this);
+        builder.CloseComponent();
     }
 
     public void Dispose()
@@ -85,7 +104,7 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        Parent.UnregisterOption(this);
+        Parent?.UnregisterOption(this);
 
         _disposed = true;
     }

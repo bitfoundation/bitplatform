@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" AutoReorderOptions="true">
+    <BitChoiceGroupOption TValue="string" Text="First" Value="@("1")" />
+    @if (ShowMiddle)
+    {
+        <BitChoiceGroupOption TValue="string" Text="Middle" Value="@("2")" />
+    }
+    <BitChoiceGroupOption TValue="string" Text="Last" Value="@("3")" />
+</BitChoiceGroup>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+}

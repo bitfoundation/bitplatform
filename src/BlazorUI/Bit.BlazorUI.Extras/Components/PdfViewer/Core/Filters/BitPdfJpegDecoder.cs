@@ -1,7 +1,9 @@
-// A baseline (sequential DCT, Huffman) JPEG decoder. Ported to the scope needed
+﻿// A baseline (sequential DCT, Huffman) JPEG decoder. Ported to the scope needed
 // by the PDF image pipeline: it lets us decode CMYK/YCCK JPEGs (which browsers
 // render wrong) and apply /SMask, /Mask and /Decode to DCT images. Progressive
 // JPEGs are not handled here (the caller keeps browser passthrough for those).
+
+using System.Runtime.Intrinsics;
 
 namespace Bit.BlazorUI;
 
@@ -479,34 +481,128 @@ internal static class BitPdfJpegDecoder
         }
     }
 
-    // Separable inverse DCT (float; adequate fidelity for display).
-    private static void Idct(int[] block)
+    // Precomputed 1-D IDCT basis. The naive separable IDCT above evaluated Math.Cos/Math.Sqrt
+    // ~1000 times per 8x8 block, which dominated decode time. The transform is linear, so the
+    // whole cosine matrix is baked once into Basis[f][x] = 0.5 * c(f) * cos((2x+1)*f*pi/16),
+    // c(0)=1/sqrt(2). Each 1-D pass then reduces to out[x] = sum_f in[f] * Basis[f][x] — a
+    // broadcast-multiply-accumulate over eight basis vectors with no trig per block. The vectors
+    // are split into 4-wide low/high halves so the hot loop maps onto Vector128 (which is the
+    // SIMD width hardware-accelerated under Blazor WASM, and also on x86/ARM).
+    private static readonly float[] IdctTable = BuildIdctTable();
+    private static readonly Vector128<float>[] IdctBasisLo = BuildIdctBasis(0);
+    private static readonly Vector128<float>[] IdctBasisHi = BuildIdctBasis(4);
+
+    private static float[] BuildIdctTable()
     {
-        var tmp = new double[64];
-        for (int u = 0; u < 8; u++)
+        var t = new float[64];
+        for (int f = 0; f < 8; f++)
         {
+            double cf = f == 0 ? Math.Sqrt(0.5) : 1.0;
             for (int x = 0; x < 8; x++)
             {
-                double sum = 0;
-                for (int v = 0; v < 8; v++)
-                {
-                    double cv = v == 0 ? Math.Sqrt(0.5) : 1;
-                    sum += cv * block[v * 8 + u] * Math.Cos((2 * x + 1) * v * Math.PI / 16);
-                }
-                tmp[x * 8 + u] = sum * 0.5;
+                t[f * 8 + x] = (float)(0.5 * cf * Math.Cos((2 * x + 1) * f * Math.PI / 16));
             }
         }
+        return t;
+    }
+
+    private static Vector128<float>[] BuildIdctBasis(int offset)
+    {
+        var basis = new Vector128<float>[8];
+        for (int f = 0; f < 8; f++)
+        {
+            basis[f] = Vector128.Create(new ReadOnlySpan<float>(IdctTable, f * 8 + offset, 4));
+        }
+        return basis;
+    }
+
+    // Separable inverse DCT via precomputed basis vectors (float; adequate fidelity for display).
+    // Both passes transform rows, so a column pass is expressed as transpose -> row pass -> transpose.
+    private static void Idct(int[] block)
+    {
+        // DC-only blocks (all AC coefficients zero) IDCT to a flat plane of DC/8. This is the
+        // common case for smooth image regions, so short-circuit before touching either pass.
+        bool acZero = block.AsSpan(1, 63).IndexOfAnyExcept(0) < 0;
+        if (acZero)
+        {
+            int dc = (int)MathF.Round(block[0] * 0.125f);
+            for (int i = 0; i < 64; i++)
+            {
+                block[i] = dc;
+            }
+            return;
+        }
+
+        Span<float> src = stackalloc float[64];
+        Span<float> a = stackalloc float[64];
+        for (int i = 0; i < 64; i++)
+        {
+            src[i] = block[i];
+        }
+
+        RowIdct(src, a);          // transform each row
+        Transpose(a, src);        // columns become rows (src is free after the pass above)
+        RowIdct(src, a);          // transform the (original) columns
+        TransposeToInt(a, block); // restore orientation and round back to the caller's buffer
+    }
+
+    // out[y, x] = sum_f input[y, f] * Basis[f][x], done for all eight rows.
+    private static void RowIdct(ReadOnlySpan<float> input, Span<float> output)
+    {
+        if (Vector128.IsHardwareAccelerated)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                int o = y * 8;
+                var lo = Vector128<float>.Zero;
+                var hi = Vector128<float>.Zero;
+                for (int f = 0; f < 8; f++)
+                {
+                    var s = Vector128.Create(input[o + f]);
+                    lo += s * IdctBasisLo[f];
+                    hi += s * IdctBasisHi[f];
+                }
+                lo.CopyTo(output.Slice(o, 4));
+                hi.CopyTo(output.Slice(o + 4, 4));
+            }
+            return;
+        }
+
+        // Scalar fallback for runtimes without SIMD acceleration.
+        var table = IdctTable;
         for (int y = 0; y < 8; y++)
         {
+            int o = y * 8;
             for (int x = 0; x < 8; x++)
             {
-                double sum = 0;
-                for (int u = 0; u < 8; u++)
+                float sum = 0;
+                for (int f = 0; f < 8; f++)
                 {
-                    double cu = u == 0 ? Math.Sqrt(0.5) : 1;
-                    sum += cu * tmp[y * 8 + u] * Math.Cos((2 * x + 1) * u * Math.PI / 16);
+                    sum += table[f * 8 + x] * input[o + f];
                 }
-                block[y * 8 + x] = (int)Math.Round(sum * 0.5);
+                output[o + x] = sum;
+            }
+        }
+    }
+
+    private static void Transpose(ReadOnlySpan<float> src, Span<float> dst)
+    {
+        for (int r = 0; r < 8; r++)
+        {
+            for (int c = 0; c < 8; c++)
+            {
+                dst[c * 8 + r] = src[r * 8 + c];
+            }
+        }
+    }
+
+    private static void TransposeToInt(ReadOnlySpan<float> src, int[] dst)
+    {
+        for (int r = 0; r < 8; r++)
+        {
+            for (int c = 0; c < 8; c++)
+            {
+                dst[c * 8 + r] = (int)MathF.Round(src[r * 8 + c]);
             }
         }
     }

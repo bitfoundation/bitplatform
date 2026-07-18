@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitBreadcrumb TItem="BitBreadcrumbOption">
+    <BitBreadcrumbOption Text="First" Href="/first" />
+    @if (ShowMiddle)
+    {
+        <BitBreadcrumbOption Text="Middle" Href="/middle" />
+    }
+    <BitBreadcrumbOption Text="Last" Href="/last" />
+</BitBreadcrumb>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+}

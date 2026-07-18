@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Forms;
+
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PdfViewer;
 
 public partial class BitPdfViewerDemo
@@ -17,8 +19,8 @@ public partial class BitPdfViewerDemo
         {
             Name = "Height",
             Type = "string?",
-            DefaultValue = "780px",
-            Description = "The CSS height of the viewer container.",
+            DefaultValue = "null",
+            Description = "The CSS height of the viewer container. When not set, the viewer height is responsive: capped at 780px and shrinking to fit the viewport on small screens.",
         },
         new()
         {
@@ -53,6 +55,13 @@ public partial class BitPdfViewerDemo
             Description = "How page content is painted. Canvas replays a display list onto a per-page canvas, while Html (the default) renders prerenderable positioned DOM.",
             LinkType = LinkType.Link,
             Href = "#pdf-render-mode-enum"
+        },
+        new()
+        {
+            Name = "BackgroundRendering",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Offloads document parsing and page rendering to a background thread so scrolling and navigation stay responsive while a complex page renders. Only has an effect when the runtime provides a spare thread (Blazor Server, or a Blazor WebAssembly app built with WasmEnableThreads); on the default single-threaded WebAssembly runtime it is a safe no-op.",
         },
         new()
         {
@@ -313,37 +322,112 @@ public partial class BitPdfViewerDemo
 
 
 
-    private readonly BitPdfSource basicSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
-    private readonly BitPdfSource plainSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/hello-world.pdf", "hello-world.pdf");
-    private readonly BitPdfSource canvasSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
-    private readonly BitPdfSource eventsSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
-    private readonly BitPdfSource publicApiSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
+    private BitPdfSource basicSource = BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/sample-pdf.pdf", "sample.pdf");
+
+    // The remaining examples load on demand through their "Load document" buttons:
+    // parsing a document blocks the single WASM thread, so loading five viewers at
+    // once would freeze the whole page for several seconds at startup.
+    private BitPdfSource? plainSource;
+    private BitPdfSource? canvasSource;
+    private BitPdfSource? eventsSource;
+    private BitPdfSource? publicApiSource;
 
     private readonly List<string> eventsLog = [];
 
     private BitPdfViewer pdfViewerRef = default!;
 
+    private static BitPdfSource CreateSampleSource()
+        => BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/sample-pdf.pdf", "sample.pdf");
+
+    private static BitPdfSource CreateArticleSource()
+        => BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf", "article.pdf");
+
+    private async Task OnBasicFileChange(InputFileChangeEventArgs e)
+    {
+        basicSource = await ReadFileSource(e) ?? basicSource;
+    }
+
+    private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
+    {
+        canvasSource = await ReadFileSource(e) ?? canvasSource;
+    }
+
+    private static async Task<BitPdfSource?> ReadFileSource(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount == 0) return null;
+
+        const long maxSize = 512 * 1024 * 1024;
+        if (e.File.Size <= 0 || e.File.Size > maxSize) return null; // reject empty/oversized files before buffering
+
+        using var stream = e.File.OpenReadStream(maxAllowedSize: maxSize);
+        var bytes = new byte[(int)e.File.Size];
+        await stream.ReadExactlyAsync(bytes);
+
+        return BitPdfSource.FromBytes(bytes, e.File.Name);
+    }
+
 
 
     private readonly string example1RazorCode = @"
+<InputFile OnChange=""OnBasicFileChange"" accept="".pdf,application/pdf"" />
+
 <BitPdfViewer Source=""basicSource"" />";
     private readonly string example1CsharpCode = @"
-private readonly BitPdfSource basicSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+private BitPdfSource basicSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
 
 // or from in-memory bytes:
-// private readonly BitPdfSource basicSource = BitPdfSource.FromBytes(pdfBytes, ""file-name.pdf"");";
+// private BitPdfSource basicSource = BitPdfSource.FromBytes(pdfBytes, ""file-name.pdf"");
+
+private async Task OnBasicFileChange(InputFileChangeEventArgs e)
+{
+    if (e.FileCount == 0) return;
+
+    const long maxSize = 512 * 1024 * 1024;
+    if (e.File.Size <= 0 || e.File.Size > maxSize) return;
+
+    using var stream = e.File.OpenReadStream(maxAllowedSize: maxSize);
+    var bytes = new byte[(int)e.File.Size];
+    await stream.ReadExactlyAsync(bytes);
+
+    basicSource = BitPdfSource.FromBytes(bytes, e.File.Name);
+}";
 
     private readonly string example2RazorCode = @"
-<BitPdfViewer Source=""plainSource"" ShowToolbar=""false"" Height=""420px"" />";
+<BitButton IsEnabled=""plainSource is null""
+           OnClick='() => plainSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
+<BitPdfViewer Source=""plainSource"" ShowToolbar=""false"" Height=""600px"" />";
     private readonly string example2CsharpCode = @"
-private readonly BitPdfSource plainSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");";
+private BitPdfSource? plainSource;";
 
     private readonly string example3RazorCode = @"
+<BitButton IsEnabled=""canvasSource is null""
+           OnClick='() => canvasSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
+<InputFile OnChange=""OnCanvasFileChange"" accept="".pdf,application/pdf"" />
+
 <BitPdfViewer Source=""canvasSource"" RenderMode=""BitPdfRenderMode.Canvas"" />";
     private readonly string example3CsharpCode = @"
-private readonly BitPdfSource canvasSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");";
+private BitPdfSource? canvasSource;
+
+private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
+{
+    if (e.FileCount == 0) return;
+
+    const long maxSize = 512 * 1024 * 1024;
+    if (e.File.Size <= 0 || e.File.Size > maxSize) return;
+
+    using var stream = e.File.OpenReadStream(maxAllowedSize: maxSize);
+    var bytes = new byte[(int)e.File.Size];
+    await stream.ReadExactlyAsync(bytes);
+
+    canvasSource = BitPdfSource.FromBytes(bytes, e.File.Name);
+}";
 
     private readonly string example4RazorCode = @"
+<BitButton IsEnabled=""eventsSource is null""
+           OnClick='() => eventsSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
 <BitPdfViewer Source=""eventsSource""
               OnDocumentLoaded='() => eventsLog.Add(""Document loaded"")'
               OnPageChanged='p => eventsLog.Add($""Page changed: {p}"")'
@@ -357,28 +441,35 @@ private readonly BitPdfSource canvasSource = BitPdfSource.FromUrl(""url-to-the-p
     }
 </div>";
     private readonly string example4CsharpCode = @"
-private readonly BitPdfSource eventsSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+private BitPdfSource? eventsSource;
 
 private readonly List<string> eventsLog = [];";
 
     private readonly string example5RazorCode = @"
-<BitButton OnClick=""() => pdfViewerRef.GoToPage(1)"">First</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.PrevPage()"">Prev</BitButton>
-<BitTag Variant=""BitVariant.Outline"" Text=""@($""{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}"")"" Color=""BitColor.Info"" />
-<BitButton OnClick=""() => pdfViewerRef.NextPage()"">Next</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)"">Last</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.ZoomOut()"">Zoom -</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.ZoomIn()"">Zoom +</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.RotateClockwise()"">Rotate</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.Print()"">Print</BitButton>
+<BitButton IsEnabled=""publicApiSource is null""
+           OnClick='() => publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
-<BitPdfViewer @ref=""pdfViewerRef""
+<div style=""display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center"">
+    <BitButton OnClick=""() => pdfViewerRef.GoToPage(1)"">First</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.PrevPage()"">Prev</BitButton>
+    <BitTag Variant=""BitVariant.Outline"" Text=""@($""{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}"")"" Color=""BitColor.Info"" />
+    <BitButton OnClick=""() => pdfViewerRef.NextPage()"">Next</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)"">Last</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.ZoomOut()"">Zoom -</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.ZoomIn()"">Zoom +</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.RotateClockwise()"">Rotate</BitButton>
+    <BitButton OnClick=""() => pdfViewerRef.Print()"">Print</BitButton>
+</div>
+
+@* BackgroundRendering offloads parse/render to a worker thread when the runtime
+   has one (Blazor Server, or a WASM app built with WasmEnableThreads). *@
+<BitPdfViewer @ref=""pdfViewerRef"" BackgroundRendering
               Source=""publicApiSource""
               ShowToolbar=""false""
               OnDocumentLoaded=""StateHasChanged""
               OnPageChanged=""_ => StateHasChanged()"" />";
     private readonly string example5CsharpCode = @"
-private readonly BitPdfSource publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"");
+private BitPdfSource? publicApiSource;
 
 private BitPdfViewer pdfViewerRef = default!;";
 }

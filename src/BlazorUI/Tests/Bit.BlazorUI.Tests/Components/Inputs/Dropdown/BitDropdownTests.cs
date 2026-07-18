@@ -485,7 +485,7 @@ public class BitDropdownTests : BunitTestContext
 
         if (isMultiSelect)
         {
-            var drpItems = component.FindAll(".bit-drp-iwr", true);
+            var drpItems = component.FindAll(".bit-drp-iwr");
             drpItems[0].GetElementsByTagName("button").First().Click();
             drpItems[1].GetElementsByTagName("button").First().Click();
             var expectedResult = itemIsEnabled ? 2 : 0;
@@ -861,7 +861,7 @@ public class BitDropdownTests : BunitTestContext
         var bitDropdown = component.Find(".bit-drp-wrp");
         bitDropdown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
         Assert.AreEqual(items.Count, drpItems.Count);
 
@@ -869,11 +869,14 @@ public class BitDropdownTests : BunitTestContext
         searchInput.Input(search);
 
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+        // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
+        drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
         Assert.AreEqual(itemCount, drpItems.Count);
 
         if (string.IsNullOrEmpty(search) is false)
         {
             searchInput.Input(string.Empty);
+            drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
             Assert.AreEqual(items.Count, drpItems.Count);
         }
     }
@@ -900,7 +903,7 @@ public class BitDropdownTests : BunitTestContext
         var bitDropdown = component.Find(".bit-drp-wrp");
         bitDropdown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
         Assert.AreEqual(items.Count, drpItems.Count);
 
@@ -908,12 +911,15 @@ public class BitDropdownTests : BunitTestContext
 
         // Without Immediate, typing (oninput) should not filter the items.
         searchInput.Input(search);
+        // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
+        drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
         Assert.AreEqual(items.Count, drpItems.Count);
 
         // Filtering happens on the change event instead.
         searchInput.Change(search);
 
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+        drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
         Assert.AreEqual(itemCount, drpItems.Count);
     }
 
@@ -940,7 +946,7 @@ public class BitDropdownTests : BunitTestContext
         var bitDropdown = component.Find(".bit-drp-wrp");
         bitDropdown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
         Assert.AreEqual(items.Count, drpItems.Count);
 
@@ -948,11 +954,14 @@ public class BitDropdownTests : BunitTestContext
         comboInput.Input(search);
 
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+        // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
+        drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
         Assert.AreEqual(itemCount, drpItems.Count);
 
         if (string.IsNullOrEmpty(search) is false)
         {
             comboInput.Input(string.Empty);
+            drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
             Assert.AreEqual(items.Count, drpItems.Count);
         }
     }
@@ -979,7 +988,7 @@ public class BitDropdownTests : BunitTestContext
         var bitDropdown = component.Find(".bit-drp-wrp");
         bitDropdown.Click();
 
-        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
 
         Assert.AreEqual(items.Count, drpItems.Count);
 
@@ -989,6 +998,8 @@ public class BitDropdownTests : BunitTestContext
         comboInput.Change(search);
 
         var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+        // bUnit v2 removed auto-refreshing FindAll collections, so re-query after the DOM changes.
+        drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm");
         Assert.AreEqual(itemCount, drpItems.Count);
     }
 

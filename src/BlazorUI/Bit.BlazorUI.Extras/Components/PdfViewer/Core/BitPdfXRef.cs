@@ -1,4 +1,4 @@
-// Cross-reference table and stream reader.
+﻿// Cross-reference table and stream reader.
 
 using System.Linq;
 using System.Text;
@@ -271,9 +271,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
                 int num = subStart + i;
                 bool free = typeTok is BitPdfCmd { Value: "f" };
-                if (!_entries.ContainsKey(num))
-                {
-                    _entries[num] = new Entry
+                _entries.TryAdd(num, new Entry
                     {
                         Type = free ? EntryType.Free : EntryType.Uncompressed,
                         // Normalize a real object offset to an absolute buffer index
@@ -281,8 +279,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
                         // field is a next-free object number, not an offset (2.5).
                         Field2 = free ? (int)off : (int)off + _startOffset,
                         Field3 = (int)gen,
-                    };
-                }
+                    });
             }
         }
 
@@ -734,10 +731,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 _ = lexer.GetObj(); // offset (unused for positional access)
                 int objNum = (int)dn;
                 // Don't override a directly-scanned (uncompressed) definition.
-                if (!_entries.ContainsKey(objNum))
-                {
-                    _entries[objNum] = new Entry { Type = EntryType.Compressed, Field2 = streamNum, Field3 = idx };
-                }
+                _entries.TryAdd(objNum, new Entry { Type = EntryType.Compressed, Field2 = streamNum, Field3 = idx });
             }
         }
     }

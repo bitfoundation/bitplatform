@@ -1,4 +1,4 @@
-@import "../../Styles/extra-variables.scss";
+﻿@import "../../Styles/extra-variables.scss";
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
 .bit-pdv {
@@ -6,6 +6,11 @@
     overflow: hidden;
     position: relative;
     flex-direction: column;
+    /* Default height adapts to the viewport so the viewer stays usable on small
+       screens; the Height parameter overrides it via an inline style. The vh
+       line is a fallback for browsers without dvh support. */
+    height: min(#{rem2(780px)}, 85vh);
+    height: min(#{rem2(780px)}, 85dvh);
     background: $clr-bg-sec-dark;
     font-family: $tg-font-family;
     border-radius: $shp-border-radius;
@@ -44,19 +49,29 @@
 }
 
 /* Placeholder shown while a page is being rendered on demand. Pdf pages paint
-   on white regardless of the theme, so the placeholder mimics a white page. */
+   on white regardless of the theme, so the placeholder mimics a white page.
+   The shimmer sweeps a gradient overlay via a transform animation, which runs
+   on the compositor: animating the gradient's background-position instead (as
+   an earlier version did) repaints every visible placeholder on the main
+   thread on every frame, which alone causes scroll jank. */
 .bit-pdv-page-placeholder {
     inset: 0;
     position: absolute;
-    background: linear-gradient(100deg, #f2f2f2 30%, #e6e6e6 50%, #f2f2f2 70%) #f2f2f2;
-    background-size: 200% 100%;
-    animation: bit-pdv-shimmer 1.3s linear infinite;
-    will-change: background-position;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.bit-pdv-page-placeholder::after {
+    content: "";
+    inset: 0;
+    position: absolute;
+    transform: translateX(-100%);
+    background: linear-gradient(100deg, transparent 25%, #dcdcdc 50%, transparent 75%);
+    animation: bit-pdv-shimmer 1.4s linear infinite;
 }
 
 @keyframes bit-pdv-shimmer {
-    0% { background-position: 150% 0; }
-    100% { background-position: -50% 0; }
+    100% { transform: translateX(100%); }
 }
 
 /* Toolbar */
@@ -236,6 +251,7 @@
 
 .bit-pdv-thumb-svg {
     line-height: 0;
+    contain: strict; /* explicit inline width/height, same isolation as .bit-pdv-page */
 }
 
 .bit-pdv-thumb-label {
@@ -328,6 +344,21 @@
     overflow: hidden;
     position: relative;
     box-shadow: $box-shadow-2;
+    /* Pages always carry an explicit inline width/height, so full containment is
+       safe. It isolates each page's (potentially huge) subtree: inserting or
+       evicting one page no longer forces style/layout work across the rest of
+       the document surface (or the hosting page). */
+    contain: strict;
+}
+
+/* The initial loading placeholder shown before any real page dimensions are
+   known: size it from the surface with a portrait-page aspect ratio. It drops
+   the size containment of .bit-pdv-page (which needs an explicit height) so the
+   aspect-ratio can derive the height. */
+.bit-pdv-page-loading {
+    width: min(100%, 620px);
+    aspect-ratio: 8.5 / 11;
+    contain: layout paint;
 }
 
 .bit-pdv-page .bit-pdv-html-page,

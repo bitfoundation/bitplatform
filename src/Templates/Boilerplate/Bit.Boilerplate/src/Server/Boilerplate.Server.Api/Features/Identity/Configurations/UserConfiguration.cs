@@ -69,6 +69,29 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
             ConcurrencyStamp = "425e1a26-5b3a-4544-8e91-2760cd28e230",
             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
         }]);
+
+        const string storeUserUserName = "store-user";
+        const string storeUserEmail = "store-user@bitplatform.dev";
+
+        // A regular (non-admin) member of the default store tenant, assigned to the demo user-group.
+        // (See UserRoleConfiguration and TenantUserConfiguration).
+        builder.HasData([new User
+        {
+            Id = Guid.Parse("4ff71671-a1d6-4f97-abb9-d87d7b47d6e4"),
+            EmailConfirmed = true,
+            LockoutEnabled = true,
+            Gender = Gender.Other,
+            BirthDate = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
+            FullName = "Store tenant user",
+            UserName = storeUserUserName,
+            NormalizedUserName = storeUserUserName.ToUpperInvariant(),
+            Email = storeUserEmail,
+            NormalizedEmail = storeUserEmail.ToUpperInvariant(),
+            EmailTokenRequestedOn = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
+            SecurityStamp = "469ff4a9-4b07-4cc1-8141-c5fc033daf84",
+            ConcurrencyStamp = "435e1a26-5b3a-4544-8e91-2760cd28e229",
+            PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
+        }]);
         //#endif
 
         //#if (database != "PostgreSQL")

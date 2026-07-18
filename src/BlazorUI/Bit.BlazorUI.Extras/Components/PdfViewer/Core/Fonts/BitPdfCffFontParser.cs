@@ -1,4 +1,4 @@
-// Minimal CFF (Compact Font Format) parser: recovers the glyph count and the
+﻿// Minimal CFF (Compact Font Format) parser: recovers the glyph count and the
 // glyph-id → glyph-name mapping (via the charset + String INDEX + the 391 CFF
 // standard strings). Enough to wrap a bare CFF (/FontFile3 /Type1C) in an
 // OpenType sfnt with a synthetic Unicode cmap, without interpreting charstrings.

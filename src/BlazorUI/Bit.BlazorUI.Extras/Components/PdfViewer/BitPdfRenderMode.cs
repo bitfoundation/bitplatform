@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>How page content is rendered.</summary>
 public enum BitPdfRenderMode

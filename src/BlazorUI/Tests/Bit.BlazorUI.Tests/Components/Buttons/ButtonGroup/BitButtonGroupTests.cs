@@ -46,7 +46,6 @@ public class BitButtonGroupTests : BunitTestContext
         });
 
         var btn = component.Find(".bit-btg-itm");
-        Assert.IsNotNull(btn);
 
         btn.Click();
 

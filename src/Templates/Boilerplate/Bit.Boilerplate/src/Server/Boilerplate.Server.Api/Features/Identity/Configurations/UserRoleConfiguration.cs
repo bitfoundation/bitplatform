@@ -23,6 +23,12 @@ public partial class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 
         // store-admin@bitplatform.dev is the default store tenant's admin.
         builder.HasData(new UserRole { RoleId = tenantAdminRoleId, UserId = storeAdminUserId, TenantId = TenantConfiguration.FallbackTenantId });
+
+        var demoRoleId = Guid.Parse("9ff71672-a1d5-4f97-abb7-d87d6b47d5e8");
+        var storeUserUserId = Guid.Parse("4ff71671-a1d6-4f97-abb9-d87d7b47d6e4");
+
+        // store-user@bitplatform.dev is a regular member of the default store tenant's demo user-group.
+        builder.HasData(new UserRole { RoleId = demoRoleId, UserId = storeUserUserId, TenantId = TenantConfiguration.FallbackTenantId });
         //#endif
     }
 }

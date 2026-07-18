@@ -25,7 +25,7 @@ public class DragEdgesTests
     public void DragPropagation_True_FlagsPropagation()
     {
         using var ctx = new BmotionTestContext();
-        ctx.RenderComponent<Bmotion>(ps => ps
+        ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Drag, BmDrag.Both)
             .Add(p => p.DragPropagation, true)
@@ -40,7 +40,7 @@ public class DragEdgesTests
     public void DragPropagation_DefaultFalse_OmitsFlag()
     {
         using var ctx = new BmotionTestContext();
-        ctx.RenderComponent<Bmotion>(ps => ps
+        ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Drag, BmDrag.Both)
             .Add(p => p.ChildContent, Div));

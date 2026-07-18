@@ -86,7 +86,10 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
             result.AppendLine($"{header.Key}: {header.Value}");
         }
 
-        result.AppendLine();
+        result.AppendLine();    
+        //#if (multitenant == true)
+        result.AppendLine($"TenantId: {TenantProvider.GetCurrentTenantId()}");
+        //#endif
         result.AppendLine($"Environment: {env.EnvironmentName}");
         result.AppendLine("Base url: " + Request.GetBaseUrl());
         result.AppendLine("Web app url: " + Request.GetWebAppUrl());

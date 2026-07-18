@@ -1,4 +1,4 @@
-// Recovers glyph mappings from an embedded TrueType (sfnt) font and builds a
+﻿// Recovers glyph mappings from an embedded TrueType (sfnt) font and builds a
 // synthetic (3,1) Unicode cmap. Subset fonts embedded in PDFs frequently carry a
 // cmap subtable the browser's OTS rejects ("no supported subtables"), or one
 // keyed by byte codes rather than Unicode. We re-derive code→glyph-id from the

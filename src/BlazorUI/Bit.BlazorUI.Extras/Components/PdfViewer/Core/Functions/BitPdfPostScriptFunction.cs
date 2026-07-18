@@ -1,4 +1,4 @@
-// Type 4 (PostScript calculator) function parsing and evaluation.
+﻿// Type 4 (PostScript calculator) function parsing and evaluation.
 
 using System.Globalization;
 
@@ -85,43 +85,45 @@ internal sealed class BitPdfPostScriptFunction : BitPdfFunction
             string op = (string)token;
             switch (op)
             {
-                case "add": Bin(stack, (a, b) => a + b); break;
-                case "sub": Bin(stack, (a, b) => a - b); break;
-                case "mul": Bin(stack, (a, b) => a * b); break;
-                case "div": Bin(stack, (a, b) => b != 0 ? a / b : 0); break;
-                case "idiv": Bin(stack, (a, b) => b != 0 ? Math.Truncate(a / b) : 0); break;
-                case "mod": Bin(stack, (a, b) => b != 0 ? a % b : 0); break;
-                case "neg": Un(stack, a => -a); break;
+                case "add": Bin(stack, static (a, b) => a + b); break;
+                case "sub": Bin(stack, static (a, b) => a - b); break;
+                case "mul": Bin(stack, static (a, b) => a * b); break;
+                case "div": Bin(stack, static (a, b) => b != 0 ? a / b : 0); break;
+                case "idiv": Bin(stack, static (a, b) => b != 0 ? Math.Truncate(a / b) : 0); break;
+                case "mod": Bin(stack, static (a, b) => b != 0 ? a % b : 0); break;
+                case "neg": Un(stack, static a => -a); break;
                 case "abs": Un(stack, Math.Abs); break;
-                case "sqrt": Un(stack, a => Math.Sqrt(Math.Max(0, a))); break;
-                case "sin": Un(stack, a => Math.Sin(a * Math.PI / 180)); break;
-                case "cos": Un(stack, a => Math.Cos(a * Math.PI / 180)); break;
-                case "atan": Bin(stack, (a, b) => { double r = Math.Atan2(a, b) * 180 / Math.PI; return r < 0 ? r + 360 : r; }); break;
+                case "sqrt": Un(stack, static a => Math.Sqrt(Math.Max(0, a))); break;
+                case "sin": Un(stack, static a => Math.Sin(a * Math.PI / 180)); break;
+                case "cos": Un(stack, static a => Math.Cos(a * Math.PI / 180)); break;
+                case "atan": Bin(stack, static (a, b) => { double r = Math.Atan2(a, b) * 180 / Math.PI; return r < 0 ? r + 360 : r; }); break;
                 case "exp": Bin(stack, Math.Pow); break;
-                case "ln": Un(stack, a => a > 0 ? Math.Log(a) : 0); break;
-                case "log": Un(stack, a => a > 0 ? Math.Log10(a) : 0); break;
+                case "ln": Un(stack, static a => a > 0 ? Math.Log(a) : 0); break;
+                case "log": Un(stack, static a => a > 0 ? Math.Log10(a) : 0); break;
                 case "cvi": case "truncate": Un(stack, Math.Truncate); break;
                 case "cvr": break;
                 case "floor": Un(stack, Math.Floor); break;
                 case "ceiling": Un(stack, Math.Ceiling); break;
-                case "round": Un(stack, a => Math.Round(a, MidpointRounding.AwayFromZero)); break;
+                case "round": Un(stack, static a => Math.Round(a, MidpointRounding.AwayFromZero)); break;
                 case "dup": { double a = Peek(stack); stack.Push(a); break; }
                 case "pop": if (stack.Count > 0) stack.Pop(); break;
                 case "exch": { double b = Pop(stack), a = Pop(stack); stack.Push(b); stack.Push(a); break; }
                 case "copy": DoCopy(stack); break;
                 case "index": DoIndex(stack); break;
                 case "roll": DoRoll(stack); break;
-                case "eq": Cmp(stack, (a, b) => a == b); break;
-                case "ne": Cmp(stack, (a, b) => a != b); break;
-                case "gt": Cmp(stack, (a, b) => a > b); break;
-                case "ge": Cmp(stack, (a, b) => a >= b); break;
-                case "lt": Cmp(stack, (a, b) => a < b); break;
-                case "le": Cmp(stack, (a, b) => a <= b); break;
-                case "and": Bin(stack, (a, b) => (double)((long)a & (long)b)); break;
-                case "or": Bin(stack, (a, b) => (double)((long)a | (long)b)); break;
-                case "xor": Bin(stack, (a, b) => (double)((long)a ^ (long)b)); break;
-                case "bitshift": Bin(stack, (a, b) => { int s = (int)b; long v = (long)a; return s >= 0 ? (double)(v << s) : (double)(v >> -s); }); break;
-                case "not": Un(stack, a => a != 0 ? 0 : 1); break;
+                case "eq": Cmp(stack, static (a, b) => a == b); break;
+                case "ne": Cmp(stack, static (a, b) => a != b); break;
+                case "gt": Cmp(stack, static (a, b) => a > b); break;
+                case "ge": Cmp(stack, static (a, b) => a >= b); break;
+                case "lt": Cmp(stack, static (a, b) => a < b); break;
+                case "le": Cmp(stack, static (a, b) => a <= b); break;
+                case "and": Bin(stack, static (a, b) => (double)((long)a & (long)b)); break;
+                case "or": Bin(stack, static (a, b) => (double)((long)a | (long)b)); break;
+                case "xor": Bin(stack, static (a, b) => (double)((long)a ^ (long)b)); break;
+                // A negative shift is a LOGICAL right shift (zeros fill the vacated
+                // bits regardless of sign, PLRM bitshift) — shift unsigned, not v >> -s.
+                case "bitshift": Bin(stack, static (a, b) => { int s = (int)b; long v = (long)a; return s >= 0 ? (double)(v << s) : (double)(long)((ulong)v >> -s); }); break;
+                case "not": Un(stack, static a => a != 0 ? 0 : 1); break;
                 case "true": stack.Push(1); break;
                 case "false": stack.Push(0); break;
                 case "if":

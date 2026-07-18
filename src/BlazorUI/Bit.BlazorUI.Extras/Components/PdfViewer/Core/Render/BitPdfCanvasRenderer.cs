@@ -1,4 +1,4 @@
-// Canvas rendering: the display-list front end over the shared content engine.
+﻿// Canvas rendering: the display-list front end over the shared content engine.
 
 namespace Bit.BlazorUI;
 

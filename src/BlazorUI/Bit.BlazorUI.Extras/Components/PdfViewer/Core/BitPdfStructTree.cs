@@ -1,4 +1,4 @@
-// Tagged-PDF logical structure tree (/StructTreeRoot) exposure. Assistive
+﻿// Tagged-PDF logical structure tree (/StructTreeRoot) exposure. Assistive
 // technology and reflow tools use this to recover reading order, headings and
 // alternate text. This parses the structure hierarchy into a simple tree; it
 // does not resolve marked-content (MCID) leaves, which reference page content.

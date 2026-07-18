@@ -37,7 +37,7 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -75,7 +75,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
         var style = "padding: 1rem;";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, style);
         });
@@ -108,7 +108,7 @@ public class BitStickyTests : BunitTestContext
 
         var cssClass = "test-class";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, cssClass);
         });
@@ -163,7 +163,7 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -204,7 +204,7 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -288,7 +288,7 @@ public class BitStickyTests : BunitTestContext
 
         var top = "20px";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Top, top);
         });
@@ -328,7 +328,7 @@ public class BitStickyTests : BunitTestContext
 
         var bottom = "20px";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Bottom, "20px");
         });
@@ -368,7 +368,7 @@ public class BitStickyTests : BunitTestContext
 
         var left = "20px";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Left, left);
         });
@@ -408,7 +408,7 @@ public class BitStickyTests : BunitTestContext
 
         var right = "20px";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Right, right);
         });
@@ -477,7 +477,7 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Position, BitStickyPosition.Start);
         });

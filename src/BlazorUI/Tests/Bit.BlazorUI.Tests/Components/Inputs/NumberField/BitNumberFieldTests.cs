@@ -187,7 +187,7 @@ public class BitNumberFieldTests : BunitTestContext
         var button = component.Find("button:last-child");
         var icon = component.Find("button:last-child > span > i");
 
-        Assert.IsTrue(icon.ToMarkup().Contains($"bit-icon--{iconName}"));
+        Assert.IsTrue(icon.OuterHtml.Contains($"bit-icon--{iconName}"));
         Assert.AreEqual(!isEnabled, button.HasAttribute("disabled"));
         Assert.AreEqual(!isEnabled, button.HasAttribute("aria-disabled"));
 
@@ -644,11 +644,11 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual("۱۲۳", component.Find("input").GetAttribute("value"));
 
         // The parent resets the bound value to 0.
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Value, 0));
+        component.Render(parameters => parameters.Add(p => p.Value, 0));
         Assert.AreEqual("0", component.Find("input").GetAttribute("value"));
 
         // The parent then loads 123 again; the stale Persian text must NOT reappear.
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Value, 123));
+        component.Render(parameters => parameters.Add(p => p.Value, 123));
         Assert.AreEqual("123", component.Find("input").GetAttribute("value"));
     }
 
@@ -859,7 +859,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         // Disabling normalization (with the same non-Latin Min) must drop the previously parsed Min,
         // since "۱۰" no longer parses, falling back to the type minimum (no clamping).
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.NormalizeDigits, false));
+        component.Render(parameters => parameters.Add(p => p.NormalizeDigits, false));
         component.Find("input").Change(new ChangeEventArgs { Value = "5" });
         Assert.AreEqual(5, component.Instance.Value);
     }

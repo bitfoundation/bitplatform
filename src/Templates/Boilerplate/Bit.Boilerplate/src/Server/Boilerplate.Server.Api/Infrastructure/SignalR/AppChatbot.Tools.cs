@@ -5,6 +5,7 @@ using Boilerplate.Server.Api.Features.Products;
 //#endif
 using ModelContextProtocol.Server;
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Shared;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
@@ -89,6 +90,16 @@ public partial class AppChatbot
             serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Navigation failed";
         }
+    }
+
+    /// <summary>
+    /// Returns the list of available application pages with their relative URLs and descriptions.
+    /// </summary>
+    [Description("Returns the list of available application pages, each with its relative URL and a short description. Call this tool whenever the user asks to find, open or navigate to a specific page/section of the app, then use the returned relative URL (e.g. /dashboard) with the NavigateToPage tool.")]
+    [McpServerTool(Name = nameof(GetAppPages))]
+    private object GetAppPages()
+    {
+        return PageUrls.GetPages();
     }
 
     [Description(@"Displays the sign-in modal to the user and waits for either successful sign-in or cancellation")]

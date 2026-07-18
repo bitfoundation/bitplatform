@@ -1,4 +1,4 @@
-// Parsing of embedded CMap streams used as the /Encoding of Type0 (composite)
+﻿// Parsing of embedded CMap streams used as the /Encoding of Type0 (composite)
 // fonts: maps multi-byte character codes to CIDs. Identity encodings map code
 // to CID directly; an embedded CMap supplies explicit codespace ranges and
 // cidrange/cidchar mappings.

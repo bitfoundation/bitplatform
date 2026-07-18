@@ -1,0 +1,103 @@
+﻿@* Route lifecycle demo. This is a singleton Component route (no KeepAlive) whose page implements
+   IBrouterRoute DIRECTLY - the router discovers the interface on the component it instantiates,
+   no base class or cascading parameter needed. Switching ids re-commits the SAME instance
+   (OnRenavigated); leaving unmounts it (OnDeactivated with reason Disposing). Every callback is
+   written to the scoped DemoState log so the Disposing entry - fired while this page tears
+   down - is still visible when you come back. Compare /sticky, where the keep-alive retention
+   makes the deactivation reason Hidden instead. *@
+
+@implements IBrouterRoute
+@inject DemoState demoState
+
+<div class="bb-intro">
+    <h1>Route lifecycle <span class="bb-badge">instance #@_instanceStamp</span></h1>
+    <p class="bb-subtitle">
+        <code>/lifecycle/{id:int}</code> implements <code>IBrouterRoute</code> directly - the router
+        auto-discovers it on the page it instantiates - and logs every
+        <code>OnActivated</code> / <code>OnRenavigated</code> / <code>OnDeactivated</code> callback below.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Trigger the callbacks</h3>
+    <ul class="bb-link-list">
+        <li><BrouterLink Href="/lifecycle/1">/lifecycle/1</BrouterLink></li>
+        <li><BrouterLink Href="/lifecycle/2">/lifecycle/2</BrouterLink></li>
+        <li><BrouterLink Href="/lifecycle/2?tab=comments">/lifecycle/2?tab=comments</BrouterLink></li>
+        <li><BrouterLink Href="/home">Leave (Home)</BrouterLink></li>
+    </ul>
+    <dl class="bb-params">
+        <dt>id (route)</dt>
+        <dd>@Id</dd>
+        <dt>?tab (query)</dt>
+        <dd>@(_tab ?? "-")</dd>
+    </dl>
+    <p class="bb-card-desc">
+        This route is a singleton (not keep-alive), so switching between ids re-commits the
+        <strong>same component instance</strong>: <code>OnInitialized</code> does not re-run, and
+        <code>OnRenavigated</code> is the "user arrived here again" signal, carrying both locations.
+        Navigating away fires <code>OnDeactivated</code> with reason <code>Disposing</code> (its
+        synchronous part is guaranteed to run before <code>Dispose</code>); coming back mounts a fresh
+        instance - new # in the title - whose first <code>OnActivated</code> has
+        <code>IsFirstActivation</code> set.
+    </p>
+</div>
+
+<LifecyclePulse />
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Event log (survives disposal)</h3>
+    @if (demoState.LifecycleLog.Count == 0)
+    {
+        <p class="bb-card-desc">No events yet - this page's first OnActivated is about to appear.</p>
+    }
+    else
+    {
+        <ul class="bb-link-list">
+            @foreach (var entry in demoState.LifecycleLog)
+            {
+                <li><code>@entry</code></li>
+            }
+        </ul>
+    }
+    <button class="btn btn-primary" style="margin-top: .75rem;" @onclick="@(() => demoState.LifecycleLog.Clear())">
+        Clear log
+    </button>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private string? _tab;
+
+    // Monotonic stamp handed out per created instance: the same # across a renavigation proves the
+    // instance was reused; a new # after leaving and returning proves it was disposed and rebuilt.
+    private static int _nextStamp;
+    private readonly int _instanceStamp = System.Threading.Interlocked.Increment(ref _nextStamp);
+
+    public ValueTask OnActivatedAsync(BrouterRouteActivation activation)
+    {
+        _tab = activation.Location.GetQuery("tab");
+        Log($"OnActivated ({(activation.IsFirstActivation ? "first" : "reveal")}) at {activation.Location.Path}{activation.Location.Query}");
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
+    {
+        _tab = renavigation.Location.GetQuery("tab");
+        Log($"OnRenavigated {renavigation.PreviousLocation.Path}{renavigation.PreviousLocation.Query} -> {renavigation.Location.Path}{renavigation.Location.Query}");
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask OnDeactivatedAsync(BrouterRouteDeactivation deactivation)
+    {
+        // No StateHasChanged: this instance is about to be disposed - the entry is read on return.
+        Log($"OnDeactivated ({deactivation.Reason}) -> {deactivation.Location.Path}");
+        return ValueTask.CompletedTask;
+    }
+
+    private void Log(string message) =>
+        demoState.LifecycleLog.Insert(0, $"{DateTime.Now:HH:mm:ss} · #{_instanceStamp} {message}");
+}

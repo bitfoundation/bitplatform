@@ -8,24 +8,23 @@
 
 <CascadingValue Value=BitDir.Ltr>
     <section>
-        <BitStack Gap="3rem">
-            <BitCard FullSize>
-                <BitText Typography="BitTypography.Body1">
-                    You can add `.razor`, `.razor.cs`, and `.razor.scss` files to the `Client.Maui` and `Client.Windows` projects,
-                    allowing direct access to native platform features without dependency injection.
-                    <br />
-                    The `AboutPage.razor` file in `Client.Web` demonstrates that you can use the same route (e.g., `/about`) on the web,
-                    but it does not provide access to native platform features.
-                </BitText>
+        <BitStack Gap="1.5rem">
+            <AppInfoCard AppName="@appName"
+                         AppVersion="@appVersion"
+                         Platform="@platform"
+                         Environment="@AppEnvironment.Current"
+                         ProcessId="@processId"
+                         Oem="@oem">
+                <Note>
+                    You can add <code>.razor</code>, <code>.razor.cs</code>, and <code>.razor.scss</code> files to the
+                    <b>Client.Maui</b> and <b>Client.Windows</b> projects, allowing direct access to native platform
+                    features without dependency injection. This <b>AboutPage</b> in <b>Client.Web</b> reuses the same
+                    route (e.g. <code>/about</code>) on the web, though without access to native platform features.
+                </Note>
+            </AppInfoCard>
 
-                <BitStack AutoWidth>
-                    <BitText>App Name: <b>@appName</b></BitText>
-                    <BitText>App Version: <b>@appVersion</b></BitText>
-                    <BitText>OS: <b>@platform</b></BitText>
-                    <BitText>OEM: <b>@oem</b></BitText>
-                    <BitText>Environment: <b>@AppEnvironment.Current</b></BitText>
-                    <BitText>Process Id: <b>@processId</b></BitText>
-                </BitStack>
+            <BitCard FullSize>
+                <Acknowledgements />
             </BitCard>
         </BitStack>
     </section>

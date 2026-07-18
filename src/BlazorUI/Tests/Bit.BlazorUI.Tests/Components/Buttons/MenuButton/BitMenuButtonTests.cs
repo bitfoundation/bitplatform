@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
-namespace Bit.BlazorUI.Tests.Components.Buttons;
+namespace Bit.BlazorUI.Tests.Components.Buttons.MenuButton;
 
 [TestClass]
 public class BitMenuButtonTests : BunitTestContext

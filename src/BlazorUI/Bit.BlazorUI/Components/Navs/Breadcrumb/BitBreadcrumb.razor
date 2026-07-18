@@ -3,7 +3,11 @@
 @typeparam TItem
 
 <CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+    @* The options render a marker element each, whose DOM order is used to keep the order of the
+       registered items in sync with the markup order of the options (even when an option is added or
+       removed conditionally later on), since the breadcrumb has to render its items out of an ordered
+       list to be able to split them between the display items and the overflow callout. *@
+    <div style="display:none" hidden id="@_optionsContainerId">@(Options ?? ChildContent)</div>
 </CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
