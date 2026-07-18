@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (offlineDb == true)
 using Microsoft.EntityFrameworkCore;
 using Boilerplate.Client.Core.Infrastructure.Data;

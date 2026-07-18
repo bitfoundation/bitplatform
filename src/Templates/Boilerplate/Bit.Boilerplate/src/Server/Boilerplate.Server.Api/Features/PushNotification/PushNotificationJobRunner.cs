@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using AdsPush;
 using AdsPush.Abstraction;
 using System.Collections.Concurrent;

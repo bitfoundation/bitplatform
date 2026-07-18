@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Api.Features.Tenants;
+using Boilerplate.Server.Api.Features.Tenants;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 

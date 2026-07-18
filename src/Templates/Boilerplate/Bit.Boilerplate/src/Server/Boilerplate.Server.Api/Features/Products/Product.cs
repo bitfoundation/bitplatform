@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Categories;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;

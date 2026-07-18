@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Chatbot;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;

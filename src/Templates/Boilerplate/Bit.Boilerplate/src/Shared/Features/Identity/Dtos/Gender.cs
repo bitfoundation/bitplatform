@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Identity.Dtos;
+namespace Boilerplate.Shared.Features.Identity.Dtos;
 
 public enum Gender
 {

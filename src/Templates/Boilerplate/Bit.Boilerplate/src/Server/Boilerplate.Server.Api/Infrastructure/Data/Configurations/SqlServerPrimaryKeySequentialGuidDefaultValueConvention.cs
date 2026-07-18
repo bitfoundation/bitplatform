@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace Boilerplate.Server.Api.Infrastructure.Data.Configurations;
 

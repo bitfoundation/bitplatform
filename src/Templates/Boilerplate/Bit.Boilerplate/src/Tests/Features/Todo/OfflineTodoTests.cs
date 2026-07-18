@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Boilerplate.Tests.Features.Identity;
 using Boilerplate.Server.Api.Infrastructure.Data;
 

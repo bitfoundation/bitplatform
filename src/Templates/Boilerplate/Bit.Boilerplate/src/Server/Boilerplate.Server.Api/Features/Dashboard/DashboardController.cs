@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Dashboard;
 
 namespace Boilerplate.Server.Api.Features.Dashboard;

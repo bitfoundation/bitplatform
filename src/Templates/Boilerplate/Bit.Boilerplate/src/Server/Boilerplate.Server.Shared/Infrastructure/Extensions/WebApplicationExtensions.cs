@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Server.Shared;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Http;

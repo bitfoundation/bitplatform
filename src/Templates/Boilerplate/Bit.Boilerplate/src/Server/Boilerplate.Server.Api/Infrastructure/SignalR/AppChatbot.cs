@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 using System.Threading.Channels;
 using Boilerplate.Shared;

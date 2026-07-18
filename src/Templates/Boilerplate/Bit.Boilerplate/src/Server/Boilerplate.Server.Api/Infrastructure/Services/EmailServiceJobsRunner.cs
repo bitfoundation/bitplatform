@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using FluentEmail.Core;
 using Hangfire.Server;
 

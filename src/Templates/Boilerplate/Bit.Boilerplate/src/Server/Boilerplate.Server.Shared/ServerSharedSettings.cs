@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 

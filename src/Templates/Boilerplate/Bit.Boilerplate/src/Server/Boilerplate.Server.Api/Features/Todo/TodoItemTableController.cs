@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Todo;
+using Boilerplate.Shared.Features.Todo;
 using CommunityToolkit.Datasync.Server;
 using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 
 public partial class DashboardPage

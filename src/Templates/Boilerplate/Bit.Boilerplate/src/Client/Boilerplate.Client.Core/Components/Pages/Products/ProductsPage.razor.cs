@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 using System.Web;
 using Boilerplate.Shared.Features.Products;
 

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif

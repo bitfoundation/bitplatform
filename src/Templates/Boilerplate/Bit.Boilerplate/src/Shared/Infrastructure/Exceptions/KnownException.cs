@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Exceptions;
+namespace Boilerplate.Shared.Infrastructure.Exceptions;
 
 public abstract partial class KnownException : ApplicationException
 {

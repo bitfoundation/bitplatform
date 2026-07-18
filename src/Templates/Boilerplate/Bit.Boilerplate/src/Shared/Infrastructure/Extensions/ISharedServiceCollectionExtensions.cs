@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;

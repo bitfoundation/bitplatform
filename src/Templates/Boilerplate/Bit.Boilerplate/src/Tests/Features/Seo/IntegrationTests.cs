@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.Features.Seo;
+namespace Boilerplate.Tests.Features.Seo;
 
 [TestClass, TestCategory("IntegrationTest")]
 public partial class IntegrationTests

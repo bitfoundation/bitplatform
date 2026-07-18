@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Services.Contracts
+namespace Boilerplate.Shared.Infrastructure.Services.Contracts
 {
     public interface IAppController
     {

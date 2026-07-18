@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
 public partial class UserClaimsService

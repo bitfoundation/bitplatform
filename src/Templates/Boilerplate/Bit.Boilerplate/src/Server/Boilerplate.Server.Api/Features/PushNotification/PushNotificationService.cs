@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using AdsPush.Vapid;
 using System.Linq.Expressions;
 

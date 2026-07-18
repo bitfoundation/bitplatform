@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Exceptions;
+namespace Boilerplate.Shared.Infrastructure.Exceptions;
 
 /// <summary>
 /// A machine-readable format for specifying errors in HTTP API responses based on <see href="https://tools.ietf.org/html/rfc7807"/>.

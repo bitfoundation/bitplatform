@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Server.Api.Features.Tenants;
 
 public partial class TenantConfiguration : IEntityTypeConfiguration<Tenant>

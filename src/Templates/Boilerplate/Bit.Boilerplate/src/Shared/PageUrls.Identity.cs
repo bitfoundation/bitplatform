@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.ComponentModel;
 
 namespace Boilerplate.Shared;

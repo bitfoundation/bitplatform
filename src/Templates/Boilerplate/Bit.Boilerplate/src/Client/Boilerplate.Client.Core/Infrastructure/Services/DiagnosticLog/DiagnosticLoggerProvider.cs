@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 
 using Boilerplate.Client.Core.Components.Layout.Diagnostic;
 

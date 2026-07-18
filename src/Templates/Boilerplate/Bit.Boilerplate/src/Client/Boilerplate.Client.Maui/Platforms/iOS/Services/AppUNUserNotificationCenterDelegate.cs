@@ -1,4 +1,4 @@
-﻿using Foundation;
+using Foundation;
 using UserNotifications;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;

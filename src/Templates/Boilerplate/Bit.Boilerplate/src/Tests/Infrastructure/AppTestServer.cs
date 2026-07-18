@@ -1,4 +1,4 @@
-﻿using Hangfire;
+using Hangfire;
 using System.Net;
 using System.Net.Sockets;
 using Boilerplate.Server.Api;

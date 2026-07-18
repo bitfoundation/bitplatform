@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Exceptions;
+namespace Boilerplate.Shared.Infrastructure.Exceptions;
 
 public partial class ErrorResourcePayload
 {

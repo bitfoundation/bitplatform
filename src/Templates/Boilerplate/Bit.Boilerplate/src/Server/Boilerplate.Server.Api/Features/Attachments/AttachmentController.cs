@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using ImageMagick;
 using FluentStorage.Storage;
 using System.Diagnostics.Metrics;

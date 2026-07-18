@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace System.Security.Claims;
 
 public static partial class ClaimsPrincipalExtensions

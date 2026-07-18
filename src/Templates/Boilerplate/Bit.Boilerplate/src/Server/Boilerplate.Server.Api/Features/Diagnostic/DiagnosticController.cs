@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;

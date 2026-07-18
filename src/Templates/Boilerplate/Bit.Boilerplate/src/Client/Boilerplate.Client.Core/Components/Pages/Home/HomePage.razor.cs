@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages.Home;

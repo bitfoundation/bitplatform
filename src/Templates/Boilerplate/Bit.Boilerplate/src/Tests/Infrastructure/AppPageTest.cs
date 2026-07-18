@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.Infrastructure;
+namespace Boilerplate.Tests.Infrastructure;
 
 public class AppPageTest : PageTest
 {
