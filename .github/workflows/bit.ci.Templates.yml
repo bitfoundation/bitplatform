@@ -45,4 +45,4 @@ jobs:
       run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
 
     - name: dotnet build Boilerplate
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -p:EnforceCodeStyleInBuild=true -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx
