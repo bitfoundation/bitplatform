@@ -29,6 +29,12 @@ jobs:
       script: 'dotnet workload restore'
 
   - task: Bash@3
+    displayName: 'Verify formatting'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet format whitespace Boilerplate.slnx --verify-no-changes'
+
+  - task: Bash@3
     displayName: 'Build'
     inputs:
       targetType: 'inline'

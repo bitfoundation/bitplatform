@@ -25,26 +25,6 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Verify UTF-8 without BOM (Boilerplate template)
-      shell: bash
-      working-directory: src/Templates/Boilerplate/Bit.Boilerplate
-      run: |
-        set -euo pipefail
-        printf '\xEF\xBB\xBF' > "$RUNNER_TEMP/utf8-bom.bin"
-        found=0
-        while IFS= read -r f; do
-          [ -f "$f" ] || continue
-          if head -c 3 -- "$f" | cmp -s - "$RUNNER_TEMP/utf8-bom.bin"; then
-            echo "::error file=src/Templates/Boilerplate/Bit.Boilerplate/$f::File has a UTF-8 BOM; repo standard is UTF-8 without BOM."
-            found=1
-          fi
-        done < <(git ls-files)
-        if [ "$found" -ne 0 ]; then
-          echo "One or more files contain a UTF-8 BOM. Strip it (byte-level, keep line endings) and commit."
-          exit 1
-        fi
-        echo "OK: no UTF-8 BOM found in the Boilerplate template."
-
     - name: Setup .NET 10.0
       uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
@@ -61,5 +41,8 @@ jobs:
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
       run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
+    - name: Verify formatting
+      run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
+
     - name: dotnet build Boilerplate
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -p:EnforceCodeStyleInBuild=true
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -p:EnforceCodeStyleInBuild=true -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true

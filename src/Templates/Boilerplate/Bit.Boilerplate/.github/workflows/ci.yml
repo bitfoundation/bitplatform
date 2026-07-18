@@ -37,6 +37,9 @@ jobs:
     - name: Workload restore
       run: dotnet workload restore
 
+    - name: Verify formatting
+      run: dotnet format whitespace Boilerplate.slnx --verify-no-changes
+
     - name: Build
       run: dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true
 

@@ -39,8 +39,11 @@ jobs:
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
+    - name: Verify formatting
+      run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
+
     - name: Build Boilerplate solution in Release mode
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
 
 
 
@@ -83,10 +86,13 @@ jobs:
       run: |
         echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
 
+    - name: Verify formatting
+      run: dotnet format whitespace TestPostgreSQL/TestPostgreSQL.Web.slnf --verify-no-changes
+
     - name: Build and setup database
       run: |
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
-        dotnet build
+        dotnet build -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         dotnet tool restore
         dotnet ef migrations add Initial --verbose
 
@@ -97,7 +103,7 @@ jobs:
     - name: Build tests and install Playwright
       working-directory: TestPostgreSQL/src/Tests
       run: |
-        dotnet build
+        dotnet build -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
 
     - name: Run tests (Blazor Server)
@@ -208,10 +214,13 @@ jobs:
       run: |
         echo '{"ServerAddress":"/"}' > TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot/appsettings.json
 
+    - name: Verify formatting
+      run: dotnet format whitespace TestSqlServer/TestSqlServer.Web.slnf --verify-no-changes
+
     - name: Build and setup database
       run: |
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
-        dotnet build
+        dotnet build -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         dotnet tool restore
         dotnet ef migrations add Initial --verbose
 
@@ -226,7 +235,7 @@ jobs:
     - name: Build tests and install Playwright
       working-directory: TestSqlServer/src/Tests
       run: |
-        dotnet build
+        dotnet build -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
 
     - name: Run tests (Blazor Server)
@@ -339,29 +348,33 @@ jobs:
     - name: Build backend setup options
       run: |
         dotnet new bit-bp --name TestStandalone --api Standalone
+        dotnet format whitespace TestStandalone/TestStandalone.slnx --verify-no-changes
         cd TestStandalone/src/Server/TestStandalone.Server.Api/
-        dotnet build
+        dotnet build -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         cd ../
         cd TestStandalone.Server.Web/
-        dotnet build
+        dotnet build -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         cd ../../../../
         rm -r "TestStandalone"
         dotnet new bit-bp --name TestIntegrated --api Integrated
+        dotnet format whitespace TestIntegrated/TestIntegrated.slnx --verify-no-changes
         cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
-        dotnet build
+        dotnet build -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         cd ../../../../
         rm -r "TestIntegrated"
 
     - name: Build sample configuration 1
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant
-        dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
+        dotnet format whitespace TestProject/TestProject.sln --verify-no-changes
+        dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         rm -r "TestProject"
 
     - name: Build sample configuration 2
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false
-        dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development
+        dotnet format whitespace TestProject2/TestProject2.slnx --verify-no-changes
+        dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development -p:RunAnalyzers=true -p:AnalysisMode=All -p:TreatWarningsAsErrors=true
         rm -r "TestProject2"
 
 
