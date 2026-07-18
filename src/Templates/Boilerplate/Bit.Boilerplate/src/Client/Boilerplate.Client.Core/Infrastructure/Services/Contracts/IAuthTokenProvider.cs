@@ -68,7 +68,7 @@ public interface IAuthTokenProvider
                 claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
         }
         //#endif
-        
+
         return claims;
     }
 

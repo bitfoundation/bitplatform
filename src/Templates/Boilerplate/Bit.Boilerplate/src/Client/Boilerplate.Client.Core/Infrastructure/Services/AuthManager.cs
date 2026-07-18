@@ -81,7 +81,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreServerConnectionException = false
         //#if (multitenant == true)
         , Guid? requestedTenantId = null // The id of the tenant the user is trying to switch into.
-        //#endif
+                                         //#endif
         )
     {
         if (accessTokenTsc is null)

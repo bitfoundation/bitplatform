@@ -5,8 +5,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Home;
 public partial class ProductsCarousel
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
- 
- 
+
+
     [AutoInject] private IProductViewController productViewController = default!;
 
 
@@ -19,10 +19,10 @@ public partial class ProductsCarousel
         await base.OnInitAsync();
 
         carouselProducts = await productViewController
-                                    .WithQuery(new ODataQuery 
-                                    { 
-                                        Top = 6, 
-                                        OrderBy = nameof(ProductDto.Name) 
+                                    .WithQuery(new ODataQuery
+                                    {
+                                        Top = 6,
+                                        OrderBy = nameof(ProductDto.Name)
                                     })
                                     .Get(CurrentCancellationToken);
     }

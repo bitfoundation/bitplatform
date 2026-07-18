@@ -20,7 +20,7 @@ public partial class Product
     public int ShortId { get; set; }
         //#if (database != "PostgreSQL" && database != "SqlServer")
         = Environment.TickCount; // Using a database sequence for this is recommended.
-        //#endif
+                                 //#endif
 
     [Required, MaxLength(64)]
     public string? Name { get; set; }

@@ -29,7 +29,7 @@ public partial class ChangePasswordTab
             // Changing the password regenerates the security stamp on the server, so every active session gets signed out on its next token refresh.
             SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
         }
-        catch(ResourceValidationException exp)
+        catch (ResourceValidationException exp)
         {
             validatorRef.DisplayErrors(exp);
         }

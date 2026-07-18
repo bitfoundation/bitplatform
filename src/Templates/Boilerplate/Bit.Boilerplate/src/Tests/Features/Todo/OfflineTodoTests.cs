@@ -20,7 +20,7 @@ public partial class OfflineTodoTests : AppPageTest
     [TestMethod]
     public async Task OfflineTodo_Should_SyncPendingChanges_WhenServerIsBackOnline()
     {
-        
+
 
         var firstTodoTitle = Guid.NewGuid().ToString();
         var secondTodoTitle = Guid.NewGuid().ToString();

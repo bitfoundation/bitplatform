@@ -16,7 +16,7 @@ public partial class HomePage
 
 
     [AutoInject] private IStatisticsController statisticsController = default!;
-    
+
 
     protected override async Task OnInitAsync()
     {
@@ -33,7 +33,7 @@ public partial class HomePage
 
         await Task.WhenAll(LoadNuget(), LoadGitHub());
     }
-    
+
 
     private async Task LoadNuget()
     {

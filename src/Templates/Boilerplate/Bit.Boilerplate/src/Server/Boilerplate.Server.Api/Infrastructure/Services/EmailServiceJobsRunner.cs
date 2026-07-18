@@ -34,9 +34,9 @@ public partial class EmailServiceJobsRunner
         }
         catch (Exception exp)
         {
-            serverExceptionHandler.Handle(exp, new() 
+            serverExceptionHandler.Handle(exp, new()
             {
-                { "Subject", subject }, 
+                { "Subject", subject },
                 { "ToEmailAddress", toEmailAddress },
                 { "JobId", context.BackgroundJob.Id }
             });

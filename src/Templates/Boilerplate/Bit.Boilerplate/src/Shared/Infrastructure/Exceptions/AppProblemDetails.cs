@@ -71,7 +71,7 @@ public partial class AppProblemDetails
 
     public static implicit operator Exception(AppProblemDetails problemDetails)
     {
-        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) 
+        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!)
             ?? typeof(KnownException).Assembly.ExportedTypes.FirstOrDefault(t => problemDetails.Type?.EndsWith(t.Name) is true)
             ?? typeof(UnknownException);
 

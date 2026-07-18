@@ -16,7 +16,7 @@ public partial class ThemeService
     public async Task<AppThemeType> ToggleTheme()
     {
         var newThemeName = await bitThemeManager.ToggleDarkLightAsync();
-        
+
         var isDark = newThemeName == "dark";
         await bitDeviceCoordinator.ApplyTheme(isDark);
 
