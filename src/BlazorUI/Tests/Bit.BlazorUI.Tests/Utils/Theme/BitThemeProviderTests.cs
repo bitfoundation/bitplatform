@@ -167,7 +167,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
         // to consumers (CascadingValue<BitTheme> change detection is reference-based).
         var second = new BitTheme();
         second.Color.Primary.Main = "#222222";
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Theme, second));
+        component.Render(parameters => parameters.Add(p => p.Theme, second));
 
         Assert.AreEqual("#222222", component.Find("span").GetAttribute("data-primary"));
     }
@@ -191,7 +191,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
         // the next render: the provider rebuilds its inline style from the current token values
         // every parameters update (it does not rely on the Theme reference changing).
         theme.Color.Primary.Main = "#222222";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Theme, theme);
             parameters.Add(p => p.RootElement, "section");
@@ -246,7 +246,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
         // A new reference is a real change even when Frozen: the provider must rebuild and propagate.
         var second = new BitTheme();
         second.Color.Primary.Main = "#222222";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Frozen, true);
             parameters.Add(p => p.Theme, second);
@@ -275,7 +275,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
         // reference is unchanged so the cached merge + CSS string are reused. Callers opting into
         // Frozen must assign a new BitTheme instance to apply changes.
         theme.Color.Primary.Main = "#222222";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Frozen, true);
             parameters.Add(p => p.Theme, theme);
