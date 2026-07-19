@@ -24,6 +24,11 @@
     }
 
     &.bit-inv {
+        .bit-chg-ili:focus-visible,
+        input:focus-visible + .bit-chg-ili {
+            @include focus-ring($clr-err-focus);
+        }
+
         .bit-chg-rad {
             color: $clr-err;
             border-color: $clr-err;

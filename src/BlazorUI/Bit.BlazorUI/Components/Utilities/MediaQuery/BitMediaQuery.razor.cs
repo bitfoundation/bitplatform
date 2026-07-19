@@ -90,7 +90,11 @@ public partial class BitMediaQuery : BitComponentBase
             if (effectiveKey != _query || screenQuery is not null)
             {
                 _query = effectiveKey;
-                await _js.BitMediaQuerySetup(_Id, customQuery, screenQuery, _dotnetObj);
+                try
+                {
+                    await _js.BitMediaQuerySetup(_Id, customQuery, screenQuery, _dotnetObj);
+                }
+                catch (JSDisconnectedException) { } // circuit gone; nothing to set up
             }
         }
         else if (_query is not null)

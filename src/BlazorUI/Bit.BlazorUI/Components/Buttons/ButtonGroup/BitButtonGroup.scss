@@ -11,6 +11,13 @@
     --bit-btg-itm-brd-wid: #{$shp-border-width};
     --bit-btg-itm-brd-wid-ver: 0;
 
+    // The ring is rendered on the group container (like the MenuButton split-button) because the
+    // root's overflow:hidden would clip a box-shadow ring drawn on the focused item itself.
+    &:focus-visible,
+    &:focus-within {
+        @include focus-ring(var(--bit-btg-clr-focus));
+    }
+
     &.bit-dis, &.bit-dis * {
         cursor: default;
         pointer-events: none;
@@ -173,6 +180,7 @@
     --bit-btg-clr-brd: #{$clr-pri-dark};
     --bit-btg-clr-hover: #{$clr-pri-hover};
     --bit-btg-clr-active: #{$clr-pri-active};
+    --bit-btg-clr-focus: #{$clr-pri-focus};
     --bit-btg-clr-dark: #{$clr-pri-dark};
     --bit-btg-clr-dark-hover: #{$clr-pri-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-pri-dark-active};
@@ -186,6 +194,7 @@
     --bit-btg-clr-brd: #{$clr-sec-dark};
     --bit-btg-clr-hover: #{$clr-sec-hover};
     --bit-btg-clr-active: #{$clr-sec-active};
+    --bit-btg-clr-focus: #{$clr-sec-focus};
     --bit-btg-clr-dark: #{$clr-sec-dark};
     --bit-btg-clr-dark-hover: #{$clr-sec-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-sec-dark-active};
@@ -199,6 +208,7 @@
     --bit-btg-clr-brd: #{$clr-ter-dark};
     --bit-btg-clr-hover: #{$clr-ter-hover};
     --bit-btg-clr-active: #{$clr-ter-active};
+    --bit-btg-clr-focus: #{$clr-ter-focus};
     --bit-btg-clr-dark: #{$clr-ter-dark};
     --bit-btg-clr-dark-hover: #{$clr-ter-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-ter-dark-active};
@@ -212,6 +222,7 @@
     --bit-btg-clr-brd: #{$clr-inf-dark};
     --bit-btg-clr-hover: #{$clr-inf-hover};
     --bit-btg-clr-active: #{$clr-inf-active};
+    --bit-btg-clr-focus: #{$clr-inf-focus};
     --bit-btg-clr-dark: #{$clr-inf-dark};
     --bit-btg-clr-dark-hover: #{$clr-inf-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-inf-dark-active};
@@ -225,6 +236,7 @@
     --bit-btg-clr-brd: #{$clr-suc-dark};
     --bit-btg-clr-hover: #{$clr-suc-hover};
     --bit-btg-clr-active: #{$clr-suc-active};
+    --bit-btg-clr-focus: #{$clr-suc-focus};
     --bit-btg-clr-dark: #{$clr-suc-dark};
     --bit-btg-clr-dark-hover: #{$clr-suc-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-suc-dark-active};
@@ -238,6 +250,7 @@
     --bit-btg-clr-brd: #{$clr-wrn-dark};
     --bit-btg-clr-hover: #{$clr-wrn-hover};
     --bit-btg-clr-active: #{$clr-wrn-active};
+    --bit-btg-clr-focus: #{$clr-wrn-focus};
     --bit-btg-clr-dark: #{$clr-wrn-dark};
     --bit-btg-clr-dark-hover: #{$clr-wrn-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-wrn-dark-active};
@@ -251,6 +264,7 @@
     --bit-btg-clr-brd: #{$clr-swr-dark};
     --bit-btg-clr-hover: #{$clr-swr-hover};
     --bit-btg-clr-active: #{$clr-swr-active};
+    --bit-btg-clr-focus: #{$clr-swr-focus};
     --bit-btg-clr-dark: #{$clr-swr-dark};
     --bit-btg-clr-dark-hover: #{$clr-swr-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-swr-dark-active};
@@ -264,6 +278,7 @@
     --bit-btg-clr-brd: #{$clr-err-dark};
     --bit-btg-clr-hover: #{$clr-err-hover};
     --bit-btg-clr-active: #{$clr-err-active};
+    --bit-btg-clr-focus: #{$clr-err-focus};
     --bit-btg-clr-dark: #{$clr-err-dark};
     --bit-btg-clr-dark-hover: #{$clr-err-dark-hover};
     --bit-btg-clr-dark-active: #{$clr-err-dark-active};
@@ -278,6 +293,7 @@
     --bit-btg-clr-brd: #{$clr-bg-pri};
     --bit-btg-clr-hover: #{$clr-bg-pri-hover};
     --bit-btg-clr-active: #{$clr-bg-pri-active};
+    --bit-btg-clr-focus: #{$clr-bg-pri-focus};
     --bit-btg-clr-dark: #{$clr-bg-pri};
     --bit-btg-clr-dark-hover: #{$clr-bg-pri-hover};
     --bit-btg-clr-dark-active: #{$clr-bg-pri-active};
@@ -291,6 +307,7 @@
     --bit-btg-clr-brd: #{$clr-bg-sec};
     --bit-btg-clr-hover: #{$clr-bg-sec-hover};
     --bit-btg-clr-active: #{$clr-bg-sec-active};
+    --bit-btg-clr-focus: #{$clr-bg-sec-focus};
     --bit-btg-clr-dark: #{$clr-bg-sec};
     --bit-btg-clr-dark-hover: #{$clr-bg-sec-hover};
     --bit-btg-clr-dark-active: #{$clr-bg-sec-active};
@@ -304,6 +321,7 @@
     --bit-btg-clr-brd: #{$clr-bg-ter};
     --bit-btg-clr-hover: #{$clr-bg-ter-hover};
     --bit-btg-clr-active: #{$clr-bg-ter-active};
+    --bit-btg-clr-focus: #{$clr-bg-ter-focus};
     --bit-btg-clr-dark: #{$clr-bg-ter};
     --bit-btg-clr-dark-hover: #{$clr-bg-ter-hover};
     --bit-btg-clr-dark-active: #{$clr-bg-ter-active};
@@ -317,6 +335,7 @@
     --bit-btg-clr-brd: #{$clr-fg-pri};
     --bit-btg-clr-hover: #{$clr-fg-pri-hover};
     --bit-btg-clr-active: #{$clr-fg-pri-active};
+    --bit-btg-clr-focus: #{$clr-fg-pri-focus};
     --bit-btg-clr-dark: #{$clr-fg-pri};
     --bit-btg-clr-dark-hover: #{$clr-fg-pri-hover};
     --bit-btg-clr-dark-active: #{$clr-fg-pri-active};
@@ -330,6 +349,7 @@
     --bit-btg-clr-brd: #{$clr-fg-sec};
     --bit-btg-clr-hover: #{$clr-fg-sec-hover};
     --bit-btg-clr-active: #{$clr-fg-sec-active};
+    --bit-btg-clr-focus: #{$clr-fg-sec-focus};
     --bit-btg-clr-dark: #{$clr-fg-sec};
     --bit-btg-clr-dark-hover: #{$clr-fg-sec-hover};
     --bit-btg-clr-dark-active: #{$clr-fg-sec-active};
@@ -343,6 +363,7 @@
     --bit-btg-clr-brd: #{$clr-fg-ter};
     --bit-btg-clr-hover: #{$clr-fg-ter-hover};
     --bit-btg-clr-active: #{$clr-fg-ter-active};
+    --bit-btg-clr-focus: #{$clr-fg-ter-focus};
     --bit-btg-clr-dark: #{$clr-fg-ter};
     --bit-btg-clr-dark-hover: #{$clr-fg-ter-hover};
     --bit-btg-clr-dark-active: #{$clr-fg-ter-active};
@@ -356,6 +377,7 @@
     --bit-btg-clr-brd: #{$clr-brd-pri};
     --bit-btg-clr-hover: #{$clr-brd-pri-hover};
     --bit-btg-clr-active: #{$clr-brd-pri-active};
+    --bit-btg-clr-focus: #{$clr-brd-pri-focus};
     --bit-btg-clr-dark: #{$clr-brd-pri};
     --bit-btg-clr-dark-hover: #{$clr-brd-pri-hover};
     --bit-btg-clr-dark-active: #{$clr-brd-pri-active};
@@ -369,6 +391,7 @@
     --bit-btg-clr-brd: #{$clr-brd-sec};
     --bit-btg-clr-hover: #{$clr-brd-sec-hover};
     --bit-btg-clr-active: #{$clr-brd-sec-active};
+    --bit-btg-clr-focus: #{$clr-brd-sec-focus};
     --bit-btg-clr-dark: #{$clr-brd-sec};
     --bit-btg-clr-dark-hover: #{$clr-brd-sec-hover};
     --bit-btg-clr-dark-active: #{$clr-brd-sec-active};
@@ -382,6 +405,7 @@
     --bit-btg-clr-brd: #{$clr-brd-ter};
     --bit-btg-clr-hover: #{$clr-brd-ter-hover};
     --bit-btg-clr-active: #{$clr-brd-ter-active};
+    --bit-btg-clr-focus: #{$clr-brd-ter-focus};
     --bit-btg-clr-dark: #{$clr-brd-ter};
     --bit-btg-clr-dark-hover: #{$clr-brd-ter-hover};
     --bit-btg-clr-dark-active: #{$clr-brd-ter-active};

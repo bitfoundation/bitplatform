@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public sealed class BitThemeProvider : ComponentBase
+public class BitThemeProvider : ComponentBase
 {
     /// <summary>
     /// The content of the ThemeProvider.
