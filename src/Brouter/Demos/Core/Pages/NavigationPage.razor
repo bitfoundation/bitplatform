@@ -1,0 +1,130 @@
+@* Topic page: imperative navigation - awaited outcomes, history, functional query updates,
+   named routes, relative URLs, and BrouterLink's full surface. Live links point at /outcomes and
+   /history-state declared in AppRouter.razor. *@
+
+<div class="bb-intro">
+    <h1>Navigation &amp; history</h1>
+    <p class="bb-subtitle">
+        Everything on <code>IBrouter</code> for moving around imperatively - and what
+        <code>&lt;BrouterLink&gt;</code> adds over a plain anchor.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Navigate, and know how it went</h3>
+    <p class="bb-card-desc">
+        <code>Navigate(url)</code> is fire-and-forget with optional <code>replace</code> (no new
+        history entry), <code>forceLoad</code> (full page load), and <code>historyState</code>.
+        <code>NavigateAsync(url)</code> additionally <em>awaits the whole pipeline</em> and reports
+        a <code>BrouterNavigationOutcome</code> - so calling code can react when a guard cancelled
+        or redirected, something Blazor's <code>NavigationManager</code> can't tell you.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Outcome status</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>Succeeded</td><td>Destination rendered.</td></tr>
+            <tr><td>Cancelled</td><td>A guard/lock called Cancel() - URL unchanged.</td></tr>
+            <tr><td>Redirected</td><td>A guard redirected; <code>RedirectedTo</code> has the final URL.</td></tr>
+            <tr><td>NotFound</td><td>Nothing matched (after NotFound handling ran).</td></tr>
+            <tr><td>Failed</td><td>The pipeline threw; <code>Exception</code> carries it.</td></tr>
+            <tr><td>Superseded</td><td>A newer navigation started before this one finished.</td></tr>
+        </tbody>
+    </table>
+    <div class="bb-try">
+        <BrouterLink Href="/outcomes" class="btn btn-outline">/outcomes - trigger each result live</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> History &amp; entry state</h3>
+    <p class="bb-card-desc">
+        <code>Back()</code> / <code>Forward()</code> move through history;
+        <code>BackAsync(delta)</code> / <code>ForwardAsync(delta)</code> are awaitable and can jump
+        several entries at once. Each entry can carry <em>state</em>: pass
+        <code>historyState:</code> when navigating (or <code>HistoryState</code> on a link) and
+        read it back from <code>brouter.Location.HistoryState</code> - it survives Back/Forward
+        per entry, unlike anything keyed to the URL. Serialize to JSON for structured payloads.
+        The router also classifies every navigation as <code>Push</code>, <code>Replace</code>, or
+        <code>Pop</code> (Back/Forward) - exposed as <code>NavigationType</code> on guard/hook
+        contexts and used to pick view-transition direction.
+    </p>
+    <pre class="bb-code">brouter.Navigate(<span class="s">"/history-state"</span>, historyState: <span class="s">"draft-42"</span>);
+&lt;<span class="k">BrouterLink</span> Href=<span class="s">"/history-state"</span> HistoryState=<span class="s">"from-a-link"</span>&gt;…&lt;/<span class="k">BrouterLink</span>&gt;
+<span class="c">// later, e.g. after the user presses Back onto that entry:</span>
+<span class="k">var</span> state = brouter.Location.HistoryState;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/history-state" class="btn btn-outline">/history-state - state across Back/Forward</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Functional query updates</h3>
+    <p class="bb-card-desc">
+        Updating one query parameter shouldn't mean rebuilding the whole URL.
+        <code>NavigateWithQuery</code> hands you a <code>BrouterQueryBuilder</code> over the
+        current query - mutate what you need, everything else (other params, the fragment) is
+        preserved, and the history entry is <em>replaced</em> by default so paging doesn't pollute
+        Back. The builder API: <code>Set</code> (null removes), <code>SetAll</code> (multi-value,
+        <code>?tag=a&amp;tag=b</code>), <code>Remove</code>, <code>Clear</code>, plus
+        <code>Get</code>/<code>Contains</code> for reading.
+    </p>
+    <pre class="bb-code">brouter.NavigateWithQuery(q =&gt; q.Set(<span class="s">"page"</span>, page + 1));
+brouter.NavigateWithQuery(q =&gt; q.SetAll(<span class="s">"tag"</span>, tags).Remove(<span class="s">"page"</span>));</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/data" class="btn btn-outline">/data - pager built on NavigateWithQuery</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Named routes &amp; relative URLs</h3>
+    <p class="bb-card-desc">
+        A <code>Name</code>d route can be targeted without spelling its URL:
+        <code>NavigateToName(name, parameters)</code> and <code>ResolveUrl(name, parameters)</code>
+        fill the template (parameters that aren't in the template are appended as query pairs;
+        enumerable values emit repeated pairs). Pair them with the generated
+        <code>BrouterRoutes.Names</code> constants - see the
+        <BrouterLink Href="/generator">generator page</BrouterLink>. URLs are also
+        <em>route-relative</em> everywhere Brouter accepts one (links, <code>Navigate</code>,
+        guard redirects): <code>./sibling</code>, <code>../up</code>, <code>.</code> and
+        <code>..</code> resolve against the current path by segment math, clamped at the root.
+    </p>
+    <pre class="bb-code">brouter.NavigateToName(BrouterRoutes.Names.Counter,
+    <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">object</span>?&gt; { [<span class="s">"init"</span>] = 7 });
+
+&lt;<span class="k">BrouterLink</span> Href=<span class="s">"../sibling"</span>&gt;Up one, over one&lt;/<span class="k">BrouterLink</span>&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BrouterLink</h3>
+    <p class="bb-card-desc">
+        <code>&lt;BrouterLink&gt;</code> renders a real anchor - Ctrl/middle/Shift clicks keep
+        native browser behavior; only plain left clicks are intercepted.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Parameter</th><th>Behavior</th></tr></thead>
+        <tbody>
+            <tr><td>Href</td><td>Destination; route-relative forms re-resolve after every navigation.</td></tr>
+            <tr><td>Match</td><td>Active detection: <code>Prefix</code> (default, segment-boundary aware) or <code>All</code> (exact). Root <code>/</code> always matches exactly.</td></tr>
+            <tr><td>ActiveClass</td><td>Class added when active (default <code>"active"</code>); also sets <code>aria-current="page"</code>.</td></tr>
+            <tr><td>Replace</td><td>Replaces the current history entry instead of pushing.</td></tr>
+            <tr><td>Preload</td><td><code>Intent</code> / <code>Viewport</code> / <code>Render</code> - see <BrouterLink Href="/loaders">Data loading</BrouterLink>.</td></tr>
+            <tr><td>HistoryState</td><td>State attached to the entry created by the click.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Not-found handling</h3>
+    <p class="bb-card-desc">
+        When nothing matches, the router follows <code>NotFoundUrl</code> (this demo's
+        <code>/404</code> page) or renders an inline <code>&lt;NotFound&gt;</code> fragment without
+        moving the URL; the <code>OnNotFound</code> callback fires either way. Brouter also
+        integrates .NET 10's <code>NavigationManager.NotFound()</code>: a component that
+        discovers mid-render that its entity doesn't exist can hand control to the router's
+        not-found pipeline while the URL stays put - try it on the outcomes page.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/no/such/page" class="btn btn-outline">/no/such/page → 404</BrouterLink>
+        <BrouterLink Href="/outcomes" class="btn btn-outline">/outcomes - NotFound() interop</BrouterLink>
+    </div>
+</div>

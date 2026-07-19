@@ -1,167 +1,137 @@
-﻿<div class="bb-intro">
-    <h1>Hello, Brouter!</h1>
-    <p class="bb-subtitle">A tour of <code>Bit.Brouter</code> routing features. Pick any link below to see it in action.</p>
+@* The introduction page: what Bit.Brouter is, how to set it up, and a map of the topic pages.
+   The feature demos themselves live on the topic pages linked below (and in the header). *@
+
+<div class="bb-intro">
+    <h1>Bit.Brouter</h1>
+    <p class="bb-subtitle">
+        A full-featured client-side router for Blazor - framework-parity route templates plus the
+        capabilities modern router libraries are measured by: guards, data loaders with
+        stale-while-revalidate caching, keep-alive, view transitions, and a source generator for
+        compile-time-safe URLs.
+    </p>
 </div>
 
-<div class="bb-counter">
-    <div>
-        <div class="bb-counter-label">Current count</div>
-        <div class="bb-counter-value">@CountValue</div>
-    </div>
-    <div style="color: var(--bb-text-muted); font-size: .85rem;">
-        The shared count is preserved across navigations via the host component.
-    </div>
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting started</h3>
+    <p class="bb-card-desc">
+        Register the services, then declare routes in markup with <code>&lt;Brouter&gt;</code> and
+        <code>&lt;Broute&gt;</code>. Templates are a superset-compatible match of the built-in
+        router's, so <code>@@page</code> components keep working - <code>AppAssembly</code>
+        discovers them alongside the hand-declared tree.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs</span>
+services.AddBitBrouterServices(o =&gt;
+{
+    o.ViewTransitions = <span class="k">true</span>;
+    o.ScrollBehavior = BrouterScrollMode.ToTop;
+    <span class="c">// constraints, caching, keep-alive and scroll options all live here too</span>
+});
+
+<span class="c">@@* App.razor *@@</span>
+&lt;<span class="k">Brouter</span> NotFoundUrl=<span class="s">"404"</span> AppAssembly=<span class="s">"@@GetType().Assembly"</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/"</span> RedirectTo=<span class="s">"/home"</span> /&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/counter/{init:int}"</span> Component=<span class="s">"@@typeof(CounterPage)"</span> /&gt;
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Brouter</span>&gt;</pre>
+    <p class="bb-card-desc">
+        This demo app is itself the documentation: every page in the header explains one feature
+        area with code samples and live routes to click. The router powering these pages is
+        declared in <code>AppRouter.razor</code>.
+    </p>
 </div>
+
+<h2 style="margin: 1.5rem 0 .75rem;">Explore the features</h2>
 
 <div class="bb-grid">
     <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-primary"></span>
-            Route templates
-            <span class="bb-badge">reference</span>
-        </h3>
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Route templates</h3>
         <p class="bb-card-desc">
-            The full template grammar - framework-parity with the built-in Blazor router: middle
-            optionals, default values, complex segments, constrained catch-alls, and 18 constraints
-            to test live.
+            The full grammar: literals, typed parameters, optionals (trailing <em>and</em> middle),
+            default values, complex segments, catch-alls - plus specificity rules and parity
+            details.
         </p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/templates"><strong>Template reference</strong> - every shape, explained with live links</BrouterLink></li>
-            <li><BrouterLink Href="/constraints"><strong>Constraint tester</strong> - type / validation / custom, interactive</BrouterLink></li>
-            <li><BrouterLink Href="/products/en/list">Middle optional: <code>/products/{culture?}/list</code></BrouterLink></li>
-            <li><BrouterLink Href="/blog">Default value: <code>/blog/{action=Index}</code></BrouterLink></li>
-            <li><BrouterLink Href="/files/report.pdf">Complex segment: <code>{name}.{ext?}</code></BrouterLink></li>
-            <li><BrouterLink Href="/assets/img/logo">Constrained catch-all: <code>{*path:nonfile}</code></BrouterLink></li>
-        </ul>
+        <BrouterLink Href="/templates" class="btn btn-outline">Template reference →</BrouterLink>
     </section>
 
     <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-primary"></span>
-            Route parameters
-            <span class="bb-badge">params</span>
-        </h3>
-        <p class="bb-card-desc">Strongly-typed route values with optional and multi-segment constraints.</p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/counter/1234">Counter starting at <code>1234</code></BrouterLink></li>
-            <li><BrouterLink Href="/counter/multi/1/2/saleh">Multi-param: <code>/multi/1/2/saleh</code></BrouterLink></li>
-            <li><BrouterLink Href="/profile">Profile (no username)</BrouterLink></li>
-            <li><BrouterLink Href="/profile/saleh">Profile of <code>saleh</code></BrouterLink></li>
-            <li><BrouterLink Href="/posts/2026/05/intro-to-brouter">Catch-all post slug</BrouterLink></li>
-        </ul>
-    </section>
-
-    <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-warning"></span>
-            Wildcards &amp; fallbacks
-            <span class="bb-badge bb-badge-warn">wildcard</span>
-        </h3>
-        <p class="bb-card-desc">How wildcard segments and the 404 fallback resolve.</p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/hahahaha/test">Wildcard <code>*/test</code></BrouterLink></li>
-            <li><BrouterLink Href="/start/test2/end">Pattern <code>{prefix}/test2/{postfix}</code></BrouterLink></li>
-            <li><BrouterLink Href="/404-test">Non-existent page</BrouterLink></li>
-        </ul>
-    </section>
-
-    <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-success"></span>
-            Nested routes
-            <span class="bb-badge bb-badge-success">nested</span>
-        </h3>
-        <p class="bb-card-desc">Routes with their own children and outlets.</p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/nested-route/1">Nested example <code>/1</code></BrouterLink></li>
-            <li><BrouterLink Href="/nested-route/5/hello">Nested example <code>/5/hello</code></BrouterLink></li>
-            <li><BrouterLink Href="/nested-route/10/world">Nested example <code>/10/world</code></BrouterLink></li>
-            <li><BrouterLink Href="/nested-route/22/404-test">Non-existent nested route</BrouterLink></li>
-            <li><BrouterLink Href="/nested">Nested layout</BrouterLink></li>
-            <li><BrouterLink Href="/nested2">Nested2 layout</BrouterLink></li>
-            <li><BrouterLink Href="/nested3">Nested3 layout</BrouterLink></li>
-        </ul>
-    </section>
-
-    <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-danger"></span>
-            Guarded routes
-            <span class="bb-badge bb-badge-danger">guard</span>
-        </h3>
-        <p class="bb-card-desc">Routes that conditionally redirect via guards, cancel leaves, or block outright.</p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/g1">/g1 - allowed when <code>second % 2 == 0</code></BrouterLink></li>
-            <li><BrouterLink Href="/g2">/g2 - allowed when <code>minute % 2 == 0</code></BrouterLink></li>
-            <li><BrouterLink Href="/editor">Leave guard - unsaved-changes editor</BrouterLink></li>
-            <li><BrouterLink Href="/lock/1"><strong>Navigation lock</strong> - the page vetoes with a custom dialog</BrouterLink></li>
-        </ul>
-    </section>
-
-    <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-primary"></span>
-            Data layer
-            <span class="bb-badge">loader</span>
-        </h3>
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Constraints</h3>
         <p class="bb-card-desc">
-            Loaders, the <code>StaleTime</code> cache, revalidation, deferred data and error boundaries.
-            The links below <strong>preload on hover</strong> (<code>Preload="Intent"</code>) - rest the
-            pointer on one for a moment and the slow loader is already done when you click.
+            18 built-in type and validation constraints, chaining rules, and custom constraints
+            registered per DI container - tested interactively.
         </p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/data" Preload="BrouterLinkPreload.Intent">Loader + cache + revalidate + query updates</BrouterLink></li>
-            <li><BrouterLink Href="/deferred" Preload="BrouterLinkPreload.Intent">Deferred (streamed) data via <code>BrouterAwait</code></BrouterLink></li>
-            <li><BrouterLink Href="/unstable">Error boundary with retry (loader throws)</BrouterLink></li>
-        </ul>
+        <BrouterLink Href="/constraints" class="btn btn-outline">Constraint tester →</BrouterLink>
     </section>
 
     <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-warning"></span>
-            Navigation control
-            <span class="bb-badge bb-badge-warn">nav</span>
-        </h3>
-        <p class="bb-card-desc">Awaited outcomes, history entry state, and the .NET 10 NotFound interop.</p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/outcomes">Awaited navigation (<code>NavigateAsync</code>) + <code>NotFound()</code></BrouterLink></li>
-            <li><BrouterLink Href="/history-state">History entry state across Back/Forward</BrouterLink></li>
-        </ul>
-    </section>
-
-    <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-success"></span>
-            Layout &amp; state
-            <span class="bb-badge bb-badge-success">layout</span>
-        </h3>
-        <p class="bb-card-desc">Named outlets, pathless groups, and animated page changes via the View Transitions API.</p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/gallery"><strong>View Transitions gallery</strong> - shared-element morphs between routes</BrouterLink></li>
-            <li><BrouterLink Href="/dashboard/stats">Named outlets + pathless group (dashboard)</BrouterLink></li>
-        </ul>
-    </section>
-
-    <section class="bb-card">
-        <h3 class="bb-card-title">
-            <span class="bb-dot bb-dot-primary"></span>
-            Route lifecycle &amp; keep-alive
-            <span class="bb-badge">lifecycle</span>
-        </h3>
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Route parameters</h3>
         <p class="bb-card-desc">
-            <code>OnActivated</code> / <code>OnRenavigated</code> / <code>OnDeactivated</code> callbacks on
-            routed components (via <code>IBrouterRoute</code> or <code>BrouterRouteBase</code>), plus
-            keep-alive retention.
+            How URL values reach components: typed <code>[Parameter]</code> binding, the cascaded
+            parameter bag, query binding, wildcards and the 404 fallback.
         </p>
-        <ul class="bb-link-list">
-            <li><BrouterLink Href="/lifecycle/1"><strong>Lifecycle event log</strong> - renavigation + Disposing (<code>IBrouterRoute</code>)</BrouterLink></li>
-            <li><BrouterLink Href="/sticky">Keep-alive route - pause/resume via <code>BrouterRouteBase</code></BrouterLink></li>
-            <li><BrouterLink Href="/fleeting">Transient control route (state resets)</BrouterLink></li>
-            <li><BrouterLink Href="/notes/1">Per-parameter keep-alive (<code>KeepAliveMax</code>) + <code>ClearKeepAlive()</code></BrouterLink></li>
-        </ul>
+        <BrouterLink Href="/parameters" class="btn btn-outline">Parameters →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested routes &amp; outlets</h3>
+        <p class="bb-card-desc">
+            Parents render persistent layout, children fill outlets - including multiple named
+            regions per route and pathless groups for shared behavior.
+        </p>
+        <BrouterLink Href="/outlets" class="btn btn-outline">Outlets →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Guards &amp; locks</h3>
+        <p class="bb-card-desc">
+            Enter guards, preventive leave guards, component-level navigation locks with custom
+            dialogs, declarative redirects, and the global hooks.
+        </p>
+        <BrouterLink Href="/guards" class="btn btn-outline">Guards →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Data loading</h3>
+        <p class="bb-card-desc">
+            Route loaders with a stale-while-revalidate cache, revalidation, hover/viewport
+            preloading, streamed deferred data, and error boundaries with retry.
+        </p>
+        <BrouterLink Href="/loaders" class="btn btn-outline">Data loading →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Navigation &amp; history</h3>
+        <p class="bb-card-desc">
+            Awaited navigation outcomes, history entry state, functional query updates, named
+            routes, relative URLs, and everything <code>&lt;BrouterLink&gt;</code> can do.
+        </p>
+        <BrouterLink Href="/navigation" class="btn btn-outline">Navigation →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> View Transitions</h3>
+        <p class="bb-card-desc">
+            Direction-aware page animations and shared-element morphs via the browser View
+            Transitions API - one option to enable, overridable with plain CSS.
+        </p>
+        <BrouterLink Href="/transitions" class="btn btn-outline">Transitions →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lifecycle &amp; keep-alive</h3>
+        <p class="bb-card-desc">
+            Activation, renavigation and deactivation callbacks on routed components, plus
+            keep-alive retention with per-parameter instances and LRU eviction.
+        </p>
+        <BrouterLink Href="/lifecycle" class="btn btn-outline">Lifecycle →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> URL generator</h3>
+        <p class="bb-card-desc">
+            <code>Bit.Brouter.Generators</code> turns your route declarations into typed
+            <code>BrouterRoutes</code> URL builders - broken links become build errors.
+        </p>
+        <BrouterLink Href="/generator" class="btn btn-outline">Generator →</BrouterLink>
     </section>
 </div>
-
-@code {
-    [Parameter] public int CountValue { get; set; }
-}

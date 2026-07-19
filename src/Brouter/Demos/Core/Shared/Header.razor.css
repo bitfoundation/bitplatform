@@ -1,5 +1,5 @@
 ﻿.bb-header {
-    background: #ffffff;
+    background: var(--bb-surface);
     border-bottom: 1px solid var(--bb-border);
     box-shadow: var(--bb-shadow-sm);
     position: sticky;
@@ -19,8 +19,7 @@
     padding: .75rem 1.5rem;
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 /* The <a> rendered by <BrouterLink class="bb-brand"> lives inside a child
@@ -30,6 +29,7 @@
     display: inline-flex;
     align-items: center;
     gap: .5rem;
+    flex-shrink: 0;
     font-weight: 700;
     font-size: 1.05rem;
     color: var(--bb-text);
@@ -48,12 +48,12 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border-radius: 7px;
+    border-radius: var(--bb-radius);
     background: linear-gradient(135deg, var(--bb-primary) 0%, var(--bb-accent) 100%);
     color: #fff;
     font-weight: 700;
     font-size: .9rem;
-    box-shadow: 0 4px 10px rgba(79, 70, 229, .3);
+    box-shadow: 0 4px 10px rgba(26, 134, 216, .3);
 }
 
 .bb-brand-tag {
@@ -64,15 +64,17 @@
     background: var(--bb-primary-soft);
     color: var(--bb-primary-hover);
     padding: .15rem .45rem;
-    border-radius: 4px;
+    border-radius: var(--bb-radius-sm);
 }
 
 .bb-nav {
     display: flex;
     align-items: center;
     gap: .25rem;
-    flex-wrap: wrap;
-    margin-left: auto;
+    /* Single-line header: the nav shrinks and scrolls horizontally instead of wrapping. */
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
 }
 
 /* The nav anchors are also rendered by <BrouterLink>, so we need ::deep. */
@@ -84,6 +86,7 @@
     font-weight: 500;
     color: var(--bb-text-muted);
     text-decoration: none;
+    white-space: nowrap;
     transition: background .15s ease, color .15s ease;
 }
 
@@ -105,17 +108,5 @@
     .bb-header-inner {
         padding: .65rem 1rem;
         gap: .75rem;
-    }
-
-    .bb-nav {
-        margin-left: 0;
-        width: 100%;
-        overflow-x: auto;
-        flex-wrap: nowrap;
-    }
-
-    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
-    .bb-nav ::deep a {
-        white-space: nowrap;
     }
 }

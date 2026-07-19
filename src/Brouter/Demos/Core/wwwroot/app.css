@@ -1,24 +1,79 @@
-﻿/* ---------- Bit.Brouter Demo - Global Styles ---------- */
+﻿/* ---------- Bit.Brouter Demo - Global Styles ----------
 
-:root {
-    --bb-bg: #f5f7fb;
-    --bb-surface: #ffffff;
-    --bb-border: #e6e8ef;
-    --bb-text: #1f2937;
-    --bb-text-muted: #6b7280;
-    --bb-text-soft: #9ca3af;
-    --bb-primary: #4f46e5;
-    --bb-primary-hover: #4338ca;
-    --bb-primary-soft: #eef2ff;
-    --bb-accent: #0ea5e9;
-    --bb-success: #10b981;
-    --bb-warning: #f59e0b;
-    --bb-danger: #ef4444;
-    --bb-radius: 10px;
-    --bb-radius-sm: 6px;
-    --bb-shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
-    --bb-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+   The color tokens mirror the bit platform websites (bitplatform.dev / blazorui.bitplatform.dev),
+   which are built on the Bit.BlazorUI Fluent theme (see BlazorUI/Bit.BlazorUI/Styles/Fluent).
+   Theme selection uses the same `bit-theme` attribute convention as those sites: theme.js sets
+   bit-theme="light|dark" on <html> before first paint (system preference by default). */
+
+:root,
+:root[bit-theme="light"] {
+    color-scheme: light;
+    --bb-bg: #F5F5F5;
+    --bb-surface: #FFFFFF;
+    --bb-surface-2: #EDECEB;
+    --bb-border: #DEDDDC;
+    --bb-text: #1A1A1A;
+    --bb-text-muted: #5A5A5A;
+    --bb-text-soft: #999999;
+    --bb-primary: #1A86D8;
+    --bb-primary-hover: #096FBD;
+    --bb-primary-soft: #E5F0FF;
+    --bb-primary-text: #FFFFFF;
+    --bb-accent: #FF7D33;
+    --bb-success: #49A94C;
+    --bb-success-soft: #DEF0DF;
+    --bb-success-text: #2C792F;
+    --bb-warning: #F2B01F;
+    --bb-warning-soft: #FCEBC5;
+    --bb-warning-text: #8F6408;
+    --bb-danger: #DF3A2E;
+    --bb-danger-soft: #FADEDC;
+    --bb-danger-text: #AC2218;
+    --bb-code-bg: #F6F8FA;
+    --bb-code-fg: #1F2328;
+    --bb-code-comment: #59636E;
+    --bb-code-keyword: #0969DA;
+    --bb-code-string: #953800;
+    --bb-code-param: #1A7F37;
+    /* Matches the Bit.BlazorUI Fluent shape token (--bit-shp-brd-radius: 0.125rem). */
+    --bb-radius: 4px;
+    --bb-radius-sm: 2px;
+    --bb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .06);
+    --bb-shadow: 0 6px 20px rgba(0, 0, 0, .06);
     --bb-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+:root[bit-theme="dark"] {
+    color-scheme: dark;
+    --bb-bg: #010409;
+    --bb-surface: #101419;
+    --bb-surface-2: #181F26;
+    --bb-border: #232933;
+    --bb-text: #F6F7F8;
+    --bb-text-muted: #ADB5BF;
+    --bb-text-soft: #616973;
+    --bb-primary: #569FFF;
+    --bb-primary-hover: #89BCFF;
+    --bb-primary-soft: rgba(86, 159, 255, .13);
+    --bb-primary-text: #212121;
+    --bb-accent: #FF9E67;
+    --bb-success: #7FB58A;
+    --bb-success-soft: rgba(127, 181, 138, .16);
+    --bb-success-text: #A5CBAD;
+    --bb-warning: #FFD07A;
+    --bb-warning-soft: rgba(255, 208, 122, .14);
+    --bb-warning-text: #FFDEA2;
+    --bb-danger: #DC7C7C;
+    --bb-danger-soft: rgba(220, 124, 124, .15);
+    --bb-danger-text: #E7A3A3;
+    --bb-code-bg: #0D1117;
+    --bb-code-fg: #E6EDF3;
+    --bb-code-comment: #64748B;
+    --bb-code-keyword: #7DD3FC;
+    --bb-code-string: #FBBF24;
+    --bb-code-param: #86EFAC;
+    --bb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+    --bb-shadow: 0 6px 20px rgba(0, 0, 0, .5);
 }
 
 * {
@@ -38,7 +93,7 @@ html, body {
     padding: 0;
     background: var(--bb-bg);
     color: var(--bb-text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 15px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
@@ -75,7 +130,7 @@ code {
     background: var(--bb-primary-soft);
     color: var(--bb-primary-hover);
     padding: .125rem .375rem;
-    border-radius: 4px;
+    border-radius: var(--bb-radius-sm);
 }
 
 hr {
@@ -150,6 +205,13 @@ article {
 .bb-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.bb-flex {
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -229,18 +291,18 @@ article {
 }
 
 .bb-badge.bb-badge-warn {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--bb-warning-soft);
+    color: var(--bb-warning-text);
 }
 
 .bb-badge.bb-badge-danger {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--bb-danger-soft);
+    color: var(--bb-danger-text);
 }
 
 .bb-badge.bb-badge-success {
-    background: #d1fae5;
-    color: #065f46;
+    background: var(--bb-success-soft);
+    color: var(--bb-success-text);
 }
 
 /* ---------- Buttons ---------- */
@@ -269,13 +331,13 @@ button.btn:active,
 .btn-primary,
 button.btn-primary {
     background: var(--bb-primary);
-    color: #fff;
+    color: var(--bb-primary-text);
     border-color: var(--bb-primary);
 }
 
 .btn-primary:hover,
 button.btn-primary:hover {
-    color: #fff;
+    color: var(--bb-primary-text);
     background: var(--bb-primary-hover);
     border-color: var(--bb-primary-hover);
 }
@@ -306,7 +368,7 @@ button.btn-outline:hover {
 }
 
 .table thead {
-    background: #f9fafc;
+    background: var(--bb-surface-2);
 }
 
 .table th,
@@ -329,7 +391,7 @@ button.btn-outline:hover {
 }
 
 .table tbody tr:hover {
-    background: #fafbfd;
+    background: var(--bb-surface-2);
 }
 
 /* ---------- Counter (used by CounterPage) ---------- */
@@ -508,8 +570,9 @@ button.btn-outline:hover {
 /* ---------- Code samples & feature tables (TemplatesPage / ConstraintsPage) ---------- */
 
 .bb-code {
-    background: #0f172a;
-    color: #e2e8f0;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    border: 1px solid var(--bb-border);
     border-radius: var(--bb-radius);
     padding: 1rem 1.25rem;
     font-family: var(--bb-mono);
@@ -520,10 +583,10 @@ button.btn-outline:hover {
     white-space: pre;
 }
 
-.bb-code .c { color: #64748b; }        /* comment */
-.bb-code .k { color: #7dd3fc; }        /* keyword-ish / tag */
-.bb-code .s { color: #fbbf24; }        /* string / template */
-.bb-code .p { color: #86efac; }        /* parameter */
+.bb-code .c { color: var(--bb-code-comment); }   /* comment */
+.bb-code .k { color: var(--bb-code-keyword); }   /* keyword-ish / tag */
+.bb-code .s { color: var(--bb-code-string); }    /* string / template */
+.bb-code .p { color: var(--bb-code-param); }     /* parameter */
 
 .bb-table {
     width: 100%;
@@ -574,3 +637,40 @@ button.btn-outline:hover {
     gap: .5rem;
     margin: .25rem 0 1rem;
 }
+
+/* ---------- Theme toggle ----------
+
+   Lives here (not in Header.razor.css) because the icon swap keys off the bit-theme attribute
+   on <html>, which scoped-CSS selectors can't reach. */
+
+.bb-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: var(--bb-radius-sm);
+    border: 1px solid var(--bb-border);
+    background: var(--bb-surface);
+    color: var(--bb-text-muted);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.bb-theme-toggle:hover {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    border-color: var(--bb-primary);
+}
+
+.bb-theme-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+.bb-theme-toggle .bb-icon-moon { display: none; }
+
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-sun { display: none; }
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-moon { display: block; }

@@ -1,0 +1,99 @@
+@* Topic page: nested routes, outlets, named views, and pathless groups. The live links point at
+   the nested* and /dashboard routes declared in AppRouter.razor. *@
+
+<div class="bb-intro">
+    <h1>Nested routes &amp; outlets</h1>
+    <p class="bb-subtitle">
+        Compose route trees where parents render persistent layout and children fill outlets -
+        including multiple named regions per route and pathless groups that share behavior without
+        adding URL segments.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Nesting composes templates</h3>
+    <p class="bb-card-desc">
+        A <code>&lt;Broute&gt;</code> declared inside another inherits its parent's template as a
+        prefix: a child <code>n1/{count:int}</code> under <code>nested</code> matches
+        <code>/nested/n1/3</code>. Children can be declared directly in the parent's markup, or in
+        an explicit <code>&lt;Routes&gt;</code> block when the parent also has its own
+        <code>&lt;Content&gt;</code> (the two are aliases - never use both). A child with an
+        <em>empty</em> path is the <strong>index route</strong>: it matches the parent's path
+        exactly.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"nested"</span> Component=<span class="s">"@@typeof(Nested)"</span>&gt;
+    &lt;<span class="k">Broute</span> Path=<span class="s">"n1/{count:int}"</span>&gt; ... &lt;/<span class="k">Broute</span>&gt;  <span class="c">@@* matches /nested/n1/3 *@@</span>
+&lt;/<span class="k">Broute</span>&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/nested-route/1" class="btn btn-outline">/nested-route/1</BrouterLink>
+        <BrouterLink Href="/nested-route/5/hello" class="btn btn-outline">/nested-route/5/hello</BrouterLink>
+        <BrouterLink Href="/nested-route/10/world" class="btn btn-outline">/nested-route/10/world</BrouterLink>
+        <BrouterLink Href="/nested-route/22/404-test" class="btn btn-outline">Non-existent nested → 404</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The outlet renders the matched child</h3>
+    <p class="bb-card-desc">
+        The parent decides <em>where</em> children appear by placing a
+        <code>&lt;BrouterOutlet /&gt;</code> in its own content - the equivalent of React Router's
+        <code>&lt;Outlet /&gt;</code>. Everything around the outlet stays mounted while children
+        swap, so parent state (timers, form input, scroll) survives child navigation. Outlet-hosted
+        children get their own cascades: <code>RouteParameters</code>, <code>BrouterRouteData</code>,
+        <code>BrouterRouteMeta</code>, and a <code>BrouterRouteContext</code> for lifecycle
+        registration. The three <code>nested*</code> demos show the shapes: a
+        <code>Component</code> parent with an outlet in its markup, two children sharing one
+        outlet, and an inline parent declaring both its own outlet and an explicit
+        <code>&lt;Routes&gt;</code> block.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/nested" class="btn btn-outline">/nested - component parent</BrouterLink>
+        <BrouterLink Href="/nested2" class="btn btn-outline">/nested2 - two children, one outlet</BrouterLink>
+        <BrouterLink Href="/nested3" class="btn btn-outline">/nested3 - inline parent + outlet</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Named outlets &amp; views</h3>
+    <p class="bb-card-desc">
+        One route can drive <em>several</em> layout regions (Vue's "named views"). The parent
+        declares outlets with names; the child supplies a <code>&lt;BrouterView Name="..."&gt;</code>
+        fragment per region it wants to fill. A route that declares no view for a named outlet
+        simply leaves that region empty - watch the sidebar clear when you switch from Stats to
+        Activity in the dashboard demo.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Parent layout: two regions. *@@</span>
+&lt;<span class="k">BrouterOutlet</span> /&gt;                      <span class="c">@@* primary *@@</span>
+&lt;<span class="k">BrouterOutlet</span> Name=<span class="s">"sidebar"</span> /&gt;
+
+<span class="c">@@* Child route: main content via Content, sidebar via a named view. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/stats"</span>&gt;
+    &lt;<span class="k">Content</span>&gt;Stats main content&lt;/<span class="k">Content</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">BrouterView</span> Name=<span class="s">"sidebar"</span>&gt;Stats filters&lt;/<span class="k">BrouterView</span>&gt;
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Broute</span>&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/dashboard/stats" class="btn btn-outline">/dashboard/stats - fills both regions</BrouterLink>
+        <BrouterLink Href="/dashboard/activity" class="btn btn-outline">/dashboard/activity - sidebar stays empty</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Pathless groups</h3>
+    <p class="bb-card-desc">
+        A <code>&lt;Broute Group&gt;</code> contributes <strong>no URL segments</strong> - it exists
+        purely to attach shared behavior (a <code>Guard</code>, <code>LeaveGuard</code>,
+        <code>Loader</code>, or <code>ErrorContent</code>) to all of its children, like SvelteKit's
+        <code>(group)</code> folders. The dashboard wraps its children in a group whose guard
+        counts every entry into the section - one declaration, every child covered, no
+        <code>/group</code> in the URL. Groups without outlets pass their children straight through
+        to the nearest ancestor outlet.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> <span class="k">Group</span> Path=<span class="s">""</span> Guard=<span class="s">"CountDashboardVisit"</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/stats"</span>&gt; ... &lt;/<span class="k">Broute</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/activity"</span>&gt; ... &lt;/<span class="k">Broute</span>&gt;
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Broute</span>&gt;</pre>
+</div>
