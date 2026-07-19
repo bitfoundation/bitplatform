@@ -604,14 +604,18 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(expectedRel, bitButton.GetAttribute("rel"));
     }
 
-    [TestMethod]
-    public void BitButtonAnchorShouldRenderLoadingAndFireOnClick()
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonAnchorShouldRenderLoadingAndRespectReclickable(bool reclickable)
     {
         var clicked = false;
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
             parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Reclickable, reclickable);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
@@ -627,7 +631,26 @@ public class BitButtonTests : BunitTestContext
 
         bitButton.Click();
 
-        Assert.IsTrue(clicked);
+        Assert.AreEqual(reclickable, clicked);
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonLoadingShouldRespectReclickable(bool reclickable)
+    {
+        var clicked = false;
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Reclickable, reclickable);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+        });
+
+        com.Find(".bit-btn").Click();
+
+        Assert.AreEqual(reclickable, clicked);
     }
 
     [TestMethod]

@@ -214,7 +214,7 @@ public partial class BitButton : BitComponentBase
     public RenderFragment? PrimaryTemplate { get; set; }
 
     /// <summary>
-    /// Enables re-clicking in loading state when AutoLoading is enabled.
+    /// Enables re-clicking while the button is in the loading state.
     /// </summary>
     [Parameter] public bool Reclickable { get; set; }
 
@@ -452,7 +452,7 @@ public partial class BitButton : BitComponentBase
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (AutoLoading && IsLoading && Reclickable is false) return;
+        if (IsLoading && Reclickable is false) return;
 
         var isLoading = IsLoading;
 

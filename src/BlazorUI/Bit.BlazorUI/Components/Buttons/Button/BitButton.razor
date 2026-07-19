@@ -83,7 +83,7 @@
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
             @onclick:stopPropagation="StopPropagation"
-            @onclick:preventDefault="@(IsEnabled is false || (AutoLoading && IsLoading && Reclickable is false))"
+            @onclick:preventDefault="@(IsEnabled is false || (IsLoading && Reclickable is false))"
             id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
@@ -106,7 +106,7 @@ else
 {
     <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
        @onclick:stopPropagation="StopPropagation"
-       @onclick:preventDefault="@(IsEnabled is false || (AutoLoading && IsLoading && Reclickable is false))"
+       @onclick:preventDefault="@(IsEnabled is false || (IsLoading && Reclickable is false))"
        id="@_Id"
        rel="@_rel"
        style="@StyleBuilder.Value"

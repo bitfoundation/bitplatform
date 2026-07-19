@@ -269,7 +269,7 @@ private Task AutoLoadingReclick(bool isLoading)
     </div>
 </div>";
     private readonly string example12CsharpCode = @"
-private string? floatOffset;
+private string? floatOffset = ""63px"";
 private BitPosition floatPosition = BitPosition.BottomRight;
 
 [Inject] private IJSRuntime _js { get; set; } = default!;
