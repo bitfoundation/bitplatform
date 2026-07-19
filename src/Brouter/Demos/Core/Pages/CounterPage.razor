@@ -61,8 +61,7 @@
                 CurrentCount = init;
                 _appliedInit = init;
                 ChangeCount?.Invoke(CurrentCount);
-                if (CurrentCountChanged.HasDelegate)
-                    await CurrentCountChanged.InvokeAsync(CurrentCount);
+                await CurrentCountChanged.InvokeAsync(CurrentCount);
             }
         }
         else
@@ -78,7 +77,6 @@
         var next = CurrentCount + 1;
         CurrentCount = next;
         ChangeCount?.Invoke(next);
-        if (CurrentCountChanged.HasDelegate)
-            await CurrentCountChanged.InvokeAsync(next);
+        await CurrentCountChanged.InvokeAsync(next);
     }
 }

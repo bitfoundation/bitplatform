@@ -92,6 +92,21 @@ public class BrouterRoutesGeneratorTests
     }
 
     [TestMethod]
+    public void Middle_default_valued_parameter_is_required_in_the_builder()
+    {
+        // A default-valued segment followed by a required parameter can't stay an omittable C#
+        // argument (an optional parameter may not precede a required one), and at match time a
+        // middle default behaves as required anyway - so the builder requires it, like a middle
+        // optional.
+        var (source, asm) = Run(("Blog.razor", """
+            @page "/blog/{action=Index}/{id:int}"
+            """));
+
+        StringAssert.Contains(source, "public static string BlogByActionById(string @action, int @id");
+        Assert.AreEqual("/blog/Archive/5", Invoke(asm, "BlogByActionById", "Archive", 5, Type.Missing));
+    }
+
+    [TestMethod]
     public void Middle_optional_parameter_is_required_in_the_builder()
     {
         // Runtime parity: "/products/{culture?}/list" treats the middle optional as required, so

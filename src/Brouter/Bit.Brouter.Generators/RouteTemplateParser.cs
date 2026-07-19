@@ -108,18 +108,20 @@ internal static class RouteTemplateParser
             }
         }
 
-        // Runtime parity: a middle optional (one followed by a non-skippable segment) is required
-        // at match time, so the generated method must require its argument too.
+        // Runtime parity: a middle optional or default-valued parameter (one followed by a
+        // non-skippable segment) is required at match time, so the generated method must require
+        // its argument too (C# also rejects an optional argument before a required one).
         for (var i = 0; i < segments.Count; i++)
         {
             var segment = segments[i];
-            if (segment.Kind != SegmentKind.Parameter || segment.IsOptional is false) continue;
+            if (segment.Kind != SegmentKind.Parameter) continue;
+            if (segment.IsOptional is false && segment.DefaultValue is null) continue;
 
             for (var j = i + 1; j < segments.Count; j++)
             {
                 if (IsSkippable(segments[j]) is false)
                 {
-                    segments[i] = segment with { IsOptional = false };
+                    segments[i] = segment with { IsOptional = false, DefaultValue = null };
                     break;
                 }
             }

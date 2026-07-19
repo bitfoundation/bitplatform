@@ -45,9 +45,9 @@ else
 
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Query updates</h3>
-        <button class="btn btn-primary" @onclick="@(() => SetPage(int.Parse(Info.Page) - 1))">← page</button>
+        <button class="btn btn-primary" @onclick="@(() => SetPage(CurrentPage - 1))">← page</button>
         <span style="margin: 0 .75rem;">page <strong>@Info.Page</strong></span>
-        <button class="btn btn-primary" @onclick="@(() => SetPage(int.Parse(Info.Page) + 1))">page →</button>
+        <button class="btn btn-primary" @onclick="@(() => SetPage(CurrentPage + 1))">page →</button>
         <p class="bb-card-desc">
             <code>NavigateWithQuery(q =&gt; q.Set("page", n))</code> updates one parameter, preserves the
             rest, and replaces the history entry by default. Each page value is its own cache entry.
@@ -60,6 +60,10 @@ else
     [CascadingParameter] public BrouterRouteMeta? Meta { get; set; }
 
     private LoadedInfo? Info => Data?.GetOrDefault<LoadedInfo>();
+
+    // The page value round-trips through the URL query, so a hand-edited "?page=abc" must not
+    // crash the +/- buttons.
+    private int CurrentPage => int.TryParse(Info?.Page, out var page) ? page : 1;
 
     private Task Revalidate() => brouter.RevalidateAsync().AsTask();
 

@@ -159,8 +159,9 @@ public sealed class BrouterRoutesGenerator : IIncrementalGenerator
                     var paramName = ParameterNameFor(segment.Value);
                     if (segment.DefaultValue is not null)
                     {
-                        // Default-valued parameter ({action=Index}): callers may omit the argument;
-                        // the declared default is emitted so the URL always matches the template.
+                        // Trailing default-valued parameter ({action=Index}): callers may omit the
+                        // argument; the declared default is emitted so the URL always matches the
+                        // template. (Non-trailing defaults were demoted to required by the parser.)
                         var defaultType = segment.ClrType == "string" ? "string?" : segment.ClrType + "?";
                         parameters.Add($"{defaultType} {paramName} = null");
                         body.AppendLine($"        sb.Append('/').Append({paramName} is null ? \"{Escape(Uri.EscapeDataString(segment.DefaultValue))}\" : global::System.Uri.EscapeDataString(__Format({paramName})));");

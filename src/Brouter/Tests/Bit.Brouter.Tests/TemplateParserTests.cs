@@ -106,6 +106,17 @@ public class TemplateParserTests
     }
 
     [TestMethod]
+    public void Middle_default_value_parses()
+    {
+        // Framework parity: like a middle optional, a non-trailing default parses fine and simply
+        // behaves as required at match time (defaults only bind when a trailing run is omitted).
+        var result = BrouterTemplateParser.ParseTemplate("/{a=x}/{b}");
+        Assert.AreEqual(2, result.TemplateSegments.Count);
+        Assert.IsTrue(result.TemplateSegments[0].HasDefault);
+        Assert.AreEqual("x", result.TemplateSegments[0].DefaultValue);
+    }
+
+    [TestMethod]
     public void Default_value_with_constraint_parses()
     {
         var segment = BrouterTemplateParser.ParseTemplate("/blog/{id:int=5}").TemplateSegments[1];
