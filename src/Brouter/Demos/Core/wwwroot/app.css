@@ -196,6 +196,22 @@ article {
     font-weight: 600;
 }
 
+/* Prose-style list: items mix text with inline links/code. */
+.bb-detail-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    color: var(--bb-text-muted);
+    font-size: .9rem;
+    line-height: 1.7;
+}
+
+.bb-detail-list a {
+    color: var(--bb-primary);
+}
+
 /* ---------- Badges ---------- */
 
 .bb-badge {

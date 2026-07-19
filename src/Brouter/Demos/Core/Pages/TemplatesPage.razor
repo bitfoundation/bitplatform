@@ -177,7 +177,7 @@
         rank higher, optional/defaulted parameters slightly lower. Exact-duplicate templates are
         rejected at registration instead of silently picking one.
     </p>
-    <ul class="bb-link-list">
+    <ul class="bb-detail-list">
         <li>
             <BrouterLink Href="/rate/3"><code>/rate/3</code></BrouterLink> - the constrained
             <code>/rate/{score:int:min(1):max(5)}</code> outranks the <code>/c/{kind}/{value}</code>
@@ -192,7 +192,7 @@
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Small parity details</h3>
-    <ul class="bb-link-list" style="line-height: 1.7;">
+    <ul class="bb-detail-list">
         <li><code>~/products</code> - a leading <code>~/</code> is trimmed, same as the built-in router.</li>
         <li><code>{{</code> and <code>}}</code> escape literal braces: the template <code>/docs/{{literal}}</code> matches the URL path segment <code>{literal}</code>.</li>
         <li>A catch-all can't be optional (<code>{*path?}</code> throws) and an optional can't have a default (<code>{id=5?}</code> throws) - both rejected at parse time, matching the framework.</li>
