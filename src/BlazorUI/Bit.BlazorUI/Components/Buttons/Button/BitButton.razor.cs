@@ -408,7 +408,8 @@ public partial class BitButton : BitComponentBase
         }
         else
         {
-            _tabIndex = TabIndex ?? _tabIndex;
+            // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
+            _tabIndex = TabIndex;
         }
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);

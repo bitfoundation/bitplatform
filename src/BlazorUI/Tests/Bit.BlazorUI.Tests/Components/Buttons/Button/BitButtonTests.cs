@@ -379,8 +379,9 @@ public class BitButtonTests : BunitTestContext
     [TestMethod,
         DataRow("5"),
         DataRow("50"),
+        DataRow(null),
     ]
-    public void BitButtonTabIndexShouldRecoverAfterReEnable(string tabIndex)
+    public void BitButtonTabIndexShouldRecoverAfterReEnable(string? tabIndex)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
@@ -398,7 +399,14 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, true);
         });
 
-        Assert.AreEqual(tabIndex, bitButton.GetAttribute("tabindex"));
+        if (tabIndex is null)
+        {
+            Assert.IsFalse(bitButton.HasAttribute("tabindex"));
+        }
+        else
+        {
+            Assert.AreEqual(tabIndex, bitButton.GetAttribute("tabindex"));
+        }
     }
 
     [TestMethod,

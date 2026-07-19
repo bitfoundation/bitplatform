@@ -235,7 +235,7 @@ public partial class BitButtonDemo
             Name = "Reclickable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables re-clicking in loading state when AutoLoading is enabled.",
+            Description = "Enables re-clicking while the button is in the loading state.",
         },
         new()
         {
