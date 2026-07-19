@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Todo;
 
 [DtoResourceType(typeof(AppStrings))]

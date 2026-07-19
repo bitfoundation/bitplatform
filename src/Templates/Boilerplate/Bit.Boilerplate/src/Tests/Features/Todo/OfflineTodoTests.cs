@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Boilerplate.Tests.Features.Identity;
 using Boilerplate.Server.Api.Infrastructure.Data;
 
@@ -20,7 +20,7 @@ public partial class OfflineTodoTests : AppPageTest
     [TestMethod]
     public async Task OfflineTodo_Should_SyncPendingChanges_WhenServerIsBackOnline()
     {
-        
+
 
         var firstTodoTitle = Guid.NewGuid().ToString();
         var secondTodoTitle = Guid.NewGuid().ToString();

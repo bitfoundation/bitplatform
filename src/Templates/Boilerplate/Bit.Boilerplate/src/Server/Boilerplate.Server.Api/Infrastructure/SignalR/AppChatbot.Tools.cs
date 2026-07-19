@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.ComponentModel;
 //#if (module == "Sales")
 using Boilerplate.Server.Api.Features.Products;

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (sample == true || offlineDb == true)
 using Boilerplate.Server.Api.Features.Todo;
 //#endif

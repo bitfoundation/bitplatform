@@ -1,0 +1,201 @@
+@* The complete route-template reference: every segment shape Brouter understands, each with a
+   description, a code sample, and live links into real routes declared in AppRouter.razor.
+   Brouter's template grammar mirrors the built-in Blazor router (which since .NET 8 compiles in
+   ASP.NET Core's routing engine), so everything on this page is also a valid @page template. *@
+
+<div class="bb-intro">
+    <h1>Route templates</h1>
+    <p class="bb-subtitle">
+        Every template shape Brouter supports, with live examples. The grammar is a superset-compatible
+        match of the built-in Blazor router - templates you'd write in <code>@@page</code> work here,
+        with the same matching semantics.
+    </p>
+</div>
+
+@* ============================== Literals & parameters ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Literals, parameters &amp; type constraints</h3>
+    <p class="bb-card-desc">
+        Literal segments match their exact text (case-insensitive by default). <code>{name}</code>
+        binds a segment to a parameter; adding a <em>type constraint</em> both restricts what matches
+        and <strong>converts the bound value</strong> to that CLR type. Built-in type constraints:
+        <code>int</code>, <code>long</code>, <code>bool</code>, <code>guid</code>, <code>datetime</code>,
+        <code>decimal</code>, <code>double</code>, <code>float</code>.
+    </p>
+    <pre class="bb-code"><span class="c">@@* /counter/1234 matches; /counter/abc does not - and init arrives as an int. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/counter/{init:int}"</span> ... /&gt;
+
+<span class="c">@@* Several constraints can chain; each must accept the value. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/counter/multi/{id:int:long}/{age:long:decimal:double}/{name}"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/counter/1234" class="btn btn-outline">/counter/1234</BrouterLink>
+        <BrouterLink Href="/counter/multi/1/2/saleh" class="btn btn-outline">/counter/multi/1/2/saleh</BrouterLink>
+        <BrouterLink Href="/counter/oops" class="btn btn-outline">/counter/oops → 404 (fails :int)</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Optional parameters ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Optional parameters - trailing <em>and</em> middle</h3>
+    <p class="bb-card-desc">
+        A trailing <code>{param?}</code> may be omitted by the URL - the parameter binds
+        <code>null</code>. An optional may also sit in the <em>middle</em> of a template
+        (<code>/products/{culture?}/list</code>): it parses fine, but - exactly like the built-in
+        router - a middle optional is <strong>required at match time</strong>. Only the trailing run
+        of optional segments can actually be left out.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Trailing optional: both /profile and /profile/saleh match. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/profile/{username?}"</span> ... /&gt;
+
+<span class="c">@@* Middle optional: /products/en/list matches (culture = "en"),</span>
+<span class="c">   but /products/list does NOT - the literal "list" that follows makes</span>
+<span class="c">   {culture?} effectively required. Framework parity. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/products/{culture?}/list"</span> ... /&gt;
+
+<span class="c">@@* A middle optional can carry constraints too: *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/{lang:nonfile?}/welcome"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/profile" class="btn btn-outline">/profile (omitted)</BrouterLink>
+        <BrouterLink Href="/profile/saleh" class="btn btn-outline">/profile/saleh</BrouterLink>
+        <BrouterLink Href="/products/en/list" class="btn btn-outline">/products/en/list</BrouterLink>
+        <BrouterLink Href="/products/list" class="btn btn-outline">/products/list → 404</BrouterLink>
+        <BrouterLink Href="/en/welcome" class="btn btn-outline">/en/welcome</BrouterLink>
+        <BrouterLink Href="/style.css/welcome" class="btn btn-outline">/style.css/welcome → 404 (fails :nonfile)</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Default values ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Default values</h3>
+    <p class="bb-card-desc">
+        <code>{param=value}</code> makes the segment omittable like an optional, but instead of
+        <code>null</code> the parameter binds the declared default. Combine with a type constraint
+        and the default converts too (<code>{id:int=5}</code> binds <code>int 5</code>). A parameter
+        can't be optional <em>and</em> defaulted (<code>{id=5?}</code> is rejected at parse time).
+    </p>
+    <pre class="bb-code"><span class="c">@@* /blog binds action = "Index"; /blog/archive binds action = "archive". *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/blog/{action=Index}"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/blog" class="btn btn-outline">/blog → action = "Index"</BrouterLink>
+        <BrouterLink Href="/blog/archive" class="btn btn-outline">/blog/archive</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Catch-alls & wildcards ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Catch-alls &amp; wildcards</h3>
+    <p class="bb-card-desc">
+        A catch-all parameter - <code>{*path}</code> or <code>{**path}</code>, both equivalent for
+        matching - must be the last segment and binds the entire remaining path (zero or more
+        segments, slashes included). Catch-alls accept constraints: the constraint validates the
+        whole remainder, and the bound value always stays a string. <code>nonfile</code> is the
+        classic use - route everything <em>except</em> static-asset-looking URLs. Literal wildcards
+        <code>*</code> (one segment) and <code>**</code> (rest) match without binding anything.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Binds the whole tail: /posts/2026/05/intro → slug = "2026/05/intro". *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/posts/{**slug}"</span> ... /&gt;
+
+<span class="c">@@* Single-star form + a constraint. Matches /assets and /assets/img/logo,</span>
+<span class="c">   but NOT /assets/app.js - "app.js" looks like a file name. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/assets/{*path:nonfile}"</span> ... /&gt;
+
+<span class="c">@@* Literal wildcards - match one / all segments, bind nothing: *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/*/test"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/posts/2026/05/intro-to-brouter" class="btn btn-outline">/posts/2026/05/intro-to-brouter</BrouterLink>
+        <BrouterLink Href="/assets" class="btn btn-outline">/assets (empty remainder)</BrouterLink>
+        <BrouterLink Href="/assets/img/logo" class="btn btn-outline">/assets/img/logo</BrouterLink>
+        <BrouterLink Href="/assets/app.js" class="btn btn-outline">/assets/app.js → 404 (fails :nonfile)</BrouterLink>
+        <BrouterLink Href="/anything/test" class="btn btn-outline">/anything/test (wildcard)</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Complex segments ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Complex (multi-part) segments</h3>
+    <p class="bb-card-desc">
+        One URL segment can mix literals and several parameters: <code>{name}.{ext}</code>,
+        <code>v{major}-{minor}</code>. Matching runs right-to-left on the segment text (the same
+        algorithm as the built-in router), every parameter must capture at least one character, and
+        two parameters can't touch without a literal between them. The last part may be optional
+        when preceded by a period - <code>{name}.{ext?}</code> matches <code>report.pdf</code>
+        <em>and</em> <code>report</code>, but never <code>report.</code>.
+    </p>
+    <pre class="bb-code"><span class="c">@@* /files/report.pdf → name = "report", ext = "pdf"</span>
+<span class="c">   /files/report     → name = "report", ext = null</span>
+<span class="c">   /files/a.b.c      → name = "a.b",    ext = "c"   (rightmost '.' wins) *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/files/{name}.{ext?}"</span> ... /&gt;
+
+<span class="c">@@* Parts can be typed: /api/v2-10 → major = 2, minor = 10 (both int). *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/api/v{major:int}-{minor:int}"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/files/report.pdf" class="btn btn-outline">/files/report.pdf</BrouterLink>
+        <BrouterLink Href="/files/report" class="btn btn-outline">/files/report</BrouterLink>
+        <BrouterLink Href="/files/a.b.c" class="btn btn-outline">/files/a.b.c</BrouterLink>
+        <BrouterLink Href="/files/report." class="btn btn-outline">/files/report. → 404</BrouterLink>
+        <BrouterLink Href="/api/v2-10" class="btn btn-outline">/api/v2-10</BrouterLink>
+        <BrouterLink Href="/api/vX-10" class="btn btn-outline">/api/vX-10 → 404 (fails :int)</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Validation constraints ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Validation constraints &amp; chaining rules</h3>
+    <p class="bb-card-desc">
+        Beyond the type constraints there are <em>validation</em> constraints - they accept or reject
+        but leave the value a string: <code>alpha</code>, <code>file</code>, <code>nonfile</code>,
+        and the parameterized <code>min(1)</code>, <code>max(10)</code>, <code>range(1,10)</code>,
+        <code>minlength(2)</code>, <code>maxlength(8)</code>, <code>length(4)</code> /
+        <code>length(2,8)</code>, <code>regex(...)</code>. In a chain the <strong>last type
+        constraint decides the bound value</strong>: <code>{score:int:min(1):max(5)}</code> still
+        binds an <code>int</code> - the validators just gate it.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Only 1..5 pass, and score arrives as an int, not a string. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/rate/{score:int:min(1):max(5)}"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/rate/3" class="btn btn-outline">/rate/3</BrouterLink>
+        <BrouterLink Href="/rate/9" class="btn btn-outline">/rate/9 → 404 (fails max(5))</BrouterLink>
+        <BrouterLink Href="/constraints" class="btn btn-primary">Open the interactive constraint tester →</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Precedence & odds and ends ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Which route wins? (specificity)</h3>
+    <p class="bb-card-desc">
+        When several templates match one URL the most specific wins:
+        <strong>literal</strong> beats <strong>complex segment</strong> beats
+        <strong>constrained parameter</strong> beats <strong>parameter</strong> beats
+        <strong>single-segment wildcard</strong> beats <strong>catch-all</strong>; more constraints
+        rank higher, optional/defaulted parameters slightly lower. Exact-duplicate templates are
+        rejected at registration instead of silently picking one.
+    </p>
+    <ul class="bb-detail-list">
+        <li>
+            <BrouterLink Href="/rate/3"><code>/rate/3</code></BrouterLink> - the constrained
+            <code>/rate/{score:int:min(1):max(5)}</code> outranks the <code>/c/{kind}/{value}</code>
+            fallback used by the constraint tester.
+        </li>
+        <li>
+            <BrouterLink Href="/anything/test"><code>/anything/test</code></BrouterLink> - the wildcard
+            <code>/*/test</code> only wins because nothing more specific matches.
+        </li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Small parity details</h3>
+    <ul class="bb-detail-list">
+        <li><code>~/products</code> - a leading <code>~/</code> is trimmed, same as the built-in router.</li>
+        <li><code>{{</code> and <code>}}</code> escape literal braces: the template <code>/docs/{{literal}}</code> matches the URL path segment <code>{literal}</code>.</li>
+        <li>A catch-all can't be optional (<code>{*path?}</code> throws) and an optional can't have a default (<code>{id=5?}</code> throws) - both rejected at parse time, matching the framework.</li>
+        <li>Matching is case-insensitive (configurable via <code>BrouterOptions.CaseSensitive</code>); trailing-slash strictness via <code>BrouterOptions.IgnoreTrailingSlash</code>.</li>
+    </ul>
+</div>

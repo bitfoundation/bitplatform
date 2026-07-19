@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Features.Tenants;
+namespace Boilerplate.Server.Api.Features.Tenants;
 
 public partial class TenantUserConfiguration : IEntityTypeConfiguration<TenantUser>
 {

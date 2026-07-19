@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.Features.Identity;
+namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("UITest")]
 public partial class UITests : AppPageTest

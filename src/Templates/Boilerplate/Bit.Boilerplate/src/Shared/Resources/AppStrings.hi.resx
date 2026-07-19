@@ -1437,6 +1437,18 @@
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>टेनेंट शीर्षक दर्ज करें</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>डोमेन</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>टेनेंट का कस्टम डोमेन दर्ज करें (जैसे myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} एक मान्य डोमेन नाम होना चाहिए जिसमें कोई स्कीम या पाथ न हो (जैसे myapp.com)।</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>डोमेन '{0}' पहले से उपयोग में है।</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>आपने अभी तक कोई टेनेंट नहीं चुना है। शुरू करने के लिए अपने किसी टेनेंट पर स्विच करें या एक नया टेनेंट बनाएं।</value>
   </data>

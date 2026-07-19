@@ -68,7 +68,7 @@ Before implementing any changes, you **MUST** complete the following:
 ## 4. Critical Command Reference
 
 -   **Build the project**: Run `dotnet build` in Boilerplate.Server.Web project root directory.
--   **Run the project**: Run `dotnet run` in Boilerplate.Server.Web project root directory.
+-   **Run the project**: Run `dotnet watch` in Boilerplate.Server.Web project root directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
 -   **Run tests**: Run `dotnet test` in Boilerplate.Tests project root directory.
 -   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose` in Boilerplate.Server.Api project root directory.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory.
@@ -99,4 +99,4 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 ## 6. Behavioral Directives
 
 -   You **MUST** verify that you have access to the `DeepWiki ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message: **❌ CRITICAL ERROR: DeepWiki ask_question Tool Not Available**
--   If the user's prompt language is a Right-to-Left (RTL) language (e.g., فارسی, العربية, עברית), you **MUST** prepend the Unicode character U+202B (‫) at the beginning of **text, bullet points, and paragraphs**, except inside code blocks, code examples, file paths, or any technical content that should remain in LTR format.
+-   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.

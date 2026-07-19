@@ -1437,6 +1437,18 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>Mandantentitel eingeben</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Domain</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Benutzerdefinierte Domain des Mandanten eingeben (z. B. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} muss ein gültiger Domainname ohne Schema oder Pfad sein (z. B. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>Die Domain '{0}' ist bereits vergeben.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Sie haben noch keinen Mandanten ausgewählt. Wechseln Sie zu einem Ihrer Mandanten oder erstellen Sie einen neuen, um loszulegen.</value>
   </data>

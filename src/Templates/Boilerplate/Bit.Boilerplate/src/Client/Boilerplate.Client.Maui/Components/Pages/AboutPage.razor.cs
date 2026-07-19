@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Maui.Components.Pages;
+namespace Boilerplate.Client.Maui.Components.Pages;
 
 public partial class AboutPage
 {

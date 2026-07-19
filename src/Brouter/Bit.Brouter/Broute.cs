@@ -314,7 +314,7 @@ public class Broute : ComponentBase, IDisposable
         var templateParamNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var seg in RouteTemplate.TemplateSegments)
         {
-            if (seg.IsParameter) templateParamNames.Add(seg.Value);
+            foreach (var paramName in seg.ParameterNames) templateParamNames.Add(paramName);
         }
         TemplateParameterNames = templateParamNames;
 
@@ -403,11 +403,13 @@ public class Broute : ComponentBase, IDisposable
         var sb = new System.Text.StringBuilder();
         foreach (var seg in RouteTemplate.TemplateSegments)
         {
-            if (seg.IsParameter is false) continue;
-            Parameters.TryGetValue(seg.Value, out var value);
-            // U+001F (unit separator) can't appear in a template's parameter name, so the
-            // key is unambiguous even when values themselves contain '=' or '/'.
-            sb.Append(seg.Value).Append('=').Append(BrouterService.FormatRouteValue(value)).Append('\u001f');
+            foreach (var paramName in seg.ParameterNames)
+            {
+                Parameters.TryGetValue(paramName, out var value);
+                // U+001F (unit separator) can't appear in a template's parameter name, so the
+                // key is unambiguous even when values themselves contain '=' or '/'.
+                sb.Append(paramName).Append('=').Append(BrouterService.FormatRouteValue(value)).Append('\u001f');
+            }
         }
         return sb.ToString();
     }

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +46,7 @@ public static partial class ISharedServiceCollectionExtensions
             services.AddSingleton<IMemoryCache, AppMemoryCache>(); // Extends services.AddMemoryCache()
             services.Configure<MemoryCacheOptions>(options =>
             {
-                configuration.GetRequiredSection("MemoryCache").Bind(options);
+                configuration.GetRequiredSection("MemoryCache").DynamicBind(options);
             });
 
             return services;

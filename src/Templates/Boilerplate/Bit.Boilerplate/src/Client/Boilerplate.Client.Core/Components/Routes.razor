@@ -1,9 +1,23 @@
+@*+:cnd:noEmit*@
 <AppErrorBoundary>
     <CascadingAuthenticationState>
         <AppClientCoordinator />
         <LayoutView Layout="@(Layout ?? typeof(MainLayout))">
-            <Router AppAssembly="@GetType().Assembly"
-                    AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">
+            <AppRouter AppAssembly="@GetType().Assembly"
+                       AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">
+                @*#if (brouter == true)*@
+                <ChildContent>
+                    @*#if (module == "Admin")*@
+                    @* Keep-alive: pages that host a BitDataGrid whose add/edit lives on a separate page
+                       (e.g. ProductsPage -> AddOrEditProductPage) keep their grid state - current page,
+                       sorting and filtering - when the user navigates to the detail page and back, instead
+                       of resetting to page 1. These hand-declared routes shadow the discovered @@page routes
+                       of ProductsPage; authorization keeps flowing through the Found template below. *@
+                    <Broute KeepAlive Path="@PageUrls.Products" Component="@typeof(Boilerplate.Client.Core.Components.Pages.Products.ProductsPage)" />
+                    <Broute KeepAlive Path="@("{culture?}" + PageUrls.Products)" Component="@typeof(Boilerplate.Client.Core.Components.Pages.Products.ProductsPage)" />
+                    @*#endif*@
+                </ChildContent>
+                @*#endif*@
                 <Found Context="routeData">
                     <AppRouteDataPublisher RouteData="@routeData" />
                     <AuthorizeRouteView RouteData="@routeData">
@@ -22,7 +36,7 @@
                 <Navigating>
                     <LoadingComponent />
                 </Navigating>
-            </Router>
+            </AppRouter>
         </LayoutView>
     </CascadingAuthenticationState>
 </AppErrorBoundary>

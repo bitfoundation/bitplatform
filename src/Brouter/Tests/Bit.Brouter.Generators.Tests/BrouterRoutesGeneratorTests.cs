@@ -71,6 +71,68 @@ public class BrouterRoutesGeneratorTests
     }
 
     [TestMethod]
+    public void Single_star_catch_all_and_constrained_catch_all_generate_builders()
+    {
+        var (_, asm) = Run(("Files.razor", """
+            @page "/files/{*path:nonfile}"
+            """));
+
+        Assert.AreEqual("/files/docs/guide", Invoke(asm, "Files", "docs/guide", Type.Missing));
+    }
+
+    [TestMethod]
+    public void Default_valued_parameter_emits_the_default_when_omitted()
+    {
+        var (_, asm) = Run(("Blog.razor", """
+            @page "/blog/{action=Index}"
+            """));
+
+        Assert.AreEqual("/blog/Index", Invoke(asm, "BlogByAction", Type.Missing, Type.Missing));
+        Assert.AreEqual("/blog/Archive", Invoke(asm, "BlogByAction", "Archive", Type.Missing));
+    }
+
+    [TestMethod]
+    public void Middle_default_valued_parameter_is_required_in_the_builder()
+    {
+        // A default-valued segment followed by a required parameter can't stay an omittable C#
+        // argument (an optional parameter may not precede a required one), and at match time a
+        // middle default behaves as required anyway - so the builder requires it, like a middle
+        // optional.
+        var (source, asm) = Run(("Blog.razor", """
+            @page "/blog/{action=Index}/{id:int}"
+            """));
+
+        StringAssert.Contains(source, "public static string BlogByActionById(string @action, int @id");
+        Assert.AreEqual("/blog/Archive/5", Invoke(asm, "BlogByActionById", "Archive", 5, Type.Missing));
+    }
+
+    [TestMethod]
+    public void Middle_optional_parameter_is_required_in_the_builder()
+    {
+        // Runtime parity: "/products/{culture?}/list" treats the middle optional as required, so
+        // the generated method must not allow omitting it (an omitted value would build an
+        // unmatchable URL).
+        var (source, asm) = Run(("Products.razor", """
+            @page "/products/{culture?}/list"
+            """));
+
+        StringAssert.Contains(source, "public static string ProductsListByCulture(string @culture");
+        Assert.AreEqual("/products/en/list", Invoke(asm, "ProductsListByCulture", "en", Type.Missing));
+    }
+
+    [TestMethod]
+    public void Validation_constraints_keep_the_string_parameter_type()
+    {
+        var (source, asm) = Run(("Rate.razor", """
+            @page "/rate/{score:int:min(1)}"
+            """));
+
+        // min(1) is validation-only: the int constraint still decides the CLR type.
+        StringAssert.Contains(source, "public static string RateByScore(int @score");
+        Assert.AreEqual("/rate/3", Invoke(asm, "RateByScore", 3, Type.Missing));
+    }
+
+    [TestMethod]
     public void Values_are_escaped_and_formatted_invariantly()
     {
         var (_, asm) = Run(("Routes.razor", """

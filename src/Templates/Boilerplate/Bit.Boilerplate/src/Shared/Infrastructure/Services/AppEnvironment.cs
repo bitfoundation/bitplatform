@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 namespace Boilerplate.Shared.Infrastructure.Services;
 
 /// <summary>

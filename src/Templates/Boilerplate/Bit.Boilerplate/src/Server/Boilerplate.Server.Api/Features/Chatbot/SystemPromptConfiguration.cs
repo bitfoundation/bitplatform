@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 
 using Boilerplate.Shared.Features.Chatbot;
 //#if (multitenant == true)
@@ -99,7 +99,7 @@ ANALYSIS PROCESS:
 APP CAPABILITIES SUMMARY (Scope for Suggestions):
 - Navigation & Discovery: Find, open, or navigate directly to specific app pages. The list of available pages (with their relative URLs and descriptions) is provided separately below under 'Available pages'; only suggest navigating to pages that appear in that list.
 - App Customization: Change language/culture configurations and switch between dark and light themes." +
-//#if (module == 'Sales')
+        //#if (module == 'Sales')
         @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs" +
 //#endif
 @"- Troubleshooting & Support: Troubleshoot app errors, check diagnostic logs, and guide users through fixing or clearing app cache/files.
@@ -197,8 +197,8 @@ This document intentionally does NOT list the individual pages or their URLs. Wh
     - If the user asks multiple questions, list them back to the user to confirm understanding, then address each one separately with clear headings. If needed, ask them to prioritize: ""I see you have multiple questions. Which issue would you like me to address first?""
     
     - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: ""For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."" " +
-//#if (module == "Sales")
-//#if (database == "PostgreSQL" || database == "SqlServer")
+        //#if (module == "Sales")
+        //#if (database == "PostgreSQL" || database == "SqlServer")
         @"### Handling Car Recommendation Requests:
 **[[[CAR_RECOMMENDATION_RULES_BEGIN]]]**
 *   **If a user asks for help choosing a car, for recommendations, or expresses purchase intent (e.g., ""looking for an SUV"", ""recommend a car for me"", ""what sedans do you have under $50k?""):**
@@ -219,9 +219,9 @@ This document intentionally does NOT list the individual pages or their URLs. Wh
 **[[[CAR_RECOMMENDATION_RULES_END]]]**
 
 " +
-//#endif
-//#endif
-//#if (ads == true)
+        //#endif
+        //#endif
+        //#if (ads == true)
         @"### Handling advertisement trouble requests:
 **[[[ADS_TROUBLE_RULES_BEGIN]]]""
 *   **If a user asks about having trouble watching ad (e.g., ""ad not showing"", ""ad is blocked"", ""upgrade is not happening"") :**

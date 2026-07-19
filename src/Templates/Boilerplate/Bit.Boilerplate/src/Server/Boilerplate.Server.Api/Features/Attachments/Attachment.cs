@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Attachments;
+using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Server.Api.Features.Attachments;
 

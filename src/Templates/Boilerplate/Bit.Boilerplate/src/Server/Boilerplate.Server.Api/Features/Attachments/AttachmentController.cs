@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using ImageMagick;
 using FluentStorage.Storage;
 using System.Diagnostics.Metrics;
@@ -54,9 +54,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [HttpPost("{productId}")]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
     [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
-        //#if (multitenant == true)
-        [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
-        //#endif
+    //#if (multitenant == true)
+    [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+    //#endif
     public async Task<IActionResult> UploadProductPrimaryImage(Guid productId, IFormFile? file, CancellationToken cancellationToken)
     {
         //#if (multitenant == true)

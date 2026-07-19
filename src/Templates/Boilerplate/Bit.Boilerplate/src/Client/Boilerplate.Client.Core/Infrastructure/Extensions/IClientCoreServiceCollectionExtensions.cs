@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (offlineDb == true)
 using Microsoft.EntityFrameworkCore;
 using Boilerplate.Client.Core.Infrastructure.Data;
@@ -82,6 +82,9 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .ValidateOnStart();
 
             services.AddBitButilServices();
+            //#if (brouter == true)
+            services.AddBitBrouterServices();
+            //#endif
             services.AddBitBlazorUIServices();
             services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
 

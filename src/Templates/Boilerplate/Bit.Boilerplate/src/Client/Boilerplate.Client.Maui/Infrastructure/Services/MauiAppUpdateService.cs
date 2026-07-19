@@ -1,4 +1,4 @@
-﻿using Maui.AppStores;
+using Maui.AppStores;
 
 namespace Boilerplate.Client.Maui.Infrastructure.Services;
 

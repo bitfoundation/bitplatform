@@ -25,7 +25,7 @@ public static partial class NavigationManagerExtensions
         /// </summary>
         public void RefreshCurrentPage()
         {
-            navigationManager.NavigateTo(navigationManager.GetUriPath(), forceLoad: false, replace: true);
+            navigationManager.NavigateTo(navigationManager.GetUriPath(), forceLoad: true, replace: true);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
+using Riok.Mapperly.Abstractions;
 
 namespace Boilerplate.Server.Api.Features.PushNotification;
 

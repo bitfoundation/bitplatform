@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using UIKit;
 using Foundation;
 //#if (notification == true)

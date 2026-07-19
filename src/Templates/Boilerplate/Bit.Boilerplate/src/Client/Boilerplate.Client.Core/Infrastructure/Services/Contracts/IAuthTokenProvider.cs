@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.Contracts;
@@ -68,7 +68,7 @@ public interface IAuthTokenProvider
                 claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
         }
         //#endif
-        
+
         return claims;
     }
 

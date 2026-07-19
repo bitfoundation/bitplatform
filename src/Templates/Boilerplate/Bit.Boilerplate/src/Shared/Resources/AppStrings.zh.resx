@@ -1437,6 +1437,18 @@
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>输入租户标题</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>域名</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>输入租户自定义域名（例如 myapp.com）</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} 必须是不含协议或路径的有效域名（例如 myapp.com）。</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>域名 '{0}' 已被占用。</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>您尚未选择任何租户。切换到您的某个租户，或创建一个新租户即可开始。</value>
   </data>

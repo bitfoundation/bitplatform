@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 
 using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;

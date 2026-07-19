@@ -41,5 +41,8 @@ jobs:
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
       run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
+    - name: Verify formatting
+      run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
+
     - name: dotnet build Boilerplate
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx 
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -p:EnforceCodeStyleInBuild=true

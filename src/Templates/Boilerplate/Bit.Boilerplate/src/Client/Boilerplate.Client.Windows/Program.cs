@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Velopack;
 
 using System.Diagnostics.CodeAnalysis;

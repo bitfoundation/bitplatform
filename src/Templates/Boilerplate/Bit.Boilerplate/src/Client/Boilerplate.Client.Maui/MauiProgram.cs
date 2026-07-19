@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
 //#if (notification == true)
@@ -43,7 +43,7 @@ public static partial class MauiProgram
             //#if (sentry == true)
             .UseSentry(options =>
             {
-                builder.Configuration.Bind("Logging:Sentry", options);
+                builder.Configuration.DynamicBind("Logging:Sentry", options);
             })
             //#endif
             ;

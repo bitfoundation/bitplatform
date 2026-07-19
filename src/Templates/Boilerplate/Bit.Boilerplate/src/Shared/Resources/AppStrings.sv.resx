@@ -1437,6 +1437,18 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="EnterTenantTitle" xml:space="preserve">
     <value>Ange tenanttitel</value>
   </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Domän</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Ange tenantens anpassade domän (t.ex. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} måste vara ett giltigt domännamn utan schema eller sökväg (t.ex. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>Domänen '{0}' är redan upptagen.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Du har inte valt någon tenant ännu. Byt till en av dina tenants eller skapa en ny för att komma igång.</value>
   </data>
