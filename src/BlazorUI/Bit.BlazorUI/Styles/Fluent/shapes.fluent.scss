@@ -20,6 +20,7 @@
     //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
     --bit-shp-focus-ring-width: 0.125rem; //2px
     --bit-shp-focus-ring-offset: 0.125rem; //2px
+
     //global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
     //Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
     //The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.

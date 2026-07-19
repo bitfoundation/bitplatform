@@ -1,5 +1,5 @@
 ﻿namespace BitBlazorUI {
-    type BreakpointKey = 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+    type BreakpointKey = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
 
     export class MediaQuery {
         private static _abortControllers: { [key: string]: AbortController } = {};
@@ -12,6 +12,7 @@
         // Fallback breakpoints (px), used only when the corresponding --bit-bp-* CSS variable is
         // not resolvable. Kept in sync with the defaults published by media-queries.scss.
         private static _defaultBreakpoints: Record<BreakpointKey, string> = {
+            xs: '0',
             sm: '600px',
             md: '960px',
             lg: '1280px',
@@ -75,7 +76,7 @@
             const max = (v: string) => `(max-width: ${MediaQuery.below(v)})`;
 
             switch (screenQuery) {
-                case 'Xs': return max(bp.sm);
+                case 'Xs': return `${min(bp.xs)} and ${max(bp.sm)}`;
                 case 'Sm': return `${min(bp.sm)} and ${max(bp.md)}`;
                 case 'Md': return `${min(bp.md)} and ${max(bp.lg)}`;
                 case 'Lg': return `${min(bp.lg)} and ${max(bp.xl)}`;
@@ -114,7 +115,7 @@
                 return value || MediaQuery._defaultBreakpoints[key];
             };
 
-            return { sm: read('sm'), md: read('md'), lg: read('lg'), xl: read('xl'), xxl: read('xxl') };
+            return { xs: read('xs'), sm: read('sm'), md: read('md'), lg: read('lg'), xl: read('xl'), xxl: read('xxl') };
         }
 
         // Returns the value one CSS pixel below `value`, for exclusive max-width bounds. A unitless
