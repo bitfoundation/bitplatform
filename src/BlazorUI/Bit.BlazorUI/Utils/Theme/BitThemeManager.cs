@@ -165,11 +165,12 @@ public class BitThemeManager : IAsyncDisposable
 
     private async ValueTask EnsureJsNotifierRegisteredAsync()
     {
+        // Fail fast so public operations (which all funnel through here) do not proceed into JS
+        // interop after the manager has been disposed - checked before the receiver guard so
+        // receiver-less managers throw after DisposeAsync() too, instead of silently continuing.
+        ObjectDisposedException.ThrowIf(_disposed, this);
         if (_jsNotifierRegistered) return;
         if (_jsNotifierReceiver is null) return; // no-op when constructed without a receiver
-        // Fail fast so public operations (which all funnel through here) do not proceed into JS
-        // interop after the manager has been disposed.
-        ObjectDisposedException.ThrowIf(_disposed, this);
         if (_js.IsRuntimeInvalid()) return; // e.g. prerendering / disconnected circuit; retry on next call.
 
         // Serialize concurrent callers (e.g. Task.WhenAll over multiple manager methods) so only one

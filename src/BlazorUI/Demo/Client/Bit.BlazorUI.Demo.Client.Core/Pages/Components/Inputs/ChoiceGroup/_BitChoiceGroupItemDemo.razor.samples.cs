@@ -613,26 +613,28 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
-                Color=""BitColor.PrimaryBackground""
-                Label=""PrimaryBackground""
-                Horizontal
-                Items=""basicItems""
-                DefaultValue=""basicItems[0].Value"" />
+<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.PrimaryBackground""
+                    Label=""PrimaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
-                Color=""BitColor.SecondaryBackground""
-                Label=""SecondaryBackground""
-                Horizontal
-                Items=""basicItems""
-                DefaultValue=""basicItems[0].Value"" />
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.SecondaryBackground""
+                    Label=""SecondaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
-                Color=""BitColor.TertiaryBackground""
-                Label=""TertiaryBackground""
-                Horizontal
-                Items=""basicItems""
-                DefaultValue=""basicItems[0].Value"" />
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.TertiaryBackground""
+                    Label=""TertiaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[0].Value"" />
+</div>
 
 <BitChoiceGroup IsEnabled=""false""
                 Color=""BitColor.PrimaryForeground""

@@ -278,17 +278,19 @@ private List<BitButtonGroupItem> basicItems =
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
 
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+</div>
 
 
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Fill"" Items=""basicItems"" />

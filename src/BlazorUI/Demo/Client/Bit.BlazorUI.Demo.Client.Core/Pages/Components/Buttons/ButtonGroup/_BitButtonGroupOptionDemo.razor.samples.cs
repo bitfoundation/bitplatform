@@ -486,35 +486,37 @@ private string? clickedOption;";
 </BitButtonGroup>
 
 
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
 
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
 
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+</div>
 
 
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">

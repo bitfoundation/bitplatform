@@ -39,6 +39,9 @@
         }
 
         &:focus-visible {
+            // Cancel both layers of the focus-ring mixin applied above: the box-shadow ring and
+            // the forced-colors Highlight outline, so a disabled link never shows a focus indicator.
+            outline: none;
             box-shadow: none;
         }
 
