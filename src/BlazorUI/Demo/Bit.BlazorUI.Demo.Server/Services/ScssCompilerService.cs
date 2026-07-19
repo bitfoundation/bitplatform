@@ -88,8 +88,10 @@ public static class ScssCompilerService
                 }
             };
 
-            watchScssFilesProcess.OutputDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogInformation(e.Data); };
-            watchScssFilesProcess.ErrorDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogError(e.Data); };
+            // Pass the sass output as a logging argument, not as the message template: scss snippets in
+            // sass's error output contain braces that ILogger would parse as format placeholders.
+            watchScssFilesProcess.OutputDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogInformation("{SassOutput}", e.Data); };
+            watchScssFilesProcess.ErrorDataReceived += (_, e) => { if (string.IsNullOrEmpty(e.Data) is false) logger.LogError("{SassError}", e.Data); };
 
             logger.LogInformation("Running {toolPath} for {ProjectDirectory}", toolPath, clientCorePath);
             if (watchScssFilesProcess.Start() is false)
