@@ -8,4 +8,4 @@ Debug builds render in Blazor Server mode; the WASM client is excluded by defaul
 (see `IncludeWasm` in the csproj). To run/debug the Blazor WebAssembly client,
 build with the WASM client included, e.g.:
 
-    dotnet run -p:IncludeWasm=true
+    dotnet run --project Bit.BlazorUI.Demo.Server -p:IncludeWasm=true
