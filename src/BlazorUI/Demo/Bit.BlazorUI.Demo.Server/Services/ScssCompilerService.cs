@@ -103,13 +103,11 @@ public static class ScssCompilerService
             watchScssFilesProcess.BeginOutputReadLine();
             watchScssFilesProcess.BeginErrorReadLine();
 
-            // dart-sass --watch runs until killed, so tie its lifetime to the server: kill the whole
-            // process tree when the host starts shutting down (dotnet watch restart, Ctrl+C) so no
-            // orphaned sass watcher survives. The finally is a backstop for exceptions before shutdown.
-            app.Lifetime.ApplicationStopping.Register(() => KillSassProcess(watchScssFilesProcess, logger));
-
-            // Park until the host begins shutting down. Waiting on ApplicationStopping (instead of
-            // app.WaitForShutdownAsync, which itself calls host.StopAsync) keeps Program.cs's
+            // dart-sass --watch runs until killed, so tie its lifetime to the server: park until the
+            // host begins shutting down (dotnet watch restart, Ctrl+C), then the finally kills the whole
+            // process tree so no orphaned sass watcher survives - Program.cs awaits this task, so the
+            // cleanup always completes before the process exits. Waiting on ApplicationStopping (instead
+            // of app.WaitForShutdownAsync, which itself calls host.StopAsync) keeps Program.cs's
             // WaitForShutdownAsync as the single code path that drives host shutdown.
             try
             {
@@ -139,6 +137,10 @@ public static class ScssCompilerService
             {
                 process.Kill(entireProcessTree: true);
             }
+        }
+        catch (InvalidOperationException)
+        {
+            // The process never started or is already disposed - nothing to terminate.
         }
         catch (Exception ex)
         {
