@@ -217,17 +217,19 @@ private int clickCounter;";
 <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"">Error</BitToggleButton>
 <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Error"">Error</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
+    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
+</div>
 
 <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>
 <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>

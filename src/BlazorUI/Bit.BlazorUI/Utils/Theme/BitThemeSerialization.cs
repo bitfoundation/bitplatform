@@ -54,6 +54,8 @@ public static class BitThemeSerialization
     /// </remarks>
     internal static BitTheme Normalize(BitTheme theme)
     {
+        ArgumentNullException.ThrowIfNull(theme);
+
         EnsureNestedObjects(theme);
 
         return theme;

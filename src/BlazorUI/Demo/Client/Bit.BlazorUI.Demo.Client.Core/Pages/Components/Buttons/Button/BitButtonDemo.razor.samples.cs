@@ -548,7 +548,7 @@ private int clickCounter;";
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>
 
 
-Disabled:
+<div><b>Disabled</b>:</div>
 
 <BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"">Primary</BitButton>
 <BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"">Primary</BitButton>

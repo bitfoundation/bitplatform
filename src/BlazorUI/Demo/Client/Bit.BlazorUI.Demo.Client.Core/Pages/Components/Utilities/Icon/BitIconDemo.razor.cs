@@ -304,17 +304,19 @@ public partial class BitIconDemo
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />
 
-<BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Pinned"" />
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem;color:var(--bit-clr-bg-sec)"">
+    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Accept"" />
+    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Bus"" />
+    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Pinned"" />
 
-<BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Pinned"" />
+    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Accept"" />
+    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Bus"" />
+    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Pinned"" />
 
-<BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Pinned"" />
+    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Accept"" />
+    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Bus"" />
+    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Pinned"" />
+</div>
 
 <BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Accept"" />
 <BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Bus"" />

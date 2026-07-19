@@ -21,8 +21,9 @@ public static class BitThemeColorDerivation
     /// throwing.
     /// </para>
     /// <para>
-    /// The variants are derived by shifting only the HSV <em>value</em> (brightness) of
-    /// <paramref name="mainHex"/> - hue and saturation are preserved. The result is clamped to the
+    /// The variants are derived by shifting only the HSV <em>value</em> (brightness) of the resolved
+    /// <see cref="BitThemeColorVariants.Main"/> color - falling back to <paramref name="mainHex"/>
+    /// when a preset <c>Main</c> is not a parseable hex color - hue and saturation are preserved. The result is clamped to the
     /// [0,1] value range, so for an already very bright base color the "light" steps
     /// (<see cref="BitThemeColorVariants.Light"/> / <c>LightHover</c> / <c>LightActive</c>) can
     /// saturate at white and collapse to the same hex, and likewise the "dark" steps can converge
@@ -49,9 +50,18 @@ public static class BitThemeColorDerivation
         if (BitThemeColorContrast.TryNormalizeHex(mainHex, out var normalizedHex) is false) return;
 
         var baseColor = new BitInternalColor(normalizedHex);
-        var (h, s, v) = baseColor.Hsv;
 
         variants.Main ??= baseColor.Hex;
+
+        // Derive the brightness-shifted variants from the resolved Main (a caller may have preset it
+        // to a different color than mainHex, and the variants should form one family with it),
+        // falling back to the validated mainHex when the preset Main is not a parseable hex color
+        // (e.g. a CSS var() reference) - mirroring how Text resolves its background below.
+        var sourceColor = BitThemeColorContrast.TryNormalizeHex(variants.Main, out var mainSourceHex)
+            ? new BitInternalColor(mainSourceHex)
+            : baseColor;
+        var (h, s, v) = sourceColor.Hsv;
+
         variants.MainHover ??= ToHex(h, s, ScaleV(v, 0.96));
         variants.MainActive ??= ToHex(h, s, ScaleV(v, 0.90));
         variants.Dark ??= ToHex(h, s, ScaleV(v, 0.82));

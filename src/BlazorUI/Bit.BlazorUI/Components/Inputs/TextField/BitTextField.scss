@@ -69,15 +69,11 @@
         }
 
         &.bit-tfl-fcs {
-            .bit-tfl-fgp {
+            &:not(.bit-tfl-und) .bit-tfl-fgp {
                 @include focus-ring($clr-err-focus);
             }
 
             &.bit-tfl-und {
-                .bit-tfl-fgp {
-                    box-shadow: none;
-                }
-
                 .bit-tfl-wrp {
                     @include focus-underline-ring($clr-err-focus);
                 }
@@ -317,15 +313,13 @@
         color: var(--bit-tfl-clr);
     }
 
-    .bit-tfl-fgp {
+    // The underlined variant is excluded so it gets only the bottom-rule treatment below - applying
+    // the ring mixin and negating its box-shadow would still leave its forced-colors outline behind.
+    &:not(.bit-tfl-und) .bit-tfl-fgp {
         @include focus-ring(var(--bit-tfl-clr-focus));
     }
 
     &.bit-tfl-und {
-        .bit-tfl-fgp {
-            box-shadow: none; // underlined variant uses a bottom rule instead of a full ring.
-        }
-
         .bit-tfl-wrp {
             @include focus-underline-ring(var(--bit-tfl-clr-focus));
         }

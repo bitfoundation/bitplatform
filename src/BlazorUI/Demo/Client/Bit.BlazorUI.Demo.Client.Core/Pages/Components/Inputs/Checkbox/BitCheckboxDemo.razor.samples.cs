@@ -216,17 +216,19 @@ private bool customContentIndeterminate = true;";
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.Error"" Label=""Error"" Indeterminate />
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.Error"" Label=""Error"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Value />
+<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Indeterminate />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Value />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Indeterminate />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Value />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Indeterminate />
+    <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Value />
+</div>
 
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" />
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" Indeterminate />
