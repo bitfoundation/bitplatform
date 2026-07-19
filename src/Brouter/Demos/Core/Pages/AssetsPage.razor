@@ -1,0 +1,41 @@
+@* Demos a CONSTRAINED catch-all: /assets/{*path:nonfile}. The single-star form is equivalent to
+   {**path} for matching; the constraint validates the entire remainder, and an empty remainder is
+   treated as a "missing value" that only nonfile accepts. *@
+
+<div class="bb-intro">
+    <h1>Assets browser</h1>
+    <p class="bb-subtitle">Matched <code>/assets/{*path:nonfile}</code> - a catch-all with a constraint.</p>
+</div>
+
+<dl class="bb-params">
+    <dt>path</dt>
+    <dd>@(string.IsNullOrEmpty(Path) ? "(empty - the catch-all matched zero segments)" : Path)</dd>
+</dl>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Constraints on catch-alls</h3>
+    <p class="bb-card-desc">
+        The constraint sees the <em>whole remainder</em> ("img/logo", slashes and all) and the bound
+        value always stays a string - typed conversion deliberately skips catch-alls, mirroring the
+        built-in router. <code>nonfile</code> checks only the text after the last slash, so directory
+        paths pass while <code>app.js</code> is rejected. On the empty remainder
+        (<code>/assets</code> itself) the constraint sees a missing value: <code>nonfile</code>
+        accepts that, any other constraint would not (<code>{*path:int}</code> wouldn't match
+        <code>/assets</code>).
+    </p>
+    <pre class="bb-code"><span class="c">@@* /assets          → path = ""          (missing value: nonfile accepts)</span>
+<span class="c">   /assets/img/logo → path = "img/logo"  ("logo" is not a file name)</span>
+<span class="c">   /assets/app.js   → no match           ("app.js" IS a file name) *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/assets/{*path:nonfile}"</span> Component=<span class="s">"@@typeof(AssetsPage)"</span> /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/assets" class="btn btn-outline">/assets</BrouterLink>
+        <BrouterLink Href="/assets/img/logo" class="btn btn-outline">/assets/img/logo</BrouterLink>
+        <BrouterLink Href="/assets/docs/2026/roadmap" class="btn btn-outline">/assets/docs/2026/roadmap</BrouterLink>
+        <BrouterLink Href="/assets/app.js" class="btn btn-outline">/assets/app.js → 404</BrouterLink>
+        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Path { get; set; }
+}

@@ -488,3 +488,73 @@ button.btn-outline:hover {
     margin-top: 1rem;
     flex-wrap: wrap;
 }
+
+/* ---------- Code samples & feature tables (TemplatesPage / ConstraintsPage) ---------- */
+
+.bb-code {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: var(--bb-radius);
+    padding: 1rem 1.25rem;
+    font-family: var(--bb-mono);
+    font-size: .82rem;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+    white-space: pre;
+}
+
+.bb-code .c { color: #64748b; }        /* comment */
+.bb-code .k { color: #7dd3fc; }        /* keyword-ish / tag */
+.bb-code .s { color: #fbbf24; }        /* string / template */
+.bb-code .p { color: #86efac; }        /* parameter */
+
+.bb-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    overflow: hidden;
+    font-size: .88rem;
+    margin-bottom: 1rem;
+}
+
+.bb-table th {
+    text-align: left;
+    padding: .55rem .9rem;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.bb-table td {
+    padding: .5rem .9rem;
+    border-top: 1px solid var(--bb-border);
+    vertical-align: top;
+}
+
+.bb-table td:first-child {
+    font-family: var(--bb-mono);
+    white-space: nowrap;
+}
+
+.bb-note {
+    border-left: 3px solid var(--bb-accent);
+    background: var(--bb-primary-soft);
+    border-radius: 0 var(--bb-radius-sm) var(--bb-radius-sm) 0;
+    padding: .75rem 1rem;
+    font-size: .9rem;
+    margin: 0 0 1rem;
+}
+
+.bb-note-warn { border-left-color: var(--bb-warning); }
+
+.bb-try {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .25rem 0 1rem;
+}

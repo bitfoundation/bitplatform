@@ -59,11 +59,14 @@ render modes.
 ## Features
 
 - Declarative routes with literal segments, parameter segments, constraints and wildcards
-- Built-in constraints: `int`, `bool`, `guid`, `long`, `float`, `double`, `decimal`, `datetime`
-- Multiple constraints per parameter: `{id:int:long}`
+- Built-in type constraints: `int`, `bool`, `guid`, `long`, `float`, `double`, `decimal`, `datetime` (convert the bound value)
+- Built-in validation constraints (framework parity, value stays a string): `alpha`, `file`, `nonfile`, `min(1)`, `max(10)`, `range(1,10)`, `minlength(2)`, `maxlength(8)`, `length(4)` / `length(2,8)`, `regex(^\d+$)`
+- Multiple constraints per parameter: `{id:int:min(0)}` - the last *type* constraint decides the bound value
 - Wildcards: `*` (single segment), `**` (catch-all)
-- **Optional parameters**: `{id?}` - must be trailing
-- **Catch-all parameter binding**: `{**path}` exposes the remainder
+- **Optional parameters**: `{id?}` - allowed anywhere like the built-in router (a non-trailing optional matches as required; only a trailing run of optionals can be omitted by the URL)
+- **Default values**: `{action=Index}` binds the default when the URL omits the segment
+- **Catch-all parameter binding**: `{*path}` / `{**path}` exposes the remainder; constraints allowed (`{*path:nonfile}`)
+- **Complex segments**: `{name}.{ext}`, `v{major}-{minor}`, `{file}.{ext?}` - multiple parameters per segment, matched right-to-left exactly like the built-in router
 - Custom constraints, scoped per DI container via `o.Constraints.Register("slug", new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)
 - **Ambiguous templates are rejected**: registering two routes that match exactly the same URLs (e.g. a duplicated `@page`, or `/users/{id}` next to `/users/{userId}`) throws instead of silently picking one, mirroring the built-in router's `AmbiguousMatchException`. A hand-declared route may still shadow a discovered `@page` with the same template (see [`@page` discovery](#attribute-route--page-discovery))
@@ -785,15 +788,18 @@ compile-time-safe URL builder on a generated `BrouterRoutes` class in your root 
 ```
 
 - Constraints become parameter types (`{init:int}` → `int init`, `{id:guid}` → `Guid id`; the last
-  constraint wins, matching the matcher), optionals become optional arguments, catch-alls become
-  path strings split and escaped per segment.
+  *type* constraint wins - validation constraints like `min(1)` keep the string - matching the
+  matcher), trailing optionals become optional arguments (a middle optional stays required, since
+  the matcher treats it as required), default-valued parameters become optional arguments that emit
+  the declared default, and catch-alls become path strings split and escaped per segment.
 - Methods are named from the route's `Name` when present (named routes always own their identifier)
   or from the template's literals + `By{Param}` suffixes; every method takes a trailing
   `string? query = null`.
 - Values are escaped and formatted with the router's exact invariant rules, so a generated URL
   always round-trips through its own template.
 - Skipped by design: dynamic paths (`Path="@expr"`) and their subtrees, `RedirectTo` routes,
-  literal-wildcard templates (`/*/x`), and `Group` routes (their children generate normally).
+  literal-wildcard templates (`/*/x`), complex multi-part segments (`{name}.{ext}`), and `Group`
+  routes (their children generate normally).
 
 ## Named outlets
 
@@ -1311,5 +1317,9 @@ builder.Services.AddBitBrouterServices(o =>
 <Broute Path="/posts/{slug:slug}" Component="@typeof(PostPage)" />
 ```
 
-> Built-in constraints (`int`, `bool`, `guid`, `long`, `float`, `double`, `decimal`, `datetime`) are
-> always available and need no registration.
+> Built-in constraints are always available and need no registration: the type constraints
+> (`int`, `bool`, `guid`, `long`, `float`, `double`, `decimal`, `datetime`) convert the bound value,
+> and the validation constraints (`alpha`, `file`, `nonfile`, `min(1)`, `max(10)`, `range(1,10)`,
+> `minlength(2)`, `maxlength(8)`, `length(4)` / `length(2,8)`, `regex(^[a-z]+$)`) only accept/reject
+> and leave the value a string - mirroring the built-in Blazor router. In a constraint chain the
+> last *type* constraint decides the bound value (`{id:int:min(0)}` binds an `int`).

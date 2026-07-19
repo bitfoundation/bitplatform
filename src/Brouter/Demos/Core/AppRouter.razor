@@ -180,6 +180,72 @@
         </Broute>
 
         @*============================================================================*@
+        @* Framework-parity template features - the /templates page documents every shape with
+       code samples and links into the live routes below: middle optionals (ProductsListPage),
+       constrained middle optionals (WelcomePage), default values (BlogPage), complex segments
+       (FileDetailPage / ApiVersionPage), and a constrained single-star catch-all (AssetsPage). *@
+
+        <Broute Path="/templates" Component="@typeof(TemplatesPage)" />
+
+        @* Middle optional: parses like the built-in router; required at match time, so
+       /products/en/list matches but /products/list does not. *@
+        <Broute Path="/products/{culture?}/list" Component="@typeof(ProductsListPage)" />
+
+        @* Constrained middle optional: nonfile rejects first segments that look like file names. *@
+        <Broute Path="/{lang:nonfile?}/welcome" Component="@typeof(WelcomePage)" />
+
+        @* Default value: /blog binds action = "Index"; /blog/archive overrides it. *@
+        <Broute Path="/blog/{action=Index}" Component="@typeof(BlogPage)" />
+
+        @* Complex segments: several parameters inside ONE URL segment, matched right-to-left. *@
+        <Broute Path="/files/{name}.{ext?}" Component="@typeof(FileDetailPage)" />
+        <Broute Path="/api/v{major:int}-{minor:int}" Component="@typeof(ApiVersionPage)" />
+
+        @* Constrained catch-all ({*path} == {**path} for matching): the constraint validates the
+       whole remainder; nonfile also accepts the empty remainder, so /assets itself matches. *@
+        <Broute Path="/assets/{*path:nonfile}" Component="@typeof(AssetsPage)" />
+
+        @* Constraint chaining: validators gate the match, the last TYPE constraint (int) binds. *@
+        <Broute Path="/rate/{score:int:min(1):max(5)}">
+            <Content Context="p">
+                <div class="bb-intro">
+                    <h1>Rated @p["score"] / 5</h1>
+                    <p class="bb-subtitle">
+                        Matched <code>/rate/{score:int:min(1):max(5)}</code> - min/max validated the value,
+                        and it bound as <strong>@(p["score"]?.GetType().Name)</strong> thanks to <code>:int</code>.
+                    </p>
+                </div>
+                <div class="bb-try">
+                    <BrouterLink Href="/rate/5" class="btn btn-outline">/rate/5</BrouterLink>
+                    <BrouterLink Href="/rate/9" class="btn btn-outline">/rate/9 → 404</BrouterLink>
+                    <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+                </div>
+            </Content>
+        </Broute>
+
+        @*============================================================================*@
+        @* Interactive constraint tester (ConstraintsPage). One constrained route per catalog
+       entry plus one unconstrained fallback: both can match /c/x/y, and specificity picks the
+       winner - the fallback only renders when the constrained sibling rejected the value. *@
+
+        <Broute Path="/constraints" Component="@typeof(ConstraintsPage)" />
+
+        @foreach (var c in ConstraintCatalog.All)
+        {
+            <Broute Path="@($"/c/{c.Kind}/{{v:{c.Token}}}")">
+                <Content Context="p">
+                    <ConstraintResultPage Kind="@c.Kind" Value="@p["v"]" />
+                </Content>
+            </Broute>
+        }
+
+        <Broute Path="/c/{kind}/{value}">
+            <Content Context="p">
+                <ConstraintResultPage Kind="@(p["kind"]?.ToString())" Value="@p["value"]" Rejected="true" />
+            </Content>
+        </Broute>
+
+        @*============================================================================*@
 
         <Broute Path="/nested-route">
             <Broute Path="/{id:int}" Component="@typeof(FetchDataPage)" />

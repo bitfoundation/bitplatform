@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/.Solution Items/">
     <File Path="../../.gitignore" />
     <File Path="../.editorconfig" />
@@ -6,19 +6,19 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/InteralDemos/">
-    <Project Path="InteralDemos/Core/Bit.Brouter.Demos.Core.csproj" />
+  <Folder Name="/Demos/">
+    <Project Path="Demos/Core/Bit.Brouter.Demos.Core.csproj" />
   </Folder>
-  <Folder Name="/InteralDemos/Auto/">
-    <Project Path="InteralDemos/Auto/Bit.Brouter.Demos.Auto.Client/Bit.Brouter.Demos.Auto.Client.csproj" />
-    <Project Path="InteralDemos/Auto/Bit.Brouter.Demos.Auto/Bit.Brouter.Demos.Auto.csproj" />
+  <Folder Name="/Demos/Auto/">
+    <Project Path="Demos/Auto/Bit.Brouter.Demos.Auto.Client/Bit.Brouter.Demos.Auto.Client.csproj" />
+    <Project Path="Demos/Auto/Bit.Brouter.Demos.Auto/Bit.Brouter.Demos.Auto.csproj" />
   </Folder>
-  <Folder Name="/InteralDemos/Server/">
-    <Project Path="InteralDemos/Server/Bit.Brouter.Demos.Server.csproj" />
+  <Folder Name="/Demos/Server/">
+    <Project Path="Demos/Server/Bit.Brouter.Demos.Server.csproj" />
   </Folder>
-  <Folder Name="/InteralDemos/Wasm/">
-    <Project Path="InteralDemos/Wasm/Bit.Brouter.Demos.Wasm.Client/Bit.Brouter.Demos.Wasm.Client.csproj" />
-    <Project Path="InteralDemos/Wasm/Bit.Brouter.Demos.Wasm/Bit.Brouter.Demos.Wasm.csproj" />
+  <Folder Name="/Demos/Wasm/">
+    <Project Path="Demos/Wasm/Bit.Brouter.Demos.Wasm.Client/Bit.Brouter.Demos.Wasm.Client.csproj" />
+    <Project Path="Demos/Wasm/Bit.Brouter.Demos.Wasm/Bit.Brouter.Demos.Wasm.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />

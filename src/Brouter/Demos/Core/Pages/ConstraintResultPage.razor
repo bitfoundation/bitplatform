@@ -1,0 +1,93 @@
+@* Renders the outcome of a constraint-tester navigation (see ConstraintsPage). The MATCHED case is
+   rendered by the constrained /c/{kind}/{v:token} routes; the REJECTED case by the unconstrained
+   /c/{kind}/{value} fallback, which only wins when the constrained sibling refused the value. *@
+
+<div class="bb-intro">
+    <h1>@(Rejected ? "Rejected" : "Matched") <span class="bb-badge @(Rejected ? "bb-badge-danger" : "bb-badge-success")">@(Rejected ? "constraint failed" : "constraint passed")</span></h1>
+    <p class="bb-subtitle">
+        @if (Demo is not null)
+        {
+            <text>Constraint <code>{v:@Demo.Token}</code> - @Demo.Rule</text>
+        }
+        else
+        {
+            <text>Unknown constraint kind <code>@Kind</code> - only the fallback route could match.</text>
+        }
+    </p>
+</div>
+
+<dl class="bb-params">
+    <dt>URL value</dt>
+    <dd>@RawText</dd>
+    @if (Rejected is false)
+    {
+        <dt>bound value</dt>
+        <dd>@Value</dd>
+        <dt>bound CLR type</dt>
+        <dd><strong>@(Value?.GetType().Name ?? "null")</strong></dd>
+        <dt>matched route</dt>
+        <dd>/c/@Kind/{v:@Demo?.Token}</dd>
+    }
+    else
+    {
+        <dt>matched route</dt>
+        <dd>/c/{kind}/{value} (the unconstrained fallback)</dd>
+    }
+</dl>
+
+<div class="bb-card">
+    <h3 class="bb-card-title">
+        <span class="bb-dot @(Rejected ? "bb-dot-danger" : "bb-dot-success")"></span>
+        What happened
+    </h3>
+    @if (Rejected)
+    {
+        <p class="bb-card-desc">
+            The constrained route <code>/c/@Kind/{v:@Demo?.Token}</code> did <strong>not</strong> match:
+            the constraint rejected <code>@RawText</code>. The URL then fell through to the
+            unconstrained fallback <code>/c/{kind}/{value}</code>, which ranks lower in specificity and
+            only wins when every constrained sibling has refused.
+        </p>
+    }
+    else if (Demo?.Category is "type" or "chain")
+    {
+        <p class="bb-card-desc">
+            A <em>type</em> constraint validated <strong>and converted</strong> the value: the parameter
+            arrived as <code>@(Value?.GetType().Name)</code>, not as a string. Chained validators
+            (like <code>min</code>/<code>max</code> in <code>{v:int:min(1):max(5)}</code>) gate the match
+            but never undo the conversion - the last <em>type</em> constraint decides the bound value.
+        </p>
+    }
+    else
+    {
+        <p class="bb-card-desc">
+            A <em>validation</em> constraint accepted the value but left it untouched - the parameter is
+            still a <code>string</code>. Only type constraints (<code>int</code>, <code>guid</code>,
+            <code>datetime</code>, ...) convert.
+        </p>
+    }
+    <div class="bb-try">
+        <BrouterLink Href="/constraints" class="btn btn-primary">← Back to the tester</BrouterLink>
+        @if (Demo is not null)
+        {
+            <BrouterLink Href="@($"/c/{Demo.Kind}/{Uri.EscapeDataString(Rejected ? Demo.PassExample : Demo.FailExample)}")" class="btn btn-outline">
+                try the @(Rejected ? "passing" : "failing") example: @(Rejected ? Demo.PassExample : Demo.FailExample)
+            </BrouterLink>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>The catalog kind - the literal middle segment of the /c/... route.</summary>
+    [Parameter] public string? Kind { get; set; }
+
+    /// <summary>The bound route value: typed when a type constraint matched, string otherwise.</summary>
+    [Parameter] public object? Value { get; set; }
+
+    /// <summary>True when rendered by the unconstrained fallback route (the constraint refused the value).</summary>
+    [Parameter] public bool Rejected { get; set; }
+
+    private ConstraintDemo? Demo => ConstraintCatalog.Find(Kind);
+
+    private string RawText => Value?.ToString() ?? "(null)";
+}

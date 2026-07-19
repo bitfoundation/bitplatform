@@ -1,0 +1,27 @@
+@* Routes exercising the framework-parity template features: middle optionals, single-star and
+   constrained catch-alls, default values, complex segments, and the new built-in constraints. *@
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/products/{culture?}/list">
+        <Content Context="ctx"><div data-testid="products">@(ctx["culture"] ?? "(none)")</div></Content>
+    </Broute>
+    <Broute Path="/{lang:nonfile?}/home">
+        <Content Context="ctx"><div data-testid="home">@(ctx["lang"] ?? "(none)")</div></Content>
+    </Broute>
+    <Broute Path="/files/{name}.{ext?}">
+        <Content Context="ctx"><div data-testid="file">@ctx["name"]|@(ctx["ext"] ?? "(none)")</div></Content>
+    </Broute>
+    <Broute Path="/api/v{major:int}-{minor:int}">
+        <Content Context="ctx"><div data-testid="version">@ctx["major"].@ctx["minor"]</div></Content>
+    </Broute>
+    <Broute Path="/static/{*path:nonfile}">
+        <Content Context="ctx"><div data-testid="static">@(ctx["path"] is string { Length: > 0 } p ? p : "(empty)")</div></Content>
+    </Broute>
+    <Broute Path="/blog/{action=Index}">
+        <Content Context="ctx"><div data-testid="blog">@ctx["action"]</div></Content>
+    </Broute>
+    <Broute Path="/rate/{score:int:min(1):max(5)}">
+        <Content Context="ctx"><div data-testid="rate">@(ctx["score"]!.GetType().Name):@ctx["score"]</div></Content>
+    </Broute>
+</Brouter>

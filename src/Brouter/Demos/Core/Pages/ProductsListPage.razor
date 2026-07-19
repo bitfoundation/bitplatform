@@ -1,0 +1,38 @@
+@* Demos the middle-optional parameter: /products/{culture?}/list. The template parses with the
+   optional in the middle (framework parity), but matching treats it as required - /products/list
+   never reaches this page. *@
+
+<div class="bb-intro">
+    <h1>Products list</h1>
+    <p class="bb-subtitle">Matched <code>/products/{culture?}/list</code> - an optional parameter in the <em>middle</em> of a template.</p>
+</div>
+
+<dl class="bb-params">
+    <dt>culture</dt>
+    <dd>@(Culture ?? "(null)")</dd>
+</dl>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why did this match?</h3>
+    <p class="bb-card-desc">
+        A middle optional is legal in a template but <strong>required at match time</strong> - only a
+        trailing run of optionals can be omitted by the URL. That's exactly how the built-in Blazor
+        router treats <code>/products/{culture?}/list</code> too: the literal <code>list</code> after
+        the optional pins every segment in place.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Matches /products/en/list (culture = "en").</span>
+<span class="c">   Does NOT match /products/list - "list" would have to shift into {culture?}'s</span>
+<span class="c">   slot and then nothing is left for the literal. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/products/{culture?}/list"</span> Component=<span class="s">"@@typeof(ProductsListPage)"</span> /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/products/en/list" class="btn btn-outline">/products/en/list</BrouterLink>
+        <BrouterLink Href="/products/fa-IR/list" class="btn btn-outline">/products/fa-IR/list</BrouterLink>
+        <BrouterLink Href="/products/list" class="btn btn-outline">/products/list → 404</BrouterLink>
+        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+    </div>
+</div>
+
+@code {
+    // Bound by name from the {culture?} route parameter.
+    [Parameter] public string? Culture { get; set; }
+}

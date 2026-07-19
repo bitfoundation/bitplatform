@@ -17,6 +17,27 @@
     <section class="bb-card">
         <h3 class="bb-card-title">
             <span class="bb-dot bb-dot-primary"></span>
+            Route templates
+            <span class="bb-badge">reference</span>
+        </h3>
+        <p class="bb-card-desc">
+            The full template grammar - framework-parity with the built-in Blazor router: middle
+            optionals, default values, complex segments, constrained catch-alls, and 18 constraints
+            to test live.
+        </p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/templates"><strong>Template reference</strong> - every shape, explained with live links</BrouterLink></li>
+            <li><BrouterLink Href="/constraints"><strong>Constraint tester</strong> - type / validation / custom, interactive</BrouterLink></li>
+            <li><BrouterLink Href="/products/en/list">Middle optional: <code>/products/{culture?}/list</code></BrouterLink></li>
+            <li><BrouterLink Href="/blog">Default value: <code>/blog/{action=Index}</code></BrouterLink></li>
+            <li><BrouterLink Href="/files/report.pdf">Complex segment: <code>{name}.{ext?}</code></BrouterLink></li>
+            <li><BrouterLink Href="/assets/img/logo">Constrained catch-all: <code>{*path:nonfile}</code></BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-primary"></span>
             Route parameters
             <span class="bb-badge">params</span>
         </h3>

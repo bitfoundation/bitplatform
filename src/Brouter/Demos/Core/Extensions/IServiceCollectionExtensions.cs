@@ -28,6 +28,15 @@ public static class IServiceCollectionExtensions
             // which would otherwise reduce this showcase to plain crossfades. Real applications
             // should usually leave this at its default (true) and respect the user's preference.
             o.ViewTransitionRespectReducedMotion = false;
+
+            // Custom route constraint, scoped to this DI container. Templates can now use
+            // {value:slug} exactly like a built-in constraint - see the /constraints tester.
+            o.Constraints.Register("slug",
+                new BrouterTypeRouteConstraint<string>((string s, out string r) =>
+                {
+                    r = s;
+                    return s.Length >= 3 && s.All(c => char.IsLetterOrDigit(c) || c == '-');
+                }));
         });
 
         services.AddScoped<DemoState>();
