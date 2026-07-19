@@ -654,6 +654,36 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitButtonShouldApplyHiddenContentClassStyles()
+    {
+        var hiddenContentClass = "hidden-content-class";
+        var hiddenContentStyle = "opacity: 0.5;";
+
+        var classes = new BitButtonClassStyles
+        {
+            HiddenContent = hiddenContentClass
+        };
+
+        var styles = new BitButtonClassStyles
+        {
+            HiddenContent = hiddenContentStyle
+        };
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Classes, classes);
+            parameters.Add(p => p.Styles, styles);
+            parameters.AddChildContent("Content");
+        });
+
+        var hiddenContent = com.Find(".bit-btn-hcn");
+
+        Assert.IsTrue(hiddenContent.ClassList.Contains(hiddenContentClass));
+        Assert.AreEqual(hiddenContentStyle, hiddenContent.GetAttribute("style"));
+    }
+
+    [TestMethod]
     public void BitButtonFormIdTest()
     {
         var com = RenderComponent<BitButton>(parameters =>
