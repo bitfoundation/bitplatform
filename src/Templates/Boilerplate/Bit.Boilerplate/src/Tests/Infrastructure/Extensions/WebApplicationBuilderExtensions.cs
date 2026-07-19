@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Tests.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;

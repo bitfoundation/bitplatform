@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Products;
 
 [Mapper(UseDeepCloning = true)]

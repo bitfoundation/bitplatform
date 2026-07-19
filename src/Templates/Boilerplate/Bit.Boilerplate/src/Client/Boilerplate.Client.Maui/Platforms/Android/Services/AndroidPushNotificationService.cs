@@ -1,4 +1,4 @@
-﻿using Firebase.Messaging;
+using Firebase.Messaging;
 using Plugin.LocalNotification;
 using Microsoft.Extensions.Logging;
 using static Android.Provider.Settings;

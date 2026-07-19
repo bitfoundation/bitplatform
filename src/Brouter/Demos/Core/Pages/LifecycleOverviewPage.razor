@@ -1,0 +1,97 @@
+@* Topic page: route lifecycle callbacks and keep-alive retention. Live links point at
+   /lifecycle/{id}, /sticky, /fleeting and /notes/{id} declared in AppRouter.razor. *@
+
+<div class="bb-intro">
+    <h1>Lifecycle &amp; keep-alive</h1>
+    <p class="bb-subtitle">
+        Know when your routed component arrives, is revisited, or leaves - and optionally keep it
+        alive (state and all) while the user is elsewhere.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The route lifecycle</h3>
+    <p class="bb-card-desc">
+        Implement <code>IBrouterRoute</code> on a routed component - the router discovers it
+        automatically for <code>Component</code>-rendered routes, no registration needed. Arrivals
+        fire root→leaf after the render commits; departures fire leaf→root before it. All
+        callbacks have default no-op implementations, so you override only what you need. None of
+        them run during static prerendering.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Callback</th><th>When</th><th>Payload highlights</th></tr></thead>
+        <tbody>
+            <tr><td>OnActivatedAsync</td><td>Route became active (first visit or return from keep-alive).</td><td>IsFirstActivation, Location</td></tr>
+            <tr><td>OnRenavigatedAsync</td><td>Same route re-committed with different parameters or query.</td><td>Location, PreviousLocation</td></tr>
+            <tr><td>OnDeactivatedAsync</td><td>Route left. Sync part guaranteed to run before Dispose.</td><td>Reason (Hidden / Disposing), Location</td></tr>
+            <tr><td>OnDeactivatingAsync</td><td>About to be left - awaited, cancellable (navigation lock).</td><td>To, Cancel(), Redirect(), CancellationToken</td></tr>
+            <tr><td>OnRenavigatingAsync</td><td>About to re-commit with new params - awaited, cancellable.</td><td>same as above</td></tr>
+        </tbody>
+    </table>
+    <p class="bb-card-desc">
+        <code>BrouterRouteBase</code> is the convenience base class: it wires the cascaded context
+        for you, adds sync+async virtual pairs (<code>OnActivated</code> /
+        <code>OnActivatedAsync</code>, ...), an <code>IsActive</code> property, and an automatic
+        <code>StateHasChanged</code> after activation. For components that <em>aren't</em> the
+        route root - a widget inside a <code>&lt;Content&gt;</code> fragment, or a descendant at
+        any depth - take the cascaded <code>BrouterRouteContext</code> and call
+        <code>Register(this)</code> / <code>Unregister(this)</code> yourself.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/lifecycle/1" class="btn btn-outline">/lifecycle/1 - live event log (IBrouterRoute)</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Keep-alive</h3>
+    <p class="bb-card-desc">
+        Normally a route's component is disposed on leave and rebuilt on return. With
+        <code>KeepAlive="true"</code> the rendered content is retained in a hidden container
+        instead - scroll position, form input, timers, all component state survive. Deactivation
+        then reports <code>Reason = Hidden</code> rather than <code>Disposing</code>, which is the
+        cue to pause background work (the sticky-note demo pauses its timer in
+        <code>OnDeactivated</code> and resumes in <code>OnActivated</code>). Compare
+        <code>/sticky</code> with the <code>/fleeting</code> control route: same component, no
+        keep-alive, state resets every visit.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/sticky"</span> KeepAlive=<span class="s">"true"</span>&gt; ... &lt;/<span class="k">Broute</span>&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/sticky" class="btn btn-outline">/sticky - state survives leaving</BrouterLink>
+        <BrouterLink Href="/fleeting" class="btn btn-outline">/fleeting - control, resets every visit</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Per-parameter instances &amp; eviction</h3>
+    <p class="bb-card-desc">
+        <code>KeepAliveMax</code> sets the retained-instance budget. At the default
+        (<code>BrouterOptions.DefaultKeepAliveMax</code>, 1) a single instance is re-bound as
+        parameters change. Above 1, each distinct set of <em>template parameter values</em> gets
+        its own instance - <code>/notes/1</code> and <code>/notes/2</code> are two live components;
+        query-string variations share one - with least-recently-used eviction beyond the budget.
+        <code>brouter.ClearKeepAlive()</code> disposes everything retained (sign-out, memory
+        pressure).
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/notes/{id:int}"</span> KeepAlive=<span class="s">"true"</span> KeepAliveMax=<span class="s">"2"</span>
+        Component=<span class="s">"@@typeof(NotebookPage)"</span> /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/notes/1" class="btn btn-outline">/notes/1 - edit notes 1 &amp; 2, then visit 3: LRU evicts</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Singleton re-commit vs disposal</h3>
+    <p class="bb-card-desc">
+        The lifecycle log makes the instance model tangible: <code>/lifecycle/1 → /lifecycle/2</code>
+        keeps the route matched, so the <em>same instance</em> re-commits and
+        <code>OnRenavigatedAsync</code> fires with old and new locations - no dispose, no rebuild.
+        Leaving the route entirely fires <code>OnDeactivatedAsync</code> with
+        <code>Reason = Disposing</code>. The page stamps each instance with a random id so you can
+        verify it never changes across renavigations.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/lifecycle/1" class="btn btn-outline">/lifecycle/1</BrouterLink>
+        <BrouterLink Href="/lifecycle/2" class="btn btn-outline">/lifecycle/2 - renavigation, same instance</BrouterLink>
+        <BrouterLink Href="/lifecycle/2?tab=comments" class="btn btn-outline">?tab=comments - query-only renavigation</BrouterLink>
+    </div>
+</div>

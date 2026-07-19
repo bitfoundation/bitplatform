@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Statistics;
+namespace Boilerplate.Shared.Features.Statistics;
 
 public record GitHubStats(
     [property: JsonPropertyName("name")] string Name,

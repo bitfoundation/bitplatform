@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Exceptions;
+namespace Boilerplate.Shared.Infrastructure.Exceptions;
 
 /// <summary>
 /// A machine-readable format for specifying errors in HTTP API responses based on <see href="https://tools.ietf.org/html/rfc7807"/>.
@@ -71,7 +71,7 @@ public partial class AppProblemDetails
 
     public static implicit operator Exception(AppProblemDetails problemDetails)
     {
-        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) 
+        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!)
             ?? typeof(KnownException).Assembly.ExportedTypes.FirstOrDefault(t => problemDetails.Type?.EndsWith(t.Name) is true)
             ?? typeof(UnknownException);
 

@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Shared.Features.Diagnostic;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 

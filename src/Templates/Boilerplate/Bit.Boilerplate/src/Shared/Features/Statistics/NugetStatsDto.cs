@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Statistics;
+namespace Boilerplate.Shared.Features.Statistics;
 
 public record NugetStatsDto(
     [property: JsonPropertyName("data")] IReadOnlyList<Datum> Data

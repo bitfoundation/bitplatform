@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Styles;
+using Boilerplate.Client.Core.Styles;
 
 namespace Boilerplate.Client.Maui.Infrastructure.Services;
 

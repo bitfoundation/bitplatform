@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Attachments;
 
 [Route("api/v1/[controller]/[action]/"), AuthorizedApi]

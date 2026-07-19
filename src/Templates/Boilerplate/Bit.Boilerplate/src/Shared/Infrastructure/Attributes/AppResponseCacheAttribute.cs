@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Attributes;
+namespace Boilerplate.Shared.Infrastructure.Attributes;
 
 /// <summary>
 /// Applying this attribute to Blazor pages or API actions will cache them in ASP.NET Core's output cache,

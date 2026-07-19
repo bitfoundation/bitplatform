@@ -157,12 +157,21 @@ public sealed class BrouterRoutesGenerator : IIncrementalGenerator
 
                 case SegmentKind.Parameter:
                     var paramName = ParameterNameFor(segment.Value);
-                    if (segment.IsOptional)
+                    if (segment.DefaultValue is not null)
+                    {
+                        // Trailing default-valued parameter ({action=Index}): callers may omit the
+                        // argument; the declared default is emitted so the URL always matches the
+                        // template. (Non-trailing defaults were demoted to required by the parser.)
+                        var defaultType = segment.ClrType == "string" ? "string?" : segment.ClrType + "?";
+                        parameters.Add($"{defaultType} {paramName} = null");
+                        body.AppendLine($"        sb.Append('/').Append({paramName} is null ? \"{Escape(Uri.EscapeDataString(segment.DefaultValue))}\" : global::System.Uri.EscapeDataString(__Format({paramName})));");
+                    }
+                    else if (segment.IsOptional)
                     {
                         var optionalType = segment.ClrType == "string" ? "string?" : segment.ClrType + "?";
                         parameters.Add($"{optionalType} {paramName} = null");
-                        // Trailing optionals: emit only while values are provided (the template
-                        // parser guarantees optionals are trailing, so no literal follows).
+                        // Trailing optionals: emit only while values are provided (the RouteTemplateParser
+                        // demotes non-trailing optionals to required, so no literal follows).
                         body.AppendLine($"        if ({paramName} is not null) sb.Append('/').Append(global::System.Uri.EscapeDataString(__Format({paramName})));");
                     }
                     else

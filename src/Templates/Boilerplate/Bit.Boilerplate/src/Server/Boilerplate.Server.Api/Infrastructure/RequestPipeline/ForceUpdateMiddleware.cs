@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Infrastructure.RequestPipeline;
+namespace Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 public class ForceUpdateMiddleware(RequestDelegate next, ServerApiSettings settings)
 {

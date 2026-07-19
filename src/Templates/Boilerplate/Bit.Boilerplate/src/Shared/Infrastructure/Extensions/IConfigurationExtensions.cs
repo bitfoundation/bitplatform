@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Extensions.Configuration;
+namespace Microsoft.Extensions.Configuration;
 
 /// <summary>
 /// The Bind method's performance gets improved by `EnableConfigurationBindingGenerator`, which

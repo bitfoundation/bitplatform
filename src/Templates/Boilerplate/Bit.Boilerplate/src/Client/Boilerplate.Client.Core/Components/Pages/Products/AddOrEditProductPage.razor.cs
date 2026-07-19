@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Products;
+using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Features.Categories;
 using Boilerplate.Shared.Features.Attachments;
 

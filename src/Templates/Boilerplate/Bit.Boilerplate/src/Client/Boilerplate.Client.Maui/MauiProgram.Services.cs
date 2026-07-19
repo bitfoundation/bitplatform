@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -39,10 +39,8 @@ public static partial class MauiProgram
                 {
                     BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
                 };
-                if (sp.GetRequiredService<ClientMauiSettings>().WebAppUrl is Uri origin)
-                {
-                    httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
-                }
+                var origin = sp.GetRequiredService<ClientMauiSettings>().WebAppUrl ?? httpClient.BaseAddress;
+                httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
                 return httpClient;
             });
 
@@ -114,7 +112,7 @@ public static partial class MauiProgram
 
             //-:cnd:noEmit
 #if Android
-        services.AddClientMauiProjectAndroidServices(builder.Configuration);
+            services.AddClientMauiProjectAndroidServices(builder.Configuration);
 #elif iOS
         services.AddClientMauiProjectIosServices(builder.Configuration);
 #elif Mac

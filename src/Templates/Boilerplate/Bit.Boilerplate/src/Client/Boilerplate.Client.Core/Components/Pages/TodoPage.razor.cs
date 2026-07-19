@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Todo;
+using Boilerplate.Shared.Features.Todo;
 
 namespace Boilerplate.Client.Core.Components.Pages;
 

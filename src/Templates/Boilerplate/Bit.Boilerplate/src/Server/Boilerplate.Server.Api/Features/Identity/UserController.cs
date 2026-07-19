@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 using System.Text.Encodings.Web;
 using QRCoder;

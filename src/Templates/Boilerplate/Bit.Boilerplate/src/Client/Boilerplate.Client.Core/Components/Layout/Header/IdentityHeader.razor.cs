@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout.Header;
+namespace Boilerplate.Client.Core.Components.Layout.Header;
 
 public partial class IdentityHeader : AppComponentBase
 {

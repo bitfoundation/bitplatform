@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
 //#if (notification == true)

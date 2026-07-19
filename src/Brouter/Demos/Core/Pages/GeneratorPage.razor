@@ -1,0 +1,177 @@
+@* Explains Bit.Brouter.Generators - the Roslyn incremental source generator that turns this
+   project's route declarations into the typed BrouterRoutes URL builders used across the demo
+   (e.g. Header.razor). Every URL in the "live output" card below is built by the generated code
+   at runtime, so this page doubles as a smoke test of the generator itself. *@
+
+@inject IBrouter brouter
+
+<div class="bb-intro">
+    <h1>The BrouterRoutes generator</h1>
+    <p class="bb-subtitle">
+        <code>Bit.Brouter.Generators</code> is a Roslyn source generator that scans your
+        <code>.razor</code> files and emits <code>BrouterRoutes</code> - one compile-time-safe URL
+        builder per route. Rename a parameter or change a constraint and every stale caller becomes
+        a <em>build error</em> instead of a broken link.
+    </p>
+</div>
+
+@* ============================== What it scans ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What it scans</h3>
+    <p class="bb-card-desc">
+        The generator reads route declarations textually from every <code>.razor</code> file:
+        <code>@@page</code> directives, <code>@@attribute [Route(...)]</code>, and literal
+        <code>&lt;Broute Path="..."&gt;</code> tags - including <em>nested</em> trees, where a
+        child's template is composed onto its ancestors' prefixes. A dynamic path
+        (<code>Path="@@expr"</code>) can't be known at compile time, so that tag and everything
+        beneath it is skipped.
+    </p>
+    <pre class="bb-code"><span class="c">&lt;!-- Bit.Brouter.Demos.Core.csproj - referenced as an analyzer: --&gt;</span>
+&lt;<span class="k">ProjectReference</span> Include=<span class="s">"..\Bit.Brouter.Generators\Bit.Brouter.Generators.csproj"</span>
+                  OutputItemType=<span class="s">"Analyzer"</span> ReferenceOutputAssembly=<span class="s">"false"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        The output is a single <code>static partial class BrouterRoutes</code> in your project's
+        root namespace (<code>BrouterRoutes.g.cs</code>). Duplicate templates across files are
+        de-duplicated; declaring the <em>same</em> template with two <em>different</em>
+        <code>Name</code>s raises the <code>BRT001</code> warning instead of silently picking one.
+    </p>
+</div>
+
+@* ============================== Template → method ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> From template to typed method</h3>
+    <p class="bb-card-desc">
+        Route parameters become method parameters typed by the template's <em>last type
+        constraint</em> (<code>{init:int}</code> → <code>int init</code>; validation-only
+        constraints like <code>min(1)</code> keep the raw string). Optionals become optional
+        arguments, <code>{action=Index}</code> emits its declared default when omitted, and a
+        catch-all becomes an optional path string. Every method also takes an optional
+        <code>query</code>.
+    </p>
+    <pre class="bb-code"><span class="c">@@* The declaration in AppRouter.razor... *@@</span>
+&lt;<span class="k">Broute</span> Name=<span class="s">"counter"</span> Path=<span class="s">"/counter/{init:int}"</span>&gt;
+
+<span class="c">// ...becomes this method in BrouterRoutes.g.cs:</span>
+<span class="k">public static string</span> Counter(<span class="k">int</span> <span class="p">init</span>, <span class="k">string</span>? <span class="p">query</span> = <span class="k">null</span>) { ... }
+
+<span class="c">// Callers get IntelliSense, type checking, and refactoring safety:</span>
+&lt;<span class="k">BrouterLink</span> Href=<span class="s">"@@BrouterRoutes.Counter(1234)"</span>&gt;Counter&lt;/<span class="k">BrouterLink</span>&gt;</pre>
+    <table class="bb-table">
+        <thead>
+            <tr><th>Declared template</th><th>Generated signature</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>/counter/{init:int}</td><td><code>Counter(int init, string? query = null)</code></td></tr>
+            <tr><td>/profile/{username?}</td><td><code>ProfileByUsername(string? username = null, string? query = null)</code></td></tr>
+            <tr><td>/blog/{action=Index}</td><td><code>BlogByAction(string? action = null, string? query = null)</code></td></tr>
+            <tr><td>/posts/{**slug}</td><td><code>Posts(string? slug = null, string? query = null)</code></td></tr>
+        </tbody>
+    </table>
+</div>
+
+@* ============================== Live output ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Live output</h3>
+    <p class="bb-card-desc">
+        These URLs are produced <em>right now</em> by the generated methods - note the emitted
+        default in <code>/blog/Index</code>, the per-segment escaping of the catch-all, and the
+        query appended with or without a leading <code>?</code>.
+    </p>
+    <table class="bb-table">
+        <thead>
+            <tr><th>Expression</th><th>Result</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var (expression, url) in _samples)
+            {
+                <tr>
+                    <td>@expression</td>
+                    <td><code>@url</code></td>
+                    <td><BrouterLink Href="@url" class="btn btn-outline">open →</BrouterLink></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* ============================== Naming & Names constants ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Method naming &amp; the <code>Names</code> class</h3>
+    <p class="bb-card-desc">
+        An explicit <code>Name="..."</code> owns its method name (<code>Name="counter"</code> →
+        <code>Counter(...)</code>, even if another template would derive the same identifier - the
+        other one gets a numeric suffix). Unnamed routes derive a name from their literal segments
+        plus a <code>By{Param}</code> suffix per parameter: <code>/profile/{username?}</code> →
+        <code>ProfileByUsername</code>. The bare root template becomes <code>Root()</code>.
+    </p>
+    <p class="bb-card-desc">
+        Named routes additionally get a constant in <code>BrouterRoutes.Names</code>, so
+        name-based APIs need no magic strings:
+    </p>
+    <pre class="bb-code"><span class="c">// Resolve or navigate by route name, without hardcoding "counter" anywhere:</span>
+brouter.ResolveUrl(<span class="k">BrouterRoutes.Names</span>.Counter, <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">object</span>?&gt; { [<span class="s">"init"</span>] = 7 });
+brouter.NavigateToName(<span class="k">BrouterRoutes.Names</span>.Counter, <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">object</span>?&gt; { [<span class="s">"init"</span>] = 777 });</pre>
+    <div class="bb-try">
+        <span class="bb-badge">resolved: @_resolvedUrl</span>
+        <button class="btn btn-primary" @onclick="NavigateByName">NavigateToName(Names.Counter, init: 777)</button>
+    </div>
+</div>
+
+@* ============================== Fidelity & edge cases ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Fidelity &amp; edge cases</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Values are formatted with the router's own invariant rules (<code>bool</code> →
+            <code>true/false</code>, <code>DateTime</code> → round-trip <code>"o"</code>) and
+            escaped with <code>Uri.EscapeDataString</code>, so a generated URL always round-trips
+            through its template - byte-identical to what <code>ResolveUrl</code> produces.
+        </li>
+        <li>
+            Catch-all values are split on <code>/</code> and escaped per segment:
+            <code>Posts("2026/07/hello world")</code> → <code>/posts/2026/07/hello%20world</code>.
+        </li>
+        <li>
+            A <em>middle</em> optional (<code>/products/{culture?}/list</code>) is required at
+            match time, so the generated method requires that argument too - runtime parity over
+            template appearance.
+        </li>
+        <li>
+            Complex segments (<code>/files/{name}.{ext?}</code>) and dynamic
+            <code>Path="@@expr"</code> subtrees are skipped: no builder is generated rather than
+            risk generating a wrong one.
+        </li>
+    </ul>
+</div>
+
+@code {
+    private List<(string Expression, string Url)> _samples = [];
+    private string _resolvedUrl = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        // Evaluated here (not hardcoded) so the page proves the generated builders' behavior.
+        _samples =
+        [
+            ("BrouterRoutes.Counter(42)", BrouterRoutes.Counter(42)),
+            ("BrouterRoutes.Counter(42, query: \"step=5\")", BrouterRoutes.Counter(42, query: "step=5")),
+            ("BrouterRoutes.ProfileByUsername(\"saleh\")", BrouterRoutes.ProfileByUsername("saleh")),
+            ("BrouterRoutes.ProfileByUsername()", BrouterRoutes.ProfileByUsername()),
+            ("BrouterRoutes.BlogByAction()", BrouterRoutes.BlogByAction()),
+            ("BrouterRoutes.BlogByAction(\"archive\")", BrouterRoutes.BlogByAction("archive")),
+            ("BrouterRoutes.Posts(\"2026/07/hello world\")", BrouterRoutes.Posts("2026/07/hello world")),
+        ];
+
+        _resolvedUrl = brouter.ResolveUrl(BrouterRoutes.Names.Counter, new Dictionary<string, object?> { ["init"] = 7 });
+    }
+
+    private void NavigateByName()
+    {
+        brouter.NavigateToName(BrouterRoutes.Names.Counter, new Dictionary<string, object?> { ["init"] = 777 });
+    }
+}

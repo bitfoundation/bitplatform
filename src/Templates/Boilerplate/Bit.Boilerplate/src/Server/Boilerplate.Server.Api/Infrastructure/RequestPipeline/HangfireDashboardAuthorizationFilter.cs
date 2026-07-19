@@ -1,4 +1,4 @@
-﻿using Hangfire.Dashboard;
+using Hangfire.Dashboard;
 using Hangfire.Annotations;
 
 namespace Boilerplate.Server.Api.Infrastructure.RequestPipeline;

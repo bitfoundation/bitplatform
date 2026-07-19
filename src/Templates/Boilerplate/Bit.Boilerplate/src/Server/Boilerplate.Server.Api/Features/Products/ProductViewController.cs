@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Products;
+using Boilerplate.Shared.Features.Products;
 
 namespace Boilerplate.Server.Api.Features.Products;
 

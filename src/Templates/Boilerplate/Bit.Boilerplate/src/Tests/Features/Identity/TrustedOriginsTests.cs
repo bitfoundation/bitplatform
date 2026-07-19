@@ -1,4 +1,4 @@
-﻿using Boilerplate.Server.Shared;
+using Boilerplate.Server.Shared;
 
 namespace Boilerplate.Tests.Features.Identity;
 

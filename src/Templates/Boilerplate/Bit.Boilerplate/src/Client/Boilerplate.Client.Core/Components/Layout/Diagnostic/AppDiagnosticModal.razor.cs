@@ -1,4 +1,4 @@
-﻿//#if (signalR == true)
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 using System.Text.RegularExpressions;

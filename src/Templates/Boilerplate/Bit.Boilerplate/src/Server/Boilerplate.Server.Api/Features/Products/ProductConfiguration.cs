@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;

@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 /// <summary>
 /// The layout type of the SignIn panel UI. Check out <see cref="SignInModalService"/> for more details

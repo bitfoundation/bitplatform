@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Text;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -86,7 +86,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
             result.AppendLine($"{header.Key}: {header.Value}");
         }
 
-        result.AppendLine();    
+        result.AppendLine();
         //#if (multitenant == true)
         result.AppendLine($"TenantId: {TenantProvider.GetCurrentTenantId()}");
         //#endif

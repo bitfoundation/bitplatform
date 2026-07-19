@@ -315,6 +315,13 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         {
             sb.Append('/');
 
+            if (segment.IsComplex)
+            {
+                if (optionalOmitted) ThrowOmittedOptionalConflict(name, omittedOptionalName, segment.Value);
+                AppendComplexSegment(sb, name, segment, normalizedParams, consumedNames);
+                continue;
+            }
+
             if (segment.IsParameter is false)
             {
                 if (segment.IsCatchAll || segment.IsSingleWildcard)
@@ -322,16 +329,26 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
                         $"Cannot resolve route '{name}' that contains literal wildcards. " +
                         "Use a catch-all parameter (e.g. '{{**path}}') instead.");
 
+                if (optionalOmitted) ThrowOmittedOptionalConflict(name, omittedOptionalName, segment.Value);
                 sb.Append(segment.Value);
                 continue;
             }
 
             consumedNames?.Add(segment.Value);
 
+            string rawValue;
             var hasValue = normalizedParams is not null && normalizedParams.TryGetValue(segment.Value, out var raw) && raw is not null;
             if (hasValue is false)
             {
-                if (segment.IsOptional)
+                if (segment.HasDefault)
+                {
+                    // Emit the declared default rather than omitting the segment: the emitted URL
+                    // then matches the template no matter what follows, and the matcher binds the
+                    // same default value back.
+                    if (optionalOmitted) ThrowOmittedOptionalConflict(name, omittedOptionalName, segment.Value);
+                    rawValue = segment.DefaultValue!;
+                }
+                else if (segment.IsOptional)
                 {
                     // Drop trailing '/' for the absent optional segment.
                     if (sb.Length > 0 && sb[^1] == '/') sb.Length--;
@@ -339,32 +356,29 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
                     omittedOptionalName ??= segment.Value;
                     continue;
                 }
-                throw new ArgumentException(
-                    $"Missing value for required route parameter '{segment.Value}' when resolving route '{name}'.",
-                    nameof(parameters));
+                else
+                {
+                    throw new ArgumentException(
+                        $"Missing value for required route parameter '{segment.Value}' when resolving route '{name}'.",
+                        nameof(parameters));
+                }
             }
-
-            // A trailing optional with a value can't follow an omitted earlier optional, since
-            // optionals only ever live at the tail of a template (TemplateParser enforces this).
-            // Allowing it would emit a URL that re-binds to the wrong parameter.
-            if (segment.IsOptional && optionalOmitted)
+            else
             {
-                throw new ArgumentException(
-                    $"Cannot resolve route '{name}': optional parameter '{omittedOptionalName}' is missing " +
-                    $"but a later optional parameter '{segment.Value}' has a value. " +
-                    "Trailing optionals must be filled in order from left to right.",
-                    nameof(parameters));
+                // Any emitted segment after an omitted optional would shift into the missing
+                // optional's slot when the URL is matched again ("/a/{b?}/{c?}" + only c =>
+                // "/a/x" reads back as b="x"), so fail loud rather than silently mis-bind.
+                if (optionalOmitted) ThrowOmittedOptionalConflict(name, omittedOptionalName, segment.Value);
+                rawValue = FormatRouteValue(normalizedParams![segment.Value]);
             }
-
-            var rawValue = FormatRouteValue(normalizedParams![segment.Value]);
 
             // Validate the formatted value against any constraints declared on this segment.
             // Without this check ResolveUrl would happily emit a URL ("/users/abc" for {id:int})
             // that fails to match its own template, surfacing as a confusing NotFound far from
             // the call site. Run constraints on the formatted (string) value, mirroring what
-            // the matcher will do when the URL comes back through LocationChanged.
-            // Catch-all parameters never carry constraints (TemplateParser rejects them) so
-            // we don't need a special branch here.
+            // the matcher will do when the URL comes back through LocationChanged. This covers
+            // constrained catch-alls too: like the matcher, the constraint sees the full
+            // (slash-containing) remainder value.
             if (segment.IsParameter && segment.Constraints.Length > 0 && string.IsNullOrEmpty(rawValue) is false)
             {
                 foreach (var binding in segment.Constraints)
@@ -373,6 +387,21 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
                     {
                         throw new ArgumentException(
                             $"Value '{rawValue}' for route parameter '{segment.Value}' fails the '{binding.Name}' constraint " +
+                            $"on route '{name}'. The generated URL would not round-trip back through this template.",
+                            nameof(parameters));
+                    }
+                }
+            }
+            else if (segment.IsCatchAll && segment.Constraints.Length > 0 && string.IsNullOrEmpty(rawValue))
+            {
+                // Mirror the matcher: an empty catch-all is a missing value, which only
+                // constraints like nonfile accept. Anything else would emit an unmatchable URL.
+                foreach (var binding in segment.Constraints)
+                {
+                    if (binding.Constraint.MatchesMissingValue is false)
+                    {
+                        throw new ArgumentException(
+                            $"An empty value for catch-all parameter '{segment.Value}' fails the '{binding.Name}' constraint " +
                             $"on route '{name}'. The generated URL would not round-trip back through this template.",
                             nameof(parameters));
                     }
@@ -460,6 +489,76 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
         }
 
         return sb.ToString();
+    }
+
+    private static void ThrowOmittedOptionalConflict(string routeName, string? omittedName, string nextSegment) =>
+        throw new ArgumentException(
+            $"Cannot resolve route '{routeName}': optional parameter '{omittedName}' is missing " +
+            $"but the template continues with '{nextSegment}'. Optional parameters must be filled " +
+            "from left to right; only a trailing run of omitted optionals can be dropped from the URL.",
+            "parameters");
+
+    // Emits a complex (multi-part) segment such as "{name}.{ext?}" or "v{major}-{minor}": literals
+    // verbatim, parameter values escaped and constraint-validated. The optional last part (and its
+    // '.' separator) is dropped when no value is supplied for it.
+    private static void AppendComplexSegment(StringBuilder sb, string routeName, BrouterTemplateSegment segment,
+        Dictionary<string, object?>? normalizedParams, HashSet<string>? consumedNames)
+    {
+        var parts = segment.Parts!;
+        for (var i = 0; i < parts.Count; i++)
+        {
+            var part = parts[i];
+
+            if (part.IsSeparator)
+            {
+                // The '.' before an optional last part is emitted only when that part has a value.
+                var optionalPart = parts[i + 1];
+                consumedNames?.Add(optionalPart.Value);
+
+                var optionalValue = GetComplexPartValue(normalizedParams, optionalPart);
+                if (string.IsNullOrEmpty(optionalValue)) break;
+
+                ValidateComplexPartConstraints(routeName, segment, optionalPart, optionalValue);
+                sb.Append(part.Value).Append(Uri.EscapeDataString(optionalValue));
+                break;
+            }
+
+            if (part.IsParameter is false)
+            {
+                sb.Append(part.Value);
+                continue;
+            }
+
+            consumedNames?.Add(part.Value);
+
+            var rawValue = GetComplexPartValue(normalizedParams, part) ?? part.DefaultValue;
+            if (string.IsNullOrEmpty(rawValue))
+                throw new ArgumentException(
+                    $"Missing value for route parameter '{part.Value}' in segment '{segment.Value}' when resolving route '{routeName}'.",
+                    "parameters");
+
+            ValidateComplexPartConstraints(routeName, segment, part, rawValue);
+            sb.Append(Uri.EscapeDataString(rawValue));
+        }
+    }
+
+    private static string? GetComplexPartValue(Dictionary<string, object?>? normalizedParams, BrouterTemplatePart part) =>
+        normalizedParams is not null && normalizedParams.TryGetValue(part.Value, out var raw) && raw is not null
+            ? FormatRouteValue(raw)
+            : null;
+
+    private static void ValidateComplexPartConstraints(string routeName, BrouterTemplateSegment segment, BrouterTemplatePart part, string value)
+    {
+        foreach (var binding in part.Constraints)
+        {
+            if (binding.Constraint.TryMatch(value, out _) is false)
+            {
+                throw new ArgumentException(
+                    $"Value '{value}' for route parameter '{part.Value}' fails the '{binding.Name}' constraint " +
+                    $"in segment '{segment.Value}' of route '{routeName}'. The generated URL would not round-trip back through this template.",
+                    "parameters");
+            }
+        }
     }
 
     private static void AppendQueryPair(StringBuilder sb, string key, string value, ref bool hasQuery)

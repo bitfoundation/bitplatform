@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Reflection;
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;

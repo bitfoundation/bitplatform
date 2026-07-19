@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Features.Identity.Models;
 //#if (multitenant == true)

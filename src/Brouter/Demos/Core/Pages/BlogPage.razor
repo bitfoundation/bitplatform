@@ -1,0 +1,45 @@
+@* Demos default parameter values: /blog/{action=Index}. Omitting the segment binds the declared
+   default instead of null; with a type constraint the default converts too ({id:int=5} → int 5). *@
+
+<div class="bb-intro">
+    <h1>Blog - @Action</h1>
+    <p class="bb-subtitle">Matched <code>/blog/{action=Index}</code> - a default-valued route parameter.</p>
+</div>
+
+<dl class="bb-params">
+    <dt>action</dt>
+    <dd>@Action</dd>
+    <dt>came from</dt>
+    <dd>@(WasDefaulted ? "the template default (URL omitted the segment)" : "the URL")</dd>
+</dl>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Defaults vs. optionals</h3>
+    <p class="bb-card-desc">
+        <code>{action=Index}</code> is omittable like <code>{action?}</code>, but the parameter never
+        binds <code>null</code> - the missing segment binds <code>"Index"</code>. URL generation
+        mirrors this: <code>ResolveUrl</code> and the source-generated
+        <code>BrouterRoutes.BlogByAction()</code> emit the default when you don't pass a value, so
+        generated URLs always round-trip. A parameter can't be optional <em>and</em> defaulted
+        (<code>{id=5?}</code> throws at parse time, framework parity).
+    </p>
+    <pre class="bb-code"><span class="c">@@* /blog         → action = "Index" (the default)</span>
+<span class="c">   /blog/archive → action = "archive"</span>
+<span class="c">   Typed default: {id:int=5} binds int 5, not the string "5". *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/blog/{action=Index}"</span> Component=<span class="s">"@@typeof(BlogPage)"</span> /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/blog" class="btn btn-outline">/blog (defaulted)</BrouterLink>
+        <BrouterLink Href="/blog/archive" class="btn btn-outline">/blog/archive</BrouterLink>
+        <BrouterLink Href="/blog/drafts" class="btn btn-outline">/blog/drafts</BrouterLink>
+        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Action { get; set; }
+
+    [Inject] public IBrouter Brouter { get; set; } = default!;
+
+    // The URL had only "/blog" when the default kicked in.
+    private bool WasDefaulted => Brouter.Location.Segments.Count == 1;
+}

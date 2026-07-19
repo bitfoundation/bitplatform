@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Net;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;

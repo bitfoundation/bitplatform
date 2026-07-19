@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Dtos;
+namespace Boilerplate.Shared.Infrastructure.Dtos;
 
 /// <summary>
 /// CommunityToolkit.Datasync compatible base class for DTOs for client app offline database sync.

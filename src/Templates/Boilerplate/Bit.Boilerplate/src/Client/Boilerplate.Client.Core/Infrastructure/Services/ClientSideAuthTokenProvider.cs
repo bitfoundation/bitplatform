@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class ClientSideAuthTokenProvider : IAuthTokenProvider

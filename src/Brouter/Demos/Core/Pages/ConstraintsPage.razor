@@ -1,0 +1,117 @@
+@* Interactive tester for every built-in constraint (plus a custom one). Each catalog entry has a
+   real route registered in AppRouter: /c/{kind}/{v:token}. Testing navigates to that URL - if the
+   constraint accepts, the constrained route wins by specificity and shows the bound value; if it
+   rejects, the unconstrained fallback /c/{kind}/{value} catches the URL and explains the rejection.
+   The router itself is the referee - nothing here re-implements constraint logic. *@
+
+@inject IBrouter brouter
+
+<div class="bb-intro">
+    <h1>Route constraints</h1>
+    <p class="bb-subtitle">
+        Every built-in constraint, live. Type a value and hit <em>test</em> on any row - the actual
+        router decides: match lands on the constrained route, rejection falls through to an
+        unconstrained fallback route.
+    </p>
+</div>
+
+<div class="bb-note">
+    <strong>Two families.</strong> <em>Type</em> constraints (<code>int</code>, <code>guid</code>, ...)
+    validate <em>and convert</em> - the parameter binds a real <code>int</code>/<code>Guid</code>/...
+    <em>Validation</em> constraints (<code>alpha</code>, <code>min(10)</code>, <code>regex(...)</code>, ...)
+    only accept or reject - the value stays a string. Chained together, the <strong>last type
+    constraint decides the bound value</strong>: <code>{v:int:min(1):max(5)}</code> binds an <code>int</code>.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Your test value</h3>
+    <p>
+        <input @bind="_value" @bind:event="oninput" placeholder="type a value to test…"
+               style="padding: .45rem .7rem; border: 1px solid var(--bb-border); border-radius: var(--bb-radius-sm); min-width: 260px; font-family: var(--bb-mono);" />
+        <span style="color: var(--bb-text-muted); font-size: .85rem; margin-left: .5rem;">
+            → navigates to <code>/c/&lt;kind&gt;/@(string.IsNullOrEmpty(_value) ? "…" : Uri.EscapeDataString(_value))</code>
+        </span>
+    </p>
+</div>
+
+<table class="bb-table">
+    <thead>
+        <tr>
+            <th>Constraint</th>
+            <th>Rule</th>
+            <th>Try it</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in ConstraintCatalog.All)
+        {
+            <tr>
+                <td>
+                    {v:@c.Token}
+                    <br />
+                    <span class="bb-badge @(c.Category switch { "type" => "", "validation" => "bb-badge-warn", "custom" => "bb-badge-success", _ => "bb-badge-danger" })">@c.Category</span>
+                </td>
+                <td>@c.Rule</td>
+                <td>
+                    <div class="bb-try" style="margin: 0;">
+                        <button class="btn btn-outline" @onclick="@(() => Test(c, c.PassExample))" title="A value this constraint accepts">✓ @Shorten(c.PassExample)</button>
+                        <button class="btn btn-outline" @onclick="@(() => Test(c, c.FailExample))" title="A value this constraint rejects">✗ @Shorten(c.FailExample)</button>
+                        <button class="btn btn-primary" @onclick="@(() => Test(c, _value))" disabled="@string.IsNullOrEmpty(_value)">test yours</button>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How the tester works</h3>
+    <p class="bb-card-desc">
+        Two routes exist per row - a constrained one and one shared unconstrained fallback. Both can
+        match the same URL, and <strong>specificity</strong> picks the winner: a constrained
+        parameter outranks a plain one. When the constraint rejects the value, the constrained route
+        simply doesn't match and the fallback renders the rejection page.
+    </p>
+    <pre class="bb-code"><span class="c">@@* The winner when the value passes - a constrained parameter ranks higher: *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/c/int/{v:int}"</span>&gt;...&lt;/<span class="k">Broute</span>&gt;
+
+<span class="c">@@* The shared fallback that renders rejections - matches any /c/x/y: *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/c/{kind}/{value}"</span>&gt;...&lt;/<span class="k">Broute</span>&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Custom constraints</h3>
+    <p class="bb-card-desc">
+        The <code>slug</code> row is not built-in - it's registered at startup on
+        <code>BrouterOptions.Constraints</code>, scoped to this app's DI container. Custom
+        constraints are used in templates exactly like built-ins.
+    </p>
+    <pre class="bb-code"><span class="c">// Program startup (see Extensions/IServiceCollectionExtensions.cs):</span>
+services.AddBitBrouterServices(o =&gt;
+{
+    o.Constraints.Register(<span class="s">"slug"</span>,
+        <span class="k">new</span> BrouterTypeRouteConstraint&lt;<span class="k">string</span>&gt;((<span class="k">string</span> s, <span class="k">out string</span> r) =&gt;
+        {
+            r = s;
+            <span class="k">return</span> s.Length &gt;= 3 &amp;&amp; s.All(c =&gt; <span class="k">char</span>.IsLetterOrDigit(c) || c == '-');
+        }));
+});
+
+<span class="c">// Then in any template:</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/posts/{name:slug}"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+    </div>
+</div>
+
+@code {
+    private string _value = "";
+
+    private void Test(ConstraintDemo c, string value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+        brouter.Navigate($"/c/{c.Kind}/{Uri.EscapeDataString(value)}");
+    }
+
+    private static string Shorten(string value) => value.Length <= 12 ? value : value[..11] + "…";
+}

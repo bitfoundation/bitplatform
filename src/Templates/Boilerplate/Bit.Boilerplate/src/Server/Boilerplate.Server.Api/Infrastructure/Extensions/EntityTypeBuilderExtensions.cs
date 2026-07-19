@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Linq.Expressions;
 
 namespace Microsoft.EntityFrameworkCore;

@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Windows.Infrastructure.Services;
+namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public partial class WindowsWebAuthnService : WebAuthnServiceBase
 {
