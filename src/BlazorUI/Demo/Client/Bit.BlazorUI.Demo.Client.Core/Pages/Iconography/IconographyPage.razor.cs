@@ -131,7 +131,7 @@ public partial class IconographyPage
         }
         catch
         {
-            iconGlyphs = [];
+            iconGlyphs = null;
         }
     }
 
