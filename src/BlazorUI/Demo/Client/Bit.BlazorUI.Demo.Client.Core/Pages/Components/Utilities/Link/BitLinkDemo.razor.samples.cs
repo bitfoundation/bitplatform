@@ -118,9 +118,11 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink IsEnabled=""false"" Color=""BitColor.SevereWarning"" Href=""https://github.com/bitfoundation/bitplatform"">SevereWarning</BitLink>
 <BitLink IsEnabled=""false"" Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
 
-<BitLink IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground</BitLink>
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitLink IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground</BitLink>
+    <BitLink IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground</BitLink>
+    <BitLink IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground</BitLink>
+</div>
 
 <BitLink IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
 <BitLink IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryForeground</BitLink>

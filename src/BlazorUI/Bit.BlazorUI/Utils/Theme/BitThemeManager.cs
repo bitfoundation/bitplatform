@@ -219,6 +219,7 @@ public class BitThemeManager : IAsyncDisposable
                 await _js.BitThemeUnregisterDotNetNotifier().ConfigureAwait(false);
             }
             catch (JSDisconnectedException) { } // circuit gone - nothing to unregister
+            catch (OperationCanceledException) { } // teardown raced the interop call (covers TaskCanceledException)
             catch (JSException ex)
             {
                 // Missing JS module (e.g. after a page refresh or navigation) - safe to ignore at
@@ -230,8 +231,8 @@ public class BitThemeManager : IAsyncDisposable
             finally
             {
                 // Always release the .NET reference and reset state, even if the JS call threw an
-                // exception type we don't catch above (e.g. OperationCanceledException), so we never
-                // leak the DotNetObjectReference or leave _jsNotifierRegistered in an inconsistent state.
+                // exception type we don't catch above, so we never leak the DotNetObjectReference or
+                // leave _jsNotifierRegistered in an inconsistent state.
                 _jsNotifierReference.Dispose();
                 _jsNotifierReference = null;
                 _jsNotifierRegistered = false;

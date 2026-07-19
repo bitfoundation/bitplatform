@@ -770,7 +770,8 @@ private readonly List<Order> iconCustoms =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup IsEnabled=""false""
-                Label=""Primary (default)""
+                Color=""BitColor.Primary""
+                Label=""Primary""
                 Horizontal
                 Items=""basicCustoms""
                 DefaultValue=""basicCustoms[0].ItemValue""
