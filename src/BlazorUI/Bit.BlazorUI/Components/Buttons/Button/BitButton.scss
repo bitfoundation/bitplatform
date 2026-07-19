@@ -20,8 +20,6 @@
     --bit-btn-float-offset: #{spacing(2)};
 
     &:focus-visible {
-        outline-offset: spacing(0.25);
-        outline: spacing(0.25) solid var(--bit-btn-clr);
         @include focus-ring(var(--bit-btn-clr-focus));
     }
 

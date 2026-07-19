@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -92,6 +93,19 @@ public sealed class BitThemeManagerTests : BunitTestContext
         await manager.DisposeAsync();
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.unregisterDotNetNotifier", calledTimes: 1);
+    }
+
+    [TestMethod]
+    public async Task PublicMethodsThrowAfterDispose()
+    {
+        var manager = CreateFullyWiredManager();
+        await manager.EnsureThemeNotificationsRegisteredAsync();
+
+        await manager.DisposeAsync();
+
+        // Every public method funnels through the registration step, which fails fast on a disposed
+        // manager instead of reaching JS interop with a torn-down DotNetObjectReference.
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await manager.GetCurrentThemeAsync());
     }
 
     /// <summary>
