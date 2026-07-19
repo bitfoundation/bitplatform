@@ -28,7 +28,7 @@
         public static async setup(id: string, query: string | null, screenQuery: string | null, dotnetObj: DotNetObject) {
             if (!dotnetObj) return;
 
-            const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery) : '');
+            const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery, id) : '');
             if (!resolvedQuery) return;
 
             // The C# side re-invokes setup for screen queries on every render (the expression
@@ -69,8 +69,8 @@
         // Builds the media query for a predefined BitScreenQuery from the resolved theme breakpoints.
         // Range bounds are half-open (min inclusive, max exclusive), so the upper edge is one CSS
         // pixel below the next breakpoint - matching the packaged media-queries.scss mixins.
-        private static buildScreenQuery(screenQuery: string): string {
-            const bp = MediaQuery.resolveBreakpoints();
+        private static buildScreenQuery(screenQuery: string, id: string): string {
+            const bp = MediaQuery.resolveBreakpoints(id);
             const min = (v: string) => `(min-width: ${v})`;
             const max = (v: string) => `(max-width: ${MediaQuery.below(v)})`;
 
@@ -98,11 +98,15 @@
             }
         }
 
-        // Reads the --bit-bp-* breakpoint tokens from the document root (where the theme defines and
-        // a global override belongs), falling back to the built-in defaults for any that are unset.
-        private static resolveBreakpoints(): Record<BreakpointKey, string> {
+        // Reads the --bit-bp-* breakpoint tokens from the queried element's themed scope, so the
+        // breakpoints of an enclosing BitThemeProvider are honored. Custom properties inherit, so a
+        // document-root definition still resolves through the element; the root itself is only read
+        // directly when the element is not rendered (e.g. an OnChange-only usage with no content).
+        // Built-in defaults fill in for any token that is unset everywhere.
+        private static resolveBreakpoints(id: string): Record<BreakpointKey, string> {
+            const element = document.getElementById(id) ?? document.documentElement;
             const styles = typeof getComputedStyle === 'function'
-                ? getComputedStyle(document.documentElement)
+                ? getComputedStyle(element)
                 : null;
 
             const read = (key: BreakpointKey) => {

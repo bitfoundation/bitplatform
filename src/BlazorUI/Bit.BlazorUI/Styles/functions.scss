@@ -56,6 +56,7 @@ $html-font-size: 16px;
     // focused element with no visible indicator. Restore a real outline so focus stays perceivable.
     @media (forced-colors: active) {
         outline: #{$shp-focus-ring-width} solid Highlight;
+
         // Read the offset through the same custom property the box-shadow uses so a runtime
         // override of --bit-focus-ring-offset stays in sync in High Contrast mode too.
         outline-offset: var(--bit-focus-ring-offset, #{$offset});

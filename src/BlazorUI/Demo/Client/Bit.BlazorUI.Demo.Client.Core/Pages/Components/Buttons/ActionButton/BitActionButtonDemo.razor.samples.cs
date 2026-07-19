@@ -292,7 +292,7 @@ private bool templateIsLoading;";
 </BitActionButton>
 
 
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"">Primary</BitActionButton>
+<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Primary"">Primary</BitActionButton>
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Secondary"">Secondary</BitActionButton>
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Tertiary"">Tertiary</BitActionButton>
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Info"">Info</BitActionButton>

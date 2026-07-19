@@ -314,7 +314,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 <BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" IsEnabled=""false"" />
 <BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" IsEnabled=""false"" Underlined />
 
-<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+<div style=""background:var(--bit-clr-bg-dis);padding:1rem"">
     <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" />
     <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Underlined />
 

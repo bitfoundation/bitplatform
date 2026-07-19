@@ -378,7 +378,7 @@ private List<Operation> basicCustoms =
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 
 
-<!-- Disabled: -->
+<div><b>Disabled</b>:</div>
 
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />

@@ -576,6 +576,8 @@ private List<BitDropdownItem<BitPosition>> badgePositionList = Enum.GetValues(ty
 </BitBadge>
 
 
+<div><b>Disabled</b>:</div>
+
 <BitBadge Content=""84"" Color=""BitColor.Primary"" IsEnabled=""false"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>

@@ -243,7 +243,7 @@ private List<BitButtonGroupItem> basicItems =
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
 
-<!-- Disabled: -->
+<div><b>Disabled</b>:</div>
 
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
