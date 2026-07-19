@@ -84,7 +84,7 @@
         }
 
         &.bit-srb-foc {
-            .bit-srb-cnt {
+            &:not(.bit-srb-und) .bit-srb-cnt {
                 @include focus-ring($clr-err-focus);
             }
 
@@ -347,7 +347,7 @@
         border-color: var(--bit-srb-clr-focus);
     }
 
-    .bit-srb-cnt {
+    &:not(.bit-srb-und) .bit-srb-cnt {
         @include focus-ring(var(--bit-srb-clr-focus));
     }
 

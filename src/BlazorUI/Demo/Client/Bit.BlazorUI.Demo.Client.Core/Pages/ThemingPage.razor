@@ -112,6 +112,9 @@
 &lt;!-- Persist the user's pick in localStorage --&gt;
 &lt;html bit-theme-persist&gt;...&lt;/html&gt;
 
+&lt;!-- Also mirror the pick into the bit-theme-preference cookie (SSR sync) --&gt;
+&lt;html bit-theme-persist bit-theme-persist-cookie&gt;...&lt;/html&gt;
+
 &lt;!-- Rename the resolved keys (combine with bit-theme-system) --&gt;
 &lt;html bit-theme-system
       bit-theme-light="brand-light"
@@ -129,13 +132,11 @@
             <br />
 
             <BitText>
-                1. <BitTag>bit-theme</BitTag> &nbsp;&rarr;&nbsp; explicit preset wins.
+                1. <BitTag>bit-theme</BitTag> / <BitTag>bit-theme-default</BitTag> &nbsp;&rarr;&nbsp; the base preset (<BitTag>bit-theme</BitTag> wins over <BitTag>bit-theme-default</BitTag> when both are present).
                 <br />
-                2. <BitTag>bit-theme-default</BitTag> &nbsp;&rarr;&nbsp; fallback when <BitTag>bit-theme</BitTag> is absent.
+                2. <BitTag>bit-theme-system</BitTag> (or a base value of <BitTag>system</BitTag>) &nbsp;&rarr;&nbsp; overrides the base preset with the OS choice, resolved from <BitTag>prefers-color-scheme</BitTag> using <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (default <BitTag>light</BitTag> / <BitTag>dark</BitTag>).
                 <br />
-                3. <BitTag>bit-theme-system</BitTag> &nbsp;&rarr;&nbsp; resolved from <BitTag>prefers-color-scheme</BitTag> using <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (default <BitTag>light</BitTag> / <BitTag>dark</BitTag>).
-                <br />
-                4. <BitTag>bit-theme-persist</BitTag> &nbsp;&rarr;&nbsp; <BitTag>localStorage</BitTag> override (when present and not <BitTag>system</BitTag>).
+                3. <BitTag>bit-theme-persist</BitTag> / <BitTag>bit-theme-persist-cookie</BitTag> &nbsp;&rarr;&nbsp; a stored preference overrides both. A concrete stored preset also stops the OS-following; a stored <BitTag>system</BitTag> keeps following and resolves like step 2.
             </BitText>
         </BitCard>
 
@@ -583,7 +584,7 @@ public void Dispose()
             <br />
 
             <BitText>
-                The script logic mirrors the runtime <BitTag>BitBlazorUI.Theme</BitTag>: with <BitTag>bit-theme-persist</BitTag>, the stored key <BitTag>bit-current-theme</BitTag> is read; if the value is <BitTag>system</BitTag>, <BitTag>prefers-color-scheme</BitTag> picks the light or dark name from <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (defaulting to <BitTag>light</BitTag> and <BitTag>dark</BitTag>).
+                The script logic mirrors the runtime <BitTag>BitBlazorUI.Theme</BitTag>: with <BitTag>bit-theme-persist</BitTag>, the stored key <BitTag>bit-current-theme</BitTag> is read; with <BitTag>bit-theme-persist-cookie</BitTag>, the <BitTag>bit-theme-preference</BitTag> cookie is used as a fallback when <BitTag>localStorage</BitTag> holds no value; if the resolved value is <BitTag>system</BitTag>, <BitTag>prefers-color-scheme</BitTag> picks the light or dark name from <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (defaulting to <BitTag>light</BitTag> and <BitTag>dark</BitTag>).
             </BitText>
         </BitCard>
 
@@ -595,7 +596,7 @@ public void Dispose()
             <br />
 
             <BitText>
-                <BitTag>BitThemeSsr</BitTag> handles the client side. For full server-side parity, persist the user's preference in a cookie and emit the same <BitTag>bit-theme</BitTag> attribute server-side. <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> documents the conventional cookie name (<BitTag>bit-theme-preference</BitTag>) so client and server agree:
+                <BitTag>BitThemeSsr</BitTag> handles the client side. For full server-side parity, add <BitTag>bit-theme-persist-cookie</BitTag> so the client mirrors the user's preference into a cookie, then read that cookie on the server and emit the matching <BitTag>bit-theme</BitTag> attribute. <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> documents the conventional cookie name (<BitTag>bit-theme-preference</BitTag>) so client and server agree:
             </BitText>
 
             <br />
@@ -608,12 +609,12 @@ var preference = Context.Request.Cookies[BitThemeCookie.PreferenceCookieName];
 // so you never emit a contradictory bit-theme + bit-theme-system pair by hand.
 
 // In your root document, render the generated attributes on the &lt;html&gt; element:
-&lt;html @@((MarkupString)BitThemeSsr.BuildRootThemeAttributes(preference)) bit-theme-persist&gt;</CodeBox>
+&lt;html @@((MarkupString)BitThemeSsr.BuildRootThemeAttributes(preference)) bit-theme-persist bit-theme-persist-cookie&gt;</CodeBox>
 
             <br />
 
             <BitText>
-                Subscribe to <BitTag>BitThemeNotifications.ThemeChanged</BitTag> to keep the cookie updated when the user toggles in the client.
+                With <BitTag>bit-theme-persist-cookie</BitTag> on <BitTag>&lt;html&gt;</BitTag>, the runtime script mirrors every theme change into the <BitTag>bit-theme-preference</BitTag> cookie automatically, keeping the client (<BitTag>localStorage</BitTag>) and server (cookie) stores in sync &mdash; no manual <BitTag>BitThemeNotifications.ThemeChanged</BitTag> subscription is needed for that.
             </BitText>
         </BitCard>
 
@@ -820,7 +821,7 @@ await ThemeLoader.DetachStylesheetAsync("tenant-theme");</CodeBox>
             <br />
 
             <BitText>
-                Only same-origin paths and absolute <BitTag>http(s)</BitTag> URLs are accepted. Unsafe schemes such as <BitTag>javascript:</BitTag>, <BitTag>data:</BitTag>, and <BitTag>vbscript:</BitTag> are rejected. Always pass URLs you control or have explicitly trusted.
+                Only same-origin URLs are accepted &mdash; relative paths or <BitTag>http(s)</BitTag> URLs on the app's own origin; cross-origin URLs (e.g. CDNs) are rejected. Unsafe schemes such as <BitTag>javascript:</BitTag>, <BitTag>data:</BitTag>, and <BitTag>vbscript:</BitTag> are rejected as well. Always pass URLs you control or have explicitly trusted.
             </BitText>
         </BitCard>
 
@@ -1065,7 +1066,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
                 <br />
                 <BitTag>BitThemeSsr</BitTag>: <BitTag>InlineHeadScript</BitTag>, <BitTag>InlineHeadScriptBody</BitTag>, <BitTag>BuildInlineHeadScript(nonce)</BitTag>
                 <br />
-                <BitTag>BitThemeCookie.PreferenceCookieName</BitTag>
+                <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> &nbsp;&middot;&nbsp; <BitTag>bit-theme-persist-cookie</BitTag> (attribute)
                 <br />
                 <BitTag>BitExternalThemeLoader</BitTag>: <BitTag>AttachStylesheetAsync</BitTag>, <BitTag>DetachStylesheetAsync</BitTag>
             </BitText>

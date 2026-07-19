@@ -32,8 +32,8 @@ $html-font-size: 16px;
  *     both globally themable.
  *   - Color defaults to --bit-clr-pri-focus and accepts any role token (e.g. $clr-err-focus)
  *     so invalid/success/etc. variants can opt into matching focus colors.
- *   - In Windows High Contrast mode the global --bit-shd-focus-ring is overridden to a
- *     single solid Highlight ring; @see forced-colors.fluent.scss.
+ *   - In Windows High Contrast / forced-colors mode box-shadows are stripped, so a real
+ *     outline in the system Highlight color is rendered instead (matching focus-underline-ring).
  *
  * Usage:
  *   .my-component {
@@ -49,8 +49,15 @@ $html-font-size: 16px;
     // Inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss
     // so focus indicators still render if a consumer-defined theme omits that token.
     box-shadow: var(--bit-shd-focus-ring,
-        0 0 0 var(--bit-focus-ring-offset, #{$offset}) var(--bit-clr-bg-pri-focus),
+        0 0 0 var(--bit-focus-ring-offset, #{$offset}) var(--bit-clr-bg-pri),
         0 0 0 calc(var(--bit-focus-ring-offset, #{$offset}) + #{$shp-focus-ring-width}) var(--bit-focus-ring-color, #{$color}));
+
+    // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
+    // focused element with no visible indicator. Restore a real outline so focus stays perceivable.
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+        outline-offset: #{$offset};
+    }
 }
 
 /*

@@ -82,7 +82,12 @@ public partial class BitMediaQuery : BitComponentBase
 
         if (effectiveKey.HasValue())
         {
-            if (effectiveKey != _query)
+            // For a predefined ScreenQuery the actual media-query expression is resolved on the JS
+            // side from the live --bit-bp-* theme breakpoints, so it can change while the enum name
+            // stays the same (e.g. after new breakpoints are applied). Re-invoke setup on every
+            // render in that case and let the JS side reuse the existing listener when the resolved
+            // expression is unchanged; a custom Query is verbatim, so the key comparison suffices.
+            if (effectiveKey != _query || screenQuery is not null)
             {
                 _query = effectiveKey;
                 await _js.BitMediaQuerySetup(_Id, customQuery, screenQuery, _dotnetObj);

@@ -4,6 +4,11 @@
     export class MediaQuery {
         private static _abortControllers: { [key: string]: AbortController } = {};
 
+        // The resolved media-query expression each listener was created with, so a repeated setup
+        // call can reuse the existing listener when the expression is unchanged and replace it when
+        // the theme breakpoints have changed the resolved query for the same ScreenQuery name.
+        private static _resolvedQueries: { [key: string]: string } = {};
+
         // Fallback breakpoints (px), used only when the corresponding --bit-bp-* CSS variable is
         // not resolvable. Kept in sync with the defaults published by media-queries.scss.
         private static _defaultBreakpoints: Record<BreakpointKey, string> = {
@@ -26,10 +31,16 @@
             const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery) : '');
             if (!resolvedQuery) return;
 
+            // The C# side re-invokes setup for screen queries on every render (the expression
+            // depends on the live --bit-bp-* breakpoints); keep the existing listener when the
+            // resolved expression is unchanged and only rebuild it when it actually differs.
+            if (MediaQuery._abortControllers[id] && MediaQuery._resolvedQueries[id] === resolvedQuery) return;
+
             MediaQuery.dispose(id);
 
             const ac = new AbortController();
             MediaQuery._abortControllers[id] = ac;
+            MediaQuery._resolvedQueries[id] = resolvedQuery;
 
             const queryList = window.matchMedia(resolvedQuery);
 
@@ -45,6 +56,8 @@
         }
 
         public static dispose(id: string) {
+            delete MediaQuery._resolvedQueries[id];
+
             const ac = MediaQuery._abortControllers[id];
             if (!ac) return;
 

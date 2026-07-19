@@ -97,17 +97,22 @@ namespace BitBlazorUI {
 
             let theme = Theme._initOptions.theme || Theme._initOptions.default || Theme._lightTheme;
 
+            // A `system` opt-in comes from the JS `system: true` option / bit-theme-system attribute,
+            // OR from the base theme itself resolving to the "system" keyword (bit-theme="system" or
+            // bit-theme-default="system"). Capture it once so first-paint resolution, the persist
+            // deferral below and runtime OS-follow all treat these spellings identically.
+            const systemRequested = Theme._initOptions.system || theme === Theme.SYSTEM_THEME;
+
             // Resolve the first-paint theme with the SAME precedence as the SSR inline script in
-            // BitThemeSsr.cs (BuildInlineScriptBody): a `system` opt-in - the bit-theme-system
-            // attribute, the JS `system: true` option, or an explicit bit-theme="system" - follows
-            // the OS and takes precedence over an explicit bit-theme / bit-theme-default at first
-            // paint. A persisted preference (handled below) still wins over this.
+            // BitThemeSsr.cs (BuildInlineScriptBody): a `system` opt-in follows the OS and takes
+            // precedence over an explicit bit-theme / bit-theme-default at first paint. A persisted
+            // preference (handled below) still wins over this.
             //
             // Previously this only resolved the OS theme when there was NO explicit theme/default,
             // so a document with both bit-theme="..." and bit-theme-system painted the explicit
             // theme on hydration while the SSR script painted the OS-resolved one - a flash of the
             // wrong theme. Keeping the two code paths in lockstep avoids that.
-            if (Theme._initOptions.system || Theme._initOptions.theme === Theme.SYSTEM_THEME) {
+            if (systemRequested) {
                 theme = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
             }
 
@@ -126,7 +131,7 @@ namespace BitBlazorUI {
                     // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                     // stop following the OS even when <html bit-theme-system> is present.
                     Theme._stopFollowingSystem = persisted !== Theme.SYSTEM_THEME;
-                } else if (Theme._initOptions.system) {
+                } else if (systemRequested) {
                     // System mode is enabled but no value has been persisted yet. Avoid writing the
                     // resolved light/dark theme to storage during the initial set() - otherwise the next
                     // init would treat that concrete value as an explicit user choice and stop following
@@ -139,12 +144,13 @@ namespace BitBlazorUI {
                 }
             }
 
-            // The JS `system: true` option must on its own enable OS follow, otherwise callers that
-            // configure system mode purely from JS (no <html bit-theme-system> attribute, no persisted
-            // "system" value) would never get the prefers-color-scheme listener attached because
+            // Any `system` opt-in (system: true, bit-theme="system" or bit-theme-default="system")
+            // must on its own enable OS follow, otherwise setups without the bit-theme-system
+            // attribute and without a persisted "system" value would resolve the OS theme once at
+            // init but never get the prefers-color-scheme listener attached, because
             // shouldFollowSystem() only considers the HTML attribute and persisted value. Runtime
             // follow is still cleared when the user later pins a concrete theme via set(...).
-            if (Theme._initOptions.system && !Theme._stopFollowingSystem) {
+            if (systemRequested && !Theme._stopFollowingSystem) {
                 Theme._runtimeFollowSystem = true;
             }
 

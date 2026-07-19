@@ -33,7 +33,9 @@ public static class BitThemeColorDerivation
     /// The auto-generated <see cref="BitThemeColorVariants.Text"/> (on-color text) is set to whichever
     /// of black/white has the higher WCAG sRGB relative-luminance contrast against the resolved
     /// <see cref="BitThemeColorVariants.Main"/> background - which, for a black/white choice, is also the
-    /// WCAG-AA-optimal option. A caller-provided <c>Text</c> is never overwritten.
+    /// WCAG-AA-optimal option. When <c>Main</c> was preset to a value that is not a valid hex color
+    /// (e.g. a CSS <c>var()</c> reference), <c>Text</c> is left unset since the actual background color
+    /// cannot be evaluated. A caller-provided <c>Text</c> is never overwritten.
     /// </para>
     /// </remarks>
     public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex)
@@ -60,14 +62,13 @@ public static class BitThemeColorDerivation
         variants.LightActive ??= ToHex(h, s, AddV(v, 0.16));
 
         // On-color text: pick the higher-contrast of black/white against the actual Main background
-        // (a caller may have preset Main to a value other than mainHex). If that preset Main is not a
-        // valid hex, fall back to the derived base color. A caller-provided Text is never overwritten.
-        if (variants.Text is null)
+        // (a caller may have preset Main to a value other than mainHex). When that preset Main is not
+        // a valid hex (e.g. a CSS var() reference), the real background color is unknowable here, so
+        // Text is left unset for the stylesheet/theme default to apply rather than guessing against a
+        // color the user may not actually see. A caller-provided Text is never overwritten.
+        if (variants.Text is null && BitThemeColorContrast.TryNormalizeHex(variants.Main, out var mainNormalized))
         {
-            var background = BitThemeColorContrast.TryNormalizeHex(variants.Main, out var mainNormalized)
-                ? mainNormalized
-                : normalizedHex;
-            variants.Text = SuggestOnColorText(background);
+            variants.Text = SuggestOnColorText(mainNormalized);
         }
     }
 

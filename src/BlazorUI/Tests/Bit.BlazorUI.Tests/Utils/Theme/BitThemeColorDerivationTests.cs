@@ -332,6 +332,26 @@ public sealed class BitThemeColorDerivationTests
         Assert.AreEqual("#FFFFFF", v.Text);
     }
 
+    [TestMethod]
+    public void FillColorRoleFromMainPresetHexMainDrivesTextSuggestion()
+    {
+        // Main preset to a concrete hex different from mainHex: Text contrast is evaluated against
+        // the preset Main (near-black → white), not mainHex (near-white, which would pick black).
+        var v = new BitThemeColorVariants { Main = "#101010" };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#F0F0F0");
+        Assert.AreEqual("#FFFFFF", v.Text);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetNonHexMainLeavesTextUnset()
+    {
+        // Main preset to a CSS variable: the actual background color cannot be evaluated, so Text
+        // stays unset for the stylesheet/theme default to apply instead of guessing against mainHex.
+        var v = new BitThemeColorVariants { Main = "var(--brand-main)" };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#F0F0F0");
+        Assert.IsNull(v.Text);
+    }
+
     // ── Whitespace trimming ───────────────────────────────────────────────────
 
     [TestMethod]
