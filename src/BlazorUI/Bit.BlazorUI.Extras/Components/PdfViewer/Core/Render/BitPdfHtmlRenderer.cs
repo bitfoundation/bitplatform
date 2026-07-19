@@ -66,8 +66,8 @@ public sealed class BitPdfHtmlRenderer
     /// <summary>
     /// How painted text runs are emitted. <see cref="BitPdfTextCoalescing.Compact"/>
     /// merges same-line, same-style runs - including embedded-font (PUA
-    /// glyph-mapped) ones - into one span per visual line; only rotated or
-    /// mirrored text stays per-run exact. Default is
+    /// glyph-mapped) ones - into one span per visual line; only non-upright
+    /// (rotated, mirrored, or skewed) text stays per-run exact. Default is
     /// <see cref="BitPdfTextCoalescing.Exact"/>.
     /// </summary>
     public BitPdfTextCoalescing TextCoalescing { get; set; } = BitPdfTextCoalescing.Exact;
@@ -1618,8 +1618,9 @@ public sealed class BitPdfHtmlRenderer
         // merged run out with the font's own advance widths, so only explicit TJ
         // kerning between runs is approximated while data-w pins the line's total
         // advance. (A gap-bridging space missing from a subset font falls through
-        // to the generic fallback in the font stack.) Only rotated/mirrored text
-        // is excluded - its geometry can't be reduced to a horizontal line.
+        // to the generic fallback in the font stack.) Only non-upright text
+        // (rotated/mirrored/skewed) is excluded - its geometry can't be reduced
+        // to a horizontal line.
         if (TextCoalescing == BitPdfTextCoalescing.Compact
             && a > 1e-3 && d > 1e-3
             && Math.Abs(b) < 1e-3 && Math.Abs(c) < 1e-3)
