@@ -181,6 +181,37 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavPanelParentItemBodyClickShouldToggleExpansion()
+    {
+        IList<BitNavItem> items =
+        [
+            new() { Text = "Home", Url = "/home" },
+            new()
+            {
+                Text = "AdminPanel",
+                ChildItems =
+                [
+                    new() { Text = "Dashboard", Url = "/dashboard" },
+                    new() { Text = "Categories", Url = "/categories" },
+                ]
+            }
+        ];
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var parentButton = component.FindAll(".bit-nav-ict")[1];
+
+        parentButton.Click();
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count));
+
+        component.FindAll(".bit-nav-ict")[1].Click();
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count));
+    }
+
+    [TestMethod]
     public void BitNavPanelShouldRenderSearchBoxByDefault()
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
