@@ -18,6 +18,8 @@
         <PackageReference Include="Bit.BlazorUI.Icons" />
         <PackageReference Include="Bit.BlazorUI.Assets" />
         <!--/+:msbuild-conditional:noEmit -->
+        <Using Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
+        <PackageReference Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" />

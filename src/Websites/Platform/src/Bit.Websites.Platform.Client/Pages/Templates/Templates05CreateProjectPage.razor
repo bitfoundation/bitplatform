@@ -1,4 +1,4 @@
-@page "/templates/create-project"
+﻿@page "/templates/create-project"
 @page "/boilerplate/create-project"
 @inherits AppComponentBase
 
@@ -406,6 +406,21 @@
                 @GetGoogleAdsCommand()
             </CodeBox>
             Helps you earn money by displaying reward-based Google ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank">Demo</a>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md" ColumnSpan="2">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>bit Brouter</BitText>
+                <BitToggle @bind-Value="brouter.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetBrouterCommand()
+            </CodeBox>
+            bit Brouter replaces Blazor's built-in Router and brings the powerful routing features that developers enjoy in Vue.js, React and Angular to the Blazor ecosystem: nested routing, async route guards, data loaders, keep-alive pages that preserve their state across navigation, named and typed routes, and animated view transitions.
+            <br />
+            <br />
+            It stays a drop-in replacement, so your existing <b>@@page</b> routes, layouts and authorization keep working unchanged while you opt into the advanced features where you need them.
         </BitGridItem>
 
     </BitGrid>

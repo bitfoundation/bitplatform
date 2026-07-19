@@ -354,13 +354,13 @@ jobs:
 
     - name: Build sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant
+        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant --brouter
         dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging -p:EnforceCodeStyleInBuild=true
         rm -r "TestProject"
 
     - name: Build sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false --brouter false
         dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development -p:EnforceCodeStyleInBuild=true
         rm -r "TestProject2"
 

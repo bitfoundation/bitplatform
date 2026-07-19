@@ -1,4 +1,3 @@
-
 namespace Boilerplate.Client.Core.Components.Pages;
 
 public abstract partial class AppPageBase : AppComponentBase

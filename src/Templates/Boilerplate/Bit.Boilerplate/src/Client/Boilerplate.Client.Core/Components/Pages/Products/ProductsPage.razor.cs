@@ -1,5 +1,4 @@
 //-:cnd:noEmit
-using System.Web;
 using Boilerplate.Shared.Features.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
@@ -92,4 +91,15 @@ public partial class ProductsPage
         searchQuery = value;
         await RefreshData();
     }
+
+    //#if (brouter == true)
+    protected override async ValueTask OnActivated(BrouterRouteActivation activation)
+    {
+        if (activation.IsFirstActivation is false)
+        {
+            await RefreshData();
+        }
+        await base.OnActivated(activation);
+    }
+    //#endif
 }

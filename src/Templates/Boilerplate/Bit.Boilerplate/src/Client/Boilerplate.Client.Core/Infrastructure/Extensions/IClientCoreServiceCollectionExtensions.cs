@@ -82,6 +82,9 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .ValidateOnStart();
 
             services.AddBitButilServices();
+            //#if (brouter == true)
+            services.AddBitBrouterServices();
+            //#endif
             services.AddBitBlazorUIServices();
             services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
 

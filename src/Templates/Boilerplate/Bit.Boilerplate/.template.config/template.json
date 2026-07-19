@@ -241,6 +241,13 @@
             "defaultValue": "false",
             "description": "Adds GoogleAds integration."
         },
+        "brouter": {
+            "displayName": "Use bit Brouter?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
+        },
         "nameToLower": {
             "type": "generated",
             "generator": "casing",
@@ -689,6 +696,12 @@
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs"
+                    ]
+                },
+                {
+                    "condition": "(brouter != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.BrouterLifecycles.cs"
                     ]
                 }
             ]
