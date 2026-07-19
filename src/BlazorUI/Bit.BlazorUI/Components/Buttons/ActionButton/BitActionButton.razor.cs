@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -10,8 +10,9 @@ public partial class BitActionButton : BitComponentBase
 {
     private string? _rel;
     private string? _tabIndex;
-    private bool _isLoading;
+    private bool _showLoading;
     private BitButtonType _buttonType;
+    private CancellationTokenSource? _loadingDelayCts;
 
 
 
@@ -35,7 +36,9 @@ public partial class BitActionButton : BitComponentBase
 
 
     /// <summary>
-    /// Keeps the disabled action button focusable by not forcing a negative tabindex when <see cref="BitComponentBase.IsEnabled"/> is false.
+    /// Keeps the disabled action button focusable and discoverable by assistive technologies.
+    /// When enabled, the disabled state is conveyed using the <c>aria-disabled</c> attribute instead of the
+    /// native <c>disabled</c> attribute, so the button remains in the tab order while its action is suppressed.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; }
 
@@ -48,6 +51,11 @@ public partial class BitActionButton : BitComponentBase
     /// If true, adds an <c>aria-hidden</c> attribute instructing screen readers to ignore the button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
+    /// </summary>
+    [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
     /// The type of the button element; defaults to <c>submit</c> inside an <see cref="EditForm"/> otherwise <c>button</c>.
@@ -76,6 +84,13 @@ public partial class BitActionButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The value of the download attribute of the link rendered by the button when the Href parameter is provided.
+    /// Instructs the browser to download the linked resource instead of navigating to it, using the provided value
+    /// (if any) as the suggested file name (only works for same-origin, blob: and data: URLs).
+    /// </summary>
+    [Parameter] public string? Download { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the component should expand to occupy the full available width.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -86,7 +101,7 @@ public partial class BitActionButton : BitComponentBase
     /// If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public string? Href { get; set; }
 
     /// <summary>
@@ -110,10 +125,10 @@ public partial class BitActionButton : BitComponentBase
     /// <remarks>
     /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.AddFriend</c>).
     /// <br />
-    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: 
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
     /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
     /// <br />
-    /// The value is case-sensitive and must match a valid icon identifier. 
+    /// The value is case-sensitive and must match a valid icon identifier.
     /// If not set or set to <c>null</c>, no icon will be rendered.
     /// <br />
     /// For external icon libraries, use <see cref="Icon"/> instead.
@@ -124,7 +139,7 @@ public partial class BitActionButton : BitComponentBase
     /// Gets or sets a value indicating whether only the icon is displayed, without accompanying text.
     /// </summary>
     /// <remarks>
-    /// Set this property to <see langword="true"/> to render the component with only its icon visible. 
+    /// Set this property to <see langword="true"/> to render the component with only its icon visible.
     /// When <see langword="false"/>, both icon and text are shown if available.
     /// </remarks>
     [Parameter] public bool IconOnly { get; set; }
@@ -138,8 +153,20 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Determines whether the action button is in loading mode or not.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// The delay in milliseconds before the loading indicator appears after entering the loading state.
+    /// Useful to avoid a spinner flash for fast operations. The click-guard of the loading state applies immediately regardless of this delay.
+    /// </summary>
+    [Parameter] public int LoadingDelay { get; set; }
+
+    /// <summary>
+    /// The text to show next to the spinner while the action button is in the loading state, replacing the button body.
+    /// It is also announced by screen readers through a status live region when the loading state starts.
+    /// </summary>
+    [Parameter] public string? LoadingLabel { get; set; }
 
     /// <summary>
     /// The custom template used to replace the default loading indicator inside the action button in the loading state.
@@ -150,10 +177,16 @@ public partial class BitActionButton : BitComponentBase
     /// Gets or sets the callback that is invoked when the component is clicked.
     /// </summary>
     /// <remarks>
-    /// The callback receives a <see cref="MouseEventArgs"/> instance containing details about the mouse event. 
+    /// The callback receives a <see cref="MouseEventArgs"/> instance containing details about the mouse event.
     /// Assign this property to handle click interactions, such as responding to user input or triggering actions.
     /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Enables re-clicking the action button while it is in the loading state.
+    /// By default, clicks are ignored while the button is loading to protect against double submissions.
+    /// </summary>
+    [Parameter] public bool Reclickable { get; set; }
 
     /// <summary>
     /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
@@ -165,9 +198,11 @@ public partial class BitActionButton : BitComponentBase
     /// Set this property to specify how the linked resource is related to the current context.
     /// Common values include "stylesheet", "noopener", or "nofollow". The value determines how browsers and search
     /// engines interpret the link.
+    /// <br />
+    /// When <see cref="Target"/> is set to <c>_blank</c> and no opener-related rel is provided, <c>noopener</c> is added automatically.
     /// </remarks>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public BitLinkRels? Rel { get; set; }
 
     /// <summary>
@@ -177,11 +212,17 @@ public partial class BitActionButton : BitComponentBase
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// If true, stops the propagation of the click event to the parent elements.
+    /// Useful when the action button is placed inside clickable containers like rows or cards.
+    /// </summary>
+    [Parameter] public bool StopPropagation { get; set; }
+
+    /// <summary>
     /// Gets or sets the custom CSS inline styles to apply to the action button component.
     /// </summary>
     /// <remarks>
     /// Use this property to override the default styles of the action button.
-    /// If not set, the component uses its built-in styling. 
+    /// If not set, the component uses its built-in styling.
     /// This property is typically used to provide additional visual customization.
     /// </remarks>
     [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
@@ -193,8 +234,12 @@ public partial class BitActionButton : BitComponentBase
     /// Specify a value to control where the linked content will be displayed. Common values include
     /// "_blank" to open in a new window or tab, "_self" for the same frame, "_parent" for the parent frame, and "_top"
     /// for the full body of the window. If not set, the default browser behavior is used.
+    /// <br />
+    /// When set to <c>_blank</c> and no opener-related <see cref="Rel"/> is provided, <c>noopener</c> is added to the rel attribute automatically.
     /// </remarks>
-    [Parameter] public string? Target { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
+    public string? Target { get; set; }
 
     /// <summary>
     /// The tooltip to show when the mouse is placed on the button.
@@ -270,7 +315,7 @@ public partial class BitActionButton : BitComponentBase
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
-        _isLoading = IsLoading;
+        UpdateLoadingVisuals();
 
         base.OnParametersSet();
     }
@@ -279,22 +324,110 @@ public partial class BitActionButton : BitComponentBase
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
+        if (IsEnabled is false) return;
+        if (IsLoading && Reclickable is false) return;
+
+        if (AutoLoading)
+        {
+            if (await AssignIsLoading(true) is false) return;
+
+            UpdateLoadingVisuals();
+        }
+
+        try
         {
             await OnClick.InvokeAsync(e);
+        }
+        finally
+        {
+            if (AutoLoading)
+            {
+                await AssignIsLoading(false);
+
+                UpdateLoadingVisuals();
+            }
         }
     }
 
 
 
-    internal void OnSetHrefAndRel()
+    internal void OnSetHrefRelAndTarget()
     {
-        if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
+        if (Href.HasNoValue() || Href!.StartsWith('#'))
         {
             _rel = null;
             return;
         }
 
-        _rel = BitLinkRelUtils.GetRels(Rel.Value);
+        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
+
+        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
+        {
+            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
+        }
+
+        _rel = rel;
+    }
+
+
+
+    private void UpdateLoadingVisuals()
+    {
+        if (IsLoading)
+        {
+            if (_showLoading || _loadingDelayCts is not null) return;
+
+            if (LoadingDelay < 1)
+            {
+                _showLoading = true;
+                return;
+            }
+
+            _loadingDelayCts = new();
+            _ = ShowLoadingAfterDelay(_loadingDelayCts.Token);
+        }
+        else
+        {
+            _showLoading = false;
+            CancelLoadingDelay();
+        }
+    }
+
+    private async Task ShowLoadingAfterDelay(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(LoadingDelay, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+
+        _showLoading = true;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CancelLoadingDelay()
+    {
+        if (_loadingDelayCts is null) return;
+
+        _loadingDelayCts.Cancel();
+        _loadingDelayCts.Dispose();
+        _loadingDelayCts = null;
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        CancelLoadingDelay();
+
+        await base.DisposeAsync(disposing);
     }
 }

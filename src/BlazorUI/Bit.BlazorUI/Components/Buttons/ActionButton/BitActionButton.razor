@@ -5,25 +5,10 @@
     RenderFragment b = @<div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">@(Body ?? ChildContent)</div>;
     var body = ((Body ?? ChildContent) is not null && IconOnly is false) ? b : null;
     var icon = BitIconInfo.From(Icon, IconName);
-}
 
-@if (Href.HasNoValue())
-{
-    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-            id="@_Id"
-            style="@StyleBuilder.Value"
-            class="@ClassBuilder.Value"
-            type="@_buttonType.GetValue()"
-            dir="@Dir?.ToString().ToLower()"
-            disabled="@(IsEnabled is false)"
-            title="@Title"
-            tabindex="@_tabIndex"
-            aria-label="@AriaLabel"
-            aria-hidden="@AriaHidden"
-            aria-describedby="@AriaDescription"
-            aria-busy="@(_isLoading ? "true" : null)">
-        <div class="bit-acb-inn">
-            @if (_isLoading)
+    RenderFragment inner =
+        @<text>
+            @if (_showLoading)
             {
                 @if (LoadingTemplate is not null)
                 {
@@ -31,46 +16,74 @@
                 }
                 else
                 {
-                    <div style="@Styles?.Spinner" class="bit-acb-spn @Classes?.Spinner"></div>
+                    <div style="@Styles?.Spinner" class="bit-acb-spn @Classes?.Spinner" aria-hidden="true"></div>
 
-                    @body
+                    @if (LoadingLabel.HasValue() && IconOnly is false)
+                    {
+                        <div style="@Styles?.LoadingLabel" class="bit-acb-lbl @Classes?.LoadingLabel">@LoadingLabel</div>
+                    }
+                    else
+                    {
+                        @body
+                    }
                 }
             }
             else
             {
                 @if (icon is not null)
                 {
-                    <i style="@Styles?.Icon" class="bit-acb-ico @icon.GetCssClasses() @Classes?.Icon" />
+                    <i style="@Styles?.Icon" class="bit-acb-ico @icon.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
                 }
 
                 @body
             }
+        </text>;
+}
+
+@if (Href.HasNoValue())
+{
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
+            id="@_Id"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            type="@_buttonType.GetValue()"
+            dir="@Dir?.ToString().ToLower()"
+            disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+            title="@Title"
+            tabindex="@_tabIndex"
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-disabled="@(IsEnabled ? null : "true")"
+            aria-describedby="@AriaDescription"
+            aria-busy="@(IsLoading ? "true" : null)">
+        <div class="bit-acb-inn">
+            @inner
         </div>
+        <span class="bit-acb-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
     </button>
 }
 else
 {
-    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
        id="@_Id"
        rel="@_rel"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        dir="@Dir?.ToString().ToLower()"
-       disabled="@(IsEnabled is false)"
-       href="@(IsEnabled? Href : null)"
+       href="@(IsEnabled && IsLoading is false ? Href : null)"
+       role="@(IsEnabled && IsLoading is false ? null : "link")"
        title="@Title"
        target="@Target"
+       download="@Download"
        tabindex="@_tabIndex"
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
-       aria-describedby="@AriaDescription">
+       aria-disabled="@(IsEnabled ? null : "true")"
+       aria-describedby="@AriaDescription"
+       aria-busy="@(IsLoading ? "true" : null)">
         <span class="bit-acb-inn">
-            @if (icon is not null)
-            {
-                <i style="@Styles?.Icon" class="bit-acb-ico @icon.GetCssClasses() @Classes?.Icon" />
-            }
-
-            @body
+            @inner
         </span>
+        <span class="bit-acb-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
     </a>
 }
