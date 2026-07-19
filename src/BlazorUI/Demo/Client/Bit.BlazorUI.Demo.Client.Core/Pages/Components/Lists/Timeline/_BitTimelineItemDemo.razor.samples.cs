@@ -178,7 +178,7 @@ private List<BitTimelineItem> templateItems =
 <BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />
 
 
-Disabled:
+<div><b>Disabled</b>:</div>
 
 <BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Items=""iconItems"" />
 <BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />

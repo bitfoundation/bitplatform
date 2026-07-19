@@ -56,4 +56,52 @@ public sealed class BitThemeManagerTests : BunitTestContext
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.set");
         Assert.AreEqual("fluent-dark", invocation.Arguments[0]);
     }
+
+    [TestMethod]
+    public async Task NotifierIsRegisteredExactlyOnceAcrossManagerCalls()
+    {
+        var manager = CreateFullyWiredManager();
+
+        await manager.SetThemeAsync("dark");
+        await manager.ToggleDarkLightAsync();
+        await manager.EnsureThemeNotificationsRegisteredAsync();
+
+        // Every public method funnels through the same idempotent registration step, so only the
+        // first call may reach the JS side.
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.registerDotNetNotifier", calledTimes: 1);
+    }
+
+    [TestMethod]
+    public async Task DisposeUnregistersNotifierExactlyOnce()
+    {
+        var manager = CreateFullyWiredManager();
+        await manager.EnsureThemeNotificationsRegisteredAsync();
+
+        await manager.DisposeAsync();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.unregisterDotNetNotifier", calledTimes: 1);
+    }
+
+    [TestMethod]
+    public async Task DoubleDisposeIsSafeAndDoesNotDuplicateUnregistration()
+    {
+        var manager = CreateFullyWiredManager();
+        await manager.EnsureThemeNotificationsRegisteredAsync();
+
+        await manager.DisposeAsync();
+        await manager.DisposeAsync();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.unregisterDotNetNotifier", calledTimes: 1);
+    }
+
+    /// <summary>
+    /// Resolves a manager through DI so it is built via the internal receiver-wired constructor
+    /// (the ctor is not visible to this assembly, but the DI factory registered by
+    /// AddBitBlazorUIServices uses it) - the receiver-less public ctor never registers a notifier.
+    /// </summary>
+    private BitThemeManager CreateFullyWiredManager()
+    {
+        Services.AddBitBlazorUIServices();
+        return Services.GetRequiredService<BitThemeManager>();
+    }
 }

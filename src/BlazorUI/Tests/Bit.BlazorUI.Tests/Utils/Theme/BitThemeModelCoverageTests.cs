@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Utils.Theme;
@@ -42,7 +41,7 @@ public sealed class BitThemeModelCoverageTests
         // BitThemeMapper.MapToCssVariables, or two tokens were mapped to the same CSS variable
         // name (a copy/paste bug - which additionally surfaces as a duplicate-key throw below).
         var theme = new BitTheme();
-        var leafCount = FillStringLeavesWithSentinels(theme);
+        var leafCount = BitThemeTestGraph.FillStringLeavesWithSentinels(theme);
 
         var emitted = BitThemeUtilities.ToCssVariables(theme);
 
@@ -104,50 +103,6 @@ public sealed class BitThemeModelCoverageTests
         AssertNoNullBranches(new BitTheme(), "new BitTheme()");
     }
 
-    /// <summary>
-    /// Walks the graph and sets every readable/writable <see cref="string"/> property to a unique
-    /// non-empty sentinel (so the mapper's whitespace guard never skips it), returning the count.
-    /// </summary>
-    private static int FillStringLeavesWithSentinels(object root)
-    {
-        var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
-        var counter = 0;
-        Walk(root, visited, ref counter);
-        return counter;
-
-        static void Walk(object obj, HashSet<object> visited, ref int counter)
-        {
-            if (!visited.Add(obj)) return;
-
-            foreach (var prop in GetModelProperties(obj.GetType()))
-            {
-                var pt = prop.PropertyType;
-
-                if (pt == typeof(string))
-                {
-                    prop.SetValue(obj, $"sentinel-{counter++}");
-                }
-                else if (IsModelBranch(pt))
-                {
-                    var child = prop.GetValue(obj);
-                    if (child is null)
-                    {
-                        child = Activator.CreateInstance(pt);
-                        if (child is null)
-                        {
-                            throw new InvalidOperationException(
-                                $"Theme branch type '{pt.FullName}' (property '{prop.DeclaringType?.Name}.{prop.Name}') " +
-                                "could not be instantiated via its parameterless constructor. " +
-                                "Ensure every theme branch model exposes a public parameterless constructor.");
-                        }
-                        prop.SetValue(obj, child);
-                    }
-                    Walk(child, visited, ref counter);
-                }
-            }
-        }
-    }
-
     private static void AssertNoNullBranches(object root, string scenario)
     {
         var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
@@ -162,9 +117,9 @@ public sealed class BitThemeModelCoverageTests
         {
             if (!visited.Add(obj)) return;
 
-            foreach (var prop in GetModelProperties(obj.GetType()))
+            foreach (var prop in BitThemeTestGraph.GetModelProperties(obj.GetType()))
             {
-                if (!IsModelBranch(prop.PropertyType)) continue;
+                if (!BitThemeTestGraph.IsModelBranch(prop.PropertyType)) continue;
 
                 var child = prop.GetValue(obj);
                 var childPath = $"{path}.{prop.Name}";
@@ -177,14 +132,4 @@ public sealed class BitThemeModelCoverageTests
             }
         }
     }
-
-    private static IEnumerable<PropertyInfo> GetModelProperties(Type type)
-        => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-               .Where(p => p.CanRead && p.CanWrite && p.GetIndexParameters().Length == 0);
-
-    /// <summary>A nested model object: a non-string reference type declared in the Bit.BlazorUI namespace.</summary>
-    private static bool IsModelBranch(Type type)
-        => type != typeof(string)
-           && !type.IsValueType
-           && string.Equals(type.Namespace, "Bit.BlazorUI", StringComparison.Ordinal);
 }

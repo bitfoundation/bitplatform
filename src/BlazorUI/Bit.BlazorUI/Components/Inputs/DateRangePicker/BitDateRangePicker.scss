@@ -51,11 +51,10 @@
             border-color: $clr-err;
         }
 
-        // In underline mode .bit-dtrp-icn has `border: none`, so the border-color above is
-        // invisible. Render the invalid underline as a box-shadow on .bit-dtrp-icn (mirroring
-        // the focus indicator) so it shows when invalid and unfocused.
-        &.bit-dtrp-und .bit-dtrp-icn {
-            box-shadow: inset 0 calc(-1 * #{$shp-border-width}) 0 0 #{$clr-err};
+        &.bit-dtrp-und .bit-dtrp-wrp {
+            // Underlined variant drops the icon border, so surface the error cue on the
+            // underline itself to keep the invalid state visible before focus.
+            border-bottom-color: $clr-err;
         }
 
         &.bit-dtrp-foc:not(.bit-dtrp-und) .bit-dtrp-icn {
