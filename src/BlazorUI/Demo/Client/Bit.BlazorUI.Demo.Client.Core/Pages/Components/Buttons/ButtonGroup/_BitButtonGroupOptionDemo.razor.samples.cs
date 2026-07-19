@@ -403,7 +403,7 @@ private string? clickedOption;";
 </BitButtonGroup>
 
 
-<!-- Disabled: -->
+<div><b>Disabled</b>:</div>
 
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />

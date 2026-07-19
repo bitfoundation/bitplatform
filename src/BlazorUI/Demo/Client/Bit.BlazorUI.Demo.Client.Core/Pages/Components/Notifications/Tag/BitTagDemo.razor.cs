@@ -411,7 +411,8 @@ private bool isDismissed;";
 <BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" />&nbsp;
 <BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" />
 
-<b>Disabled</b>:
+<br /><br /><br />
+<div><b>Disabled</b>:</div>
 
 <BitTag IsEnabled=""false"" Text=""Primary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Primary"" />
 <BitTag IsEnabled=""false"" Text=""Secondary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Secondary"" />
