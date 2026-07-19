@@ -621,6 +621,8 @@ public class BitButtonTests : BunitTestContext
 
         Assert.IsFalse(bitButton.HasAttribute("href"));
 
+        Assert.AreEqual("0", bitButton.GetAttribute("tabindex"));
+
         Assert.IsNotNull(com.Find(".bit-btn-ldg"));
 
         bitButton.Click();

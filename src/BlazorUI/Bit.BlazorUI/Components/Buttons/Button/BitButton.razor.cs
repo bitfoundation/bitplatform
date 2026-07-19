@@ -401,6 +401,11 @@ public partial class BitButton : BitComponentBase
             // anchors without an href are not focusable, so an explicit tabindex is required to keep them in the tab order
             _tabIndex = AllowDisabledFocus ? (Href.HasValue() ? "0" : null) : "-1";
         }
+        else if (Href.HasValue() && IsLoading)
+        {
+            // the href is removed while loading, so an explicit tabindex is required to keep the anchor focusable
+            _tabIndex = TabIndex ?? "0";
+        }
         else
         {
             _tabIndex = TabIndex ?? _tabIndex;
