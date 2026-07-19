@@ -65,8 +65,9 @@ public sealed class BitPdfHtmlRenderer
 
     /// <summary>
     /// How painted text runs are emitted. <see cref="BitPdfTextCoalescing.Compact"/>
-    /// merges same-line, same-style substitute-font runs into one span per visual
-    /// line (embedded-font runs always stay per-run exact). Default is
+    /// merges same-line, same-style runs - including embedded-font (PUA
+    /// glyph-mapped) ones - into one span per visual line; only rotated or
+    /// mirrored text stays per-run exact. Default is
     /// <see cref="BitPdfTextCoalescing.Exact"/>.
     /// </summary>
     public BitPdfTextCoalescing TextCoalescing { get; set; } = BitPdfTextCoalescing.Exact;
