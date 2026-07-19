@@ -184,7 +184,17 @@ public class BitThemeManager : IAsyncDisposable
             if (_js.IsRuntimeInvalid()) return;
 
             _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver!);
-            await _js.BitThemeRegisterDotNetNotifier(_jsNotifierReference).ConfigureAwait(false);
+
+            try
+            {
+                await _js.BitThemeRegisterDotNetNotifier(_jsNotifierReference).ConfigureAwait(false);
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit dropped after the IsRuntimeInvalid check above. Swallow it so the public
+                // methods keep their null-on-disconnect behavior, and leave the flag false to retry later.
+                return;
+            }
 
             // InvokeVoid silently no-ops when the runtime is invalid; if it became invalid between the
             // initial check and the awaited call, leave the flag false so a later call can retry.

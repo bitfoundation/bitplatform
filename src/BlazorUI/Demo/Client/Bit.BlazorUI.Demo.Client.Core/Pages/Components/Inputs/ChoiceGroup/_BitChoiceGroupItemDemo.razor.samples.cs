@@ -559,7 +559,8 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
                 DefaultValue=""basicItems[1].Value"" />
 
 <BitChoiceGroup IsEnabled=""false""
-                Label=""Primary (default)""
+                Color=""BitColor.Primary""
+                Label=""Primary""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />

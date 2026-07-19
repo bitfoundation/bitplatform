@@ -1325,6 +1325,61 @@ private BitPivotItem selectedPivotItem;";
 </BitPivot>
 
 
+<BitPivot Color=""BitColor.PrimaryBackground"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.SecondaryBackground"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.TertiaryBackground"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.PrimaryForeground"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.SecondaryForeground"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.TertiaryForeground"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.PrimaryBorder"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.SecondaryBorder"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.TertiaryBorder"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Primary"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>

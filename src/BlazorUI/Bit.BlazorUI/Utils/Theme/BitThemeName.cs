@@ -62,11 +62,32 @@ public readonly struct BitThemeName : IEquatable<BitThemeName>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        var token = name.Trim().ToLowerInvariant();
+        var token = NormalizeToken(name, out var error) ?? throw new ArgumentException(error, nameof(name));
+
+        return new BitThemeName(token);
+    }
+
+    /// <summary>
+    /// Normalizes (trim + lower-case invariant) and validates a theme token, returning <see langword="null"/>
+    /// with a reason in <paramref name="error"/> when the value is blank, longer than 64 characters, or contains
+    /// characters outside <c>[a-z0-9-]</c>. Shared with <c>BitThemeSsr.NormalizeThemeToken</c> so runtime and
+    /// first-paint validation stay identical; each caller maps the failure onto its own contract
+    /// (<see cref="Custom(string)"/> throws, the SSR helper returns <see langword="null"/>).
+    /// </summary>
+    internal static string? NormalizeToken(string? value, out string? error)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            error = "Theme name must not be empty or whitespace.";
+            return null;
+        }
+
+        var token = value.Trim().ToLowerInvariant();
 
         if (token.Length > 64)
         {
-            throw new ArgumentException("Theme name must be at most 64 characters.", nameof(name));
+            error = "Theme name must be at most 64 characters.";
+            return null;
         }
 
         foreach (var ch in token)
@@ -74,11 +95,13 @@ public readonly struct BitThemeName : IEquatable<BitThemeName>
             var allowed = (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-';
             if (allowed is false)
             {
-                throw new ArgumentException("Theme name may only contain lower-case letters, digits, and hyphens.", nameof(name));
+                error = "Theme name may only contain lower-case letters, digits, and hyphens.";
+                return null;
             }
         }
 
-        return new BitThemeName(token);
+        error = null;
+        return token;
     }
 
     /// <summary>Implicitly converts to the underlying string so existing string-typed APIs accept the wrapper unchanged.</summary>

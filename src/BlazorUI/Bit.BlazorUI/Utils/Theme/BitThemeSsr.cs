@@ -114,21 +114,7 @@ public static class BitThemeSsr
     /// treat it as "no preference" - this also prevents a tampered cookie value from being emitted
     /// into the document.
     /// </summary>
-    private static string? NormalizeThemeToken(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value)) return null;
-
-        var token = value.Trim().ToLowerInvariant();
-        if (token.Length > 64) return null;
-
-        foreach (var ch in token)
-        {
-            var allowed = (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-';
-            if (allowed is false) return null;
-        }
-
-        return token;
-    }
+    private static string? NormalizeThemeToken(string? value) => BitThemeName.NormalizeToken(value, out _);
 
     private static string BuildInlineScriptBody()
     {

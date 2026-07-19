@@ -38,6 +38,7 @@
         &.bit-drp-nbd {
             .bit-drp-wrp {
                 &:focus {
+                    outline: none;
                     box-shadow: none;
                 }
 
@@ -64,7 +65,9 @@
             &:focus {
                 color: $clr-fg-dis;
                 border-color: $clr-brd-dis;
-                box-shadow: none; // Suppress focus ring while disabled.
+                // Suppress the focus ring while disabled, including the forced-colors outline.
+                outline: none;
+                box-shadow: none;
             }
         }
 
@@ -110,8 +113,9 @@
         }
 
         &:focus {
-            // Suppress the global box-shadow focus ring on the no-border variant; the
-            // underline-ring below still applies for keyboard focus via :focus-visible.
+            // Suppress the global focus ring on the no-border variant; the underline-ring
+            // below still applies for keyboard focus via :focus-visible.
+            outline: none;
             box-shadow: none;
         }
 
