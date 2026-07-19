@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Bit.BlazorUI.Demo.Client.Core.Services.HttpMessageHandlers;
+using Bit.BlazorUI.Legacy;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,7 @@ public static class IServiceCollectionExtensions
 
         services.AddBitBlazorUIServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid);
+        services.AddBitBlazorUILegacyServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddSharedServices();
 
         services.AddScoped(sp =>

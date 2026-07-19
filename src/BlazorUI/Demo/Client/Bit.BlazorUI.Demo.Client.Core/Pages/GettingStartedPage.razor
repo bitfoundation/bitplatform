@@ -276,8 +276,89 @@
 
         <br />
 
+        <BitCard Id="legacy-components" Style="scroll-margin-top:65px">
+            <BitText Element="h2" Typography="BitTypography.H4">5. Legacy components</BitText>
+
+            <br />
+
+            <BitText Gutter>
+                Some of the older bit BlazorUI components were completely re-implemented with brand new APIs
+                (for example the new native SVG-based <BitTag>BitChart</BitTag>, the new <BitTag>BitDataGrid</BitTag>,
+                <BitTag>BitMarkdownViewer</BitTag>, <BitTag>BitMarkdownEditor</BitTag>, <BitTag>BitRichTextEditor</BitTag>
+                and <BitTag>BitPdfViewer</BitTag>). To keep <b>backward compatibility</b> for projects that still rely on
+                the original components, their previous versions are preserved unchanged in the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy/" Target="_blank">Bit.BlazorUI.Legacy</BitLink>
+                package under the dedicated <BitTag>Bit.BlazorUI.Legacy</BitTag> namespace, so they can live side by side
+                with the new components without any conflict.
+
+                <br /><br />
+
+                The package currently ships these legacy components:
+            </BitText>
+
+            <BitText>
+                <ul>
+                    <li><b>BitChart</b>: the original Chart.js based charting component.</li>
+                    <li><b>BitDataGrid</b>: the original data grid (previously renamed to <BitTag>BitQuickGrid</BitTag>).</li>
+                    <li><b>BitMarkdownViewer</b>: the original markedjs based markdown viewer.</li>
+                    <li><b>BitMarkdownEditor</b>: the original markdown editor.</li>
+                    <li><b>BitRichTextEditor</b>: the original Quill based rich text editor.</li>
+                    <li><b>BitPdfReader</b>: the original pdf.js based pdf reader.</li>
+                </ul>
+            </BitText>
+
+            <br />
+
+            <BitText><b>1. Installation</b>: add the package to your project:</BitText>
+
+            <CodeBox>dotnet add package Bit.BlazorUI.Legacy</CodeBox>
+
+            Or
+
+            <CodeBox>Install-Package Bit.BlazorUI.Legacy</CodeBox>
+
+            <br /><br />
+
+            <BitText>
+                <b>2. Namespace</b>: add the following line to the <BitTag>_Imports.razor</BitTag> file of your application:
+            </BitText>
+
+            <CodeBox Language="cshtml">&#64;using Bit.BlazorUI.Legacy</CodeBox>
+
+            <br /><br />
+
+            <BitText>
+                <b>3. Services</b>: register the required services of the Legacy package (this also registers the core
+                bit BlazorUI services) in your DI container:
+            </BitText>
+
+            <CodeBox Language="csharp">services.AddBitBlazorUILegacyServices();</CodeBox>
+
+            <br /><br />
+
+            <BitText>
+                <b>4. Styles and Scripts</b>: open the <BitTag>App.razor</BitTag> or <BitTag>index.html</BitTag> file and
+                add the CSS file link tag and the JS file script tag of the Legacy package:
+            </BitText>
+
+            <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" rel="stylesheet" /></CodeBox>
+
+            <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js">&lt;/script></CodeBox>
+
+            <br />
+
+            <BitText>
+                <b>Note</b>: the legacy components keep their original type names but live in the
+                <BitTag>Bit.BlazorUI.Legacy</BitTag> namespace. When you reference a component whose name also exists in
+                the new packages (like <BitTag>BitChart</BitTag>), fully qualify it (for example
+                <BitTag>Bit.BlazorUI.Legacy.BitChart</BitTag>) to disambiguate it from the new implementation.
+            </BitText>
+        </BitCard>
+
+        <br />
+
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>5. AI/MCP Integration</BitText>
+            <BitText Element="h2" Typography="BitTypography.H4" Gutter>6. AI/MCP Integration</BitText>
 
             <br />
 

@@ -179,6 +179,19 @@ public partial class MainLayout
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
             ]
         },
+        new()
+        {
+            Text = "Legacy",
+            ChildItems =
+            [
+                new() { Text = "Chart", Url = "/components/legacy/chart" },
+                new() { Text = "DataGrid", Url = "/components/legacy/datagrid" },
+                new() { Text = "MarkdownEditor", Url = "/components/legacy/markdowneditor" },
+                new() { Text = "MarkdownViewer", Url = "/components/legacy/markdownviewer" },
+                new() { Text = "PdfReader", Url = "/components/legacy/pdfreader" },
+                new() { Text = "RichTextEditor", Url = "/components/legacy/richtexteditor" },
+            ]
+        },
         new() { Text = "Iconography", Url = "/iconography" },
         new() { Text = "Theming", Url = "/theming" },
     ];

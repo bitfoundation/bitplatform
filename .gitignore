@@ -251,6 +251,12 @@ _book
 !/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/quilljs/*.css
 !/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/leaflet/*.css
 
+/src/BlazorUI/Bit.BlazorUI.Legacy/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Legacy/Scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Legacy/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Legacy/wwwroot/**/*.css.gz
+!/src/BlazorUI/Bit.BlazorUI.Legacy/wwwroot/quilljs/*.css
+
 /src/BlazorUI/Bit.BlazorUI.Assets/**/*.css
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/**/*.css.gz
