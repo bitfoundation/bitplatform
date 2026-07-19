@@ -13,12 +13,39 @@
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
 
+    @keyframes bit-mnb-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
     &.bit-dis {
         cursor: default;
         color: $clr-fg-dis;
         pointer-events: none;
         --bit-mnb-clr-spb: #{$clr-fg-dis};
     }
+}
+
+.bit-mnb-flw {
+    width: 100%;
+}
+
+.bit-mnb-spn {
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-color: $clr-brd-sec;
+    border-top-color: currentColor;
+    border-width: spacing(0.2125);
+    border-style: $shp-border-style;
+    animation: bit-mnb-spinner-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
 .bit-mnb-opb,
@@ -135,6 +162,13 @@
     list-style-type: none;
 }
 
+.bit-mnb-isp {
+    list-style: none;
+    height: spacing(0.125);
+    margin: spacing(0.5) 0;
+    background-color: $clr-brd-sec;
+}
+
 .bit-mnb-itm {
     width: 100%;
     border: none;
@@ -147,6 +181,8 @@
     padding: spacing(1);
     align-items: center;
     line-height: inherit;
+    box-sizing: border-box;
+    text-decoration: none;
     background-color: transparent;
 
     &[disabled] {

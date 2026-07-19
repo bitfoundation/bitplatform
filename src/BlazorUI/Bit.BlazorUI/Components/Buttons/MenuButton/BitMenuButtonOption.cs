@@ -13,6 +13,11 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// The value of the href attribute of the option. If provided, the option renders as an anchor tag instead of button.
+    /// </summary>
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
@@ -43,6 +48,11 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public bool IsSelected { get; set; }
 
     /// <summary>
+    /// If true, the option renders as a separator line instead of a clickable item.
+    /// </summary>
+    [Parameter] public bool IsSeparator { get; set; }
+
+    /// <summary>
     /// A unique value to use as a key of the option.
     /// </summary>
     [Parameter] public string? Key { get; set; }
@@ -58,6 +68,11 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The value of the target attribute of the option when the option renders as an anchor tag (by providing the Href value).
+    /// </summary>
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>
     /// The custom template for the option.
     /// </summary>
     [Parameter] public RenderFragment<BitMenuButtonOption>? Template { get; set; }
@@ -66,6 +81,11 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     /// Text to render in the option.
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The tooltip to show when the mouse is placed on the option.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
 
     internal void InternalStateHasChanged()

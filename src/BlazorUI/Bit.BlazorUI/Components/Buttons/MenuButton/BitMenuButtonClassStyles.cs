@@ -78,6 +78,11 @@ public class BitMenuButtonClassStyles
     public string? ItemIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for each item separator of the BitMenuButton.
+    /// </summary>
+    public string? ItemSeparator { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for each item text of the BitMenuButton.
     /// </summary>
     public string? ItemText { get; set; }
@@ -86,6 +91,11 @@ public class BitMenuButtonClassStyles
     /// Custom CSS classes/styles for the overlay of the BitMenuButton.
     /// </summary>
     public string? Overlay { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner of the BitMenuButton in the loading state.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text of the BitMenuButton.

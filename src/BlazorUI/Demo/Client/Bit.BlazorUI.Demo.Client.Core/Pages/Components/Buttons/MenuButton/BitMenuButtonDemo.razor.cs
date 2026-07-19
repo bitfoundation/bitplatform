@@ -40,6 +40,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "ChevronDownAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label of the chevron down button of the split menu button for the benefit of screen readers.",
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -95,6 +102,22 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "DropDirection",
+            Type = "BitDropDirection",
+            DefaultValue = "BitDropDirection.TopAndBottom",
+            Description = "Determines the allowed drop directions of the callout.",
+            LinkType = LinkType.Link,
+            Href = "#drop-direction-enum",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands the menu button width to 100% of the available width.",
+        },
+        new()
+        {
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -115,6 +138,13 @@ public partial class BitMenuButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The icon from built-in Fluent UI icons to show inside the header of menu button.",
+        },
+        new()
+        {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the menu button is in the loading state. It replaces the default icon of the header button with a spinner and disables its click.",
         },
         new()
         {
@@ -235,6 +265,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The tooltip to show when the mouse is placed on the header button.",
+        },
+        new()
+        {
             Name = "Toggle",
             Type = "bool",
             DefaultValue = "false",
@@ -268,6 +305,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Href",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The value of the href attribute of the item. If provided, the item renders as an anchor tag instead of button.",
+               },
+               new()
+               {
                    Name = "Icon",
                    Type = "BitIconInfo?",
                    DefaultValue = "null",
@@ -298,6 +342,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "IsSeparator",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "If true, the item renders as a separator line instead of a clickable item.",
+               },
+               new()
+               {
                    Name = "Key",
                    Type = "string?",
                    DefaultValue = "null",
@@ -319,6 +370,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Target",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The value of the target attribute of the item when the item renders as an anchor tag (by providing the Href value).",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "RenderFragment<BitMenuButtonItem>?",
                    DefaultValue = "null",
@@ -330,6 +388,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Text to render in the item.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The tooltip to show when the mouse is placed on the item.",
                }
             ]
         },
@@ -345,6 +410,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The custom CSS classes of the option.",
+               },
+               new()
+               {
+                   Name = "Href",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The value of the href attribute of the option. If provided, the option renders as an anchor tag instead of button.",
                },
                new()
                {
@@ -378,6 +450,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "IsSeparator",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "If true, the option renders as a separator line instead of a clickable item.",
+               },
+               new()
+               {
                    Name = "Key",
                    Type = "string?",
                    DefaultValue = "null",
@@ -399,6 +478,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Target",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The value of the target attribute of the option when the option renders as an anchor tag (by providing the Href value).",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "RenderFragment<BitMenuButtonOption>?",
                    DefaultValue = "null",
@@ -410,6 +496,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Text to render in the option.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The tooltip to show when the mouse is placed on the option.",
                }
             ]
         },
@@ -519,6 +612,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "ItemSeparator",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item separator of the BitMenuButton."
+               },
+               new()
+               {
                    Name = "ItemText",
                    Type = "string?",
                    DefaultValue = "null",
@@ -530,6 +630,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for each overlay of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "Spinner",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the spinner of the BitMenuButton in the loading state."
                },
                new()
                {
@@ -559,6 +666,15 @@ public partial class BitMenuButtonDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.Class))",
                     Description = "The CSS Class field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Href",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Href))",
+                    Description = "Href field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -600,6 +716,15 @@ public partial class BitMenuButtonDemo
                 },
                 new()
                 {
+                    Name = "IsSeparator",
+                    Type = "BitNameSelectorPair<TItem, bool>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.IsSeparator))",
+                    Description = "IsSeparator field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
                     Name = "Key",
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.Key))",
@@ -627,10 +752,28 @@ public partial class BitMenuButtonDemo
                 },
                 new()
                 {
+                    Name = "Target",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Target))",
+                    Description = "Target field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
                     Name = "Text",
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.Text))",
                     Description = "Text field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Title",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Title))",
+                    Description = "Title field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -857,6 +1000,27 @@ public partial class BitMenuButtonDemo
                     Name= "TertiaryBorder",
                     Description="Tertiary border color.",
                     Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "drop-direction-enum",
+            Name = "BitDropDirection",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "All",
+                    Description = "The callout is positioned in all directions.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Description = "The callout is positioned in the top and bottom directions.",
+                    Value = "1",
                 }
             ]
         },
