@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Net;
 using Polly.CircuitBreaker;
 using Microsoft.Net.Http.Headers;

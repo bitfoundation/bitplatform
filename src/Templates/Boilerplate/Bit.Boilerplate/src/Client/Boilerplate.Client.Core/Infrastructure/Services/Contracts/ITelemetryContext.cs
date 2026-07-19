@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.Contracts;

@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Shared.Infrastructure.Services;

@@ -1,0 +1,39 @@
+@* Demos a CONSTRAINED middle optional: /{lang:nonfile?}/welcome. The nonfile constraint rejects
+   first segments that look like file names (app.js, style.css), which is its classic use: letting
+   an app route "language-prefixed" URLs without swallowing static-asset requests. *@
+
+<div class="bb-intro">
+    <h1>Welcome</h1>
+    <p class="bb-subtitle">Matched <code>/{lang:nonfile?}/welcome</code> - a constrained optional in the middle of a template.</p>
+</div>
+
+<dl class="bb-params">
+    <dt>lang</dt>
+    <dd>@(Lang ?? "(null)")</dd>
+</dl>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How the pieces combine</h3>
+    <p class="bb-card-desc">
+        Two features stack here. The optional marker parses anywhere (framework parity, effectively
+        required in the middle), and the <code>nonfile</code> validation constraint rejects any first
+        segment that looks like a file name - a segment whose last part contains a <code>.</code>
+        followed by something. So <code>/en/welcome</code> matches while
+        <code>/style.css/welcome</code> falls through to the 404 fallback.
+    </p>
+    <pre class="bb-code"><span class="c">@@* /en/welcome        → lang = "en"</span>
+<span class="c">   /style.css/welcome → no match ("style.css" is a file name)</span>
+<span class="c">   /welcome           → no match (middle optional is required at match time) *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/{lang:nonfile?}/welcome"</span> Component=<span class="s">"@@typeof(WelcomePage)"</span> /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/en/welcome" class="btn btn-outline">/en/welcome</BrouterLink>
+        <BrouterLink Href="/de/welcome" class="btn btn-outline">/de/welcome</BrouterLink>
+        <BrouterLink Href="/style.css/welcome" class="btn btn-outline">/style.css/welcome → 404</BrouterLink>
+        <BrouterLink Href="/welcome" class="btn btn-outline">/welcome → 404</BrouterLink>
+        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Lang { get; set; }
+}

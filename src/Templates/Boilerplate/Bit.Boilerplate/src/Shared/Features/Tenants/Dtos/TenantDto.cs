@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Tenants.Dtos;
+namespace Boilerplate.Shared.Features.Tenants.Dtos;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class TenantDto

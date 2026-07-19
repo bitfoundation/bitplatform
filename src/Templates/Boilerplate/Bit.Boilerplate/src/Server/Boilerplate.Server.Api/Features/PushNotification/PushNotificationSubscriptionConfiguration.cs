@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Features.PushNotification;
+namespace Boilerplate.Server.Api.Features.PushNotification;
 
 public class PushNotificationSubscriptionConfiguration : IEntityTypeConfiguration<PushNotificationSubscription>
 {

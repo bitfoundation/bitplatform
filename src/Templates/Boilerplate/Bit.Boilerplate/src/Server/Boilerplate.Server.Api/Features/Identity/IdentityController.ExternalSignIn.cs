@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication;
 

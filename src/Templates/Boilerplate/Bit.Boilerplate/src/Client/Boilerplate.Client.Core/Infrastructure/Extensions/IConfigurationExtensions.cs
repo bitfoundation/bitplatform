@@ -3,6 +3,7 @@
 using Boilerplate.Client.Core;
 
 namespace Microsoft.Extensions.Configuration;
+
 public static partial class IConfigurationExtensions
 {
     extension(IConfiguration configuration)

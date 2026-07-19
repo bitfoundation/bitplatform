@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Tenants;
+using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Tenants;

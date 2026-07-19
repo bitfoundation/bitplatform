@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Routing;
 using Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 

@@ -63,6 +63,9 @@
             "id": "ads"
         },
         {
+            "id": "brouter"
+        },
+        {
             "id": "apiServerUrl",
             "isVisible": false
         },

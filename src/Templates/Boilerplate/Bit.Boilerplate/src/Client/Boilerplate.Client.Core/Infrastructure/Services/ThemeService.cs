@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Infrastructure.Services;
+namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class ThemeService
 {
@@ -16,7 +16,7 @@ public partial class ThemeService
     public async Task<AppThemeType> ToggleTheme()
     {
         var newThemeName = await bitThemeManager.ToggleDarkLightAsync();
-        
+
         var isDark = newThemeName == "dark";
         await bitDeviceCoordinator.ApplyTheme(isDark);
 

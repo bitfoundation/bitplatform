@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Chatbot;
 
 namespace Boilerplate.Server.Api.Features.Chatbot;

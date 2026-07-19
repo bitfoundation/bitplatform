@@ -1,0 +1,69 @@
+@* Topic page: animated navigation via the browser View Transitions API. The gallery routes
+   (declared in AppRouter.razor) are the live playground. *@
+
+<div class="bb-intro">
+    <h1>View Transitions</h1>
+    <p class="bb-subtitle">
+        Animated page changes and shared-element morphs via the browser's View Transitions API -
+        one option to turn on, zero JavaScript to write.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One option, sensible defaults</h3>
+    <p class="bb-card-desc">
+        With <code>o.ViewTransitions = true</code>, every navigation's render is wrapped in
+        <code>document.startViewTransition</code>. The built-in default animations
+        (<code>ViewTransitionDefaultAnimations</code>, on by default) are direction-aware: forward
+        navigations glide in, Back/Forward mirror the motion, replaces cross-fade - the router
+        detects direction from the navigation type (<code>Push</code> / <code>Replace</code> /
+        <code>Pop</code>) and exposes it as <code>data-brouter-nav</code> on the root element for
+        your own CSS. On browsers without the API everything is inert; nothing breaks.
+    </p>
+    <pre class="bb-code">services.AddBitBrouterServices(o =&gt;
+{
+    o.ViewTransitions = <span class="k">true</span>;
+    <span class="c">// o.ViewTransitionDefaultAnimations = true;      // built-in glide/fade set</span>
+    <span class="c">// o.ViewTransitionRespectReducedMotion = true;   // crossfade under prefers-reduced-motion</span>
+});</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Shared-element morphs are pure CSS</h3>
+    <p class="bb-card-desc">
+        Give the outgoing and incoming elements the same standard
+        <code>view-transition-name</code> and the browser morphs one into the other - no router
+        API involved. The gallery does exactly this: each grid tile and the detail hero share a
+        per-item name, so the tile appears to grow into the hero. This page's header is pinned the
+        same way: naming it gives it its own transition group, excluding persistent chrome from
+        the page animation.
+    </p>
+    <pre class="bb-code"><span class="c">/* the grid tile ... */</span>
+.tile-42 { view-transition-name: bb-item-42; }
+<span class="c">/* ... and the detail hero share one name - the browser does the rest */</span>
+.hero-42 { view-transition-name: bb-item-42; }</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/gallery" class="btn btn-outline">/gallery - click a tile and watch it morph</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Overriding the defaults</h3>
+    <p class="bb-card-desc">
+        The built-in animations live in the CSS layer <code>bit-brouter</code>, and unlayered
+        author CSS always wins over layered rules - so overriding is just writing a normal
+        <code>::view-transition-*</code> rule in your stylesheet, no <code>!important</code>
+        needed. Scope by direction with the <code>data-brouter-nav</code> attribute if forward and
+        back should differ.
+    </p>
+    <pre class="bb-code"><span class="c">/* your app.css - overrides the layered defaults automatically */</span>
+::view-transition-new(root) { animation: 400ms ease both my-entrance; }
+html[data-brouter-nav=<span class="s">"pop"</span>]::view-transition-new(root) { animation-name: my-back-entrance; }</pre>
+    <p class="bb-card-desc">
+        Accessibility is handled for you: with
+        <code>ViewTransitionRespectReducedMotion</code> (default), users with
+        <code>prefers-reduced-motion</code> get opacity cross-fades instead of movement. This demo
+        turns that respect <em>off</em> only because VMs and remote desktops often report reduced
+        motion spuriously - keep it on in production.
+    </p>
+</div>

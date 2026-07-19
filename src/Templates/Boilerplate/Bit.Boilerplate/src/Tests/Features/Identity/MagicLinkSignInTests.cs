@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Boilerplate.Tests.Infrastructure.Components;
 
 namespace Boilerplate.Tests.Features.Identity;

@@ -231,3 +231,4 @@ custom.aprof
 /src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json
 
 .env
+.playwright-mcp

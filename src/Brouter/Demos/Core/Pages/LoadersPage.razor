@@ -1,0 +1,111 @@
+@* Topic page: the data layer - loaders, the stale-while-revalidate cache, revalidation,
+   preloading, deferred data, and error boundaries. Live links point at /data, /deferred and
+   /unstable declared in AppRouter.razor. *@
+
+<div class="bb-intro">
+    <h1>Data loading</h1>
+    <p class="bb-subtitle">
+        Fetch route data <em>before</em> the page renders - with caching, revalidation, preloading
+        on intent, streamed slow parts, and error boundaries when a loader throws.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Loaders</h3>
+    <p class="bb-card-desc">
+        A route's <code>Loader</code> runs after guards pass and before the route renders; its
+        result cascades to the content as <code>BrouterRouteData</code>
+        (<code>Get&lt;T&gt;</code> / <code>TryGet&lt;T&gt;</code> / <code>GetOrDefault&lt;T&gt;</code>).
+        In a nested chain, loaders run sequentially root→leaf by default - set
+        <code>ParallelLoaders</code> on <code>&lt;Brouter&gt;</code> to run them concurrently. The
+        loader context tells you why it's running (<code>IsRevalidation</code>,
+        <code>IsPreload</code>), exposes the destination (<code>ctx.To</code>, including query
+        values), and its <code>CancellationToken</code> fires when a newer navigation supersedes
+        the load. While loaders run, the router-level <code>&lt;Navigating&gt;</code> fragment is
+        shown. Static route metadata takes the same path: <code>Meta="..."</code> cascades as
+        <code>BrouterRouteMeta</code> without running any code.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/data"</span> Loader=<span class="s">"LoadData"</span> StaleTime=<span class="s">"TimeSpan.FromSeconds(30)"</span>&gt;
+
+<span class="k">private async</span> ValueTask&lt;<span class="k">object</span>?&gt; LoadData(BrouterNavigationContext ctx)
+{
+    <span class="k">var</span> page = ctx.To.GetQuery(<span class="s">"page"</span>) ?? <span class="s">"1"</span>;
+    <span class="k">return await</span> FetchAsync(page, ctx.CancellationToken);
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The stale-while-revalidate cache</h3>
+    <p class="bb-card-desc">
+        <code>StaleTime</code> gives loader results a freshness window, keyed by the full URL (path
+        + query - so <code>?page=1</code> and <code>?page=2</code> cache separately). A fresh hit
+        skips the loader entirely; a stale hit renders the cached data <em>immediately</em> and
+        refreshes in the background (<code>BrouterStaleReloadMode.Background</code> - set
+        <code>Blocking</code> to treat stale as a miss instead). Related knobs and APIs:
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>API / option</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>Broute.StaleTime / DefaultLoaderStaleTime</td><td>Per-route freshness window; option-level default (null = no caching).</td></tr>
+            <tr><td>LoaderCacheGcTime / MaxLoaderCacheEntries</td><td>Cache-entry lifetime (30 min) and size cap (50, oldest evicted).</td></tr>
+            <tr><td>brouter.RevalidateAsync()</td><td>Re-runs the current chain's loaders in place - not a navigation: URL unchanged, guards skipped, content stays visible, <code>IsRevalidation</code> set.</td></tr>
+            <tr><td>brouter.ClearLoaderCache()</td><td>Drops every cached loader result (e.g. on sign-out).</td></tr>
+            <tr><td>BrouterOptions.PersistLoaderState</td><td>Persists loader results across prerender→interactive so they don't run twice (AOT-safe via <code>LoaderStateTypeInfoResolver</code>).</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Preloading</h3>
+    <p class="bb-card-desc">
+        Warm the cache <em>before</em> the click. <code>BrouterLink Preload</code> supports
+        <code>Intent</code> (hover / touch / focus, debounced by
+        <code>BrouterOptions.PreloadDelay</code>, 50&nbsp;ms), <code>Viewport</code> (when the link
+        scrolls into view, once), and <code>Render</code> (immediately);
+        <code>DefaultLinkPreload</code> sets an app-wide default, and
+        <code>brouter.PreloadAsync(url)</code> does the same imperatively. A preload runs only the
+        destination's loaders - no guards, no render, failures swallowed - and marks its context
+        with <code>IsPreload</code>. The two links below use <code>Intent</code>: rest the pointer
+        on one for a moment and the 600&nbsp;ms loader is already done when you click.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BrouterLink</span> Href=<span class="s">"/data"</span> Preload=<span class="s">"BrouterLinkPreload.Intent"</span>&gt;Data&lt;/<span class="k">BrouterLink</span>&gt;
+<span class="c">// or imperatively, e.g. after login while the dashboard is still a click away:</span>
+<span class="k">await</span> brouter.PreloadAsync(<span class="s">"/data"</span>);</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/data" Preload="BrouterLinkPreload.Intent" class="btn btn-outline">/data - loader + cache + revalidate + query updates</BrouterLink>
+        <BrouterLink Href="/deferred" Preload="BrouterLinkPreload.Intent" class="btn btn-outline">/deferred - streamed details</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Deferred (streamed) data</h3>
+    <p class="bb-card-desc">
+        Don't make the whole page wait for its slowest query. A loader can await only the critical
+        data and return the slow part as an <em>unawaited</em> <code>Task</code>: the route reveals
+        immediately, and <code>&lt;BrouterAwait&gt;</code> streams the result in when it lands -
+        with <code>&lt;Pending&gt;</code>, <code>&lt;Resolved&gt;</code>, and
+        <code>&lt;Error&gt;</code> fragments (a cancelled task surfaces as
+        <code>TaskCanceledException</code>).
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BrouterAwait</span> Task=<span class="s">"@@Report.SlowDetails"</span>&gt;
+    &lt;<span class="k">Pending</span>&gt;Crunching the numbers…&lt;/<span class="k">Pending</span>&gt;
+    &lt;<span class="k">Resolved</span> Context=<span class="s">"details"</span>&gt; @@* render details *@@ &lt;/<span class="k">Resolved</span>&gt;
+    &lt;<span class="k">Error</span> Context=<span class="s">"ex"</span>&gt;Details unavailable: @@ex.Message&lt;/<span class="k">Error</span>&gt;
+&lt;/<span class="k">BrouterAwait</span>&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Error boundaries</h3>
+    <p class="bb-card-desc">
+        When a loader (or lifecycle callback) throws, the router walks from the failed route up its
+        ancestors to the nearest <code>&lt;ErrorContent&gt;</code>; the router-level
+        <code>ErrorContent</code> is the last resort, and ancestor layouts keep rendering either
+        way. The boundary receives a <code>BrouterErrorContext</code> with the
+        <code>Exception</code>, the target <code>Location</code>, and <code>RetryAsync()</code>,
+        which re-runs the full navigation pipeline in place. The global <code>IBrouter.OnError</code>
+        hook fires for these failures too - boundaries handle display, the hook handles logging.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/unstable" class="btn btn-outline">/unstable - loader throws, boundary offers retry</BrouterLink>
+    </div>
+</div>

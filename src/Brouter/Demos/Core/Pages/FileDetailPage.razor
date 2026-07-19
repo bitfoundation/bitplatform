@@ -1,0 +1,48 @@
+@* Demos complex (multi-part) segments: /files/{name}.{ext?} - two parameters inside ONE URL
+   segment, with the trailing part optional. Matching runs right-to-left on the segment text,
+   port-for-port with the built-in router's algorithm. *@
+
+<div class="bb-intro">
+    <h1>File details</h1>
+    <p class="bb-subtitle">Matched <code>/files/{name}.{ext?}</code> - a complex segment with an optional extension.</p>
+</div>
+
+<dl class="bb-params">
+    <dt>name</dt>
+    <dd>@Name</dd>
+    <dt>ext</dt>
+    <dd>@(Ext ?? "(null - the optional part was omitted)")</dd>
+</dl>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How complex segments match</h3>
+    <p class="bb-card-desc">
+        The segment text is scanned <strong>right-to-left</strong>: the router finds the rightmost
+        <code>.</code>, gives what follows to <code>{ext?}</code> and the rest to <code>{name}</code> -
+        so <code>a.b.c</code> binds <code>name = "a.b"</code>, <code>ext = "c"</code>. Every parameter
+        in a complex segment must capture at least one character, and the optional last part may only
+        follow a period: <code>report.</code> (trailing dot, nothing after) never matches.
+    </p>
+    <pre class="bb-code"><span class="c">@@* report.pdf → name = "report", ext = "pdf"</span>
+<span class="c">   report     → name = "report", ext = null (optional part + '.' dropped together)</span>
+<span class="c">   a.b.c      → name = "a.b",    ext = "c"</span>
+<span class="c">   report.    → no match *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/files/{name}.{ext?}"</span> Component=<span class="s">"@@typeof(FileDetailPage)"</span> /&gt;
+
+<span class="c">@@* Only a period may precede the optional part - {name}-{ext?} throws at parse time.</span>
+<span class="c">   Any literal works for REQUIRED parts though, and parts can be typed: *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/api/v{major:int}-{minor:int}"</span> ... /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/files/report.pdf" class="btn btn-outline">/files/report.pdf</BrouterLink>
+        <BrouterLink Href="/files/report" class="btn btn-outline">/files/report</BrouterLink>
+        <BrouterLink Href="/files/a.b.c" class="btn btn-outline">/files/a.b.c</BrouterLink>
+        <BrouterLink Href="/files/report." class="btn btn-outline">/files/report. → 404</BrouterLink>
+        <BrouterLink Href="/api/v2-10" class="btn btn-outline">/api/v2-10 (typed parts)</BrouterLink>
+        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public string? Ext { get; set; }
+}

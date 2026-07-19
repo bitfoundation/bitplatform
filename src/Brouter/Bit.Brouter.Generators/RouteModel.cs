@@ -13,9 +13,10 @@ internal sealed record RouteModel(string Template, string? Name, EquatableArray<
 
 /// <summary>
 /// One template segment: <c>Value</c> is the literal text or parameter name; <c>ClrType</c> the C#
-/// type keyword the (last) constraint maps to ("string" when unconstrained).
+/// type keyword the last type constraint maps to ("string" when unconstrained);
+/// <c>DefaultValue</c> the template's <c>=default</c> text (null when absent).
 /// </summary>
-internal sealed record RouteSegment(SegmentKind Kind, string Value, string ClrType, bool IsOptional);
+internal sealed record RouteSegment(SegmentKind Kind, string Value, string ClrType, bool IsOptional, string? DefaultValue = null);
 
 internal enum SegmentKind
 {

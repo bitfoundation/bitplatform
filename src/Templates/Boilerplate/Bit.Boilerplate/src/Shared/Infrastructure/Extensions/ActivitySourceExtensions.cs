@@ -1,4 +1,4 @@
-﻿namespace System.Diagnostics;
+namespace System.Diagnostics;
 
 public static class ActivitySourceExtensions
 {

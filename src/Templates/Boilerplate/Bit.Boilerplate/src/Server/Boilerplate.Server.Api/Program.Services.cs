@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")

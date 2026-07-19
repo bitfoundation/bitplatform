@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Identity.Dtos;
+using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings.Account;
 

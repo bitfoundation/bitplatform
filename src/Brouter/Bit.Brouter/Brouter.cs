@@ -432,7 +432,33 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             sb.Append('/');
             if (seg.IsCatchAll)
             {
+                // Constraints stay in the key: "{**a:int}" and "{**b}" match different URL sets.
                 sb.Append("**");
+                for (var i = 0; i < seg.Constraints.Length; i++)
+                {
+                    sb.Append(':').Append(seg.Constraints[i].Name.ToLowerInvariant());
+                }
+            }
+            else if (seg.IsComplex)
+            {
+                foreach (var part in seg.Parts!)
+                {
+                    if (part.IsParameter)
+                    {
+                        sb.Append('{');
+                        for (var i = 0; i < part.Constraints.Length; i++)
+                        {
+                            if (i > 0) sb.Append(':');
+                            sb.Append(part.Constraints[i].Name.ToLowerInvariant());
+                        }
+                        if (part.IsOptional) sb.Append('?');
+                        sb.Append('}');
+                    }
+                    else
+                    {
+                        AppendCollisionKeyLiteral(sb, part.Value, caseSensitive);
+                    }
+                }
             }
             else if (seg.IsParameter)
             {
@@ -443,16 +469,29 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                     sb.Append(seg.Constraints[i].Name.ToLowerInvariant());
                 }
                 if (seg.IsOptional) sb.Append('?');
+                // A default changes the value bound when the segment is absent, so "{id?}" and
+                // "{id=5}" must not collide even though they match the same URLs.
+                if (seg.HasDefault) sb.Append('=').Append(seg.DefaultValue);
                 sb.Append('}');
             }
             else
             {
                 // Covers plain literals and the single-segment wildcard "*" (its Value is "*", which
                 // can't collide with a real literal: TemplateParser never produces a literal "*").
-                sb.Append(caseSensitive ? seg.Value : seg.Value.ToLowerInvariant());
+                AppendCollisionKeyLiteral(sb, seg.Value, caseSensitive);
             }
         }
         return sb.ToString();
+    }
+
+    // Literal text goes into the collision key with braces doubled, so a literal produced from
+    // escaped braces ("{{x}}" -> "{x}") can never collide with a parameter's "{...}" rendering.
+    private static void AppendCollisionKeyLiteral(StringBuilder sb, string literal, bool caseSensitive)
+    {
+        var text = caseSensitive ? literal : literal.ToLowerInvariant();
+        if (text.Contains('{') || text.Contains('}'))
+            text = text.Replace("{", "{{").Replace("}", "}}");
+        sb.Append(text);
     }
 
     /// <summary>
@@ -558,9 +597,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             }
 
             var first = template.TemplateSegments[0];
-            if (first.IsParameter || first.IsCatchAll || first.IsSingleWildcard)
+            if (first.IsParameter || first.IsCatchAll || first.IsSingleWildcard || first.IsComplex)
             {
-                // Parameter / '*' / '**' / '{**catch}' first segment matches many URL first segments.
+                // Parameter / complex / '*' / '**' / '{**catch}' first segment matches many URL first segments.
                 nonLiteralFirst.Add(entry);
             }
             else
@@ -2025,11 +2064,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 var ancestorConstraints = new Dictionary<string, string[]>();
                 foreach (var seg in ancestorTemplate.TemplateSegments)
                 {
-                    if (seg.IsParameter is false) continue;
-                    if (winner.Parameters.TryGetValue(seg.Value, out var val))
-                        ancestorParams[seg.Value] = val;
-                    if (winner.ConstraintsByParameter.TryGetValue(seg.Value, out var cons))
-                        ancestorConstraints[seg.Value] = cons;
+                    foreach (var paramName in seg.ParameterNames)
+                    {
+                        if (winner.Parameters.TryGetValue(paramName, out var val))
+                            ancestorParams[paramName] = val;
+                        if (winner.ConstraintsByParameter.TryGetValue(paramName, out var cons))
+                            ancestorConstraints[paramName] = cons;
+                    }
                 }
                 node.Parameters = ancestorParams;
                 node.ConstraintsByParameter = ancestorConstraints;
@@ -3009,15 +3050,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         //     applies while the optional segment is genuinely unfilled - i.e. the URL is shorter
         //     than the template. Once the template is fully satisfied a trailing slash is a real
         //     extra slash ("/users/1/" against "/users/{id?}") and must still be rejected.
+        //     A default-valued final segment ("{action=Index}") is skippable the same way.
         if (hasTrailingSlash && last.IsCatchAll is false
-            && (last.IsOptional is false || segments.Length >= templateSegments.Count))
+            && ((last.IsOptional is false && last.HasDefault is false) || segments.Length >= templateSegments.Count))
         {
             return false;
         }
 
         if (templateSegments.Count != segments.Length)
         {
-            // Allow shorter URLs if every missing trailing segment is optional or the last one is catch-all.
+            // Allow shorter URLs if every missing trailing segment is skippable: optional,
+            // default-valued, or the last one is catch-all.
             if (segments.Length < templateSegments.Count)
             {
                 if (last.IsCatchAll && segments.Length >= lastIdx)
@@ -3029,7 +3072,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                     for (int i = segments.Length; i < templateSegments.Count; i++)
                     {
                         if (templateSegments[i].IsOptional is false &&
-                            templateSegments[i].IsCatchAll is false) return false;
+                            templateSegments[i].IsCatchAll is false &&
+                            templateSegments[i].HasDefault is false) return false;
                     }
                 }
             }
@@ -3056,23 +3100,65 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 {
                     var remaining = i < segments.Length
                         ? string.Join('/', segments[i..])
-                        : string.Empty;
+                        : templateSegment.DefaultValue ?? string.Empty;
+
+                    if (templateSegment.Constraints.Length > 0)
+                    {
+                        if (remaining.Length == 0)
+                        {
+                            // Framework parity: a constraint sees an empty catch-all as a missing
+                            // value; only constraints that accept a missing value (nonfile) match.
+                            foreach (var binding in templateSegment.Constraints)
+                            {
+                                if (binding.Constraint.MatchesMissingValue is false) return false;
+                            }
+                        }
+                        else
+                        {
+                            // Framework parity: constraints validate the remainder, but the bound
+                            // value stays the raw string (typed conversion skips catch-alls).
+                            foreach (var binding in templateSegment.Constraints)
+                            {
+                                if (binding.Constraint.TryMatch(remaining, out _) is false) return false;
+                            }
+                        }
+                    }
 
                     parameters[templateSegment.Value] = remaining;
-                    constraints[templateSegment.Value] = [];
+                    constraints[templateSegment.Value] =
+                        templateSegment.Constraints.Select(rc => rc.Name).ToArray();
                 }
                 result = new MatchResult(route, parameters, constraints);
                 return true;
             }
 
-            // Out of URL segments: only valid if optional.
+            // Out of URL segments: only valid if the segment is skippable.
             if (i >= segments.Length)
             {
                 if (templateSegment.IsOptional) continue;
+
+                if (templateSegment.HasDefault)
+                {
+                    // Bind the declared default, running it through the constraint chain so a
+                    // typed constraint still yields a converted value ({id:int=5} binds int 5).
+                    if (templateSegment.TryMatch(templateSegment.DefaultValue!, literalComparison, out var defaultValue) is false) return false;
+                    parameters[templateSegment.Value] = defaultValue;
+                    constraints[templateSegment.Value] =
+                        templateSegment.Constraints.Select(rc => rc.Name).ToArray();
+                    continue;
+                }
+
                 return false;
             }
 
             var segment = segments[i];
+
+            // Complex (multi-part) segments bind zero or more parameters themselves.
+            if (templateSegment.IsComplex)
+            {
+                if (templateSegment.TryMatchComplex(segment, literalComparison, parameters, constraints) is false) return false;
+                continue;
+            }
 
             if (templateSegment.TryMatch(segment, literalComparison, out var matchedValue) is false) return false;
 

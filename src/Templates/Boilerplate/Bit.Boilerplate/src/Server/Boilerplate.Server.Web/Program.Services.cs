@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Options;
 //#if (api == "Integrated")

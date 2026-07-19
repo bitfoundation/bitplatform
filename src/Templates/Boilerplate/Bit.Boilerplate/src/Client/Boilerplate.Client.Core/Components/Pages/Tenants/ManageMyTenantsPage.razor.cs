@@ -1,4 +1,4 @@
-﻿using Bit.BlazorUI;
+using Bit.BlazorUI;
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;

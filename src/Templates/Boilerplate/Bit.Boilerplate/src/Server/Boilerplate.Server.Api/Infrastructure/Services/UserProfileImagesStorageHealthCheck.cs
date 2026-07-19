@@ -1,4 +1,4 @@
-﻿using FluentStorage.Storage;
+using FluentStorage.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;

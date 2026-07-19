@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;
@@ -34,10 +34,8 @@ public static partial class Program
                 {
                     BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
                 };
-                if (sp.GetRequiredService<ClientWindowsSettings>().WebAppUrl is Uri origin)
-                {
-                    httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
-                }
+                var origin = sp.GetRequiredService<ClientWindowsSettings>().WebAppUrl ?? httpClient.BaseAddress;
+                httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
                 return httpClient;
             });
 

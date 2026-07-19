@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Infrastructure.Services;
+namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class DefaultExternalNavigationService : IExternalNavigationService, IAsyncDisposable
 {

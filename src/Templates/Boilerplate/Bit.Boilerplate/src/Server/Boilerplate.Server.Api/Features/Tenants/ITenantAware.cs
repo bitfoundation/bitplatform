@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Features.Tenants;
+namespace Boilerplate.Server.Api.Features.Tenants;
 
 /// <summary>
 /// Entities implementing this interface are tenant scoped:

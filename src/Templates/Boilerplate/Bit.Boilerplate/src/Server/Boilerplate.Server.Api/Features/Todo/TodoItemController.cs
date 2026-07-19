@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Todo;
 
 namespace Boilerplate.Server.Api.Features.Todo;

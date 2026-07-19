@@ -1,0 +1,41 @@
+@* Demos a complex segment whose parts carry TYPE constraints: /api/v{major:int}-{minor:int}.
+   Both values arrive as ints - constraints inside complex segments convert exactly like
+   constraints on whole-segment parameters. *@
+
+<div class="bb-intro">
+    <h1>API v@(Major).@(Minor)</h1>
+    <p class="bb-subtitle">Matched <code>/api/v{major:int}-{minor:int}</code> - typed parameters inside one segment.</p>
+</div>
+
+<dl class="bb-params">
+    <dt>major</dt>
+    <dd>@Major (bound as @Major.GetType().Name)</dd>
+    <dt>minor</dt>
+    <dd>@Minor (bound as @Minor.GetType().Name)</dd>
+</dl>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Typed complex parts</h3>
+    <p class="bb-card-desc">
+        The literal <code>v</code> must sit at the segment's left edge and the <code>-</code>
+        between the parameters anchors the split, so <code>v2-10</code> binds
+        <code>major = 2</code>, <code>minor = 10</code> - both real <code>int</code>s, straight into
+        the typed <code>[Parameter]</code> properties. A non-numeric piece
+        (<code>vX-10</code>) fails the <code>:int</code> constraint and the route doesn't match.
+    </p>
+    <pre class="bb-code"><span class="c">@@* /api/v2-10 → major = 2 (int), minor = 10 (int)</span>
+<span class="c">   /api/vX-10 → no match *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/api/v{major:int}-{minor:int}"</span> Component=<span class="s">"@@typeof(ApiVersionPage)"</span> /&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/api/v2-10" class="btn btn-outline">/api/v2-10</BrouterLink>
+        <BrouterLink Href="/api/v3-0" class="btn btn-outline">/api/v3-0</BrouterLink>
+        <BrouterLink Href="/api/vX-10" class="btn btn-outline">/api/vX-10 → 404</BrouterLink>
+        <BrouterLink Href="/files/report.pdf" class="btn btn-outline">More complex segments: /files</BrouterLink>
+        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Major { get; set; }
+    [Parameter] public int Minor { get; set; }
+}

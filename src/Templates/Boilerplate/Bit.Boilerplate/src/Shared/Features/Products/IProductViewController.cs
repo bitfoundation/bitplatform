@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Products;
+namespace Boilerplate.Shared.Features.Products;
 
 [Route("api/v1/[controller]/[action]/")]
 public interface IProductViewController : IAppController
