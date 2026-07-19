@@ -48,6 +48,10 @@
     &.bit-inv {
         .bit-tgl-btn {
             border-color: $clr-err;
+
+            &:focus-visible {
+                @include focus-ring($clr-err-focus);
+            }
         }
 
         .bit-tgl-stx {
