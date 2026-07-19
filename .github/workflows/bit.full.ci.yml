@@ -102,7 +102,6 @@ jobs:
 
     - name: Run tests (Blazor Server)
       id: test-postgresql-blazorserver
-      continue-on-error: true
       working-directory: TestPostgreSQL/src/Tests
       run: dotnet test --no-build
 
@@ -116,7 +115,6 @@ jobs:
 
     - name: Run UI tests (Blazor WebAssembly)
       id: test-postgresql-blazorwasm
-      continue-on-error: true
       working-directory: TestPostgreSQL/src/Tests
       run: WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
 
@@ -130,7 +128,6 @@ jobs:
 
     - name: Run UI tests (Blazor WebAssembly, prerender, Firefox)
       id: test-postgresql-blazorwasm-prerender
-      continue-on-error: true
       working-directory: TestPostgreSQL/src/Tests
       run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
 
@@ -144,7 +141,6 @@ jobs:
 
     - name: Run UI tests (InvariantGlobalization)
       id: test-postgresql-invariantglobalization
-      continue-on-error: true
       working-directory: TestPostgreSQL/src/Tests
       run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest&TestCategory!=Localization"
 
@@ -155,18 +151,6 @@ jobs:
         name: postgres-tests-invariantglobalization
         path: ./TestPostgreSQL/src/Tests/TestResults
         retention-days: 14
-
-    - name: Fail job if any test run failed
-      if: ${{ !cancelled() }}
-      run: |
-        if [[ "${{ steps.test-postgresql-blazorserver.outcome }}" == "failure" || \
-              "${{ steps.test-postgresql-blazorwasm.outcome }}" == "failure" || \
-              "${{ steps.test-postgresql-blazorwasm-prerender.outcome }}" == "failure" || \
-              "${{ steps.test-postgresql-invariantglobalization.outcome }}" == "failure" ]]; then
-          echo "::error::One or more PostgreSQL test runs failed. See the step results and uploaded artifacts above."
-          exit 1
-        fi
-
 
 
   test-boilerplate-mssql:
@@ -231,7 +215,6 @@ jobs:
 
     - name: Run tests (Blazor Server)
       id: test-mssql-blazorserver
-      continue-on-error: true
       working-directory: TestSqlServer/src/Tests
       run: dotnet test --no-build
 
@@ -245,7 +228,6 @@ jobs:
 
     - name: Run UI tests (Blazor WebAssembly)
       id: test-mssql-blazorwasm
-      continue-on-error: true
       working-directory: TestSqlServer/src/Tests
       run: WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
 
@@ -259,7 +241,6 @@ jobs:
 
     - name: Run UI tests (Blazor WebAssembly, prerender, Firefox)
       id: test-mssql-blazorwasm-prerender
-      continue-on-error: true
       working-directory: TestSqlServer/src/Tests
       run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
 
@@ -273,7 +254,6 @@ jobs:
 
     - name: Run UI tests (InvariantGlobalization)
       id: test-mssql-invariantglobalization
-      continue-on-error: true
       working-directory: TestSqlServer/src/Tests
       run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest&TestCategory!=Localization"
 
@@ -284,18 +264,6 @@ jobs:
         name: sqlserver-tests-invariantglobalization
         path: ./TestSqlServer/src/Tests/TestResults
         retention-days: 14
-
-    - name: Fail job if any test run failed
-      if: ${{ !cancelled() }}
-      run: |
-        if [[ "${{ steps.test-mssql-blazorserver.outcome }}" == "failure" || \
-              "${{ steps.test-mssql-blazorwasm.outcome }}" == "failure" || \
-              "${{ steps.test-mssql-blazorwasm-prerender.outcome }}" == "failure" || \
-              "${{ steps.test-mssql-invariantglobalization.outcome }}" == "failure" ]]; then
-          echo "::error::One or more SQL Server test runs failed. See the step results and uploaded artifacts above."
-          exit 1
-        fi
-
 
 
   build-boilerplate-configurations:

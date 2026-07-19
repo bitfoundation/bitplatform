@@ -3,12 +3,11 @@ using Boilerplate.Server.Api.Features.Tenants;
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
 /// <summary>
-/// This scoped service resolves the tenant of the current request in the following order:
+/// This singleton service resolves the tenant of the current request in the following order:
 /// 1. The <see cref="AppClaimTypes.TENANT_ID"/> claim of the signed-in user.
 /// 2. The tenant whose custom <see cref="Tenant.Domain"/> equals the complete host of the current request (custom/vanity domains).
 /// 3. The tenant whose name is equal to the sub domain of the current request (For anonymous requests such as the sales module's product pages).
-/// 4. The tenant id that has been set explicitly by <see cref="SetCurrentTenantId(Guid)"/> (Useful in background jobs etc).
-/// 5. The default tenant created by <see cref="TenantConfiguration"/> as fallback.
+/// 4. The default tenant created by <see cref="TenantConfiguration"/> as fallback.
 /// </summary>
 public partial class TenantProvider
 {
@@ -21,13 +20,6 @@ public partial class TenantProvider
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private IDbContextFactory<AppDbContext> dbContextFactory = default!;
 
-    private Guid? tenantId;
-
-    public void SetCurrentTenantId(Guid tenantId)
-    {
-        this.tenantId = tenantId;
-    }
-
     /// <summary>
     /// Note: The lack of async here wouldn't hurt that much, because it needs no I/O at all for signed-in users,
     /// and for anonymous requests the tenants are read from the in-memory (L1) cache instead of redis, because of the fusion cache's hybrid setup.
@@ -36,14 +28,15 @@ public partial class TenantProvider
     {
         var httpContext = httpContextAccessor.HttpContext;
 
-        // Background jobs have no HttpContext: only the explicitly-set tenant is available, otherwise fail closed.
+        // Background jobs have no HttpContext, so there's no tenant to resolve: fail closed instead of silently
+        // serving the fallback tenant's data. Such jobs have to use IgnoreQueryFilters and scope the query by tenant themselves.
         if (httpContext is null)
-            return tenantId ?? throw new InvalidOperationException("Inside background jobs, either set the TenantId explicitly or Use IgnoreQueryFilters");
+            throw new InvalidOperationException("TenantProvider doesn't function inside background jobs, use IgnoreQueryFilters to prevent it from being called.");
 
         var user = httpContext.User;
 
-        // 1. The signed-in user's tenant claim. This is the trusted source and is evaluated BEFORE the explicit
-        // SetCurrentTenantId value, so the (public) setter can never override an authenticated user's tenant within a request.
+        // 1. The signed-in user's tenant claim. This is the trusted source (the claim is server-issued) and takes
+        // precedence over the host based resolution below, which is only meant for anonymous requests.
         if (user.IsAuthenticated() && user.GetTenantId() is Guid claimTenantId)
             return claimTenantId;
 
@@ -65,11 +58,7 @@ public partial class TenantProvider
                 return subDomainTenantId;
         }
 
-        // 4. A tenant id set explicitly via SetCurrentTenantId (rarely used within a request scope).
-        if (tenantId is not null)
-            return tenantId.Value;
-
-        // 5. The default tenant as fallback. You've to implement your custom business here depending on your requirements.
+        // 4. The default tenant as fallback. You've to implement your custom business here depending on your requirements.
         return TenantConfiguration.FallbackTenantId;
     }
 
