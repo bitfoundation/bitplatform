@@ -106,7 +106,17 @@ public static class ScssCompilerService
             // orphaned sass watcher survives. The finally is a backstop for exceptions before shutdown.
             app.Lifetime.ApplicationStopping.Register(() => KillSassProcess(watchScssFilesProcess, logger));
 
-            await app.WaitForShutdownAsync();
+            // Park until the host begins shutting down. Waiting on ApplicationStopping (instead of
+            // app.WaitForShutdownAsync, which itself calls host.StopAsync) keeps Program.cs's
+            // WaitForShutdownAsync as the single code path that drives host shutdown.
+            try
+            {
+                await Task.Delay(Timeout.Infinite, app.Lifetime.ApplicationStopping);
+            }
+            catch (OperationCanceledException)
+            {
+                // The normal shutdown signal, not a failure.
+            }
         }
         catch (Exception ex)
         {
