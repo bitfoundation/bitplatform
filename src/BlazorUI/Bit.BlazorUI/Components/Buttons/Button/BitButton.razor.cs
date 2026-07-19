@@ -28,7 +28,9 @@ public partial class BitButton : BitComponentBase
 
 
     /// <summary>
-    /// Keeps the disabled button focusable by not forcing a negative tabindex when <see cref="BitComponentBase.IsEnabled"/> is false.
+    /// Keeps the disabled button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// Set it to false to render the native <c>disabled</c> attribute and remove the button from the tab order.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
 
@@ -41,6 +43,11 @@ public partial class BitButton : BitComponentBase
     /// If true, adds an <c>aria-hidden</c> attribute instructing screen readers to ignore the button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, the button automatically receives focus when the page renders (rendered as the <c>autofocus</c> attribute).
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
@@ -68,6 +75,12 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The value of the <c>download</c> attribute of the link rendered by the button when <see cref="Href"/> is provided.
+    /// Instructs the browser to download the linked resource instead of navigating to it, using the provided value as the file name.
+    /// </summary>
+    [Parameter] public string? Download { get; set; }
 
     /// <summary>
     /// Makes the Float/FloatAbsolute button draggable on the page.
@@ -103,6 +116,12 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPosition? FloatPosition { get; set; }
+
+    /// <summary>
+    /// The id of the form element that the button is associated with (rendered as the <c>form</c> attribute).
+    /// Allows a submit/reset button to be placed outside of its form element.
+    /// </summary>
+    [Parameter] public string? FormId { get; set; }
 
     /// <summary>
     /// Expand the button width to 100% of the available width.
@@ -165,7 +184,7 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>
-    [Parameter, TwoWayBound]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsLoading { get; set; }
 
     /// <summary>
@@ -226,14 +245,22 @@ public partial class BitButton : BitComponentBase
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// If true, stops the click event from bubbling up to the parent elements.
+    /// </summary>
+    [Parameter] public bool StopPropagation { get; set; }
+
+    /// <summary>
     /// Custom inline styles for different parts of the button.
     /// </summary>
     [Parameter] public BitButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).
+    /// When set to <c>_blank</c> and no <see cref="Rel"/> is provided, <c>rel="noopener"</c> gets added automatically for security.
     /// </summary>
-    [Parameter] public string? Target { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Target { get; set; }
 
     /// <summary>
     /// The tooltip to show when the mouse is placed on the button.
@@ -245,6 +272,13 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
+
+
+
+    /// <summary>
+    /// Gives focus to the root element of the button.
+    /// </summary>
+    public ValueTask FocusAsync() => RootElement.FocusAsync();
 
 
 
@@ -282,6 +316,8 @@ public partial class BitButton : BitComponentBase
                                         : string.Empty);
 
         ClassBuilder.Register(() => SecondaryText.HasValue() || SecondaryTemplate is not null ? "bit-btn-hsc" : string.Empty);
+
+        ClassBuilder.Register(() => IsLoading ? "bit-btn-lda" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -362,7 +398,8 @@ public partial class BitButton : BitComponentBase
     {
         if (IsEnabled is false)
         {
-            _tabIndex = AllowDisabledFocus ? null : "-1";
+            // anchors without an href are not focusable, so an explicit tabindex is required to keep them in the tab order
+            _tabIndex = AllowDisabledFocus ? (Href.HasValue() ? "0" : null) : "-1";
         }
         else
         {
@@ -436,13 +473,20 @@ public partial class BitButton : BitComponentBase
 
     private void OnSetHrefAndRel()
     {
-        if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
+        if (Href.HasNoValue() || Href!.StartsWith('#'))
         {
             _rel = null;
             return;
         }
 
-        _rel = BitLinkRelUtils.GetRels(Rel.Value);
+        if (Rel.HasValue)
+        {
+            _rel = BitLinkRelUtils.GetRels(Rel.Value);
+            return;
+        }
+
+        // protects against reverse-tabnabbing when opening the link in a new browsing context
+        _rel = Target == "_blank" ? "noopener" : null;
     }
 
 
