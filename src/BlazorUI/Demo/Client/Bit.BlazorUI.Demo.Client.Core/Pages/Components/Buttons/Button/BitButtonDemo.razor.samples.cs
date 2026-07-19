@@ -509,17 +509,19 @@ private int clickCounter;";
 <BitButton Color=""BitColor.Error"" Variant=""BitVariant.Text"">Error</BitButton>
 
 
-<BitButton Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitButton>
-<BitButton Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
-<BitButton Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"">PrimaryBackground</BitButton>
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitButton Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitButton>
+    <BitButton Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
+    <BitButton Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"">PrimaryBackground</BitButton>
 
-<BitButton Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitButton>
-<BitButton Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
-<BitButton Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"">SecondaryBackground</BitButton>
+    <BitButton Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitButton>
+    <BitButton Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
+    <BitButton Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"">SecondaryBackground</BitButton>
 
-<BitButton Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitButton>
-<BitButton Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
-<BitButton Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"">TertiaryBackground</BitButton>
+    <BitButton Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitButton>
+    <BitButton Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
+    <BitButton Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"">TertiaryBackground</BitButton>
+</div>
 
 
 <BitButton Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitButton>
@@ -582,17 +584,19 @@ private int clickCounter;";
 <BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"">Error</BitButton>
 <BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Error"">Error</BitButton>
 
-<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitButton>
-<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
-<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"">PrimaryBackground</BitButton>
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"">PrimaryBackground</BitButton>
 
-<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitButton>
-<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
-<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"">SecondaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"">SecondaryBackground</BitButton>
 
-<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitButton>
-<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
-<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"">TertiaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
+    <BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"">TertiaryBackground</BitButton>
+</div>
 
 <BitButton IsEnabled=""false"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitButton>
 <BitButton IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Outline"">PrimaryForeground</BitButton>

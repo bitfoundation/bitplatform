@@ -172,13 +172,16 @@ public class BitThemeProvider : ComponentBase
 
         builder.OpenElement(1, RootElement ?? "div");
 
-        // Splat user attributes individually so we can pull out any "style" entry and merge it
-        // with our CSS-variable declarations (last-write-wins semantics on RenderTreeBuilder mean
-        // a single AddMultipleAttributes followed by AddAttribute("style", ...) would silently
-        // drop the user's style).
+        // Collect user attributes into a single dictionary (splatted via AddMultipleAttributes so
+        // the render-tree diff reconciles a changing attribute set correctly), pulling out any
+        // "style" entry first so we can merge it with our CSS-variable declarations. It is added
+        // separately below rather than left in the splat because last-write-wins semantics on
+        // RenderTreeBuilder mean a splat followed by AddAttribute("style", ...) would silently drop
+        // the user's style.
         string? userStyle = null;
         if (AdditionalAttributes is not null)
         {
+            var attributes = new Dictionary<string, object>(StringComparer.Ordinal);
             foreach (var kv in AdditionalAttributes)
             {
                 if (string.Equals(kv.Key, "style", StringComparison.OrdinalIgnoreCase))
@@ -187,8 +190,10 @@ public class BitThemeProvider : ComponentBase
                     continue;
                 }
 
-                builder.AddAttribute(2, kv.Key, kv.Value);
+                attributes[kv.Key] = kv.Value;
             }
+
+            builder.AddMultipleAttributes(2, attributes);
         }
 
         // Compose the inline style. The wrapper defaults to `display:contents` so it produces no

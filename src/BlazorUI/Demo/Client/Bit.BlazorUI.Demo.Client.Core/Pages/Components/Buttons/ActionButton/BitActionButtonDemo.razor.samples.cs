@@ -301,9 +301,11 @@ private bool templateIsLoading;";
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SevereWarning"">SevereWarning</BitActionButton>
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Error"">Error</BitActionButton>
 
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitActionButton>
+<div style=""background:var(--bit-clr-fg-ter);padding:1rem"">
+    <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitActionButton>
+    <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitActionButton>
+    <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitActionButton>
+</div>
 
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitActionButton>
 <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitActionButton>

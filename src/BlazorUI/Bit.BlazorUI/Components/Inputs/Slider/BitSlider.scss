@@ -28,6 +28,12 @@ $BgHover: $clr-pri-light;
         box-shadow: var(--bit-shd-focus-ring,
             0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri-focus},
             0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus});
+
+        // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave
+        // the focused thumb with no visible indicator. Restore a real outline (matching focus-ring).
+        @media (forced-colors: active) {
+            outline: #{$shp-focus-ring-width} solid Highlight;
+        }
     }
 
     input:focus-visible::-moz-range-thumb,
@@ -36,6 +42,10 @@ $BgHover: $clr-pri-light;
         box-shadow: var(--bit-shd-focus-ring,
             0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri-focus},
             0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus});
+
+        @media (forced-colors: active) {
+            outline: #{$shp-focus-ring-width} solid Highlight;
+        }
     }
 
     /* webkit thumb */

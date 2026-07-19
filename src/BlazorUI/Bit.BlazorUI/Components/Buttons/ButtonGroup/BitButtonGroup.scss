@@ -14,7 +14,7 @@
     // The ring is rendered on the group container (like the MenuButton split-button) because the
     // root's overflow:hidden would clip a box-shadow ring drawn on the focused item itself.
     &:focus-visible,
-    &:focus-within {
+    &:has(:focus-visible) {
         @include focus-ring(var(--bit-btg-clr-focus));
     }
 

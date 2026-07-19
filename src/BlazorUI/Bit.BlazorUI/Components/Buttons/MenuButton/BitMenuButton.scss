@@ -14,7 +14,7 @@
     border-radius: $shp-border-radius;
 
     &:focus-visible,
-    &:focus-within {
+    &:has(:focus-visible) {
         @include focus-ring(var(--bit-mnb-clr-focus));
     }
 
