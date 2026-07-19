@@ -32,7 +32,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
 
     - name: Publish
-      run: dotnet publish src/Brouter/InteralDemos/Wasm/Bit.Brouter.Demos.Wasm/Bit.Brouter.Demos.Wasm.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: dotnet publish src/Brouter/Demos/Wasm/Bit.Brouter.Demos.Wasm/Bit.Brouter.Demos.Wasm.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
 
     - name: Upload artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

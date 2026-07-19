@@ -26,9 +26,9 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
-A runnable tour of every feature below lives in [`InteralDemos`](InteralDemos/) - run the
-[Server](InteralDemos/Server/) project (`dotnet run`) and click through the home page cards; the
-same shared demo pages also run under [WASM](InteralDemos/Wasm/) and [Auto](InteralDemos/Auto/)
+A runnable tour of every feature below lives in [`Demos`](Demos/) - run the
+[Server](Demos/Server/) project (`dotnet run`) and click through the home page cards; the
+same shared demo pages also run under [WASM](Demos/Wasm/) and [Auto](Demos/Auto/)
 render modes.
 
 ## Quick start
