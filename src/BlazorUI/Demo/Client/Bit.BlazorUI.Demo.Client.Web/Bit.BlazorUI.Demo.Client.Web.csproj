@@ -34,6 +34,7 @@
 
     <ItemGroup>
         <PackageReference Include="Bit.Bswup" Version="10.5.0-pre-08" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -50,6 +51,15 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Lazily loaded on demand by the Legacy BitChart demo (see BitChartDemo). These assemblies
+             are only needed by the legacy Chart's Newtonsoft.Json serialization, so keeping them out
+             of the initial WASM download reduces the app's startup payload. -->
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
