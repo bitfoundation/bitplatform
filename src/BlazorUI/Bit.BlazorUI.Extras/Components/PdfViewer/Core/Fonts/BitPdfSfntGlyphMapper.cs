@@ -32,7 +32,7 @@ internal static class BitPdfSfntGlyphMapper
             var names = ReadPost(font, dir);               // glyph name → gid
 
             // Map each byte code to a unique Private-Use-Area codepoint (glyph
-            // painting is by exact glyph id — no shaping, no Unicode collisions).
+            // painting is by exact glyph id - no shaping, no Unicode collisions).
             var result = new Dictionary<int, int>();
             for (int code = 0; code < 256; code++)
             {

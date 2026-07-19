@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <param name="TextLayerHtml">
 /// The page's DOM part: the positioned page <c>div</c> containing the
 /// <c>&lt;canvas&gt;</c> placeholder, the selectable text layer, and link/
-/// annotation overlays — everything except the painted content.
+/// annotation overlays - everything except the painted content.
 /// </param>
 /// <param name="OpsJson">
 /// The display list to replay onto the canvas (JSON array of drawing ops),

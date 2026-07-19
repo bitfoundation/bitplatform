@@ -1,6 +1,6 @@
 ﻿// A conservative TrueType/OpenType (sfnt) sanitizer. Embedded PDF subset fonts
 // frequently ship with an unsorted table directory, wrong table checksums, a
-// wrong head.checkSumAdjustment, or unpadded tables — all of which strict font
+// wrong head.checkSumAdjustment, or unpadded tables - all of which strict font
 // parsers (including the browser's OTS) reject, so the @font-face silently fails
 // to load. This rebuilds a structurally valid sfnt: recognized tables are kept
 // verbatim, the directory is re-sorted, tables are 4-byte aligned, and all
@@ -21,7 +21,7 @@ internal static class BitPdfTrueTypeSanitizer
 
     /// <summary>
     /// As <see cref="Sanitize(byte[])"/>, but replaces the font's <c>cmap</c> with
-    /// <paramref name="replacementCmap"/> when supplied — used to inject a clean
+    /// <paramref name="replacementCmap"/> when supplied - used to inject a clean
     /// synthetic Unicode cmap for subset fonts whose own cmap OTS rejects.
     /// </summary>
     public static byte[]? Sanitize(byte[] input, byte[]? replacementCmap)

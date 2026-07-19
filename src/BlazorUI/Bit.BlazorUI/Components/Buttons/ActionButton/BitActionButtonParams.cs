@@ -37,6 +37,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public bool? AriaHidden { get; set; }
 
     /// <summary>
+    /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
+    /// </summary>
+    public bool? AutoLoading { get; set; }
+
+    /// <summary>
     /// The type of the button element; defaults to <c>submit</c> inside an <see cref="Microsoft.AspNetCore.Components.Forms.EditForm"/> otherwise <c>button</c>.
     /// </summary>
     public BitButtonType? ButtonType { get; set; }
@@ -50,6 +55,12 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     /// The general color of the button that applies to the icon and text of the action button.
     /// </summary>
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The value of the download attribute of the link rendered by the button when the Href parameter is provided.
+    /// Instructs the browser to download the linked resource instead of navigating to it.
+    /// </summary>
+    public string? Download { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the component should expand to occupy the full available width.
@@ -108,6 +119,21 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public bool? IsLoading { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the loading indicator appears after entering the loading state.
+    /// </summary>
+    public int? LoadingDelay { get; set; }
+
+    /// <summary>
+    /// The text to show next to the spinner while the action button is in the loading state, replacing the button body.
+    /// </summary>
+    public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// Enables re-clicking the action button while it is in the loading state.
+    /// </summary>
+    public bool? Reclickable { get; set; }
+
+    /// <summary>
     /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
     /// </summary>
     /// <remarks>
@@ -124,6 +150,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     /// Sets the preset size (Small, Medium, Large) for typography and padding of the action button.
     /// </summary>
     public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// If true, stops the propagation of the click event to the parent elements.
+    /// </summary>
+    public bool? StopPropagation { get; set; }
 
     /// <summary>
     /// Gets or sets the custom CSS inline styles to apply to the action button component.
@@ -189,6 +220,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.AriaHidden = AriaHidden.Value;
         }
 
+        if (AutoLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(AutoLoading)))
+        {
+            bitActionButton.AutoLoading = AutoLoading.Value;
+        }
+
         if (ButtonType.HasValue && bitActionButton.HasNotBeenSet(nameof(ButtonType)))
         {
             bitActionButton.ButtonType = ButtonType.Value;
@@ -215,13 +251,19 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.ClassBuilder.Reset();
         }
 
+        if (Download.HasValue() && bitActionButton.HasNotBeenSet(nameof(Download)))
+        {
+            bitActionButton.Download = Download;
+        }
+
         bool hrefWasSet = false;
         bool relWasSet = false;
+        bool targetWasSet = false;
 
         if (Href.HasValue() && bitActionButton.HasNotBeenSet(nameof(Href)))
         {
             bitActionButton.Href = Href;
-            
+
             hrefWasSet = true;
         }
 
@@ -254,6 +296,21 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.ClassBuilder.Reset();
         }
 
+        if (LoadingDelay.HasValue && bitActionButton.HasNotBeenSet(nameof(LoadingDelay)))
+        {
+            bitActionButton.LoadingDelay = LoadingDelay.Value;
+        }
+
+        if (LoadingLabel.HasValue() && bitActionButton.HasNotBeenSet(nameof(LoadingLabel)))
+        {
+            bitActionButton.LoadingLabel = LoadingLabel;
+        }
+
+        if (Reclickable.HasValue && bitActionButton.HasNotBeenSet(nameof(Reclickable)))
+        {
+            bitActionButton.Reclickable = Reclickable.Value;
+        }
+
         if (Rel.HasValue && bitActionButton.HasNotBeenSet(nameof(Rel)))
         {
             bitActionButton.Rel = Rel.Value;
@@ -261,17 +318,16 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             relWasSet = true;
         }
 
-        // Call OnSetHrefAndRel if either Href or Rel was set, to update the _rel field
-        if (hrefWasSet || relWasSet)
-        {
-            bitActionButton.OnSetHrefAndRel();
-        }
-
         if (Size.HasValue && bitActionButton.HasNotBeenSet(nameof(Size)))
         {
             bitActionButton.Size = Size.Value;
 
             bitActionButton.ClassBuilder.Reset();
+        }
+
+        if (StopPropagation.HasValue && bitActionButton.HasNotBeenSet(nameof(StopPropagation)))
+        {
+            bitActionButton.StopPropagation = StopPropagation.Value;
         }
 
         if (Styles is not null && bitActionButton.HasNotBeenSet(nameof(Styles)))
@@ -282,6 +338,14 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
         if (Target.HasValue() && bitActionButton.HasNotBeenSet(nameof(Target)))
         {
             bitActionButton.Target = Target;
+
+            targetWasSet = true;
+        }
+
+        // Call OnSetHrefRelAndTarget if any of Href, Rel or Target was set, to update the rel attribute value
+        if (hrefWasSet || relWasSet || targetWasSet)
+        {
+            bitActionButton.OnSetHrefRelAndTarget();
         }
 
         if (Title.HasValue() && bitActionButton.HasNotBeenSet(nameof(Title)))

@@ -31,6 +31,11 @@ public class BitButtonClassStyles
     public string? Secondary { get; set; }
 
     /// <summary>
+    /// Custom class or style applied to the wrapper of the content that keeps the button size while it is hidden in the loading state.
+    /// </summary>
+    public string? HiddenContent { get; set; }
+
+    /// <summary>
     /// Custom class or style applied to the loading container.
     /// </summary>
     public string? LoadingContainer { get; set; }

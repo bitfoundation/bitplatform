@@ -32,7 +32,9 @@ public class Middlewares
 
         if (env.IsDevelopment())
         {
+#if INCLUDE_WASM
             app.UseWebAssemblyDebugging();
+#endif
         }
         else
         {
@@ -107,7 +109,9 @@ public class Middlewares
         // Handle the rest of requests with blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
+#if INCLUDE_WASM
             .AddInteractiveWebAssemblyRenderMode()
+#endif
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Bit.BlazorUI.Demo") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
     }
 

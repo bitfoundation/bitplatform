@@ -383,7 +383,7 @@ public sealed class BitPdfFont
                     : (data, "cff");
             }
             // Type1 program (/FontFile): parse it and build an OpenType/CFF font the
-            // browser can load. On any failure fall through to a substitute font —
+            // browser can load. On any failure fall through to a substitute font -
             // a rejected @font-face simply falls back to the generic family.
             if (descriptor.Get("FontFile") is BitPdfStream t1Stream)
             {
@@ -761,7 +761,7 @@ public sealed class BitPdfFont
         int index = code - _firstChar;
         if (index >= 0 && index < _widths.Length)
         {
-            // An explicit width of 0 is valid (e.g. combining marks) — use it
+            // An explicit width of 0 is valid (e.g. combining marks) - use it
             // rather than falling through to a substitute metric.
             return _widths[index] * _glyphWidthScale;
         }

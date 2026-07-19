@@ -25,6 +25,7 @@
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj">
       <Deploy />
     </Project>
+    <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Web.Shared/Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Web/Bit.BlazorUI.Demo.Client.Web.csproj" />
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Bit.BlazorUI.Demo.Client.Windows.csproj" />
   </Folder>
@@ -39,6 +40,7 @@
   <Project Path="Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
   <Project Path="Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
   <Project Path="Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
+  <Project Path="Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />
   <Project Path="Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
   <Project Path="Bit.BlazorUI/Bit.BlazorUI.csproj" />
 </Solution>

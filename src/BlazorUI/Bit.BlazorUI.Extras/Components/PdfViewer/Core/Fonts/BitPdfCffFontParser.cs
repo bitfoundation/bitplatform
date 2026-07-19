@@ -25,7 +25,7 @@ internal sealed class BitPdfCffFontParser
     /// <summary>The raw CFF Encoding offset from the Top DICT (0/1 = predefined).</summary>
     public int EncodingOffset { get; private set; }
 
-    /// <summary><c>true</c> for a CID-keyed CFF (ROS present) — unsupported here.</summary>
+    /// <summary><c>true</c> for a CID-keyed CFF (ROS present) - unsupported here.</summary>
     public bool IsCid { get; private set; }
 
     public static BitPdfCffFontParser? Parse(byte[] cff)

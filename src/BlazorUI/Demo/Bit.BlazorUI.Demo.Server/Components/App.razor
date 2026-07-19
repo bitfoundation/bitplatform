@@ -1,9 +1,25 @@
 @using Bit.BlazorUI.Demo.Client.Core.Shared
-@using Bit.BlazorUI.Demo.Client.Web.Components
+@using Bit.BlazorUI.Demo.Client.Web.Shared.Components
 
 @{
+#if INCLUDE_WASM
+    var includeWasm = true;
+#else
+    var includeWasm = false;
+#endif
+#if DEBUG
+    // While debugging, boot from the framework-served blazor.web.js instead of the ES2019-transpiled
+    // bit.blazor.web.es2019.js variant, which is only needed to support legacy (non-ES2019+) browsers.
+    var blazorWebScript = "_framework/blazor.web.js";
+#else
+    var blazorWebScript = "_framework/bit.blazor.web.es2019.js";
+#endif
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
-    var renderMode = noPrerender ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.Current;
+    // Without the WASM client in the build, WebAssembly render modes can't boot, so fall back to Blazor Server
+    // even where AppRenderMode.Current would pick WebAssembly (e.g. Release with IncludeWasm=false).
+    var renderMode = noPrerender
+        ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
+        : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
 }
 
 <!DOCTYPE html>
@@ -71,15 +87,20 @@
 
     <HeadOutlet @rendermode=renderMode />
 
-    <Link rel="manifest" Href="manifest.json" />
-    <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
-    <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
+    @if (includeWasm)
+    {
+        @* These files live in the Client.Web project's wwwroot, so they only exist when the WASM client is part of the build. *@
+        <Link rel="manifest" Href="manifest.json" />
+        <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
+    }
+    <Link rel="icon" Href="_content/Bit.BlazorUI.Demo.Client.Core/favicon.ico" type="image/x-icon" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main bit-blazor-web">
 
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.css" />
@@ -94,13 +115,23 @@
 
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-        <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-        <AppBswupProgressBar />
+        @if (includeWasm)
+        {
+            <Script Src="@blazorWebScript" autostart="false"></Script>
+            <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="@blazorWebScript"></Script>
+            <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+            <AppBswupProgressBar />
+        }
+        else
+        {
+            @* No WASM client in this build (Debug renders in Blazor Server mode), so boot blazor directly without Bswup/service-worker.
+               Uses the framework-served blazor.web.js (always available) rather than the ES2019 variant, which only ships in the WASM build. *@
+            <Script Src="_framework/blazor.web.js"></Script>
+        }
         <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
     }
 </body>

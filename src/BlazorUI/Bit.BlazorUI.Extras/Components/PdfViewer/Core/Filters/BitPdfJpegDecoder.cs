@@ -101,7 +101,7 @@ internal static class BitPdfJpegDecoder
             switch (marker)
             {
                 case 0xC0: // SOF0 baseline
-                case 0xC1: // SOF1 extended sequential (Huffman) — same layout
+                case 0xC1: // SOF1 extended sequential (Huffman) - same layout
                 {
                     precision = data[segStart];
                     frameHeight = (data[segStart + 1] << 8) | data[segStart + 2];
@@ -122,7 +122,7 @@ internal static class BitPdfJpegDecoder
                     }
                     break;
                 }
-                case 0xC2: // SOF2 progressive — not supported here
+                case 0xC2: // SOF2 progressive - not supported here
                     return null;
                 case 0xC4: // DHT
                     ReadHuffmanTables(data, segStart, segEnd, huffDc, huffAc);

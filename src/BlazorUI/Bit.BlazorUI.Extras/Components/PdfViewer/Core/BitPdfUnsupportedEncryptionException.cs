@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Thrown when a document declares an <c>/Encrypt</c> dictionary that this
-/// library cannot handle — an unsupported security handler or revision, or a
+/// library cannot handle - an unsupported security handler or revision, or a
 /// cryptographic primitive that is unavailable on the current platform (for
 /// example MD5/AES in the browser WebAssembly sandbox). Distinct from
 /// <see cref="BitPdfFormatException"/> so callers can surface a clear "this

@@ -2,6 +2,27 @@
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
+
+    &.column {
+        flex-flow: column nowrap;
+        align-items: flex-start;
+    }
+}
+
+.clickable-row {
+    gap: 0.5rem;
+    display: flex;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--bit-clr-brd-sec);
+
+    &:hover {
+        background-color: var(--bit-clr-bg-sec);
+    }
 }
 
 .form-container {

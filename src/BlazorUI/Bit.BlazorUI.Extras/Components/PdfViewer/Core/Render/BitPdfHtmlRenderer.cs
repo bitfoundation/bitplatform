@@ -54,7 +54,7 @@ public sealed class BitPdfHtmlRenderer
 
     // Coalesced selection/text layer (the pdf.js model): text is accumulated here
     // separately from the painted glyph spans and emitted once, on top, at page end
-    // — decoupled from paint order. Adjacent runs on a baseline merge into a single
+    // - decoupled from paint order. Adjacent runs on a baseline merge into a single
     // transparent, selectable span per visual line (with spaces inserted for gaps),
     // so double-click words, triple-click lines, click-drag and copy behave like
     // normal text instead of fragmenting per glyph.
@@ -65,8 +65,9 @@ public sealed class BitPdfHtmlRenderer
 
     /// <summary>
     /// How painted text runs are emitted. <see cref="BitPdfTextCoalescing.Compact"/>
-    /// merges same-line, same-style substitute-font runs into one span per visual
-    /// line (embedded-font runs always stay per-run exact). Default is
+    /// merges same-line, same-style runs - including embedded-font (PUA
+    /// glyph-mapped) ones - into one span per visual line; only non-upright
+    /// (rotated, mirrored, or skewed) text stays per-run exact. Default is
     /// <see cref="BitPdfTextCoalescing.Exact"/>.
     /// </summary>
     public BitPdfTextCoalescing TextCoalescing { get; set; } = BitPdfTextCoalescing.Exact;
@@ -270,7 +271,7 @@ public sealed class BitPdfHtmlRenderer
         // in, so dragging over text selects while empty areas stay clickable.
         // font-size:0 collapses the flow-level <br> separators (the spans set their
         // own size): the brs still put line breaks in copied text, but their empty
-        // line boxes — which stack at the container's top-left — become zero-sized,
+        // line boxes - which stack at the container's top-left - become zero-sized,
         // so a multi-line selection no longer paints stray highlight blocks along
         // the page's left edge.
         if (_selLayer.Length > 0)
@@ -1336,7 +1337,7 @@ public sealed class BitPdfHtmlRenderer
         int colon = uri.IndexOf(':');
         if (colon <= 0)
         {
-            return false; // no scheme, or leading ':' — treat as unsafe
+            return false; // no scheme, or leading ':' - treat as unsafe
         }
         // A URI scheme is letters/digits/+/-/. and must precede any '/', '?' or '#'.
         for (int i = 0; i < colon; i++)
@@ -1370,8 +1371,8 @@ public sealed class BitPdfHtmlRenderer
         {
             return null;
         }
-        // Key the cache by the font's object identity — the indirect reference if
-        // present (value-equal), otherwise the dictionary instance — rather than
+        // Key the cache by the font's object identity - the indirect reference if
+        // present (value-equal), otherwise the dictionary instance - rather than
         // "depth:name". Different resource dictionaries can reuse a resource name
         // for different fonts, so a name-based key returned the wrong font.
         object? raw = fonts.GetRaw(name);
@@ -1477,7 +1478,7 @@ public sealed class BitPdfHtmlRenderer
     private void ShowType3Text(List<BitPdfGlyph> glyphs)
     {
         // Type3 glyphs paint graphics directly (below), reached via a whitelisted
-        // show-text operator — flush any pending coalesced line to keep paint order.
+        // show-text operator - flush any pending coalesced line to keep paint order.
         FlushPaintedLine();
 
         BitPdfFont font = _state.Font!;
@@ -1592,18 +1593,18 @@ public sealed class BitPdfHtmlRenderer
             AccumulateSelectionText(realText, trm, left, top, fontHeight, targetWidth, linear);
         }
 
-        // Emit only the PAINTED layer. It is never selectable or searchable — all
+        // Emit only the PAINTED layer. It is never selectable or searchable - all
         // selection and find-in-page run against the coalesced layer above.
         if (invisible)
         {
             // Render modes 3/7 (e.g. an OCR text layer over a scanned image) paint
             // nothing, so there is no glyph layer and no embedded @font-face to
-            // inline — the coalesced selection span alone carries the text.
+            // inline - the coalesced selection span alone carries the text.
             return;
         }
 
         // Canvas mode: one fillText/strokeText op per run at its exact device
-        // matrix (no DOM cost, so no coalescing) — the selection layer above
+        // matrix (no DOM cost, so no coalescing) - the selection layer above
         // already carries the real Unicode.
         if (_ops is not null)
         {
@@ -1612,13 +1613,14 @@ public sealed class BitPdfHtmlRenderer
         }
 
         // Compact mode: coalesce painted runs into one span per visual line.
-        // Embedded fonts — including PUA glyph-mapped ones, which is how every
-        // embedded font in this engine paints — coalesce too: the browser lays the
+        // Embedded fonts - including PUA glyph-mapped ones, which is how every
+        // embedded font in this engine paints - coalesce too: the browser lays the
         // merged run out with the font's own advance widths, so only explicit TJ
         // kerning between runs is approximated while data-w pins the line's total
         // advance. (A gap-bridging space missing from a subset font falls through
-        // to the generic fallback in the font stack.) Only rotated/mirrored text
-        // is excluded — its geometry can't be reduced to a horizontal line.
+        // to the generic fallback in the font stack.) Only non-upright text
+        // (rotated/mirrored/skewed) is excluded - its geometry can't be reduced
+        // to a horizontal line.
         if (TextCoalescing == BitPdfTextCoalescing.Compact
             && a > 1e-3 && d > 1e-3
             && Math.Abs(b) < 1e-3 && Math.Abs(c) < 1e-3)
@@ -1639,8 +1641,8 @@ public sealed class BitPdfHtmlRenderer
 
     /// <summary>
     /// Emits one canvas text op. The matrix's linear part maps the run's local em
-    /// space (x right, y down, baseline at the origin) to device space — identical
-    /// to the HTML span's transform — and (e, f) is the baseline origin, matching
+    /// space (x right, y down, baseline at the origin) to device space - identical
+    /// to the HTML span's transform - and (e, f) is the baseline origin, matching
     /// canvas's alphabetic textBaseline. The interpreter measures the drawn text
     /// and applies scaleX width-correction to <paramref name="targetWidth"/>, the
     /// run's PDF-computed advance (the data-w mechanism, done inline).
@@ -1933,7 +1935,7 @@ public sealed class BitPdfHtmlRenderer
     /// <summary>
     /// The CSS font-family list for <paramref name="font"/>, registering the
     /// embedded face's <c>@font-face</c> rule on first use. Canvas text uses the
-    /// same registered faces — <c>document.fonts</c> serves them to
+    /// same registered faces - <c>document.fonts</c> serves them to
     /// <c>ctx.fillText</c> once loaded.
     /// </summary>
     private string FontFamilyList(BitPdfFont font)

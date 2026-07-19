@@ -9,7 +9,7 @@ public partial class BitButtonDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Keeps the disabled button focusable by not forcing a negative tabindex when IsEnabled is false.",
+            Description = "Keeps the disabled button focusable and discoverable by screen readers, rendering aria-disabled instead of the native disabled attribute when IsEnabled is false, preserving a consistent tab order. Set it to false to render the native disabled attribute and remove the button from the tab order.",
         },
         new()
         {
@@ -24,6 +24,13 @@ public partial class BitButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the button.",
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the button automatically receives focus when the page renders (rendered as the autofocus attribute).",
         },
         new()
         {
@@ -68,6 +75,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Download",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The value of the download attribute of the link rendered by the button when Href is provided. Instructs the browser to download the linked resource instead of navigating to it, using the provided value as the file name.",
+        },
+        new()
+        {
             Name = "Draggable",
             Type = "bool",
             DefaultValue = "false",
@@ -109,6 +123,13 @@ public partial class BitButtonDemo
             Description = "Specifies the position of the floating button.",
             LinkType = LinkType.Link,
             Href = "#button-position"
+        },
+        new()
+        {
+            Name = "FormId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the form element that the button is associated with (rendered as the form attribute). Allows a submit/reset button to be placed outside of its form element.",
         },
         new()
         {
@@ -214,7 +235,7 @@ public partial class BitButtonDemo
             Name = "Reclickable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables re-clicking in loading state when AutoLoading is enabled.",
+            Description = "Enables re-clicking while the button is in the loading state.",
         },
         new()
         {
@@ -250,6 +271,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "StopPropagation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, stops the click event from bubbling up to the parent elements.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitButtonClassStyles?",
             DefaultValue = "null",
@@ -262,7 +290,7 @@ public partial class BitButtonDemo
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).",
+            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter). When set to _blank and no Rel is provided, rel=\"noopener\" gets added automatically for security.",
         },
         new()
         {
@@ -325,6 +353,13 @@ public partial class BitButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom class or style applied to the secondary section."
+               },
+               new()
+               {
+                   Name = "HiddenContent",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom class or style applied to the wrapper of the content that keeps the button size while it is hidden in the loading state."
                },
                new()
                {
@@ -810,7 +845,7 @@ public partial class BitButtonDemo
 
     private bool templateIsLoading;
 
-    private string? floatOffset;
+    private string? floatOffset = "63px";
     private BitPosition floatPosition = BitPosition.BottomRight;
     private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues<BitPosition>()
                                                                                 .Cast<BitPosition>()
@@ -898,6 +933,11 @@ public partial class BitButtonDemo
 
     private int clickCounter;
 
+    private int parentClickCounter;
+    private int buttonClickCounter;
+
+    private BitButton focusButtonRef = default!;
+
     private bool formIsValidSubmit;
     private ButtonValidationModel buttonValidationModel = new();
 
@@ -919,6 +959,22 @@ public partial class BitButtonDemo
         formIsValidSubmit = false;
     }
 
+    private bool externalFormSubmitted;
+    private ButtonValidationModel externalFormModel = new();
+
+    private async Task HandleExternalFormValidSubmit()
+    {
+        externalFormSubmitted = true;
+
+        await Task.Delay(2000);
+
+        externalFormModel = new();
+
+        externalFormSubmitted = false;
+
+        StateHasChanged();
+    }
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
-    private async Task ScrollToFloat() => await _js.ScrollToElement("example10");
+    private async Task ScrollToFloat() => await _js.ScrollToElement("example12");
 }

@@ -374,7 +374,7 @@
     pointer-events: auto;
 }
 
-/* Selection spans (data-bit-pdv-sel) hold the real Unicode but paint nothing — keep
+/* Selection spans (data-bit-pdv-sel) hold the real Unicode but paint nothing - keep
    them transparent even while selected so only the highlight box shows and the
    painted glyphs beneath stay visible through it. Without this the browser paints
    the selected substitute glyphs opaque, stacking a wrong-font copy over the

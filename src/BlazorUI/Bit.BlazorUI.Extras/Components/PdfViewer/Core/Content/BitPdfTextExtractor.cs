@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Extracts the visible text of a page by replaying its content stream and
 /// decoding show-text operators through each selected font. Positioning is
-/// approximated with simple space/newline heuristics — enough for search and
+/// approximated with simple space/newline heuristics - enough for search and
 /// copy, not a layout-faithful reconstruction.
 /// </summary>
 public static class BitPdfTextExtractor

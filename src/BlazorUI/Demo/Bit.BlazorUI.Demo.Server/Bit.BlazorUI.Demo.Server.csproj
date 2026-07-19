@@ -2,11 +2,24 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <UserSecretsId>fcf350f4-eef5-430b-a5cb-144713a68932</UserSecretsId>
 
+        <!-- In Debug the app renders in Blazor Server mode (see AppRenderMode.Current), so building the
+             Blazor WebAssembly client (webcil, boot json, service worker manifest, compression) on every
+             inner-loop build is pure overhead. The WASM client is therefore only referenced in Release
+             builds, or on demand via `dotnet build/run -p:IncludeWasm=true` (required to run/debug the
+             Blazor WebAssembly client or the ?no-prerender WASM mode in Debug). -->
+        <IncludeWasm Condition=" '$(IncludeWasm)' == '' And '$(Configuration)' == 'Release' ">true</IncludeWasm>
+        <IncludeWasm Condition=" '$(IncludeWasm)' == '' ">false</IncludeWasm>
+        <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
+    </PropertyGroup>
+
+    <!-- Self-contained + ReadyToRun are deployment concerns; keeping them out of Debug builds avoids
+         RID-specific output with the whole runtime copied (and locked) on every dev build. -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <SelfContained>true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
-        <UserSecretsId>fcf350f4-eef5-430b-a5cb-144713a68932</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -45,7 +58,8 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.BlazorUI.Demo.Shared\Bit.BlazorUI.Demo.Shared.csproj" />
         <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
-        <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
+        <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Web.Shared\Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
+        <ProjectReference Condition=" '$(IncludeWasm)' == 'true' " Include="..\Client\Bit.BlazorUI.Demo.Client.Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
     </ItemGroup>
 
     <ItemGroup>

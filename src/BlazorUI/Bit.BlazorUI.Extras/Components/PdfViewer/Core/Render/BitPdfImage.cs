@@ -50,7 +50,7 @@ internal static class BitPdfImage
         {
             // Browsers decode plain RGB/YCbCr JPEG correctly, so pass those through.
             // But CMYK JPEGs render wrong in browsers, and /SMask, /Mask and a
-            // non-default /Decode all need the pixels in hand — decode in C# then.
+            // non-default /Decode all need the pixels in hand - decode in C# then.
             BitPdfColorSpace jcs = BitPdfColorSpace.Create(dict.Get("ColorSpace", "CS"), xref, resources);
             bool needsCSharp = jcs.Components == 4
                 || dict.Get("SMask") is BitPdfStream
@@ -407,7 +407,7 @@ internal static class BitPdfImage
 
         // The SMask's own bytes need the same image decoding as a base image. We
         // don't yet decode DCT/JPX masks, so applying the raw compressed bytes as
-        // alpha would paint noise — leave the image fully opaque instead.
+        // alpha would paint noise - leave the image fully opaque instead.
         var maskFilters = GetFilterNames(smask.Dict);
         if (maskFilters.Contains("DCTDecode") || maskFilters.Contains("DCT")
             || maskFilters.Contains("JPXDecode") || maskFilters.Contains("JBIG2Decode"))
