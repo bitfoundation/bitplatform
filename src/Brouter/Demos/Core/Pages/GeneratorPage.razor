@@ -27,9 +27,20 @@
         (<code>Path="@@expr"</code>) can't be known at compile time, so that tag and everything
         beneath it is skipped.
     </p>
-    <pre class="bb-code"><span class="c">&lt;!-- Bit.Brouter.Demos.Core.csproj - referenced as an analyzer: --&gt;</span>
-&lt;<span class="k">ProjectReference</span> Include=<span class="s">"..\Bit.Brouter.Generators\Bit.Brouter.Generators.csproj"</span>
-                  OutputItemType=<span class="s">"Analyzer"</span> ReferenceOutputAssembly=<span class="s">"false"</span> /&gt;</pre>
+    <pre class="bb-code"><span class="c"># Add the router and the generator to your Blazor project:</span>
+dotnet add package Bit.Brouter
+dotnet add package Bit.Brouter.Generators
+
+<span class="c">&lt;!-- ...or declare them in your .csproj. Bit.Brouter.Generators is an analyzer-only
+     package (it ships no runtime assembly), so PrivateAssets="all" keeps it out of
+     your own package's dependencies: --&gt;</span>
+&lt;<span class="k">PackageReference</span> Include=<span class="s">"Bit.Brouter"</span> Version=<span class="s">"10.5.0"</span> /&gt;
+&lt;<span class="k">PackageReference</span> Include=<span class="s">"Bit.Brouter.Generators"</span> Version=<span class="s">"10.5.0"</span> PrivateAssets=<span class="s">"all"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        Nothing else is wired up by hand: the package drops the generator into the compiler, and
+        the very next build emits <code>BrouterRoutes</code> from the routes already declared in
+        your project. No tool to run, no file to check in.
+    </p>
     <p class="bb-card-desc">
         The output is a single <code>static partial class BrouterRoutes</code> in your project's
         root namespace (<code>BrouterRoutes.g.cs</code>). Duplicate templates across files are
