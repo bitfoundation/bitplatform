@@ -15,6 +15,14 @@ namespace BitBlazorUI {
 
             Pivot.dispose(id);
 
+            // the id of the component changes between renders in some scenarios, so any leftover
+            // instance of the same header element gets disposed here to not keep observing it.
+            Object.keys(Pivot._instances).forEach(key => {
+                if (Pivot._instances[key].isHeader(header)) {
+                    Pivot.dispose(key);
+                }
+            });
+
             const instance = new PivotInstance(id, header, moreButton, isMenu, isSlide, isRtl, isVertical, dotnetObj);
             Pivot._instances[id] = instance;
             instance.start();
@@ -38,6 +46,16 @@ namespace BitBlazorUI {
             instance.dispose();
             delete Pivot._instances[id];
         }
+
+        public static disposeInstance(id: string, instance: PivotInstance) {
+            // a newer instance may already be registered with this id, so only the
+            // instance itself gets disposed here to not take down its replacement.
+            if (Pivot._instances[id] === instance) {
+                Pivot.dispose(id);
+            } else {
+                instance.dispose();
+            }
+        }
     }
 
     class PivotInstance {
@@ -49,6 +67,7 @@ namespace BitBlazorUI {
         private isRtl: boolean;
         private isVertical: boolean;
         private dotnetObj: DotNetObject;
+        private disposed: boolean = false;
         private observer: ResizeObserver | null = null;
         private scrollHandler: (() => void) | null = null;
         private lastOverflow: string = '';
@@ -90,8 +109,33 @@ namespace BitBlazorUI {
         }
 
         public update() {
+            if (this.disposed) return;
+
+            // the element gets removed from the dom without the component being able to dispose
+            // this instance in some scenarios (like a disconnected circuit), so it disposes itself.
+            if (this.header.isConnected === false) {
+                Pivot.disposeInstance(this.id, this);
+                return;
+            }
+
             if (this.isMenu) this.updateMenu();
             if (this.isSlide) this.updateSlide();
+        }
+
+        public isHeader(header: HTMLElement) {
+            return this.header === header;
+        }
+
+        private invoke(method: string, ...args: any[]) {
+            if (this.disposed) return;
+
+            try {
+                // the dotnet object reference gets disposed before this instance in some scenarios,
+                // so the rejection is handled here to not end up as an unhandled promise rejection.
+                this.dotnetObj.invokeMethodAsync(method, ...args).catch(() => Pivot.disposeInstance(this.id, this));
+            } catch (e) {
+                Pivot.disposeInstance(this.id, this);
+            }
         }
 
         private getItems(): HTMLElement[] {
@@ -149,7 +193,7 @@ namespace BitBlazorUI {
                 if (serialized === this.lastOverflow) return;
                 this.lastOverflow = serialized;
 
-                this.dotnetObj.invokeMethodAsync('OnSetOverflowItems', overflowIndexes);
+                this.invoke('OnSetOverflowItems', overflowIndexes);
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.updateMenu:', e);
             }
@@ -186,13 +230,15 @@ namespace BitBlazorUI {
                 if (serialized === this.lastSlideState) return;
                 this.lastSlideState = serialized;
 
-                this.dotnetObj.invokeMethodAsync('OnSetSlideState', hasOverflow, atStart, atEnd);
+                this.invoke('OnSetSlideState', hasOverflow, atStart, atEnd);
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.updateSlide:', e);
             }
         }
 
         public slide(forward: boolean) {
+            if (this.disposed) return;
+
             try {
                 const direction = forward ? 1 : -1;
                 if (this.isVertical) {
@@ -209,6 +255,8 @@ namespace BitBlazorUI {
         }
 
         public dispose() {
+            this.disposed = true;
+
             try {
                 if (this.observer) {
                     this.observer.disconnect();

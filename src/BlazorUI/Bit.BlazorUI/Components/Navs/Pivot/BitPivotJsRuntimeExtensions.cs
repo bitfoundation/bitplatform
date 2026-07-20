@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-internal static class PivotJsRuntimeExtensions
+internal static class BitPivotJsRuntimeExtensions
 {
     internal static ValueTask BitPivotSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         this IJSRuntime jsRuntime,

@@ -1386,6 +1386,7 @@ private BitPivotItem selectedPivotItem;";
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
+
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Success"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>

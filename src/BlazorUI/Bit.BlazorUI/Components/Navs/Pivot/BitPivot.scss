@@ -82,11 +82,16 @@
 
     .bit-pvt-hwr {
         flex-flow: column;
+        flex-shrink: 0;
         align-items: stretch;
     }
 
     .bit-pvt-hwr > .bit-pvt-hct {
         min-height: 0;
+    }
+
+    .bit-pvt-cct {
+        min-width: 0;
     }
 
     .bit-pvt-sbt {

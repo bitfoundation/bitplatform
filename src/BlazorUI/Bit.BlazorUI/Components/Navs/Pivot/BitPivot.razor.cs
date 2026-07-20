@@ -6,6 +6,7 @@ namespace Bit.BlazorUI;
 public partial class BitPivot : BitComponentBase
 {
     private bool _jsSetup;
+    private bool _jsSetupRunning;
     private bool _setupRtl;
     private bool _setupVertical;
     private bool _isMenuOpen;
@@ -265,47 +266,63 @@ public partial class BitPivot : BitComponentBase
         var rtl = Dir is BitDir.Rtl;
         var vertical = Position is BitPivotPosition.Start or BitPivotPosition.End;
 
-        if (_setupBehavior != behavior || (_jsSetup && (_setupRtl != rtl || _setupVertical != vertical)))
+        if (_jsSetupRunning is false && (_setupBehavior != behavior || (_jsSetup && (_setupRtl != rtl || _setupVertical != vertical))))
         {
-            if (_jsSetup)
-            {
-                await _js.BitPivotDispose(_Id);
-                _jsSetup = false;
-            }
-
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-
-            _isMenuOpen = false;
-            _slideAtEnd = false;
-            _slideAtStart = true;
-            _slideHasOverflow = false;
-            _overflowItemIndexes = [];
-
-            if (needsJs)
-            {
-                _dotnetObj = DotNetObjectReference.Create(this);
-
-                await _js.BitPivotSetup(
-                    _Id,
-                    _headerRef,
-                    behavior is BitPivotOverflowBehavior.Menu ? _moreRef : null,
-                    behavior is BitPivotOverflowBehavior.Menu,
-                    behavior is BitPivotOverflowBehavior.Slide,
-                    rtl,
-                    vertical,
-                    _dotnetObj);
-
-                _jsSetup = true;
-            }
-
+            // OnAfterRenderAsync gets called again while the interop calls below are still in flight,
+            // so the setup state is captured and the branch is locked before the first await, otherwise
+            // the next pass re-enters here and disposes the object reference that the JS instance of the
+            // in-flight setup is still holding on to (which then fails its invocations).
+            _jsSetupRunning = true;
             _setupBehavior = behavior;
             _setupRtl = rtl;
             _setupVertical = vertical;
+
+            try
+            {
+                if (_dotnetObj is not null)
+                {
+                    _jsSetup = false;
+                    await _js.BitPivotDispose(_Id);
+                    _dotnetObj.Dispose();
+                    _dotnetObj = null;
+                }
+
+                _isMenuOpen = false;
+                _slideAtEnd = false;
+                _slideAtStart = true;
+                _slideHasOverflow = false;
+                _overflowItemIndexes = [];
+
+                if (needsJs && IsDisposed is false)
+                {
+                    _dotnetObj = DotNetObjectReference.Create(this);
+
+                    await _js.BitPivotSetup(
+                        _Id,
+                        _headerRef,
+                        behavior is BitPivotOverflowBehavior.Menu ? _moreRef : null,
+                        behavior is BitPivotOverflowBehavior.Menu,
+                        behavior is BitPivotOverflowBehavior.Slide,
+                        rtl,
+                        vertical,
+                        _dotnetObj);
+
+                    _jsSetup = true;
+                }
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+            finally
+            {
+                _jsSetupRunning = false;
+            }
         }
         else if (_jsSetup)
         {
-            await _js.BitPivotRefresh(_Id);
+            try
+            {
+                await _js.BitPivotRefresh(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         await base.OnAfterRenderAsync(firstRender);
