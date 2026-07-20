@@ -3,37 +3,93 @@
 
 @{
     var isEnabled = ButtonGroup.IsEnabled && ButtonGroup.GetIsEnabled(Item);
+    var isLoading = ButtonGroup.GetIsLoading(Item);
+    var isInteractive = isEnabled && isLoading is false;
     var template = ButtonGroup.GetTemplate(Item);
+    var href = ButtonGroup.GetHref(Item);
 }
 
-<button type="button"
-        @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
-        tabindex="@(isEnabled ? 0 : -1)"
-        disabled="@(isEnabled is false)"
-        aria-disabled="@(isEnabled is false)"
-        title="@ButtonGroup.GetItemTitle(Item)"
-        style="@ButtonGroup.GetItemStyle(Item)"
-        class="@ButtonGroup.GetItemClass(Item)">
-    @if (template is not null)
-    {
-        @template(Item)
-    }
-    else if (ButtonGroup.ItemTemplate is not null)
-    {
-        @ButtonGroup.ItemTemplate(Item)
-    }
-    else
-    {
-        var icon = ButtonGroup.GetItemIcon(Item);
-        @if (icon is not null)
+@if (href.HasNoValue())
+{
+    <button @ref="_element" type="button"
+            @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+            role="@ButtonGroup.GetItemRole()"
+            tabindex="@ButtonGroup.GetItemTabIndex(Item)"
+            disabled="@(isEnabled is false && ButtonGroup.DisabledInteractive is false)"
+            aria-disabled="@(isInteractive ? null : "true")"
+            aria-busy="@(isLoading ? "true" : null)"
+            aria-label="@ButtonGroup.GetAriaLabel(Item)"
+            aria-pressed="@ButtonGroup.GetItemAriaPressed(Item)"
+            aria-checked="@ButtonGroup.GetItemAriaChecked(Item)"
+            title="@ButtonGroup.GetItemTitle(Item)"
+            style="@ButtonGroup.GetItemStyle(Item)"
+            class="@ButtonGroup.GetItemClass(Item)">
+        @Content(template, isLoading)
+    </button>
+}
+else
+{
+    <a @ref="_element"
+       @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+       href="@(isInteractive ? href : null)"
+       target="@ButtonGroup.GetTarget(Item)"
+       role="@ButtonGroup.GetItemRole()"
+       tabindex="@ButtonGroup.GetItemTabIndex(Item)"
+       aria-disabled="@(isInteractive ? null : "true")"
+       aria-busy="@(isLoading ? "true" : null)"
+       aria-label="@ButtonGroup.GetAriaLabel(Item)"
+       aria-pressed="@ButtonGroup.GetItemAriaPressed(Item)"
+       aria-checked="@ButtonGroup.GetItemAriaChecked(Item)"
+       title="@ButtonGroup.GetItemTitle(Item)"
+       style="@ButtonGroup.GetItemStyle(Item)"
+       class="@ButtonGroup.GetItemClass(Item)">
+        @Content(template, isLoading)
+    </a>
+}
+
+@code {
+    private RenderFragment Content(RenderFragment<TItem>? template, bool isLoading) =>
+    @<text>
+        @if (ButtonGroup.ShowSelectionIndicator && ButtonGroup._Mode is not BitButtonGroupSelectionMode.None)
         {
-            <i style="@ButtonGroup.Styles?.Icon" class="@icon.GetCssClasses() @ButtonGroup.Classes?.Icon" />
+            @* The indicator always occupies its space so that toggling an item never shifts the layout. *@
+            <span style="@ButtonGroup.Styles?.SelectionIndicator" class="bit-btg-sin @ButtonGroup.Classes?.SelectionIndicator" />
         }
 
-        var text = ButtonGroup.GetItemText(Item);
-        if (text.HasValue())
+        @if (template is not null)
         {
-            <span style="@ButtonGroup.Styles?.Text" class="bit-btg-btx @ButtonGroup.Classes?.Text">@text</span>
+            @template(Item)
         }
-    }
-</button>
+        else if (ButtonGroup.ItemTemplate is not null)
+        {
+            @ButtonGroup.ItemTemplate(Item)
+        }
+        else
+        {
+            @if (isLoading)
+            {
+                <div style="@ButtonGroup.Styles?.Spinner" class="bit-btg-spn @ButtonGroup.Classes?.Spinner" />
+            }
+            else
+            {
+                var icon = ButtonGroup.GetItemIcon(Item);
+                @if (icon is not null)
+                {
+                    <i style="@ButtonGroup.Styles?.Icon" class="@icon.GetCssClasses() @ButtonGroup.Classes?.Icon" />
+                }
+            }
+
+            var text = ButtonGroup.GetItemText(Item);
+            if (text.HasValue())
+            {
+                <span style="@ButtonGroup.Styles?.Text" class="bit-btg-btx @ButtonGroup.Classes?.Text">@text</span>
+            }
+
+            var badge = ButtonGroup.GetBadge(Item);
+            if (badge.HasValue())
+            {
+                <span style="@ButtonGroup.Styles?.Badge" class="bit-btg-bdg @ButtonGroup.Classes?.Badge">@badge</span>
+            }
+        }
+    </text>;
+}

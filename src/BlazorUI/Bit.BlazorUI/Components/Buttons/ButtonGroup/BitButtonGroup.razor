@@ -1,13 +1,15 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown" @onkeydown:preventDefault="_preventKeyDownDefault"
      id="@_Id"
-     role="group"
+     role="@_RootRole"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@AriaLabel"
+     aria-orientation="@_AriaOrientation">
     @if (Options is not null || ChildContent is not null)
     {
         <CascadingValue Value="this" IsFixed="true">

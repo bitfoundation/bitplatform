@@ -29,11 +29,7 @@ using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Infrastructure.Data;
 
-public partial class AppDbContext(DbContextOptions<AppDbContext> options
-    //#if (multitenant == true)
-    , TenantProvider tenantProvider
-    //#endif
-    )
+public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>(options), IDataProtectionKeyContext
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
@@ -224,6 +220,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options
     }
 
     //#if (multitenant == true)
+    private TenantProvider tenantProvider => field ??= this.GetService<TenantProvider>();
     private Guid CurrentTenantId => tenantProvider.GetCurrentTenantId();
 
     /// <summary>

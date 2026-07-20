@@ -47,10 +47,52 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "DefaultToggleKeys",
+            Type = "IEnumerable<string>?",
+            DefaultValue = "null",
+            Description = "The default keys that will be initially used to set the toggled items in the Multiple selection mode if the ToggleKeys parameter is not set.",
+        },
+        new()
+        {
+            Name = "Detached",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Detaches the buttons from each other, so each button is rendered as a separate rounded button.",
+        },
+        new()
+        {
+            Name = "DisabledInteractive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the disabled buttons focusable by rendering them with the aria-disabled attribute instead of the disabled attribute, so that assistive technologies can still discover them.",
+        },
+        new()
+        {
+            Name = "FixedToggle",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the fixed-toggle mode that ensures one item to be always toggled. In the Multiple selection mode it prevents un-toggling the last toggled item.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
             Description = "Expand the ButtonGroup width to 100% of the available width.",
+        },
+        new()
+        {
+            Name = "Gap",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The gap between the buttons of the ButtonGroup in the detached mode.",
+        },
+        new()
+        {
+            Name = "Justified",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gives every button an equal width so that the buttons evenly fill the width of the ButtonGroup.",
         },
         new()
         {
@@ -70,12 +112,26 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "MaxToggles",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The maximum number of items that can be toggled at the same time in the Multiple selection mode.",
+        },
+        new()
+        {
             Name = "NameSelectors",
             Type = "BitButtonGroupNameSelectors<TItem>?",
             DefaultValue = "null",
             Description = "Names and selectors of the custom input type properties.",
             LinkType = LinkType.Link,
             Href = "#name-selectors",
+        },
+        new()
+        {
+            Name = "Navigable",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Enables the roving tabindex behavior, which turns the whole ButtonGroup into a single tab stop that is navigable using the arrow, Home, and End keys.",
         },
         new()
         {
@@ -98,17 +154,63 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "Overflow",
+            Type = "BitButtonGroupOverflow?",
+            DefaultValue = "null",
+            Description = "Determines how the ButtonGroup behaves when its buttons do not fit in the available space.",
+            LinkType = LinkType.Link,
+            Href = "#overflow-enum",
+        },
+        new()
+        {
+            Name = "Rounded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the ButtonGroup with fully rounded (pill shaped) corners.",
+        },
+        new()
+        {
+            Name = "SelectionMode",
+            Type = "BitButtonGroupSelectionMode?",
+            DefaultValue = "null",
+            Description = "Determines how many items can be toggled at the same time. When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.",
+            LinkType = LinkType.Link,
+            Href = "#selection-mode-enum",
+        },
+        new()
+        {
+            Name = "SelectOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection follows the focus.",
+        },
+        new()
+        {
+            Name = "ShowSelectionIndicator",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a check mark at the start of the toggled buttons.",
+        },
+        new()
+        {
             Name = "Toggle",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Display ButtonGroup with toggle mode enabled for each button.",
+            Description = "Display ButtonGroup with toggle mode enabled for each button. It is a shorthand of setting the SelectionMode parameter to Single.",
         },
         new()
         {
             Name = "ToggleKey",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The key of the toggled item in toggle mode. (two-way bound)",
+            Description = "The key of the toggled item in the Single selection mode. (two-way bound)",
+        },
+        new()
+        {
+            Name = "ToggleKeys",
+            Type = "IEnumerable<string>?",
+            DefaultValue = "null",
+            Description = "The keys of the toggled items in the Multiple selection mode. (two-way bound)",
         },
         new()
         {
@@ -156,10 +258,31 @@ public partial class BitButtonGroupDemo
             [
                new()
                {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible label of the item, rendered as the aria-label attribute. Required for icon-only items, and strongly recommended in toggle mode when OnText/OffText are used, so that the accessible name of the item stays the same while its toggle state changes.",
+               },
+               new()
+               {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The content of the badge rendered at the end of the item, usually a short count.",
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The custom CSS classes of the item.",
+               },
+               new()
+               {
+                   Name = "Href",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The url of the link rendered by the item. If provided, the item renders as an anchor tag instead of a button.",
                },
                new()
                {
@@ -183,6 +306,13 @@ public partial class BitButtonGroupDemo
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the item is enabled.",
+               },
+               new()
+               {
+                   Name = "IsLoading",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Whether or not the item is in the loading state, which replaces its icon with a spinner and blocks its click.",
                },
                new()
                {
@@ -274,6 +404,13 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "Target",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The target attribute of the link when the item renders as an anchor (by providing the Href property).",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "RenderFragment<BitButtonGroupItem>?",
                    DefaultValue = "null",
@@ -303,10 +440,31 @@ public partial class BitButtonGroupDemo
             [
                new()
                {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible label of the option, rendered as the aria-label attribute. Required for icon-only options, and strongly recommended in toggle mode when OnText/OffText are used, so that the accessible name of the option stays the same while its toggle state changes.",
+               },
+               new()
+               {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The content of the badge rendered at the end of the option, usually a short count.",
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The custom CSS classes of the option.",
+               },
+               new()
+               {
+                   Name = "Href",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The url of the link rendered by the option. If provided, the option renders as an anchor tag instead of a button.",
                },
                new()
                {
@@ -330,6 +488,13 @@ public partial class BitButtonGroupDemo
                    Type = "bool",
                    DefaultValue = "true",
                    Description = "Whether or not the option is enabled.",
+               },
+               new()
+               {
+                   Name = "IsLoading",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Whether or not the option is in the loading state, which replaces its icon with a spinner and blocks its click.",
                },
                new()
                {
@@ -421,6 +586,13 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "Target",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The target attribute of the link when the option renders as an anchor (by providing the Href parameter).",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "RenderFragment<BitButtonGroupOption>?",
                    DefaultValue = "null",
@@ -464,10 +636,31 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the badge of the buttons of the BitButtonGroup.",
+               },
+               new()
+               {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the icon of the BitButtonGroup."
+               },
+               new()
+               {
+                   Name = "SelectionIndicator",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the selection indicator (check mark) of the toggled buttons of the BitButtonGroup.",
+               },
+               new()
+               {
+                   Name = "Spinner",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the loading spinner of the buttons of the BitButtonGroup.",
                },
                new()
                {
@@ -493,10 +686,37 @@ public partial class BitButtonGroupDemo
             [
                 new()
                 {
+                    Name = "AriaLabel",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.AriaLabel))",
+                    Description = "AriaLabel field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "Badge",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.Badge))",
+                    Description = "Badge field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
                     Name = "Class",
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Class))",
                     Description = "The CSS Class field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "Href",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.Href))",
+                    Description = "Href field name and selector of the custom input class.",
                     LinkType = LinkType.Link,
                     Href = "#name-selector-pair",
                 },
@@ -524,6 +744,15 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, bool>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.IsEnabled))",
                     Description = "IsEnabled field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "IsLoading",
+                    Type = "BitNameSelectorPair<TItem, bool>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.IsLoading))",
+                    Description = "IsLoading field name and selector of the custom input class.",
                     LinkType = LinkType.Link,
                     Href = "#name-selector-pair",
                 },
@@ -637,6 +866,15 @@ public partial class BitButtonGroupDemo
                 },
                 new()
                 {
+                    Name = "Target",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.Target))",
+                    Description = "Target field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
                     Name = "Template",
                     Type = "BitNameSelectorPair<TItem, RenderFragment?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Template))",
@@ -741,6 +979,66 @@ public partial class BitButtonGroupDemo
                     Name= "Text",
                     Description="Text styled variant.",
                     Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "selection-mode-enum",
+            Name = "BitButtonGroupSelectionMode",
+            Description = "Determines how many items of a BitButtonGroup can be toggled at the same time.",
+            Items =
+            [
+                new()
+                {
+                    Name= "None",
+                    Description="The items act as plain action buttons and cannot be toggled.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Single",
+                    Description="At most one item can be toggled at a time (rendered with the radiogroup accessibility pattern).",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Multiple",
+                    Description="Any number of items can be toggled at the same time (rendered with the toolbar accessibility pattern).",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "overflow-enum",
+            Name = "BitButtonGroupOverflow",
+            Description = "Determines how a BitButtonGroup behaves when its items do not fit in the available space.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Clip",
+                    Description="The items are kept on a single line and the overflowing part is clipped.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Wrap",
+                    Description="The items wrap onto multiple lines.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Scroll",
+                    Description="The items are kept on a single line and the group becomes scrollable, without rendering a scrollbar. It can still be scrolled by swiping, by shift+wheel, and through the arrow keys.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Scrollbar",
+                    Description="The items are kept on a single line and the group becomes scrollable, with a visible scrollbar. The scrollbar is laid out inside the border of the group, which makes the group taller.",
+                    Value="3",
                 }
             ]
         },

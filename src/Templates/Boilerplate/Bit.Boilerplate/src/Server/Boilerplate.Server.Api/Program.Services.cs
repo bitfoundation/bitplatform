@@ -1,12 +1,14 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
-//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+//#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
-using System.ClientModel.Primitives;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
+//#endif
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+using System.ClientModel.Primitives;
 //#endif
 //#if (database == "PostgreSQL")
 using Npgsql;
@@ -294,22 +296,16 @@ public static partial class Program
         //#endif
         //#endif
 
-        //#if (multitenant == true)
-        // The AppDbContext requires the scoped TenantProvider service to apply tenant based row level security,
-        // so DbContext pooling (AddDbContextPool/AddPooledDbContextFactory) can't be used, because pooled contexts only accept DbContextOptions in their constructor.
-        services.AddDbContextFactory<AppDbContext>(AddDbContext, ServiceLifetime.Scoped);
-        services.AddDbContext<AppDbContext>(AddDbContext);
+        //#if (database == "PostgreSQL")
+        var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
+        dataSourceBuilder.UseVector();
+        dataSourceBuilder.EnableDynamicJson();
+        var dataSource = dataSourceBuilder.Build();
+        services.AddSingleton(dataSource);
         //#endif
-        //#if (IsInsideProjectTemplate == true)
-        /*
-        //#endif
-        //#if (multitenant != true)
-        services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
+
         services.AddDbContextPool<AppDbContext>(AddDbContext);
-        //#endif
-        //#if (IsInsideProjectTemplate == true)
-        */
-        //#endif
+        services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
 
         void AddDbContext(DbContextOptionsBuilder options)
         {
@@ -342,10 +338,7 @@ public static partial class Program
                     errorNumbersToAdd: null);
             });
             //#elif (database == "PostgreSQL")
-            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
-            dataSourceBuilder.UseVector();
-            dataSourceBuilder.EnableDynamicJson();
-            options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
+            options.UseNpgsql(dataSource, dbOptions =>
             {
                 dbOptions.UseVector();
                 dbOptions.SetPostgresVersion(18, 0);
@@ -529,7 +522,9 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
 
+            //#if (signalR == true)
             builder.AddAppAIAgents();
+            //#endif
         }
 
         if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
@@ -603,7 +598,7 @@ public static partial class Program
         });
     }
 
-    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+    //#if (signalR == true)
     private static void AddAppAIAgents(this WebApplicationBuilder builder)
     {
         static string GetSystemPrompt(PromptKind promptKind, IServiceProvider sp)
@@ -674,7 +669,7 @@ public static partial class Program
 
         services.AddScoped<UserClaimsService>();
         //#if (multitenant == true)
-        services.AddScoped<TenantProvider>();
+        services.AddSingleton<TenantProvider>();
         // Replaces the default RoleValidator to scope the role name uniqueness by the role's TenantId.
         services.Replace(ServiceDescriptor.Scoped<IRoleValidator<Features.Identity.Models.Role>, AppRoleValidator>());
         //#endif

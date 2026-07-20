@@ -37,4 +37,18 @@ public class Operation
     public string? OffTitle { get; set; }
 
     public bool IsSelected { get; set; }
+
+    public string? Label { get; set; }
+
+    public string? Count { get; set; }
+
+    public string? Url { get; set; }
+
+    public string? UrlTarget { get; set; }
+
+    public bool IsBusy { get; set; }
+
+    public string? Tooltip { get; set; }
+
+    public RenderFragment<Operation>? Content { get; set; }
 }

@@ -8,8 +8,12 @@ public class Operation
     public BitIconInfo? IconInfo { get; set; }
     public bool Disabled { get; set; }
     public bool IsSelected { get; set; }
+    public bool IsDivider { get; set; }
     public string? Class { get; set; }
     public string? Style { get; set; }
+    public string? Url { get; set; }
+    public string? UrlTarget { get; set; }
+    public string? Tooltip { get; set; }
 
     public RenderFragment<Operation>? Fragment { get; set; }
 
