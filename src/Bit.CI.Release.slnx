@@ -44,12 +44,6 @@
     <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
     <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
   </Folder>
-  <Folder Name="/BlazorUI/Demo/">
-    <Project Path="BlazorUI/Demo/Bit.BlazorUI.Demo.Shared/Bit.BlazorUI.Demo.Shared.csproj" />
-  </Folder>
-  <Folder Name="/BlazorUI/Demo/Client/">
-    <Project Path="BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj" />
-  </Folder>
   <Folder Name="/Bswup/">
     <File Path="Bswup/README.md" />
     <Project Path="Bswup/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
