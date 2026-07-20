@@ -12,6 +12,7 @@
     background-color: transparent;
     padding: var(--bit-acb-padding);
     font-size: var(--bit-acb-fontsize);
+    -webkit-tap-highlight-color: transparent;
 
     @media (hover: hover) {
         &:hover {
@@ -53,6 +54,11 @@
     border-top-color: var(--bit-acb-clr-ico);
     animation: bit-acb-spin 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 4s;
+        animation-timing-function: linear;
+    }
 }
 
 @keyframes bit-acb-spin {
@@ -68,6 +74,19 @@
 .bit-acb-con {
     flex-grow: 1;
     display: flex;
+}
+
+.bit-acb-sts {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    clip: rect(0 0 0 0);
 }
 
 .bit-acb-inn {

@@ -1,12 +1,12 @@
-
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components;
 
 public partial class AppRouteDataPublisher : AppComponentBase
 {
-    private RouteData? lastPublishedRouteData;
-
     [Parameter] public RouteData? RouteData { get; set; }
 
+    //#if (brouter == true)
+    private RouteData? lastPublishedRouteData;
     protected override async Task OnParamsSetAsync()
     {
         await base.OnParamsSetAsync();
@@ -17,4 +17,18 @@ public partial class AppRouteDataPublisher : AppComponentBase
 
         PubSubService.Publish(ClientAppMessages.ROUTE_DATA_UPDATED, RouteData);
     }
+    //#else
+    //#if (IsInsideProjectTemplate == true)
+    /*
+    //#endif
+    protected override async Task OnInitAsync()
+    {
+        await base.OnInitAsync();
+
+        PubSubService.Publish(ClientAppMessages.ROUTE_DATA_UPDATED, RouteData);
+    }
+        //#if (IsInsideProjectTemplate == true)
+    */
+    //#endif
+    //#endif
 }
