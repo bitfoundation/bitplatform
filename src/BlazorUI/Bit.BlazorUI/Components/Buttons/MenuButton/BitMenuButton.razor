@@ -119,7 +119,7 @@
      style="@Styles?.Callout"
      class="bit-mnb-cal @GetCalloutCss() @Classes?.Callout">
     <ul role="menu"
-        aria-labelledby="@(_Id + (Split ? "-chb" : "-opb"))"
+        aria-labelledby="@(_Id + (Split && ChevronDownAriaLabel.HasValue() ? "-chb" : "-opb"))"
         style="@Styles?.CalloutContainer"
         class="bit-mnb-cul @Classes?.CalloutContainer">
         @if (Options is not null || ChildContent is not null)

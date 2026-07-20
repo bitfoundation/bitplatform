@@ -883,6 +883,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task OpenCallout()
     {
+        if (IsLoading) return;
+
         var focusFirstItem = _focusFirstItemOnOpen;
         _focusFirstItemOnOpen = false;
 
