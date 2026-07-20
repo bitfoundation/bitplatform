@@ -1,12 +1,14 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
-//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+//#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
-using System.ClientModel.Primitives;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
+//#endif
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+using System.ClientModel.Primitives;
 //#endif
 //#if (database == "PostgreSQL")
 using Npgsql;
@@ -520,7 +522,9 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
 
+            //#if (signalR == true)
             builder.AddAppAIAgents();
+            //#endif
         }
 
         if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
@@ -594,7 +598,7 @@ public static partial class Program
         });
     }
 
-    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+    //#if (signalR == true)
     private static void AddAppAIAgents(this WebApplicationBuilder builder)
     {
         static string GetSystemPrompt(PromptKind promptKind, IServiceProvider sp)

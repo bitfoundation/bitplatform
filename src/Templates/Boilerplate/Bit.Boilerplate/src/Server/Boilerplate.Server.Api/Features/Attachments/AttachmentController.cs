@@ -21,7 +21,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IStore blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;
 
-    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+    //#if (signalR == true)
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private ILogger<AttachmentController> logger = default!;
     //#endif
@@ -247,7 +247,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             //#if (module == "Sales" || module == "Admin")
             if (attachment.Kind is AttachmentKind.ProductPrimaryImageMedium)
             {
-                //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+                //#if (signalR == true)
                 if (serviceProvider.GetKeyedService<Microsoft.Agents.AI.AIAgent>("AnalyzeProductImageAgent") is Microsoft.Agents.AI.AIAgent analyzeProductImageAgent)
                 {
                     ChatOptions chatOptions = new()
@@ -332,7 +332,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         return filePath;
     }
 
-    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+    //#if (signalR == true)
     public record AIImageReviewResponse(bool IsCar, double Confidence, string? Alt, string? Reasoning);
     //#endif
 }
