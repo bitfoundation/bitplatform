@@ -133,18 +133,28 @@ public partial class BitMessageBoxDemo
 
 
     private bool isModalOpen;
+    private bool isProModalOpen;
 
     [AutoInject] private BitModalService modalService { get; set; } = default!;
     private async Task ShowMessageBox()
     {
-        BitModalReference modalRef = default!;
-        Dictionary<string, object> parameters = new()
+        await modalService.Show<BitMessageBox>(modalRef => new()
         {
             { nameof(BitMessageBox.Title), "This is a title" },
             { nameof(BitMessageBox.Body), "This is a body." },
-            { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
-        };
-        modalRef = await modalService.Show<BitMessageBox>(parameters);
+            { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, modalRef.Close) }
+        });
+    }
+
+    [AutoInject] private BitProModalService proModalService { get; set; } = default!;
+    private async Task ShowProMessageBox()
+    {
+        await proModalService.Show<BitMessageBox>(modalRef => new()
+        {
+            { nameof(BitMessageBox.Title), "This is a title" },
+            { nameof(BitMessageBox.Body), "This is a body." },
+            { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, modalRef.Close) }
+        });
     }
 
     [AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;

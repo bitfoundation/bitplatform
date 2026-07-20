@@ -3,22 +3,30 @@
 
 <PageOutlet Url="components/togglebutton"
             Title="ToggleButton"
-            Description="ToggleButton is a type of button that stores and shows a status representing the toggle state of the component." />
+            Description="A button that stays pressed, with its own text, icon and color per state, a loading state, and proper aria-pressed semantics." />
 
 <DemoPage Name="ToggleButton"
-          Description="ToggleButton is a type of button that stores and shows a status representing the toggle state of the component."
+          Description="ToggleButton is a button that stays pressed. Instead of firing an action and forgetting it, it holds an on/off state and shows which one it is currently in. It suits the kind of setting that belongs right next to the thing it affects — muting a microphone, bolding a selection, pinning an item — where a toolbar button reads better than a checkbox or a switch. Its text, icon, color and variant can all differ between the two states, it can stay in a loading state while an async toggle is being saved, and it exposes its state to screen readers through aria-pressed."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubUrl="Buttons/ToggleButton/BitToggleButton.razor"
           GitHubDemoUrl="Buttons/ToggleButton/BitToggleButtonDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>See the basic usage of a BitToggleButton in action.</div><br />
+        <div>
+            Left on its own, the BitToggleButton owns its state: every click flips it and the checked styling follows
+            along, with no binding and no event handler involved.
+        </div><br />
         <BitToggleButton>Microphone</BitToggleButton>
     </DemoExample>
 
     <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
-        <div>The BitToggleButton offers three variants: Fill (default), Outline, and Text.</div><br />
+        <div>
+            The variant sets how much visual weight the BitToggleButton carries: <b>Fill</b> (the default) for a solid
+            button, <b>Outline</b> for a bordered one, and <b>Text</b> for a borderless one. Whichever you pick, the
+            checked state renders in a darker shade of the same color, so the two states stay apart in all three.
+        </div><br />
         <div class="example-box">
             <BitToggleButton Variant="BitVariant.Fill">Fill</BitToggleButton>
             <BitToggleButton Variant="BitVariant.Outline">Outline</BitToggleButton>
@@ -31,43 +39,145 @@
             <BitToggleButton Variant="BitVariant.Outline" IsEnabled="false">Outline</BitToggleButton>
             <BitToggleButton Variant="BitVariant.Text" IsEnabled="false">Text</BitToggleButton>
         </div>
+        <br /><br />
+        <div>
+            A disabled BitToggleButton stays focusable by default so screen reader users can still find it,
+            rendering <b>aria-disabled</b> instead of the native <b>disabled</b> attribute.
+            Set <b>AllowDisabledFocus</b> to false to take it out of the tab order instead.
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton IsEnabled="false" AllowDisabledFocus="false">Not focusable</BitToggleButton>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Texts" RazorCode="@example3RazorCode" Id="example3">
-        <div>You can provide the text of the BitToggleButton in different ways.</div><br />
-        <div>Text:</div><br/>
+    <DemoExample Title="Texts & Titles" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            <b>Text</b> labels both states the same way, leaving the color to carry the state.
+            <b>OnText</b> and <b>OffText</b> label each state separately, which reads well when the wording is the
+            clearest signal of what is going on — though it also changes the accessible name, so the BitToggleButton
+            stops announcing <b>aria-pressed</b>. The
+            <BitLink Href="#example13">Accessibility</BitLink> section covers why, and what to do about it.
+        </div><br />
+        <div>Text:</div><br />
         <BitToggleButton Text="Microphone" />
-        <br/><br/><br/><br/>
-        <div>On/Off Texts:</div><br/>
+        <br /><br /><br /><br />
+        <div>On/Off Texts:</div><br />
         <BitToggleButton OnText="Muted" OffText="Unmuted" />
+        <br /><br /><br /><br />
+        <div>
+            <b>Title</b> follows the same shape and fills the native tooltip, with <b>OnTitle</b> and <b>OffTitle</b>
+            overriding it per state. It is the natural companion to <b>IconOnly</b>, where the button has no visible
+            wording of its own — though a tooltip never reaches keyboard or touch users, so it supplements an
+            <b>AriaLabel</b> rather than replacing one. Hover the two below:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton IconOnly Title="Microphone" AriaLabel="Microphone"
+                             IconName="@BitIconName.Microphone" />
+
+            <BitToggleButton IconOnly AriaLabel="Mute"
+                             OnTitle="Click to unmute" OnIconName="@BitIconName.MicOff"
+                             OffTitle="Click to mute" OffIconName="@BitIconName.Microphone" />
+        </div>
     </DemoExample>
-    
+
     <DemoExample Title="Icons" RazorCode="@example4RazorCode" Id="example4">
-        <div>Checkout different ways of utilizing Icons in BitToggleButton.</div><br />
-        <div>IconName:</div><br/>
+        <div>
+            Icons follow the same shape as the text: <b>IconName</b> for both states, <b>OnIconName</b> and
+            <b>OffIconName</b> for one each. <b>IconPosition</b> moves the icon after the content, and <b>IconOnly</b>
+            drops the text and squares up the padding for a compact, toolbar-style button — which leaves nothing behind
+            to name it, so give an icon-only BitToggleButton an <b>AriaLabel</b>.
+        </div><br />
+        <div>IconName:</div><br />
         <BitToggleButton Text="Microphone" IconName="@BitIconName.Microphone" />
-        <br/><br/><br/><br/>
-        <div>On/Off IconNames:</div><br/>
+        <br /><br /><br /><br />
+        <div>On/Off IconNames:</div><br />
         <BitToggleButton OnText="Muted" OnIconName="@BitIconName.MicOff"
                          OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
-        <br/><br/><br/><br/>
-        <div>No text:</div><br/>
+        <br /><br /><br /><br />
+        <div>IconPosition:</div><br />
+        <div class="example-box">
+            <BitToggleButton IconPosition="BitIconPosition.Start" Text="Start" IconName="@BitIconName.Microphone" />
+            <BitToggleButton IconPosition="BitIconPosition.End" Text="End" IconName="@BitIconName.Microphone" />
+        </div>
+        <br /><br /><br />
+        <div>No text:</div><br />
         <div class="example-box">
             <BitToggleButton IconName="@BitIconName.Microphone" />
             <BitToggleButton OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
         </div>
-        <br/><br/><br/>
-        <div>IconOnly:</div><br/>
+        <br /><br /><br />
+        <div>IconOnly:</div><br />
         <div class="example-box">
             <BitToggleButton IconOnly IconName="@BitIconName.Microphone" Text="Microphone" />
             <BitToggleButton IconOnly
-                             OnText="Muted" OnIconName="@BitIconName.MicOff" 
+                             OnText="Muted" OnIconName="@BitIconName.MicOff"
                              OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>Explore default checked state, two-way binding, and handling change events for a customizable user experience.</div><br />
+    <DemoExample Title="Checked appearance" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            The darker checked shade is enough for most cases, but some toggles mean genuinely different things in
+            their two states and should look the part. <b>OnColor</b>/<b>OffColor</b> and
+            <b>OnVariant</b>/<b>OffVariant</b> let the whole appearance change with the state, each falling back to
+            the general <b>Color</b> and <b>Variant</b> when it is not set, so you only override the axis you care about.
+        </div><br />
+        <div>OnColor & OffColor:</div><br />
+        <div class="example-box">
+            <BitToggleButton OnColor="BitColor.Success" OffColor="BitColor.Error"
+                             OnText="Recording" OnIconName="@BitIconName.CircleFill"
+                             OffText="Stopped" OffIconName="@BitIconName.CircleStopSolid" />
+        </div>
+        <br /><br /><br />
+        <div>OnVariant & OffVariant:</div><br />
+        <div class="example-box">
+            <BitToggleButton OnVariant="BitVariant.Fill" OffVariant="BitVariant.Outline"
+                             OnText="Following" OffText="Follow" />
+        </div>
+        <br /><br /><br />
+        <div>Both, on top of a shared Color:</div><br />
+        <div class="example-box">
+            <BitToggleButton Color="BitColor.Info"
+                             OnColor="BitColor.Warning" OnVariant="BitVariant.Fill" OffVariant="BitVariant.Text"
+                             OnText="Notifications muted" OnIconName="@BitIconName.RingerOff"
+                             OffText="Notifications on" OffIconName="@BitIconName.Ringer" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="CheckMark" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            A checked state told only by a shade of color is invisible to anyone who cannot perceive that shade, and
+            disappears outright in Windows High Contrast. <b>ShowCheckMark</b> adds a check mark in the checked state
+            so the state carries a shape as well as a color, which is what makes a row of toggle buttons readable at a
+            glance. <b>FixedCheckMark</b> reserves the mark's space while unchecked so the content does not jump on
+            every click, and <b>CheckMarkIconName</b> swaps the mark for any other icon.
+        </div><br />
+        <div>ShowCheckMark:</div><br />
+        <div class="example-box">
+            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" Text="Bold" />
+            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" Text="Italic" />
+        </div>
+        <br /><br /><br />
+        <div>FixedCheckMark:</div><br />
+        <div class="example-box">
+            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Bold" />
+            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Italic" />
+        </div>
+        <br /><br /><br />
+        <div>CheckMarkIconName:</div><br />
+        <div class="example-box">
+            <BitToggleButton ShowCheckMark FixedCheckMark CheckMarkIconName="@BitIconName.FavoriteStarFill"
+                             Variant="BitVariant.Outline" Color="BitColor.Warning" Text="Favorite" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            Who owns the checked state is up to you. <b>DefaultIsChecked</b> seeds it once and leaves the
+            BitToggleButton in charge, <b>&#64;bind-IsChecked</b> keeps it in sync with a field you control, and
+            <b>OnChange</b> just reports it. The <b>ToggleAsync</b> and <b>FocusAsync</b> methods drive it from code,
+            the former taking the same path a click does.
+        </div><br />
         <div>DefaultIsChecked:</div><br />
         <BitToggleButton DefaultIsChecked="true"
                          OnText="Muted" OnIconName="@BitIconName.MicOff"
@@ -86,10 +196,22 @@
                          OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         <br /><br />
         <div>Check status: @onChangeValue</div>
+        <br /><br /><br /><br />
+        <div>ToggleAsync & FocusAsync:</div><br />
+        <div class="example-box">
+            <BitToggleButton @ref="programmaticToggleRef" OnText="Muted" OffText="Unmuted" />
+            <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticToggleRef.ToggleAsync()">Toggle it</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="FocusTheToggleButton">Focus it</BitButton>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example6RazorCode" Id="example6">
-        <div>Here are some examples of customizing the BitToggleButton content.</div><br />
+    <DemoExample Title="Templates" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            When the icon and the text are not enough, <b>ChildContent</b> replaces the whole body of the
+            BitToggleButton for both states. <b>OnTemplate</b> and <b>OffTemplate</b> do the same one state at a time,
+            so the two states can differ in structure and not just in wording.
+        </div><br />
+        <div>ChildContent:</div><br />
         <BitToggleButton>
             <div class="custom-template">
                 <BitIcon IconName="@BitIconName.Airplane" Color="BitColor.Tertiary" />
@@ -97,78 +219,223 @@
                 <BitRollerLoading CustomSize="20" Color="BitColor.Tertiary" />
             </div>
         </BitToggleButton>
-    </DemoExample>
-
-    <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Managing BitToggleButton click event (OnClick).</div><br />
-        <BitToggleButton OnClick="() => clickCounter++">
-            Click me (@clickCounter)
+        <br /><br /><br /><br />
+        <div>OnTemplate & OffTemplate:</div><br />
+        <BitToggleButton>
+            <OnTemplate>
+                <div class="custom-template">
+                    <BitIcon IconName="@BitIconName.CheckMark" Color="BitColor.Success" />
+                    <span>Subscribed</span>
+                </div>
+            </OnTemplate>
+            <OffTemplate>
+                <div class="custom-template">
+                    <BitIcon IconName="@BitIconName.Add" Color="BitColor.Tertiary" />
+                    <span>Subscribe</span>
+                </div>
+            </OffTemplate>
         </BitToggleButton>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example8RazorCode" Id="example8">
-        <div>Varying sizes for BitToggleButton tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+    <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            Three callbacks fire in a fixed order around a click: <b>OnClick</b> first, while the state is still the old
+            one; then <b>OnChanging</b>, carrying the state the BitToggleButton is about to move to; and finally
+            <b>OnChange</b>, once the new state is committed.
+        </div><br />
+        <div>OnClick:</div><br />
+        <BitToggleButton OnClick="() => clickCounter++">
+            Click me (@clickCounter)
+        </BitToggleButton>
+        <br /><br /><br /><br />
+        <div>
+            <b>OnChanging</b> is the veto point: setting <b>Cancel</b> on its arguments leaves the BitToggleButton
+            where it was, so a toggle can be refused instead of silently reverted afterwards. It is awaited, so it can
+            take its time — asking for confirmation, or checking with the server before letting the state through.
+        </div><br />
+        <BitCheckbox Label="Allow the change" @bind-Value="allowChange" />
+        <br />
+        <BitToggleButton OnChanging="HandleOnChanging" OnText="Published" OffText="Draft" />
         <br /><br />
-        <div><b>Small</b>:</div><br/>
-        <div class="example-box">
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" Text="Microphone" />
-        </div>
-        <br />
-        <div class="example-box">
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" Text="Microphone" />
-        </div>
-        <br />
-        <div class="example-box">
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" Text="Microphone" />
-        </div>
+        <div>Cancelled attempts: @cancelledCounter</div>
         <br /><br /><br /><br />
-        <div><b>Medium</b>:</div><br/>
-        <div class="example-box">
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" Text="Microphone" />
+        <div>
+            A BitToggleButton inside a clickable container fires that container's handler too, which is rarely what
+            you want when the toggle sits in a selectable card or a list row. <b>StopPropagation</b> keeps the click
+            to itself. Both toggles below sit in the same clickable box:
+        </div><br />
+        <div class="clickable-box" @onclick="() => containerClickCounter++">
+            <div class="example-box">
+                <BitToggleButton Text="Bubbles up" />
+                <BitToggleButton StopPropagation Text="Stops here" />
+            </div>
         </div>
         <br />
+        <div>Container clicks: @containerClickCounter</div>
+    </DemoExample>
+
+    <DemoExample Title="Loading" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            A toggle that has to reach a server is not really toggled until the server says so, and clicking it three
+            more times in the meantime helps nobody. <b>IsLoading</b> covers the content with a spinner and blocks
+            further clicks for exactly that window; <b>Reclickable</b> lifts the block if the extra clicks are harmless.
+        </div><br />
         <div class="example-box">
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" Text="Microphone" />
+            <BitToggleButton IsLoading="isLoading" OnText="Muted" OffText="Unmuted" />
+            <BitCheckbox Label="IsLoading" @bind-Value="isLoading" />
         </div>
-        <br />
+        <br /><br /><br />
+        <div>
+            Both of these are loading, but only the second one still reacts. Click each of them:
+        </div><br />
         <div class="example-box">
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" Text="Microphone" />
+            <BitToggleButton IsLoading OnClick="() => blockedClickCounter++" Text="@($"Blocked ({blockedClickCounter})")" />
+            <BitToggleButton IsLoading Reclickable OnClick="() => reclickCounter++" Text="@($"Reclickable ({reclickCounter})")" />
         </div>
-        <br /><br /><br /><br />
-        <div><b>Large</b>:</div><br /><br/>
+        <br /><br /><br />
+        <div>
+            <b>AutoLoading</b> does the bookkeeping for you: the BitToggleButton stays loading for as long as the
+            <b>OnClick</b> and <b>OnChange</b> callbacks take, so an async toggle needs no loading flag of its own.
+        </div><br />
         <div class="example-box">
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" Text="Microphone" />
+            <BitToggleButton AutoLoading OnChange="HandleAutoLoadingChange"
+                             OnText="Muted" OffText="Unmuted" />
         </div>
-        <br />
+        <br /><br /><br />
+        <div>
+            <b>LoadingLabel</b> puts a word next to the spinner, and <b>LoadingLabelPosition</b> places it on any of
+            the four sides:
+        </div><br />
         <div class="example-box">
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" Text="Microphone" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.End" Text="End" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Start" Text="Start" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Top" Text="Top" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Bottom" Text="Bottom" />
         </div>
-        <br />
+        <br /><br /><br />
+        <div><b>LoadingTemplate</b> replaces the spinner and the label altogether:</div><br />
         <div class="example-box">
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" />
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text" Text="Microphone" />
-            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" Text="Microphone" />
+            <BitToggleButton IsLoading Text="Muted">
+                <LoadingTemplate>
+                    <div class="custom-template">
+                        <BitRollerLoading CustomSize="20" Color="BitColor.PrimaryForeground" />
+                        <span>Working on it...</span>
+                    </div>
+                </LoadingTemplate>
+            </BitToggleButton>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example9RazorCode" Id="example9">
-        <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div><br />
+    <DemoExample Title="FullWidth" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            A BitToggleButton is inline by default and only as wide as its content. <b>FullWidth</b> stretches it
+            across its container instead, which is what you want when it sits alone in a narrow column, a form, or a
+            settings row, and its edges should line up with everything around it.
+        </div><br />
+        <BitToggleButton FullWidth OnText="Muted" OnIconName="@BitIconName.MicOff"
+                         OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
+    </DemoExample>
+
+    <DemoExample Title="FixedColor" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            The foreground color normally shifts on hover and focus to reinforce that something is happening.
+            With the background colors that is counterproductive — the hover shade is close enough to the content
+            that the text and the icon wash out. <b>FixedColor</b> pins the foreground so it stays legible throughout.
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton Color="BitColor.TertiaryBackground" FixedColor
+                             OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
+
+            <BitToggleButton Color="BitColor.TertiaryBackground" FixedColor
+                             OnText="Muted" OnIconName="@BitIconName.MicOff"
+                             OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            A toggle button announces its state through <b>aria-pressed</b>. That only works while the accessible
+            name stays the same in both states: a name that changes together with the state leaves screen reader
+            users unable to tell what was announced. So by default the BitToggleButton drops <b>aria-pressed</b>
+            as soon as it detects that the name differs between the two states.
+        </div>
+        <br />
+        <div>
+            The examples below differ in their markup rather than in their looks, so open the browser's element
+            inspector to see what each one actually renders.
+        </div>
+        <br />
+        <div>
+            Here <b>OnText</b> and <b>OffText</b> differ, so the name carries the state and no <b>aria-pressed</b> is rendered:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton OnText="Muted" OffText="Unmuted" />
+        </div>
+        <br /><br /><br />
+        <div>
+            Adding a stable <b>AriaLabel</b> pins the name down for both states, so <b>aria-pressed</b> comes back:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton AriaLabel="Mute" OnText="Muted" OffText="Unmuted" />
+        </div>
+        <br /><br /><br />
+        <div>
+            <b>AriaMode</b> takes the decision back from the automatic one. <b>Pressed</b> always renders
+            <b>aria-pressed</b>, <b>Switch</b> renders <b>role="switch"</b> with <b>aria-checked</b> instead — which
+            reads better for an on/off setting than a pressed/not pressed one — and <b>None</b> renders no state
+            attribute at all, for a button like play/pause whose own content already says which state it is in:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton AriaMode="BitToggleButtonAriaMode.Pressed" AriaLabel="Bold" IconOnly IconName="@BitIconName.Bold" />
+            <BitToggleButton AriaMode="BitToggleButtonAriaMode.Switch" AriaLabel="Airplane mode" Text="Airplane mode" />
+            <BitToggleButton AriaMode="BitToggleButtonAriaMode.None"
+                             OnText="Pause" OnIconName="@BitIconName.Pause"
+                             OffText="Play" OffIconName="@BitIconName.Play" />
+        </div>
+        <br /><br /><br />
+        <div>
+            An icon-only BitToggleButton has no visible wording at all, so its <b>AriaLabel</b> is its whole name.
+            <b>OnAriaLabel</b> and <b>OffAriaLabel</b> let that name change with the state — useful when the name is
+            better phrased as the action the click performs than as the state it is in. Being a changing name, it
+            drops <b>aria-pressed</b> for the same reason the changing text does:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton IconOnly
+                             OnAriaLabel="Unmute" OnIconName="@BitIconName.MicOff"
+                             OffAriaLabel="Mute" OffIconName="@BitIconName.Microphone" />
+        </div>
+        <br /><br /><br />
+        <div>
+            When a visible element already labels the toggle button, <b>AriaLabelledBy</b> points at it instead of
+            repeating the wording in an <b>AriaLabel</b> that could drift out of sync with it:
+        </div><br />
+        <div class="example-box">
+            <span id="wifi-label">Wi-Fi</span>
+            <BitToggleButton AriaLabelledBy="wifi-label" AriaMode="BitToggleButtonAriaMode.Switch"
+                             IconOnly IconName="@BitIconName.StatusCircleCheckmark" />
+        </div>
+        <br /><br /><br />
+        <div>
+            <b>AriaDescription</b> adds a visually hidden description, and <b>AriaControls</b> points at the element the
+            toggle button controls:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton AriaLabel="Show details"
+                             AriaControls="accessibility-details"
+                             AriaDescription="Expands the details panel below the button."
+                             @bind-IsChecked="detailsVisible"
+                             Text="Details" />
+        </div>
+        <br />
+        <div id="accessibility-details">@(detailsVisible ? "The details panel is visible." : "The details panel is hidden.")</div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            The whole general color set is available, Primary being the default. Each color also supplies the darker
+            shade used for the checked state, so a checked and an unchecked BitToggleButton read as one control in two
+            states rather than as two unrelated buttons. Click through the ones below to see both.
+        </div><br />
         <div class="example-box">
             <BitToggleButton Variant="BitVariant.Fill" Color="BitColor.Primary">Primary</BitToggleButton>
             <BitToggleButton Variant="BitVariant.Outline" Color="BitColor.Primary">Primary</BitToggleButton>
@@ -274,61 +541,135 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="FixedColor" RazorCode="@example10RazorCode" Id="example10">
-        <div>FixedColor parameter preserves the foreground color between hovering and focused states.</div><br />
-        <div class="example-box">
-            <BitToggleButton Color="BitColor.TertiaryBackground" FixedColor 
-                             OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
-
-            <BitToggleButton Color="BitColor.TertiaryBackground" FixedColor 
-                             OnText="Muted" OnIconName="@BitIconName.MicOff"
-                             OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            The built-in icon set is not a requirement. <b>Icon</b>, <b>OnIcon</b> and <b>OffIcon</b> take a
+            <b>BitIconInfo</b> that renders whatever CSS classes you give it, so any icon font works —
+            <b>BitIconInfo.Fa</b> for FontAwesome, <b>BitIconInfo.Bi</b> for Bootstrap Icons, or
+            <b>BitIconInfo.Css</b> for anything else. Just remember to reference the library's stylesheet yourself.
         </div>
-    </DemoExample>
-
-    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
-        <div>Use icons from external libraries like FontAwesome with the <b>Icon</b>, <b>OnIcon</b>, and <b>OffIcon</b> parameters.</div>
 
         <br />
         <br />
-        
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-        
+
         <BitToggleButton Icon="@("fa-solid fa-microphone")" Text="Microphone" />
-        
-        <br/>
-        <br/>
-        
+
+        <br />
+        <br />
+
         <BitToggleButton OnIcon="@BitIconInfo.Css("fa-solid fa-microphone-slash")" OnText="Muted"
                          OffIcon="@BitIconInfo.Css("fa-solid fa-microphone")" OffText="Unmuted"
                          Color="BitColor.Secondary" />
-        
-        <br/>
-        <br/>
-        
+
+        <br />
+        <br />
+
         <BitToggleButton OnIcon="@BitIconInfo.Fa("solid volume-xmark")" OnText="Muted"
                          OffIcon="@BitIconInfo.Fa("solid volume-high")" OffText="Unmuted"
                          Color="BitColor.Tertiary" />
-        
-        <br/>
-        <br/>
-        
-        <BitToggleButton OnIcon="@BitIconInfo.Fa("fa-regular fa-circle-pause")" OnText="Paused"
-                         OffIcon="@BitIconInfo.Fa("fa-regular fa-circle-play")" OffText="Playing"
+
+        <br />
+        <br />
+
+        <BitToggleButton OnIcon="@BitIconInfo.Fa("regular circle-pause")" OnText="Paused"
+                         OffIcon="@BitIconInfo.Fa("regular circle-play")" OffText="Playing"
                          Color="BitColor.Success" />
+
+        <br />
+        <br />
+
+        <div><b>CheckMarkIcon</b> takes the same kind of value:</div>
+
+        <br />
+
+        <BitToggleButton ShowCheckMark FixedCheckMark
+                         CheckMarkIcon="@BitIconInfo.Fa("solid check")"
+                         Variant="BitVariant.Outline" Text="Bold" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
-        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div><br />
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            Three preset sizes scale the typography, the padding and the icon together, so a BitToggleButton keeps its
+            proportions at any of them. Icon-only ones get square padding at each size, which is what keeps a toolbar
+            row of them evenly spaced.
+        </div>
+        <br /><br />
+        <div><b>Small</b>:</div><br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Medium</b>:</div><br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Large</b>:</div><br /><br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text" Text="Microphone" />
+            <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text" IconName="@BitIconName.Microphone" Text="Microphone" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root element, while <b>Styles</b> and <b>Classes</b> address the
+            individual parts — the root, the icon, the text, the check mark and the loading pieces. Both of them also
+            carry a <b>Checked</b> entry, which is layered on top of the rest whenever the BitToggleButton is checked,
+            so a state-specific override does not need a conditional in your markup.
+        </div><br />
         <div>Component's Style & Class:</div><br />
         <div class="example-box">
             <BitToggleButton Style="background-color: transparent; border-color: blueviolet; color: blueviolet;"
                              Variant="BitVariant.Outline"
-                             OnText="Styled Button: Muted" OnIconName="@BitIconName.MicOff" 
+                             OnText="Styled Button: Muted" OnIconName="@BitIconName.MicOff"
                              OffText="Styled Button: Unmuted" OffIconName="@BitIconName.Microphone" />
 
             <BitToggleButton Class="custom-class"
-                             OnText="Classed Button: Muted" OnIconName="@BitIconName.MicOff" 
+                             OnText="Classed Button: Muted" OnIconName="@BitIconName.MicOff"
                              OffText="Classed Button: Unmuted" OffIconName="@BitIconName.Microphone" />
         </div>
         <br /><br />
@@ -349,22 +690,36 @@
                                                 Icon = "custom-icon",
                                                 Text = "custom-text" })" />
         </div>
+        <br /><br />
+        <div>The check mark and the loading parts are addressable in the same way:</div><br />
+        <div class="example-box">
+            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Check mark"
+                             Styles="@(new() { CheckMark = "color: hotpink;" })" />
+
+            <BitToggleButton IsLoading LoadingLabel="Saving..." Text="Loading parts"
+                             Styles="@(new() { Spinner = "border-top-color: gold;",
+                                               LoadingLabel = "color: gold; font-style: italic;" })" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
-        <div>Use BitToggleButton in right-to-left (RTL).</div>
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            Setting <b>Dir</b> to <b>Rtl</b> mirrors the BitToggleButton: the icon moves to the right of the text and
+            the spacing follows it, since the layout is built from logical properties rather than fixed left and right
+            ones. The same happens automatically when an ancestor cascades the direction down.
+        </div>
         <br />
         <div class="example-box" dir="rtl">
             <BitToggleButton Dir="BitDir.Rtl" Variant="BitVariant.Fill"
-                             OnText="صدا قطع" OnIconName="@BitIconName.MicOff" 
+                             OnText="صدا قطع" OnIconName="@BitIconName.MicOff"
                              OffText="صدا وصل" OffIconName="@BitIconName.Microphone" />
 
             <BitToggleButton Dir="BitDir.Rtl" Variant="BitVariant.Outline"
-                             OnText="صدا قطع" OnIconName="@BitIconName.MicOff" 
+                             OnText="صدا قطع" OnIconName="@BitIconName.MicOff"
                              OffText="صدا وصل" OffIconName="@BitIconName.Microphone" />
 
             <BitToggleButton Dir="BitDir.Rtl" Variant="BitVariant.Text"
-                             OnText="صدا قطع" OnIconName="@BitIconName.MicOff" 
+                             OnText="صدا قطع" OnIconName="@BitIconName.MicOff"
                              OffText="صدا وصل" OffIconName="@BitIconName.Microphone" />
         </div>
     </DemoExample>

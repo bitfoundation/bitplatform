@@ -1,0 +1,110 @@
+@* Topic page: enter guards, leave guards, component-level navigation locks, declarative
+   redirects, and the global navigation hooks. Live links point at g1/g2/editor/lock routes
+   declared in AppRouter.razor. *@
+
+<div class="bb-intro">
+    <h1>Guards &amp; navigation locks</h1>
+    <p class="bb-subtitle">
+        Decide whether a navigation may happen - per route on the way <em>in</em>, per route on the
+        way <em>out</em>, from the component that's about to be left, or globally.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Enter guards</h3>
+    <p class="bb-card-desc">
+        <code>Guard</code> runs before a route (and its children) is entered - root→leaf down the
+        matched chain. A guard is an async <code>Func&lt;BrouterNavigationContext, ValueTask&gt;</code>:
+        call <code>ctx.Cancel()</code> to stop the navigation or <code>ctx.Redirect(url)</code> to
+        send it elsewhere (redirect targets resolve route-relatively against the destination, and a
+        redirect to the current target is a no-op, so loops can't form). Long-running guards should
+        honor <code>ctx.CancellationToken</code> - it fires when a newer navigation supersedes this
+        one. Guards do <em>not</em> run again for <code>RevalidateAsync()</code> or preloads.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"g1"</span> Guard=<span class="s">"@@GuardEvenSecond"</span>&gt; ... &lt;/<span class="k">Broute</span>&gt;
+
+<span class="k">private</span> ValueTask GuardEvenSecond(BrouterNavigationContext ctx)
+{
+    <span class="k">if</span> (DateTime.Now.Second % 2 != 0) ctx.Redirect(<span class="s">"/403"</span>);
+    <span class="k">return</span> ValueTask.CompletedTask;
+}</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/g1" class="btn btn-outline">/g1 - allowed when second is even</BrouterLink>
+        <BrouterLink Href="/g2" class="btn btn-outline">/g2 - async guard, even minute</BrouterLink>
+        <BrouterLink Href="/blocked" class="btn btn-outline">/blocked - guard always cancels (URL never moves)</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Leave guards</h3>
+    <p class="bb-card-desc">
+        <code>LeaveGuard</code> runs when a matched route is about to be <em>left</em> - leaf→root,
+        and <strong>before</strong> anything else in the pipeline (global hooks, enter guards).
+        Crucially it is <em>preventive</em>: cancellation happens before the URL commits, so there
+        is no address-bar flicker and no history corruption. The classic use is an unsaved-changes
+        editor. A leave guard does <em>not</em> fire when the same route stays matched with
+        different parameters - for that, use a navigation lock (below).
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/editor"</span> LeaveGuard=<span class="s">"GuardEditorLeave"</span>&gt; ... &lt;/<span class="k">Broute</span>&gt;
+
+<span class="k">private</span> ValueTask GuardEditorLeave(BrouterNavigationContext ctx)
+{
+    <span class="k">if</span> (demoState.IsEditorDirty) ctx.Cancel();
+    <span class="k">return</span> ValueTask.CompletedTask;
+}</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/editor" class="btn btn-outline">/editor - dirty state cancels leaving</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Component-level navigation locks</h3>
+    <p class="bb-card-desc">
+        Sometimes the <em>component</em> owns the veto, not the route declaration. Implement
+        <code>IBrouterRoute</code> (or derive from <code>BrouterRouteBase</code>) and override
+        <code>OnDeactivatingAsync</code> / <code>OnRenavigatingAsync</code>: both are awaited
+        before the navigation commits, may show a custom dialog, and cancel or redirect through
+        their context. <code>OnRenavigatingAsync</code> closes the gap leave guards can't see -
+        parameter changes on the <em>same</em> route (<code>/lock/1 → /lock/2</code>). The
+        context's <code>CancellationToken</code> fires if a newer navigation supersedes the pending
+        one, letting an open dialog dismiss itself. A thrown exception fails closed: the
+        navigation is cancelled.
+    </p>
+    <pre class="bb-code"><span class="k">public partial class</span> NavigationLockPage : <span class="k">BrouterRouteBase</span>
+{
+    <span class="k">protected override async</span> ValueTask OnDeactivatingAsync(BrouterRouteDeactivatingContext ctx)
+    {
+        <span class="k">if</span> (_dirty &amp;&amp; !<span class="k">await</span> ShowDialogAsync(ctx.To.Path, ctx.CancellationToken))
+            ctx.Cancel();
+    }
+}</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/lock/1" class="btn btn-outline">/lock/1 - custom-dialog veto (try /lock/2 from there)</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Declarative redirects &amp; global hooks</h3>
+    <p class="bb-card-desc">
+        <code>RedirectTo</code> turns a route into a pure redirect (guards on the route still run
+        first) - this demo maps <code>/</code> → <code>/home</code> and <code>/lock</code> →
+        <code>/lock/1</code> that way. Cross-cutting concerns hang off the router service instead
+        of any single route:
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Hook</th><th>Fires</th></tr></thead>
+        <tbody>
+            <tr><td>IBrouter.OnNavigating</td><td>Before every navigation; can Cancel()/Redirect() like a guard. This demo subscribes for analytics-style logging.</td></tr>
+            <tr><td>IBrouter.OnNavigated</td><td>After each successful navigation - page titles, telemetry.</td></tr>
+            <tr><td>IBrouter.OnError</td><td>On unhandled pipeline exceptions (loader, guard, lifecycle). Cancel/redirect are control flow, not errors.</td></tr>
+            <tr><td>Brouter OnMatch / OnNotFound</td><td>Router-component callbacks when a route matches / nothing matches.</td></tr>
+        </tbody>
+    </table>
+    <p class="bb-card-desc">
+        Leaving the <em>app</em> entirely (tab close, reload, external link) can't be intercepted
+        by guards - arm the browser's confirmation instead via
+        <code>BrouterOptions.ConfirmExternalNavigation</code> or at runtime with
+        <code>brouter.SetConfirmExternalNavigationAsync(true)</code>, as the editor demo does while
+        dirty.
+    </p>
+</div>

@@ -1,4 +1,4 @@
-﻿using Plugin.Maui.AppRating;
+using Plugin.Maui.AppRating;
 using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui;

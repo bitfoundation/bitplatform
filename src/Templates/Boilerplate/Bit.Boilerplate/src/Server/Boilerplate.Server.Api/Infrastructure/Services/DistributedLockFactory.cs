@@ -1,4 +1,4 @@
-﻿using Medallion.Threading;
+using Medallion.Threading;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 

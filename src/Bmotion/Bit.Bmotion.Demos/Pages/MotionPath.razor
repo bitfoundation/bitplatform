@@ -1,0 +1,123 @@
+@page "/motion-path"
+
+<h1>Motion path</h1>
+
+<div class="demo-section">
+    <h2>Travel along an SVG path</h2>
+    <p>
+        Set <strong>OffsetPath</strong> once (CSS <code>offset-path</code>) and animate
+        <strong>OffsetDistance</strong> from <code>0%</code> to <code>100%</code> to move an element
+        along it - a standards-based, compositor-friendly alternative to hand-animating x/y.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="min-height:220px;">
+            <div class="mpath-stage">
+                <svg viewBox="0 0 300 180" style="position:absolute; inset:0; width:100%; height:100%; opacity:.35">
+                    <path d="M20,150 C80,20 220,20 280,150" fill="none" stroke="#6c47ff" stroke-width="2" stroke-dasharray="4 4" />
+                </svg>
+                <Bmotion Initial="_initial"
+                         Animate="@(_on ? _travel : _initial)"
+                         Transition="Bm.Tween(2.0, BmEase.InOut)">
+                    <div class="dot" />
+                </Bmotion>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
+        @(_on ? "Rewind" : "Travel")
+    </button>
+
+    <CodeSnippet Code="@_code" />
+</div>
+
+<div class="demo-section">
+    <h2>Shape morphing</h2>
+    <p>
+        Animate the SVG <strong>D</strong> (path <code>d</code>) attribute. Two paths with the
+        <strong>same command structure</strong> morph smoothly (control points interpolate);
+        mismatched paths snap. Put the <code>&lt;path&gt;</code> directly inside the Bmotion.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <svg viewBox="0 0 200 200" width="200" height="200">
+                <Bmotion Animate="@(_morph ? _blobB : _blobA)"
+                         Transition="Bm.Spring(stiffness: 120, damping: 14)">
+                    <path d="M100 30 C140 30 170 60 170 100 C170 140 140 170 100 170 C60 170 30 140 30 100 C30 60 60 30 100 30"
+                          fill="url(#morphGrad)" />
+                </Bmotion>
+                <defs>
+                    <linearGradient id="morphGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#6c47ff" />
+                        <stop offset="1" stop-color="#ff4785" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _morph = !_morph)">
+        Morph
+    </button>
+
+    <CodeSnippet Code="@_morphCode" />
+</div>
+
+<style>
+    /* Fixed-size stage so the SVG guide (viewBox 0 0 300 180) and the dot's
+       pixel-based offset-path share one coordinate system, and position:relative
+       keeps the absolutely-positioned SVG contained within the card. */
+    .mpath-stage {
+        position: relative;
+        width: 300px;
+        height: 180px;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    .dot {
+        width: 24px; height: 24px; border-radius: 50%;
+        background: linear-gradient(135deg, #6c47ff, #ff4785);
+    }
+</style>
+
+@code {
+    private bool _on;
+    private bool _morph;
+
+    private static readonly BmProps _initial =
+        Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
+    private static readonly BmProps _travel = Bm.To(offsetDistance: "100%");
+
+    // Same command structure (M + 4 cubic segments) so the control points interpolate smoothly.
+    private static readonly BmProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 C170 140 140 170 100 170 C60 170 30 140 30 100 C30 60 60 30 100 30");
+    private static readonly BmProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 C180 130 130 180 100 150 C70 180 20 130 50 100 C20 70 70 20 100 50");
+
+    private const string _morphCode = """
+        <svg viewBox="0 0 200 200">
+            <Bmotion Animate="@(_morph ? _blobB : _blobA)" Transition="Bm.Spring(stiffness: 120, damping: 14)">
+                <path d="M100 30 C140 30 ..." fill="…" />
+            </Bmotion>
+        </svg>
+
+        @code {
+            static readonly BmProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 …");
+            static readonly BmProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 …");
+        }
+        """;
+
+    private const string _code = """
+        <Bmotion Initial="_initial"
+                 Animate="@(_on ? _travel : _initial)"
+                 Transition="Bm.Tween(2.0, BmEase.InOut)">
+            <div class="dot" />
+        </Bmotion>
+
+        @code {
+            static readonly BmProps _initial =
+                Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
+            static readonly BmProps _travel = Bm.To(offsetDistance: "100%");
+        }
+        """;
+}

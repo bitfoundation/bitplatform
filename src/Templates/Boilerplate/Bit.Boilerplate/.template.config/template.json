@@ -150,6 +150,13 @@
                 }
             ]
         },
+        "multitenant": {
+            "displayName": "Multi-Tenant",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Adds multi-tenant support"
+        },
         "captcha": {
             "displayName": "Captcha",
             "type": "parameter",
@@ -233,6 +240,13 @@
             "datatype": "bool",
             "defaultValue": "false",
             "description": "Adds GoogleAds integration."
+        },
+        "brouter": {
+            "displayName": "Use bit Brouter?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
         },
         "nameToLower": {
             "type": "generated",
@@ -371,6 +385,13 @@
                 ]
             },
             "replaces": "use-your-web-app-url-here.com"
+        },
+        "advancedTests": {
+            "displayName": "Include advanced automated tests?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Includes advanced automated tests (e.g. the Blazor WebAssembly offline sync test) that add extra infrastructure not needed by a typical project."
         }
     },
     "postActions": [
@@ -499,7 +520,60 @@
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Data/**",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineTodoPage*",
-                        "src/Shared/Infrastructure/Dtos/BaseDtoTableData.cs"
+                        "src/Shared/Infrastructure/Dtos/BaseDtoTableData.cs",
+                        "src/Tests/Features/Todo/OfflineTodoTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true)",
+                    "exclude": [
+                        "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
+                        "src/Tests/Features/Todo/OfflineTodoTests.cs",
+                        "src/Tests/Features/Identity/TrustedOriginsTests.cs",
+                        "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
+                        "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
+                        "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
+                        "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
+                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
+                        "src/Tests/Features/Seo/**",
+                        "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
+                        "src/Tests/Infrastructure/Configuration/AppConfigurationBuilderTests.cs",
+                        "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
+                        "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
+                        "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
+                        "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
+                        "src/Tests/Features/Culture/CultureSelectionUITests.cs",
+                        "src/Tests/Features/Identity/PhoneNumberNormalizationUITests.cs",
+                        "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
+                        "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
+                        "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || aspire != true)",
+                    "exclude": [
+                        "src/Tests/Features/Identity/ExternalIdentityTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || module != Sales)",
+                    "exclude": [
+                        "src/Tests/Features/Identity/QuickSignInUITests.cs",
+                        "src/Tests/Features/Identity/MagicLinkReturnUrlTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || signalR != true)",
+                    "exclude": [
+                        "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
+                        "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || notification != true || signalR != true)",
+                    "exclude": [
+                        "src/Tests/Features/PushNotification/PushNotificationUITests.cs"
                     ]
                 },
                 {
@@ -603,12 +677,31 @@
                     ]
                 },
                 {
+                    "condition": "(multitenant != true)",
+                    "exclude": [
+                        "src/Shared/Features/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Services/TenantProvider.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Components/TenantInvitationTemplate.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs"
+                    ]
+                },
+                {
                     "condition": "(ads != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs"
+                    ]
+                },
+                {
+                    "condition": "(brouter != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.BrouterLifecycles.cs"
                     ]
                 }
             ]

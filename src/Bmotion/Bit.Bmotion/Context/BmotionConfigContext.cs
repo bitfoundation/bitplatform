@@ -29,4 +29,10 @@ internal class BmotionConfigContext
         set => _transitionSpeed = double.IsFinite(value) && value >= 0 ? value : 0;
     }
     private double _transitionSpeed = 1.0;
+
+    /// <summary>
+    /// Global color-interpolation space for the subtree. <c>null</c> means no override (sRGB);
+    /// a per-transition <c>ColorSpace</c> always wins over this.
+    /// </summary>
+    public BmColorSpace? ColorSpace { get; set; }
 }

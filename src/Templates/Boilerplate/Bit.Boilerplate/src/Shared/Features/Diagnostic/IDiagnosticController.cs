@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Diagnostic;
+namespace Boilerplate.Shared.Features.Diagnostic;
 
 [Route("api/v1/[controller]/[action]/")]
 public interface IDiagnosticController : IAppController

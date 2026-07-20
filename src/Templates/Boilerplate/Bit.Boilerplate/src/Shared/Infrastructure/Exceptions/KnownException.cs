@@ -1,26 +1,26 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Exceptions;
+namespace Boilerplate.Shared.Infrastructure.Exceptions;
 
 public abstract partial class KnownException : ApplicationException
 {
-    public KnownException(string message)
+    protected KnownException(string message)
         : base(message)
     {
         Key = message;
     }
 
-    public KnownException(string message, Exception? innerException)
+    protected KnownException(string message, Exception? innerException)
         : base(message, innerException)
     {
         Key = message;
     }
 
-    public KnownException(LocalizedString message)
+    protected KnownException(LocalizedString message)
         : base(message.Value)
     {
         Key = message.Name;
     }
 
-    public KnownException(LocalizedString message, Exception? innerException)
+    protected KnownException(LocalizedString message, Exception? innerException)
         : base(message.Value, innerException)
     {
         Key = message.Name;

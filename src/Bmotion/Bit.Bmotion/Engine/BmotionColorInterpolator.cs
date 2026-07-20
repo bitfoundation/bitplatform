@@ -39,13 +39,80 @@ internal static partial class BmotionColorInterpolator
     /// regex/parse cost of the string overload.
     /// </summary>
     public static string Lerp(double[] from, double[] to, double t)
+        => Lerp(from, to, t, BmColorSpace.Srgb);
+
+    /// <summary>
+    /// Interpolates between two pre-parsed RGBA channel arrays in the given color space. sRGB mixes
+    /// per-channel; OKLab converts to a perceptual space first so mid-points stay saturated.
+    /// </summary>
+    public static string Lerp(double[] from, double[] to, double t, BmColorSpace space)
     {
+        if (space == BmColorSpace.Oklab)
+            return LerpOklab(from, to, t);
+
         int r = (int)Math.Round(Math.Clamp(from[0] + (to[0] - from[0]) * t, 0, 255));
         int g = (int)Math.Round(Math.Clamp(from[1] + (to[1] - from[1]) * t, 0, 255));
         int b = (int)Math.Round(Math.Clamp(from[2] + (to[2] - from[2]) * t, 0, 255));
         double a = Math.Clamp(from[3] + (to[3] - from[3]) * t, 0, 1);
         return $"rgba({r},{g},{b},{BmotionCssFormat.Num(a, "G4")})";
     }
+
+    // ── OKLab perceptual interpolation (Björn Ottosson) ───────────────────────
+
+    private static string LerpOklab(double[] from, double[] to, double t)
+    {
+        var (l1, a1, b1) = RgbToOklab(from[0], from[1], from[2]);
+        var (l2, a2, b2) = RgbToOklab(to[0], to[1], to[2]);
+        double l = l1 + (l2 - l1) * t;
+        double aa = a1 + (a2 - a1) * t;
+        double bb = b1 + (b2 - b1) * t;
+        double alpha = Math.Clamp(from[3] + (to[3] - from[3]) * t, 0, 1);
+
+        var (r, g, b) = OklabToRgb(l, aa, bb);
+        return $"rgba({r},{g},{b},{BmotionCssFormat.Num(alpha, "G4")})";
+    }
+
+    private static (double L, double A, double B) RgbToOklab(double r255, double g255, double b255)
+    {
+        double r = LinearizeSrgb(r255 / 255.0);
+        double g = LinearizeSrgb(g255 / 255.0);
+        double b = LinearizeSrgb(b255 / 255.0);
+
+        double l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+        double m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+        double s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+
+        double l_ = Math.Cbrt(l), m_ = Math.Cbrt(m), s_ = Math.Cbrt(s);
+
+        return (
+            0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+            1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+            0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_);
+    }
+
+    private static (int R, int G, int B) OklabToRgb(double L, double A, double B)
+    {
+        double l_ = L + 0.3963377774 * A + 0.2158037573 * B;
+        double m_ = L - 0.1055613458 * A - 0.0638541728 * B;
+        double s_ = L - 0.0894841775 * A - 1.2914855480 * B;
+
+        double l = l_ * l_ * l_, m = m_ * m_ * m_, s = s_ * s_ * s_;
+
+        double r = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+        double g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+        double b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+
+        return (
+            (int)Math.Round(Math.Clamp(DelinearizeSrgb(r) * 255, 0, 255)),
+            (int)Math.Round(Math.Clamp(DelinearizeSrgb(g) * 255, 0, 255)),
+            (int)Math.Round(Math.Clamp(DelinearizeSrgb(b) * 255, 0, 255)));
+    }
+
+    private static double LinearizeSrgb(double c)
+        => c <= 0.04045 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+
+    private static double DelinearizeSrgb(double c)
+        => c <= 0.0031308 ? c * 12.92 : 1.055 * Math.Pow(c, 1.0 / 2.4) - 0.055;
 
     /// <summary>Returns true if the CSS string looks like a color value.</summary>
     public static bool LooksLikeColor(string? value)

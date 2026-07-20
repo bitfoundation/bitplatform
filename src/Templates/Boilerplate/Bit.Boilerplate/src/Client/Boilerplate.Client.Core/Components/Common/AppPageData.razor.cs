@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Common;
+namespace Boilerplate.Client.Core.Components.Common;
 
 public partial class AppPageData
 {

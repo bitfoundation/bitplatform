@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 /// <summary>
 /// Declares a named view fragment for the enclosing <see cref="Broute"/>: when the route matches,

@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings.Account;
@@ -6,6 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Settings.Account;
 public partial class PasswordlessTab
 {
     private bool isConfigured;
+    private bool isAvailable = false;
 
 
     [AutoInject] IUserController userController = default!;
@@ -22,6 +23,7 @@ public partial class PasswordlessTab
 
         if (User?.UserName is null) return;
 
+        isAvailable = await webAuthnService.IsWebAuthnAvailable();
         isConfigured = await webAuthnService.IsWebAuthnConfigured(User.Id);
     }
 

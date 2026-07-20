@@ -1,0 +1,27 @@
+﻿<div class="bb-intro">
+    <h1>Profile</h1>
+    <p class="bb-subtitle">An optional route parameter - the page handles both the empty and populated cases.</p>
+</div>
+
+@if (string.IsNullOrEmpty(Username))
+{
+    <div class="bb-empty">
+        <p style="margin: 0 0 .75rem;">No username supplied.</p>
+        <BrouterLink Href="/profile/saleh" class="btn btn-primary">Try /profile/saleh</BrouterLink>
+    </div>
+}
+else
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-primary"></span>
+            @Username
+        </h3>
+        <p class="bb-card-desc">Profile loaded from the optional <code>{username?}</code> route parameter.</p>
+    </div>
+}
+
+@code {
+    // Optional parameter: bound by name when the URL provides one, otherwise null.
+    [Parameter] public string? Username { get; set; }
+}

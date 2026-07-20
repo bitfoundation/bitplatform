@@ -9,9 +9,29 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
 
 
     /// <summary>
+    /// The accessible label of the option, rendered as the aria-label attribute.
+    /// </summary>
+    /// <remarks>
+    /// Required for icon-only options, and strongly recommended in toggle mode when
+    /// <see cref="OnText"/>/<see cref="OffText"/> are used, so that the accessible name
+    /// of the option stays the same while its toggle state changes.
+    /// </remarks>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// The content of the badge rendered at the end of the option, usually a short count.
+    /// </summary>
+    [Parameter] public string? Badge { get; set; }
+
+    /// <summary>
     /// The custom CSS classes of the option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// The url of the link rendered by the option. If provided, the option renders as an anchor tag instead of a button.
+    /// </summary>
+    [Parameter] public string? Href { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -37,6 +57,11 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     /// Whether or not the option is enabled.
     /// </summary>
     [Parameter] public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether or not the option is in the loading state, which replaces its icon with a spinner and blocks its click.
+    /// </summary>
+    [Parameter] public bool IsLoading { get; set; }
 
     /// <summary>
     /// A unique value to use as a key of the option
@@ -119,6 +144,11 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The target attribute of the link when the option renders as an anchor (by providing the Href parameter).
+    /// </summary>
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>
     /// The custom template for the option.
     /// </summary>
     [Parameter] public RenderFragment<BitButtonGroupOption>? Template { get; set; }
@@ -140,11 +170,30 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
 
 
 
+    internal void InternalStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+
+
     protected override async Task OnInitializedAsync()
     {
-        Parent.RegisterOption(this);
+        Parent?.RegisterOption(this);
 
         await base.OnInitializedAsync();
+    }
+
+    // Renders the option's item in place, so the rendered order of the items always follows the
+    // markup order of the options, even when an option is added or removed conditionally later on.
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (Parent is null) return;
+
+        builder.OpenComponent<_BitButtonGroupItem<BitButtonGroupOption>>(0);
+        builder.AddComponentParameter(1, nameof(_BitButtonGroupItem<BitButtonGroupOption>.ButtonGroup), Parent);
+        builder.AddComponentParameter(2, nameof(_BitButtonGroupItem<BitButtonGroupOption>.Item), this);
+        builder.CloseComponent();
     }
 
     public void Dispose()
@@ -157,7 +206,7 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        Parent.UnregisterOption(this);
+        Parent?.UnregisterOption(this);
 
         _disposed = true;
     }

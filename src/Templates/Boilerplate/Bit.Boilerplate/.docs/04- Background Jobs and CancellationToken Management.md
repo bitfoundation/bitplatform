@@ -2,7 +2,7 @@
 
 Welcome to **Stage 4** of the Boilerplate project tutorial! In this stage, we'll explore how the project handles **cancellation tokens** for request cancellation and **background job processing** with Hangfire.
 
-In modern web applications, managing the lifecycle of an operation is critical for resource efficiency and data integrity. A standard API request is ephemeral—it lives only as long as the client is waiting and the server is running. If a user closes their browser, clicks a cancel button, or if the server undergoes a sudden restart, ongoing HTTP requests are aborted. 
+In modern web applications, managing the lifecycle of an operation is critical for resource efficiency and data integrity. A standard API request is ephemeral-it lives only as long as the client is waiting and the server is running. If a user closes their browser, clicks a cancel button, or if the server undergoes a sudden restart, ongoing HTTP requests are aborted. 
 
 To build a resilient system, developers must handle these scenarios predictably:
 1. **Discarding Unneeded Work:** Automatically tearing down database queries and tasks when a user abandons a request using `CancellationToken`.

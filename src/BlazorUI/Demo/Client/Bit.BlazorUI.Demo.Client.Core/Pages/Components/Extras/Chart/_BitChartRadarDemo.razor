@@ -5,7 +5,7 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="BitChartSampleData.Skills()" Options="_bottom" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Outline only" RazorCode="@outlineRazorCode" CsharpCode="@outlineCsharpCode" Id="radar-outline">
+<DemoExample Title="Outline only" RazorCode="@outlineRazorCode" CsharpCode="@outlineCsharpCode" Id="radar-outline" PreventRenderForMcpClient>
     <div class="example-desc">no fill, thicker borders</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Radar" Data="@Outline()" Options="_bottom" /></div></div>
 </DemoExample>

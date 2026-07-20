@@ -70,9 +70,59 @@
     <CodeSnippet Code="@_layoutIdCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Size correction - no distortion</h2>
+    <p>
+        With <strong>Layout="true"</strong>, a resizing box scales for a smooth 60fps FLIP, but its
+        text and child elements are <strong>counter-scaled</strong> and the <strong>border-radius is
+        corrected</strong> each frame - so nothing stretches and the corners stay round (Motion's
+        headline layout feature). Toggle the size and watch the label and inner dot stay crisp.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="min-height:220px;">
+            <Bmotion Layout="true" Transition="Bm.Spring(stiffness: 350, damping: 30)">
+                <div class="@(_big ? "resize-card big" : "resize-card")">
+                    <span class="resize-label">Layout</span>
+                    <div class="resize-dot" />
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _big = !_big)">
+        @(_big ? "Shrink" : "Grow")
+    </button>
+
+    <CodeSnippet Code="@_sizeCode" />
+</div>
+
+<style>
+    .resize-card {
+        width: 120px; height: 120px; border-radius: 20px;
+        background: linear-gradient(135deg, #6c47ff, #ff4785);
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem;
+    }
+    .resize-card.big { width: 260px; height: 180px; }
+    .resize-label { font-weight: 800; font-size: 1.3rem; color: #fff; }
+    .resize-dot { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.85); }
+</style>
+
 @code {
     private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
     private string _activeTab = "Home";
+    private bool _big;
+
+    private const string _sizeCode = """
+        @* Layout="true" scales for a smooth FLIP; children counter-scale + border-radius is
+           corrected automatically so text/corners don't distort. *@
+        <Bmotion Layout="true" Transition="Bm.Spring(stiffness: 350, damping: 30)">
+            <div class="@(_big ? "resize-card big" : "resize-card")">
+                <span class="resize-label">Layout</span>
+                <div class="resize-dot" />
+            </div>
+        </Bmotion>
+        """;
 
     private const string _layoutIdCode = """
         @foreach (var tab in _tabs)

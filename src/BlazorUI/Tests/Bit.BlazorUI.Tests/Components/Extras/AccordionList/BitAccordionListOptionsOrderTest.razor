@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitAccordionList TItem="BitAccordionListOption">
+    <BitAccordionListOption Title="First" />
+    @if (ShowMiddle)
+    {
+        <BitAccordionListOption Title="Middle" />
+    }
+    <BitAccordionListOption Title="Last" />
+</BitAccordionList>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+}

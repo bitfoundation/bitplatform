@@ -124,7 +124,7 @@ private BitChartData BubbleData() => new()
             Label = ""Markets"",
             BackgroundColor = BitChartColorUtil.WithAlpha(""#4bc0c0"", 0.5),
             BorderColor = ""#4bc0c0"",
-            // BitChartDataPoint(x, y, r) — r drives the bubble radius
+            // BitChartDataPoint(x, y, r) - r drives the bubble radius
             Points = new()
             {
                 new(10, 20, 14), new(15, 10, 8), new(20, 30, 22),

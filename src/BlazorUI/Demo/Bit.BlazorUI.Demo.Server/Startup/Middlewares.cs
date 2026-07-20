@@ -16,9 +16,25 @@ public class Middlewares
     {
         app.UseForwardedHeaders();
 
+        // Cross-origin isolation, required for the multi-threaded WebAssembly runtime
+        // (WasmEnableThreads in Bit.BlazorUI.Demo.Client.Web) to use SharedArrayBuffer.
+        // Without these headers on the top-level document, crossOriginIsolated stays
+        // false and the runtime silently falls back to a single thread. COEP
+        // 'credentialless' is used instead of 'require-corp' so cross-origin
+        // subresources (fonts, images) keep loading without their own CORP/CORS headers;
+        // it enables isolation on Chromium and Firefox (Safari needs 'require-corp').
+        app.Use(async (context, next) =>
+        {
+            context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+            context.Response.Headers["Cross-Origin-Embedder-Policy"] = "credentialless";
+            await next.Invoke(context);
+        });
+
         if (env.IsDevelopment())
         {
+#if INCLUDE_WASM
             app.UseWebAssemblyDebugging();
+#endif
         }
         else
         {
@@ -93,7 +109,9 @@ public class Middlewares
         // Handle the rest of requests with blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
+#if INCLUDE_WASM
             .AddInteractiveWebAssemblyRenderMode()
+#endif
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Bit.BlazorUI.Demo") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
     }
 

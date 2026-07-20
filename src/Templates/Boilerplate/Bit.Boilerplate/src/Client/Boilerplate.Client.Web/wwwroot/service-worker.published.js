@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-// bit version: 10.5.0-pre-05
+// bit version: 10.5.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -48,20 +48,6 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
 
-    // If a PDF reader (https://blazorui.bitplatform.dev/components/pdfreader) is needed in the PWA, remove these two lines:
-    /pdfjs-4\.7\.76\.js$/,
-    /pdfjs-4\.7\.76-worker\.js$/,
-
-    //#if (module != "Admin")
-    /chartjs-2\.9\.4\.js$/,
-    /chartjs-2\.9\.4-adapter\.js$/,
-
-    // If a RichTextEditor (https://blazorui.bitplatform.dev/components/richtexteditor) is needed in the PWA, remove the following lines:
-    /quill-2\.0\.3\.js$/,
-    /quill.snow-2\.0\.3\.css$/,
-    /quill.bubble-2\.0\.3\.css$/,
-    //#endif
-
     // country flags
     /_content\/Bit\.BlazorUI\.Extras\/flags/
 ];
@@ -98,6 +84,7 @@ self.serverHandledUrls = [
     /\/products.xml/,
     //#endif
     /\/sitemap_index.xml/,
+    /\/llms.txt/,
     /\/web-interop-app.html/
 ];
 

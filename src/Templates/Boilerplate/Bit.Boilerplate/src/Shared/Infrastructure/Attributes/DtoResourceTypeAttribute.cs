@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Attributes;
+namespace Boilerplate.Shared.Infrastructure.Attributes;
 
 /// <summary>
 /// Instead of repeatedly applying the <see cref="ValidationAttribute.ErrorMessageResourceType"/> to properties featuring validation attributes like [Required] or [StringLength],

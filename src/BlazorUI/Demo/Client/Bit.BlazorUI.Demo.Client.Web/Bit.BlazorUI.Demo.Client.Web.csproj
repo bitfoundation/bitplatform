@@ -15,7 +15,12 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <WasmEnableSIMD>true</WasmEnableSIMD>
+        <!-- Multi-threaded WebAssembly runtime: lets BitPdfViewer's BackgroundRendering
+             offload parsing/rendering to a worker thread. Requires the hosting server to
+             send the COOP/COEP cross-origin-isolation headers (see the demo server's
+             Middlewares.cs) so the runtime can use SharedArrayBuffer. -->
+        <WasmEnableThreads>true</WasmEnableThreads>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,17 +28,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Watch Include="..\Bit.BlazorUI.Demo.Client.Core\**\*.razor" />
-        <Watch Include="..\Bit.BlazorUI.Demo.Client.Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="10.5.0-pre-05" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-05">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0-pre-05">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -41,10 +40,20 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
+        <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Web.Shared\Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Lazily loaded on demand by the Legacy BitChart demo (see BitChartDemo). These assemblies
+             are only needed by the legacy Chart's Newtonsoft.Json serialization, so keeping them out
+             of the initial WASM download reduces the app's startup payload. -->
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">

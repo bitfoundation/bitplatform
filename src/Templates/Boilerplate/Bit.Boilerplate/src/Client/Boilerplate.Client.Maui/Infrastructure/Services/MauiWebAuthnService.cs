@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Maui.Infrastructure.Services;
+namespace Boilerplate.Client.Maui.Infrastructure.Services;
 
 public partial class MauiWebAuthnService : WebAuthnServiceBase
 {

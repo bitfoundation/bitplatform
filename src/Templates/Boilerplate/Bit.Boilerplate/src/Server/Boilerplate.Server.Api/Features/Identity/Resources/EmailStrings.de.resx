@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -196,4 +196,21 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate-App</value>
   </data>
+  <!--#if (multitenant == true) -->
+  <data name="TenantInvitationEmailSubject" xml:space="preserve">
+    <value>Sie wurden eingeladen, {0} beizutreten</value>
+  </data>
+  <data name="TenantInvitationHello" xml:space="preserve">
+    <value>Hallo {0}</value>
+  </data>
+  <data name="TenantInvitationMessage" xml:space="preserve">
+    <value>{0} hat Sie eingeladen, dem Mandanten {1} beizutreten.</value>
+  </data>
+  <data name="TenantInvitationLinkMessage" xml:space="preserve">
+    <value>Indem Sie den untenstehenden Link öffnen und sich anmelden, können Sie diesem Mandanten beitreten.</value>
+  </data>
+  <data name="TenantInvitationOpenApp" xml:space="preserve">
+    <value>App öffnen</value>
+  </data>
+  <!--#endif-->
 </root>

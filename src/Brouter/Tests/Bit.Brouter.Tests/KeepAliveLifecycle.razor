@@ -1,23 +1,39 @@
-@* Consumes the keep-alive lifecycle context to record activate/deactivate transitions, for
-   asserting that a kept component is signalled when it is hidden and shown again. *@
+﻿@* Derives from BrouterRouteBase to record route-lifecycle transitions, for asserting that routed
+   content is signalled on activation (first show and reveals from keep-alive retention),
+   deactivation (hidden/disposing) and renavigation. *@
 
 @using Bit.Brouter
+@inherits BrouterRouteBase
 
-<div data-testid="lifecycle">active:@IsActive deactivations:@_deactivations activations:@_activations</div>
+@* "activated:" rather than "activations:" - the assertions match these labels with substring
+   Contains, and "activations:N" would also match inside "deactivations:N". *@
+<div data-testid="lifecycle">active:@IsActive activated:@_activations first:@_firstActivations deactivations:@_deactivations reasons:@_lastReason renavigations:@_renavigations</div>
 
 @code {
-    [CascadingParameter] public BrouterKeepAliveContext? KeepAlive { get; set; }
-
-    private bool IsActive => KeepAlive?.IsActive ?? true;
-    private int _deactivations;
     private int _activations;
-    private bool _wasActive = true;
+    private int _firstActivations;
+    private int _deactivations;
+    private int _renavigations;
+    private string _lastReason = "none";
 
-    protected override void OnParametersSet()
+    protected override void OnActivated(BrouterRouteActivation activation)
     {
-        var active = IsActive;
-        if (_wasActive && active is false) _deactivations++;
-        if (_wasActive is false && active) _activations++;
-        _wasActive = active;
+        _activations++;
+        if (activation.IsFirstActivation) _firstActivations++;
+        // The base class repaints after activation automatically.
+    }
+
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+    {
+        _deactivations++;
+        _lastReason = deactivation.Reason.ToString();
+        // Deactivation deliberately does not auto-repaint (hidden content shouldn't re-render);
+        // this component opts in so the assertions can read the counters off the hidden markup.
+        StateHasChanged();
+    }
+
+    protected override void OnRenavigated(BrouterRouteRenavigation renavigation)
+    {
+        _renavigations++;
     }
 }

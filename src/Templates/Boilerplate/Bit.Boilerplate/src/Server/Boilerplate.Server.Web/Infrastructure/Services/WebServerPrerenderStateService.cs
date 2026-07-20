@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;

@@ -1,0 +1,187 @@
+@using Boilerplate.Shared.Features.Tenants.Dtos
+
+@attribute [Route(PageUrls.ManageMyTenants)]
+@attribute [Route("{culture?}" + PageUrls.ManageMyTenants)]
+@attribute [Authorize]
+@inherits AppPageBase
+
+<AppPageData Title="@Localizer[nameof(AppStrings.ManageMyTenants)]"
+             PageTitle="@Localizer[nameof(AppStrings.ManageMyTenantsPageTitle)]" />
+
+@* Shared name/title fields reused by both the create and the rename forms (each gets its own model instance). *@
+@{
+    RenderFragment<TenantDto> tenantFields = model =>
+    @<BitStack Gap="0.5rem">
+        <BitTextField @bind-Value="model.Name" FullWidth
+                      Label="@Localizer[nameof(AppStrings.Name)]"
+                      Placeholder="@Localizer[nameof(AppStrings.EnterTenantName)]" />
+        <ValidationMessage For="() => model.Name" />
+        <BitTextField @bind-Value="model.Title" FullWidth
+                      Label="@Localizer[nameof(AppStrings.Title)]"
+                      Placeholder="@Localizer[nameof(AppStrings.EnterTenantTitle)]" />
+        <ValidationMessage For="() => model.Title" />
+        <BitTextField @bind-Value="model.Domain" FullWidth
+                      Label="@Localizer[nameof(AppStrings.Domain)]"
+                      Placeholder="@Localizer[nameof(AppStrings.EnterTenantDomain)]" />
+        <ValidationMessage For="() => model.Domain" />
+    </BitStack>;
+}
+
+<section>
+    <BitStack Class="root-stack" Gap="1rem">
+        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.ManageMyTenants)]</BitText>
+
+        @if (isLoading)
+        {
+            <BitStack HorizontalAlign="BitAlignment.Center" Style="padding:3rem">
+                <BitRippleLoading />
+            </BitStack>
+        }
+        else
+        {
+            @* The three tenant actions. Only one section is expanded at a time (single-expand accordion list).
+               When the user has no tenant yet, the create section opens automatically. *@
+            <BitAccordionList TItem="BitAccordionListOption" Class="actions-accordion" Gap="8"
+                              DefaultExpandedKey="@(tenants.Count is 0 ? "create" : null)"
+                              OnExpand="OnSectionExpand">
+
+                @* 1. Create a brand new tenant. Always visible and enabled. *@
+                <BitAccordionListOption Key="create" Title="@Localizer[nameof(AppStrings.CreateNewTenant)]">
+                    <EditForm Model="newTenant" OnValidSubmit="WrapHandled(CreateTenant)" novalidate>
+                        <AppDataAnnotationsValidator @ref="createValidatorRef" />
+                        <BitStack Gap="0.5rem">
+                            @tenantFields(newTenant)
+                            <BitStack Horizontal FitHeight>
+                                <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+                                    @Localizer[nameof(AppStrings.Save)]
+                                </BitButton>
+                            </BitStack>
+                        </BitStack>
+                    </EditForm>
+                </BitAccordionListOption>
+
+                @* Inviting and renaming both target the current tenant, so they are only available to its admins
+                   (Tenant_Write) and stay disabled until a tenant is selected. *@
+                <AuthorizeView Policy="@AppFeatures.Management.Tenant_Manage">
+
+                    @* 2. Invite a user to the current tenant. *@
+                    <BitAccordionListOption Key="invite"
+                                            IsEnabled="currentTenant is not null"
+                                            Title="@(currentTenant is null
+                                                       ? Localizer[nameof(AppStrings.Invite)]
+                                                       : Localizer[nameof(AppStrings.InviteUserToTenant), string.IsNullOrEmpty(currentTenant.Title) ? currentTenant.Name : currentTenant.Title!])">
+                        <EditForm Model="inviteRequest" OnValidSubmit="WrapHandled(InviteUser)" Context="inviteFormContext" novalidate>
+                            <AppDataAnnotationsValidator @ref="inviteValidatorRef" />
+                            <BitStack Gap="0.5rem">
+                                <BitTextField @bind-Value="inviteRequest.Email"
+                                              Type="BitInputType.Email" FullWidth
+                                              Label="@Localizer[nameof(AppStrings.Email)]"
+                                              Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                                <ValidationMessage For="() => inviteRequest.Email" />
+                                <BitPhoneInput @bind-Value="inviteRequest.PhoneNumber"
+                                               DefaultCountry="@BitCountries.Current" FullWidth
+                                               Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                                <ValidationMessage For="() => inviteRequest.PhoneNumber" />
+                                <BitStack Horizontal FitHeight>
+                                    <BitButton IsLoading="isInviting" ButtonType="BitButtonType.Submit">
+                                        @Localizer[nameof(AppStrings.Invite)]
+                                    </BitButton>
+                                </BitStack>
+                            </BitStack>
+                        </EditForm>
+                    </BitAccordionListOption>
+
+                    @* 3. Rename the current tenant (Update always targets the current tenant). *@
+                    <BitAccordionListOption Key="update"
+                                            IsEnabled="currentTenant is not null"
+                                            Title="@Localizer[nameof(AppStrings.EditTenant)]">
+                        <EditForm Model="editingTenant" OnValidSubmit="WrapHandled(UpdateTenant)" Context="updateFormContext" novalidate>
+                            <AppDataAnnotationsValidator @ref="editValidatorRef" />
+                            <BitStack Gap="0.5rem">
+                                @tenantFields(editingTenant)
+                                <BitStack Horizontal FitHeight>
+                                    <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+                                        @Localizer[nameof(AppStrings.Save)]
+                                    </BitButton>
+                                </BitStack>
+                            </BitStack>
+                        </EditForm>
+                    </BitAccordionListOption>
+
+                </AuthorizeView>
+            </BitAccordionList>
+
+            <BitBasicList Items="tenants" Class="tenants-list">
+                <EmptyContent>
+                    <BitStack HorizontalAlign="BitAlignment.Center" Gap="1rem" Style="padding:3rem 1rem">
+                        <BitIcon IconName="@BitIconName.Org" Color="BitColor.Primary" Style="font-size:3rem" />
+                        <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                            @Localizer[nameof(AppStrings.SelectTenantMessage)]
+                        </BitText>
+                    </BitStack>
+                </EmptyContent>
+                <RowTemplate Context="tenant">
+                    <BitCard FullWidth Class="tenant-card" @key="tenant.Id">
+                        <BitStack Gap="1rem">
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="1rem" FitHeight>
+                                @* Green check for the current tenant, a mail icon for invitations not accepted yet, org icon otherwise. *@
+                                @if (IsSelected(tenant))
+                                {
+                                    <BitIcon IconName="@BitIconName.SkypeCircleCheck"
+                                             Color="BitColor.Success"
+                                             Style="font-size:1.75rem"
+                                             Title="@Localizer[nameof(AppStrings.CurrentTenant)]" />
+                                }
+                                else if (IsPendingInvitation(tenant))
+                                {
+                                    <BitIcon IconName="@BitIconName.Mail"
+                                             Color="BitColor.Warning"
+                                             Style="font-size:1.75rem"
+                                             Title="@Localizer[nameof(AppStrings.PendingInvitation)]" />
+                                }
+                                else
+                                {
+                                    <BitIcon IconName="@BitIconName.Org" Color="BitColor.SecondaryForeground" Style="font-size:1.75rem" />
+                                }
+
+                                <BitStack Gap="0.125rem" Grows>
+                                    <BitText Typography="BitTypography.Subtitle1">@(string.IsNullOrEmpty(tenant.Title) ? tenant.Name : tenant.Title)</BitText>
+                                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@tenant.Name</BitText>
+                                    @if (string.IsNullOrEmpty(tenant.Domain) is false)
+                                    {
+                                        <BitText Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground">@tenant.Domain</BitText>
+                                    }
+                                </BitStack>
+
+                                @* IsActive is read-only here; it can only be toggled from the tenant management page. *@
+                                <BitTag Variant="BitVariant.Outline"
+                                        Style="flex-shrink:0"
+                                        Color="@(tenant.IsActive ? BitColor.Success : BitColor.Error)"
+                                        Text="@Localizer[tenant.IsActive ? nameof(AppStrings.Active) : nameof(AppStrings.Inactive)]" />
+                            </BitStack>
+
+                            <BitStack Horizontal HorizontalAlign="BitAlignment.End" VerticalAlign="BitAlignment.Center" Gap="0.5rem" Wrap FitHeight>
+                                @if (IsSelected(tenant) is false)
+                                {
+                                    <BitButton Variant="BitVariant.Outline"
+                                               IconName="@(IsPendingInvitation(tenant) ? BitIconName.Accept : BitIconName.Switch)"
+                                               OnClick="WrapHandled(() => SwitchTo(tenant))">
+                                        @Localizer[IsPendingInvitation(tenant) ? nameof(AppStrings.AcceptInvitation) : nameof(AppStrings.Switch)]
+                                    </BitButton>
+                                }
+
+                                <BitButton Color="BitColor.Error"
+                                           Variant="BitVariant.Text"
+                                           IconName="@BitIconName.Leave"
+                                           OnClick="WrapHandled(() => LeaveTenant(tenant))">
+                                    @Localizer[nameof(AppStrings.LeaveTenant)]
+                                </BitButton>
+                            </BitStack>
+                        </BitStack>
+                    </BitCard>
+                </RowTemplate>
+            </BitBasicList>
+        }
+    </BitStack>
+</section>

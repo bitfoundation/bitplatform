@@ -29,7 +29,13 @@
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <Watch Remove="*.scss" />
+        <!-- dotnet watch: watch the ts sources so edits trigger the tsc target on rebuilds.
+             The generated wwwroot css/js stay watched (default Content behavior) so dotnet watch can
+             hot-apply them when the demo server's ScssCompilerService regenerates them. Scss sources are
+             intentionally not watched here: the in-app compiler recompiles them without a rebuild. Paths
+             are rooted with $(MSBuildProjectDirectory) because dotnet watch resolves relative Watch items
+             of referenced projects against the startup project's directory. -->
+        <Watch Include="$(MSBuildProjectDirectory)\**\*.ts" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\**\*.d.ts" />
     </ItemGroup>
 
     <ItemGroup>

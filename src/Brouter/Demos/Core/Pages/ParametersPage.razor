@@ -1,0 +1,139 @@
+@* Topic page: how route values reach your components - typed binding, the cascaded
+   BrouterRouteParameters bag, wildcards, and the 404 fallback. The live links point at routes
+   declared in AppRouter.razor. *@
+
+<div class="bb-intro">
+    <h1>Route parameters</h1>
+    <p class="bb-subtitle">
+        How URL segments become strongly-typed values in your components - by-name
+        <code>[Parameter]</code> binding, the cascaded parameter bag, wildcards, and fallbacks.
+    </p>
+</div>
+
+<div class="bb-counter">
+    <div>
+        <div class="bb-counter-label">Current count</div>
+        <div class="bb-counter-value">@CountValue</div>
+    </div>
+    <div style="color: var(--bb-text-muted); font-size: .85rem;">
+        The shared count lives in the host component that declares the routes and is passed into
+        this page through <code>&lt;Content&gt;</code> - visit a counter link below, change it, and
+        come back: route content can share state with its host like any other component tree.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Typed binding via constraints</h3>
+    <p class="bb-card-desc">
+        A parameter with a <em>type constraint</em> doesn't just restrict what matches - it
+        <strong>converts</strong> the value before your component sees it: <code>{init:int}</code>
+        arrives as an <code>int</code>, <code>{day:datetime}</code> as a <code>DateTime</code>
+        (invariant culture). When constraints chain, the <em>last type constraint</em> decides the
+        CLR type; validation constraints (<code>min</code>, <code>regex</code>, ...) only gate the
+        match. Route values bind automatically to same-named <code>[Parameter]</code> properties on
+        a <code>Component</code>-rendered page - and <code>[BrouterParameter(Name = "...")]</code>
+        overrides the name when the property can't (or shouldn't) match the template's.
+    </p>
+    <pre class="bb-code"><span class="c">@@* {init:int} binds the segment as an int. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/counter/{init:int}"</span> Component=<span class="s">"@@typeof(CounterPage)"</span> /&gt;
+
+<span class="c">// CounterPage.razor - bound by name, already converted:</span>
+[<span class="k">Parameter</span>] <span class="k">public int</span> Init { <span class="k">get</span>; <span class="k">set</span>; }
+
+<span class="c">// or bind a differently-named property explicitly:</span>
+[<span class="k">Parameter</span>, <span class="k">BrouterParameter</span>(Name = <span class="s">"init"</span>)] <span class="k">public int</span> StartValue { <span class="k">get</span>; <span class="k">set</span>; }</pre>
+    <div class="bb-try">
+        <BrouterLink Href="@BrouterRoutes.Counter(1234)" class="btn btn-outline">Counter starting at 1234</BrouterLink>
+        <BrouterLink Href="/counter/multi/1/2/saleh" class="btn btn-outline">Multi-param /multi/1/2/saleh</BrouterLink>
+        <BrouterLink Href="/counter/oops" class="btn btn-outline">/counter/oops → 404 (fails :int)</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The cascaded parameter bag</h3>
+    <p class="bb-card-desc">
+        Every matched route also cascades a <code>BrouterRouteParameters</code> value (cascading
+        parameter name <code>"RouteParameters"</code>; it's also the argument of a
+        <code>&lt;Content Context="p"&gt;</code> fragment). It's the escape hatch when you don't
+        want one property per parameter - keys are case-insensitive, and the typed getters convert
+        strings to enums, <code>Guid</code>s, and any scalar on demand.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Member</th><th>Behavior</th></tr></thead>
+        <tbody>
+            <tr><td>this[key]</td><td>Raw bound value (object) or null when absent.</td></tr>
+            <tr><td>Contains(key)</td><td>Whether the template bound this parameter.</td></tr>
+            <tr><td>Get&lt;T&gt;(key)</td><td>Convert or throw - distinguishes missing from unconvertible.</td></tr>
+            <tr><td>TryGet&lt;T&gt;(key, out v)</td><td>Convert without throwing.</td></tr>
+            <tr><td>GetOrDefault&lt;T&gt;(key, fallback)</td><td>Convert or return the fallback.</td></tr>
+        </tbody>
+    </table>
+    <pre class="bb-code">[<span class="k">CascadingParameter</span>(Name = <span class="s">"RouteParameters"</span>)]
+<span class="k">public</span> BrouterRouteParameters Parameters { <span class="k">get</span>; <span class="k">set</span>; } = BrouterRouteParameters.Empty;
+
+<span class="c">// Parameters.GetOrDefault&lt;int&gt;("init", 0), Parameters.TryGet&lt;Guid&gt;("id", out var id), ...</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Optionals, defaults &amp; catch-alls</h3>
+    <p class="bb-card-desc">
+        A trailing <code>{username?}</code> binds <code>null</code> when the URL omits it - so bind
+        it to a nullable property. <code>{action=Index}</code> supplies its default instead of
+        null. A catch-all (<code>{**slug}</code>) binds the entire remaining path, slashes
+        included, always as a <code>string</code> (constraints on a catch-all validate but never
+        convert). See the <BrouterLink Href="/templates">template reference</BrouterLink> for every
+        shape and its matching rules.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="@BrouterRoutes.ProfileByUsername()" class="btn btn-outline">/profile (username = null)</BrouterLink>
+        <BrouterLink Href="@BrouterRoutes.ProfileByUsername("saleh")" class="btn btn-outline">/profile/saleh</BrouterLink>
+        <BrouterLink Href="/blog" class="btn btn-outline">/blog (action = "Index")</BrouterLink>
+        <BrouterLink Href="@BrouterRoutes.Posts("/2026/5/intro-to-brouter")" class="btn btn-outline">Catch-all post slug</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Query-string binding</h3>
+    <p class="bb-card-desc">
+        Query values bind through the framework's <code>[SupplyParameterFromQuery]</code> as usual.
+        For types the framework can't parse - enums, <code>Guid</code>, nullables of any scalar,
+        or <code>string[]</code> for repeated pairs (<code>?tag=a&amp;tag=b</code>) - annotate the
+        property with <code>[BrouterQuery]</code> and Brouter converts it for you. Reading without
+        binding also works: <code>Brouter.Location.GetQuery("page")</code> /
+        <code>GetQueryAll("tag")</code>.
+    </p>
+    <pre class="bb-code">[<span class="k">Parameter</span>, <span class="k">SupplyParameterFromQuery</span>] <span class="k">public string</span>? Q { <span class="k">get</span>; <span class="k">set</span>; }
+
+<span class="c">// Types the framework can't supply - Brouter converts them:</span>
+[<span class="k">Parameter</span>, <span class="k">BrouterQuery</span>] <span class="k">public</span> SortOrder? Sort { <span class="k">get</span>; <span class="k">set</span>; }
+[<span class="k">Parameter</span>, <span class="k">BrouterQuery</span>(Name = <span class="s">"tag"</span>)] <span class="k">public string</span>[]? Tags { <span class="k">get</span>; <span class="k">set</span>; }</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/discovered/1?q=hello" class="btn btn-outline">/discovered/1?q=hello</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Wildcards &amp; the 404 fallback</h3>
+    <p class="bb-card-desc">
+        A bare <code>*</code> matches any single segment without binding a value - useful for
+        patterns where the segment's content doesn't matter. Wildcards rank below every named
+        parameter in specificity, so they only win when nothing more specific matches. When
+        <em>no</em> route matches at all, the router follows <code>NotFoundUrl</code> (this demo
+        redirects to its <code>/404</code> page); alternatively an inline
+        <code>&lt;NotFound&gt;</code> fragment can render in place without changing the URL.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Any first segment, literal "test" second. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/*/test"</span> ... /&gt;
+
+<span class="c">@@* Router-level fallback wiring: *@@</span>
+&lt;<span class="k">Brouter</span> NotFoundUrl=<span class="s">"404"</span>&gt; ... &lt;/<span class="k">Brouter</span>&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/hahahaha/test" class="btn btn-outline">/hahahaha/test (wildcard)</BrouterLink>
+        <BrouterLink Href="/start/test2/end" class="btn btn-outline">/start/test2/end (pattern)</BrouterLink>
+        <BrouterLink Href="/404-test" class="btn btn-outline">/404-test (no match → 404)</BrouterLink>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CountValue { get; set; }
+}

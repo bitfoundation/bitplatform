@@ -1,13 +1,328 @@
-﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-mde {
     width: 100%;
-    height: 100%;
+    display: flex;
+    overflow: hidden;
+    position: relative;
     box-sizing: border-box;
+    flex-direction: column;
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-mde-fsc {
+    inset: 0;
+    border: none;
+    position: fixed;
+    border-radius: 0;
+    z-index: $zindex-modal;
+}
+
+.bit-mde-tlb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: spacing(0.25);
+    background: $clr-bg-sec;
+    padding: spacing(0.75) spacing(1);
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-mde-btn {
+    padding: 0;
+    cursor: pointer;
+    width: spacing(3.75);
+    height: spacing(3.75);
+    align-items: center;
+    color: $clr-fg-sec;
+    display: inline-flex;
+    background: transparent;
+    justify-content: center;
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style transparent;
+    transition: background-color 0.12s, color 0.12s, border-color 0.12s;
+
+    svg {
+        width: spacing(2.25);
+        height: spacing(2.25);
+    }
+
+    &:hover:not(:disabled) {
+        color: $clr-fg-pri;
+        background: $clr-bg-sec-hover;
+        border-color: $clr-brd-sec;
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(spacing(0.125));
+    }
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(0.125);
+    }
+
+    &.bit-mde-act {
+        color: $clr-pri-text;
+        background: $clr-pri;
+        border-color: $clr-pri;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.bit-mde-sep {
+    width: spacing(0.125);
+    align-self: stretch;
+    margin: spacing(0.5);
+    background: $clr-brd-sec;
+}
+
+.bit-mde-dd {
+    position: relative;
+    display: inline-flex;
+}
+
+.bit-mde-ddm {
+    top: 100%;
+    left: 0;
+    margin: 0;
+    display: none;
+    min-width: spacing(18);
+    position: absolute;
+    padding: spacing(0.5);
+    z-index: $zindex-overlay;
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    box-shadow: $box-shadow-callout;
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-mde-dd:hover .bit-mde-ddm,
+.bit-mde-dd:focus-within .bit-mde-ddm {
+    display: block;
+}
+
+.bit-mde-mi {
+    width: 100%;
+    gap: spacing(1);
+    justify-content: flex-start;
+    padding: spacing(0.5) spacing(0.75);
+}
+
+.bit-mde-mit {
+    font-size: spacing(1.75);
+}
+
+.bit-mde-guard {
+    width: 0;
+    height: 0;
+    position: absolute;
+    outline: none;
+}
+
+.bit-mde-fnd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: spacing(0.5);
+    background: $clr-bg-sec;
+    padding: spacing(0.5) spacing(1);
+    border-top: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-mde-fni {
+    min-width: 0;
+    flex: 1 1 spacing(15);
+    color: $clr-fg-pri;
+    font-size: spacing(1.75);
+    background: $clr-bg-pri;
+    padding: spacing(0.5) spacing(0.75);
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(-0.125);
+    }
+}
+
+.bit-mde-fnb {
+    cursor: pointer;
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    font-size: spacing(1.5);
+    padding: spacing(0.5) spacing(1);
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:hover:not(:disabled) {
+        background: $clr-bg-sec-hover;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.bit-mde-bdy {
+    display: flex;
+    overflow: hidden;
+    min-height: spacing(15);
+    height: var(--bit-mde-height, spacing(40));
+}
+
+.bit-mde-fsc .bit-mde-bdy {
+    flex: 1;
+    height: auto;
+}
+
+.bit-mde-pne {
+    min-width: 0;
+    flex: 1 1 50%;
+    overflow: auto;
+}
+
+// Hide the inactive pane per mode but keep it in the DOM so the textarea
+// element (and its event wiring) survives mode switches.
+.bit-mde-edit .bit-mde-ppn {
+    display: none;
+}
+
+.bit-mde-preview .bit-mde-epn {
+    display: none;
+}
+
+.bit-mde-split .bit-mde-ppn {
+    border-inline-start: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-mde-txa {
+    margin: 0;
     width: 100%;
     height: 100%;
-    padding: spacing(1);
+    border: none;
+    resize: none;
+    outline: none;
+    tab-size: 4;
+    display: block;
+    line-height: 1.6;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
+    background: transparent;
+    font-size: spacing(1.75);
+    padding: spacing(1.5) spacing(1.75);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    &::placeholder {
+        color: $clr-fg-sec;
+    }
+
+    // The textarea fills its pane, so an inset outline keeps the keyboard
+    // focus indicator visible instead of being clipped by the container.
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(-0.25);
+    }
+}
+
+.bit-mde-ppn {
+    padding: spacing(1.5) spacing(2);
+}
+
+.bit-mde-emp {
+    font-style: italic;
+    color: $clr-fg-sec;
+}
+
+.bit-mde-sbr {
+    display: flex;
+    gap: spacing(1.75);
+    align-items: center;
+    color: $clr-fg-sec;
+    background: $clr-bg-sec;
+    font-size: spacing(1.5);
+    padding: spacing(0.5) spacing(1.5);
+    border-top: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-mde-spc {
+    flex: 1;
+}
+
+.bit-mde-mod {
+    text-transform: capitalize;
+}
+
+.bit-mde-hlp {
+    inset: 0;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    z-index: $zindex-overlay;
+    background: $clr-bg-overlay;
+}
+
+.bit-mde-fsc .bit-mde-hlp {
+    position: fixed;
+}
+
+.bit-mde-hcr {
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    width: min(spacing(45), 90%);
+    box-shadow: $box-shadow-callout;
+    padding: spacing(2) spacing(2.25);
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    header {
+        display: flex;
+        align-items: center;
+        margin-bottom: spacing(1.25);
+        justify-content: space-between;
+    }
+
+    dl {
+        margin: 0;
+
+        > div {
+            display: flex;
+            padding: spacing(0.625) 0;
+            justify-content: space-between;
+            border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+
+        dt {
+            color: $clr-fg-pri;
+        }
+
+        dd {
+            margin: 0;
+            color: $clr-fg-sec;
+            font-family: ui-monospace, monospace;
+        }
+    }
+}
+
+.bit-mde-hcl {
+    border: none;
+    line-height: 1;
+    cursor: pointer;
+    color: $clr-fg-sec;
+    background: transparent;
+    font-size: spacing(2.5);
 }

@@ -9,7 +9,7 @@
     var isChecked = ChoiceGroup.GetIsCheckedItem(Item);
 }
 
-<div style="@ChoiceGroup.GetItemContainerCssStyles(Item)" class="@ChoiceGroup.GetItemContainerCssClasses(Item)">
+<div style="@ChoiceGroup.GetItemContainerCssStyles(Item)" class="@ChoiceGroup.GetItemContainerCssClasses(Item)" @attributes="ChoiceGroup.GetItemMarkerAttributes(Item)">
     <label for="@inputId" style="@ChoiceGroup.Styles?.ItemLabel" class="bit-chg-itl @ChoiceGroup.GetItemLabelCssClasses(Item) @ChoiceGroup.Classes?.ItemLabel">
         @if (template is not null)
         {

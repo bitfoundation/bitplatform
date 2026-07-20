@@ -1,0 +1,27 @@
+﻿@* A Component-route page implementing IBrouterRoute DIRECTLY (no BrouterRouteBase, no cascading
+   parameter): exercises the router's interface discovery via component reference capture. Only
+   the members under test are implemented - the rest keep their interface defaults. *@
+
+@using Bit.Brouter
+@implements IBrouterRoute
+
+<div data-testid="lifecyclepage">activations:@_activations renavigations:@_renavigations</div>
+
+@code {
+    private int _activations;
+    private int _renavigations;
+
+    public ValueTask OnActivatedAsync(BrouterRouteActivation activation)
+    {
+        _activations++;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
+    {
+        _renavigations++;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+}

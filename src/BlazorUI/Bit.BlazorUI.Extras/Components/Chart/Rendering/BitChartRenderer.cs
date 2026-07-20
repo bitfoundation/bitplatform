@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Computes a <see cref="BitChartScene"/> (pure SVG primitives + interaction metadata) from a
-/// <see cref="BitChartConfig"/>. This is the heart of the native Blazor renderer — no JavaScript or
+/// <see cref="BitChartConfig"/>. This is the heart of the native Blazor renderer - no JavaScript or
 /// canvas is involved.
 /// </summary>
 public sealed partial class BitChartRenderer

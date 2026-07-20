@@ -1,28 +1,31 @@
-﻿using Boilerplate.Server.Shared;
+using Boilerplate.Server.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
 public static class HttpRequestExtensions
 {
-    public static bool IsFromCDN(this HttpRequest request)
+    extension(HttpRequest request)
     {
-        return request.Headers.ContainsKey("CDN-Loop");
-    }
+        public bool IsFromCDN()
+        {
+            return request.Headers.ContainsKey("CDN-Loop");
+        }
 
-    public static Uri GetWebAppUrl(this HttpRequest req)
-    {
-        var settings = req.HttpContext.RequestServices.GetRequiredService<ServerSharedSettings>();
+        public Uri GetWebAppUrl()
+        {
+            var settings = request.HttpContext.RequestServices.GetRequiredService<ServerSharedSettings>();
 
-        var serverUrl = req.GetBaseUrl();
+            var serverUrl = request.GetBaseUrl();
 
-        var origin = req.Query["origin"].Union(req.Headers["X-Origin"]).Select(o => new Uri(o)).FirstOrDefault();
+            var origin = request.Query["origin"].Union(request.Headers["X-Origin"]).Select(o => new Uri(o)).FirstOrDefault();
 
-        if (origin is null)
-            return serverUrl; // Assume that web app and server are hosted in one place.
+            if (origin is null)
+                return serverUrl; // Assume that web app and server are hosted in one place.
 
-        if (origin == serverUrl || settings.IsTrustedOrigin(origin))
-            return origin;
+            if (origin == serverUrl || settings.IsTrustedOrigin(origin))
+                return origin;
 
-        throw new BadRequestException($"Invalid origin {origin}");
+            throw new BadRequestException($"Invalid origin {origin}");
+        }
     }
 }

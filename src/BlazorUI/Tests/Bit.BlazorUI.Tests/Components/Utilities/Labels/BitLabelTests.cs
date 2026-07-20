@@ -37,7 +37,7 @@ public class BitLabelTests : BunitTestContext
 
         component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -68,7 +68,7 @@ public class BitLabelTests : BunitTestContext
 
         component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Required, true);
         });
@@ -105,7 +105,7 @@ public class BitLabelTests : BunitTestContext
 
         component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, "padding: 1rem;");
         });
@@ -136,7 +136,7 @@ public class BitLabelTests : BunitTestContext
 
         component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, "test-class");
         });
@@ -212,7 +212,7 @@ public class BitLabelTests : BunitTestContext
 
         component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -253,7 +253,7 @@ public class BitLabelTests : BunitTestContext
 
         component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });

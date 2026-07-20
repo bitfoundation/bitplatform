@@ -1,0 +1,47 @@
+﻿<header class="bb-header">
+    <div class="bb-header-inner">
+        <BrouterLink Href="/" Match="BrouterLinkMatch.All" class="bb-brand">
+            <span class="bb-brand-text">Bit.Brouter</span>
+            <span class="bb-brand-tag">demo</span>
+        </BrouterLink>
+
+        <nav class="bb-nav">
+            <BrouterLink Href="/home" Match="BrouterLinkMatch.All">Home</BrouterLink>
+            <BrouterLink Href="/templates">Templates</BrouterLink>
+            <BrouterLink Href="/constraints">Constraints</BrouterLink>
+            <BrouterLink Href="/parameters">Parameters</BrouterLink>
+            <BrouterLink Href="/outlets">Outlets</BrouterLink>
+            <BrouterLink Href="/guards">Guards</BrouterLink>
+            <BrouterLink Href="/loaders">Loaders</BrouterLink>
+            <BrouterLink Href="/navigation">Navigation</BrouterLink>
+            <BrouterLink Href="/transitions">Transitions</BrouterLink>
+            <BrouterLink Href="/lifecycle">Lifecycle</BrouterLink>
+            <BrouterLink Href="/generator">Generator</BrouterLink>
+        </nav>
+
+        <div style="flex-grow: 1;"></div>
+
+        <button type="button" class="bb-theme-toggle" title="Toggle light/dark theme" aria-label="Toggle light/dark theme" @onclick="ToggleTheme">
+            <svg class="bb-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <svg class="bb-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+        </button>
+    </div>
+</header>
+
+@code {
+    [Inject] private IJSRuntime jsRuntime { get; set; } = default!;
+
+    private async Task ToggleTheme()
+    {
+        // theme.js flips the bit-theme attribute on <html>; the sun/moon icon swap is pure CSS.
+        await jsRuntime.InvokeVoidAsync("bitBrouterTheme.toggle");
+    }
+}

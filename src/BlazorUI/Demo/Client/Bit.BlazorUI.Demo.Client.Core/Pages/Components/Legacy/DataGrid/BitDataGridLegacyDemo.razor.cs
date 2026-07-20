@@ -1,0 +1,711 @@
+using Bit.BlazorUI.Demo.Client.Core.Components;
+using Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo;
+
+namespace Bit.BlazorUI.Legacy.Demo.DataGrid;
+
+public partial class BitDataGridLegacyDemo : AppComponentBase
+{
+    private readonly List<ComponentParameter> componentParameters =
+    [
+         new()
+         {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = @"Defines the child components of this instance. 
+                            For example, you may define columns by adding components derived from the BitDataGridLegacyColumnBase<TGridItem>.",
+         },
+         new()
+         {
+            Name = "Class",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "An optional CSS class name. If given, this will be included in the class attribute of the rendered table.",
+         },
+         new()
+         {
+            Name = "Columns",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of the ChildContent parameter.",
+         },
+         new()
+         {
+             Name = "ItemKey",
+             Type = "Func<TGridItem, object>",
+             DefaultValue = "x => x!",
+             Description = @"Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
+                             unique identifier, such as a primary key value, for each data item.
+                             This allows the grid to preserve the association between row elements and data items based on their
+                             unique identifiers, even when the TGridItem instances are replaced by new copies (for example, after a new query against the underlying data store).
+                             If not set, the @key will be the TGridItem instance itself.",
+         },
+         new()
+         {
+            Name = "Items",
+            Type = "IQueryable<TGridItem>?",
+            DefaultValue = "null",
+            Description = @"A queryable source of data for the grid.
+                            This could be in-memory data converted to queryable using the
+                            System.Linq.Queryable.AsQueryable(System.Collections.IEnumerable) extension method,
+                            or an EntityFramework DataSet or an IQueryable derived from it.
+                            You should supply either Items or ItemsProvider, but not both.",
+         },
+         new()
+         {
+            Name = "ItemSize",
+            Type = "float",
+            DefaultValue = "50",
+            Description = @"This is applicable only when using Virtualize. It defines an expected height in pixels for
+                            each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
+                            size and to ensure accurate scrolling.",
+         },
+         new()
+         {
+            Name = "ItemsProvider",
+            Type = "BitDataGridItemsProvider<TGridItem>?",
+            DefaultValue = "null",
+            Description = @"A callback that supplies data for the grid.
+                            You should supply either Items or ItemsProvider, but not both.",
+         },
+        new()
+         {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render while loading the new items.",
+         },
+         new()
+         {
+             Name = "Pagination",
+             Type = "BitDataGridLegacyPaginationState?",
+             DefaultValue = "null",
+             Description = @"Optionally links this BitDataGridLegacy<TGridItem> instance with a BitDataGridLegacyPaginationState model,
+                             causing the grid to fetch and render only the current page of data.
+                             This is normally used in conjunction with a Paginator component or some other UI logic
+                             that displays and updates the supplied BitDataGridLegacyPaginationState instance.",
+             LinkType = LinkType.Link,
+             Href = "#pagination-state",
+         },
+         new()
+         {
+            Name = "ResizableColumns",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
+                            manually. Size changes are not persisted.",
+         },
+         new()
+         {
+            Name = "RowClass",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = @"The CSS class of all rows of the BitDataGridLegacy.",
+         },
+         new()
+         {
+            Name = "RowClassSelector",
+            Type = "Func<TGridItem, string>?",
+            DefaultValue = "null",
+            Description = @"The function to generate the CSS class of each row of the BitDataGridLegacy.",
+         },
+         new()
+         {
+            Name = "RowStyle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = @"The CSS style of all rows of the BitDataGridLegacy.",
+         },
+         new()
+         {
+            Name = "RowStyleSelector",
+            Type = "Func<TGridItem, string>?",
+            DefaultValue = "null",
+            Description = @"The function to generate the CSS style of each row of the BitDataGridLegacy.",
+         },
+         new()
+         {
+            Name = "RowTemplate",
+            Type = "RenderFragment<BitDataGridLegacyRowTemplateArgs<TGridItem>>?",
+            DefaultValue = "null",
+            Description = @"Optional template to customize row rendering. Receives BitDataGridLegacyRowTemplateArgs with OriginalRow 
+                            set to the default row content; render it to include the original row, or omit to replace entirely.",
+            LinkType = LinkType.Link,
+            Href = "#row-template-args",
+         },
+         new()
+         {
+            Name = "Theme",
+            Type = "string?",
+            DefaultValue = "default",
+            Description = @"A theme name, with default value ""default"". This affects which styling rules match the table.",
+         },
+         new()
+         {
+            Name = "Virtualize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = @"If true, the grid will be rendered with virtualization. This is normally used in conjunction with
+                            scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
+                            This can greatly improve the performance when scrolling through large data sets.",
+         }
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "BitDataGridLegacyColumnBase",
+            Title = "BitDataGridLegacyColumnBase",
+            Description = "BitDataGridLegacy has two built-in column types, BitDataGridLegacyPropertyColumn and BitDataGridLegacyTemplateColumn. You can also create your own column types by subclassing the BitDataGridLegacyColumnBase type, which all columns must derive from. It offers some common parameters.",
+            Parameters=
+            [
+                new()
+                {
+                    Name = "Title",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Title text for the column. This is rendered automatically if HeaderTemplate is not used.",
+                },
+                new()
+                {
+                    Name = "Class",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "An optional CSS class name. If specified, this is included in the class attribute of table header and body cells for this column.",
+                },
+                new()
+                {
+                    Name = "Align",
+                    Type = "BitDataGridLegacyAlign?",
+                    DefaultValue = "null",
+                    Description = "If specified, controls the justification of table header and body cells for this column.",
+                },
+                new()
+                {
+                    Name = "HeaderTemplate",
+                    Type = "RenderFragment<BitDataGridLegacyColumnBase<TGridItem>>?",
+                    DefaultValue = "null",
+                    Description = @"An optional template for this column's header cell. If not specified, the default header template
+                                    includes the Title along with any applicable sort indicators and options buttons.",
+                },
+                new()
+                {
+                    Name = "ColumnOptions",
+                    Type = "RenderFragment<BitDataGridLegacyColumnBase<TGridItem>>?",
+                    DefaultValue = "null",
+                    Description = @"If specified, indicates that this column has this associated options UI. A button to display this
+                                    UI will be included in the header cell by default.
+                                    If HeaderTemplate is used, it is left up to that template to render any relevant
+                                    ""show options"" UI and invoke the grid's BitDataGridLegacy<TGridItem>.ShowColumnOptions(BitDataGridLegacyColumnBase<TGridItem>).",
+                },
+                new()
+                {
+                    Name = "Sortable",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = @"Indicates whether the data should be sortable by this column.
+                                    The default value may vary according to the column type (for example, a BitDataGridLegacyTemplateColumn<TGridItem>
+                                    is sortable by default if any BitDataGridLegacyTemplateColumn<TGridItem>.SortBy parameter is specified).",
+                },
+                new()
+                {
+                    Name = "IsDefaultSort",
+                    Type = "BitDataGridLegacySortDirection?",
+                    DefaultValue = "null",
+                    Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
+                },
+                new()
+                {
+                    Name = "PlaceholderTemplate",
+                    Type = "RenderFragment<PlaceholderContext>?",
+                    DefaultValue = "null",
+                    Description = "If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
+                }
+            ],
+
+        },
+        new()
+        {
+            Id="BitDataGridLegacyPropertyColumn",
+            Title = "BitDataGridLegacyPropertyColumn",
+            Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
+            Parameters=
+            [
+                new()
+                {
+                    Name = "Property",
+                    Type = "Expression<Func<TGridItem, TProp>>",
+                    Description = "Defines the value to be displayed in this column's cells.",
+                },
+                new()
+                {
+                    Name = "Format",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Optionally specifies a format string for the value. Using this requires the TProp type to implement IFormattable.",
+                },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridLegacyTemplateColumn",
+            Title = "BitDataGridLegacyTemplateColumn",
+            Description = @"It uses arbitrary Razor fragments to supply contents for its cells. It can't infer the column's title or sort order automatically. Also, it's possible to add arbitrary Blazor components to your table cells. Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid.",
+            Parameters =
+            [
+                 new()
+                 {
+                    Name = "ChildContent",
+                    Type = "RenderFragment<TGridItem>",
+                    Description = @"Specifies the content to be rendered for each row in the table.",
+                 },
+                 new()
+                 {
+                    Name = "SortBy",
+                    Type = "BitDataGridLegacySort<TGridItem>?",
+                    DefaultValue = "null",
+                    Description = "Optionally specifies sorting rules for this column.",
+                 },
+            ],
+        },
+        new()
+         {
+            Id = "BitDataGridLegacyPaginator",
+            Title = "BitDataGridLegacyPaginator",
+            Description = "A component that provides a user interface for pagination.",
+            Parameters=
+            [
+                new()
+                {
+                    Name = "GoToFirstButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to first page",
+                    Description = "The title of the go to first page button.",
+                },
+                new()
+                {
+                    Name = "GoToPrevButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to previous page",
+                    Description = "The title of the go to previous page button.",
+                },
+                new()
+                {
+                    Name = "GoToNextButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to next page",
+                    Description = "The title of the go to next page button.",
+                },
+                new()
+                {
+                    Name = "GoToLastButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to last page",
+                    Description = "The title of the go to last page button.",
+                },
+                new()
+                {
+                    Name = "SummaryFormat",
+                    Type = "Func<BitDataGridLegacyPaginationState, string>?",
+                    DefaultValue = "null",
+                    Description = "Optionally supplies a format for rendering the page count summary.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "SummaryTemplate",
+                    Type = "RenderFragment<BitDataGridLegacyPaginationState>?",
+                    DefaultValue = "null",
+                    Description = "Optionally supplies a template for rendering the page count summary.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "TextFormat",
+                    Type = "Func<BitDataGridLegacyPaginationState, string>?",
+                    DefaultValue = "null",
+                    Description = "The optional custom format for the main text of the paginator in the middle of it.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "TextTemplate",
+                    Type = "RenderFragment<BitDataGridLegacyPaginationState>?",
+                    DefaultValue = "null",
+                    Description = "The optional custom template for the main text of the paginator in the middle of it.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "Value",
+                    Type = "BitDataGridLegacyPaginationState",
+                    DefaultValue = "",
+                    Description = "Specifies the associated pagination state. This parameter is required.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+            ],
+
+        },
+        new()
+         {
+            Id = "pagination-state",
+            Title = "BitDataGridLegacyPaginationState",
+            Description = "Holds state to represent the pagination of a BitDataGridLegacy. Tracks the current page index, the number of items per page, and the total item count so a paginator UI and the grid stay in sync.",
+            Parameters=
+            [
+                new()
+                {
+                    Name = "CurrentPageIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Gets the current zero-based page index.",
+                },
+                new()
+                {
+                    Name = "ItemsPerPage",
+                    Type = "int",
+                    DefaultValue = "10",
+                    Description = "Gets or sets the number of items on each page.",
+                },
+                new()
+                {
+                    Name = "LastPageIndex",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "Gets the zero-based index of the last page, if known. The value will be null until TotalItemCount is known.",
+                },
+                new()
+                {
+                    Name = "TotalItemCount",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "Gets the total number of items across all pages, if known. The value will be null until an associated BitDataGridLegacy assigns a value after loading data.",
+                },
+                new()
+                {
+                    Name = "TotalItemCountChanged",
+                    Type = "EventHandler<int?>?",
+                    DefaultValue = "null",
+                    Description = "An event that is raised when the total item count has changed.",
+                },
+            ],
+
+        },
+        new()
+        {
+            Id = "row-template-args",
+            Title = "BitDataGridLegacyRowTemplateArgs<TGridItem>",
+            Description = "Arguments passed to the RowTemplate render fragment.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "OriginalRow",
+                    Type = "RenderFragment",
+                    DefaultValue = "",
+                    Description = "A render fragment that produces the original row markup (the default <tr> with all column cells). Render this to include the default row, or omit to replace entirely.",
+                },
+                new()
+                {
+                    Name = "RowIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The 1-based row index used for accessibility (e.g. aria-rowindex).",
+                },
+                new()
+                {
+                    Name = "RowItem",
+                    Type = "TGridItem",
+                    DefaultValue = "",
+                    Description = "The data item for this row.",
+                },
+            ],
+        },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+             Id = "BitDataGridLegacyAlign",
+             Name = "BitDataGridLegacyAlign",
+             Description = "Describes alignment for a BitDataGridLegacy<TGridItem> column.",
+             Items =
+             [
+                 new()
+                 {
+                      Name = "Left",
+                      Value = "0",
+                      Description = "Justifies the content against the start of the container."
+                 },
+                 new()
+                 {
+                      Name = "Center",
+                      Value = "1",
+                      Description = "Justifies the content at the center of the container."
+                 },
+                 new()
+                 {
+                      Name = "Right",
+                      Value = "2",
+                      Description = "Justifies the content at the end of the container."
+                 },
+
+             ]
+        },
+    ];
+
+
+
+    private static readonly CountryModel[] _countries =
+    [
+        new CountryModel { Code = "AR", Name = "Argentina", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "AM", Name = "Armenia", Medals = new MedalsModel { Gold = 0, Silver = 2, Bronze = 2 } },
+        new CountryModel { Code = "AU", Name = "Australia", Medals = new MedalsModel { Gold = 17, Silver = 7, Bronze = 22 } },
+        new CountryModel { Code = "AT", Name = "Austria", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 5 } },
+        new CountryModel { Code = "AZ", Name = "Azerbaijan", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 4 } },
+        new CountryModel { Code = "BS", Name = "Bahamas", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "BH", Name = "Bahrain", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "BY", Name = "Belarus", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 3 } },
+        new CountryModel { Code = "BE", Name = "Belgium", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 3 } },
+        new CountryModel { Code = "BM", Name = "Bermuda", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "BW", Name = "Botswana", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "BR", Name = "Brazil", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 8 } },
+        new CountryModel { Code = "BF", Name = "Burkina Faso", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "CA", Name = "Canada", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 11 } },
+        new CountryModel { Code = "TW", Name = "Chinese Taipei", Medals = new MedalsModel { Gold = 2, Silver = 4, Bronze = 6 } },
+        new CountryModel { Code = "CO", Name = "Colombia", Medals = new MedalsModel { Gold = 0, Silver = 4, Bronze = 1 } },
+        new CountryModel { Code = "CI", Name = "Côte d'Ivoire", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "HR", Name = "Croatia", Medals = new MedalsModel { Gold = 3, Silver = 3, Bronze = 2 } },
+        new CountryModel { Code = "CU", Name = "Cuba", Medals = new MedalsModel { Gold = 7, Silver = 3, Bronze = 5 } },
+        new CountryModel { Code = "CZ", Name = "Czech Republic", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 3 } },
+        new CountryModel { Code = "DK", Name = "Denmark", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 4 } },
+        new CountryModel { Code = "DO", Name = "Dominican Republic", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 2 } },
+        new CountryModel { Code = "EC", Name = "Ecuador", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "EE", Name = "Estonia", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "ET", Name = "Ethiopia", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "FJ", Name = "Fiji", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "FI", Name = "Finland", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "FR", Name = "France", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 11 } },
+        new CountryModel { Code = "GE", Name = "Georgia", Medals = new MedalsModel { Gold = 2, Silver = 5, Bronze = 1 } },
+        new CountryModel { Code = "DE", Name = "Germany", Medals = new MedalsModel { Gold = 10, Silver = 11, Bronze = 16 } },
+        new CountryModel { Code = "GH", Name = "Ghana", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "GB", Name = "Great Britain", Medals = new MedalsModel { Gold = 22, Silver = 21, Bronze = 22 } },
+        new CountryModel { Code = "GR", Name = "Greece", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "GD", Name = "Grenada", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "HK", Name = "Hong Kong, China", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 3 } },
+        new CountryModel { Code = "HU", Name = "Hungary", Medals = new MedalsModel { Gold = 6, Silver = 7, Bronze = 7 } },
+        new CountryModel { Code = "ID", Name = "Indonesia", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 3 } },
+        new CountryModel { Code = "IE", Name = "Ireland", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "IR", Name = "Iran", Medals = new MedalsModel { Gold = 3, Silver = 2, Bronze = 2 } },
+        new CountryModel { Code = "IL", Name = "Israel", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "IT", Name = "Italy", Medals = new MedalsModel { Gold = 10, Silver = 10, Bronze = 20 } },
+        new CountryModel { Code = "JM", Name = "Jamaica", Medals = new MedalsModel { Gold = 4, Silver = 1, Bronze = 4 } },
+        new CountryModel { Code = "JO", Name = "Jordan", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "KZ", Name = "Kazakhstan", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 8 } },
+        new CountryModel { Code = "KE", Name = "Kenya", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 2 } },
+        new CountryModel { Code = "XK", Name = "Kosovo", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "KW", Name = "Kuwait", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "LV", Name = "Latvia", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "LT", Name = "Lithuania", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "MY", Name = "Malaysia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "MX", Name = "Mexico", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 4 } },
+        new CountryModel { Code = "MA", Name = "Morocco", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "NA", Name = "Namibia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "NL", Name = "Netherlands", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 14 } },
+        new CountryModel { Code = "NZ", Name = "New Zealand", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 7 } },
+        new CountryModel { Code = "MK", Name = "North Macedonia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "NO", Name = "Norway", Medals = new MedalsModel { Gold = 4, Silver = 2, Bronze = 2 } },
+        new CountryModel { Code = "PH", Name = "Philippines", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
+        new CountryModel { Code = "PL", Name = "Poland", Medals = new MedalsModel { Gold = 4, Silver = 5, Bronze = 5 } },
+        new CountryModel { Code = "PT", Name = "Portugal", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "PR", Name = "Puerto Rico", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+        new CountryModel { Code = "QA", Name = "Qatar", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "KR", Name = "Republic of Korea", Medals = new MedalsModel { Gold = 6, Silver = 4, Bronze = 10 } },
+        new CountryModel { Code = "MD", Name = "Republic of Moldova", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "RO", Name = "Romania", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
+        new CountryModel { Code = "SM", Name = "San Marino", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+        new CountryModel { Code = "SA", Name = "Saudi Arabia", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "RS", Name = "Serbia", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 5 } },
+        new CountryModel { Code = "SK", Name = "Slovakia", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
+        new CountryModel { Code = "SI", Name = "Slovenia", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 1 } },
+        new CountryModel { Code = "ZA", Name = "South Africa", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 0 } },
+        new CountryModel { Code = "ES", Name = "Spain", Medals = new MedalsModel { Gold = 3, Silver = 8, Bronze = 6 } },
+        new CountryModel { Code = "SE", Name = "Sweden", Medals = new MedalsModel { Gold = 3, Silver = 6, Bronze = 0 } },
+        new CountryModel { Code = "CH", Name = "Switzerland", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 6 } },
+        new CountryModel { Code = "SY", Name = "Syrian Arab Republic", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "TH", Name = "Thailand", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+        new CountryModel { Code = "TR", Name = "Turkey", Medals = new MedalsModel { Gold = 2, Silver = 2, Bronze = 9 } },
+        new CountryModel { Code = "TM", Name = "Turkmenistan", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+        new CountryModel { Code = "UA", Name = "Ukraine", Medals = new MedalsModel { Gold = 1, Silver = 6, Bronze = 12 } },
+        new CountryModel { Code = "US", Name = "United States of America", Medals = new MedalsModel { Gold = 39, Silver = 41, Bronze = 33 } },
+        new CountryModel { Code = "UZ", Name = "Uzbekistan", Medals = new MedalsModel { Gold = 3, Silver = 0, Bronze = 2 } },
+        new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
+    ];
+
+
+
+    private IQueryable<CountryModel> allCountries = default!;
+    private BitDataGridLegacy<FoodRecall> dataGrid = default!;
+    private BitDataGridLegacy<ProductDto> productsDataGrid = default!;
+    private BitDataGridLegacy<ProductDto> loadingProductsDataGrid = default!;
+    private BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
+    private BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
+    private BitDataGridLegacyPaginationState pagination1 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination2 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination3 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination6 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination7 = new() { ItemsPerPage = 7 };
+
+    private HashSet<string> expandedRowTemplateCodes = [];
+
+    private void ToggleRowRendererExpand(string code)
+    {
+        if (expandedRowTemplateCodes.Remove(code)) return;
+        
+        expandedRowTemplateCodes.Add(code);
+    }
+
+    private IQueryable<CountryModel>? FilteredItems1 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
+    private IQueryable<CountryModel>? FilteredItems2 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter2 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
+
+    string typicalSampleNameFilter1 = string.Empty;
+    string typicalSampleNameFilter2 = string.Empty;
+
+    string _virtualSampleNameFilter = string.Empty;
+    string VirtualSampleNameFilter
+    {
+        get => _virtualSampleNameFilter;
+        set
+        {
+            _virtualSampleNameFilter = value;
+            _ = dataGrid?.RefreshDataAsync();
+        }
+    }
+
+    string _odataSampleNameFilter = string.Empty;
+
+    string ODataSampleNameFilter
+    {
+        get => _odataSampleNameFilter;
+        set
+        {
+            _odataSampleNameFilter = value;
+            // The OData and LoadingTemplate demos share this filter and the same productsItemsProvider,
+            // so refresh both grids; otherwise the LoadingTemplate grid keeps showing data for the
+            // previous filter until it is independently re-queried.
+            _ = productsDataGrid?.RefreshDataAsync();
+            _ = loadingProductsDataGrid?.RefreshDataAsync();
+        }
+    }
+
+
+
+    protected override async Task OnInitAsync()
+    {
+        allCountries = _countries.AsQueryable();
+
+        foodRecallProvider = async req =>
+        {
+            try
+            {
+                // Strip characters that would break the openFDA Lucene query syntax (the firm name is
+                // wrapped in quotes), namely double quotes and backslashes, before interpolating it.
+                var firmFilter = _virtualSampleNameFilter?.Replace("\\", string.Empty).Replace("\"", string.Empty).Trim() ?? string.Empty;
+                var query = new Dictionary<string, object?>
+                {
+                    { "skip", req.StartIndex },
+                    { "limit", req.Count ?? 50 }
+                };
+
+                // Only constrain by firm when the user actually typed something: sending an empty
+                // recalling_firm clause is an empty Lucene query that suppresses the default results
+                // on the initial (unfiltered) load.
+                if (!string.IsNullOrWhiteSpace(firmFilter))
+                {
+                    query.Add("search", $"recalling_firm:\"{firmFilter}\"");
+                }
+
+                var sort = req.GetSortByProperties().SingleOrDefault();
+
+                if (sort != default)
+                {
+                    var sortByColumnName = sort.PropertyName switch
+                    {
+                        nameof(FoodRecall.ReportDate) => "report_date",
+                        _ => throw new InvalidOperationException()
+                    };
+
+                    query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridLegacySortDirection.Ascending ? "asc" : "desc")}");
+                }
+
+                var url = NavigationManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+                return BitDataGridLegacyItemsProviderResult.From(data!.Results!, data!.Meta!.Results!.Total);
+            }
+            catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
+            {
+                // A rapid refresh superseded this request; let the cancellation propagate so the grid
+                // treats it as a cancelled load rather than a genuine zero-item result.
+                throw;
+            }
+            catch
+            {
+                return BitDataGridLegacyItemsProviderResult.From<FoodRecall>([], 0);
+            }
+        };
+
+        productsItemsProvider = async req =>
+        {
+            try
+            {
+                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+                var query = new Dictionary<string, object?>()
+                {
+                    { "$top", req.Count ?? 50 },
+                    { "$skip", req.StartIndex }
+                };
+
+                if (string.IsNullOrWhiteSpace(_odataSampleNameFilter) is false)
+                {
+                    // Use the trimmed value so a whitespace-only entry isn't treated as a real search
+                    // term, while still escaping apostrophes to keep the OData string literal valid.
+                    var escapedFilter = _odataSampleNameFilter.Trim().Replace("'", "''");
+                    query.Add("$filter", $"contains(Name,'{escapedFilter}')");
+                }
+
+                if (req.GetSortByProperties().Any())
+                {
+                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridLegacySortDirection.Ascending ? "asc" : "desc")}")));
+                }
+
+                var url = NavigationManager.GetUriWithQueryParameters("api/Products/GetProducts", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
+
+                return BitDataGridLegacyItemsProviderResult.From(data!.Items!, data!.TotalCount);
+            }
+            catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
+            {
+                // A rapid refresh superseded this request; let the cancellation propagate so the grid
+                // treats it as a cancelled load rather than a genuine zero-item result.
+                throw;
+            }
+            catch
+            {
+                return BitDataGridLegacyItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+            }
+        };
+
+        await base.OnInitAsync();
+    }
+}

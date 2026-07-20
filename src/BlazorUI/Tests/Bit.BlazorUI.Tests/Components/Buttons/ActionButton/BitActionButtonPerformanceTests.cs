@@ -299,7 +299,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
 
         foreach (var component in components)
         {
-            component.SetParametersAndRender(parameters =>
+            component.Render(parameters =>
             {
                 parameters.Add(p => p.IsEnabled, false);
             });
@@ -345,7 +345,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
 
         foreach (var component in components)
         {
-            component.SetParametersAndRender(parameters =>
+            component.Render(parameters =>
             {
                 parameters.Add(p => p.IconName, "Edit");
             });
@@ -392,7 +392,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
 
         foreach (var component in components)
         {
-            component.SetParametersAndRender(parameters =>
+            component.Render(parameters =>
             {
                 parameters.Add(p => p.IsLoading, true);
             });
@@ -440,7 +440,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         foreach (var component in components)
         {
             var index = j++;
-            component.SetParametersAndRender(parameters =>
+            component.Render(parameters =>
             {
                 parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
                 {
@@ -494,7 +494,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         foreach (var component in components)
         {
             var index = j++;
-            component.SetParametersAndRender(parameters =>
+            component.Render(parameters =>
             {
                 parameters.Add(p => p.IconName, "Edit");
                 parameters.Add(p => p.Title, $"Updated Title {index}");
@@ -640,7 +640,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
 
         for (int i = 0; i < rerenderCount; i++)
         {
-            component.SetParametersAndRender(parameters =>
+            component.Render(parameters =>
             {
                 parameters.Add(p => p.IsEnabled, i % 2 == 0);
             });
@@ -732,7 +732,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
 
             foreach (var component in components)
             {
-                component.SetParametersAndRender(parameters =>
+                component.Render(parameters =>
                 {
                     parameters.Add(p => p.IsLoading, isLoading);
                     parameters.Add(p => p.IsEnabled, isEnabled);

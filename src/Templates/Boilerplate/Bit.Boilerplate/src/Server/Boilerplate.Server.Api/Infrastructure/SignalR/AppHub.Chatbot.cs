@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.SignalR;
 using System.Runtime.CompilerServices;

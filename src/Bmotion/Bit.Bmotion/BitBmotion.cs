@@ -30,8 +30,19 @@ public static class BitBmotion
     /// </para>
     /// </summary>
     public static IServiceCollection AddBitBmotionServices(this IServiceCollection services)
+        => services.AddBitBmotionServices(null);
+
+    /// <summary>
+    /// Registers all Bit.Bmotion services with library-wide options, e.g. the reduced-motion policy:
+    /// <code>builder.Services.AddBitBmotionServices(o =&gt; o.ReducedMotion = BmReducedMotionMode.User);</code>
+    /// </summary>
+    public static IServiceCollection AddBitBmotionServices(this IServiceCollection services, Action<BitBmotionOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        var options = new BitBmotionOptions();
+        configure?.Invoke(options);
+        services.AddSingleton(options);
 
         // Keep the JSON-marshaled interop DTOs trim/AOT-safe. These types cross the JS↔.NET
         // boundary via reflection-based System.Text.Json (InvokeAsync<T>, [JSInvokable] params),
@@ -39,11 +50,15 @@ public static class BitBmotion
         // to empty/failed deserialization in published WebAssembly builds.
         PreserveInteropContracts();
 
-        // Slim browser-API interop bridge - one instance per DI scope
-        services.AddScoped<BmotionInterop>();
+        // Slim browser-API interop bridge - one instance per DI scope. Registered behind the
+        // IBmotionInterop seam so the engine and components can be unit-tested against a fake.
+        services.AddScoped<IBmotionInterop, BmotionInterop>();
 
         // C# animation engine - drives all animation math in WebAssembly
         services.AddScoped<BmotionAnimationEngine>();
+
+        // Queryable render-mode capability flags (WASM frame loop vs Server compositor-only).
+        services.AddScoped(sp => new BmotionCapabilities(sp.GetRequiredService<IBmotionInterop>()));
 
         // Shared-element (LayoutId) rect registry - one per scope, like the engine
         services.AddScoped<BmotionLayoutRegistry>();
@@ -56,6 +71,9 @@ public static class BitBmotion
         // causing ObjectDisposedException when another component re-observes.
         services.AddTransient<BmotionScrollTracker>();
         services.AddScoped<BmotionAnimateService>();
+
+        // Native View Transitions API wrapper (opt-in helper).
+        services.AddScoped<BmotionViewTransition>();
 
         return services;
     }

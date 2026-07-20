@@ -1,0 +1,4 @@
+﻿@* DefaultLayout alone composes the framework RouteView, wrapping pages that declare no @layout of
+   their own (failing closed on [Authorize] pages via Brouter's own guard - plain RouteView
+   performs no authorization check). *@
+<Brouter AppAssembly="@typeof(AutoAuthLayoutHost).Assembly" DefaultLayout="@typeof(FoundTestLayout)" />

@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Dtos.SignalR;
+namespace Boilerplate.Shared.Infrastructure.Dtos.SignalR;
 
 public class BackgroundJobProgressDto
 {

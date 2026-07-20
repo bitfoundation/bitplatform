@@ -1,0 +1,137 @@
+@* The introduction page: what Bit.Brouter is, how to set it up, and a map of the topic pages.
+   The feature demos themselves live on the topic pages linked below (and in the header). *@
+
+<div class="bb-intro">
+    <h1>Bit.Brouter</h1>
+    <p class="bb-subtitle">
+        A full-featured client-side router for Blazor - framework-parity route templates plus the
+        capabilities modern router libraries are measured by: guards, data loaders with
+        stale-while-revalidate caching, keep-alive, view transitions, and a source generator for
+        compile-time-safe URLs.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting started</h3>
+    <p class="bb-card-desc">
+        Register the services, then declare routes in markup with <code>&lt;Brouter&gt;</code> and
+        <code>&lt;Broute&gt;</code>. Templates are a superset-compatible match of the built-in
+        router's, so <code>@@page</code> components keep working - <code>AppAssembly</code>
+        discovers them alongside the hand-declared tree.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs</span>
+services.AddBitBrouterServices(o =&gt;
+{
+    o.ViewTransitions = <span class="k">true</span>;
+    o.ScrollBehavior = BrouterScrollMode.ToTop;
+    <span class="c">// constraints, caching, keep-alive and scroll options all live here too</span>
+});
+
+<span class="c">@@* App.razor *@@</span>
+&lt;<span class="k">Brouter</span> NotFoundUrl=<span class="s">"404"</span> AppAssembly=<span class="s">"@@GetType().Assembly"</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/"</span> RedirectTo=<span class="s">"/home"</span> /&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/counter/{init:int}"</span> Component=<span class="s">"@@typeof(CounterPage)"</span> /&gt;
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Brouter</span>&gt;</pre>
+    <p class="bb-card-desc">
+        This demo app is itself the documentation: every page in the header explains one feature
+        area with code samples and live routes to click. The router powering these pages is
+        declared in <code>AppRouter.razor</code>.
+    </p>
+</div>
+
+<h2 style="margin: 1.5rem 0 .75rem;">Explore the features</h2>
+
+<div class="bb-grid">
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Route templates</h3>
+        <p class="bb-card-desc">
+            The full grammar: literals, typed parameters, optionals (trailing <em>and</em> middle),
+            default values, complex segments, catch-alls - plus specificity rules and parity
+            details.
+        </p>
+        <BrouterLink Href="/templates" class="btn btn-outline">Template reference →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Constraints</h3>
+        <p class="bb-card-desc">
+            18 built-in type and validation constraints, chaining rules, and custom constraints
+            registered per DI container - tested interactively.
+        </p>
+        <BrouterLink Href="/constraints" class="btn btn-outline">Constraint tester →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Route parameters</h3>
+        <p class="bb-card-desc">
+            How URL values reach components: typed <code>[Parameter]</code> binding, the cascaded
+            parameter bag, query binding, wildcards and the 404 fallback.
+        </p>
+        <BrouterLink Href="/parameters" class="btn btn-outline">Parameters →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested routes &amp; outlets</h3>
+        <p class="bb-card-desc">
+            Parents render persistent layout, children fill outlets - including multiple named
+            regions per route and pathless groups for shared behavior.
+        </p>
+        <BrouterLink Href="/outlets" class="btn btn-outline">Outlets →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Guards &amp; locks</h3>
+        <p class="bb-card-desc">
+            Enter guards, preventive leave guards, component-level navigation locks with custom
+            dialogs, declarative redirects, and the global hooks.
+        </p>
+        <BrouterLink Href="/guards" class="btn btn-outline">Guards →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Data loading</h3>
+        <p class="bb-card-desc">
+            Route loaders with a stale-while-revalidate cache, revalidation, hover/viewport
+            preloading, streamed deferred data, and error boundaries with retry.
+        </p>
+        <BrouterLink Href="/loaders" class="btn btn-outline">Data loading →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Navigation &amp; history</h3>
+        <p class="bb-card-desc">
+            Awaited navigation outcomes, history entry state, functional query updates, named
+            routes, relative URLs, and everything <code>&lt;BrouterLink&gt;</code> can do.
+        </p>
+        <BrouterLink Href="/navigation" class="btn btn-outline">Navigation →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> View Transitions</h3>
+        <p class="bb-card-desc">
+            Direction-aware page animations and shared-element morphs via the browser View
+            Transitions API - one option to enable, overridable with plain CSS.
+        </p>
+        <BrouterLink Href="/transitions" class="btn btn-outline">Transitions →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lifecycle &amp; keep-alive</h3>
+        <p class="bb-card-desc">
+            Activation, renavigation and deactivation callbacks on routed components, plus
+            keep-alive retention with per-parameter instances and LRU eviction.
+        </p>
+        <BrouterLink Href="/lifecycle" class="btn btn-outline">Lifecycle →</BrouterLink>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> URL generator</h3>
+        <p class="bb-card-desc">
+            <code>Bit.Brouter.Generators</code> turns your route declarations into typed
+            <code>BrouterRoutes</code> URL builders - broken links become build errors.
+        </p>
+        <BrouterLink Href="/generator" class="btn btn-outline">Generator →</BrouterLink>
+    </section>
+</div>

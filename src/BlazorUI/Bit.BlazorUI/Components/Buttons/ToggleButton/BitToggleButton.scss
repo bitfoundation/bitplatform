@@ -15,23 +15,127 @@
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
     font-size: var(--bit-tgb-fontsize);
+
+    // a gap rather than a margin on the icon, so reversing the icon position keeps the spacing on the right side
+    gap: var(--bit-tgb-icn-margin);
     --bit-tgb-icn-margin: #{spacing(0.5)};
+
+    &:focus-visible {
+        outline-offset: spacing(0.25);
+        outline: spacing(0.25) solid var(--bit-tgb-clr);
+    }
 
     &.bit-dis {
         cursor: default;
         color: $clr-fg-dis;
         pointer-events: none;
     }
+
+    @keyframes bit-tgb-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .bit-tgb-ico {
     flex-shrink: 0;
     text-align: center;
-    margin-inline-end: var(--bit-tgb-icn-margin);
 }
 
 .bit-tgb-btx {
     display: block;
+}
+
+.bit-tgb-chm {
+    flex-shrink: 0;
+    text-align: center;
+}
+
+// keeps the check mark's space reserved so toggling does not shift the content
+.bit-tgb-chmh {
+    visibility: hidden;
+}
+
+.bit-tgb-eni {
+    flex-direction: row-reverse;
+}
+
+.bit-tgb-flw {
+    width: 100%;
+}
+
+.bit-tgb-hcn {
+    opacity: 0;
+    gap: spacing(0.5);
+    align-items: center;
+    display: inline-flex;
+    pointer-events: none;
+    justify-content: center;
+}
+
+.bit-tgb-ldg {
+    display: flex;
+    gap: spacing(1);
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+}
+
+.bit-tgb-top {
+    flex-direction: column-reverse;
+}
+
+.bit-tgb-btm {
+    flex-direction: column;
+}
+
+.bit-tgb-srt {
+    flex-direction: row-reverse;
+}
+
+.bit-tgb-end {
+    flex-direction: row;
+}
+
+.bit-tgb-spn {
+    border-radius: 50%;
+    border-width: spacing(0.2125);
+    width: var(--bit-tgb-spn-size);
+    height: var(--bit-tgb-spn-size);
+    border-color: $clr-brd-sec;
+    border-style: $shp-border-style;
+
+    // the button's own foreground already contrasts with its background in every variant and state
+    border-top-color: currentcolor;
+    animation: bit-tgb-spinner-animation 1.3s cubic-bezier(0.53, 0.21, 0.29, 0.67) infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 4s;
+        animation-timing-function: linear;
+    }
+}
+
+.bit-tgb-lbl {
+    color: inherit;
+    text-align: center;
+    font-size: var(--bit-tgb-lbl-fontsize);
+}
+
+.bit-tgb-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-tgb-fil {
@@ -295,6 +399,8 @@
     --bit-tgb-fontsize: #{spacing(1.5)};
     --bit-tgb-ntx-pad: #{spacing(0.5)};
     --bit-tgb-ntx-icn-size: #{spacing(2.00)};
+    --bit-tgb-spn-size: #{spacing(2.00)};
+    --bit-tgb-lbl-fontsize: #{spacing(1.25)};
 }
 
 .bit-tgb-md {
@@ -302,6 +408,8 @@
     --bit-tgb-fontsize: #{spacing(1.75)};
     --bit-tgb-ntx-pad: #{spacing(0.75)};
     --bit-tgb-ntx-icn-size: #{spacing(2.35)};
+    --bit-tgb-spn-size: #{spacing(2.35)};
+    --bit-tgb-lbl-fontsize: #{spacing(1.50)};
 }
 
 .bit-tgb-lg {
@@ -309,11 +417,44 @@
     --bit-tgb-fontsize: #{spacing(2)};
     --bit-tgb-ntx-pad: #{spacing(1.0)};
     --bit-tgb-ntx-icn-size: #{spacing(3.35)};
+    --bit-tgb-spn-size: #{spacing(2.75)};
+    --bit-tgb-lbl-fontsize: #{spacing(1.75)};
+}
+
+
+
+// the checked state is a background color change, which forced-colors modes discard,
+// so the state gets re-established with system colors here.
+@media (forced-colors: active) {
+    .bit-tgb {
+        border-color: ButtonText;
+    }
+
+    .bit-tgb-chk {
+        forced-color-adjust: none;
+        color: HighlightText;
+        border-color: Highlight;
+        background-color: Highlight;
+    }
+
+    .bit-tgb.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+    }
 }
 
 
 
 // important: these need to be here at the end!
+
+.bit-tgb-lda {
+    display: inline-grid;
+    place-items: center;
+
+    > * {
+        grid-area: 1 / 1;
+    }
+}
 
 .bit-tgb-fxc {
     color: var(--bit-tgb-clr-txt);

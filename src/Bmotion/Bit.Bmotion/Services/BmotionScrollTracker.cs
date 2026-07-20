@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmotion;
@@ -30,17 +31,19 @@ namespace Bit.Bmotion;
 /// </summary>
 public sealed class BmotionScrollTracker : IAsyncDisposable
 {
-    private readonly BmotionInterop _interop;
+    private readonly IBmotionInterop _interop;
+    private readonly ILogger<BmotionScrollTracker>? _logger;
     private readonly List<string> _subscriptionKeys = new();
     private DotNetObjectReference<BmotionScrollTracker>? _dotnet;
 
     private Func<BmScrollInfo, Task>? _onScroll;
     private bool _disposed;
 
-    public BmotionScrollTracker(BmotionInterop interop)
+    public BmotionScrollTracker(IBmotionInterop interop, ILogger<BmotionScrollTracker>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(interop);
         _interop = interop;
+        _logger = logger;
     }
 
     // Created on first use so an injected-but-unused tracker doesn't allocate a JS-object reference.
@@ -163,9 +166,10 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
         if (_onScroll != null)
         {
             // Guard the user callback so a faulting handler can't fault the JS-invokable flow
-            // (which would destabilise the interop bridge / host circuit).
+            // (which would destabilise the interop bridge / host circuit). Log at debug so the
+            // failure is still diagnosable instead of vanishing silently.
             try { await _onScroll(info); }
-            catch { /* swallow user-callback failures to keep the scroll bridge alive */ }
+            catch (Exception ex) { _logger?.LogDebug(ex, "Bmotion scroll callback threw; swallowed to keep the scroll bridge alive."); }
         }
     }
 
@@ -186,7 +190,7 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
             _subscriptionKeys.Clear();
             _onScroll = null;
             _dotnet?.Dispose();
-            // Note: BmotionInterop itself is DI-scoped and disposed by the DI container
+            // Note: IBmotionInterop itself is DI-scoped and disposed by the DI container
         }
     }
 }

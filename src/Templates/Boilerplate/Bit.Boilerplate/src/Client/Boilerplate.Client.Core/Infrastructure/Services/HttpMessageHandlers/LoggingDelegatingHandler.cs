@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Web;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;

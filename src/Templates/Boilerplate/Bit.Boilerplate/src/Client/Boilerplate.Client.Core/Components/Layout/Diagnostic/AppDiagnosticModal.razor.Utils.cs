@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Features.Identity;
 //#if (signalR == true)

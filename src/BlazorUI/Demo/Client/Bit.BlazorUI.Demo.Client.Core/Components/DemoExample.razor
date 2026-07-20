@@ -2,7 +2,16 @@
 
 @if (RenderForMcpClient)
 {
-    @((MarkupString)($"**{Title}**: {RazorCode}{CsharpCode}"))
+    if (PreventRenderForMcpClient is false)
+    {
+        @((MarkupString)($@"\n**{Title}**:
+{(string.IsNullOrWhiteSpace(RazorCode) ? "" : $@"```razor
+{RazorCode}
+```")}
+{(string.IsNullOrWhiteSpace(CsharpCode) ? "" : $@"```csharp
+{CsharpCode}
+```")}"))
+    }
 }
 else
 {

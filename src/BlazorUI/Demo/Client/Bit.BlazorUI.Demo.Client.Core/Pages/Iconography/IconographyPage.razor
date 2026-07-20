@@ -1,0 +1,237 @@
+@page "/iconography"
+
+@code {
+    private IEnumerable<IBitComponentParams> _cascadingParams = new List<IBitComponentParams>
+    {
+        new BitCardParams { Background = BitColorKind.Primary, FullWidth = true, Style = "padding: 1.5rem" },
+        new BitTextParams { Typography = BitTypography.Body1 },
+        new BitTagParams { Color = BitColor.TertiaryBackground },
+    };
+}
+
+<PageOutlet Url="iconography"
+            Title="Iconography"
+            Description="Browse and search the full set of Fabric (MDL2) icons available in bit BlazorUI, and copy any icon name with a click." />
+
+<section class="page-container">
+    <BitParams Parameters="_cascadingParams">
+        <BitText Element="h1" Typography="BitTypography.H3">Iconography</BitText>
+
+        <br />
+
+        <BitText Element="p" Typography="BitTypography.H6">
+            bit BlazorUI is using a custom font for icons of its components.
+            This font is part of the MDL2 design system (Office UI fabric icons) and contains glyphs that you can scale, color, and style in any way.
+        </BitText>
+
+        <br /><br />
+
+        <BitCard>
+            <BitText>
+                <b>Note:</b> To use these Icons, you need to add the <BitTag>Bit.BlazorUI.Icons</BitTag> nuget package to your project
+                as described in the Optional steps of the <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Icon list</BitText>
+
+            <br />
+
+            <BitText Typography="BitTypography.Caption1" Gutter Element="div">
+                <b>Note</b>: click an icon to open its details. Use the panel to preview sizes, colors, and copy usage snippets.
+            </BitText>
+
+            <BitSearchBox Immediate
+                          DebounceTime="300"
+                          OnClear="HandleClear"
+                          OnChange="HandleChange"
+                          Placeholder="Search icons"
+                          IconName="@BitIconName.Search"
+                          Class="iconography-search-box" />
+
+            <br />
+
+            <BitScrollablePane Height="23rem" OverflowX="BitOverflow.Hidden" Modern>
+                <BitStack Horizontal Wrap FitHeight Gap="1rem">
+                    @if (filteredIcons.Count == 0)
+                    {
+                        <BitText Element="p" Typography="BitTypography.H6">No result</BitText>
+                    }
+                    else
+                    {
+                        foreach (var icon in filteredIcons)
+                        {
+                            <BitButton Variant="BitVariant.Text" 
+                                       Title="@icon.Value"
+                                       AriaLabel="@icon.Value"
+                                       OnClick="() => OpenIconPanel(icon)"
+                                       Class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")">
+                                <BitStack Gap="0.5rem" Alignment="BitAlignment.Center">
+                                    <BitIcon IconName="@icon.Value" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
+
+                                    <BitText Class="icon-name" Typography="BitTypography.Caption1">
+                                        @icon.Value
+                                    </BitText>
+                                </BitStack>
+                            </BitButton>
+                        }
+                    }
+                </BitStack>
+            </BitScrollablePane>
+        </BitCard>
+
+        <br />
+
+        <FeedbackSection Url="IconographyPage.razor" />
+    </BitParams>
+</section>
+
+<div class="icon-details-panel-scope">
+    <BitProPanel AutoToggleScroll Modeless ShowCloseButton
+                 @bind-IsOpen="isIconPanelOpen"
+                 Size="IconPanelSize"
+                 Position="BitPanelPosition.End"
+                 HeaderText="Icon details"
+                 OnDismiss="HandleIconPanelDismissed">
+        <Body>
+            @if (selectedIcon is not null)
+            {
+                var glyphCode = GetGlyphCode(selectedIcon);
+
+                <BitStack Gap="1rem" FillContent>
+                    <BitCard FullWidth Background="BitColorKind.Secondary">
+                        <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
+                            <BitIcon IconName="@selectedIcon.Value"
+                                     Style="font-size: 3rem;"
+                                     Color="BitColor.PrimaryForeground" />
+                            <BitText Gutter ForceBreak Typography="BitTypography.H5">
+                                @selectedIcon.Value
+                            </BitText>
+
+                            <BitTag Color="BitColor.TertiaryBackground">
+                                @selectedIcon.ConstantReference
+                            </BitTag>
+
+                            <BitButton Size="BitSize.Small"
+                                       IconName="@(copyFeedbackKey == COPY_KEY_NAME ? BitIconName.Accept : BitIconName.Copy)"
+                                       OnClick="CopyIconName">
+                                @(copyFeedbackKey == COPY_KEY_NAME ? "Copied" : "Copy name")
+                            </BitButton>
+                        </BitStack>
+                    </BitCard>
+
+                    <section>
+                        <BitText Gutter Typography="BitTypography.Subtitle2" Foreground="BitColorKind.Secondary">
+                            Preview
+                        </BitText>
+                        <BitCard FullWidth>
+                            <BitStack Gap="1rem" FillContent>
+                                <BitGrid Columns="3" Spacing="2rem">
+                                    <BitGridItem>
+                                        <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
+                                            <BitIcon IconName="@selectedIcon.Value" Size="BitSize.Small" />
+                                            <BitText Typography="BitTypography.Caption2">Small</BitText>
+                                        </BitStack>
+                                    </BitGridItem>
+                                    <BitGridItem>
+                                        <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
+                                            <BitIcon IconName="@selectedIcon.Value" Size="BitSize.Medium" />
+                                            <BitText Typography="BitTypography.Caption2">Medium</BitText>
+                                        </BitStack>
+                                    </BitGridItem>
+                                    <BitGridItem>
+                                        <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
+                                            <BitIcon IconName="@selectedIcon.Value" Size="BitSize.Large" />
+                                            <BitText Typography="BitTypography.Caption2">Large</BitText>
+                                        </BitStack>
+                                    </BitGridItem>
+                                </BitGrid>
+
+                                <BitSeparator />
+
+                                <BitGrid Columns="4" Spacing="2rem">
+                                    @foreach (var color in previewColors)
+                                    {
+                                        <BitGridItem Title="@color.Label">
+                                            <BitStack Alignment="BitAlignment.Center" Gap="0.375rem">
+                                                <BitIcon IconName="@selectedIcon.Value" Color="color.Value" />
+                                                <BitText Typography="BitTypography.Caption2">@color.Label</BitText>
+                                            </BitStack>
+                                        </BitGridItem>
+                                    }
+                                </BitGrid>
+                            </BitStack>
+                        </BitCard>
+                    </section>
+
+                    <section>
+                        <BitText Typography="BitTypography.Subtitle2" Gutter Foreground="BitColorKind.Secondary">
+                            Properties
+                        </BitText>
+                        <BitCard FullWidth>
+                            <BitStack Gap="0">
+                                <IconDetailRow Label="Name"
+                                               Value="@selectedIcon.Value"
+                                               CopyKey="name-row"
+                                               CopyFeedbackKey="@copyFeedbackKey"
+                                               OnCopy="HandleDetailCopy" />
+                                <hr style="width: 100%;" />
+                                <IconDetailRow Label="Constant"
+                                               Value="@selectedIcon.ConstantReference"
+                                               CopyKey="constant"
+                                               CopyFeedbackKey="@copyFeedbackKey"
+                                               OnCopy="HandleDetailCopy" />
+                                <hr style="width: 100%;" />
+                                <IconDetailRow Label="CSS class"
+                                               Value="@selectedIcon.CssClass"
+                                               CopyKey="css"
+                                               CopyFeedbackKey="@copyFeedbackKey"
+                                               OnCopy="HandleDetailCopy" />
+                                @if (string.IsNullOrEmpty(glyphCode) is false)
+                                {
+                                    <hr style="width: 100%;" />
+                                    <IconDetailRow Label="Glyph"
+                                                   CopyKey="glyph"
+                                                   Value="@glyphCode"
+                                                   CopyFeedbackKey="@copyFeedbackKey"
+                                                   OnCopy="HandleDetailCopy" />
+                                }
+                            </BitStack>
+                        </BitCard>
+                    </section>
+
+                    <section>
+                        <BitText Typography="BitTypography.Subtitle2" Gutter Foreground="BitColorKind.Secondary">
+                            Usage
+                        </BitText>
+
+                        <BitStack Gap="0.75rem">
+                            <BitStack Gap="0.25rem">
+                                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                                    IconName parameter
+                                </BitText>
+
+                                <CodeBox Language="xml" MaxHeight="4.5rem">
+                                    @($"<BitIcon {selectedIcon.RazorIconName} />")
+                                </CodeBox>
+                            </BitStack>
+
+                            <BitStack Gap="0.25rem">
+                                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                                    BitIconInfo
+                                </BitText>
+
+                                <CodeBox Language="xml" MaxHeight="4.5rem">
+                                    @($"<BitButton {selectedIcon.RazorIconInfo} />")
+                                </CodeBox>
+                            </BitStack>
+                        </BitStack>
+                    </section>
+                </BitStack>
+            }
+        </Body>
+    </BitProPanel>
+</div>

@@ -26,6 +26,13 @@
     /// </summary>
     [Parameter] public double TransitionSpeed { get; set; } = 1.0;
 
+    /// <summary>
+    /// Global color-interpolation space for this subtree. <c>null</c> leaves the default (sRGB);
+    /// set to <c>BmColorSpace.Oklab</c> for perceptual color transitions. A per-transition
+    /// <c>colorSpace</c> still wins.
+    /// </summary>
+    [Parameter] public BmColorSpace? ColorSpace { get; set; }
+
     private BmotionConfigContext _ctx = new();
 
     // Cache the last parameter values so OnParametersSet only swaps in a new context (and triggers
@@ -33,6 +40,7 @@
     private BmTransition? _lastTransition;
     private bool? _lastReduceMotion;
     private double _lastTransitionSpeed = 1.0;
+    private BmColorSpace? _lastColorSpace;
     private bool _ctxInitialized;
 
     protected override void OnParametersSet()
@@ -40,7 +48,8 @@
         if (_ctxInitialized &&
             ReferenceEquals(_lastTransition, Transition) &&
             _lastReduceMotion == ReduceMotion &&
-            _lastTransitionSpeed.Equals(TransitionSpeed))
+            _lastTransitionSpeed.Equals(TransitionSpeed) &&
+            _lastColorSpace == ColorSpace)
             return;
 
         // Replace the context with a fresh instance (rather than mutating in place) so the cascading
@@ -52,10 +61,12 @@
             DefaultTransition = Transition,
             ReduceMotion      = ReduceMotion,
             TransitionSpeed   = TransitionSpeed,
+            ColorSpace        = ColorSpace,
         };
         _lastTransition = Transition;
         _lastReduceMotion = ReduceMotion;
         _lastTransitionSpeed = TransitionSpeed;
+        _lastColorSpace = ColorSpace;
         _ctxInitialized = true;
     }
 }

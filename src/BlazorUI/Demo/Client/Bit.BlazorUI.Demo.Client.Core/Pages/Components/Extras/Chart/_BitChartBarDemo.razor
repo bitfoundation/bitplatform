@@ -15,7 +15,7 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@PerColor()" Options="@_horizontal" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Rounded + per-bar colors" RazorCode="@roundedRazorCode" CsharpCode="@roundedCsharpCode" Id="bar-rounded">
+<DemoExample Title="Rounded + per-bar colors" RazorCode="@roundedRazorCode" CsharpCode="@roundedCsharpCode" Id="bar-rounded" PreventRenderForMcpClient>
     <div class="example-desc">borderRadius, palette per index</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@PerColorRounded()" Options="@_rounded" /></div></div>
 </DemoExample>
@@ -35,12 +35,12 @@
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Patterned()" Options="_bottom" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Top-rounded corners" RazorCode="@topRoundedRazorCode" CsharpCode="@topRoundedCsharpCode" Id="bar-top-rounded">
+<DemoExample Title="Top-rounded corners" RazorCode="@topRoundedRazorCode" CsharpCode="@topRoundedCsharpCode" Id="bar-top-rounded" PreventRenderForMcpClient>
     <div class="example-desc">per-corner borderRadius</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@TopRounded()" Options="_noLegend" /></div></div>
 </DemoExample>
 
-<DemoExample Title="Auto-rotated labels" RazorCode="@rotatedRazorCode" CsharpCode="@rotatedCsharpCode" Id="bar-rotated">
+<DemoExample Title="Auto-rotated labels" RazorCode="@rotatedRazorCode" CsharpCode="@rotatedCsharpCode" Id="bar-rotated" PreventRenderForMcpClient>
     <div class="example-desc">long category labels tilt to fit</div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Countries()" Options="_noLegend" /></div></div>
 </DemoExample>

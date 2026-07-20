@@ -1,0 +1,109 @@
+.toolbar {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.basic-item {
+    gap: 0.5rem;
+    display: flex;
+    height: 100%;
+    padding: 0 1rem;
+    align-items: center;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--bit-clr-brd-sec);
+}
+
+.provider-item {
+    display: flex;
+    height: 100%;
+    padding: 0 1rem;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--bit-clr-brd-sec);
+}
+
+.post {
+    padding: 1rem;
+    border-bottom: 1px solid var(--bit-clr-brd-sec);
+}
+
+.post-header {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+.tile {
+    display: flex;
+    margin: 0.5rem;
+    border-radius: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: calc(100% - 1rem);
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+.group-header {
+    display: flex;
+    height: 100%;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    align-items: center;
+    box-sizing: border-box;
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.contact {
+    display: flex;
+    height: 100%;
+    padding: 0.5rem 1rem;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--bit-clr-brd-sec);
+}
+
+.message {
+    display: flex;
+    padding: 0.25rem 1rem;
+    box-sizing: border-box;
+
+    &.mine {
+        justify-content: flex-end;
+    }
+
+    .bubble {
+        max-width: 70%;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    &.mine .bubble {
+        color: var(--bit-clr-pri-text);
+        background-color: var(--bit-clr-pri);
+    }
+}
+
+.composer {
+    gap: 0.5rem;
+    display: flex;
+    margin-top: 0.5rem;
+}
+
+::deep {
+    .list,
+    .chat-list {
+        height: 25rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+
+    .horizontal-list {
+        height: 9rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+}

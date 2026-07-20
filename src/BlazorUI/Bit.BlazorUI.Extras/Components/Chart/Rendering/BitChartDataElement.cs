@@ -18,7 +18,7 @@ public sealed class BitChartDataElement
     public BitChartSvgNode? BorderShape { get; init; }
     /// <summary>Per-element entry animation CSS class (e.g. grow from baseline for bars, pop for points).</summary>
     public string? EnterAnim { get; init; }
-    /// <summary>Transform origin (in view-box/pixel coordinates) for the entry animation — the bar baseline
+    /// <summary>Transform origin (in view-box/pixel coordinates) for the entry animation - the bar baseline
     /// or the point center.</summary>
     public double AnimOriginX { get; init; }
     public double AnimOriginY { get; init; }

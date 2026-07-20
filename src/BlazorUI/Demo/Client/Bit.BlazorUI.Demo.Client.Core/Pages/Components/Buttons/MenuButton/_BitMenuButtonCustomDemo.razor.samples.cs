@@ -4,6 +4,7 @@ public partial class _BitMenuButtonCustomDemo
 {
     private readonly string example1RazorCode = @"
 <BitMenuButton Text=""MenuButton"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+
     private readonly string example1CsharpCode = @"
 public class Operation
 {
@@ -30,6 +31,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
     private readonly string example2RazorCode = @"
 <BitMenuButton Text=""Split"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split />";
+
     private readonly string example2CsharpCode = @"
 public class Operation
 {
@@ -70,6 +72,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 <BitMenuButton Text=""Fill"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" IsEnabled=""false"" Split />
 <BitMenuButton Text=""Outline"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" IsEnabled=""false"" Split />
 <BitMenuButton Text=""Text"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" IsEnabled=""false"" Split />";
+
     private readonly string example3CsharpCode = @"
 public class Operation
 {
@@ -103,6 +106,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <BitMenuButton Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Sticky />
 <BitMenuButton Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Split Sticky />";
+
     private readonly string example4CsharpCode = @"
 public class Operation
 {
@@ -130,6 +134,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     private readonly string example5RazorCode = @"
 <BitMenuButton Text=""IconName"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" IconName=""@BitIconName.Edit"" />
 <BitMenuButton Text=""ChevronDownIconName"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />";
+
     private readonly string example5CsharpCode = @"
 public class Operation
 {
@@ -155,112 +160,12 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 };";
 
     private readonly string example6RazorCode = @"
-<style>
-    .custom-class {
-        margin-inline: 1rem;
-        border-radius: 1rem;
-        border-color: tomato;
-        border-width: 0.25rem;
-    }
-
-    .custom-class > button {
-        color: tomato;
-        border-color: tomato;
-        background: transparent;
-    }
-
-    .custom-class > button:hover {
-        background-color: #ff63473b;
-    }
-
-
-    .custom-item {
-        color: peachpuff;
-        background-color: tomato;
-    }
-
-
-    .custom-button {
-        color: deepskyblue;
-        background: transparent;
-    }
-
-    .custom-opened .custom-button {
-        color: cornflowerblue;
-    }
-
-    .custom-callout {
-        border-radius: 1rem;
-        border-color: lightgray;
-        backdrop-filter: blur(20px);
-        background-color: transparent;
-        box-shadow: darkgray 0 0 0.5rem;
-    }
-
-    .custom-item-button {
-        border-bottom: 1px solid gray;
-    }
-
-    .custom-item-button:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .custom-callout li:last-child .custom-item-button {
-        border-bottom: none;
-    }
-</style>
-
-
-<BitMenuButton Text=""Styled Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"" />
-<BitMenuButton Text=""Classed Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
-
-
-<BitMenuButton Text=""Non-Sticky"" Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
-<BitMenuButton Text=""Sticky"" Sticky Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
-
-
-<BitMenuButton Text=""Classes"" Items=""basicCustoms"" IconName=""@BitIconName.FormatPainter"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text""
-               Classes=""@(new() { OperatorButton = ""custom-button"",
-                                  Opened = ""custom-opened"",
-                                  Callout = ""custom-callout"",
-                                  ItemButton = ""custom-item-button"" })"" />
-
-<BitMenuButton Text=""Styles"" Items=""basicCustoms"" IconName=""@BitIconName.Brush"" NameSelectors=""nameSelectors""
-               Styles=""@(new() { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
-                                 Opened = ""--button-background: orangered;"",
-                                 OperatorButton = ""background: var(--button-background);"",
-                                 ItemButton = ""background: lightcoral;"",
-                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"" />";
-    private readonly string example6CsharpCode = @"
-public class Operation
-{
-    public string? Id { get; set; }
-    public string? Name { get; set; }
-    public string? Image { get; set; }
-    public bool Disabled { get; set; }
-}
-
-private static List<Operation> itemStyleClassCustoms =
-[
-    new() { Name = ""Custom A (Default)"", Id = ""A"", Image = BitIconName.Emoji, Style = ""color: brown"" },
-    new() { Name = ""Custom B (Styled)"", Id = ""B"", Image = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
-    new() { Name = ""Custom C (Classed)"", Id = ""C"", Image = BitIconName.Emoji2, Class = ""custom-item"" },
-];
-
-private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
-{
-    Text = { Name = nameof(Operation.Name) },
-    Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Image) },
-    IsEnabled = { Selector = m => m.Disabled is false }
-};";
-
-    private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Primary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Background=""BitColorKind.Primary"" />
 <BitMenuButton Text=""Secondary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Background=""BitColorKind.Secondary"" />
 <BitMenuButton Text=""Tertiary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Background=""BitColorKind.Tertiary"" />
 <BitMenuButton Text=""Transparent"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Background=""BitColorKind.Transparent"" />";
-    private readonly string example7CsharpCode = @"
+
+    private readonly string example6CsharpCode = @"
 private List<Operation> basicCustoms =
 [
     new() { Name = ""Custom A"", Id = ""A"" },
@@ -276,7 +181,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Toggle"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle />
 
 <BitMenuButton Text=""DefaultIsToggled"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle DefaultIsToggled=""true"" />
@@ -286,7 +191,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <div>OnToggleChange: @customToggledValue</div>
 <BitMenuButton Text=""OnToggleChange"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle OnToggleChange=""v => customToggledValue = v"" />";
-    private readonly string example8CsharpCode = @"
+
+    private readonly string example7CsharpCode = @"
 private bool customIsToggled;
 private bool customToggledValue;
 
@@ -305,13 +211,14 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitMenuButton Text=""With icon"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" IconName=""@BitIconName.Edit"" />
 <BitMenuButton Text=""No icon"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" IconName=""@BitIconName.Edit"" NoIcon />
 
 <BitMenuButton Sticky Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" />
 <BitMenuButton Sticky Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" NoIcon />";
-    private readonly string example9CsharpCode = @"
+
+    private readonly string example8CsharpCode = @"
 private List<Operation> basicIconCustoms =
 [
     new() { Name = ""Custom A"", Id = ""A"", Image = BitIconName.Emoji },
@@ -327,7 +234,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -353,7 +260,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 </BitMenuButton>
 
 <BitMenuButton Text=""Customs"" Items=""itemTemplateCustoms2"" NameSelectors=""nameSelectors"" />";
-    private readonly string example10CsharpCode = @"
+
+    private readonly string example9CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -405,7 +313,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     Template = { Name = nameof(Operation.Fragment) }
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitMenuButton Text=""Customs"" Items=""basicCustoms"" NameSelectors=""nameSelectors""
                OnChange=""(Operation item) => eventsChangedCustom = item?.Id""
                OnClick=""(Operation item) => eventsClickedCustom = item?.Id"" />
@@ -424,7 +332,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <div>Changed custom item: @eventsChangedCustom</div>
 <div>Clicked custom item: @eventsClickedCustom</div>";
-    private readonly string example11CsharpCode = @"
+
+    private readonly string example10CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -455,7 +364,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMenuButton Split Sticky Items=""basicCustoms"" DefaultSelectedItem=""basicCustoms[1]"" NameSelectors=""nameSelectors"" />
 
 <BitMenuButton Sticky Items=""basicCustoms"" NameSelectors=""nameSelectors"" @bind-SelectedItem=""twoWaySelectedCustom"" />
@@ -468,7 +377,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <BitMenuButton Sticky Items=""basicCustoms"" NameSelectors=""nameSelectors"" @bind-IsOpen=""twoWayIsOpen"" />
 <BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
-    private readonly string example12CsharpCode = @"
+
+    private readonly string example11CsharpCode = @"
 private Operation twoWaySelectedCustom = default!;
 private bool oneWayIsOpen;
 private bool twoWayIsOpen;
@@ -503,79 +413,192 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
+    private readonly string example12RazorCode = @"
+<BitMenuButton Text=""File"" Items=""separatorCustoms"" IconName=""@BitIconName.OpenFile"" NameSelectors=""nameSelectors"" />
+<BitMenuButton Split Sticky Items=""separatorCustoms"" NameSelectors=""nameSelectors"" />";
+
+    private readonly string example12CsharpCode = @"
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
+    public bool Disabled { get; set; }
+    public bool IsDivider { get; set; }
+}
+
+private static List<Operation> separatorCustoms =
+[
+    new() { Name = ""New"", Id = ""new"", Image = BitIconName.Add },
+    new() { Name = ""Open"", Id = ""open"", Image = BitIconName.OpenFile },
+    new() { IsDivider = true },
+    new() { Name = ""Save"", Id = ""save"", Image = BitIconName.Save },
+    new() { Name = ""Save as"", Id = ""save-as"", Image = BitIconName.SaveAs },
+    new() { IsDivider = true },
+    new() { Name = ""Delete"", Id = ""delete"", Image = BitIconName.Delete }
+];
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) },
+    IconName = { Name = nameof(Operation.Image) },
+    IsEnabled = { Selector = m => m.Disabled is false },
+    IsSeparator = { Name = nameof(Operation.IsDivider) }
+};";
+
     private readonly string example13RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+<BitMenuButton Text=""Links"" Items=""linkCustoms"" IconName=""@BitIconName.Globe"" NameSelectors=""nameSelectors"" />";
 
-<BitMenuButton Text=""Actions""
-               Items=""externalIconCustoms""
-               Icon=""@(""fa-solid fa-house"")""
-               NameSelectors=""nameSelectors2"" />
-
-<BitMenuButton Split 
-               Text=""Actions""
-               Items=""externalIconCustoms""
-               Icon=""@(""fa-brands fa-github"")""
-               NameSelectors=""nameSelectors2"" />
-
-
-
-<BitMenuButton Text=""Actions""
-               Color=""BitColor.Secondary""
-               Items=""externalIconCustoms""
-               Variant=""BitVariant.Outline""
-               NameSelectors=""nameSelectors2""
-               Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"" />
-
-<BitMenuButton Split 
-               Text=""Actions""
-               Color=""BitColor.Secondary""
-               Items=""externalIconCustoms""
-               Variant=""BitVariant.Outline""
-               NameSelectors=""nameSelectors2""
-               Icon=""@BitIconInfo.Css(""fa-brands fa-github"")"" />
-
-
-
-<BitMenuButton Text=""Actions"" 
-               Color=""BitColor.Tertiary""
-               Variant=""BitVariant.Text"" 
-               Items=""externalIconCustoms"" 
-               NameSelectors=""nameSelectors2"" 
-               Icon=""@BitIconInfo.Fa(""solid house"")"" />
-
-<BitMenuButton Split 
-               Text=""Actions""
-               Color=""BitColor.Tertiary""
-               Variant=""BitVariant.Text""
-               Items=""externalIconCustoms""
-               NameSelectors=""nameSelectors2""
-               Icon=""@BitIconInfo.Fa(""brands github"")"" />";
     private readonly string example13CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Image { get; set; }
-    public BitIconInfo? IconInfo { get; set; }
     public bool Disabled { get; set; }
+    public bool IsDivider { get; set; }
+    public string? Url { get; set; }
+    public string? UrlTarget { get; set; }
+    public string? Tooltip { get; set; }
 }
 
-private static List<Operation> externalIconCustoms =
+private static List<Operation> linkCustoms =
 [
-    new() { Name = ""Add"", IconInfo = ""fa-solid fa-plus"" },
-    new() { Name = ""Edit"", IconInfo = BitIconInfo.Css(""fa-solid fa-pen"") },
-    new() { Name = ""Delete"", IconInfo = BitIconInfo.Fa(""solid trash"") }
+    new() { Name = ""bit platform"", Id = ""bit"", Image = BitIconName.Globe, Url = ""https://bitplatform.dev"", UrlTarget = ""_blank"", Tooltip = ""The bit platform website"" },
+    new() { Name = ""GitHub repo"", Id = ""github"", Image = BitIconName.Link, Url = ""https://github.com/bitfoundation/bitplatform"", UrlTarget = ""_blank"", Tooltip = ""The bit platform GitHub repository"" },
+    new() { IsDivider = true },
+    new() { Name = ""Custom C"", Id = ""C"", Image = BitIconName.Emoji2, Tooltip = ""A regular item"" }
 ];
 
-private BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    Icon = { Selector = i => i.IconInfo },
-    IsEnabled = { Selector = m => m.Disabled is false }
+    IconName = { Name = nameof(Operation.Image) },
+    IsEnabled = { Selector = m => m.Disabled is false },
+    IsSeparator = { Name = nameof(Operation.IsDivider) },
+    Href = { Name = nameof(Operation.Url) },
+    Target = { Name = nameof(Operation.UrlTarget) },
+    Title = { Name = nameof(Operation.Tooltip) }
 };";
 
     private readonly string example14RazorCode = @"
+<BitMenuButton Text=""Full width"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" FullWidth />
+<BitMenuButton Text=""Full width split"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" FullWidth Split />";
+
+    private readonly string example14CsharpCode = @"
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
+    public bool Disabled { get; set; }
+}
+
+private static List<Operation> basicIconCustoms =
+[
+    new() { Name = ""Custom A"", Id = ""A"", Image = BitIconName.Emoji },
+    new() { Name = ""Custom B"", Id = ""B"", Image = BitIconName.Emoji, Disabled = true },
+    new() { Name = ""Custom C"", Id = ""C"", Image = BitIconName.Emoji2 }
+];
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) },
+    IconName = { Name = nameof(Operation.Image) },
+    IsEnabled = { Selector = m => m.Disabled is false }
+};";
+
+    private readonly string example15RazorCode = @"
+<BitMenuButton Split Text=""Save"" Items=""basicIconCustoms"" IconName=""@BitIconName.Save"" NameSelectors=""nameSelectors"" IsLoading=""customAutoIsLoading"" OnClick=""(Operation item) => HandleOnLoadingClick()"" />
+<BitMenuButton Text=""Loading"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" IsLoading=""customIsLoading"" />
+<BitCheckbox Label=""IsLoading"" @bind-Value=""customIsLoading"" />";
+
+    private readonly string example15CsharpCode = @"
+private bool customIsLoading;
+private bool customAutoIsLoading;
+
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
+    public bool Disabled { get; set; }
+}
+
+private static List<Operation> basicIconCustoms =
+[
+    new() { Name = ""Custom A"", Id = ""A"", Image = BitIconName.Emoji },
+    new() { Name = ""Custom B"", Id = ""B"", Image = BitIconName.Emoji, Disabled = true },
+    new() { Name = ""Custom C"", Id = ""C"", Image = BitIconName.Emoji2 }
+];
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) },
+    IconName = { Name = nameof(Operation.Image) },
+    IsEnabled = { Selector = m => m.Disabled is false }
+};
+
+private async Task HandleOnLoadingClick()
+{
+    customAutoIsLoading = true;
+    await Task.Delay(2000);
+    customAutoIsLoading = false;
+}";
+
+    private readonly string example16RazorCode = @"
+<BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" />
+<BitMenuButton Split Text=""Split"" Title=""The main button tooltip"" ChevronDownAriaLabel=""Open the menu"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" />";
+
+    private readonly string example16CsharpCode = @"
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
+    public bool Disabled { get; set; }
+}
+
+private static List<Operation> basicIconCustoms =
+[
+    new() { Name = ""Custom A"", Id = ""A"", Image = BitIconName.Emoji },
+    new() { Name = ""Custom B"", Id = ""B"", Image = BitIconName.Emoji, Disabled = true },
+    new() { Name = ""Custom C"", Id = ""C"", Image = BitIconName.Emoji2 }
+];
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) },
+    IconName = { Name = nameof(Operation.Image) },
+    IsEnabled = { Selector = m => m.Disabled is false }
+};";
+
+    private readonly string example17RazorCode = @"
+<BitMenuButton Text=""TopAndBottom"" Items=""dropDirectionCustoms"" NameSelectors=""nameSelectors"" DropDirection=""BitDropDirection.TopAndBottom"" />
+<BitMenuButton Text=""All"" Items=""dropDirectionCustoms"" NameSelectors=""nameSelectors"" DropDirection=""BitDropDirection.All"" />";
+
+    private readonly string example17CsharpCode = @"
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+}
+
+private static List<Operation> dropDirectionCustoms =
+    Enumerable.Range(1, 8).Select(i => new Operation { Name = $""Custom {i}"", Id = i.ToString() }).ToList();
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) }
+};";
+
+    private readonly string example18RazorCode = @"
 <BitMenuButton Text=""Primary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" />
@@ -727,7 +750,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" Split />
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Split />
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Split />";
-    private readonly string example14CsharpCode = @"
+
+    private readonly string example18CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -751,7 +775,81 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example19RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitMenuButton Text=""Actions""
+               Items=""externalIconCustoms""
+               Icon=""@(""fa-solid fa-house"")""
+               NameSelectors=""nameSelectors2"" />
+
+<BitMenuButton Split 
+               Text=""Actions""
+               Items=""externalIconCustoms""
+               Icon=""@(""fa-brands fa-github"")""
+               NameSelectors=""nameSelectors2"" />
+
+
+
+<BitMenuButton Text=""Actions""
+               Color=""BitColor.Secondary""
+               Items=""externalIconCustoms""
+               Variant=""BitVariant.Outline""
+               NameSelectors=""nameSelectors2""
+               Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"" />
+
+<BitMenuButton Split 
+               Text=""Actions""
+               Color=""BitColor.Secondary""
+               Items=""externalIconCustoms""
+               Variant=""BitVariant.Outline""
+               NameSelectors=""nameSelectors2""
+               Icon=""@BitIconInfo.Css(""fa-brands fa-github"")"" />
+
+
+
+<BitMenuButton Text=""Actions"" 
+               Color=""BitColor.Tertiary""
+               Variant=""BitVariant.Text"" 
+               Items=""externalIconCustoms"" 
+               NameSelectors=""nameSelectors2"" 
+               Icon=""@BitIconInfo.Fa(""solid house"")"" />
+
+<BitMenuButton Split
+               Text=""Actions""
+               Color=""BitColor.Tertiary""
+               Variant=""BitVariant.Text""
+               Items=""externalIconCustoms""
+               NameSelectors=""nameSelectors2""
+               Icon=""@BitIconInfo.Fa(""brands github"")""
+               ChevronDownIcon=""@BitIconInfo.Fa(""solid angles-down"")"" />";
+
+    private readonly string example19CsharpCode = @"
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
+    public BitIconInfo? IconInfo { get; set; }
+    public bool Disabled { get; set; }
+}
+
+private static List<Operation> externalIconCustoms =
+[
+    new() { Name = ""Add"", IconInfo = ""fa-solid fa-plus"" },
+    new() { Name = ""Edit"", IconInfo = BitIconInfo.Css(""fa-solid fa-pen"") },
+    new() { Name = ""Delete"", IconInfo = BitIconInfo.Fa(""solid trash"") }
+];
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) },
+    Icon = { Selector = i => i.IconInfo },
+    IsEnabled = { Selector = m => m.Disabled is false }
+};";
+
+    private readonly string example20RazorCode = @"
 <BitMenuButton Text=""Small"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Size=""BitSize.Small"" />
@@ -763,7 +861,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 <BitMenuButton Text=""Large"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Size=""BitSize.Large"" />
 <BitMenuButton Text=""Large"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"" />
 <BitMenuButton Text=""Large"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Size=""BitSize.Large"" />";
-    private readonly string example15CsharpCode = @"
+
+    private readonly string example20CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -787,10 +886,113 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example21RazorCode = @"
+<style>
+    .custom-class {
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
+    }
+
+    .custom-class > button {
+        color: tomato;
+        border-color: tomato;
+        background: transparent;
+    }
+
+    .custom-class > button:hover {
+        background-color: #ff63473b;
+    }
+
+
+    .custom-item {
+        color: peachpuff;
+        background-color: tomato;
+    }
+
+
+    .custom-button {
+        color: deepskyblue;
+        background: transparent;
+    }
+
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-callout li:last-child .custom-item-button {
+        border-bottom: none;
+    }
+</style>
+
+
+<BitMenuButton Text=""Styled Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"" />
+<BitMenuButton Text=""Classed Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
+
+
+<BitMenuButton Text=""Non-Sticky"" Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
+<BitMenuButton Text=""Sticky"" Sticky Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
+
+
+<BitMenuButton Text=""Classes"" Items=""basicCustoms"" IconName=""@BitIconName.FormatPainter"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text""
+               Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
+                                  Callout = ""custom-callout"",
+                                  ItemButton = ""custom-item-button"" })"" />
+
+<BitMenuButton Text=""Styles"" Items=""basicCustoms"" IconName=""@BitIconName.Brush"" NameSelectors=""nameSelectors""
+               Styles=""@(new() { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
+                                 Opened = ""--button-background: orangered;"",
+                                 OperatorButton = ""background: var(--button-background);"",
+                                 ItemButton = ""background: lightcoral;"",
+                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"" />";
+
+    private readonly string example21CsharpCode = @"
+public class Operation
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
+    public bool Disabled { get; set; }
+}
+
+private static List<Operation> itemStyleClassCustoms =
+[
+    new() { Name = ""Custom A (Default)"", Id = ""A"", Image = BitIconName.Emoji, Style = ""color: brown"" },
+    new() { Name = ""Custom B (Styled)"", Id = ""B"", Image = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
+    new() { Name = ""Custom C (Classed)"", Id = ""C"", Image = BitIconName.Emoji2, Class = ""custom-item"" },
+];
+
+private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
+{
+    Text = { Name = nameof(Operation.Name) },
+    Key = { Name = nameof(Operation.Id) },
+    IconName = { Name = nameof(Operation.Image) },
+    IsEnabled = { Selector = m => m.Disabled is false }
+};";
+
+    private readonly string example22RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" IconName=""@BitIconName.Edit"" NameSelectors=""nameSelectors"" />
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" NameSelectors=""nameSelectors"" Split />";
-    private readonly string example16CsharpCode = @"
+
+    private readonly string example22CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }

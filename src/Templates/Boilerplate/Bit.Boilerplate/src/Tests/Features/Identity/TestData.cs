@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.Features.Identity;
+namespace Boilerplate.Tests.Features.Identity;
 
 public partial class TestData
 {

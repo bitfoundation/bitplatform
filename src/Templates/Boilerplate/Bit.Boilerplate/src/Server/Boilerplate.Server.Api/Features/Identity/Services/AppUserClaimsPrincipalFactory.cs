@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Models;
 
@@ -7,13 +7,26 @@ namespace Boilerplate.Server.Api.Features.Identity.Services;
 public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsService, UserManager<User> userManager, RoleManager<Role> roleManager,
         IOptions<IdentityOptions> optionsAccessor, IConfiguration configuration, IServiceProvider serviceProvider,
         DistributedLockFactory distributedLockProvider,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor, TimeProvider timeProvider)
     : UserClaimsPrincipalFactory<User, Role>(userManager, roleManager, optionsAccessor)
 {
     /// <summary>
     /// These claims will be included in both the access and refresh tokens only if the successful sign-in happens during the current HTTP request lifecycle.
     /// </summary>
     public List<Claim> SessionClaims { get; set; } = [];
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// Setting tenant id during SignIn and RefreshToken would endup having user/role claims of the current tenant in the constructed access/refresh tokens.
+    /// <see cref="UserClaimsService.GetClaims(Guid, CancellationToken)"/>
+    /// </summary>
+    /// <param name="tenantId"></param>
+    public void SetTenantId(Guid tenantId)
+    {
+        httpContextAccessor.HttpContext!.Items[AppClaimTypes.TENANT_ID] = tenantId;
+        SessionClaims.Add(new Claim(AppClaimTypes.TENANT_ID, tenantId.ToString()));
+    }
+    //#endif
 
     protected override async Task<ClaimsIdentity> GenerateClaimsAsync(User user)
     {
@@ -73,14 +86,14 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
     {
         var keycloakTokenExpiryDate = DateTimeOffset.Parse(await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "expires_at") ?? throw new InvalidOperationException("expires_at token is missing"));
 
-        if (DateTimeOffset.UtcNow < keycloakTokenExpiryDate)
+        if (timeProvider.GetUtcNow() < keycloakTokenExpiryDate)
             return (await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "access_token"))!;
 
         await using var distributedLock = await distributedLockProvider($"Boilerplate-Locks-KeycloakTokenRefresh-{user.Id}").AcquireAsync(TimeSpan.FromSeconds(10));
 
         keycloakTokenExpiryDate = DateTimeOffset.Parse(await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "expires_at") ?? throw new InvalidOperationException("expires_at token is missing"));
 
-        if (DateTimeOffset.UtcNow < keycloakTokenExpiryDate) // Token was refreshed while waiting for the lock by another request
+        if (timeProvider.GetUtcNow() < keycloakTokenExpiryDate) // Token was refreshed while waiting for the lock by another request
             return (await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "access_token"))!;
 
         var httpClient = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("Keycloak");
@@ -103,7 +116,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
         var keycloakAccessToken = responseBody!.GetProperty("access_token").GetString()!;
         keycloakRefreshToken = responseBody!.GetProperty("refresh_token").GetString();
         var expiresIn = responseBody!.GetProperty("expires_in").GetInt32();
-        var newExpiryDate = DateTimeOffset.UtcNow.AddSeconds(expiresIn);
+        var newExpiryDate = timeProvider.GetUtcNow().AddSeconds(expiresIn);
         await UserManager.SetAuthenticationTokenAsync(user, "Keycloak", "access_token", keycloakAccessToken!);
         await UserManager.SetAuthenticationTokenAsync(user, "Keycloak", "refresh_token", keycloakRefreshToken!);
         await UserManager.SetAuthenticationTokenAsync(user, "Keycloak", "expires_at", newExpiryDate.ToString("O"));

@@ -1,0 +1,19 @@
+﻿@* Exercises Brouter.Found: attribute-discovered @page routes and hand-declared Component routes
+   render through the template - which delegates the actual page rendering to the built-in
+   RouteView, exactly like the built-in Router's <Found Context="routeData"> block - while
+   Content-based routes and the NotFound fallback are unaffected. *@
+<Brouter AppAssembly="@typeof(FoundHost).Assembly">
+    <ChildContent>
+        <Broute Path="/hand" Component="@typeof(HandComponentPage)" />
+        <Broute Path="/content-route">
+            <Content><div data-testid="content-route">content</div></Content>
+        </Broute>
+    </ChildContent>
+    <Found Context="routeData">
+        <div data-testid="found-page-type">@routeData.PageType.Name</div>
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound Context="location">
+        <div data-testid="not-found">nf:@location.Path</div>
+    </NotFound>
+</Brouter>

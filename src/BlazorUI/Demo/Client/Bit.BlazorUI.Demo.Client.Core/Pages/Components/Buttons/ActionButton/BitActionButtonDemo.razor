@@ -3,10 +3,10 @@
 
 <PageOutlet Url="components/actionbutton"
             Title="ActionButton"
-            Description="A lightweight and special type of button/link with icon-first styling, sized presets, and colorized text/icon support." />
+            Description="ActionButton is a lightweight, icon-first text button with a transparent background and colorized content that renders as a native button or a link, featuring built-in loading states, auto-loading with double-click protection, and accessible disabled and loading semantics." />
 
 <DemoPage Name="ActionButton"
-          Description="A lightweight and special type of button/link with icon-first styling, sized presets, and colorized text/icon support."
+          Description="ActionButton is a lightweight, icon-first flavor of button with a transparent background and colorized text and icon, ideal for inline actions like New, Edit, or Share. It renders as a native button or, when given an Href, as a link with hardened navigation attributes. It also ships with full loading support (AutoLoading with double-click protection, loading label, and delayed spinner) and accessible disabled and loading semantics out of the box."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -14,8 +14,12 @@
           GitHubDemoUrl="Buttons/ActionButton/BitActionButtonDemo.razor">
 
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>Explore the core features of the BitActionButton to get a feel for its baseline behavior.</div>
-        
+        <div>
+            By default, BitActionButton renders a native <b>button</b> element with its icon at the start and the content next to it.
+            Setting <b>IsEnabled</b> to false dims the button and suppresses its click, the <b>AriaLabel</b> parameter overrides the name announced by screen readers,
+            and the icon is entirely optional. When you use <b>IconOnly</b>, always provide an <b>AriaLabel</b> (or a <b>Title</b>) since the button has no visible text to name it.
+        </div>
+
         <br />
 
         <BitActionButton IconName="@BitIconName.AddFriend">
@@ -43,11 +47,14 @@
         <br /><br />
         
         <div>Icon only:</div>
-        <BitActionButton IconOnly IconName="@BitIconName.Phone" />
+        <BitActionButton IconOnly IconName="@BitIconName.Phone" AriaLabel="Call" />
     </DemoExample>
 
     <DemoExample Title="IconPosition" RazorCode="@example2RazorCode" Id="example2">
-        <div>Pick where the icon sits relative to the content: leave it at the start (default) or move it to the end without changing your content order.</div>
+        <div>
+            Move the icon to the other side of the content without touching your markup order. An end-positioned icon reads naturally for
+            forward actions like Next or Open, while the default start position suits most command-style actions. The layout also flips automatically in RTL.
+        </div>
 
         <div>Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink> enum as its value:</div>
         
@@ -65,7 +72,12 @@
     </DemoExample>
 
     <DemoExample Title="Href" RazorCode="@example3RazorCode" Id="example3">
-        <div>Turn BitActionButton into a link using the <b>Href</b> parameter, and choose whether it opens in the current tab or a new one.</div>
+        <div>
+            Providing an <b>Href</b> renders a real <b>anchor</b> element instead of a button, so browser link behaviors like open-in-new-tab,
+            the context menu, and correct screen reader announcement all keep working. Use <b>Target</b> to pick where it opens; when it is
+            <code>_blank</code>, a <code>rel="noopener"</code> is added automatically for security. Use <b>Download</b> to save the resource instead of navigating to it.
+            A disabled or loading link drops its href entirely rather than rendering an invalid disabled attribute.
+        </div>
         
         <br />
         
@@ -80,8 +92,36 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Rel" RazorCode="@example4RazorCode" Id="example4">
-        <div>Attach rel attribute values (e.g., nofollow, noreferrer) when using BitActionButton as an external link.</div>
+    <DemoExample Title="Download" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            When the action button points to a file, the <b>Download</b> parameter tells the browser to save it instead of navigating to it.
+            Pass an empty string to keep the server-provided file name, or a value to suggest your own. Browsers honor this only for same-origin,
+            <code>blob:</code>, and <code>data:</code> URLs, so a cross-origin link will simply navigate as usual.
+        </div>
+
+        <br />
+
+        <div class="example-content">
+            <BitActionButton IconName="@BitIconName.Download"
+                             Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"
+                             Download="">
+                Download the logo
+            </BitActionButton>
+
+            <BitActionButton IconName="@BitIconName.Download"
+                             Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"
+                             Download="bit-platform-logo.svg">
+                Download with a custom file name
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Rel" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            Declare the relationship between your page and an external destination. The <b>Rel</b> parameter is a flags enum, so values like
+            nofollow and noreferrer can be combined with the <code>|</code> operator. The rel attribute is only emitted for real navigations, meaning
+            it is skipped for empty or hash-only hrefs, and <code>noopener</code> is appended automatically for <code>_blank</code> targets unless you already opted into a stricter value.
+        </div>
 
         <div>The actual <b>rel</b> attribute value is generated using the provided <BitLink Href="#link-rels">BitLinkRels</BitLink> and Href value.</div>
         
@@ -98,8 +138,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Rich content" RazorCode="@example5RazorCode" Id="example5">
-        <div>You can put richer content inside BitActionButton with a custom template (like text plus spinner in this example).</div>
+    <DemoExample Title="Rich content" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            The body of BitActionButton is a render fragment, so it accepts any markup or component instead of plain text.
+            You can pass it as the child content directly or through the equivalent <b>Body</b> parameter, which is handy when
+            you also need to declare a <b>LoadingTemplate</b> on the same button.
+        </div>
         
         <br />
         
@@ -113,8 +157,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="ButtonType" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>See submit/reset/button types in action inside a validated form.</div>
+    <DemoExample Title="ButtonType" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            Inside an <b>EditForm</b>, BitActionButton defaults to a submit button so it participates in validation out of the box;
+            outside a form it defaults to a plain button that never submits anything by accident. Use the <b>ButtonType</b> parameter to
+            override that default and render an explicit submit, reset, or button element.
+        </div>
         
         <br />
         
@@ -157,8 +205,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="FullWidth" RazorCode="@example7RazorCode" Id="example7">
-        <div>Stretch buttons or align content by combining FullWidth and an end-positioned icon.</div>
+    <DemoExample Title="FullWidth" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            The <b>FullWidth</b> parameter stretches the button across all available width and aligns its content to the start,
+            which suits stacked menus, list rows, and mobile layouts. Pairing it with an end-positioned icon produces the familiar
+            navigation row where the label sits on one side and a chevron on the other.
+        </div>
         
         <br />
 
@@ -173,8 +225,12 @@
         </BitActionButton>
     </DemoExample>
 
-    <DemoExample Title="Loading" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Show a loading spinner while an operation is in progress, indicating to users that the action is being processed.</div>
+    <DemoExample Title="Loading" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            Setting <b>IsLoading</b> replaces the icon with a spinner, marks the button as busy for assistive technologies, and ignores
+            further clicks so a slow operation cannot be triggered twice. The parameter is two-way bindable, so you can drive it manually
+            with <code>@@bind-IsLoading</code> as shown below.
+        </div>
         
         <br />
         
@@ -195,10 +251,60 @@
                 Send message
             </BitActionButton>
         </div>
+
+        <br /><br />
+
+        <div>
+            You rarely need to manage that flag yourself. The <b>AutoLoading</b> parameter enters and leaves the loading state automatically
+            around an async <b>OnClick</b> handler, including when the handler throws, and blocks double submissions while it runs
+            (set <b>Reclickable</b> if you deliberately want repeat clicks). The <b>LoadingLabel</b> swaps the body for a progress message such as
+            "Saving..." and announces it to screen readers, and the <b>LoadingDelay</b> holds the spinner back for the given milliseconds so quick
+            operations complete without a distracting flash, while still guarding against double clicks from the very first moment.
+        </div>
+
+        <br />
+
+        <div class="example-content">
+            <BitActionButton AutoLoading OnClick="HandleAutoLoadingClick" IconName="@BitIconName.Save">
+                AutoLoading
+            </BitActionButton>
+
+            <BitActionButton AutoLoading OnClick="HandleAutoLoadingClick" LoadingLabel="Saving..." IconName="@BitIconName.Save">
+                AutoLoading with LoadingLabel
+            </BitActionButton>
+
+            <BitActionButton AutoLoading OnClick="HandleAutoLoadingClick" LoadingDelay="500" IconName="@BitIconName.Save">
+                AutoLoading with LoadingDelay
+            </BitActionButton>
+        </div>
+
+        <br /><br />
+
+        <div>
+            Clicks are ignored while a button is loading, which is what protects a submit or a payment from firing twice.
+            Set <b>Reclickable</b> when repeat clicks are genuinely meaningful, for example a counter or a retry that should
+            stack up while a previous run is still in flight. Compare the two counters below by clicking each of them rapidly.
+        </div>
+
+        <br />
+
+        <div class="example-content">
+            <BitActionButton AutoLoading OnClick="HandleGuardedClick" IconName="@BitIconName.Shield">
+                Guarded (@guardedClickCount)
+            </BitActionButton>
+
+            <BitActionButton AutoLoading Reclickable OnClick="HandleReclickableClick" IconName="@BitIconName.RepeatAll">
+                Reclickable (@reclickableClickCount)
+            </BitActionButton>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="LoadingTemplate" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>Use the <b>LoadingTemplate</b> parameter to design a custom loading experience inside the BitActionButton.</div>
+    <DemoExample Title="LoadingTemplate" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            When the default spinner does not fit your design, the <b>LoadingTemplate</b> parameter takes over the whole loading visual,
+            letting you render any loader component and wording you like. Declare the normal content through the <b>Body</b> parameter
+            so both templates can live on the same button, as shown below.
+        </div>
         
         <br />
 
@@ -218,8 +324,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Underlined" RazorCode="@example10RazorCode" Id="example10">
-        <div>Add an underline to the action button text for a link-style appearance using the <b>Underlined</b> parameter.</div>
+    <DemoExample Title="Underlined" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            The <b>Underlined</b> parameter draws a hyperlink-style underline beneath the content that thickens on hover.
+            It is the right choice when the button sits inside running text, where color alone is not a sufficient cue that
+            the element is interactive, and it pairs naturally with the link rendering mode.
+        </div>
         
         <br />
         
@@ -238,8 +348,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
-        <div>Preview the predefined colors of the BitActionButton for icon and text, from primary through warning/error, and the background/foreground/border sets.</div>
+    <DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            The <b>Color</b> parameter tints both the icon and the text, along with their hover and active shades, straight from the current theme.
+            Beyond the semantic set (primary through error), the background, foreground, and border colors are available for buttons that must
+            blend into a surface, such as the ones placed on the dark panel below.
+        </div>
         
         <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
 
@@ -452,8 +566,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
-        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            Besides the built-in Fluent icon set exposed through <b>IconName</b>, the <b>Icon</b> parameter renders icons from any CSS-class based library
+            such as FontAwesome or Bootstrap Icons. Pass the raw classes directly, or use the <b>BitIconInfo</b> helpers
+            (<code>Css</code>, <code>Fa</code>, and <code>Bi</code>) for a shorter syntax. When both parameters are set, <b>Icon</b> wins.
+            Remember to reference the icon library's stylesheet in your app.
+        </div>
 
         <br />
         <br />
@@ -513,8 +632,11 @@
         </BitActionButton>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
-        <div>Compare the Small, Medium, and Large presets to gauge typography and padding differences.</div>
+    <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            Each preset scales the font size, the icon, the spinner, and the padding together, so the button stays visually balanced at any size.
+            Medium is the default; Small suits dense toolbars and table rows, while Large works for prominent standalone actions.
+        </div>
 
         <div>Using the <b>Size</b> parameter and its value of type <BitLink Href="#size-enum">BitSize</BitLink> enum:</div>
         
@@ -535,8 +657,87 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
-        <div>Override look-and-feel with inline styles or custom CSS classes applied to the root, icon, and content.</div>
+    <DemoExample Title="Events" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            The <b>OnClick</b> callback fires on activation by mouse, touch, or keyboard, and it is never invoked while the button is
+            disabled or loading. When the button lives inside another clickable surface such as a table row or a card, set
+            <b>StopPropagation</b> so activating it does not also trigger the container's handler.
+        </div>
+
+        <br />
+
+        <div class="example-content">
+            <BitActionButton OnClick="() => clickCounter++" IconName="@BitIconName.TouchPointer">
+                Click me (@clickCounter)
+            </BitActionButton>
+        </div>
+
+        <br />
+
+        <div>Clicking anywhere on the row below counts as a row click, except on the second button which stops the event from bubbling up:</div>
+
+        <br />
+
+        <div class="clickable-row" @onclick="() => rowClickCount++">
+            <span>Row clicks: @rowClickCount &nbsp;|&nbsp; Button clicks: @innerClickCount</span>
+
+            <div class="example-content">
+                <BitActionButton OnClick="() => innerClickCount++" IconName="@BitIconName.Edit">
+                    Bubbles up
+                </BitActionButton>
+
+                <BitActionButton StopPropagation OnClick="() => innerClickCount++" IconName="@BitIconName.Edit">
+                    StopPropagation
+                </BitActionButton>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Title" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            The <b>Title</b> parameter renders a native tooltip that appears on hover. It is a useful supplement for icon-only buttons,
+            but it is not a replacement for an accessible name, since tooltips are not reachable by keyboard or reliably announced by
+            screen readers. Provide an <b>AriaLabel</b> as well, keeping both texts consistent.
+        </div>
+
+        <br />
+
+        <div class="example-content">
+            <BitActionButton Title="Save your changes" IconName="@BitIconName.Save">
+                Hover me
+            </BitActionButton>
+
+            <BitActionButton IconOnly Title="Delete" AriaLabel="Delete" Color="BitColor.Error" IconName="@BitIconName.Delete" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="AllowDisabledFocus" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            A disabled button is normally removed from the tab order, which means keyboard and screen reader users can miss that the action
+            exists at all. Setting <b>AllowDisabledFocus</b> conveys the disabled state through <code>aria-disabled</code> instead of the native
+            disabled attribute, so the button stays focusable and discoverable while its click remains suppressed. Tab through the two buttons
+            below to feel the difference.
+        </div>
+
+        <br />
+
+        <div class="example-content">
+            <BitActionButton IsEnabled="false" IconName="@BitIconName.Blocked">
+                Disabled (skipped by Tab)
+            </BitActionButton>
+
+            <BitActionButton IsEnabled="false" AllowDisabledFocus IconName="@BitIconName.Blocked">
+                Disabled (still focusable)
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            Every visual part of the button is addressable: the root element, the icon, the content container, the loading label, and the spinner.
+            Use <b>Styles</b> for one-off inline tweaks and <b>Classes</b> when you want your own CSS to own the styling, including states such as
+            hover and focus that inline styles cannot express.
+        </div>
 
         <div>Using the <b>Styles</b> and <b>Classes</b> parameters and their value of <BitLink Href="#class-styles">BitActionButtonClassStyles</BitLink> class:</div>
         
@@ -559,8 +760,11 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
-        <div>View BitActionButton inside a right-to-left layout, respecting RTL direction and icon/text ordering.</div>
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            Setting <b>Dir</b> to Rtl mirrors the button for right-to-left languages, so the icon and the content swap sides and the padding follows suit.
+            You can set it per button as shown here, or let it flow from an ancestor through the cascading direction value.
+        </div>
         
         <br />
         

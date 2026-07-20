@@ -1,0 +1,676 @@
+﻿/* ---------- Bit.Brouter Demo - Global Styles ----------
+
+   The color tokens mirror the bit platform websites (bitplatform.dev / blazorui.bitplatform.dev),
+   which are built on the Bit.BlazorUI Fluent theme (see BlazorUI/Bit.BlazorUI/Styles/Fluent).
+   Theme selection uses the same `bit-theme` attribute convention as those sites: theme.js sets
+   bit-theme="light|dark" on <html> before first paint (system preference by default). */
+
+:root,
+:root[bit-theme="light"] {
+    color-scheme: light;
+    --bb-bg: #F5F5F5;
+    --bb-surface: #FFFFFF;
+    --bb-surface-2: #EDECEB;
+    --bb-border: #DEDDDC;
+    --bb-text: #1A1A1A;
+    --bb-text-muted: #5A5A5A;
+    --bb-text-soft: #999999;
+    --bb-primary: #1A86D8;
+    --bb-primary-hover: #096FBD;
+    --bb-primary-soft: #E5F0FF;
+    --bb-primary-text: #FFFFFF;
+    --bb-accent: #FF7D33;
+    --bb-success: #49A94C;
+    --bb-success-soft: #DEF0DF;
+    --bb-success-text: #2C792F;
+    --bb-warning: #F2B01F;
+    --bb-warning-soft: #FCEBC5;
+    --bb-warning-text: #8F6408;
+    --bb-danger: #DF3A2E;
+    --bb-danger-soft: #FADEDC;
+    --bb-danger-text: #AC2218;
+    --bb-code-bg: #F6F8FA;
+    --bb-code-fg: #1F2328;
+    --bb-code-comment: #59636E;
+    --bb-code-keyword: #0969DA;
+    --bb-code-string: #953800;
+    --bb-code-param: #1A7F37;
+    /* Matches the Bit.BlazorUI Fluent shape token (--bit-shp-brd-radius: 0.125rem). */
+    --bb-radius: 4px;
+    --bb-radius-sm: 2px;
+    --bb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .06);
+    --bb-shadow: 0 6px 20px rgba(0, 0, 0, .06);
+    --bb-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+:root[bit-theme="dark"] {
+    color-scheme: dark;
+    --bb-bg: #010409;
+    --bb-surface: #101419;
+    --bb-surface-2: #181F26;
+    --bb-border: #232933;
+    --bb-text: #F6F7F8;
+    --bb-text-muted: #ADB5BF;
+    --bb-text-soft: #616973;
+    --bb-primary: #569FFF;
+    --bb-primary-hover: #89BCFF;
+    --bb-primary-soft: rgba(86, 159, 255, .13);
+    --bb-primary-text: #212121;
+    --bb-accent: #FF9E67;
+    --bb-success: #7FB58A;
+    --bb-success-soft: rgba(127, 181, 138, .16);
+    --bb-success-text: #A5CBAD;
+    --bb-warning: #FFD07A;
+    --bb-warning-soft: rgba(255, 208, 122, .14);
+    --bb-warning-text: #FFDEA2;
+    --bb-danger: #DC7C7C;
+    --bb-danger-soft: rgba(220, 124, 124, .15);
+    --bb-danger-text: #E7A3A3;
+    --bb-code-bg: #0D1117;
+    --bb-code-fg: #E6EDF3;
+    --bb-code-comment: #64748B;
+    --bb-code-keyword: #7DD3FC;
+    --bb-code-string: #FBBF24;
+    --bb-code-param: #86EFAC;
+    --bb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+    --bb-shadow: 0 6px 20px rgba(0, 0, 0, .5);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    /* Keep the viewport width constant whether or not the page scrolls (classic scrollbars eat
+       layout width on Windows). Without this, navigating between a tall page (home, lifecycle)
+       and a short one resizes every element ~17px, so even chrome pinned out of the view
+       transition via view-transition-name gets a visible 320ms resize animation on its group. */
+    scrollbar-gutter: stable;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bb-bg);
+    color: var(--bb-text);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: var(--bb-primary);
+    text-decoration: none;
+    transition: color .15s ease;
+}
+
+a:hover {
+    color: var(--bb-primary-hover);
+    text-decoration: underline;
+}
+
+h1, h2, h3, h4 {
+    color: var(--bb-text);
+    line-height: 1.25;
+    margin: 0 0 .5rem;
+    letter-spacing: -.01em;
+}
+
+h1 { font-size: 1.875rem; font-weight: 700; }
+h2 { font-size: 1.375rem; font-weight: 600; }
+h3 { font-size: 1.125rem; font-weight: 600; }
+
+p { margin: 0 0 .75rem; }
+
+code {
+    font-family: var(--bb-mono);
+    font-size: .875em;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    padding: .125rem .375rem;
+    border-radius: var(--bb-radius-sm);
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--bb-border);
+    margin: 1.25rem 0;
+}
+
+/* ---------- Layout ---------- */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    padding: 1.5rem;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    flex: 1;
+}
+
+article {
+    width: 100%;
+}
+
+/* ---------- Page intro ---------- */
+
+.bb-intro {
+    margin-bottom: 1.5rem;
+}
+
+.bb-intro h1 {
+    margin-bottom: .35rem;
+}
+
+.bb-intro .bb-subtitle {
+    color: var(--bb-text-muted);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ---------- Cards ---------- */
+
+.bb-card {
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: var(--bb-shadow-sm);
+    margin-bottom: 1rem;
+}
+
+.bb-card-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bb-text);
+    margin: 0 0 .25rem;
+}
+
+.bb-card-desc {
+    color: var(--bb-text-muted);
+    font-size: .875rem;
+    margin: 0 0 .85rem;
+}
+
+.bb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.bb-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ---------- Demo link list ---------- */
+
+.bb-link-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+}
+
+.bb-link-list li {
+    display: flex;
+    align-items: center;
+}
+
+.bb-link-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .4rem .7rem;
+    border-radius: var(--bb-radius-sm);
+    border: 1px solid transparent;
+    font-size: .9rem;
+    color: var(--bb-primary);
+    transition: background .15s ease, border-color .15s ease;
+    text-decoration: none;
+    width: 100%;
+}
+
+.bb-link-list a:hover {
+    background: var(--bb-primary-soft);
+    border-color: var(--bb-border);
+    text-decoration: none;
+}
+
+.bb-link-list a.active {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    font-weight: 600;
+}
+
+/* Prose-style list: items mix text with inline links/code. */
+.bb-detail-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    color: var(--bb-text-muted);
+    font-size: .9rem;
+    line-height: 1.7;
+}
+
+.bb-detail-list a {
+    color: var(--bb-primary);
+}
+
+/* ---------- Badges ---------- */
+
+.bb-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: .7rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: .25rem .5rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+}
+
+.bb-badge.bb-badge-warn {
+    background: var(--bb-warning-soft);
+    color: var(--bb-warning-text);
+}
+
+.bb-badge.bb-badge-danger {
+    background: var(--bb-danger-soft);
+    color: var(--bb-danger-text);
+}
+
+.bb-badge.bb-badge-success {
+    background: var(--bb-success-soft);
+    color: var(--bb-success-text);
+}
+
+/* ---------- Buttons ---------- */
+
+button.btn,
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding: .5rem 1rem;
+    font-size: .9rem;
+    font-weight: 500;
+    border-radius: var(--bb-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, transform .05s ease;
+    font-family: inherit;
+}
+
+button.btn:active,
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-primary,
+button.btn-primary {
+    background: var(--bb-primary);
+    color: var(--bb-primary-text);
+    border-color: var(--bb-primary);
+}
+
+.btn-primary:hover,
+button.btn-primary:hover {
+    color: var(--bb-primary-text);
+    background: var(--bb-primary-hover);
+    border-color: var(--bb-primary-hover);
+}
+
+.btn-outline,
+button.btn-outline {
+    background: var(--bb-surface);
+    color: var(--bb-primary);
+    border-color: var(--bb-border);
+}
+
+.btn-outline:hover,
+button.btn-outline:hover {
+    background: var(--bb-primary-soft);
+    border-color: var(--bb-primary);
+}
+
+/* ---------- Tables ---------- */
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    overflow: hidden;
+    font-size: .9rem;
+}
+
+.table thead {
+    background: var(--bb-surface-2);
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: .65rem .85rem;
+    border-bottom: 1px solid var(--bb-border);
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--bb-text-muted);
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .05em;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table tbody tr:hover {
+    background: var(--bb-surface-2);
+}
+
+/* ---------- Counter (used by CounterPage) ---------- */
+
+.bb-counter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    margin-bottom: 1rem;
+    box-shadow: var(--bb-shadow-sm);
+}
+
+.bb-counter-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--bb-primary);
+    min-width: 3rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.bb-counter-label {
+    color: var(--bb-text-muted);
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ---------- Param list ---------- */
+
+.bb-params {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: .35rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: 1rem 1.25rem;
+    font-size: .9rem;
+    margin-bottom: 1rem;
+}
+
+.bb-params dt {
+    color: var(--bb-text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .05em;
+    align-self: center;
+}
+
+.bb-params dd {
+    margin: 0;
+    font-family: var(--bb-mono);
+    color: var(--bb-text);
+    word-break: break-all;
+}
+
+/* ---------- Empty state ---------- */
+
+.bb-empty {
+    background: var(--bb-surface);
+    border: 1px dashed var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--bb-text-muted);
+}
+
+/* ---------- Inline icon dots ---------- */
+
+.bb-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--bb-text-soft);
+    flex-shrink: 0;
+}
+
+.bb-dot-primary { background: var(--bb-primary); }
+.bb-dot-success { background: var(--bb-success); }
+.bb-dot-warning { background: var(--bb-warning); }
+.bb-dot-danger { background: var(--bb-danger); }
+
+/* ---------- Error pages ---------- */
+
+.bb-error {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+}
+
+.bb-error h1 {
+    font-size: 4rem;
+    margin: 0;
+    line-height: 1;
+}
+
+.bb-error.bb-error-404 h1 { color: var(--bb-text-soft); }
+.bb-error.bb-error-403 h1 { color: var(--bb-warning); }
+
+.bb-error p {
+    color: var(--bb-text-muted);
+    margin: .5rem 0 1.25rem;
+}
+
+/* ---------- View Transitions (o.ViewTransitions = true) ----------
+
+   No custom ::view-transition rules here on purpose: the animations you see (direction-aware
+   glide on push, mirrored on Back/Forward, quick fade on replace, springy shared-element morphs)
+   are Bit.Brouter's BUILT-IN defaults (o.ViewTransitionDefaultAnimations, on by default).
+   They live in the CSS layer "bit-brouter", so any unlayered ::view-transition-* rule added in
+   this file would override them automatically - e.g.:
+
+       ::view-transition-new(root) { animation: 400ms ease both my-fancy-entrance; }
+*/
+
+/* ---------- View Transitions gallery (GalleryPage / GalleryItemPage) ---------- */
+
+.bb-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.bb-gallery-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--bb-radius);
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.bb-gallery-tile:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .25);
+}
+
+.bb-gallery-emoji { font-size: 2.2rem; }
+.bb-gallery-name { font-weight: 600; }
+
+.bb-gallery-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 260px;
+    border-radius: var(--bb-radius);
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .35);
+}
+
+.bb-gallery-hero-emoji { font-size: 4.5rem; }
+.bb-gallery-hero-name { margin: 0; font-size: 2.2rem; }
+
+.bb-gallery-nav {
+    display: flex;
+    gap: .5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ---------- Code samples & feature tables (TemplatesPage / ConstraintsPage) ---------- */
+
+.bb-code {
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: 1rem 1.25rem;
+    font-family: var(--bb-mono);
+    font-size: .82rem;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+    white-space: pre;
+}
+
+.bb-code .c { color: var(--bb-code-comment); }   /* comment */
+.bb-code .k { color: var(--bb-code-keyword); }   /* keyword-ish / tag */
+.bb-code .s { color: var(--bb-code-string); }    /* string / template */
+.bb-code .p { color: var(--bb-code-param); }     /* parameter */
+
+.bb-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    overflow: hidden;
+    font-size: .88rem;
+    margin-bottom: 1rem;
+}
+
+.bb-table th {
+    text-align: left;
+    padding: .55rem .9rem;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.bb-table td {
+    padding: .5rem .9rem;
+    border-top: 1px solid var(--bb-border);
+    vertical-align: top;
+}
+
+.bb-table td:first-child {
+    font-family: var(--bb-mono);
+    white-space: nowrap;
+}
+
+.bb-note {
+    border-left: 3px solid var(--bb-accent);
+    background: var(--bb-primary-soft);
+    border-radius: 0 var(--bb-radius-sm) var(--bb-radius-sm) 0;
+    padding: .75rem 1rem;
+    font-size: .9rem;
+    margin: 0 0 1rem;
+}
+
+.bb-note-warn { border-left-color: var(--bb-warning); }
+
+.bb-try {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .25rem 0 1rem;
+}
+
+/* ---------- Theme toggle ----------
+
+   Lives here (not in Header.razor.css) because the icon swap keys off the bit-theme attribute
+   on <html>, which scoped-CSS selectors can't reach. */
+
+.bb-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: var(--bb-radius-sm);
+    border: 1px solid var(--bb-border);
+    background: var(--bb-surface);
+    color: var(--bb-text-muted);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.bb-theme-toggle:hover {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    border-color: var(--bb-primary);
+}
+
+.bb-theme-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+.bb-theme-toggle .bb-icon-moon { display: none; }
+
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-sun { display: none; }
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-moon { display: block; }

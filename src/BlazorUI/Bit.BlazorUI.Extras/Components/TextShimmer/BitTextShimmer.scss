@@ -1,0 +1,45 @@
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+.bit-tsh {
+    --bit-tsh-spread: 20px;
+    --bit-tsh-duration: 2000ms;
+    --bit-tsh-base-clr: #{$clr-fg-ter};
+    --bit-tsh-gradient-clr: #{$clr-fg-pri};
+
+    margin: 0;
+    color: transparent;
+    display: inline-block;
+    background-size: 200% 100%;
+    background-position: 100% 50%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(90deg,
+            var(--bit-tsh-base-clr) 0%,
+            var(--bit-tsh-base-clr) calc(50% - var(--bit-tsh-spread)),
+            var(--bit-tsh-gradient-clr) 50%,
+            var(--bit-tsh-base-clr) calc(50% + var(--bit-tsh-spread)),
+            var(--bit-tsh-base-clr) 100%);
+    animation: bit-tsh-anim var(--bit-tsh-duration) linear infinite;
+
+    @keyframes bit-tsh-anim {
+        from {
+            background-position: 100% 50%;
+        }
+
+        to {
+            background-position: -100% 50%;
+        }
+    }
+}
+
+.bit-tsh.bit-rtl {
+    animation-direction: reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bit-tsh:not(.bit-tsh-fam) {
+        animation: none;
+        background-image: linear-gradient(var(--bit-tsh-base-clr), var(--bit-tsh-base-clr));
+    }
+}

@@ -774,6 +774,15 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>هنگامی که کد QR را اسکن کردید یا کلید بالا را وارد کردید، برنامه احراز هویت دو عاملی شما یک کد منحصر به فرد را در اختیار شما قرار می دهد. کد را در کادر تایید زیر وارد کنید.</value>
   </data>
+    <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>به‌دلیل مسائل امنیتی، طی چند دقیقه‌ی آینده از همه‌ی دستگاه‌های شما، از جمله همین دستگاه، خارج خواهید شد. لطفاً دوباره وارد شوید.</value>
+  </data>
+    <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>تغییر گذرواژه</value>
+  </data>
+    <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>گذرواژه‌ی شما با موفقیت تغییر کرد.</value>
+  </data>
     <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>احراز هویت دو مرحله‌ای فعال شد.</value>
   </data>
@@ -982,18 +991,18 @@
     <value>متن جایگزین</value>
   </data>
     <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>برگه</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>از</value>
+  </data>
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
   </data>
     <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} آیتم</value>
-  </data>
-    <data name="Page" xml:space="preserve">
-    <value>برگه</value>
-  </data>
-    <data name="Of" xml:space="preserve">
-    <value>از</value>
   </data>
     <data name="Last30DaysProductCount" xml:space="preserve">
     <value>تعداد محصولات ۳۰ روز گذشته</value>
@@ -1364,4 +1373,102 @@
     <data name="ImageNotCarError" xml:space="preserve">
     <value>تصویر ارائه شده حاوی ماشین نیست.</value>
   </data>
+    <!--#if (multitenant == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>مستأجر</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>مدیریت همه مستأجرها</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>مدیریت همه مستأجرها</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>مدیریت مستأجرهای من</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>مدیریت مستأجرهای من</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>ایجاد مستأجر جدید</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>افزودن مستأجر</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>ویرایش مستأجر</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>ترک مستأجر</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>آیا مطمئن هستید که می خواهید مستأجر {0} را ترک کنید؟</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>شما با موفقیت مستأجر را ترک کردید.</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>تغییر مستأجر</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>دعوت کاربر به {0}</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>دعوت</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>کاربر با موفقیت دعوت شد.</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>این کاربر در حال حاضر عضو مستأجر است.</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>نام مستأجر '{0}' تکراری است.</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>مستأجر مورد نظر پیدا نشد.</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} باید یک نام ساب دامین معتبر شامل حروف کوچک، اعداد و خط تیره باشد (مثلا my-tenant).</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>نام مستأجر را وارد کنید</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>عنوان مستأجر را وارد کنید</value>
+  </data>
+    <data name="Domain" xml:space="preserve">
+    <value>دامنه</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>دامنه اختصاصی مستأجر را وارد کنید (مثلا myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} باید یک نام دامنه معتبر بدون طرح (scheme) یا مسیر باشد (مثلا myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>دامنه '{0}' تکراری است.</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>شما هنوز مستأجری را انتخاب نکرده‌اید. به یکی از مستأجران خود تغییر دهید یا مستأجر جدیدی ایجاد کنید تا شروع کنید.</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} شما را برای پیوستن به {1} دعوت کرده است. {2} را باز کنید و وارد شوید تا در آن مستأجر باشید.</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>تغییر</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>پذیرفتن</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>دعوت‌نامه در انتظار</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>مستأجر فعلی</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>غیرفعال</value>
+  </data>
+    <!--#endif-->
 </root>

@@ -1,4 +1,4 @@
-﻿namespace System.Diagnostics.Metrics;
+namespace System.Diagnostics.Metrics;
 
 public static class MeterExtensions
 {

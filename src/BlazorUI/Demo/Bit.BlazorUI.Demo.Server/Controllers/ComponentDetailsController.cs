@@ -1,58 +1,48 @@
 ﻿using System.Xml.Linq;
 using System.Reflection;
-using System.Collections;
-using System.ComponentModel;
-using ModelContextProtocol.Server;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
 [ApiController]
-[McpServerToolType]
 [Route("api/[controller]/[action]")]
 public partial class ComponentDetailsController : AppControllerBase
 {
-    [AutoInject] private HtmlRenderer htmlRenderer = default!;
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
-
     private static XDocument? SummariesXmlDocument = null;
-
-    private static readonly Assembly[] ComponentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly];
-
-    private static readonly Type[] ComponentTypes = [.. ComponentsAssemblies.SelectMany(asm => asm.GetExportedTypes()
-                                                        .Where(type => typeof(BitComponentBase).IsAssignableFrom(type) && !type.IsAbstract))];
+    private static readonly Assembly ComponentsAssembly = typeof(BitButton).Assembly;
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBitBlazorUIComponentParameters))]
-    [Description("Gets the parameters of a specified component.")]
-    public async Task<ComponentParameterDetailsDto[]> GetBitBlazorUIComponentParameters(string componentName)
+    public async Task<ActionResult<List<ComponentParameterDetailsDto>>> GetProperties(string name)
     {
-        if (string.IsNullOrWhiteSpace(componentName))
-            return [];
-
         SummariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
 
-        var componentType = ComponentTypes.FirstOrDefault(type =>
-        {
-            var typeName = type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name;
+        if (string.IsNullOrWhiteSpace(name))
+            return BadRequest("Component Name is empty.");
 
-            return typeName.Equals(componentName, StringComparison.OrdinalIgnoreCase);
-        });
+        var componentType = ComponentsAssembly.ExportedTypes
+                                              .FirstOrDefault(type =>
+                                              {
+                                                  if (type.IsGenericType)
+                                                  {
+                                                      var typeName = type.Name[..type.Name.IndexOf("`")];
+                                                      return typeName.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+                                                  }
+
+                                                  return type.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+                                              });
 
         if (componentType is null)
-            return [];
+            return NotFound("No component type found.");
 
-        var concreteComponentType = componentType.IsGenericType ? componentType.MakeGenericType([.. Enumerable.Repeat(typeof(object), componentType.GetGenericArguments().Length)]) : componentType;
+        var concreteComponentType = componentType.IsGenericType ? componentType.MakeGenericType(typeof(string)) : componentType;
 
-        var componentInstance = Activator.CreateInstance(concreteComponentType)
-            ?? throw new InvalidOperationException($"Could not create an instance of {concreteComponentType.FullName}.");
+        var componentInstance = Activator.CreateInstance(concreteComponentType);
 
         var componentNamePrefix = $"{componentType.FullName}.";
 
         var baseComponentType = typeof(BitComponentBase);
         var baseComponentNamePrefix = $"{baseComponentType.FullName}.";
 
-        return [.. componentType.GetProperties()
+        return Ok(componentType.GetProperties()
                               .Where(p => Attribute.IsDefined(p, typeof(Microsoft.AspNetCore.Components.ParameterAttribute)))
                               .Select(prop =>
                               {
@@ -61,71 +51,24 @@ public partial class ComponentDetailsController : AppControllerBase
                                                             .FirstOrDefault(a => a.Value.Contains(componentNamePrefix + prop.Name) || a.Value.Contains(baseComponentNamePrefix + prop.Name));
 
                                   var typeName = GetTypeName(prop.PropertyType);
-
-                                  return new ComponentParameterDetailsDto
+                                  return new
                                   {
-                                      Name = prop.Name,
+                                      prop.Name,
                                       Type = typeName,
                                       DefaultValue = GetDefaultValue(prop, componentInstance!, typeName, concreteComponentType),
-                                      Description = xmlProperty?.Parent?.Element("summary")?.Value?.Trim(),
+                                      Description = xmlProperty?.Parent?.Element("summary")?.Value.Trim(),
                                   };
-                              })];
-    }
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBitBlazorUIComponentExamples))]
-    [Description("Gets the examples of a specified component.")]
-    public async Task<string> GetBitBlazorUIComponentExamples(string componentName)
-    {
-        if (string.IsNullOrWhiteSpace(componentName))
-            return "Component name is required.";
-
-        var demoPageType = typeof(Client.Core.Routes).Assembly
-            .GetExportedTypes()
-            .SingleOrDefault(t => string.Equals(t.Name, $"{componentName}Demo", StringComparison.OrdinalIgnoreCase));
-
-        if (demoPageType is null)
-            return "No demo page found for the specified component.";
-
-        httpContextAccessor.HttpContext!.Items["RenderForMcpClient"] = true;
-
-        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var renderedComponent = await htmlRenderer.RenderComponentAsync(demoPageType);
-
-            return renderedComponent.ToHtmlString();
-        });
-
-        return body;
+                              }));
     }
 
     private static async Task<XDocument?> LoadSummariesXmlDocumentAsync()
     {
-        XDocument? mergedDoc = null;
+        string path = Path.Combine(AppContext.BaseDirectory, $"{ComponentsAssembly.GetName().Name}.xml");
 
-        foreach (var asm in ComponentsAssemblies)
-        {
-            string path = Path.Combine(AppContext.BaseDirectory, $"{asm.GetName().Name}.xml");
+        if (System.IO.File.Exists(path) is false) return null;
 
-            using var stream = System.IO.File.OpenRead(path);
-
-            var doc = await XDocument.LoadAsync(stream, LoadOptions.None, default);
-
-            if (mergedDoc is null)
-            {
-                mergedDoc = doc;
-            }
-            else
-            {
-                var membersElement = doc.Root?.Element("members");
-                foreach (var member in membersElement!.Elements("member"))
-                {
-                    mergedDoc.Root!.Element("members")?.Add(member);
-                }
-            }
-        }
-
-        return mergedDoc;
+        var stream = System.IO.File.OpenRead(path);
+        return await XDocument.LoadAsync(stream, LoadOptions.None, default);
     }
 
     private static string GetTypeName(Type type)
@@ -133,7 +76,7 @@ public partial class ComponentDetailsController : AppControllerBase
         if (type.IsGenericType)
         {
             var arguments = string.Join(", ", type.GetGenericArguments().Select(x => x.Name));
-            var mainType = type.Name[..type.Name.IndexOf('`', StringComparison.Ordinal)];
+            var mainType = type.Name[..type.Name.IndexOf('`')];
             return $"{mainType}<{GetTypeNameOrAlias(arguments)}>";
         }
 
@@ -169,14 +112,10 @@ public partial class ComponentDetailsController : AppControllerBase
             property = concreteComponentType.GetProperty(property!.Name);
         }
 
-        if (property!.PropertyType?.Name?.Contains("EventCallback", StringComparison.Ordinal) is true) return null;
+        var value = property!.GetValue(instance)?.ToString();
 
-        var value = property.GetValue(instance);
+        if (string.IsNullOrWhiteSpace(value) || property.PropertyType.IsGenericType is false) return value;
 
-        if (value is null) return null;
-        if (value is IList list && list.Count == 0) return "[]";
-        if (value is IDictionary dictionary && dictionary.Count == 0) return "[]";
-
-        return value.ToString();
+        return $"new {typeName}()";
     }
 }

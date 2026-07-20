@@ -384,7 +384,8 @@
             <DemoExample Title="Imperative API" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29">
                 <div>
                     Capture the component with <b>@@ref</b> to drive it from code: <b>FocusAsync</b> moves keyboard focus,
-                    <b>ExecuteCommandAsync</b> runs a raw editing command, and <b>GetHtmlAsync</b> reads the current HTML.
+                    <b>ExecuteCommandAsync</b> runs a raw editing command, <b>GetHtmlAsync</b> reads the current HTML,
+                    and <b>GetTextAsync</b> reads the current content as plain text.
                 </div>
                 <br />
                 <BitRichTextEditor @ref="apiEditor" @bind-Value="apiHtml"
@@ -394,6 +395,7 @@
                     <BitButton OnClick="FocusEditor">FocusAsync</BitButton>
                     <BitButton OnClick="@(() => apiEditor.ExecuteCommandAsync("bold"))">ExecuteCommand("bold")</BitButton>
                     <BitButton OnClick="GetEditorHtml">GetHtmlAsync</BitButton>
+                    <BitButton OnClick="GetEditorText">GetTextAsync</BitButton>
                 </div>
                 <br />
                 <div>result:</div>

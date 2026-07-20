@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Features.Chatbot;
 

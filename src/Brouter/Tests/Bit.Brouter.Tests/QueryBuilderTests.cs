@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,9 +8,9 @@ namespace Bit.Brouter.Tests;
 [TestClass]
 public class QueryBuilderTests : BunitTestContext
 {
-    private (IRenderedComponent<QueryHost> Cut, IBrouter Brouter, FakeNavigationManager Nav) RenderAt(string url)
+    private (IRenderedComponent<QueryHost> Cut, IBrouter Brouter, BunitNavigationManager Nav) RenderAt(string url)
     {
-        var nav = Services.GetRequiredService<FakeNavigationManager>();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo(url);
         var cut = RenderComponent<QueryHost>();
         return (cut, Services.GetRequiredService<IBrouter>(), nav);

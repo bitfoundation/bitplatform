@@ -1,2 +1,32 @@
 ::deep {
+    .code-box {
+        margin: 0;
+        width: 100%;
+        min-height: 3rem;
+        overflow: auto;
+        padding: 0.5rem 1rem;
+        white-space: pre-wrap;
+        border-radius: 0.25rem;
+        border: 1px solid #808080;
+    }
+
+    .commands-bar {
+        gap: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .custom-class {
+        box-shadow: aqua 0 0 1rem 0.5rem;
+    }
+
+    .custom-toolbar {
+        background: linear-gradient(90deg, #ff7e5f, #feb47b);
+    }
+
+    .custom-textarea {
+        font-family: 'Courier New', monospace;
+        color: mediumseagreen;
+    }
 }

@@ -30,7 +30,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" Id="example2">
+<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" Id="example2" PreventRenderForMcpClient>
     <BitNav TItem="BitNavOption" FitWidth>
         <BitNavOption Text="bit platform"
                       Description="the bit platform description"
@@ -97,7 +97,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>Basic</div><br />
     <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
         <BitNavOption Text="Fast foods" Description="List of fast foods"
@@ -161,7 +161,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
     <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" IconOnly="iconOnly">
@@ -178,7 +178,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="Custom Templates" RazorCode="@example6RazorCode" Id="example6">
+<DemoExample Title="Custom Templates" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
     <div>Header Template (Grouped)</div><br />
     <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
         <HeaderTemplate Context="item">
@@ -257,7 +257,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div class="example-box">
         <BitNav Mode="BitNavMode.Manual"
                 OnItemClick="(BitNavOption option) => ClickedOption = option"
@@ -295,7 +295,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" Id="example8">
+<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" Id="example8" PreventRenderForMcpClient>
     <BitNav TItem="BitNavOption" AllExpanded NoCollapse>
         <BitNavOption Text="bit platform"
                       Description="the bit platform description"
@@ -327,7 +327,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9">
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
     <div>Use icons from external libraries like FontAwesome with the <BitLink Href="#bit-icon-info">Icon</BitLink> parameter (<BitLink Href="#nav-option">BitNavOption</BitLink>.<BitLink Href="#bit-icon-info">Icon</BitLink>). See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage. Built-in Fluent UI icons use <BitLink Href="#nav-option">IconName</BitLink>.</div>
     <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -380,7 +380,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+<DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11" PreventRenderForMcpClient>
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl" TItem="BitNavOption">
             <BitNavOption Text="پلتفرمِ بیت" Description="توضیحاتِ پلتفرمِ بیت">

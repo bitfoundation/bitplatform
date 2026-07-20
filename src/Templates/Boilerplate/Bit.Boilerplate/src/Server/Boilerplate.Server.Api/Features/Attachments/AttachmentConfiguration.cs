@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Features.Attachments;
+namespace Boilerplate.Server.Api.Features.Attachments;
 
 public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
 {

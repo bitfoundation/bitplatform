@@ -3,9 +3,24 @@
 public class BitButtonGroupNameSelectors<TItem>
 {
     /// <summary>
+    /// AriaLabel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitButtonGroupItem.AriaLabel));
+
+    /// <summary>
+    /// Badge field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Badge { get; set; } = new(nameof(BitButtonGroupItem.Badge));
+
+    /// <summary>
     /// The CSS Class field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitButtonGroupItem.Class));
+
+    /// <summary>
+    /// Href field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Href { get; set; } = new(nameof(BitButtonGroupItem.Href));
 
     /// <summary>
     /// Icon field name and selector of the custom input class.
@@ -21,6 +36,11 @@ public class BitButtonGroupNameSelectors<TItem>
     /// IsEnabled field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitButtonGroupItem.IsEnabled));
+
+    /// <summary>
+    /// IsLoading field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> IsLoading { get; set; } = new(nameof(BitButtonGroupItem.IsLoading));
 
     /// <summary>
     /// Key field name and selector of the custom input class.
@@ -81,6 +101,11 @@ public class BitButtonGroupNameSelectors<TItem>
     /// The CSS Style field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitButtonGroupItem.Style));
+
+    /// <summary>
+    /// Target field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Target { get; set; } = new(nameof(BitButtonGroupItem.Target));
 
     /// <summary>
     /// Template field name and selector of the custom input class.

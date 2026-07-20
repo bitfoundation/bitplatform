@@ -4,13 +4,13 @@
     <BitAccordionList Items="basicItems" TItem="BitAccordionListItem" />
 </DemoExample>
 
-<DemoExample Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>Enable the <code>Multiple</code> parameter to allow more than one item to be expanded at the same time.</div>
     <br />
     <BitAccordionList Multiple Items="basicItems" TItem="BitAccordionListItem" />
 </DemoExample>
 
-<DemoExample Title="DefaultExpanded" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="DefaultExpanded" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>Use <code>DefaultExpandedKey</code> (single) or <code>DefaultExpandedKeys</code> (multiple) to set the initially expanded items.</div>
     <br /><br />
     <div class="example-content">
@@ -24,7 +24,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>Handle the OnExpand, OnCollapse and OnToggle events of the component.</div>
     <br />
     <BitAccordionList Items="basicItems"
@@ -43,7 +43,7 @@
     <div>Item click count: <b>@clickCounter</b></div>
 </DemoExample>
 
-<DemoExample Title="ExpandAll & CollapseAll" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="ExpandAll & CollapseAll" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>In multiple-expand mode, the ExpandAll and CollapseAll public methods can be used.</div>
     <br />
     <BitButton OnClick="() => accordionListRef.ExpandAll()">Expand all</BitButton>
@@ -52,7 +52,7 @@
     <BitAccordionList @ref="accordionListRef" Multiple Items="basicItems" TItem="BitAccordionListItem" />
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>Two-way bind the expanded key in single-expand mode using <code>@@bind-ExpandedKey</code>.</div>
     <br />
     <BitButtonGroup Toggle Items="bindingButtons" TItem="BitButtonGroupItem" @bind-ToggleKey="boundExpandedKey" />
@@ -62,7 +62,7 @@
     <BitAccordionList @bind-ExpandedKey="boundExpandedKey" Items="keyedItems" TItem="BitAccordionListItem" />
 </DemoExample>
 
-<DemoExample Title="ExpanderIcon" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="ExpanderIcon" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>Customize the expander icon for the whole list or per item.</div>
     <br /><br />
     <div class="example-content">
@@ -76,7 +76,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Background & Border" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Background & Border" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
     <div>Customize the background and border color kinds of all the items.</div>
     <br /><br />
     <div class="example-content">
@@ -127,7 +127,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>Use BitAccordionList in right-to-left (RTL).</div>
     <br />
     <BitAccordionList Dir="BitDir.Rtl" Items="rtlItems" TItem="BitAccordionListItem" />

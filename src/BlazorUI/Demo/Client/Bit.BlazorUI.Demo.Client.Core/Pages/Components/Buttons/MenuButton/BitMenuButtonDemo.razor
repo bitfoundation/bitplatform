@@ -4,11 +4,11 @@
 
 <PageOutlet Url="components/menubutton"
             Title="MenuButton"
-            Description="A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation." />
+            Description="A menu button combines a button with a callout menu of related actions or links. It supports split and sticky modes, toggle behavior, separator and link items, a loading state, and full keyboard navigation with proper ARIA menu semantics." />
 
 <div>
     <DemoPage Name="MenuButton"
-              Description="A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation."
+              Description="A menu button combines a button with a callout menu of related actions or links. It supports split and sticky modes, toggle behavior, separator and link items, a loading state, and full keyboard navigation with proper ARIA menu semantics."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
@@ -22,6 +22,15 @@
                 1. The <BitLink Href="#menu-button-item"><BitTag Color="BitColor.SecondaryBackground">BitMenuButtonItem</BitTag></BitLink> class <br />
                 2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
                 3. The <BitLink Href="#menu-button-option"><BitTag Color="BitColor.SecondaryBackground">BitMenuButtonOption</BitTag></BitLink> component
+                <br /><br />
+                The component follows the WAI-ARIA menu button pattern:
+                <BitTag Color="BitColor.SecondaryBackground">Enter</BitTag>, <BitTag Color="BitColor.SecondaryBackground">Space</BitTag>,
+                and the arrow keys open the callout,
+                <BitTag Color="BitColor.SecondaryBackground">↑</BitTag>/<BitTag Color="BitColor.SecondaryBackground">↓</BitTag> and
+                <BitTag Color="BitColor.SecondaryBackground">Home</BitTag>/<BitTag Color="BitColor.SecondaryBackground">End</BitTag> navigate the items,
+                typing a character jumps to the next matching item, and
+                <BitTag Color="BitColor.SecondaryBackground">Esc</BitTag> or <BitTag Color="BitColor.SecondaryBackground">Tab</BitTag> closes it,
+                returning the focus to the button.
             </BitText>
         </NotesTemplate>
         <Examples>

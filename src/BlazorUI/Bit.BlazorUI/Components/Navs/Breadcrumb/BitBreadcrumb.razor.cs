@@ -6,6 +6,7 @@ namespace Bit.BlazorUI;
 public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 {
     private bool _isCalloutOpen;
+    private bool _optionsOrderDirty;
     private uint _internalOverflowIndex;
     private uint _internalMaxDisplayedItems;
     private List<TItem> _items = [];
@@ -18,12 +19,23 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private string _overlayId = default!;
     private string _overflowAnchorId = default!;
     private string _scrollContainerId = default!;
+    private string _optionsContainerId = default!;
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Keeps the rendered order of the items in sync with the markup order of the options even when
+    /// existing options are only reordered (not added or removed) — for example when the options are
+    /// produced by a keyed loop whose source collection gets re-sorted. This is achieved by reading the
+    /// DOM order of the options after each render, so it adds a JS interop call per render and is opt-in.
+    /// It only affects the options API (ChildContent/Options); the items API already follows the order
+    /// of the Items collection. Adding or removing options is always kept in order regardless of this flag.
+    /// </summary>
+    [Parameter] public bool AutoReorderOptions { get; set; }
 
     /// <summary>
     /// The content of the BitBreadcrumb, that are BitBreadOption components.
@@ -138,13 +150,56 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         _internalItems = [.. _items];
         _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_items.Count : MaxDisplayedItems;
         _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+        _optionsOrderDirty = true;
         SetItemsToShow();
+        StateHasChanged();
+    }
+
+    // The breadcrumb renders the visible items itself from the registered options (they only render a
+    // hidden marker), reading each option's data during its own render. So when an option's parameters
+    // change, the breadcrumb must re-render to pick up the new values.
+    internal void NotifyOptionParametersChanged()
+    {
+        if (IsDisposed) return;
+
         StateHasChanged();
     }
 
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
+        _internalItems = [.. _items];
+        _optionsOrderDirty = true;
+        SetItemsToShow();
+        StateHasChanged();
+    }
+
+    // Reorders the registered options based on the DOM order of their rendered markers, since an
+    // option that gets conditionally rendered after the first render registers itself at the end of
+    // the items list, no matter where in the markup it is located.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        List<TItem> ordered = new(_items.Count);
+
+        foreach (var optionId in orderedOptionIds)
+        {
+            var item = _items.FirstOrDefault(i => (i as BitBreadcrumbOption)?._OptionId == optionId);
+            if (item is null || ordered.Contains(item)) continue;
+
+            ordered.Add(item);
+        }
+
+        if (ordered.Count == 0) return;
+
+        ordered.AddRange(_items.Except(ordered));
+
+        if (ordered.SequenceEqual(_items)) return;
+
+        _items = ordered;
         _internalItems = [.. _items];
         SetItemsToShow();
         StateHasChanged();
@@ -170,6 +225,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         _overlayId = $"BitBreadcrumb-{UniqueId}-overlay";
         _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
         _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
+        _optionsContainerId = $"BitBreadcrumb-{UniqueId}-options-container";
 
         return base.OnInitializedAsync();
     }
@@ -179,6 +235,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         if (ChildContent is null && Options is null)
         {
             _items = Items is not null ? [.. Items] : [];
+        }
+        else if (AutoReorderOptions)
+        {
+            // Opt-in: re-read the DOM order of the options after this render so a pure reorder of
+            // existing options (which registers/unregisters nothing) is picked up. ReorderOptions
+            // only mutates when the order actually changed, so a stable order costs one DOM read.
+            _optionsOrderDirty = true;
         }
 
         if (_items.Any() is false) return;
@@ -207,6 +270,28 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         }
 
         base.OnAfterRender(firstRender);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_optionsOrderDirty)
+        {
+            _optionsOrderDirty = false;
+
+            try
+            {
+                var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_optionsContainerId, BitBreadcrumbOption._OPTION_ID_ATTRIBUTE);
+                if (IsDisposed) return;
+                if (orderedOptionIds is not null)
+                {
+                    ReorderOptions(orderedOptionIds);
+                }
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to reorder
+            catch (JSException) { } // a JS-side failure while reading the marker order is not fatal, keep the current order
+        }
     }
 
 

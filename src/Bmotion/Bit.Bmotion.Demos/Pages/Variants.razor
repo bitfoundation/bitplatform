@@ -1,4 +1,5 @@
 @page "/variants"
+@inject BmotionAnimateService Motion
 
 <h1 class="demo-page-title">Variants</h1>
 
@@ -69,9 +70,47 @@
     <CodeSnippet Code="@_orchestrationCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Grid stagger</h2>
+    <p>
+        <strong>Bm.Stagger</strong> now radiates across a 2-D grid - pass
+        <c>grid: (cols, rows)</c> and a <c>from</c> origin and the delay grows with Euclidean distance
+        from that cell. Drive it imperatively with the <strong>BmotionAnimateService</strong>.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="stagger-grid">
+                @for (int i = 0; i < 36; i++)
+                {
+                    <div class="grid-dot"></div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="RippleAsync">Ripple from center</button>
+
+    <CodeSnippet Code="@_gridStaggerCode" />
+</div>
+
+<style>
+    .stagger-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; }
+    .grid-dot { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #6c47ff, #ff4785); }
+</style>
+
 @code {
     private bool _visible = true;
     private bool _visible2 = true;
+
+    private async Task RippleAsync()
+    {
+        await Motion.AnimateAsync(
+            ".grid-dot",
+            Bm.To(scale: [1, 1.6, 1]),
+            Bm.Spring(stiffness: 400, damping: 18),
+            stagger: Bm.Stagger(0.04, from: BmStaggerFrom.Center, grid: (6, 6)));
+    }
 
     private readonly BmVariants _containerVariants = new()
     {
@@ -84,6 +123,22 @@
         ["hidden"]  = Bm.To(opacity: 0, x: -30),
         ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
     };
+
+    private const string _gridStaggerCode = """
+        @inject BmotionAnimateService Motion
+
+        <div class="stagger-grid">
+            @for (int i = 0; i < 36; i++) { <div class="grid-dot"></div> }
+        </div>
+
+        @code {
+            async Task RippleAsync() =>
+                await Motion.AnimateAsync(".grid-dot",
+                    Bm.To(scale: [1, 1.6, 1]),
+                    Bm.Spring(stiffness: 400, damping: 18),
+                    stagger: Bm.Stagger(0.04, from: BmStaggerFrom.Center, grid: (6, 6)));
+        }
+        """;
 
     private const string _variantsCode = """
         @using Bit.Bmotion

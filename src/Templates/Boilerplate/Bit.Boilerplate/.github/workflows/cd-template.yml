@@ -31,7 +31,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
 
@@ -116,7 +116,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
 
@@ -165,7 +165,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
 
@@ -225,11 +225,11 @@ jobs:
         with:
           global-json-file: global.json
 
-      - uses: maxim-lobanov/setup-xcode@v1.7.0
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
-          xcode-version: '26.5'
+          xcode-version: '26.6'
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
 

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class ContentSecurityPolicy

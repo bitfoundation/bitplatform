@@ -1,0 +1,33 @@
+﻿@* View Transitions showcase (o.ViewTransitions = true). Each tile carries a unique
+   view-transition-name; the detail page gives its hero the SAME name, so clicking a tile makes the
+   browser morph it into the hero - a shared-element transition with zero animation code. *@
+
+<div class="bb-intro">
+    <h1>View Transitions gallery</h1>
+    <p class="bb-subtitle">
+        Click a card - it <strong>morphs</strong> into the detail page's hero. That's a shared-element
+        transition: the tile and the hero declare the same <code>view-transition-name</code>, and the
+        browser animates position, size and paint between them. Everything else cross-fades.
+    </p>
+</div>
+
+<div class="bb-gallery">
+    @foreach (var item in GalleryCatalog.Items)
+    {
+        <BrouterLink Href="@($"/gallery/{item.Id}")" class="bb-gallery-tile"
+                     style="@($"background: {item.Gradient}; view-transition-name: bb-item-{item.Id};")">
+            <span class="bb-gallery-emoji">@item.Emoji</span>
+            <span class="bb-gallery-name" style="@($"view-transition-name: bb-item-name-{item.Id};")">@item.Name</span>
+        </BrouterLink>
+    }
+</div>
+
+<p class="bb-card-desc" style="margin-top: 1rem;">
+    The router side is one option (<code>o.ViewTransitions = true</code>) - it wraps each navigation's
+    re-render in <code>document.startViewTransition</code>. The morph wiring is pure CSS
+    (<code>view-transition-name</code> here and on the detail hero). The page glide you see on every
+    navigation - forward on links, mirrored on Back - is Brouter's <strong>built-in default</strong>
+    (<code>o.ViewTransitionDefaultAnimations</code>); override it with any unlayered
+    <code>::view-transition-*</code> rule in your CSS, or turn it off. Browsers without the API
+    navigate identically, just without the animation.
+</p>

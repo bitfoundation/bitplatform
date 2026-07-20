@@ -1,7 +1,8 @@
-﻿using Foundation;
+using Foundation;
 using UserNotifications;
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
+
 public partial class AppUNUserNotificationCenterDelegate : UNUserNotificationCenterDelegate
 {
     public override void DidReceiveNotificationResponse(UNUserNotificationCenter center, UNNotificationResponse response, Action completionHandler)

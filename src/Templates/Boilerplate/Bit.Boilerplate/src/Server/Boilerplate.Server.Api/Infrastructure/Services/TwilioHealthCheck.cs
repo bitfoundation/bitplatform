@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Twilio.Rest.Api.V2010;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

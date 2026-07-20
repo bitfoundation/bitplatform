@@ -35,7 +35,7 @@ jobs:
       with:
         global-json-file: src/global.json
     
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
 
@@ -103,6 +103,13 @@ jobs:
     - name: dotnet pack BlazorUI.Extras
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
 
+    - name: Generate CSS/JS files BlazorUI.Legacy
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+    - name: dotnet build BlazorUI.Legacy
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Legacy
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output . --configuration Release
+
     - name: Generate CSS/JS files BlazorUI.Assets
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build BlazorUI.Assets
@@ -133,6 +140,11 @@ jobs:
       run: dotnet build src/Brouter/Bit.Brouter/Bit.Brouter.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Brouter
       run: dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output . --configuration Release
+
+    - name: dotnet build Brouter.Generators
+      run: dotnet build src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Brouter.Generators
+      run: dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output . --configuration Release
 
     - name: dotnet build Besql
       run: dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

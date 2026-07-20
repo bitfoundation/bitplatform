@@ -13,9 +13,24 @@ public class BitButtonGroupClassStyles
     public string? Button { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the badge of the buttons of the BitButtonGroup.
+    /// </summary>
+    public string? Badge { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the icon of the BitButtonGroup.
     /// </summary>
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the selection indicator (check mark) of the toggled buttons of the BitButtonGroup.
+    /// </summary>
+    public string? SelectionIndicator { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the loading spinner of the buttons of the BitButtonGroup.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the text of the BitButtonGroup.

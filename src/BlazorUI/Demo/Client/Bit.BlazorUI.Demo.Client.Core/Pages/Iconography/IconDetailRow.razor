@@ -1,0 +1,20 @@
+<BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+    <BitText NoWrap
+             Style="min-width: fit-content;"
+             Typography="BitTypography.Caption1"
+             Foreground="BitColorKind.Secondary">
+        @Label
+    </BitText>
+    <BitText NoWrap FullWidth
+             Element="code"
+             Typography="BitTypography.Caption1">
+        @Value
+    </BitText>
+    <BitButton IconOnly
+               Size="BitSize.Small"
+               Variant="BitVariant.Text"
+               Title="@(IsCopied ? "Copied" : "Copy")"
++              AriaLabel="@(IsCopied ? "Copied" : $"Copy {Label}")"
+               IconName="@(IsCopied ? BitIconName.Accept : BitIconName.Copy)"
+               OnClick="HandleCopy" />
+</BitStack>

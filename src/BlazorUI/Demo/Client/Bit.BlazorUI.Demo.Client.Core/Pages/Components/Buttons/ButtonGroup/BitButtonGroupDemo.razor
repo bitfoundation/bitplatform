@@ -5,11 +5,11 @@
 
 <PageOutlet Url="components/button-group"
             Title="ButtonGroup"
-            Description="The ButtonGroup component can be used to group related buttons." />
+            Description="The ButtonGroup joins related buttons into a single keyboard-navigable unit, from a plain action toolbar to a single-select or multi-select segmented control." />
 
 <div>
     <DemoPage Name="ButtonGroup"
-              Description="The ButtonGroup component can be used to group related buttons."
+              Description="The ButtonGroup joins related buttons into a single unit: a plain action toolbar, or a single-select or multi-select group of toggle buttons. The whole group is one tab stop that the arrow, Home, and End keys navigate, and it follows the WAI-ARIA pattern matching its selection mode."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
@@ -17,12 +17,20 @@
               GitHubDemoUrl="Buttons/ButtonGroup/BitButtonGroupDemo.razor">
         <NotesTemplate>
             <BitText>
-                The BitButtonGroup is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component 
+                The BitButtonGroup is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
                 which can accept the list of Items in 3 different ways:
                 <br />
                 1. The <BitLink Href="#button-group-item"><BitTag Color="BitColor.SecondaryBackground">BitButtonGroupItem</BitTag></BitLink> class <br />
                 2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
                 3. The <BitLink Href="#button-group-option"><BitTag Color="BitColor.SecondaryBackground">BitButtonGroupOption</BitTag></BitLink> component
+                <br /><br />
+                The <BitTag Color="BitColor.SecondaryBackground">SelectionMode</BitTag> decides what the group is:
+                <BitTag Color="BitColor.SecondaryBackground">None</BitTag> renders plain action buttons in a
+                <strong>toolbar</strong>, <BitTag Color="BitColor.SecondaryBackground">Single</BitTag> renders a
+                <strong>radiogroup</strong> whose buttons report <strong>aria-checked</strong>, and
+                <BitTag Color="BitColor.SecondaryBackground">Multiple</BitTag> renders a <strong>toolbar</strong> of toggle
+                buttons that report <strong>aria-pressed</strong>. In every mode the group holds a single tab stop
+                (a roving tabindex) unless <BitTag Color="BitColor.SecondaryBackground">Navigable</BitTag> is disabled.
             </BitText>
         </NotesTemplate>
         <Examples>

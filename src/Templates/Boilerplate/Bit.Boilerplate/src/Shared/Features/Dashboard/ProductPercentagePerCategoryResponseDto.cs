@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Dashboard;
+namespace Boilerplate.Shared.Features.Dashboard;
 
 public partial class ProductPercentagePerCategoryResponseDto
 {

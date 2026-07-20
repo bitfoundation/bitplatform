@@ -47,7 +47,7 @@ internal class BmotionPresenceContext
 
     /// <summary>
     /// Clears exit-completion bookkeeping for a fresh enter cycle. Registered children are left
-    /// intact — they remove themselves via <see cref="Unregister"/> when disposed, so clearing the
+    /// intact - they remove themselves via <see cref="Unregister"/> when disposed, so clearing the
     /// list here would desynchronise the count for any children that are reused across a toggle.
     /// </summary>
     internal void Reset() { _completedChildren.Clear(); }

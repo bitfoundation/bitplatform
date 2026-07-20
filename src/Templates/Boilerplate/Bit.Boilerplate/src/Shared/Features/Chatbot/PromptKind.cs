@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Chatbot;
+namespace Boilerplate.Shared.Features.Chatbot;
 
 public enum PromptKind
 {

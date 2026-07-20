@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement"
@@ -7,5 +7,167 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <textarea @ref="_textAreaRef" class="bit-mde-txa" />
+
+    @if (ShowToolbar)
+    {
+        <div role="toolbar" aria-label="@ActiveTexts.ToolbarAriaLabel"
+             style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
+            @foreach (var item in ActiveToolbar)
+            {
+                if (item.Type is BitMarkdownEditorToolbarItemType.Separator)
+                {
+                    <span class="bit-mde-sep" aria-hidden="true"></span>
+                }
+                else if (item.Type is BitMarkdownEditorToolbarItemType.Dropdown)
+                {
+                    <div class="bit-mde-dd">
+                        <button type="button"
+                                style="@Styles?.ToolbarButton"
+                                class="bit-mde-btn @Classes?.ToolbarButton"
+                                title="@GetToolbarItemTitle(item)"
+                                aria-label="@GetToolbarItemLabel(item)"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                data-cmd="@item.Name"
+                                tabindex="-1"
+                                disabled="@IsToolbarItemDisabled(item)">
+                            @((MarkupString)item.Icon)
+                        </button>
+                        <div class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
+                            @foreach (var child in item.Children ?? [])
+                            {
+                                <button type="button"
+                                        role="menuitem"
+                                        class="bit-mde-btn bit-mde-mi @(IsToolbarItemActive(child) ? "bit-mde-act" : null)"
+                                        title="@GetToolbarItemTitle(child)"
+                                        aria-label="@GetToolbarItemLabel(child)"
+                                        data-cmd="@child.Name"
+                                        disabled="@IsToolbarItemDisabled(child)"
+                                        @onclick="() => OnToolbarItemClick(child)">
+                                    @((MarkupString)child.Icon)
+                                    @if (child.Text is not null)
+                                    {
+                                        <span class="bit-mde-mit">@child.Text</span>
+                                    }
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <button type="button"
+                            style="@Styles?.ToolbarButton"
+                            class="bit-mde-btn @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
+                            title="@GetToolbarItemTitle(item)"
+                            aria-label="@GetToolbarItemLabel(item)"
+                            aria-pressed="@(IsToolbarItemToggle(item) ? (IsToolbarItemActive(item) ? "true" : "false") : null)"
+                            data-cmd="@item.Name"
+                            tabindex="-1"
+                            disabled="@IsToolbarItemDisabled(item)"
+                            @onclick="() => OnToolbarItemClick(item)">
+                        @((MarkupString)item.Icon)
+                    </button>
+                }
+            }
+        </div>
+    }
+
+    <div class="bit-mde-bdy bit-mde-@Mode.ToString().ToLowerInvariant()">
+        <div class="bit-mde-pne bit-mde-epn">
+            <textarea @ref="_textAreaRef"
+                      style="@Styles?.TextArea"
+                      class="bit-mde-txa @Classes?.TextArea"
+                      placeholder="@Placeholder"
+                      aria-label="@ActiveTexts.EditorAriaLabel"
+                      spellcheck="@(SpellCheck ? "true" : "false")"
+                      readonly="@(ReadOnly || IsEnabled is false)"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      autocorrect="off"></textarea>
+        </div>
+
+        <div style="@Styles?.Preview" class="bit-mde-pne bit-mde-ppn @Classes?.Preview">
+            @if (PreviewTemplate is not null)
+            {
+                @PreviewTemplate(_previewValue)
+            }
+            else if (string.IsNullOrWhiteSpace(_previewValue))
+            {
+                <div class="bit-mde-emp">@ActiveTexts.PreviewEmptyText</div>
+            }
+            else
+            {
+                <BitMarkdownViewer Markdown="@_previewValue" Pipeline="@(PreviewPipeline ?? BitMarkdownPipelines.GitHub)" />
+            }
+        </div>
+    </div>
+
+    @if (ShowStatusBar)
+    {
+        <div style="@Styles?.StatusBar" class="bit-mde-sbr @Classes?.StatusBar">
+            <span class="bit-mde-mod">@ActiveTexts.GetModeLabel(Mode)</span>
+            <span class="bit-mde-spc"></span>
+            <span aria-live="polite">@string.Format(ActiveTexts.WordsFormat, WordCount)</span>
+            <span aria-live="polite">@string.Format(ActiveTexts.CharsFormat, CharCount)</span>
+            @if (ShowReadingTime)
+            {
+                <span aria-live="polite">@string.Format(ActiveTexts.ReadingTimeFormat, ReadingMinutes)</span>
+            }
+        </div>
+    }
+
+    @if (_showFind)
+    {
+        <div class="bit-mde-fnd" role="region" aria-label="@ActiveTexts.FindReplaceTitle">
+            <input @ref="_findRef"
+                   class="bit-mde-fni"
+                   placeholder="@ActiveTexts.FindPlaceholder"
+                   aria-label="@ActiveTexts.FindPlaceholder"
+                   value="@_findText"
+                   @oninput="e => _findText = e.Value?.ToString() ?? string.Empty"
+                   @onkeydown="OnFindKeyDown" />
+            <input class="bit-mde-fni"
+                   placeholder="@ActiveTexts.ReplacePlaceholder"
+                   aria-label="@ActiveTexts.ReplacePlaceholder"
+                   value="@_replaceText"
+                   @oninput="e => _replaceText = e.Value?.ToString() ?? string.Empty"
+                   @onkeydown="OnFindKeyDown" />
+            <button type="button" class="bit-mde-fnb" @onclick="() => ReplaceOne()" disabled="@(ReadOnly || IsEnabled is false)">@ActiveTexts.ReplaceButton</button>
+            <button type="button" class="bit-mde-fnb" @onclick="() => ReplaceAll()" disabled="@(ReadOnly || IsEnabled is false)">@ActiveTexts.ReplaceAllButton</button>
+            <button type="button" class="bit-mde-hcl" @onclick="() => _showFind = false" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
+        </div>
+    }
+
+    @if (_showHelp)
+    {
+        <div class="bit-mde-hlp" @onclick="() => _showHelp = false">
+            <div @ref="_helpRef"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-label="@ActiveTexts.KeyboardShortcutsTitle"
+                 tabindex="-1"
+                 class="bit-mde-hcr"
+                 @onkeydown="OnHelpKeyDown"
+                 @onclick:stopPropagation="true">
+                <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose" aria-hidden="true"></span>
+                <header>
+                    <strong>@ActiveTexts.KeyboardShortcutsTitle</strong>
+                    <button type="button" @ref="_helpCloseRef" class="bit-mde-hcl" @onclick="() => _showHelp = false" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
+                </header>
+                <dl>
+                    <div><dt>@ActiveTexts.ShortcutBold</dt><dd>Ctrl/Cmd + B</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutItalic</dt><dd>Ctrl/Cmd + I</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutStrikethrough</dt><dd>Ctrl/Cmd + Shift + S</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutLink</dt><dd>Ctrl/Cmd + K</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutUndo</dt><dd>Ctrl/Cmd + Z</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutRedo</dt><dd>Ctrl/Cmd + Y (or Shift + Z)</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutIndentOutdent</dt><dd>Tab / Shift + Tab</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutContinueList</dt><dd>Enter</dd></div>
+                    <div><dt>@ActiveTexts.ShortcutFind</dt><dd>Ctrl/Cmd + F</dd></div>
+                </dl>
+                <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose" aria-hidden="true"></span>
+            </div>
+        </div>
+    }
 </div>

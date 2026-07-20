@@ -1,6 +1,9 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (sample == true || offlineDb == true)
 using Boilerplate.Server.Api.Features.Todo;
+//#endif
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
 //#endif
 using Boilerplate.Shared.Features.Identity.Dtos;
 
@@ -45,6 +48,10 @@ public partial class User : IdentityUser<Guid>
     //#endif
 
     public List<WebAuthnCredential> WebAuthnCredentials { get; set; } = [];
+
+    //#if (multitenant == true)
+    public List<TenantUser> Tenants { get; set; } = [];
+    //#endif
 
     public List<UserRole> Roles { get; set; } = [];
     public List<UserClaim> Claims { get; set; } = [];

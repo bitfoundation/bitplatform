@@ -1,0 +1,40 @@
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .iconography-search-box {
+        max-width: 19rem;
+    }
+
+    .icon-box {
+        margin: 1px;
+        height: auto;
+        width: 5.125rem;
+        min-height: unset;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: $bit-shape-border-radius;
+        transition: background-color 0.15s ease;
+
+        .icon-name {
+            opacity: 0;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        &:hover,
+        &:focus-visible,
+        &:active,
+        &.selected {
+            color: inherit;
+            background-color: $bit-color-background-secondary;
+
+            .icon-name {
+                opacity: 1;
+            }
+        }
+
+        &.selected {
+            outline: 1px solid $bit-color-border-primary;
+        }
+    }
+}

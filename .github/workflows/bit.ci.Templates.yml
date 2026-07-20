@@ -30,7 +30,7 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
       
@@ -41,5 +41,8 @@ jobs:
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
       run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
+    - name: Verify formatting
+      run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
+
     - name: dotnet build Boilerplate
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx 
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -p:EnforceCodeStyleInBuild=true
