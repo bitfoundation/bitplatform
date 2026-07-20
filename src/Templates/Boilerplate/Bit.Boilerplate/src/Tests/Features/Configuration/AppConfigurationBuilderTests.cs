@@ -32,7 +32,7 @@ public class AppConfigurationBuilderTests
         // Provided by Boilerplate.Client.Core/appsettings.json.
         Assert.AreEqual("http://localhost:5030/", configuration["ServerAddress"]);
         // Provided by Boilerplate.Shared/appsettings.json - the lowest-priority layer - proving it is merged in too.
-        Assert.AreEqual("100000", configuration["MemoryCache:SizeLimit"]);
+        Assert.AreEqual("268435456", configuration["MemoryCache:SizeLimit"]);
     }
 
     [TestMethod]
