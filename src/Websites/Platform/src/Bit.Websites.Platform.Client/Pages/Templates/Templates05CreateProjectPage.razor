@@ -1,4 +1,4 @@
-@page "/templates/create-project"
+﻿@page "/templates/create-project"
 @page "/boilerplate/create-project"
 @inherits AppComponentBase
 
@@ -88,6 +88,25 @@
             }
         </BitGridItem>
 
+        <BitGridItem Class="grid-item md" ColumnSpan="2">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Multi-tenancy</BitText>
+                <BitToggle @bind-Value="multiTenant.Value" OnText="true" OffText="false" />
+            </div>
+            <CodeBox>
+                @GetMultiTenantCommand()
+            </CodeBox>
+            <BitText Typography="BitTypography.Body1" Gutter>
+                You can experience the Multi-tenancy feature instantly by logging into <a href="https://adminpanel.bitplatform.dev" target="_blank">adminpanel.bitplatform.dev</a> using <strong>store-user@bitplatform.dev</strong> (Password: <code>123456</code>). This gives you access to a demo tenant ("Store") where you can explore the Dashboard, Products, and Categories.
+            </BitText>
+            <BitText Typography="BitTypography.Body1" Gutter>
+                Alternatively, you can sign in using your regular Google/Gmail account to automatically create your own isolated tenant. Once inside your personal tenant, you will also gain access to advanced Identity Management features, including User and Role administration pages.
+            </BitText>
+            <BitText Typography="BitTypography.Body2" Class="note-text">
+                <strong>Note:</strong> The Global Tenant Administration page is exclusive to Global Administrators. To explore global management features, we recommend creating your project following this tutorial and running it locally. You can then log in using <strong>test@bitplatform.dev</strong> (Password: <code>123456</code>) to access full global admin privileges.
+            </BitText>
+        </BitGridItem>
+
         <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
@@ -164,6 +183,9 @@
                 <BitToggle @bind-Value="redis.Value" OnText="true" OffText="false" />
             </div>
             <br />
+            <CodeBox>
+                @GetRedisCommand()
+            </CodeBox>
             <BitText Typography="BitTypography.Body1" Gutter>
                 bit Boilerplate handles most of your scalability requirements using Redis:
                 <ul>
@@ -179,9 +201,6 @@
                 </ul>
                 In production, You may not scale out the application without addressing distributed locking and SignalR scale out concerns.
             </BitText>
-            <CodeBox>
-                @GetRedisCommand()
-            </CodeBox>
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
@@ -387,6 +406,21 @@
                 @GetGoogleAdsCommand()
             </CodeBox>
             Helps you earn money by displaying reward-based Google ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank">Demo</a>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md" ColumnSpan="2">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>bit Brouter</BitText>
+                <BitToggle @bind-Value="brouter.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetBrouterCommand()
+            </CodeBox>
+            bit Brouter replaces Blazor's built-in Router and brings the powerful routing features that developers enjoy in Vue.js, React and Angular to the Blazor ecosystem: nested routing, async route guards, data loaders, keep-alive pages that preserve their state across navigation, named and typed routes, and animated view transitions.
+            <br />
+            <br />
+            It stays a drop-in replacement, so your existing <b>@@page</b> routes, layouts and authorization keep working unchanged while you opt into the advanced features where you need them.
         </BitGridItem>
 
     </BitGrid>

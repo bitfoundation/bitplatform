@@ -1,0 +1,46 @@
+﻿@* Host for NamedOutletTests: a dashboard layout with a primary and a named outlet; child /a fills
+   both (Content + a sidebar BrouterView), child /b only the primary, and /u/{id:int} proves route
+   parameters flow into named view fragments. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/dash">
+        <Content>
+            <main data-testid="main-outlet"><BrouterOutlet /></main>
+            <aside data-testid="side-outlet"><BrouterOutlet Name="sidebar" /></aside>
+        </Content>
+        <ChildContent>
+            <Broute Path="/a">
+                <Content><div data-testid="a-main">a main</div></Content>
+                <ChildContent>
+                    <BrouterView Name="sidebar" Context="p">
+                        <div data-testid="a-side">a sidebar</div>
+                    </BrouterView>
+                </ChildContent>
+            </Broute>
+            <Broute Path="/b">
+                <Content><div data-testid="b-main">b main</div></Content>
+            </Broute>
+            <Broute Path="/u/{id:int}">
+                <Content Context="p">
+                    <div data-testid="u-main">user @p["id"]</div>
+                    <LifecycleProbe Log="UMainLog" />
+                </Content>
+                <ChildContent>
+                    <BrouterView Name="sidebar" Context="p">
+                        <div data-testid="u-side">sidebar for @p["id"]</div>
+                        <LifecycleProbe Log="USideLog" />
+                    </BrouterView>
+                </ChildContent>
+            </Broute>
+        </ChildContent>
+    </Broute>
+</Brouter>
+
+@code {
+    // Lifecycle logs for /u's primary content and sidebar view: a parameter change must preserve
+    // both entries (one activation, then renavigations - never a deactivation/re-activation).
+    public List<string> UMainLog { get; } = [];
+    public List<string> USideLog { get; } = [];
+}

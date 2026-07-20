@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    <title>Bit.Brouter - Server demo (prerendering)</title>
+    <link rel="stylesheet" href="_content/Bit.Brouter.Demos.Core/app.css" />
+    @* Synchronous on purpose: applies the light/dark theme before first paint. *@
+    <script src="_content/Bit.Brouter.Demos.Core/theme.js"></script>
+    <link rel="stylesheet" href="Bit.Brouter.Demos.Server.styles.css" />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 public partial class SignInModal
 {

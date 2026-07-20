@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Microsoft.Playwright;
 
 /// <summary>
@@ -6,23 +6,29 @@ namespace Microsoft.Playwright;
 /// </summary>
 public static class PlaywrightVideoRecordingExtensions
 {
-    //Pass full name of the test method to 'testMethodFullName' param or it will be inferred from the test context
-    public static async Task FinalizeVideoRecording(this IBrowserContext browserContext, TestContext testContext, string? testMethodFullName = null)
+    extension(IBrowserContext browserContext)
     {
-        await browserContext.CloseAsync();
-        if (testContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
+        //Pass full name of the test method to 'testMethodFullName' param or it will be inferred from the test context
+        public async Task FinalizeVideoRecording(TestContext testContext, string? testMethodFullName = null)
         {
-            var directory = GetVideoDirectory(testContext, testMethodFullName);
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, true);
+            await browserContext.CloseAsync();
+            if (testContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
+            {
+                var directory = GetVideoDirectory(testContext, testMethodFullName);
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, true);
+            }
         }
     }
 
-    //Pass full name of the test method to 'testMethodFullName' param or it will be inferred from the test context
-    public static BrowserNewContextOptions EnableVideoRecording(this BrowserNewContextOptions options, TestContext testContext, string? testMethodFullName = null)
+    extension(BrowserNewContextOptions options)
     {
-        options.RecordVideoDir = GetVideoDirectory(testContext, testMethodFullName);
-        return options;
+        //Pass full name of the test method to 'testMethodFullName' param or it will be inferred from the test context
+        public BrowserNewContextOptions EnableVideoRecording(TestContext testContext, string? testMethodFullName = null)
+        {
+            options.RecordVideoDir = GetVideoDirectory(testContext, testMethodFullName);
+            return options;
+        }
     }
 
     private static string GetVideoDirectory(TestContext testContext, string? testMethodFullName = null)

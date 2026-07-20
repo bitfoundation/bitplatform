@@ -5,6 +5,7 @@
    keyboard navigation can move DOM focus via Blazor's FocusAsync without conditional
    reference-capture frames (which break render-tree diffing). *@
 <div @ref="_el" class="@CssClass" role="gridcell" style="@Style" tabindex="@TabIndex"
+     aria-colindex="@Grid.AriaColIndex(ColIndex)"
      @onclick="HandleClick"
      @ondblclick="HandleDoubleClick"
      @oncontextmenu="HandleContextMenu"

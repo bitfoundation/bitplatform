@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.PushNotification;
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 

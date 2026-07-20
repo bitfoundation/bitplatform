@@ -1,6 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 
@@ -79,6 +80,30 @@ public class BitMarkdownViewerTests : BunitTestContext
         }
     }
 
+    [TestMethod,
+        DataRow(@"\\evil.com"),
+        DataRow(@"/\evil.com"),
+        DataRow(@"\/evil.com")]
+    public void BitMarkdownViewerShouldSanitizeBackslashLinks(string url)
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            // Browsers treat leading backslashes like slashes (protocol-relative),
+            // including mixed separator runs (BitMarkdownUrlSanitizer).
+            parameters.Add(p => p.Markdown, $"[click]({url})");
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+        if (links.Count > 0)
+        {
+            var href = links[0].GetAttribute("href") ?? string.Empty;
+            var leadingSeparators = href.TakeWhile(c => c is '/' or '\\');
+            Assert.IsTrue(
+                href.Length == 0 || !leadingSeparators.Contains('\\'),
+                $"Backslash link href was not sanitized: '{href}'.");
+        }
+    }
+
     [TestMethod]
     public void BitMarkdownViewerShouldSanitizeUnsafeImages()
     {
@@ -109,7 +134,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.Contains("<h1>one</h1>", component.Markup);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Markdown, "# two");
         });
@@ -162,7 +187,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.GitHub);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
         var markup = component.Markup;
@@ -178,7 +203,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, "# Hello World :rocket:");
-            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.Advanced);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
         });
 
         var markup = component.Markup;
@@ -199,9 +224,9 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.DoesNotContain("<del>gone</del>", component.Markup);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
-            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.GitHub);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
         });
 
         Assert.Contains("<del>gone</del>", component.Markup);
@@ -373,7 +398,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         Assert.Contains("<h1>hello world</h1>", component.Markup);
 
         // Tighten ImageRendering and cap the length; the cached AST must be rebuilt.
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
             parameters.Add(p => p.MaxLength, 38); // truncates before "world"
@@ -396,7 +421,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         // Default keeps the bidi control character.
         Assert.Contains("\u202E", component.Markup);
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.StripBidiControlCharacters, true);
         });

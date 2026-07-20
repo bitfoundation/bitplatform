@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (database == "PostgreSQL")
 using Pgvector.EntityFrameworkCore;
 //#endif

@@ -197,6 +197,12 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "GetTextAsync",
+            Type = "ValueTask<string>",
+            Description = "Returns the current content of the editor as plain text, with block boundaries rendered as newlines and all markup removed."
+        },
+        new()
+        {
             Name = "ExecuteCommandAsync",
             Type = "Task",
             Description = "Runs a raw editing command against the editor."
@@ -454,6 +460,10 @@ public partial class BitRichTextEditorDemo
     {
         apiResult = await apiEditor.GetHtmlAsync();
     }
+    private async Task GetEditorText()
+    {
+        apiResult = await apiEditor.GetTextAsync();
+    }
 
 
 
@@ -672,6 +682,7 @@ private readonly BitRichTextEditorToolbarConfig reorderConfig = new()
 <BitButton OnClick=""FocusEditor"">FocusAsync</BitButton>
 <BitButton OnClick='@(() => apiEditor.ExecuteCommandAsync(""bold""))'>ExecuteCommand(""bold"")</BitButton>
 <BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
+<BitButton OnClick=""GetEditorText"">GetTextAsync</BitButton>
 
 <pre>@apiResult</pre>";
     private readonly string example29CsharpCode = @"
@@ -684,6 +695,10 @@ private async Task FocusEditor()
 private async Task GetEditorHtml()
 {
     apiResult = await apiEditor.GetHtmlAsync();
+}
+private async Task GetEditorText()
+{
+    apiResult = await apiEditor.GetTextAsync();
 }";
 
     private readonly string example30RazorCode = @"

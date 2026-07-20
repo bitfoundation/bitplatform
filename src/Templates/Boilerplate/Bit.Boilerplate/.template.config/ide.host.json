@@ -36,6 +36,9 @@
             "id": "captcha"
         },
         {
+            "id": "multitenant"
+        },
+        {
             "id": "notification"
         },
         {
@@ -60,11 +63,18 @@
             "id": "ads"
         },
         {
+            "id": "brouter"
+        },
+        {
             "id": "apiServerUrl",
             "isVisible": false
         },
         {
             "id": "webAppUrl",
+            "isVisible": false
+        },
+        {
+            "id": "advancedTests",
             "isVisible": false
         }
     ]

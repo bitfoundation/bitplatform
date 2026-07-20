@@ -54,7 +54,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div class=""bit-stc"" style=""{STYLE}"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -85,7 +85,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
         var style = "padding: 1rem;";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, style);
         });
@@ -118,7 +118,7 @@ public class BitStackTests : BunitTestContext
 
         var cssClass = "test-class";
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, cssClass);
         });
@@ -173,7 +173,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -210,7 +210,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });
@@ -289,7 +289,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.FillContent, true);
             parameters.Add(p => p.Horizontal, horizontal);
@@ -326,7 +326,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
         var gap = "1rem";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Gap, gap);
         });
@@ -360,7 +360,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
         var grow = "2";
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Grow, grow);
         });
@@ -391,7 +391,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Grows, true);
         });
@@ -422,7 +422,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Horizontal, true);
         });
@@ -468,7 +468,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Alignment, BitAlignment.SpaceBetween);
         });
@@ -505,7 +505,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.HorizontalAlign, BitAlignment.SpaceBetween);
         });
@@ -536,7 +536,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Reversed, true);
         });
@@ -573,7 +573,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.VerticalAlign, BitAlignment.SpaceBetween);
         });
@@ -604,7 +604,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Wrap, true);
         });
@@ -701,7 +701,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.AutoSize, true);
         });
@@ -732,7 +732,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.AutoWidth, true);
         });
@@ -763,7 +763,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.AutoHeight, true);
         });
@@ -828,7 +828,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.FitHeight, true);
         });
@@ -859,7 +859,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.FitWidth, true);
         });
@@ -890,7 +890,7 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.FitSize, true);
         });

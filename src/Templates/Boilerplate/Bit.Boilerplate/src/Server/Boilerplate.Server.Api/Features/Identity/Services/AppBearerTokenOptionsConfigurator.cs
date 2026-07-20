@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 

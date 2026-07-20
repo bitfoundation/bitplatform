@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitRichTextEditor is a native WYSIWYG rich text editor. All component logic lives in C#;
@@ -124,6 +126,22 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     /// <summary>
+    /// Returns the current content of the editor as plain text: visible text only, with block
+    /// boundaries and line breaks rendered as newlines and all markup removed.
+    /// </summary>
+    public async ValueTask<string> GetTextAsync()
+    {
+        // Before the JS bridge is set up there is no editor DOM to read and interop may not be
+        // available (prerendering); the cached content is empty at that point, so return empty.
+        if (_initialized is false) return "";
+        // While source view is active the WYSIWYG element is detached/hidden and the raw-HTML
+        // textarea (_sourceText) drives the live content, so extract the text from the source
+        // buffer instead of the stale editor DOM in that mode.
+        if (_inSourceView) return await _js.BitRichTextEditorHtmlToText(_editorRef, _sourceText);
+        return await _js.BitRichTextEditorGetText(_editorRef);
+    }
+
+    /// <summary>
     /// Runs a raw editing command against the editor.
     /// </summary>
     public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
@@ -138,6 +156,11 @@ public partial class BitRichTextEditor : BitComponentBase
 
     // ---- callbacks from JS ----
 
+    // Preserve the callback argument types under trimming: they are only ever produced by the JS
+    // bridge, so nothing in C# statically references their constructors/setters and the trimmer
+    // would otherwise break (facts: constructor parameter names) or silently default (state:
+    // property setters) their deserialization in release builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorContentFacts))]
     [JSInvokable("OnContentChanged")]
     public async Task _OnContentChanged(string html, BitRichTextEditorContentFacts facts)
     {
@@ -158,6 +181,7 @@ public partial class BitRichTextEditor : BitComponentBase
     /// refreshes the cached content facts so count-dependent UI stays accurate, without treating
     /// the change as a user edit (no AssignValue / OnChange).
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorContentFacts))]
     [JSInvokable("OnFactsChanged")]
     public void _OnFactsChanged(BitRichTextEditorContentFacts facts)
     {
@@ -168,6 +192,7 @@ public partial class BitRichTextEditor : BitComponentBase
         }
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorSelectionState))]
     [JSInvokable("OnSelectionChanged")]
     public void _OnSelectionChanged(BitRichTextEditorSelectionState state)
     {

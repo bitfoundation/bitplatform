@@ -1,0 +1,100 @@
+@page "/reorder"
+
+<h1>Reorder</h1>
+
+<div class="demo-section">
+    <h2>Drag to reorder</h2>
+    <p>
+        <strong>BmotionReorderGroup</strong> makes every item draggable along the list axis;
+        siblings spring out of the way while you drag, and the new order is committed to the
+        bound list on release - motion.dev's <c>Reorder.Group</c>. <c>HandleSelector</c>
+        restricts the drag to a grip inside each row, keeping the rest of the row free for
+        clicks and text selection.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:.6rem;align-items:stretch;width:100%;min-width:280px;">
+            <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)" HandleSelector=".grip" Context="track">
+                <div style="display:flex;align-items:center;gap:.7rem;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.7rem 1rem;">
+                    <span class="grip" style="cursor:grab;color:#888;user-select:none;">⠿</span>
+                    <span style="flex:1">@track.Title</span>
+                    <span style="color:#888;font-size:.8rem">@track.Duration</span>
+                    <button type="button" aria-label="Move @track.Title up"
+                            disabled="@(_tracks.IndexOf(track) is 0)"
+                            style="background:none;border:none;color:#888;cursor:pointer;padding:0 .15rem"
+                            @onclick="() => MoveTrack(track, -1)">▲</button>
+                    <button type="button" aria-label="Move @track.Title down"
+                            disabled="@(_tracks.IndexOf(track) == _tracks.Count - 1)"
+                            style="background:none;border:none;color:#888;cursor:pointer;padding:0 .15rem"
+                            @onclick="() => MoveTrack(track, 1)">▼</button>
+                </div>
+            </BmotionReorderGroup>
+        </div>
+    </div>
+
+    <p style="color:#888;font-size:.85rem;margin-top:.75rem">
+        Current order: @string.Join(" → ", _tracks.Select(t => t.Title))
+    </p>
+
+    <CodeSnippet Code="@_reorderCode" />
+</div>
+
+@code {
+    private sealed record Track(int Id, string Title, string Duration);
+
+    private List<Track> _tracks =
+    [
+        new(1, "One More Time", "5:20"),
+        new(2, "Digital Love", "4:58"),
+        new(3, "Harder Better Faster", "3:45"),
+        new(4, "Something About Us", "3:51"),
+        new(5, "Voyager", "3:47"),
+    ];
+
+    // Keyboard-accessible fallback for the pointer-only drag: the group observes external
+    // Items mutations, so moving an item in the bound list reorders the rendered rows.
+    private void MoveTrack(Track track, int delta)
+    {
+        var index = _tracks.IndexOf(track);
+        var target = index + delta;
+        if (index < 0 || target < 0 || target >= _tracks.Count) return;
+        _tracks.RemoveAt(index);
+        _tracks.Insert(target, track);
+    }
+
+    private const string _reorderCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .list { display: flex; flex-direction: column; gap: .6rem; }
+            .row {
+                display: flex; align-items: center; gap: .7rem;
+                background: rgba(108,71,255,.12); border: 1px solid rgba(108,71,255,.25);
+                border-radius: 8px; padding: .7rem 1rem;
+            }
+            .grip { cursor: grab; color: #888; user-select: none; }
+        </style>
+
+        <div class="list">
+            <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)"
+                                 HandleSelector=".grip" Context="track">
+                <div class="row">
+                    <span class="grip">⠿</span>
+                    <span style="flex:1">@track.Title</span>
+                    <span>@track.Duration</span>
+                </div>
+            </BmotionReorderGroup>
+        </div>
+
+        @code {
+            private sealed record Track(int Id, string Title, string Duration);
+
+            private List<Track> _tracks =
+            [
+                new(1, "One More Time", "5:20"),
+                new(2, "Digital Love", "4:58"),
+                new(3, "Harder Better Faster", "3:45"),
+            ];
+        }
+        """;
+}

@@ -1,0 +1,26 @@
+﻿@* Sibling routes plus a three-level nested chain, used by RenderInvalidationTests to pin the
+   render-invalidation contract: navigating between routes must unrender the losing route, and a
+   single render request at the matched chain's top must be enough to render a deep leaf. *@
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/plain">
+        <Content><div data-testid="plain">plain</div></Content>
+    </Broute>
+    <Broute Path="/other">
+        <Content><div data-testid="other">other</div></Content>
+    </Broute>
+    <Broute Path="/l1/{id}">
+        <ChildContent>
+            <Broute Path="l2">
+                <ChildContent>
+                    <Broute Path="l3">
+                        <Content><div data-testid="leaf">leaf</div></Content>
+                    </Broute>
+                </ChildContent>
+                <Content><div data-testid="mid">mid</div></Content>
+            </Broute>
+        </ChildContent>
+        <Content Context="p"><div data-testid="top">top:@(p.GetOrDefault<string>("id"))</div></Content>
+    </Broute>
+</Brouter>

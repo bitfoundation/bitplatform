@@ -16,33 +16,59 @@ public partial class BitMessageBoxDemo
 private bool isModalOpen;";
 
     private readonly string example3RazorCode = @"
+<BitButton OnClick=""() => isProModalOpen = true"">Show</BitButton>
+<BitProModal @bind-IsOpen=""isProModalOpen"">
+    <BitMessageBox OnClose=""() => isProModalOpen = false"" Title=""This is the Title"" Body=""This is the Body!"" />
+</BitProModal>";
+    private readonly string example3CsharpCode = @"
+private bool isProModalOpen;";
+
+    private readonly string example4RazorCode = @"
 <BitButton OnClick=""ShowMessageBox"">Show MessageBox</BitButton>
 
 <BitModalContainer />";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 [AutoInject] private BitModalService modalService { get; set; } = default!;
 private async Task ShowMessageBox()
 {
-    BitModalReference modalRef = default!;
-    Dictionary<string, object> parameters = new()
+    await modalService.Show<BitMessageBox>(modalRef => new()
     {
         { nameof(BitMessageBox.Title), ""This is a title"" },
         { nameof(BitMessageBox.Body), ""This is a body."" },
-        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
-    };
-    modalRef = await modalService.Show<BitMessageBox>(parameters);
+        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, modalRef.Close) }
+    });
 }";
 
-    private readonly string example4RazorCode = @"
-<BitButton OnClick=""ShowMessageBoxService"">Show MessageBox</BitButton>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5RazorCode = @"
+<BitButton OnClick=""ShowProMessageBox"">Show MessageBox</BitButton>
+
+<BitProModalContainer />";
+    private readonly string example5CsharpCode = @"
+[AutoInject] private BitProModalService proModalService { get; set; } = default!;
+private async Task ShowProMessageBox()
+{
+    await proModalService.Show<BitMessageBox>(modalRef => new()
+    {
+        { nameof(BitMessageBox.Title), ""This is a title"" },
+        { nameof(BitMessageBox.Body), ""This is a body."" },
+        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, modalRef.Close) }
+    });
+}";
+
+    private readonly string example6RazorCode = @"
+<BitButton OnClick=""ShowMessageBoxService"">Show MessageBox</BitButton>
+
+@* The service uses the BitProModalService when available, otherwise the BitModalService. *@
+@* Mount the matching container: BitProModalContainer for the pro modal, BitModalContainer otherwise. *@
+<BitProModalContainer />";
+    private readonly string example6CsharpCode = @"
 [AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
 private async Task ShowMessageBoxService()
 {
     await messageBoxService.Show(""TITLE"", ""BODY"");
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .custom-msg {
         background: linear-gradient(180deg, #3e0f0f, transparent) #000;
@@ -77,7 +103,7 @@ private async Task ShowMessageBoxService()
                     Classes=""@(new() { Root = ""custom-msg"", OkButton = new() { Root = ""custom-msg-btn"" } })"" />
 </BitCard>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitCard Style=""padding:0"">
     <BitMessageBox Dir=""BitDir.Rtl"" Title=""عنوان پیام"" Body=""متن تست پیام..."" OkText=""تایید"" />
 </BitCard>";

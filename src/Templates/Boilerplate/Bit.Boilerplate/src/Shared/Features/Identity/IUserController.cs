@@ -1,4 +1,8 @@
-﻿using Boilerplate.Shared.Features.Identity.Dtos;
+//+:cnd:noEmit
+using Boilerplate.Shared.Features.Identity.Dtos;
+//#if (multitenant == true)
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 
 namespace Boilerplate.Shared.Features.Identity;
 
@@ -63,5 +67,20 @@ public interface IUserController : IAppController
     //#if (signalR == true || notification == true)
     [HttpPost("{userSessionId}")]
     Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken);
+    //#endif
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// Returns the active tenants the user can switch into.
+    /// Returns all active tenants if the user has the <see cref="AppFeatures.Management.Tenants_Manage_Global"/> feature.
+    /// </summary>
+    [HttpGet]
+    Task<List<TenantDto>> GetTenants(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Leaves the tenant the user is currently signed into by clearing TenantUser's AcceptedOn.
+    /// </summary>
+    [HttpPost("{tenantId}")]
+    Task LeaveTenant(Guid tenantId, CancellationToken cancellationToken);
     //#endif
 }

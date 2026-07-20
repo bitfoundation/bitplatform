@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+//+:cnd:noEmit
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MainLayout
 {
@@ -19,10 +20,20 @@ public partial class MainLayout
             }
         ];
 
-        //#if (module == "Admin")
+        //#if (multitenant == true)
+        var tenantIsSelected = await authorizationService.IsAuthorized(authUser!, AuthPolicies.TENANT_SELECTED);
+        //#endif
 
-        var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.AdminPanel.Dashboard),
-            authorizationService.IsAuthorized(authUser!, AppFeatures.AdminPanel.ManageProductCatalog));
+        //#if (module == "Admin")
+        var (dashboard, manageProductCatalog) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.AdminPanel.Dashboard_View),
+            authorizationService.IsAuthorized(authUser!, AppFeatures.AdminPanel.ProductCatalog_Manage));
+
+        //#if (multitenant == true)
+        if (tenantIsSelected is false)
+        {
+            dashboard = manageProductCatalog = false;
+        }
+        //#endif
 
         if (dashboard || manageProductCatalog)
         {
@@ -67,7 +78,7 @@ public partial class MainLayout
         //#endif
 
         //#if (sample == true || offlineDb == true)
-        if (await authorizationService.IsAuthorized(authUser!, AppFeatures.Todo.ManageTodo))
+        if (await authorizationService.IsAuthorized(authUser!, AppFeatures.Todo.Todo_Manage_Self))
         {
             //#if (offlineDb == true)
             navPanelItems.Add(new()
@@ -101,11 +112,24 @@ public partial class MainLayout
             Url = PageUrls.About,
         });
 
-        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.Management.ManageRoles),
-            authorizationService.IsAuthorized(authUser!, AppFeatures.Management.ManageUsers),
-            authorizationService.IsAuthorized(authUser!, AppFeatures.Management.ManageAiPrompt));
+        var (manageRoles, manageUsers, manageAiPrompt) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Roles_Manage),
+            authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Users_Manage),
+            authorizationService.IsAuthorized(authUser!, AppFeatures.Management.SystemPrompts_Write));
 
-        if (manageRoles || manageUsers || manageAiPrompt)
+        //#if (multitenant == true)
+        if (tenantIsSelected is false)
+        {
+            manageRoles = manageUsers = manageAiPrompt = false;
+        }
+
+        var manageTenantsGlobally = await authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Tenants_Manage_Global);
+        //#endif
+
+        if (manageRoles || manageUsers || manageAiPrompt
+            //#if (multitenant == true)
+            || manageTenantsGlobally
+            //#endif
+            )
         {
             BitNavItem managementItem = new()
             {
@@ -144,6 +168,18 @@ public partial class MainLayout
                     Text = localizer[nameof(AppStrings.SystemPromptsTitle)],
                     IconName = BitIconName.TextDocumentSettings,
                     Url = PageUrls.SystemPrompts,
+                });
+            }
+            //#endif
+
+            //#if (multitenant == true)
+            if (manageTenantsGlobally)
+            {
+                managementItem.ChildItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.ManageAllTenants)],
+                    IconName = BitIconName.Org,
+                    Url = PageUrls.ManageAllTenants,
                 });
             }
             //#endif

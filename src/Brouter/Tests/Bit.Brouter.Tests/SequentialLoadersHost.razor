@@ -1,0 +1,30 @@
+﻿@using Bit.Brouter
+
+@* Nested chain with a loader at each level, default (sequential) mode: the parent's loader
+   must fully complete before the child's starts. *@
+
+<Brouter>
+    <Broute Path="/parent" Loader="@LoadParent">
+        <Broute Path="/child" Loader="@LoadChild">
+            <Content><div data-testid="done">done</div></Content>
+        </Broute>
+    </Broute>
+</Brouter>
+
+@code {
+    public List<string> Events { get; } = [];
+
+    private async ValueTask<object?> LoadParent(BrouterNavigationContext ctx)
+    {
+        Events.Add("parent:start");
+        await Task.Delay(25);
+        Events.Add("parent:end");
+        return "parent";
+    }
+
+    private ValueTask<object?> LoadChild(BrouterNavigationContext ctx)
+    {
+        Events.Add("child:start");
+        return ValueTask.FromResult<object?>("child");
+    }
+}

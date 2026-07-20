@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Amazon.Runtime;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;

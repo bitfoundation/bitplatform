@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;

@@ -16,7 +16,9 @@ namespace Bit.Bmotion;
 /// <example>
 /// <code>
 /// &lt;BmotionAnimatePresence IsPresent="@_visible"&gt;
-///     &lt;Bmotion Tag="div" Animate="..." Exit="..." /&gt;
+///     &lt;Bmotion Animate="..." Exit="..."&gt;
+///         &lt;div class="box" /&gt;
+///     &lt;/Bmotion&gt;
 /// &lt;/BmotionAnimatePresence&gt;
 /// </code>
 /// </example>
@@ -32,10 +34,16 @@ public partial class BmotionAnimatePresence : ComponentBase
     [Parameter] public bool IsPresent { get; set; } = true;
 
     /// <summary>
-    /// When true, a new set of children waits for the exiting children to finish
-    /// before entering. Mirrors Framer Motion's <c>exitBeforeEnter</c>.
+    /// How exit and enter sequence when <see cref="IsPresent"/> toggles rapidly:
+    /// <see cref="BmPresenceMode.Wait"/> holds the new children until the exiting ones finish
+    /// (motion.dev's <c>mode="wait"</c>); <see cref="BmPresenceMode.PopLayout"/> pops exiting
+    /// children out of the layout flow so siblings reflow immediately.
+    /// Default: <see cref="BmPresenceMode.Sync"/>.
     /// </summary>
-    [Parameter] public bool ExitBeforeEnter { get; set; }
+    [Parameter] public BmPresenceMode Mode { get; set; }
+
+    /// <summary>Fires when all exiting children have finished their exit animations.</summary>
+    [Parameter] public EventCallback OnExitComplete { get; set; }
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -70,6 +78,7 @@ public partial class BmotionAnimatePresence : ComponentBase
             if (_presenceCtx.ChildCount > 0)
             {
                 // Children are leaving - signal exiting state so Bmotion components play Exit
+                _presenceCtx.PopLayout = Mode == BmPresenceMode.PopLayout;
                 _presenceCtx.IsExiting = true;
                 _shouldRender = true; // keep rendering until exit completes
             }
@@ -83,7 +92,7 @@ public partial class BmotionAnimatePresence : ComponentBase
         }
         else if (!_prevIsPresent && IsPresent)
         {
-            if (ExitBeforeEnter && _presenceCtx.IsExiting)
+            if (Mode == BmPresenceMode.Wait && _presenceCtx.IsExiting)
             {
                 // Wait for the exiting children to finish before rendering the new ones.
                 _deferEnter = true;
@@ -119,6 +128,10 @@ public partial class BmotionAnimatePresence : ComponentBase
             _shouldRender = false;
         }
 
-        InvokeAsync(StateHasChanged);
+        InvokeAsync(async () =>
+        {
+            await OnExitComplete.InvokeAsync();
+            StateHasChanged();
+        });
     }
 }

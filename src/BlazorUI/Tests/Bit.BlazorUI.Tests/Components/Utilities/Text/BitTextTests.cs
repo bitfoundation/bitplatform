@@ -107,7 +107,7 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.NoWrap, true);
         });
@@ -138,7 +138,7 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Gutter, true);
         });
@@ -169,7 +169,7 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -206,7 +206,7 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, "padding: 1rem;");
         });
@@ -238,7 +238,7 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, "test-class");
         });
@@ -293,7 +293,7 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -334,7 +334,7 @@ public class BitTextTests : BunitTestContext
 
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });

@@ -1,15 +1,18 @@
-﻿namespace Bit.Butil;
+namespace Bit.Butil;
 
 public static class NotificationExtensions
 {
-    public static async Task<bool> IsNotificationAvailable(this Notification notification)
+    extension(Notification notification)
     {
-        var isPresent = await notification.IsSupported();
-        if (isPresent)
+        public async Task<bool> IsNotificationAvailable()
         {
-            if (await notification.GetPermission() is NotificationPermission.Granted)
-                return true;
+            var isPresent = await notification.IsSupported();
+            if (isPresent)
+            {
+                if (await notification.GetPermission() is NotificationPermission.Granted)
+                    return true;
+            }
+            return false;
         }
-        return false;
     }
 }

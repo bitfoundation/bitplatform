@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+    <ProjectReference Include="..\..\Bit.Brouter\Bit.Brouter.csproj" />
+    <!-- Source generator: produces the typed BrouterRoutes URL builders from this project's
+         @page directives and <Broute> declarations (see Shared/Header.razor for usage). -->
+    <ProjectReference Include="..\..\Bit.Brouter.Generators\Bit.Brouter.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

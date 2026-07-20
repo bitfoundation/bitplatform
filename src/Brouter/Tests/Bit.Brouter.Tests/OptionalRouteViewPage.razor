@@ -1,0 +1,7 @@
+﻿@* Hand-declared (no @page) page with an optional route parameter, rendered through the framework
+   RouteView by the DefaultLayout-only composition. *@
+<div data-testid="opt-name">@(Name ?? "(none)")</div>
+
+@code {
+    [Parameter] public string? Name { get; set; }
+}

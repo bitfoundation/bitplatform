@@ -1,0 +1,39 @@
+﻿@* Derives from BrouterRouteBase to record route-lifecycle transitions, for asserting that routed
+   content is signalled on activation (first show and reveals from keep-alive retention),
+   deactivation (hidden/disposing) and renavigation. *@
+
+@using Bit.Brouter
+@inherits BrouterRouteBase
+
+@* "activated:" rather than "activations:" - the assertions match these labels with substring
+   Contains, and "activations:N" would also match inside "deactivations:N". *@
+<div data-testid="lifecycle">active:@IsActive activated:@_activations first:@_firstActivations deactivations:@_deactivations reasons:@_lastReason renavigations:@_renavigations</div>
+
+@code {
+    private int _activations;
+    private int _firstActivations;
+    private int _deactivations;
+    private int _renavigations;
+    private string _lastReason = "none";
+
+    protected override void OnActivated(BrouterRouteActivation activation)
+    {
+        _activations++;
+        if (activation.IsFirstActivation) _firstActivations++;
+        // The base class repaints after activation automatically.
+    }
+
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+    {
+        _deactivations++;
+        _lastReason = deactivation.Reason.ToString();
+        // Deactivation deliberately does not auto-repaint (hidden content shouldn't re-render);
+        // this component opts in so the assertions can read the counters off the hidden markup.
+        StateHasChanged();
+    }
+
+    protected override void OnRenavigated(BrouterRouteRenavigation renavigation)
+    {
+        _renavigations++;
+    }
+}

@@ -1,0 +1,5 @@
+﻿@* The probe lives in plain ChildContent - no Found template anywhere - and still observes the
+   committed navigation's RouteData via the unnamed-by-type cascade. *@
+<Brouter AppAssembly="@typeof(RouteDataObserverHost).Assembly">
+    <CascadedRouteDataProbe />
+</Brouter>

@@ -1,0 +1,20 @@
+﻿@* Guard redirects with a route-relative URL: "../login" from /admin/secret must land on /admin/login. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/admin/secret" Guard="@Deny">
+        <Content><div data-testid="secret">should not render</div></Content>
+    </Broute>
+    <Broute Path="/admin/login">
+        <Content><div data-testid="login">login</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    private ValueTask Deny(BrouterNavigationContext ctx)
+    {
+        ctx.Redirect("../login");
+        return ValueTask.CompletedTask;
+    }
+}

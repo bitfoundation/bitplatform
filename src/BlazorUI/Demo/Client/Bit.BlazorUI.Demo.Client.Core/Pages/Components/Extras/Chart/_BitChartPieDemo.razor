@@ -1,17 +1,26 @@
-﻿<DemoExample Title="Pie Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example5">
-    <div class="example-desc">
-        Pie and doughnut charts are probably the most commonly used charts.
-        They are divided into segments, the arc of each segment shows the proportional value of each piece of data.
-        They are excellent at showing the relational proportions between data.
-    </div>
-    <div class="chart-wrapper">
-        <div class="chart-container">
-            <BitChart Config="_config" @ref="_chart" />
-        </div>
-    </div>
-    <div class="buttons-container">
-        <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizePieData">Randomize Data</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddPieDataset">Add Dataset</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemovePieDataset">Remove Dataset</BitButton>
-    </div>
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Pie" RazorCode="@pieRazorCode" CsharpCode="@pieCsharpCode" Id="pie-pie">
+    <div class="example-desc">Proportional slices. Click a legend label to hide a slice; hover a slice to see its share.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Pie" Data="BitChartSampleData.Traffic()" Options="_right" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Doughnut" RazorCode="@doughnutRazorCode" CsharpCode="@doughnutCsharpCode" Id="pie-doughnut" PreventRenderForMcpClient>
+    <div class="example-desc">A doughnut is a pie with a cutout in the middle (<code>CutoutPercentage = 60</code>).</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="BitChartSampleData.Traffic()" Options="_doughnut" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Half doughnut (gauge)" RazorCode="@gaugeRazorCode" CsharpCode="@gaugeCsharpCode" Id="pie-gauge">
+    <div class="example-desc">A half doughnut acts as a gauge: circumference 180°, rotation -90°.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="Gauge()" Options="_gauge" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Multi-ring" RazorCode="@multiRingRazorCode" CsharpCode="@multiRingCsharpCode" Id="pie-multi-ring">
+    <div class="example-desc">Two datasets are drawn as concentric rings.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="MultiRing()" Options="_right" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Center text (KPI)" RazorCode="@centerTextRazorCode" CsharpCode="@centerTextCsharpCode" Id="pie-center-text">
+    <div class="example-desc">The <code>BitChartCenterTextPlugin</code> draws a total inside the doughnut cutout.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="BitChartSampleData.Traffic()" Options="_centerText" /></div></div>
 </DemoExample>

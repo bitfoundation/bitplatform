@@ -1,0 +1,14 @@
+{
+  "name": "bit-bmotion-js-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Unit tests for the pure drag/scroll math in bit-bmotion.js",
+  "scripts": {
+    "test": "vitest run",
+    "watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

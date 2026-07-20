@@ -1,0 +1,13 @@
+@using System.Collections.Generic
+@using Bit.BlazorUI
+
+<BitBreadcrumb TItem="BitBreadcrumbOption" AutoReorderOptions="true">
+    @foreach (var item in Items)
+    {
+        <BitBreadcrumbOption @key="item" Text="@item" Href="@("/" + item)" />
+    }
+</BitBreadcrumb>
+
+@code {
+    [Parameter] public List<string> Items { get; set; } = [];
+}

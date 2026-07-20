@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Hangfire.Server;
 using Twilio.Exceptions;
 using Twilio.Rest.Api.V2010.Account;

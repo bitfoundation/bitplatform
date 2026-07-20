@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.Models;
@@ -65,7 +65,7 @@ public partial class AppHub : Hub
     /// <summary>
     /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
-    [Authorize(Policy = AppFeatures.System.ManageLogs)]
+    [Authorize(Policy = AppFeatures.System.Logs_View)]
     [HubMethodName(SharedAppMessages.GetUserSessionLogs)]
     public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
     {

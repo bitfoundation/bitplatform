@@ -1,0 +1,40 @@
+name: Bmotion Demo CD
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  deploy_blazor_wasm_standalone:
+    name: build blazor wasm standalone
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm
+      run:  cd src && dotnet workload install wasm-tools
+
+    - name: Publish
+      run: dotnet publish src/Bmotion/Bit.Bmotion.Demos/Bit.Bmotion.Demos.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+
+    - name: Upload to asw
+      run: |
+          npm install -g @azure/static-web-apps-cli
+          swa deploy --deployment-token ${{ secrets.BMOTION_ASW_TOKEN }} --env production --app-location client/wwwroot

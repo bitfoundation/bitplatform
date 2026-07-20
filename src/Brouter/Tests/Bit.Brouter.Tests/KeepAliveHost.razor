@@ -1,0 +1,80 @@
+﻿@* Host for KeepAliveTests: a keep-alive route and a plain control route (rendered inline), plus a
+   parent-outlet pair exercising keep-alive through BrouterOutlet. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/ka" KeepAlive="true">
+        <Content><StatefulCounter /></Content>
+    </Broute>
+
+    <Broute Path="/plain">
+        <Content><StatefulCounter /></Content>
+    </Broute>
+
+    <Broute Path="/kl" KeepAlive="true">
+        <Content><KeepAliveLifecycle /></Content>
+    </Broute>
+
+    <Broute Path="/item/{id:int}" KeepAlive="true">
+        <Content><KeepAliveParam /></Content>
+    </Broute>
+
+    <Broute Path="/multi/{id:int}" KeepAlive="true" KeepAliveMax="2">
+        <Content><KeepAliveParam /></Content>
+    </Broute>
+
+    <Broute Path="/other">
+        <Content><div data-testid="other">other</div></Content>
+    </Broute>
+
+    @* Route-lifecycle probes (see RouteLifecycleTests): a transient route whose probe reports into
+       the host's log (the counters die with the disposed component, the log doesn't), a transient
+       parameterized route for the same-instance renavigation signal, a per-parameter keep-alive
+       route where a parameter change is an activate/deactivate pair instead, and a Component route
+       whose page implements IBrouterRoute directly (reference-capture interface discovery). *@
+
+    <Broute Path="/tl">
+        <Content><LifecycleProbe Log="ProbeLog" /></Content>
+    </Broute>
+
+    <Broute Path="/ren/{id:int}">
+        <Content><KeepAliveLifecycle /></Content>
+    </Broute>
+
+    <Broute Path="/ppl/{id:int}" KeepAlive="true" KeepAliveMax="2">
+        <Content><KeepAliveLifecycle /></Content>
+    </Broute>
+
+    <Broute Path="/page" Component="@typeof(LifecyclePage)" />
+
+    <Broute Path="/parent">
+        <Content>
+            <div data-testid="playout"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/k1" KeepAlive="true">
+                <Content><StatefulCounter /></Content>
+            </Broute>
+            <Broute Path="/k2">
+                <Content><div data-testid="k2">k2</div></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    <Broute Path="/mparent">
+        <Content>
+            <div data-testid="mlayout"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/mi/{id:int}" KeepAlive="true" KeepAliveMax="2">
+                <Content><KeepAliveParam /></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+</Brouter>
+
+@code {
+    /// <summary>Outlives disposed probe components so tests can assert Disposing deactivations.</summary>
+    public List<string> ProbeLog { get; } = [];
+}

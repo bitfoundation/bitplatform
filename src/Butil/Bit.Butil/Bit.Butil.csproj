@@ -65,7 +65,9 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-butil.js">
+    <Target Name="BuildJavaScript"
+            Inputs="@(TypeScriptFiles);tsconfig.json"
+            Outputs="wwwroot/bit-butil.js;$(BaseIntermediateOutputPath)bit-butil.$(Configuration).stamp">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
              An interrupted in-place minify could leave a half-written bundle that the Outputs check
@@ -73,6 +75,20 @@
              to avoid that. -->
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-butil.min.js" DestinationFiles="wwwroot/bit-butil.js" OverwriteReadOnlyFiles="true" />
+
+        <!-- Configuration-aware incremental marker. The bundle (wwwroot/bit-butil.js) is a single shared
+             file with a config-independent path, but only Release runs esbuild to minify it. Without a
+             per-config marker, MSBuild's Inputs/Outputs check treats a Debug-built (unminified) bundle as
+             up-to-date for a subsequent Release build - silently skipping tsc/esbuild and shipping an
+             unminified bundle (and vice-versa). Stamp the current configuration and clear every other
+             config's stamp so any Debug<->Release switch invalidates this target and regenerates the
+             correct bundle. -->
+        <ItemGroup>
+            <_ButilBuildStamp Include="$(BaseIntermediateOutputPath)bit-butil.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_ButilBuildStamp)" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-butil.$(Configuration).stamp" AlwaysCreate="true" />
     </Target>
 
 </Project>

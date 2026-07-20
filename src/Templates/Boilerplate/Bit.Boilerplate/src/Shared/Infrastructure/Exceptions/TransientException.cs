@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Exceptions;
+namespace Boilerplate.Shared.Infrastructure.Exceptions;
 
 /// <summary>
 /// This exception is thrown when there is a failure connecting client app to the backend api server.

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Shared.Features.Identity;
@@ -25,6 +25,7 @@ namespace Boilerplate.Shared.Features.Identity;
 [JsonSerializable(typeof(SendPhoneTokenRequestDto))]
 [JsonSerializable(typeof(ConfirmEmailRequestDto))]
 [JsonSerializable(typeof(ChangeEmailRequestDto))]
+[JsonSerializable(typeof(ChangePasswordRequestDto))]
 [JsonSerializable(typeof(ConfirmPhoneRequestDto))]
 [JsonSerializable(typeof(ChangePhoneNumberRequestDto))]
 [JsonSerializable(typeof(SendResetPasswordTokenRequestDto))]

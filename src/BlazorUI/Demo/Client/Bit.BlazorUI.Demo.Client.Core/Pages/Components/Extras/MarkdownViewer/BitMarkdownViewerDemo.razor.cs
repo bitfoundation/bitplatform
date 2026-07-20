@@ -16,11 +16,11 @@ public partial class BitMarkdownViewerDemo
         new()
         {
            Name = "Pipeline",
-           Type = "BitMarkdownViewerPipeline?",
+           Type = "BitMarkdownPipeline?",
            DefaultValue = "null",
            Description = @"The processing pipeline (flavor set). Defaults to the basic CommonMark core with no extensions.
-                           Use one of the ready-made pipelines on BitMarkdownViewerPipelines (Basic, GitHub, Advanced)
-                           or build a custom one with BitMarkdownViewerPipelineBuilder.",
+                           Use one of the ready-made pipelines on BitMarkdownPipelines (Basic, GitHub, Advanced)
+                           or build a custom one with BitMarkdownPipelineBuilder.",
            LinkType = LinkType.Link,
            Href = "#markdown-viewer-pipeline",
         },
@@ -71,21 +71,21 @@ public partial class BitMarkdownViewerDemo
         new()
         {
             Id = "markdown-viewer-pipeline",
-            Title = "BitMarkdownViewerPipeline",
-            Description = "An immutable, reusable Markdown processing configuration produced by a BitMarkdownViewerPipelineBuilder. Pipelines are thread-safe and should be cached and shared. Ready-made pipelines are available on BitMarkdownViewerPipelines (Basic, GitHub, Advanced).",
+            Title = "BitMarkdownPipeline",
+            Description = "An immutable, reusable Markdown processing configuration produced by a BitMarkdownPipelineBuilder. Pipelines are thread-safe and should be cached and shared. Ready-made pipelines are available on BitMarkdownPipelines (Basic, GitHub, Advanced).",
             Parameters =
             [
                 new()
                 {
                     Name = "Basic",
-                    Type = "static BitMarkdownViewerPipeline",
+                    Type = "static BitMarkdownPipeline",
                     DefaultValue = "",
                     Description = "A pipeline with only the basic CommonMark core (no flavors).",
                 },
                 new()
                 {
                     Name = "Parse",
-                    Type = "BitMarkdownViewerDocumentNode Parse(string? markdown)",
+                    Type = "BitMarkdownDocumentNode Parse(string? markdown)",
                     DefaultValue = "",
                     Description = "Parses Markdown source into an AST, applying all AST processors.",
                     LinkType = LinkType.Link,
@@ -94,7 +94,7 @@ public partial class BitMarkdownViewerDemo
                 new()
                 {
                     Name = "CreateRenderer",
-                    Type = "BitMarkdownViewerMarkdownRenderer CreateRenderer()",
+                    Type = "BitMarkdownRenderer CreateRenderer()",
                     DefaultValue = "",
                     Description = "Creates a renderer bound to this pipeline's node renderers.",
                     LinkType = LinkType.Link,
@@ -105,14 +105,14 @@ public partial class BitMarkdownViewerDemo
         new()
         {
             Id = "markdown-viewer-document-node",
-            Title = "BitMarkdownViewerDocumentNode",
-            Description = "The root of a parsed Markdown document. Inherits from BitMarkdownViewerMarkdownNode.",
+            Title = "BitMarkdownDocumentNode",
+            Description = "The root of a parsed Markdown document. Inherits from BitMarkdownNode.",
             Parameters =
             [
                 new()
                 {
                     Name = "Children",
-                    Type = "List<BitMarkdownViewerMarkdownNode>",
+                    Type = "List<BitMarkdownNode>",
                     DefaultValue = "[]",
                     Description = "The top-level child nodes of the document.",
                     LinkType = LinkType.Link,
@@ -121,7 +121,7 @@ public partial class BitMarkdownViewerDemo
                 new()
                 {
                     Name = "ChildNodes",
-                    Type = "IList<BitMarkdownViewerMarkdownNode>",
+                    Type = "IList<BitMarkdownNode>",
                     DefaultValue = "",
                     Description = "The node's single child collection (returns Children).",
                     LinkType = LinkType.Link,
@@ -132,21 +132,21 @@ public partial class BitMarkdownViewerDemo
         new()
         {
             Id = "markdown-viewer-node",
-            Title = "BitMarkdownViewerMarkdownNode",
+            Title = "BitMarkdownNode",
             Description = "The abstract base type for every node produced by the parser. Nodes expose their mutable child collections so that AST processors (plugins) can traverse and rewrite the tree generically, even for node types they did not define.",
             Parameters =
             [
                 new()
                 {
                     Name = "ChildNodes",
-                    Type = "virtual IList<BitMarkdownViewerMarkdownNode>?",
+                    Type = "virtual IList<BitMarkdownNode>?",
                     DefaultValue = "null",
                     Description = "The node's single child collection, if it has exactly one. Container nodes override this; leaf nodes return null.",
                 },
                 new()
                 {
                     Name = "ChildLists",
-                    Type = "virtual IEnumerable<IList<BitMarkdownViewerMarkdownNode>>",
+                    Type = "virtual IEnumerable<IList<BitMarkdownNode>>",
                     DefaultValue = "",
                     Description = "All mutable child collections owned by this node. Defaults to the single ChildNodes collection; nodes with several (e.g. a table's cells) override this to expose each one.",
                 },
@@ -155,21 +155,21 @@ public partial class BitMarkdownViewerDemo
         new()
         {
             Id = "markdown-viewer-renderer",
-            Title = "BitMarkdownViewerMarkdownRenderer",
+            Title = "BitMarkdownRenderer",
             Description = "Walks an AST and dispatches each node to a matching node renderer. Renderers are probed in reverse registration order, so the last renderer registered for a node type wins, allowing pipeline extensions to override the core renderers.",
             Parameters =
             [
                 new()
                 {
                     Name = "WriteNodes",
-                    Type = "void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownViewerMarkdownNode> nodes)",
+                    Type = "void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownNode> nodes)",
                     DefaultValue = "",
                     Description = "Renders a sequence of nodes.",
                 },
                 new()
                 {
                     Name = "WriteNode",
-                    Type = "void WriteNode(RenderTreeBuilder builder, BitMarkdownViewerMarkdownNode node)",
+                    Type = "void WriteNode(RenderTreeBuilder builder, BitMarkdownNode node)",
                     DefaultValue = "",
                     Description = "Renders a single node using the matching renderer (last registered wins).",
                 },
@@ -213,7 +213,7 @@ public partial class BitMarkdownViewerDemo
     // -- Advanced (live editor) example --------------------------------------
 
     private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
-    private BitMarkdownViewerPipeline playgroundPipeline = BitMarkdownViewerPipelines.Advanced;
+    private BitMarkdownPipeline playgroundPipeline = BitMarkdownPipelines.Advanced;
     private string playgroundMarkdown = SampleMarkdown;
 
     private void SetPlaygroundFlavor(MarkdownFlavor flavor)
@@ -221,9 +221,9 @@ public partial class BitMarkdownViewerDemo
         playgroundFlavor = flavor;
         playgroundPipeline = flavor switch
         {
-            MarkdownFlavor.Basic => BitMarkdownViewerPipelines.Basic,
-            MarkdownFlavor.GitHub => BitMarkdownViewerPipelines.GitHub,
-            _ => BitMarkdownViewerPipelines.Advanced
+            MarkdownFlavor.Basic => BitMarkdownPipelines.Basic,
+            MarkdownFlavor.GitHub => BitMarkdownPipelines.GitHub,
+            _ => BitMarkdownPipelines.Advanced
         };
     }
 
@@ -270,9 +270,9 @@ public partial class BitMarkdownViewerDemo
         Inline: `var viewer = new BitMarkdownViewer();`
 
         ```csharp
-        public static BitMarkdownViewerDocumentNode Parse(string? markdown)
+        public static BitMarkdownDocumentNode Parse(string? markdown)
         {
-            var document = new BitMarkdownViewerDocumentNode();
+            var document = new BitMarkdownDocumentNode();
             if (string.IsNullOrEmpty(markdown))
                 return document;
             return document;
@@ -341,7 +341,7 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
 
     // -- Custom pipeline example ---------------------------------------------
 
-    private readonly BitMarkdownViewerPipeline customPipeline = new BitMarkdownViewerPipelineBuilder()
+    private readonly BitMarkdownPipeline customPipeline = new BitMarkdownPipelineBuilder()
         .UsePipeTables()
         .UseStrikethrough()
         .UseTaskLists()
@@ -364,7 +364,7 @@ pipe tables, strikethrough, task lists, emoji and auto identifiers.
 <BitMarkdownViewer Markdown=""@(""# Native Markdown in Blazor\n\nRendered entirely in **C#** with no JavaScript and no third-party packages.\n\n- Real DOM output\n- Safe by default\n- Zero interop"")"" />";
 
     private readonly string example2RazorCode = @"
-<BitMarkdownViewer Markdown=""@gitHubMarkdown"" Pipeline=""BitMarkdownViewerPipelines.GitHub"" />";
+<BitMarkdownViewer Markdown=""@gitHubMarkdown"" Pipeline=""BitMarkdownPipelines.GitHub"" />";
     private readonly string example2CsharpCode = @"
 private readonly string gitHubMarkdown = @""# GitHub Flavored Markdown
 
@@ -423,7 +423,7 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
 private enum MarkdownFlavor { Basic, GitHub, Advanced }
 
 private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
-private BitMarkdownViewerPipeline playgroundPipeline = BitMarkdownViewerPipelines.Advanced;
+private BitMarkdownPipeline playgroundPipeline = BitMarkdownPipelines.Advanced;
 private string playgroundMarkdown = SampleMarkdown; // a feature-rich sample document
 
 private void SetPlaygroundFlavor(MarkdownFlavor flavor)
@@ -431,9 +431,9 @@ private void SetPlaygroundFlavor(MarkdownFlavor flavor)
     playgroundFlavor = flavor;
     playgroundPipeline = flavor switch
     {
-        MarkdownFlavor.Basic => BitMarkdownViewerPipelines.Basic,
-        MarkdownFlavor.GitHub => BitMarkdownViewerPipelines.GitHub,
-        _ => BitMarkdownViewerPipelines.Advanced
+        MarkdownFlavor.Basic => BitMarkdownPipelines.Basic,
+        MarkdownFlavor.GitHub => BitMarkdownPipelines.GitHub,
+        _ => BitMarkdownPipelines.Advanced
     };
 }
 
@@ -451,7 +451,7 @@ private const string SampleMarkdown = ""# BitMarkdownViewer\n\nA **native Blazor
     private readonly string example4RazorCode = @"
 <BitMarkdownViewer Markdown=""@customMarkdown"" Pipeline=""customPipeline"" />";
     private readonly string example4CsharpCode = @"
-private readonly BitMarkdownViewerPipeline customPipeline = new BitMarkdownViewerPipelineBuilder()
+private readonly BitMarkdownPipeline customPipeline = new BitMarkdownPipelineBuilder()
     .UsePipeTables()
     .UseStrikethrough()
     .UseTaskLists()

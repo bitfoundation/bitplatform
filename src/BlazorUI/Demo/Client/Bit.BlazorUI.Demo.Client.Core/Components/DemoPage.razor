@@ -1,27 +1,139 @@
 @inherits AppComponentBase
 
+@using System.Text.Json;
+
 @if (RenderForMcpClient)
 {
-    @((MarkupString)($"**{Name}** {string.Join(',', SecondaryNames ?? [])} {Description}{Notes} {Environment.NewLine}"))
+    @($"\n# {Name}\n")
+
+    @if (SecondaryNames?.Length > 0)
+    {
+        @($"**Also known as:** {string.Join(", ", SecondaryNames!)}\n")
+    }
+
+    @if (Description.HasValue())
+    {
+        @($"## Description\n{Description}\n")
+    }
+
+    @if (Notes.HasValue())
+    {
+        @($"## Notes\n{Notes}\n")
+    }
+
+    @if (Introduction.HasValue())
+    {
+        @($"## Introduction\n{Introduction}\n")
+    }
+
+    var publicMembers = PublicMembers;
+    if (_inputComponents.Contains(Name))
+    {
+        publicMembers.AddRange(_inputBasePublicMembers);
+    }
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        publicMembers.AddRange(_componentBasePublicMembers);
+    }
+
+    var parameters = Parameters;
+    if (_textInputComponents.Contains(Name))
+    {
+        parameters.AddRange(_textInputBaseParameters);
+    }
+    if (_inputComponents.Contains(Name))
+    {
+        parameters.AddRange(_inputBaseParameters);
+    }
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        parameters.AddRange(_componentBaseParameters);
+    }
+
+    var enums = SubEnums;
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        enums.AddRange(_componentBaseSubEnums);
+    }
+
+    @if (parameters.Any())
+    {
+        @("## Parameters\n")
+        @("| Name | Type | Default Value | Description |\n")
+        @("| :--- | :--- | :------------ | :---------- |\n")
+        @foreach (var param in parameters)
+        {
+            @($"| {param.Name} | `{param.Type}` | {param.DefaultValue} | {param.Description} |\n")
+        }
+    }
+
+    @if (publicMembers.Any())
+    {
+        @("## Public Members\n")
+        @("| Name | Type | Default Value | Description |\n")
+        @("| :--- | :--- | :------------ | :---------- |\n")
+        @foreach (var member in publicMembers)
+        {
+            @($"| {member.Name} | `{member.Type}` | {member.DefaultValue} | {member.Description} |\n")
+        }
+    }
+
+    @if (enums.Any())
+    {
+        @("## Enums\n")
+        @foreach (var subEnum in enums)
+        {
+            @($"### {subEnum.Name} Enum\n")
+            @("| Name | Value | Description |\n")
+            @("| :--- | :--- | :---------- |\n")
+            @foreach (var item in subEnum.Items)
+            {
+                @($"| {item.Name} | {item.Value} | {item.Description} |\n")
+            }
+            @("\n")
+        }
+    }
+
+    @if (SubClasses.Any())
+    {
+        @("## Sub Classes\n")
+        @foreach (var subClass in SubClasses)
+        {
+            @($"### {subClass.Title} Properties\n")
+            @($"{subClass.Description}\n")
+            @("| Name | Type | Default Value | Description |\n")
+            @("| :--- | :--- | :------------ | :---------- |\n")
+            @foreach (var subParam in subClass.Parameters)
+            {
+                @($"| {subParam.Name} | `{subParam.Type}` | {subParam.DefaultValue} | {subParam.Description} |\n")
+            }
+            @("\n")
+        }
+    }
+
+    @("## Examples\n")
     @(ChildContent ?? Examples)
 }
 else
 {
     <div class="demo-page">
         <div class="page-container example">
-            <BitText Element="h1" Typography="BitTypography.H3" Class="title">
+            <BitText Element="h1" Typography="BitTypography.H3">
                 @Name
             </BitText>
 
             @if (SecondaryNames?.Length > 0)
             {
-                <BitStack Horizontal>
+                <br />
+                <BitStack Horizontal AutoHeight>
                     @foreach (var name in SecondaryNames)
                     {
                         <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
                     }
                 </BitStack>
             }
+            
+            <br /><br /><br />
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {

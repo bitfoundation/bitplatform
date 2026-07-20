@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
@@ -38,15 +38,26 @@ public partial class TwoFactorSection
         var request = new TwoFactorAuthRequestDto { Enable = true, TwoFactorCode = twoFactorCode };
         var response = await SendTwoFactorAuthRequest(request);
 
-        recoveryCodes = response?.RecoveryCodes;
+        if (response is null) return; // The request failed and the error was already reported to the user.
+
+        recoveryCodes = response.RecoveryCodes;
         SnackBarService.Success(Localizer[nameof(AppStrings.TwoFactorAuthenticationEnabled)]);
+        // Enabling 2fa regenerates the security stamp on the server, so every active session gets signed out on its next token refresh.
+        SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
     }
 
     private async Task DisableTwoFactorAuth()
     {
         var request = new TwoFactorAuthRequestDto { Enable = false };
-        await SendTwoFactorAuthRequest(request);
+        var response = await SendTwoFactorAuthRequest(request);
+
+        if (response is null) return; // The request failed and the error was already reported to the user.
+
         SnackBarService.Success(Localizer[nameof(AppStrings.TwoFactorAuthenticationDisabled)]);
+        // Disabling 2fa regenerates the security stamp on the server, so every active session gets signed out on its next token refresh.
+        SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
+
+        recoveryCodes = [];
     }
 
     private async Task GenerateRecoveryCode()
@@ -60,7 +71,13 @@ public partial class TwoFactorSection
     private async Task ResetAuthenticatorKey()
     {
         var request = new TwoFactorAuthRequestDto { ResetSharedKey = true };
-        await SendTwoFactorAuthRequest(request);
+        var response = await SendTwoFactorAuthRequest(request);
+
+        if (response is null) return; // The request failed and the error was already reported to the user.
+
+        // Resetting the authenticator key (and disabling 2fa) regenerates the security stamp on the server,
+        // so every active session gets signed out on its next token refresh.
+        SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
     }
 
     //private async Task ForgetMachine()

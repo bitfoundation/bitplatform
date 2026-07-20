@@ -15,16 +15,20 @@
       <Compile Include="..\..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitInternalColor.cs" Link="Components\Inputs\ColorPicker\BitInternalColor.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
+      <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
+           blocks without InternalsVisibleTo (same source the Extras assembly builds). -->
+      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\Content\BitPdfOpCode.cs" Link="Components\Extras\PdfViewer\BitPdfOpCode.cs" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit.web" Version="1.40.0" />
-        <PackageReference Include="MSTest" Version="4.2.3" />
+        <PackageReference Include="bunit" Version="2.7.2" />
+        <PackageReference Include="MSTest" Version="4.3.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,9 +1,15 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Categories;
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 
 namespace Boilerplate.Server.Api.Features.Products;
 
 public partial class Product
+//#if (multitenant == true)
+    : ITenantAware
+//#endif
 {
     public Guid Id { get; set; }
 
@@ -14,7 +20,7 @@ public partial class Product
     public int ShortId { get; set; }
         //#if (database != "PostgreSQL" && database != "SqlServer")
         = Environment.TickCount; // Using a database sequence for this is recommended.
-        //#endif
+                                 //#endif
 
     [Required, MaxLength(64)]
     public string? Name { get; set; }
@@ -28,7 +34,7 @@ public partial class Product
     [MaxLength(4096)]
     public string? DescriptionText { get; set; }
 
-    public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedOn { get; set; }
 
     [ForeignKey(nameof(CategoryId))]
     public Category? Category { get; set; }
@@ -36,6 +42,13 @@ public partial class Product
     public Guid CategoryId { get; set; }
 
     public long Version { get; set; }
+
+    //#if (multitenant == true)
+    [ForeignKey(nameof(TenantId))]
+    public Tenant? Tenant { get; set; }
+
+    public Guid TenantId { get; set; }
+    //#endif
 
     public bool HasPrimaryImage { get; set; } = false;
 

@@ -16,18 +16,18 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-05">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0-pre-05">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0-pre-10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.10" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -39,7 +39,14 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Models" />
 
-        <Watch Remove="*.scss" />
+        <!-- dotnet watch: watch the ts sources (so edits trigger the tsc target on rebuilds) AND the
+             generated .razor.css files (so dotnet watch's scoped-css hot reload pushes style changes to
+             the browser when the in-app scss compiler regenerates them - see ScssCompilerService in the demo
+             server project). Scss sources are intentionally not watched here: the in-app compiler recompiles
+             them without a rebuild. Paths are rooted with $(MSBuildProjectDirectory) because dotnet watch
+             resolves relative Watch items of referenced projects against the startup project's directory. -->
+        <Watch Include="$(MSBuildProjectDirectory)\**\*.ts" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\**\*.d.ts" />
+        <Watch Include="$(MSBuildProjectDirectory)\**\*.razor.css" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -50,6 +57,7 @@
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Demo.Shared\Bit.BlazorUI.Demo.Shared.csproj" />
     </ItemGroup>
@@ -89,7 +97,7 @@
     </Target>
 
     <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles-&gt;Replace('.scss', '.css'))">
-        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="node_modules/.bin/sass .:. --update --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">

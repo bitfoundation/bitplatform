@@ -5,14 +5,14 @@
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
-<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <BitNav Items="customBasicNavItems" FitWidth
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
-<DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <BitNav Items="customCarNavItems"
             RenderType="BitNavRenderType.Grouped"
             NameSelectors="@(new() { Text =  { Name = nameof(CarMenu.Name) },
@@ -26,7 +26,7 @@
                                      Description =  { Name = nameof(CarMenu.Comment) } })" />
 </DemoExample>
 
-<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>Basic</div><br />
     <BitNav Items="customFoodNavItems"
             Mode="BitNavMode.Manual"
@@ -56,7 +56,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
     <BitNav Items="customIconOnlyNavItems" Mode="BitNavMode.Manual" IconOnly="iconOnly"
@@ -103,7 +103,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div class="example-box">
         <BitNav Items="customFoodNavItems"
                 Mode="BitNavMode.Manual"
@@ -130,7 +130,7 @@
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
     <div>
         Use icons from external libraries like FontAwesome with the <BitLink Href="#bit-icon-info">Icon</BitLink> selector in 
         <BitLink Href="#name-selectors">NameSelectors</BitLink>. See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.
@@ -146,7 +146,7 @@
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
-<DemoExample Title="Custom Styles" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Custom Styles" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <BitNav Items="customCustomStyleNavItems"
             NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                      ChildItems =  { Name = nameof(Section.Links) },
@@ -157,7 +157,7 @@
                               ItemIcon = "color: gold; margin-right: 15px;" })" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl"
                 Items="customRtlNavItems"

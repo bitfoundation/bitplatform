@@ -1277,8 +1277,8 @@ private BitPivotItem selectedPivotItem;";
 
     private readonly string example12RazorCode = @"
 <BitPivot Color=""BitColor.Secondary"">
-    <BitPivotItem HeaderText=""Primary"">
-        <h1>Pivot #1: Primary</h1>
+    <BitPivotItem HeaderText=""First"">
+        <h1>Pivot #1: First</h1>
         <div>
             Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
@@ -1286,8 +1286,8 @@ private BitPivotItem selectedPivotItem;";
             for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Secondary"">
-        <h1>Pivot #2: Secondary</h1>
+    <BitPivotItem HeaderText=""Second"">
+        <h1>Pivot #2: Second</h1>
         <div>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
@@ -1298,8 +1298,8 @@ private BitPivotItem selectedPivotItem;";
             are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Info"">
-        <h1>Pivot #3: Info</h1>
+    <BitPivotItem HeaderText=""Third"">
+        <h1>Pivot #3: Third</h1>
         <div>
             In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
             to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
@@ -1310,9 +1310,10 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>
 
+
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Success"">
-    <BitPivotItem HeaderText=""Primary bg"">
-        <h1>Pivot #1: Primary background</h1>
+    <BitPivotItem HeaderText=""First"">
+        <h1>Pivot #1: First background</h1>
         <div>
             Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
@@ -1320,8 +1321,8 @@ private BitPivotItem selectedPivotItem;";
             for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Secondary bg"">
-        <h1>Pivot #2: Secondary background</h1>
+    <BitPivotItem HeaderText=""Second"">
+        <h1>Pivot #2: Second background</h1>
         <div>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
@@ -1332,8 +1333,8 @@ private BitPivotItem selectedPivotItem;";
             are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Tertiary fg"">
-        <h1>Pivot #3: Tertiary foreground</h1>
+    <BitPivotItem HeaderText=""Third"">
+        <h1>Pivot #3: Third background</h1>
         <div>
             In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
             to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite

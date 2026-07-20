@@ -1,4 +1,4 @@
-@page "/presence"
+﻿@page "/presence"
 
 <div class="demo-section">
     <h2>AnimatePresence</h2>
@@ -11,12 +11,12 @@
     <div class="demo-row">
         <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
             <BmotionAnimatePresence IsPresent="@_visible">
-                <Bmotion Tag="div"
-                        Class="box"
-                        Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
-                        Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
-                        Exit="@(new BmotionAnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
-                        Transition="@BmotionTransitionConfig.Spring(stiffness:220, damping:18)" />
+                <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
+                        Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                        Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
+                        Transition="Bm.Spring(stiffness: 220, damping: 18)">
+                    <div class="box" />
+                </Bmotion>
             </BmotionAnimatePresence>
         </div>
     </div>
@@ -29,27 +29,28 @@
 </div>
 
 <div class="demo-section">
-    <h2>List Items</h2>
-    <p>Add and remove items from a list with staggered enter/exit animations.</p>
+    <h2>Presence Group (keyed lists)</h2>
+    <p>
+        <strong>BmotionPresenceGroup</strong> tracks a collection by key: removed items play
+        their <c>Exit</c> before leaving the DOM, added items play their enter - no flags, no
+        delays, just mutate the list.
+    </p>
 
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
-            @foreach (var item in _items)
-            {
-                <BmotionAnimatePresence IsPresent="@item.Present" @key="item.Id">
-                    <Bmotion Tag="div"
-                            Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
-                            Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
-                            Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0   })"
-                            Exit="@(new BmotionAnimationProps    { Opacity = 0, X = 30  })"
-                            Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
+            <BmotionPresenceGroup Items="_items" ItemKey="@(i => i.Id)" Context="item">
+                <Bmotion Initial="Bm.To(opacity: 0, x: -30)"
+                        Animate="Bm.To(opacity: 1, x: 0)"
+                        Exit="Bm.To(opacity: 0, x: 30)"
+                        Transition="Bm.Spring(stiffness: 300, damping: 25)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;">
                         <span>@item.Label</span>
                         <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
                                 aria-label="@($"Remove {item.Label}")"
-                                @onclick="@(() => RemoveItem(item.Id))">✕</button>
-                    </Bmotion>
-                </BmotionAnimatePresence>
-            }
+                                @onclick="@(() => _items.Remove(item))">✕</button>
+                    </div>
+                </Bmotion>
+            </BmotionPresenceGroup>
         </div>
     </div>
 
@@ -58,32 +59,132 @@
     <CodeSnippet Code="@_listCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Pop layout</h2>
+    <p>
+        <c>Mode="BmPresenceMode.PopLayout"</c> pops exiting items out of the layout flow
+        (<c>position: absolute</c> at their current spot), so siblings reflow immediately while
+        the exit plays - ideal for grids and chip rows. The container needs
+        <c>position: relative</c>.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="position:relative;flex-wrap:wrap;gap:.5rem;justify-content:flex-start;align-content:flex-start;min-height:120px;">
+            <BmotionPresenceGroup Items="_chips" Mode="BmPresenceMode.PopLayout" Context="chip">
+                <Bmotion Initial="Bm.To(opacity: 0, scale: 0.6)"
+                        Animate="Bm.To(opacity: 1, scale: 1)"
+                        Exit="Bm.To(opacity: 0, scale: 0.6)"
+                        Transition="Bm.Spring(stiffness: 350, damping: 26)"
+                        OnTap="@(() => _chips.Remove(chip))">
+                    <div style="background:rgba(255,71,133,.15);border:1px solid rgba(255,71,133,.35);border-radius:999px;padding:.35rem .9rem;cursor:pointer;user-select:none;white-space:nowrap;">
+                        @chip ✕
+                    </div>
+                </Bmotion>
+            </BmotionPresenceGroup>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="ResetChips">Reset chips</button>
+
+    <CodeSnippet Code="@_popLayoutCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Presence Switch</h2>
+    <p>
+        <strong>BmotionPresenceSwitch</strong> animates <em>between</em> items: change
+        <c>Item</c> and the outgoing content plays its <c>Exit</c> before the new one enters
+        (<c>Mode="BmPresenceMode.Wait"</c>, the default) - the classic paging idiom.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="min-height:180px; position:relative; overflow:hidden;">
+            <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+                <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
+                        Animate="Bm.To(opacity: 1, x: 0)"
+                        Exit="Bm.To(opacity: 0, x: -60)"
+                        Transition="Bm.Tween(0.25, BmEase.InOut)">
+                    <div class="box" style="display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">
+                        @pageNumber
+                    </div>
+                </Bmotion>
+            </BmotionPresenceSwitch>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _page++)">Next page</button>
+
+    <CodeSnippet Code="@_switchCode" />
+</div>
+
+@code {
+    private int _page = 1;
+
+    private const string _switchCode = """
+        @using Bit.Bmotion
+
+        <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+            <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
+                     Animate="Bm.To(opacity: 1, x: 0)"
+                     Exit="Bm.To(opacity: 0, x: -60)"
+                     Transition="Bm.Tween(0.25, BmEase.InOut)">
+                <div>
+                    Page @pageNumber
+                </div>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+
+        <button @onclick="@(() => _page++)">Next page</button>
+
+        @code {
+            private int _page = 1;
+        }
+        """;
+}
+
 @code {
     private bool _visible = true;
     private int  _nextId  = 4;
 
-    private sealed class Item(int id, string label)
-    {
-        public int Id { get; } = id;
-        public string Label { get; } = label;
-        // Drives the per-item AnimatePresence: flipped to false to play the exit animation
-        // *before* the item is removed from the collection.
-        public bool Present { get; set; } = true;
-    }
+    private sealed record Item(int Id, string Label);
 
-    private List<Item> _items = [new(1,"Item One"), new(2,"Item Two"), new(3,"Item Three")];
+    private List<Item> _items = [new(1, "Item One"), new(2, "Item Two"), new(3, "Item Three")];
 
     void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
 
-    async Task RemoveItem(int id)
-    {
-        var item = _items.Find(i => i.Id == id);
-        if (item is null || !item.Present) return;
-        item.Present = false;   // trigger the exit animation
-        StateHasChanged();      // force a render so the exit animation runs before the delay
-        await Task.Delay(400);  // let it finish before dropping the item from the list
-        _items.Remove(item);
-    }
+    private static readonly string[] _allChips = ["Springs", "Gestures", "Drag", "Layout", "Variants", "Keyframes"];
+    private List<string> _chips = [.. _allChips];
+
+    void ResetChips() => _chips = [.. _allChips];
+
+    private const string _popLayoutCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .chip-row { position: relative; display: flex; flex-wrap: wrap; gap: .5rem; }
+            .chip {
+                background: rgba(255,71,133,.15); border: 1px solid rgba(255,71,133,.35);
+                border-radius: 999px; padding: .35rem .9rem; cursor: pointer;
+                user-select: none; white-space: nowrap;
+            }
+        </style>
+
+        <div class="chip-row">   @* position: relative anchors the popped (absolute) items *@
+            <BmotionPresenceGroup Items="_chips" Mode="BmPresenceMode.PopLayout" Context="chip">
+                <Bmotion Initial="Bm.To(opacity: 0, scale: 0.6)"
+                        Animate="Bm.To(opacity: 1, scale: 1)"
+                        Exit="Bm.To(opacity: 0, scale: 0.6)"
+                        Transition="Bm.Spring(stiffness: 350, damping: 26)"
+                        OnTap="@(() => _chips.Remove(chip))">
+                    <div class="chip">@chip ✕</div>
+                </Bmotion>
+            </BmotionPresenceGroup>
+        </div>
+
+        @code {
+            private List<string> _chips = ["Springs", "Gestures", "Drag", "Layout"];
+        }
+        """;
 
     private const string _presenceCode = """
         @using Bit.Bmotion
@@ -114,12 +215,12 @@
             <div class="demo-row">
                 <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
                     <BmotionAnimatePresence IsPresent="@_visible">
-                        <Bmotion Tag="div"
-                                Class="box"
-                                Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
-                                Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
-                                Exit="@(new BmotionAnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
-                                Transition="@BmotionTransitionConfig.Spring(stiffness:220, damping:18)" />
+                        <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
+                                Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                                Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
+                                Transition="Bm.Spring(stiffness: 220, damping: 18)">
+                            <div class="box" />
+                        </Bmotion>
                     </BmotionAnimatePresence>
                 </div>
             </div>
@@ -154,27 +255,24 @@
         </style>
 
         <div class="demo-section">
-            <h2>List Items</h2>
-            <p>Add and remove items from a list with staggered enter/exit animations.</p>
+            <h2>Presence Group (keyed lists)</h2>
+            <p>Removed items exit, added items enter - just mutate the list.</p>
 
             <div class="demo-row">
                 <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
-                    @foreach (var item in _items)
-                    {
-                        <BmotionAnimatePresence IsPresent="@item.Present" @key="item.Id">
-                            <Bmotion Tag="div"
-                                    Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
-                                    Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
-                                    Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0   })"
-                                    Exit="@(new BmotionAnimationProps    { Opacity = 0, X = 30  })"
-                                    Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
+                    <BmotionPresenceGroup Items="_items" ItemKey="@(i => i.Id)" Context="item">
+                        <Bmotion Initial="Bm.To(opacity: 0, x: -30)"
+                                Animate="Bm.To(opacity: 1, x: 0)"
+                                Exit="Bm.To(opacity: 0, x: 30)"
+                                Transition="Bm.Spring(stiffness: 300, damping: 25)">
+                            <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;">
                                 <span>@item.Label</span>
                                 <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
                                         aria-label="@($"Remove {item.Label}")"
-                                        @onclick="@(() => RemoveItem(item.Id))">✕</button>
-                            </Bmotion>
-                        </BmotionAnimatePresence>
-                    }
+                                        @onclick="@(() => _items.Remove(item))">✕</button>
+                            </div>
+                        </Bmotion>
+                    </BmotionPresenceGroup>
                 </div>
             </div>
 
@@ -184,26 +282,11 @@
         @code {
             private int _nextId = 4;
 
-            private sealed class Item(int id, string label)
-            {
-                public int Id { get; } = id;
-                public string Label { get; } = label;
-                public bool Present { get; set; } = true;
-            }
+            private sealed record Item(int Id, string Label);
 
-            private List<Item> _items = [new(1,"Item One"), new(2,"Item Two"), new(3,"Item Three")];
+            private List<Item> _items = [new(1, "Item One"), new(2, "Item Two"), new(3, "Item Three")];
 
             void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
-
-            async Task RemoveItem(int id)
-            {
-                var item = _items.Find(i => i.Id == id);
-                if (item is null || !item.Present) return;
-                item.Present = false;   // trigger the exit animation
-                StateHasChanged();      // force a render so the exit animation runs before the delay
-                await Task.Delay(400);  // let it finish before removing the item
-                _items.Remove(item);
-            }
         }
         """;
 }

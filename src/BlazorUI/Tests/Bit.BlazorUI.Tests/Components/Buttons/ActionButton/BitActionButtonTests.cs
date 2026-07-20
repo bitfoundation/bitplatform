@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Buttons.ActionButton;
@@ -380,11 +382,19 @@ public class BitActionButtonTests : BunitTestContext
         var expectedHrefPresence = isEnabled;
 
         Assert.AreEqual(expectedHrefPresence, button.HasAttribute("href"));
-        Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
+
+        // The disabled attribute is invalid HTML on anchor elements and must never be rendered there.
+        Assert.IsFalse(button.HasAttribute("disabled"));
+        Assert.AreEqual(isEnabled is false, button.HasAttribute("aria-disabled"));
 
         if (isEnabled)
         {
             Assert.AreEqual(href, button.GetAttribute("href"));
+        }
+        else
+        {
+            // An anchor without href loses its implicit role, so the link role is restored explicitly.
+            Assert.AreEqual("link", button.GetAttribute("role"));
         }
     }
 
@@ -721,7 +731,15 @@ public class BitActionButtonTests : BunitTestContext
     ]
     public void BitActionButtonShouldRespectArbitraryHtmlAttributes(string name, string value)
     {
-        var component = RenderComponent<BitActionButton>((name, value));
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so
+        // supply them as raw component attributes (as real markup would) rather than via the builder,
+        // which rejects unmatched params on components without [Parameter(CaptureUnmatchedValues)].
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitActionButton>(0);
+            builder.AddAttribute(1, name, value);
+            builder.CloseComponent();
+        });
 
         var button = component.Find(".bit-acb");
 
@@ -784,6 +802,9 @@ public class BitActionButtonTests : BunitTestContext
         var anchor = component.Find(".bit-acb");
 
         Assert.AreEqual(target, anchor.GetAttribute("target"));
+
+        // A _blank target without an explicit Rel gets an automatic noopener for security.
+        Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
     }
 
     [TestMethod]
@@ -826,7 +847,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsFalse(button.ClassList.Contains("bit-dis"));
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--Add"));
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
             parameters.Add(p => p.IconName, "Delete");
@@ -849,12 +870,12 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Href, "#section-one"));
+        component.Render(parameters => parameters.Add(p => p.Href, "#section-one"));
 
         anchor = component.Find(".bit-acb");
         Assert.IsFalse(anchor.HasAttribute("rel"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Href, "/resources"));
+        component.Render(parameters => parameters.Add(p => p.Href, "/resources"));
 
         anchor = component.Find(".bit-acb");
         Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
@@ -876,7 +897,7 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual("-1", button.GetAttribute("tabindex"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
 
         Assert.AreEqual(tabIndex, button.GetAttribute("tabindex"));
     }
@@ -1319,7 +1340,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsFalse(button.ClassList.Contains("bit-acb-lod"));
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.IsLoading, true));
+        component.Render(parameters => parameters.Add(p => p.IsLoading, true));
 
         Assert.IsTrue(button.ClassList.Contains("bit-acb-lod"));
         Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
@@ -1464,18 +1485,24 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonAnchorWithIsLoadingShouldNotHaveAriaBusy()
+    public void BitActionButtonAnchorWithIsLoadingShouldRenderLoadingState()
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
             parameters.Add(p => p.IsLoading, true);
+            parameters.AddChildContent("Content");
         });
 
         var anchor = component.Find(".bit-acb");
 
-        // Anchor tags don't have aria-busy, only buttons do
-        Assert.IsFalse(anchor.HasAttribute("aria-busy"));
+        Assert.AreEqual("true", anchor.GetAttribute("aria-busy"));
+        Assert.IsTrue(anchor.ClassList.Contains("bit-acb-lod"));
+        Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
+
+        // The href is removed while loading to prevent keyboard-driven navigation.
+        Assert.IsFalse(anchor.HasAttribute("href"));
+        Assert.AreEqual("link", anchor.GetAttribute("role"));
     }
 
     [TestMethod]
@@ -1493,6 +1520,306 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsNotNull(innerWrapper);
     }
 
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitActionButtonDisabledSemanticsShouldFollowAllowDisabledFocus(bool allowDisabledFocus)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        // With AllowDisabledFocus the native disabled attribute is replaced by aria-disabled,
+        // keeping the button focusable and discoverable while its action stays suppressed.
+        Assert.AreEqual(allowDisabledFocus is false, button.HasAttribute("disabled"));
+        Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonFocusableDisabledShouldNotInvokeOnClick()
+    {
+        var clicked = false;
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, true);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+        });
+
+        component.Find(".bit-acb").Click();
+
+        Assert.IsFalse(clicked);
+    }
+
+    [TestMethod]
+    public async Task BitActionButtonAutoLoadingShouldEnterLoadingStateWhileAwaitingOnClick()
+    {
+        var tcs = new TaskCompletionSource();
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.OnClick, (MouseEventArgs _) => tcs.Task);
+            parameters.AddChildContent("Content");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        var clickTask = button.ClickAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(component.Find(".bit-acb").ClassList.Contains("bit-acb-lod"));
+            Assert.AreEqual("true", component.Find(".bit-acb").GetAttribute("aria-busy"));
+            Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
+        });
+
+        tcs.SetResult();
+        await clickTask;
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Find(".bit-acb").ClassList.Contains("bit-acb-lod"));
+            Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
+        });
+    }
+
+    [TestMethod,
+        DataRow(false, 1),
+        DataRow(true, 2)
+    ]
+    public async Task BitActionButtonAutoLoadingShouldGuardAgainstDoubleClicks(bool reclickable, int expectedClickCount)
+    {
+        var clickCount = 0;
+        var tcs = new TaskCompletionSource();
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Reclickable, reclickable);
+            parameters.Add(p => p.OnClick, (MouseEventArgs _) =>
+            {
+                clickCount++;
+                return tcs.Task;
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+
+        var firstClick = button.ClickAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-acb").ClassList.Contains("bit-acb-lod")));
+
+        var secondClick = button.ClickAsync(new MouseEventArgs());
+
+        tcs.SetResult();
+        await firstClick;
+        await secondClick;
+
+        Assert.AreEqual(expectedClickCount, clickCount);
+    }
+
+    [TestMethod]
+    public async Task BitActionButtonAutoLoadingShouldResetLoadingWhenOnClickThrows()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.OnClick, (MouseEventArgs _) => throw new InvalidOperationException("test"));
+        });
+
+        var button = component.Find(".bit-acb");
+
+        try
+        {
+            await button.ClickAsync(new MouseEventArgs());
+        }
+        catch (InvalidOperationException) { }
+
+        Assert.IsFalse(component.Instance.IsLoading);
+    }
+
+    [TestMethod]
+    public async Task BitActionButtonAutoLoadingShouldNotifyIsLoadingChanged()
+    {
+        var loadingStates = new List<bool>();
+        var tcs = new TaskCompletionSource();
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            parameters.Add(p => p.OnClick, (MouseEventArgs _) => tcs.Task);
+        });
+
+        var clickTask = component.Find(".bit-acb").ClickAsync(new MouseEventArgs());
+
+        tcs.SetResult();
+        await clickTask;
+
+        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+    }
+
+    [TestMethod]
+    public void BitActionButtonClickShouldBeIgnoredWhileLoading()
+    {
+        var clicked = false;
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+        });
+
+        component.Find(".bit-acb").Click();
+
+        Assert.IsFalse(clicked);
+    }
+
+    [TestMethod]
+    public void BitActionButtonLoadingLabelShouldReplaceBodyAndFillStatusRegion()
+    {
+        const string loadingLabel = "Saving...";
+        const string content = "Save";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingLabel, loadingLabel);
+            parameters.AddChildContent(content);
+        });
+
+        var label = component.Find(".bit-acb-lbl");
+        var status = component.Find(".bit-acb-sts");
+
+        Assert.AreEqual(loadingLabel, label.TextContent);
+        Assert.AreEqual("status", status.GetAttribute("role"));
+        Assert.AreEqual(loadingLabel, status.TextContent);
+        Assert.IsEmpty(component.FindAll(".bit-acb-con"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonStatusRegionShouldAlwaysExistAndBeEmptyWhenNotLoading()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.LoadingLabel, "Saving...");
+            parameters.AddChildContent("Save");
+        });
+
+        var status = component.Find(".bit-acb-sts");
+
+        Assert.AreEqual(string.Empty, status.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitActionButtonLoadingDelayShouldDeferSpinnerButGuardImmediately()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingDelay, 200);
+            parameters.AddChildContent("Content");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        // The click-guard applies immediately, but the spinner is deferred to avoid a flash on fast operations.
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-lod"));
+        Assert.AreEqual("true", button.GetAttribute("aria-busy"));
+        Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
+
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-acb-spn")), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(""),
+        DataRow("report.pdf")
+    ]
+    public void BitActionButtonDownloadShouldRenderOnAnchor(string? download)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev/file");
+            parameters.Add(p => p.Download, download);
+        });
+
+        var anchor = component.Find(".bit-acb");
+
+        Assert.AreEqual(download is not null, anchor.HasAttribute("download"));
+
+        if (download is not null)
+        {
+            Assert.AreEqual(download, anchor.GetAttribute("download"));
+        }
+    }
+
+    [TestMethod,
+        DataRow("_blank", null, "noopener"),
+        DataRow("_blank", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_blank", BitLinkRels.NoReferrer, "noreferrer"),
+        DataRow("_blank", BitLinkRels.NoOpener, "noopener"),
+        DataRow("_self", null, null),
+        DataRow(null, null, null)
+    ]
+    public void BitActionButtonShouldAutoAppendNoOpenerForBlankTarget(string? target, BitLinkRels? rel, string? expectedRel)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, target);
+
+            if (rel.HasValue)
+            {
+                parameters.Add(p => p.Rel, rel.Value);
+            }
+        });
+
+        var anchor = component.Find(".bit-acb");
+
+        Assert.AreEqual(expectedRel is not null, anchor.HasAttribute("rel"));
+
+        if (expectedRel is not null)
+        {
+            Assert.AreEqual(expectedRel, anchor.GetAttribute("rel"));
+        }
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconShouldBeAriaHidden()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("Content");
+        });
+
+        var icon = component.Find(".bit-acb-ico");
+
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonSpinnerShouldBeAriaHidden()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.AddChildContent("Content");
+        });
+
+        var spinner = component.Find(".bit-acb-spn");
+
+        Assert.AreEqual("true", spinner.GetAttribute("aria-hidden"));
+    }
 
     private static string GetColorClass(BitColor? color) => color switch
     {

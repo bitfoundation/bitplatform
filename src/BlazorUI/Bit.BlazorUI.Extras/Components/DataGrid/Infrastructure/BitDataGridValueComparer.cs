@@ -22,7 +22,7 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
     // also guarantees an equal GetHashCode, i.e. the BCL scalar/value types whose CompareTo and
     // GetHashCode are defined consistently. An arbitrary custom IComparable may report CompareTo == 0 for
     // two instances while their (un-overridden) GetHashCode differ, which would group/sort them as equal
-    // yet hash them apart — an Equals/GetHashCode contract violation. For those types we fall back to the
+    // yet hash them apart - an Equals/GetHashCode contract violation. For those types we fall back to the
     // same normalized projection (meaningful ToString, else the canonical key) that GetHashCode uses, so
     // comparison and hashing always agree.
     internal static bool IsTrustedComparable(Type type)
@@ -96,7 +96,7 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
 /// <summary>
 /// Equality comparer that mirrors <see cref="BitDataGridValueComparer"/>'s ordering semantics
 /// (two values are equal when the comparer ranks them as equal), so grouping keys collapse the same
-/// way sorting and Equals-based filtering treat them — e.g. strings group case-insensitively.
+/// way sorting and Equals-based filtering treat them - e.g. strings group case-insensitively.
 /// </summary>
 internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<object?>
 {
@@ -106,11 +106,11 @@ internal sealed class BitDataGridValueEqualityComparer : IEqualityComparer<objec
 
     // Must stay consistent with Equals: values the comparer treats as equal have to hash alike.
     // Strings compare case-insensitively, so hash them that way. Trusted BCL comparables fall back to
-    // their own hash code (where CompareTo == 0 implies an equal hash). For any other value — including
-    // a custom IComparable that the comparer does NOT shortcut — the comparer ranks two instances equal
+    // their own hash code (where CompareTo == 0 implies an equal hash). For any other value - including
+    // a custom IComparable that the comparer does NOT shortcut - the comparer ranks two instances equal
     // only when the type has a meaningful ToString() override and their text matches; hash on that same
     // canonical string. When ToString() is not overridden the comparer keeps distinct instances distinct
-    // via the same collision-free canonical key it orders them by, so hash on that key too — keeping
+    // via the same collision-free canonical key it orders them by, so hash on that key too - keeping
     // Equals/GetHashCode consistent without the identity-hash collisions a raw RuntimeHelpers.GetHashCode
     // could introduce. Null hashes to 0.
     public int GetHashCode(object? obj) => obj switch

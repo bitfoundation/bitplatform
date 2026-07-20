@@ -8,6 +8,11 @@ public class BitMenuButtonItem
     public string? Class { get; set; }
 
     /// <summary>
+    /// The value of the href attribute of the item. If provided, the item renders as an anchor tag instead of button.
+    /// </summary>
+    public string? Href { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
@@ -38,6 +43,11 @@ public class BitMenuButtonItem
     public bool IsSelected { get; set; }
 
     /// <summary>
+    /// If true, the item renders as a separator line instead of a clickable item.
+    /// </summary>
+    public bool IsSeparator { get; set; }
+
+    /// <summary>
     /// A unique value to use as a key of the item.
     /// </summary>
     public string? Key { get; set; }
@@ -53,6 +63,11 @@ public class BitMenuButtonItem
     public string? Style { get; set; }
 
     /// <summary>
+    /// The value of the target attribute of the item when the item renders as an anchor tag (by providing the Href value).
+    /// </summary>
+    public string? Target { get; set; }
+
+    /// <summary>
     /// The custom template for the item.
     /// </summary>
     public RenderFragment<BitMenuButtonItem>? Template { get; set; }
@@ -61,4 +76,9 @@ public class BitMenuButtonItem
     /// Text to render in the item.
     /// </summary>
     public string? Text { get; set; }
+
+    /// <summary>
+    /// The tooltip to show when the mouse is placed on the item.
+    /// </summary>
+    public string? Title { get; set; }
 }

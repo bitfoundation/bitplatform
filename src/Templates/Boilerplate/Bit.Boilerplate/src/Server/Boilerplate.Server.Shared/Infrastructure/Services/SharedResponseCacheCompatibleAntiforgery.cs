@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Antiforgery;
 
 namespace Boilerplate.Server.Shared.Infrastructure.Services;

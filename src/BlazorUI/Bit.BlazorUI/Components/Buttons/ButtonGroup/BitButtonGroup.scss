@@ -5,6 +5,7 @@
     width: fit-content;
     flex-direction: row;
     display: inline-flex;
+    box-sizing: border-box;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
@@ -26,6 +27,50 @@
 
 .bit-btg-flw {
     width: 100%;
+}
+
+.bit-btg-rnd {
+    border-radius: 9999px;
+
+    &.bit-btg-vrt {
+        border-radius: $shp-border-radius;
+    }
+}
+
+.bit-btg-scr,
+.bit-btg-scb {
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    // A swipe past either end scrolls the group only, never the page behind it.
+    overscroll-behavior-x: contain;
+
+    .bit-btg-itm {
+        flex: 0 0 auto;
+    }
+}
+
+// A native scrollbar is always laid out inside the element that scrolls, so leaving it visible
+// puts it within the group's border, where it crowds the buttons and gets clipped by the rounded
+// corners. Hiding it keeps the border hugging the buttons: the group still scrolls by swiping, by
+// shift+wheel, and through the arrow keys, which bring the focused button into view on their own.
+.bit-btg-scr {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+    }
+}
+
+// The opt-in variant that keeps the scrollbar visible as an affordance. It costs the height the
+// scrollbar occupies inside the border, so the buttons get a matching gap above it rather than
+// sitting directly on top of it.
+.bit-btg-scb {
+    scrollbar-width: thin;
+    padding-block-end: spacing(0.5);
 }
 
 .bit-btg-itm {
@@ -62,16 +107,90 @@
         background-color: var(--bit-btg-itm-clr-bg-active);
     }
 
-    &[disabled] {
+    // The focus ring is drawn inside the button because the group clips its overflow,
+    // which would otherwise cut an outset ring off at the edges of the group.
+    &:focus-visible {
+        z-index: 1;
+        outline-offset: calc(-1 * #{spacing(0.25)});
+        outline: spacing(0.25) solid var(--bit-btg-itm-clr-fcs);
+    }
+
+    &[disabled],
+    &[aria-disabled="true"] {
         cursor: default;
         color: $clr-fg-dis;
-        pointer-events: none;
         background-color: var(--bit-btg-itm-clr-bg-dis);
     }
 
-    &:last-child {
+    &[disabled] {
+        pointer-events: none;
+    }
+
+    // The last button never renders the separator border that joins it to the next one.
+    &.bit-btg-lst {
         border-block-end-width: 0;
         border-inline-end-width: 0;
+    }
+}
+
+// In the detached mode the group itself is only a flex container: the border and the rounding
+// move to each individual button so they read as separate buttons. It is declared after
+// .bit-btg-itm so that it also wins over the separator rules of the attached layout.
+.bit-btg-dtc {
+    overflow: visible;
+    border-width: 0;
+    gap: var(--bit-btg-gap, #{spacing(1)});
+
+    .bit-btg-itm {
+        border-width: $shp-border-width;
+        border-radius: $shp-border-radius;
+    }
+
+    &.bit-btg-rnd {
+        border-radius: 0;
+
+        .bit-btg-itm {
+            border-radius: 9999px;
+        }
+    }
+}
+
+// Wrapping breaks the single-row "attached" model that the shared separators rely on: the button
+// ending a row would keep a separator with nothing after it, the rows would sit flush with no
+// separator between them, and the last row would stretch to fill the width on its own.
+// So while wrapping, every button draws a full border and overlaps its neighbours by exactly one
+// border width, which collapses the shared edges into single lines in both directions. The group
+// drops its own border because the buttons now draw the outline themselves, and the start padding
+// balances the negative margin of the first button of each row and of the first row.
+.bit-btg-wrp {
+    flex-wrap: wrap;
+
+    // Without this the buttons of every row stretch to fill their own row, so a row holding fewer
+    // buttons renders them much wider than the rows above it.
+    .bit-btg-itm {
+        flex-grow: 0;
+    }
+}
+
+// The detached layout already separates the buttons with a gap and gives each of them a full
+// border, and that keeps working as-is once the rows wrap, so the collapsing below is only for
+// the attached layout.
+.bit-btg-wrp:not(.bit-btg-dtc) {
+    border-width: 0;
+    padding-inline-start: $shp-border-width;
+    padding-block-start: $shp-border-width;
+
+    .bit-btg-itm {
+        border-width: $shp-border-width;
+        margin-inline-start: calc(-1 * #{$shp-border-width});
+        margin-block-start: calc(-1 * #{$shp-border-width});
+    }
+}
+
+.bit-btg-jst {
+    .bit-btg-itm {
+        flex: 1 1 0;
+        min-width: 0;
     }
 }
 
@@ -79,9 +198,77 @@
     flex-direction: row-reverse;
 }
 
+.bit-btg-ldg {
+    cursor: default;
+    pointer-events: none;
+}
+
 .bit-btg-btx {
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.bit-btg-bdg {
+    display: flex;
+    flex: none;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    padding: spacing(0.25) spacing(0.75);
+    border-radius: 9999px;
+    font-size: calc(var(--bit-btg-itm-fontsize) * 0.8);
+
+    // Tinting the current foreground keeps the badge legible on every variant,
+    // including the ones whose button background is transparent.
+    color: currentcolor;
+    background-color: rgb(128 128 128 / 25%);
+    background-color: color-mix(in srgb, currentcolor 20%, transparent);
+}
+
+.bit-btg-spn {
+    flex: none;
+    border-radius: 50%;
+    border-width: spacing(0.2125);
+    border-style: $shp-border-style;
+    width: var(--bit-btg-itm-fontsize);
+    height: var(--bit-btg-itm-fontsize);
+    border-color: transparent;
+    border-top-color: var(--bit-btg-itm-clr-txt);
+    animation: bit-btg-spinner-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}
+
+@keyframes bit-btg-spinner-animation {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// The check mark is drawn with a rotated border so the component keeps no icon-font dependency,
+// and its box is always rendered so that toggling an item never shifts the layout.
+.bit-btg-sin {
+    flex: none;
+    position: relative;
+    width: var(--bit-btg-itm-fontsize);
+    height: var(--bit-btg-itm-fontsize);
+
+    &::after {
+        top: 10%;
+        content: '';
+        width: 32%;
+        height: 62%;
+        opacity: 0;
+        position: absolute;
+        inset-inline-start: 32%;
+        transform: rotate(45deg);
+        border-style: $shp-border-style;
+        border-width: 0 spacing(0.25) spacing(0.25) 0;
+        border-color: currentcolor;
+    }
+}
+
+.bit-btg-chk > .bit-btg-sin::after {
+    opacity: 1;
 }
 
 .bit-btg-fil {
@@ -93,6 +280,7 @@
     --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-hover);
     --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-active);
     --bit-btg-itm-clr-bg-dis: #{$clr-bg-dis};
+    --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
 
     @media (hover: hover) {
         &:hover {
@@ -113,7 +301,8 @@
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
     --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-hover);
     --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-active);
-    --bit-btg-itm-clr-bg-dis: transprent;
+    --bit-btg-itm-clr-bg-dis: transparent;
+    --bit-btg-itm-clr-fcs: var(--bit-btg-clr);
 
     @media (hover: hover) {
         &:hover {
@@ -134,7 +323,8 @@
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
     --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-hover);
     --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-active);
-    --bit-btg-itm-clr-bg-dis: transprent;
+    --bit-btg-itm-clr-bg-dis: transparent;
+    --bit-btg-itm-clr-fcs: var(--bit-btg-clr);
 
     &.bit-dis {
         border-color: transparent;
@@ -145,6 +335,7 @@
     color: var(--bit-btg-clr-txt);
     border-color: var(--bit-btg-clr-dark);
     background-color: var(--bit-btg-clr-dark);
+    --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
 
     @media (hover: hover) {
         &:hover {

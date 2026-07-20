@@ -3,14 +3,19 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation.
+/// A menu button combines a button with a callout menu of related actions or links.
+/// It supports split and sticky modes, toggle behavior, separator and link items, a loading state,
+/// and full keyboard navigation with proper ARIA menu semantics.
 /// </summary>
 public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 {
     private List<TItem> _items = [];
-    private BitButtonType _buttonType;
+    internal BitButtonType _buttonType;
     private string _calloutId = default!;
     private string _overlayId = default!;
+    private bool _focusFirstItemOnOpen;
+    private ElementReference _operatorButtonRef;
+    private ElementReference _chevronButtonRef;
     private IEnumerable<TItem> _oldItems = default!;
     private DotNetObjectReference<BitMenuButton<TItem>> _dotnetObj = default!;
 
@@ -49,6 +54,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
+    /// The aria-label of the chevron down button of the split menu button for the benefit of screen readers.
+    /// </summary>
+    [Parameter] public string? ChevronDownAriaLabel { get; set; }
+
+    /// <summary>
     /// The icon for the chevron down part of the menu button.
     /// </summary>
     [Parameter] public BitIconInfo? ChevronDownIcon { get; set; }
@@ -85,6 +95,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
+    /// Determines the allowed drop directions of the callout.
+    /// </summary>
+    [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
+
+    /// <summary>
+    /// Expands the menu button width to 100% of the available width.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// The content inside the header of menu button can be customized.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
@@ -108,6 +129,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// If true, removes the icon from the header button.
     /// </summary>
     [Parameter] public bool NoIcon { get; set; }
+
+    /// <summary>
+    /// Determines whether the menu button is in the loading state.
+    /// It replaces the default icon of the header button with a spinner and disables its click.
+    /// </summary>
+    [Parameter] public bool IsLoading { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout.
@@ -162,6 +189,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// Determines the current selected item that acts as the header item.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
+    [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
 
     /// <summary>
@@ -191,6 +219,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// The text to show inside the header of menu button.
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The tooltip to show when the mouse is placed on the header button.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
     /// <summary>
     /// If true, enables the toggling behavior on the header button in split mode.
@@ -231,7 +264,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
             if (SelectedItem is null)
             {
-                _ = AssignSelectedItem(_items.FirstOrDefault(GetIsEnabled));
+                _ = AssignSelectedItem(_items.FirstOrDefault(i => GetIsEnabled(i) && GetIsSeparator(i) is false));
             }
         }
 
@@ -285,6 +318,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             _ => "bit-mnb-md"
         });
 
+        ClassBuilder.Register(() => FullWidth ? "bit-mnb-flw" : string.Empty);
+
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
         ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
@@ -331,7 +366,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
-        if (ChildContent is not null || Items.Any() is false || Items == _oldItems) return;
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // menu button's own parameters (Styles, Sticky, ItemTemplate, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
+        if (ChildContent is not null || Options is not null || Items.Any() is false || Items == _oldItems) return;
 
         _oldItems = Items;
         _items = [.. Items];
@@ -348,7 +387,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
         else
         {
-            item = _items.FirstOrDefault(GetIsEnabled);
+            item = _items.FirstOrDefault(i => GetIsEnabled(i) && GetIsSeparator(i) is false);
             await AssignSelectedItem(item);
         }
     }
@@ -363,9 +402,25 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         base.OnAfterRender(firstRender);
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            try
+            {
+                // Prevents the default behavior (scrolling) of the navigation keys handled by the
+                // keydown handlers, since Blazor cannot conditionally preventDefault per key.
+                await _js.BitMenuButtonsSetup(_Id, _calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+    }
 
 
-    private string? GetClass(TItem? item)
+
+    internal string? GetClass(TItem? item)
     {
         if (item is null) return null;
 
@@ -389,7 +444,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
-    private BitIconInfo? GetIcon(TItem? item)
+    internal BitIconInfo? GetIcon(TItem? item)
     {
         if (item is null) return null;
 
@@ -428,7 +483,31 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return BitIconInfo.From(icon, iconName);
     }
 
-    private bool GetIsEnabled(TItem? item)
+    internal string? GetHref(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Href;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Href;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Href.Selector is not null)
+        {
+            return NameSelectors.Href.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Href.Name);
+    }
+
+    internal bool GetIsEnabled(TItem? item)
     {
         if (item is null) return false;
 
@@ -476,6 +555,30 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
     }
 
+    internal bool GetIsSeparator(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.IsSeparator;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsSeparator;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsSeparator.Selector is not null)
+        {
+            return NameSelectors.IsSeparator.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsSeparator.Name, false);
+    }
+
     private string? GetKey(TItem item)
     {
         if (item is BitMenuButtonItem menuButtonItem)
@@ -498,7 +601,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
-    private string? GetStyle(TItem? item)
+    internal string? GetStyle(TItem? item)
     {
         if (item is null) return null;
 
@@ -522,7 +625,31 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private RenderFragment<TItem>? GetTemplate(TItem? item)
+    internal string? GetTarget(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Target;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Target;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Target.Selector is not null)
+        {
+            return NameSelectors.Target.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
+    }
+
+    internal RenderFragment<TItem>? GetTemplate(TItem? item)
     {
         if (item is null) return null;
 
@@ -546,7 +673,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
-    private string? GetText(TItem? item)
+    internal string? GetText(TItem? item)
     {
         if (item is null) return null;
 
@@ -570,9 +697,33 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
+    internal string? GetTitle(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Title;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Title;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
+    }
+
     private async Task HandleOnHeaderClick(TItem? item)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsLoading) return;
 
         if (Split is false)
         {
@@ -600,11 +751,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private async Task HandleOnItemClick(TItem item)
+    internal async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
         await CloseCallout();
+
+        // CloseCallout changes IsOpen but does not re-render the root itself, so refresh now to update
+        // the open-state classes even when the Sticky branch below returns early.
+        StateHasChanged();
 
         if (Sticky)
         {
@@ -618,6 +773,13 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
             await InvokeItemClick(item);
         }
+
+        // The click handler runs on the clicked item's renderer, so the root element (open state
+        // classes) needs an explicit re-render here.
+        StateHasChanged();
+
+        // The focused item is hidden along with the callout, so return the focus to the trigger button.
+        await FocusTrigger();
     }
 
     private async Task InvokeItemClick(TItem item)
@@ -645,11 +807,106 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private async Task OpenCallout()
+    private async Task HandleOnTriggerKeyDown(KeyboardEventArgs e, bool opener)
     {
-        if (await AssignIsOpen(true) is false) return;
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            if (IsOpen is false) return;
+
+            await CloseCallout();
+            StateHasChanged();
+            return;
+        }
+
+        if (opener is false) return;
+
+        if (e.Key is "ArrowDown" or "ArrowUp")
+        {
+            if (await OpenCallout() is false) return;
+
+            await FocusItem(e.Key is "ArrowDown" ? "first" : "last");
+        }
+        else if (e.Key is "Enter" or " ")
+        {
+            // The native click that follows this keydown opens the callout, so
+            // mark it to move the focus to the first item as the APG pattern requires.
+            _focusFirstItemOnOpen = true;
+        }
+    }
+
+    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false || IsOpen is false) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                await FocusItem("next");
+                break;
+            case "ArrowUp":
+                await FocusItem("prev");
+                break;
+            case "Home":
+                await FocusItem("first");
+                break;
+            case "End":
+                await FocusItem("last");
+                break;
+            case "Escape":
+            case "Tab":
+                await CloseCallout();
+                StateHasChanged();
+                await FocusTrigger();
+                break;
+            default:
+                if (e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false)
+                {
+                    await FocusItem("char", e.Key);
+                }
+                break;
+        }
+    }
+
+    private ValueTask FocusItem(string mode, string? character = null)
+    {
+        return _js.BitMenuButtonsFocusItem(_calloutId, mode, character);
+    }
+
+    private async Task FocusTrigger()
+    {
+        if (Split)
+        {
+            await _chevronButtonRef.FocusAsync();
+        }
+        else
+        {
+            await _operatorButtonRef.FocusAsync();
+        }
+    }
+
+    /// <summary>
+    /// Opens the callout and reports whether it actually opened, so callers can skip
+    /// follow-up work (like focusing an item) on a menu that stayed closed.
+    /// </summary>
+    private async Task<bool> OpenCallout()
+    {
+        if (IsLoading) return false;
+
+        var focusFirstItem = _focusFirstItemOnOpen;
+        _focusFirstItemOnOpen = false;
+
+        if (await AssignIsOpen(true) is false) return false;
 
         await ToggleCallout();
+
+        if (focusFirstItem)
+        {
+            await FocusItem("first");
+        }
+
+        return true;
     }
 
     private async Task CloseCallout()
@@ -672,7 +929,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: BitResponsiveMode.None,
-            dropDirection: BitDropDirection.TopAndBottom,
+            dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: "",
             scrollOffset: 0,
@@ -686,6 +943,25 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     private void OnSetIsOpen()
     {
         _ = ToggleCallout();
+    }
+
+    private void OnSetSelectedItem()
+    {
+        // The selected item affects both the sticky header (rendered by this component) and the
+        // items rendered by the options themselves, so re-render all of them.
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    private void RefreshOptions()
+    {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
+        foreach (var item in _items)
+        {
+            (item as BitMenuButtonOption)?.InternalStateHasChanged();
+        }
     }
 
     private string GetItemKey(TItem item, string defaultKey)
@@ -721,6 +997,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             try
             {
                 await _js.BitCalloutClearCallout(_calloutId);
+                await _js.BitMenuButtonsDispose(_Id);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

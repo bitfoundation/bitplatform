@@ -1,0 +1,48 @@
+﻿@* Host for RevalidateTests: a parent/child chain whose loaders count invocations and expose an
+   incrementing value, plus a guard counter proving revalidation never re-runs guards. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/data" Guard="CountGuard" Loader="ParentLoader">
+        <Content>
+            <div data-testid="layout">
+                <BrouterOutlet />
+            </div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/view" Loader="ChildLoader">
+                <Content><ChildDataView /></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+    <Broute Path="/other">
+        <Content><div data-testid="other">other</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    public int GuardRuns { get; private set; }
+    public int ParentLoaderRuns { get; private set; }
+    public int ChildLoaderRuns { get; private set; }
+    public bool? LastLoadWasRevalidation { get; private set; }
+
+    private ValueTask CountGuard(BrouterNavigationContext ctx)
+    {
+        GuardRuns++;
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask<object?> ParentLoader(BrouterNavigationContext ctx)
+    {
+        ParentLoaderRuns++;
+        return ValueTask.FromResult<object?>($"parent-{ParentLoaderRuns}");
+    }
+
+    private ValueTask<object?> ChildLoader(BrouterNavigationContext ctx)
+    {
+        ChildLoaderRuns++;
+        LastLoadWasRevalidation = ctx.IsRevalidation;
+        return ValueTask.FromResult<object?>($"child-{ChildLoaderRuns}");
+    }
+}

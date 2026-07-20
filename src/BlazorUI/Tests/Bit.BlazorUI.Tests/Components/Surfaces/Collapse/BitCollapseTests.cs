@@ -16,7 +16,7 @@ public class BitCollapseTests : BunitTestContext
 
         var collapse = component.Find(".bit-col");
         Assert.IsNotNull(collapse);
-        Assert.IsTrue(collapse.ToMarkup().Contains("Hello Collapse"));
+        Assert.IsTrue(collapse.OuterHtml.Contains("Hello Collapse"));
     }
 
     [TestMethod]

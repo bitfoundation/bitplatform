@@ -1,0 +1,17 @@
+﻿@* Hosts two sibling routes with caller-supplied templates, used by AmbiguousRouteTests
+   to verify that registering an ambiguous (exact-duplicate) template throws. *@
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="@PathA">
+        <Content><div data-testid="a">a</div></Content>
+    </Broute>
+    <Broute Path="@PathB">
+        <Content><div data-testid="b">b</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    [Parameter, EditorRequired] public string PathA { get; set; } = default!;
+    [Parameter, EditorRequired] public string PathB { get; set; } = default!;
+}

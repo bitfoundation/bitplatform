@@ -1,0 +1,61 @@
+﻿@* A DESCENDANT of the routed content (this card sits inside LifecyclePage, it is not the page
+   root) wired to the route lifecycle by hand: it consumes the cascaded BrouterRouteContext and
+   calls Register(this) - the pattern for components that can't derive from BrouterRouteBase.
+   Registration works at any depth under the routed content, and every registered handler
+   receives the same callbacks as the page itself. Unregisters on dispose. *@
+
+@implements IBrouterRoute
+@implements IDisposable
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Descendant handler (manual registration)</h3>
+    <p>
+        <code>RouteContext.IsActive</code>: <strong>@(RouteContext?.IsActive.ToString() ?? "no context")</strong> ·
+        activations seen: <strong>@_activations</strong> ·
+        renavigations seen: <strong>@_renavigations</strong>
+    </p>
+    <p class="bb-card-desc">
+        This card is a child component, not the page: it took the cascaded
+        <code>BrouterRouteContext</code> as a <code>[CascadingParameter]</code> and called
+        <code>Register(this)</code>, so it receives the exact same lifecycle callbacks as the
+        auto-discovered page above - the manual escape hatch for <code>Content</code> fragments,
+        <code>Found</code>-template pages, or any nested component.
+    </p>
+</div>
+
+@code {
+    [CascadingParameter] private BrouterRouteContext? RouteContext { get; set; }
+
+    // The exact context instance this component registered with, so Dispose unregisters from the
+    // same one even if the cascaded parameter were ever re-assigned.
+    private BrouterRouteContext? _registeredContext;
+    private int _activations;
+    private int _renavigations;
+
+    protected override void OnParametersSet()
+    {
+        // The cascade is a stable, fixed instance - registering once on the first parameter set
+        // is enough, and it happens during the mount render, before the arrival callbacks fire.
+        if (_registeredContext is null && RouteContext is not null)
+        {
+            _registeredContext = RouteContext;
+            _registeredContext.Register(this);
+        }
+    }
+
+    public ValueTask OnActivatedAsync(BrouterRouteActivation activation)
+    {
+        _activations++;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
+    {
+        _renavigations++;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public void Dispose() => _registeredContext?.Unregister(this);
+}

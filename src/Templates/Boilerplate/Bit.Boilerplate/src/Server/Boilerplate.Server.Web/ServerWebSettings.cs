@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Client.Web;
 using Boilerplate.Client.Core;
 using Microsoft.AspNetCore.Components;
@@ -8,12 +8,11 @@ namespace Boilerplate.Server.Web;
 
 public partial class ServerWebSettings : ClientWebSettings
 {
-    public ForwardedHeadersOptions? ForwardedHeaders { get; set; } = default!;
-
     /// <summary>
     /// Specifies the allowed origins for CORS requests, URLs returned after external sign-in and email confirmation, and permitted origins for Web Auth, as well as forwarded headers middleware in ASP.NET Core.
+    /// Each entry may contain the <c>*</c> wildcard (e.g. <c>https://*.myapp.com</c>) so a single entry can trust every tenant subdomain.
     /// </summary>
-    public Uri[] TrustedOrigins { get; set; } = [];
+    public string[] TrustedOrigins { get; set; } = [];
     [Required]
     public WebAppRenderOptions WebAppRender { get; set; } = default!;
 
@@ -34,11 +33,6 @@ public partial class ServerWebSettings : ClientWebSettings
             throw new InvalidOperationException("WebAppRender is required. Please set WebAppRender in appsettings.json");
 
         Validator.TryValidateObject(WebAppRender, new ValidationContext(WebAppRender), validationResults, true);
-
-        if (ForwardedHeaders is not null)
-        {
-            Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
-        }
 
         return validationResults;
     }

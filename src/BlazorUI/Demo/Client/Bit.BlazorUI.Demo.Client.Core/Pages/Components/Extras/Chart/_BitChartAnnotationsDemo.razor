@@ -1,0 +1,11 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Threshold lines" RazorCode="@linesRazorCode" CsharpCode="@linesCsharpCode" Id="annotations-threshold-lines">
+    <div class="example-desc">horizontal target + warning band</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_lines" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Box + vertical marker" RazorCode="@boxRazorCode" CsharpCode="@boxCsharpCode" Id="annotations-box-vertical-marker">
+    <div class="example-desc">highlight a region and an event</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Bars()" Options="_box" /></div></div>
+</DemoExample>

@@ -1,0 +1,9 @@
+﻿@using Bit.Brouter
+
+@* Scans this test assembly for [Route]/@page components (e.g. DiscoveredPage) and matches them
+   alongside the hand-declared /home route. *@
+<Brouter AppAssembly="@typeof(DiscoveryHost).Assembly">
+    <Broute Path="/home">
+        <Content><div data-testid="home">home</div></Content>
+    </Broute>
+</Brouter>

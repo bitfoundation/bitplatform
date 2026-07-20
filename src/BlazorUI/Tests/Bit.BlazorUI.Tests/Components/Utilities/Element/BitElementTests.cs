@@ -56,7 +56,7 @@ public class BitElementTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -93,7 +93,7 @@ public class BitElementTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Style, "padding: 1rem;");
         });
@@ -124,7 +124,7 @@ public class BitElementTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Class, "test-class");
         });
@@ -179,7 +179,7 @@ public class BitElementTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });
@@ -220,7 +220,7 @@ public class BitElementTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
         });

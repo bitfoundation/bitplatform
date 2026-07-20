@@ -11,11 +11,13 @@
     var searchBoxIconCss = BitIconInfo.From(SearchBoxIcon, SearchBoxIconName ?? "Search")?.GetCssClasses();
     var searchBoxClearIconCss = BitIconInfo.From(SearchBoxClearIcon, SearchBoxClearIconName ?? "Cancel")?.GetCssClasses();
     var comboBoxAddButtonIconCss = BitIconInfo.From(ComboBoxAddButtonIcon, ComboBoxAddButtonIconName ?? "Add")?.GetCssClasses();
-    var itemCheckIconCss = BitIconInfo.From(ItemCheckIcon, ItemCheckIconName ?? "Accept")?.GetCssClasses();
+    var itemCheckIconCss = GetItemCheckIconCss();
 }
 
-@if ((Options ?? ChildContent) is not null)
+@if (Virtualize && (Options ?? ChildContent) is not null)
 {
+    @* In virtualize mode the items have to be rendered from the (registered) Items collection, so the
+       options only register themselves here without rendering their items in place. *@
     <CascadingValue Value="this" IsFixed="true">
         <div style="display:none" hidden>@(Options ?? ChildContent)</div>
     </CascadingValue>
@@ -306,6 +308,12 @@
                     <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
                 </Virtualize>
             }
+        }
+        else if ((Options ?? ChildContent) is not null)
+        {
+            <CascadingValue Value="this" IsFixed="true">
+                @(Options ?? ChildContent)
+            </CascadingValue>
         }
         else
         {

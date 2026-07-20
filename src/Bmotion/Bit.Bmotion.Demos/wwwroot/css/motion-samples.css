@@ -24,7 +24,8 @@ body {
     padding: .75rem 1.5rem;
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    flex-wrap: wrap;
+    gap: .5rem 1.25rem;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -35,11 +36,20 @@ body {
     background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin-right: auto;
+}
+.bm-nav-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem 1.25rem;
+    min-width: 0;
 }
 .bm-nav a {
     color: var(--bm-muted);
     text-decoration: none;
     font-size: .9rem;
+    white-space: nowrap;
     transition: color .2s;
 }
 .bm-nav a:hover, .bm-nav a.active { color: var(--bm-text); }
@@ -48,6 +58,55 @@ body {
     outline: 2px solid var(--bm-primary);
     outline-offset: 2px;
     border-radius: 4px;
+}
+
+/* Hamburger toggle - hidden until the nav collapses on narrow screens */
+.bm-nav-burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 8px;
+    cursor: pointer;
+}
+.bm-nav-burger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    margin: 0 auto;
+    background: var(--bm-text);
+    border-radius: 2px;
+    transition: transform .2s, opacity .2s;
+}
+.bm-nav-burger:focus-visible {
+    outline: 2px solid var(--bm-primary);
+    outline-offset: 2px;
+}
+
+@media (max-width: 860px) {
+    .bm-nav-burger { display: flex; }
+    .bm-nav-links {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        flex-basis: 100%;
+        gap: .25rem;
+        padding-top: .5rem;
+    }
+    .bm-nav.open .bm-nav-links { display: flex; }
+    .bm-nav-links a {
+        padding: .6rem .25rem;
+        font-size: 1rem;
+        border-radius: 6px;
+    }
+    .bm-nav.open .bm-nav-burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .bm-nav.open .bm-nav-burger span:nth-child(2) { opacity: 0; }
+    .bm-nav.open .bm-nav-burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 }
 
 .bm-page {

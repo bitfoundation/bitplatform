@@ -1,0 +1,107 @@
+﻿@* A deliberately stateful page used by the keep-alive demo: the /sticky route mounts it with
+   KeepAlive (state survives navigating away), /fleeting without (state resets). It derives from
+   BrouterRouteBase to receive the route lifecycle - OnActivated resumes its background timer
+   (on the first show and on every return), OnDeactivated pauses it while the page is kept hidden. *@
+
+@inherits BrouterRouteBase
+
+<div class="bb-intro">
+    <h1>@Title</h1>
+    <p class="bb-subtitle">@Description</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Component state</h3>
+    <p>Clicks this instance has seen: <strong>@_clicks</strong></p>
+    <button class="btn btn-primary" @onclick="@(() => _clicks++)">Click me</button>
+    <div style="margin-top: .75rem;">
+        <textarea rows="3" style="width: 100%;" @bind="_note" placeholder="Scratch note - lives in this component instance…"></textarea>
+    </div>
+    <p class="bb-card-desc">
+        Click a few times, type a note, navigate to Home and come back.
+        @(KeepAliveDemo
+            ? "This route is KeepAlive: the component stayed mounted (hidden), so everything survives."
+            : "This route is NOT KeepAlive: the component was disposed and recreated - everything resets.")
+    </p>
+</div>
+
+@if (KeepAliveDemo)
+{
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Activate / deactivate lifecycle</h3>
+        <p>
+            Seconds this page has been <em>visible</em>: <strong>@_visibleSeconds</strong><br />
+            Deactivated (hidden) <strong>@_deactivations</strong> times, reactivated <strong>@_reactivations</strong> times.
+        </p>
+        <p class="bb-card-desc">
+            A kept page stays fully alive while hidden - its timers keep firing unless it pauses them.
+            This page derives from <code>BrouterRouteBase</code>: <code>OnDeactivated</code> stops its
+            ticking timer when the page is hidden, <code>OnActivated</code> resumes it on return (and
+            <code>activation.IsFirstActivation</code> separates the first show from revisits). Navigate
+            away for a while and come back: the seconds counter did NOT advance while you were gone,
+            but the deactivation/reactivation counters did - proving the same instance was signalled
+            on each transition instead of being recreated.
+        </p>
+    </div>
+}
+
+@code {
+    [Parameter] public bool KeepAliveDemo { get; set; }
+
+    private int _clicks;
+    private string _note = string.Empty;
+
+    private int _visibleSeconds;
+    private int _reactivations;
+    private int _deactivations;
+    private bool _disposed;
+    private System.Threading.Timer? _timer;
+
+    private string Title => KeepAliveDemo ? "Keep-alive route" : "Transient route (control)";
+    private string Description => KeepAliveDemo
+        ? "Declared with KeepAlive: navigating away hides it instead of disposing it."
+        : "The default behavior: unmatched content unmounts.";
+
+    protected override void OnInitialized()
+    {
+        if (KeepAliveDemo)
+        {
+            // Created paused: OnActivated (which also fires on the first show) starts the ticking.
+            _timer = new System.Threading.Timer(_ =>
+            {
+                // Hop to the renderer's dispatcher before touching component state, and re-check
+                // disposal there: Timer.Dispose does not wait for in-flight callbacks, so a tick
+                // can still be unwinding while the component is torn down.
+                _ = InvokeAsync(() =>
+                {
+                    if (_disposed) return;
+                    _visibleSeconds++;
+                    StateHasChanged();
+                });
+            }, null, dueTime: System.Threading.Timeout.Infinite, period: System.Threading.Timeout.Infinite);
+        }
+    }
+
+    protected override void OnActivated(BrouterRouteActivation activation)
+    {
+        // Fires on the first show AND on every reveal from the hidden retention. A real page would
+        // also refresh stale data here when !activation.IsFirstActivation.
+        if (activation.IsFirstActivation is false) _reactivations++;
+        _timer?.Change(1000, 1000);
+    }
+
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+    {
+        // Deactivated: pause background work while the page is kept but hidden. Without this,
+        // the timer would keep firing (and re-rendering the hidden subtree) the whole time.
+        _deactivations++;
+        _timer?.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _disposed = true;
+        _timer?.Dispose();
+        base.Dispose(disposing);
+    }
+}

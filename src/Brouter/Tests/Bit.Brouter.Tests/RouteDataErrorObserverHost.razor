@@ -1,0 +1,23 @@
+﻿@* Observer + a failing navigation: when a commit-phase failure renders an error boundary, the
+   cascaded RouteData must reset to null - the failed target's page never rendered, and the
+   previous page's RouteData must not keep being published. *@
+@using Bit.Brouter
+
+<Brouter>
+    <ChildContent>
+        <Broute Path="/ok-observed" Component="@typeof(MultiRoutePage)" />
+
+        <Broute Path="/fail-observed" Component="@typeof(HandComponentPage)" Loader="FailLoader">
+            <ErrorContent Context="err">
+                <div data-testid="observer-boundary">@err.Exception.Message</div>
+            </ErrorContent>
+        </Broute>
+
+        <CascadedRouteDataProbe />
+    </ChildContent>
+</Brouter>
+
+@code {
+    private ValueTask<object?> FailLoader(BrouterNavigationContext ctx)
+        => throw new InvalidOperationException("observed loader failed");
+}

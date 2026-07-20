@@ -1,7 +1,11 @@
+@*+:cnd:noEmit*@
 @attribute [Route(PageUrls.AddOrEditProduct + "/{Id:guid?}")]
 @attribute [Route("{culture?}" + PageUrls.AddOrEditProduct + "/{Id:guid?}")]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
+@*#if (multitenant == true)*@
+@attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+@*#endif*@
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 @inherits AppPageBase
 
 <AppPageData ShowGoBackButton=true
@@ -41,7 +45,7 @@
                                     Label="@Localizer[(nameof(AppStrings.Price))]" />
                     <ValidationMessage For="() => product.Price" />
 
-                    <BitRichTextEditor @ref=richTextEditorRef FullToolbar OnEditorReady="@(() => richTextEditorRef.SetHtml(product.DescriptionHTML))" />
+                    <BitRichTextEditor Toolbar="BitRichTextEditorToolbar.AllExtended" @bind-Value="product.DescriptionHTML" @ref="bitRichTextEditor" />
 
                     <BitFileUpload @ref="fileUploadRef"
                                    AutoReset

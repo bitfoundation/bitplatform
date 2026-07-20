@@ -1,0 +1,307 @@
+@page "/css-props"
+
+<h1>CSS properties</h1>
+
+<p class="page-intro">
+    Beyond transforms and colors, Bmotion's typed props reach across the whole style surface -
+    <strong>typography</strong>, <strong>spacing</strong>, <strong>positioning</strong>,
+    <strong>clipping &amp; backgrounds</strong> - and the generic <strong>Css</strong> bag animates
+    <em>any</em> property by name. Each group below toggles on its own.
+</p>
+
+@* ── Typography ─────────────────────────────────────────────────────────── *@
+<div class="demo-section">
+    <h2>Typography</h2>
+    <p><code>letterSpacing</code>, <code>fontSize</code> and <code>lineHeight</code> interpolate like any length.</p>
+
+    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _typo = !_typo)">
+        @(_typo ? "Reset" : "Animate")
+    </button>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">letterSpacing</span>
+            <Bmotion Animate="@(_typo ? Bm.To(letterSpacing: "0.4em") : Bm.To(letterSpacing: "0em"))"
+                     Transition="Bm.Tween(0.7)">
+                <div class="headline">BMOTION</div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">fontSize</span>
+            <Bmotion Animate="@(_typo ? Bm.To(fontSize: "2.2rem") : Bm.To(fontSize: "1rem"))"
+                     Transition="Bm.Tween(0.6)">
+                <div class="headline" style="font-size:1rem">Scale me</div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">lineHeight</span>
+            <Bmotion Animate="@(_typo ? Bm.To(lineHeight: "2.3") : Bm.To(lineHeight: "1.15"))"
+                     Transition="Bm.Tween(0.7)">
+                <div class="prose">Motion that reads well breathes between its lines.</div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_typoCode" />
+</div>
+
+@* ── Spacing ────────────────────────────────────────────────────────────── *@
+<div class="demo-section">
+    <h2>Spacing</h2>
+    <p><code>gap</code> animates on a flex/grid container; <code>padding</code> grows a box from the inside; <code>margin</code> pushes it within its track.</p>
+
+    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _spacing = !_spacing)">
+        @(_spacing ? "Reset" : "Animate")
+    </button>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">gap (flex container)</span>
+            <Bmotion Animate="@(_spacing ? Bm.To(gap: "2.5rem") : Bm.To(gap: "0.4rem"))"
+                     Transition="Bm.Spring()">
+                <div class="row">
+                    <div class="box box-sm" /><div class="box box-sm" /><div class="box box-sm" />
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">padding</span>
+            <Bmotion Animate="@(_spacing ? Bm.To(padding: "1.8rem") : Bm.To(padding: "0.4rem"))"
+                     Transition="Bm.Tween(0.6)">
+                <div class="pad-box">PAD</div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">margin</span>
+            <div class="track">
+                <Bmotion Animate="@(_spacing ? Bm.To(margin: "1.6rem") : Bm.To(margin: "0.1rem"))"
+                         Transition="Bm.Tween(0.6)">
+                    <div class="box box-sm" />
+                </Bmotion>
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_spacingCode" />
+</div>
+
+@* ── Positioning ────────────────────────────────────────────────────────── *@
+<div class="demo-section">
+    <h2>Positioning</h2>
+    <p>Animate <code>top</code>, <code>left</code>, <code>right</code> and <code>bottom</code> on a positioned element.</p>
+
+    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _pos = !_pos)">
+        @(_pos ? "Reset" : "Animate")
+    </button>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">left</span>
+            <div class="track track-wide">
+                <Bmotion Animate="@(_pos ? Bm.To(left: "150px") : Bm.To(left: "0px"))"
+                         Transition="Bm.Tween(0.7)">
+                    <div class="box box-sm" style="position:relative" />
+                </Bmotion>
+            </div>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">top + left</span>
+            <div class="track track-wide" style="min-height:120px">
+                <Bmotion Animate="@(_pos ? Bm.To(top: "60px", left: "150px") : Bm.To(top: "0px", left: "0px"))"
+                         Transition="Bm.Spring(stiffness: 200, damping: 18)">
+                    <div class="box box-sm" style="position:relative" />
+                </Bmotion>
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_posCode" />
+</div>
+
+@* ── Clipping & backgrounds ─────────────────────────────────────────────── *@
+<div class="demo-section">
+    <h2>Clipping &amp; backgrounds</h2>
+    <p><code>clipPath</code>, <code>backgroundPosition</code> and <code>backgroundSize</code> interpolate their numeric parts frame by frame.</p>
+
+    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _visual = !_visual)">
+        @(_visual ? "Reset" : "Animate")
+    </button>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">clipPath</span>
+            <Bmotion Animate="@(_visual ? Bm.To(clipPath: "circle(30% at 50% 50%)") : Bm.To(clipPath: "circle(65% at 50% 50%)"))"
+                     Transition="Bm.Tween(0.7)">
+                <div class="fill-box grad-a" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">backgroundPosition</span>
+            <Bmotion Animate="@(_visual ? Bm.To(backgroundPosition: "100% 50%") : Bm.To(backgroundPosition: "0% 50%"))"
+                     Transition="Bm.Tween(1.0)">
+                <div class="fill-box grad-pos" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">backgroundSize</span>
+            <Bmotion Animate="@(_visual ? Bm.To(backgroundSize: "250%") : Bm.To(backgroundSize: "120%"))"
+                     Transition="Bm.Tween(0.8)">
+                <div class="fill-box grad-size" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_visualCode" />
+</div>
+
+@* ── Generic escape hatch ───────────────────────────────────────────────── *@
+<div class="demo-section">
+    <h2>Generic <code>Css</code> escape hatch</h2>
+    <p>The <code>css</code> bag animates <em>any</em> CSS property by name (dash- or camelCase) - the equivalent of motion.dev's <code>animate()</code>.</p>
+
+    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _escape = !_escape)">
+        @(_escape ? "Reset" : "Animate")
+    </button>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">css: word-spacing</span>
+            <Bmotion Animate="@(_escape ? Bm.To(css: new() { ["word-spacing"] = "1.5rem" }) : Bm.To(css: new() { ["word-spacing"] = "0rem" }))"
+                     Transition="Bm.Tween(0.7)">
+                <div class="headline" style="font-size:1rem">the quick fox</div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <span class="label">css: text-indent</span>
+            <Bmotion Animate="@(_escape ? Bm.To(css: new() { ["text-indent"] = "48px" }) : Bm.To(css: new() { ["text-indent"] = "0px" }))"
+                     Transition="Bm.Tween(0.7)">
+                <div class="prose">Indented on demand.</div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_escapeCode" />
+</div>
+
+@* ── Accessibility & safety ─────────────────────────────────────────────── *@
+<div class="demo-section">
+    <h2>Accessibility &amp; safety knobs</h2>
+    <p>These are configured once at registration in <code>Program.cs</code>:</p>
+    <ul class="feature-list">
+        <li>
+            <strong>Reduced motion</strong> -
+            <code>AddBitBmotionServices(o =&gt; o.ReducedMotion = BmReducedMotionMode.User)</code>
+            respects the OS <code>prefers-reduced-motion</code> everywhere. When reduced, transforms
+            snap while opacity/color still animate.
+        </li>
+        <li>
+            <strong>CSS-injection safe mode</strong> -
+            <code>o.CssSafeMode = BmCssSafeMode.Throw</code> validates string values before they reach
+            inline style (reject <code>;</code>, <code>}</code>, <code>javascript:</code>, …). Enable it
+            when binding untrusted input.
+        </li>
+        <li>
+            <strong>Capabilities</strong> - inject <code>BmotionCapabilities</code> to branch on
+            <code>SupportsFrameLoop</code> (false on Blazor Server, where per-frame features degrade).
+        </li>
+    </ul>
+</div>
+
+<style>
+    .page-intro { color: var(--bm-muted); margin-bottom: 2.5rem; line-height: 1.6; }
+    .label { font-size: .78rem; color: #888; }
+    .headline { font-weight: 800; font-size: 1.4rem; letter-spacing: 0; }
+    .prose { max-width: 190px; color: var(--bm-text); font-size: .95rem; text-align: left; }
+    .row { display: flex; }
+
+    /* A left/top-anchored track so margin / position offsets are visible against an edge. */
+    .track { width: 100%; display: flex; justify-content: flex-start; align-items: flex-start; }
+    .track-wide { min-height: 60px; }
+
+    .pad-box {
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+        border-radius: 10px; color: #fff; font-weight: 700; font-size: .8rem;
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    .fill-box { width: 120px; height: 120px; border-radius: 12px; }
+    .grad-a { background: linear-gradient(135deg, #6c47ff, #ff4785); }
+    .grad-pos { background: linear-gradient(90deg, #6c47ff, #ff4785, #ffb347); background-size: 300% 100%; }
+    .grad-size {
+        background: radial-gradient(circle at 50% 50%, #ff4785 0%, #6c47ff 60%);
+        background-repeat: no-repeat; background-position: center;
+    }
+
+    .feature-list { line-height: 1.9; color: #bbb; }
+    .feature-list code { background: #2a2a3a; padding: .1rem .35rem; border-radius: 4px; }
+</style>
+
+@code {
+    private bool _typo;
+    private bool _spacing;
+    private bool _pos;
+    private bool _visual;
+    private bool _escape;
+
+    private const string _typoCode = """
+        @* letterSpacing / fontSize / lineHeight all interpolate like any length *@
+        <Bmotion Animate='@(_on ? Bm.To(letterSpacing: "0.4em") : Bm.To(letterSpacing: "0em"))'
+                 Transition="Bm.Tween(0.7)">
+            <div class="headline">BMOTION</div>
+        </Bmotion>
+
+        <Bmotion Animate='@(_on ? Bm.To(fontSize: "2.2rem") : Bm.To(fontSize: "1rem"))'>...</Bmotion>
+        <Bmotion Animate='@(_on ? Bm.To(lineHeight: "2.3") : Bm.To(lineHeight: "1.15"))'>...</Bmotion>
+        """;
+
+    private const string _spacingCode = """
+        @* gap animates on the flex container itself (the first root element) *@
+        <Bmotion Animate='@(_on ? Bm.To(gap: "2.5rem") : Bm.To(gap: "0.4rem"))' Transition="Bm.Spring()">
+            <div class="row" style="display:flex"><div class="box" /><div class="box" /><div class="box" /></div>
+        </Bmotion>
+
+        @* padding grows the box from the inside; margin shifts it within its track *@
+        <Bmotion Animate='@(_on ? Bm.To(padding: "1.8rem") : Bm.To(padding: "0.4rem"))'>...</Bmotion>
+        <Bmotion Animate='@(_on ? Bm.To(margin: "1.6rem") : Bm.To(margin: "0.1rem"))'>...</Bmotion>
+        """;
+
+    private const string _posCode = """
+        @* top / left / right / bottom on a position:relative element *@
+        <Bmotion Animate='@(_on ? Bm.To(top: "60px", left: "150px") : Bm.To(top: "0px", left: "0px"))'
+                 Transition="Bm.Spring(stiffness: 200, damping: 18)">
+            <div class="box" style="position:relative" />
+        </Bmotion>
+        """;
+
+    private const string _visualCode = """
+        @* clipPath / backgroundPosition / backgroundSize interpolate their numeric parts *@
+        <Bmotion Animate='@(_on ? Bm.To(clipPath: "circle(30% at 50% 50%)")
+                                : Bm.To(clipPath: "circle(65% at 50% 50%)"))'
+                 Transition="Bm.Tween(0.7)">
+            <div class="fill-box grad-a" />
+        </Bmotion>
+
+        <Bmotion Animate='@(_on ? Bm.To(backgroundPosition: "100% 50%") : Bm.To(backgroundPosition: "0% 50%"))'>...</Bmotion>
+        <Bmotion Animate='@(_on ? Bm.To(backgroundSize: "250%") : Bm.To(backgroundSize: "120%"))'>...</Bmotion>
+        """;
+
+    private const string _escapeCode = """
+        @* Animate ANY CSS property by name (dash- or camelCase) via the css bag *@
+        <Bmotion Animate='@(_on ? Bm.To(css: new() { ["word-spacing"] = "1.5rem" })
+                                : Bm.To(css: new() { ["word-spacing"] = "0rem" }))'
+                 Transition="Bm.Tween(0.7)">
+            <div>the quick fox</div>
+        </Bmotion>
+
+        <Bmotion Animate='@(_on ? Bm.To(css: new() { ["text-indent"] = "48px" })
+                                : Bm.To(css: new() { ["text-indent"] = "0px" }))'>...</Bmotion>
+        """;
+}

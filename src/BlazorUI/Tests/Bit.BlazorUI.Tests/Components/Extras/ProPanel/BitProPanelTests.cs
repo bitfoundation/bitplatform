@@ -111,7 +111,7 @@ public class BitProPanelTests : BunitTestContext
             parameters.Add(p => p.OnOpen, EventCallback.Factory.Create(this, () => opened++));
         });
 
-        com.SetParametersAndRender(p => p.Add(x => x.IsOpen, true));
+        com.Render(p => p.Add(x => x.IsOpen, true));
 
         com.WaitForAssertion(() =>
         {

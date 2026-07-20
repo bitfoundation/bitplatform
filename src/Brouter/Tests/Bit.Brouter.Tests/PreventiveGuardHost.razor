@@ -1,0 +1,30 @@
+﻿@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/home">
+        <Content><div data-testid="home">home</div></Content>
+    </Broute>
+    <Broute Path="/cancel" Guard="@Cancel">
+        <Content><div data-testid="cancel">cancel</div></Content>
+    </Broute>
+    <Broute Path="/redirect" Guard="@Redirect">
+        <Content><div data-testid="redirect">redirect</div></Content>
+    </Broute>
+    <Broute Path="/login">
+        <Content><div data-testid="login">login</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    private ValueTask Cancel(BrouterNavigationContext ctx)
+    {
+        ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask Redirect(BrouterNavigationContext ctx)
+    {
+        ctx.Redirect("/login");
+        return ValueTask.CompletedTask;
+    }
+}

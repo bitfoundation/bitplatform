@@ -1,0 +1,24 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Decimated line (zoom + pan)" RazorCode="@decimationRazorCode" CsharpCode="@decimationCsharpCode" Id="zoom-decimation">
+    <div class="example-desc">
+        Scroll to zoom X, drag to pan, double-click to reset. A @(_count.ToString("N0"))-point series is
+        downsampled to @_samples points with the LTTB algorithm so it stays smooth. Pointer math uses a tiny JS helper; all drawing remains pure SVG.
+    </div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="_data" Options="_options" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Zoom both axes" RazorCode="@xyRazorCode" CsharpCode="@xyCsharpCode" Id="zoom-xy" PreventRenderForMcpClient>
+    <div class="example-desc"><code>Mode = XY</code> on a scatter plot: scroll to zoom both axes, drag to pan.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="Scatter()" Options="_xy" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Drag-to-zoom box" RazorCode="@dragRazorCode" CsharpCode="@dragCsharpCode" Id="zoom-drag">
+    <div class="example-desc">Drag a rectangle to zoom into it; double-click to reset (<code>DragZoom = true</code>, <code>Wheel = false</code>).</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="Scatter()" Options="_drag" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Category-axis zoom" RazorCode="@catZoomRazorCode" CsharpCode="@catZoomCsharpCode" Id="zoom-category">
+    <div class="example-desc">Scroll to zoom a 40-category bar chart; drag to pan.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="ManyBars()" Options="_catZoom" /></div></div>
+</DemoExample>

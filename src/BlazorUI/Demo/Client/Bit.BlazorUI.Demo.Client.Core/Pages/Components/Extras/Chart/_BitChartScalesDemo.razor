@@ -1,0 +1,31 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Fixed min / max" RazorCode="@minMaxRazorCode" CsharpCode="@minMaxCsharpCode" Id="scales-fixed-min-max">
+    <div class="example-desc">y locked to 0–100</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_minMax" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Suggested min / max" RazorCode="@suggestedRazorCode" CsharpCode="@suggestedCsharpCode" Id="scales-suggested-min-max" PreventRenderForMcpClient>
+    <div class="example-desc">hints that expand (not clamp) the range</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_suggested" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Explicit step size" RazorCode="@stepRazorCode" CsharpCode="@stepCsharpCode" Id="scales-explicit-step-size">
+    <div class="example-desc">ticks every 25 units</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Series()" Options="_step" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Logarithmic" RazorCode="@logRazorCode" CsharpCode="@logCsharpCode" Id="scales-logarithmic">
+    <div class="example-desc">decade ticks + minor gridlines</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="LogData()" Options="_log" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Reversed Y axis" RazorCode="@reverseRazorCode" CsharpCode="@reverseCsharpCode" Id="scales-reversed-y-axis">
+    <div class="example-desc">rankings: lower is better</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Rank()" Options="_reverse" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Grace (padding)" RazorCode="@graceRazorCode" CsharpCode="@graceCsharpCode" Id="scales-grace-padding" PreventRenderForMcpClient>
+    <div class="example-desc">10% headroom above &amp; below the data</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Series()" Options="_grace" /></div></div>
+</DemoExample>

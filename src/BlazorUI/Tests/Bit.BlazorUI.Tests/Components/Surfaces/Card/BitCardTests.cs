@@ -16,7 +16,7 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
         Assert.IsNotNull(card);
-        Assert.IsTrue(card.ToMarkup().Contains("Hello Card"));
+        Assert.IsTrue(card.OuterHtml.Contains("Hello Card"));
     }
 
     [TestMethod]

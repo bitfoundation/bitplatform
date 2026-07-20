@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Categories;
+namespace Boilerplate.Shared.Features.Categories;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class CategoryDto

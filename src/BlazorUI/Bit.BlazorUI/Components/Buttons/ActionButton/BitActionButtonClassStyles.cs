@@ -21,6 +21,11 @@ public class BitActionButtonClassStyles
     public string? Content { get; set; }
 
     /// <summary>
+    /// Custom class or style applied to the loading label element.
+    /// </summary>
+    public string? LoadingLabel { get; set; }
+
+    /// <summary>
     /// Custom class or style applied to the loading spinner element.
     /// </summary>
     public string? Spinner { get; set; }

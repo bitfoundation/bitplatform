@@ -1,4 +1,4 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content;
 using Firebase.Messaging;
 using Plugin.LocalNotification;

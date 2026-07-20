@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
@@ -42,21 +42,21 @@ public partial class ClientAppMessages
     /// </summary>
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
 
-//#if(module == "Sales")
+    //#if(module == "Sales")
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should open the AI chat panel with product search prompt.
     /// When a user taps on search bar, this message is published to open the AI chat panel with product search prompt.
     /// </summary>
     public const string SEARCH_PRODUCTS = nameof(SEARCH_PRODUCTS);
-//#endif
+    //#endif
 
-//#if(ads == true)
+    //#if(ads == true)
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should open the AI chat panel with ad help prompt.
     /// When a user has trouble with ads, this message is published to open the AI chat panel with ad help prompt.
     /// </summary>
     public const string AD_HAVE_TROUBLE = nameof(AD_HAVE_TROUBLE);
-//#endif
+    //#endif
 
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should force the app to check for updates and install them.
@@ -91,7 +91,7 @@ public partial class ClientAppMessages
     /// </summary>
     public const string ROUTE_DATA_UPDATED = nameof(ROUTE_DATA_UPDATED);
 
-//#if (signalR != true)
+    //#if (signalR != true)
     /// <summary>
     /// A publisher that publishes this message notifies that the subscriber's user's profile has been changed.
     /// </summary>
@@ -107,11 +107,19 @@ public partial class ClientAppMessages
     /// A publisher that sends this message announces that the subscriber should navigate to a specific page.
     /// </summary>
     public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
-//#endif
+    //#endif
 
     /// <summary>
     /// A publisher that publishes this message notifies that the user's external sign-in process has completed.
     /// When a user completes external sign-in in a separate window, this message is published to notify the app.
     /// </summary>
     public const string EXTERNAL_SIGN_IN_CALLBACK = nameof(EXTERNAL_SIGN_IN_CALLBACK);
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// A publisher that publishes this message notifies that the user's current tenant has changed (switched, renamed, created or left).
+    /// The payload is the new current tenant (a <c>TenantDto</c>) or null when the user no longer has a tenant selected.
+    /// </summary>
+    public const string CURRENT_TENANT_CHANGED = nameof(CURRENT_TENANT_CHANGED);
+    //#endif
 }

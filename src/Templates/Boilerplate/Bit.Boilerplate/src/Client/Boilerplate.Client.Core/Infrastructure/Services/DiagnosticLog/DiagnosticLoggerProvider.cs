@@ -1,4 +1,6 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
+
+using Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
@@ -9,11 +11,11 @@ namespace Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 /// within the application UI for enhanced diagnostic using <see cref="AppDiagnosticModal"/>
 /// </summary>
 [ProviderAlias("DiagnosticLogger")]
-public partial class DiagnosticLoggerProvider : ILoggerProvider
+public partial class DiagnosticLoggerProvider(TimeProvider timeProvider) : ILoggerProvider
 {
     public ILogger CreateLogger(string categoryName)
     {
-        return new DiagnosticLogger()
+        return new DiagnosticLogger(timeProvider)
         {
             Category = categoryName
         };

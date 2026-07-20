@@ -9,10 +9,11 @@ public static class AppRenderMode
     // .NET 10 resolves the earlier prerendering issues, so this is enabled to serve fully-formed HTML.
     public static readonly bool PrerenderEnabled = true;
 
-    private static IComponentRenderMode Auto => new InteractiveAutoRenderMode(PrerenderEnabled);
-    private static IComponentRenderMode BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(PrerenderEnabled);
-    private static IComponentRenderMode BlazorServer => new InteractiveServerRenderMode(PrerenderEnabled);
-    public static IComponentRenderMode NoPrerenderBlazorWebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false);
+    public static IComponentRenderMode Auto { get; } = new InteractiveAutoRenderMode(PrerenderEnabled);
+    public static IComponentRenderMode BlazorWebAssembly { get; } = new InteractiveWebAssemblyRenderMode(PrerenderEnabled);
+    public static IComponentRenderMode BlazorServer { get; } = new InteractiveServerRenderMode(PrerenderEnabled);
+    public static IComponentRenderMode NoPrerenderBlazorWebAssembly { get; } = new InteractiveWebAssemblyRenderMode(prerender: false);
+    public static IComponentRenderMode NoPrerenderBlazorServer { get; } = new InteractiveServerRenderMode(prerender: false);
 
     public static IComponentRenderMode Current => BuildConfiguration.IsDebug() 
                                                     ? BlazorServer /*For better development experience*/ 

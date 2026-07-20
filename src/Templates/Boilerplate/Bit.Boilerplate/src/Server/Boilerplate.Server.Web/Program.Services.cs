@@ -1,5 +1,6 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
 //#else
@@ -70,13 +71,22 @@ public static partial class Program
                     var principal = context.Principal!;
                     var identity = (ClaimsIdentity)principal.Identity!;
 
-                    if (principal.IsInRole(AppRoles.SuperAdmin))
+                    if (principal.IsInRole(AppRoles.GlobalAdmin))
                     {
-                        foreach (var feat in AppFeatures.GetSuperAdminFeatures())
+                        foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
                         {
                             identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
                         }
                     }
+                    //#if (multitenant == true)
+                    else if (principal.IsInRole(AppRoles.TenantAdmin))
+                    {
+                        foreach (var feat in AppFeatures.GetTenantAdminFeatures())
+                        {
+                            identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
+                        }
+                    }
+                    //#endif
                 }
             };
         });
@@ -142,7 +152,8 @@ public static partial class Program
                 BaseAddress = serverAddress
             };
 
-            var forwardedHeadersOptions = sp.GetRequiredService<ServerWebSettings>().ForwardedHeaders;
+            var forwardedHeadersSection = configuration.GetSection("ForwardedHeaders");
+            var forwardedHeadersOptions = forwardedHeadersSection.Exists() ? forwardedHeadersSection.DynamicBind<ForwardedHeadersOptions>() : null;
 
             foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)))
             {
