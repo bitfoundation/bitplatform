@@ -118,8 +118,6 @@ jobs:
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-sales.bitplatform.dev
-        OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
-        OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
 
     - name: Use Bit.ResxTranslator
       run: |

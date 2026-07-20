@@ -1,4 +1,4 @@
-//-:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;

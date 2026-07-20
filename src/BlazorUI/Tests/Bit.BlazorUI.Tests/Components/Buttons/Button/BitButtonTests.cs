@@ -125,7 +125,11 @@ public class BitButtonTests : BunitTestContext
 
         var bitButton = com.Find(".bit-btn");
 
-        Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
+        var descriptionElement = com.Find(".bit-btn-dsc");
+
+        Assert.AreEqual(descriptionElement.Id, bitButton.GetAttribute("aria-describedby"));
+
+        Assert.AreEqual(ariaDescription, descriptionElement.TextContent);
     }
 
     [TestMethod, DataRow("Detailed label")]
@@ -300,10 +304,15 @@ public class BitButtonTests : BunitTestContext
 
         if (isLoading)
         {
-            Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains("bit-btn-ldg"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-lda"));
+            Assert.IsNotNull(com.Find(".bit-btn-ldg"));
+
+            var hiddenContent = com.Find(".bit-btn-hcn");
+            Assert.AreEqual(textContent, hiddenContent.TextContent.Trim());
         }
         else
         {
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-lda"));
             Assert.AreEqual(textContent, bitButton.TextContent);
         }
     }
@@ -329,8 +338,6 @@ public class BitButtonTests : BunitTestContext
             }
         });
 
-        var bitButton = com.Find(".bit-btn");
-
         var labelPositionClass = labelPosition switch
         {
             BitLabelPosition.Top => "bit-btn-top",
@@ -340,11 +347,11 @@ public class BitButtonTests : BunitTestContext
             _ => "bit-btn-end"
         };
 
-        Assert.AreEqual(loadingLabel, bitButton?.LastElementChild?.TextContent);
+        var loadingContainer = com.Find(".bit-btn-ldg");
 
-        Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains("bit-btn-ldg"));
+        Assert.AreEqual(loadingLabel, com.Find(".bit-btn-lbl").TextContent.Trim());
 
-        Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains(labelPositionClass));
+        Assert.IsTrue(loadingContainer.ClassList.Contains(labelPositionClass));
     }
 
     [TestMethod,
@@ -372,8 +379,9 @@ public class BitButtonTests : BunitTestContext
     [TestMethod,
         DataRow("5"),
         DataRow("50"),
+        DataRow(null),
     ]
-    public void BitButtonTabIndexShouldRecoverAfterReEnable(string tabIndex)
+    public void BitButtonTabIndexShouldRecoverAfterReEnable(string? tabIndex)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
@@ -391,7 +399,14 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, true);
         });
 
-        Assert.AreEqual(tabIndex, bitButton.GetAttribute("tabindex"));
+        if (tabIndex is null)
+        {
+            Assert.IsFalse(bitButton.HasAttribute("tabindex"));
+        }
+        else
+        {
+            Assert.AreEqual(tabIndex, bitButton.GetAttribute("tabindex"));
+        }
     }
 
     [TestMethod,
@@ -542,4 +557,180 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(fixedColor, bitButton.ClassList.Contains("bit-btn-fxc"));
     }
 
+    [TestMethod,
+        DataRow(true, true, false, null),
+        DataRow(true, false, false, null),
+        DataRow(false, true, false, "true"),
+        DataRow(false, false, true, "true")
+    ]
+    public void BitButtonDisabledSemanticsTest(bool isEnabled, bool allowDisabledFocus, bool expectedDisabledAttribute, string? expectedAriaDisabled)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual(expectedDisabledAttribute, bitButton.HasAttribute("disabled"));
+
+        Assert.AreEqual(expectedAriaDisabled, bitButton.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonAriaBusyTest(bool isLoading)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, isLoading);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual(isLoading ? "true" : null, bitButton.GetAttribute("aria-busy"));
+    }
+
+    [TestMethod,
+        DataRow("https://bitplatform.dev", "_blank", "noopener"),
+        DataRow("https://bitplatform.dev", "_self", null),
+        DataRow("https://bitplatform.dev", null, null)
+    ]
+    public void BitButtonAutoRelNoOpenerTest(string href, string? target, string? expectedRel)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.Target, target);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual(expectedRel, bitButton.GetAttribute("rel"));
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonAnchorShouldRenderLoadingAndRespectReclickable(bool reclickable)
+    {
+        var clicked = false;
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Reclickable, reclickable);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("a", bitButton.TagName, ignoreCase: true);
+
+        Assert.IsFalse(bitButton.HasAttribute("href"));
+
+        Assert.AreEqual("0", bitButton.GetAttribute("tabindex"));
+
+        Assert.IsNotNull(com.Find(".bit-btn-ldg"));
+
+        bitButton.Click();
+
+        Assert.AreEqual(reclickable, clicked);
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonLoadingShouldRespectReclickable(bool reclickable)
+    {
+        var clicked = false;
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Reclickable, reclickable);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+        });
+
+        com.Find(".bit-btn").Click();
+
+        Assert.AreEqual(reclickable, clicked);
+    }
+
+    [TestMethod]
+    public void BitButtonShouldApplyHiddenContentClassStyles()
+    {
+        var hiddenContentClass = "hidden-content-class";
+        var hiddenContentStyle = "opacity: 0.5;";
+
+        var classes = new BitButtonClassStyles
+        {
+            HiddenContent = hiddenContentClass
+        };
+
+        var styles = new BitButtonClassStyles
+        {
+            HiddenContent = hiddenContentStyle
+        };
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Classes, classes);
+            parameters.Add(p => p.Styles, styles);
+            parameters.AddChildContent("Content");
+        });
+
+        var hiddenContent = com.Find(".bit-btn-hcn");
+
+        Assert.IsTrue(hiddenContent.ClassList.Contains(hiddenContentClass));
+        Assert.AreEqual(hiddenContentStyle, hiddenContent.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitButtonFormIdTest()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.FormId, "external-form");
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("external-form", bitButton.GetAttribute("form"));
+    }
+
+    [TestMethod]
+    public void BitButtonDownloadTest()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev/report.pdf");
+            parameters.Add(p => p.Download, "report.pdf");
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("report.pdf", bitButton.GetAttribute("download"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonAutoFocusTest(bool autoFocus)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, autoFocus);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual(autoFocus, bitButton.HasAttribute("autofocus"));
+    }
 }

@@ -21,6 +21,11 @@
     --bit-btn-clr-brd-dis: #{$clr-brd-dis};
     --bit-btn-float-offset: #{spacing(2)};
 
+    &:focus-visible {
+        outline-offset: spacing(0.25);
+        outline: spacing(0.25) solid var(--bit-btn-clr);
+    }
+
     &.bit-dis {
         cursor: default;
         color: $clr-fg-dis;
@@ -82,6 +87,41 @@
     border-top-color: var(--bit-btn-clr-spn);
     animation: bit-btn-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 4s;
+        animation-timing-function: linear;
+    }
+}
+
+.bit-btn-lda {
+    display: inline-grid;
+    place-items: center;
+
+    > * {
+        grid-area: 1 / 1;
+    }
+}
+
+.bit-btn-hcn {
+    opacity: 0;
+    gap: spacing(0.5);
+    align-items: center;
+    display: inline-flex;
+    pointer-events: none;
+    justify-content: center;
+}
+
+.bit-btn-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-btn-ldg {
