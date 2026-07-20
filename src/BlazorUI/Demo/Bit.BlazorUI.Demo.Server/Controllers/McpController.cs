@@ -18,7 +18,7 @@ public partial class McpController : AppControllerBase
 
     private static string[]? _allIconNames = null;
     private static XDocument? _summariesXmlDocument = null;
-    private static readonly Assembly[] _componentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly];
+    private static readonly Assembly[] _componentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly, typeof(Legacy._Imports).Assembly];
     private static readonly Type[] _enumTypes = [.. _componentsAssemblies.SelectMany(asm => asm.GetExportedTypes().Where(t => t.IsEnum))];
 
     [HttpGet]
