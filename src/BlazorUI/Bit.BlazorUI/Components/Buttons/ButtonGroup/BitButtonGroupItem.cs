@@ -4,9 +4,29 @@ namespace Bit.BlazorUI;
 public class BitButtonGroupItem
 {
     /// <summary>
+    /// The accessible label of the item, rendered as the aria-label attribute.
+    /// </summary>
+    /// <remarks>
+    /// Required for icon-only items, and strongly recommended in toggle mode when
+    /// <see cref="OnText"/>/<see cref="OffText"/> are used, so that the accessible name
+    /// of the item stays the same while its toggle state changes.
+    /// </remarks>
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// The content of the badge rendered at the end of the item, usually a short count.
+    /// </summary>
+    public string? Badge { get; set; }
+
+    /// <summary>
     /// The custom CSS classes of the item.
     /// </summary>
     public string? Class { get; set; }
+
+    /// <summary>
+    /// The url of the link rendered by the item. If provided, the item renders as an anchor tag instead of a button.
+    /// </summary>
+    public string? Href { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -32,6 +52,11 @@ public class BitButtonGroupItem
     /// Whether or not the item is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether or not the item is in the loading state, which replaces its icon with a spinner and blocks its click.
+    /// </summary>
+    public bool IsLoading { get; set; }
 
     /// <summary>
     /// A unique value to use as a key of the item.
@@ -112,6 +137,11 @@ public class BitButtonGroupItem
     /// The custom value for the style attribute of the item.
     /// </summary>
     public string? Style { get; set; }
+
+    /// <summary>
+    /// The target attribute of the link when the item renders as an anchor (by providing the Href property).
+    /// </summary>
+    public string? Target { get; set; }
 
     /// <summary>
     /// The custom template for the item.

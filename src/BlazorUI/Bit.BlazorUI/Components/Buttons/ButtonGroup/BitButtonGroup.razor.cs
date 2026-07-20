@@ -3,15 +3,29 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// The ButtonGroup component can be used to group related buttons.
+/// The ButtonGroup joins related buttons into a single unit: a plain action toolbar, or a single-select or
+/// multi-select group of toggle buttons.
 /// </summary>
+/// <remarks>
+/// The whole group is a single tab stop that the arrow, Home, and End keys navigate (a roving tabindex), and it
+/// follows the WAI-ARIA pattern matching its <see cref="SelectionMode"/>: a radiogroup of radio buttons reporting
+/// aria-checked in the Single mode, and a toolbar of toggle buttons reporting aria-pressed otherwise.
+/// <br />
+/// Give the group an accessible name through <see cref="BitComponentBase.AriaLabel"/>, since assistive technologies
+/// do not announce an unlabeled group or toolbar.
+/// </remarks>
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
     private int _optionKeySeed;
     private TItem? _toggleItem;
+    private string? _focusedKey;
+    private bool _preventKeyDownDefault;
     private List<TItem> _items = [];
     private string? _internalToggleKey;
+    private List<TItem> _toggledItems = [];
     private IEnumerable<TItem> _oldItems = default!;
+    private IEnumerable<string>? _internalToggleKeys;
+    private readonly Dictionary<TItem, ElementReference> _itemElements = [];
 
 
     /// <summary>
@@ -43,7 +57,26 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public string? DefaultToggleKey { get; set; }
 
     /// <summary>
+    /// The default keys that will be initially used to set the toggled items in the Multiple selection mode
+    /// if the ToggleKeys parameter is not set.
+    /// </summary>
+    [Parameter] public IEnumerable<string>? DefaultToggleKeys { get; set; }
+
+    /// <summary>
+    /// Detaches the buttons from each other, so each button is rendered as a separate rounded button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Detached { get; set; }
+
+    /// <summary>
+    /// Keeps the disabled buttons focusable by rendering them with the aria-disabled attribute instead of
+    /// the disabled attribute, so that assistive technologies can still discover them.
+    /// </summary>
+    [Parameter] public bool DisabledInteractive { get; set; }
+
+    /// <summary>
     /// Enables the fixed-toggle mode that ensures one item to be always toggled.
+    /// In the Multiple selection mode it prevents un-toggling the last toggled item.
     /// </summary>
     [Parameter] public bool FixedToggle { get; set; }
 
@@ -54,9 +87,21 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// The gap between the buttons of the ButtonGroup in the detached mode.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Gap { get; set; }
+
+    /// <summary>
     /// Determines that only the icon should be rendered.
     /// </summary>
     [Parameter] public bool IconOnly { get; set; }
+
+    /// <summary>
+    /// Gives every button an equal width so that the buttons evenly fill the width of the ButtonGroup.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Justified { get; set; }
 
     /// <summary>
     ///  List of Item, each of which can be a button with different action in the ButtonGroup.
@@ -69,9 +114,20 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// The maximum number of items that can be toggled at the same time in the Multiple selection mode.
+    /// </summary>
+    [Parameter] public int? MaxToggles { get; set; }
+
+    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitButtonGroupNameSelectors<TItem>? NameSelectors { get; set; }
+
+    /// <summary>
+    /// Enables the roving tabindex behavior, which turns the whole ButtonGroup into a single tab stop
+    /// that is navigable using the arrow, Home, and End keys.
+    /// </summary>
+    [Parameter] public bool Navigable { get; set; } = true;
 
     /// <summary>
     /// The callback that is called when a button is clicked.
@@ -89,6 +145,35 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
+    /// Determines how the ButtonGroup behaves when its buttons do not fit in the available space.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitButtonGroupOverflow? Overflow { get; set; }
+
+    /// <summary>
+    /// Renders the ButtonGroup with fully rounded (pill shaped) corners.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Rounded { get; set; }
+
+    /// <summary>
+    /// Toggles the focused item while navigating the ButtonGroup using the keyboard,
+    /// so that the selection follows the focus.
+    /// </summary>
+    [Parameter] public bool SelectOnFocus { get; set; }
+
+    /// <summary>
+    /// Determines how many items can be toggled at the same time.
+    /// When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.
+    /// </summary>
+    [Parameter] public BitButtonGroupSelectionMode? SelectionMode { get; set; }
+
+    /// <summary>
+    /// Renders a check mark at the start of the toggled buttons.
+    /// </summary>
+    [Parameter] public bool ShowSelectionIndicator { get; set; }
+
+    /// <summary>
     /// The size of ButtonGroup, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -101,14 +186,21 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     /// <summary>
     /// Display ButtonGroup with toggle mode enabled for each button.
+    /// It is a shorthand of setting the SelectionMode parameter to Single.
     /// </summary>
     [Parameter] public bool Toggle { get; set; }
 
     /// <summary>
-    /// The key of the toggled item in toggle mode. (two-way bound)
+    /// The key of the toggled item in the Single selection mode. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
     public string? ToggleKey { get; set; }
+
+    /// <summary>
+    /// The keys of the toggled items in the Multiple selection mode. (two-way bound)
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public IEnumerable<string>? ToggleKeys { get; set; }
 
     /// <summary>
     /// The visual variant of the button group.
@@ -121,6 +213,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Vertical { get; set; }
+
+
+
+    /// <summary>
+    /// The effective selection mode, which falls back to the legacy Toggle parameter when SelectionMode is not set.
+    /// </summary>
+    internal BitButtonGroupSelectionMode _Mode => SelectionMode ?? (Toggle ? BitButtonGroupSelectionMode.Single : BitButtonGroupSelectionMode.None);
 
 
 
@@ -143,7 +242,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         _items.Add(item);
 
-        if (Toggle)
+        if (_Mode is BitButtonGroupSelectionMode.Single)
         {
             var toggleKey = string.Empty;
 
@@ -159,6 +258,16 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             if (toggleKey.HasValue() && option.Key == toggleKey)
             {
                 _ = UpdateItemToggle(item, false);
+            }
+        }
+        else if (_Mode is BitButtonGroupSelectionMode.Multiple)
+        {
+            var toggleKeys = ToggleKeysHasBeenSet ? ToggleKeys : DefaultToggleKeys;
+
+            if (toggleKeys is not null && option.Key.HasValue() && toggleKeys.Contains(option.Key!))
+            {
+                _toggledItems.Add(item);
+                SetIsToggled(item, true);
             }
         }
 
@@ -177,8 +286,19 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ = AssignToggleKey(null);
         }
 
+        if (_toggledItems.Remove(item))
+        {
+            _ = AssignToggleKeys(GetToggledKeys());
+        }
+
+        _itemElements.Remove(item);
         _items.Remove(item);
         StateHasChanged();
+    }
+
+    internal void RegisterItemElement(TItem item, ElementReference element)
+    {
+        _itemElements[item] = element;
     }
 
 
@@ -230,11 +350,27 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-btg-flw" : string.Empty);
+
+        ClassBuilder.Register(() => Justified ? "bit-btg-jst" : string.Empty);
+
+        ClassBuilder.Register(() => Rounded ? "bit-btg-rnd" : string.Empty);
+
+        ClassBuilder.Register(() => Detached ? "bit-btg-dtc" : string.Empty);
+
+        ClassBuilder.Register(() => Overflow switch
+        {
+            BitButtonGroupOverflow.Wrap => "bit-btg-wrp",
+            BitButtonGroupOverflow.Scroll => "bit-btg-scr",
+            BitButtonGroupOverflow.Scrollbar => "bit-btg-scb",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-btg-gap:{Gap}" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -243,24 +379,46 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // register themselves, so it must start empty.
         _items = (ChildContent is null && Options is null && Items is not null) ? [.. Items] : [];
 
-        if (Toggle && Items is not null && Items.Any())
+        if (Items is not null && Items.Any())
         {
-            var toggleKey = string.Empty;
+            if (_Mode is BitButtonGroupSelectionMode.Single)
+            {
+                var toggleKey = string.Empty;
 
-            if (ToggleKeyHasBeenSet)
-            {
-                toggleKey = ToggleKey;
-                _internalToggleKey = ToggleKey;
-            }
-            else if (DefaultToggleKey.HasValue())
-            {
-                toggleKey = DefaultToggleKey;
-            }
+                if (ToggleKeyHasBeenSet)
+                {
+                    toggleKey = ToggleKey;
+                    _internalToggleKey = ToggleKey;
+                }
+                else if (DefaultToggleKey.HasValue())
+                {
+                    toggleKey = DefaultToggleKey;
+                }
 
-            if (toggleKey.HasValue())
+                if (toggleKey.HasValue())
+                {
+                    var item = Items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
+                    await UpdateItemToggle(item, false);
+                }
+            }
+            else if (_Mode is BitButtonGroupSelectionMode.Multiple)
             {
-                var item = Items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
-                await UpdateItemToggle(item, false);
+                IEnumerable<string>? toggleKeys = null;
+
+                if (ToggleKeysHasBeenSet)
+                {
+                    toggleKeys = ToggleKeys;
+                    _internalToggleKeys = ToggleKeys;
+                }
+                else if (DefaultToggleKeys is not null)
+                {
+                    toggleKeys = DefaultToggleKeys;
+                }
+
+                if (toggleKeys is not null)
+                {
+                    ApplyToggleKeys(toggleKeys);
+                }
             }
         }
 
@@ -289,6 +447,16 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 var item = _items.FirstOrDefault(i => GetItemKey(i) == _internalToggleKey);
                 await UpdateItemToggle(item, false);
             }
+        }
+
+        if (_Mode is BitButtonGroupSelectionMode.Multiple &&
+            (_internalToggleKeys is null
+                ? ToggleKeys is not null
+                : ToggleKeys is null || _internalToggleKeys.SequenceEqual(ToggleKeys) is false))
+        {
+            _internalToggleKeys = ToggleKeys;
+
+            ApplyToggleKeys(ToggleKeys ?? []);
         }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
@@ -345,6 +513,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     internal async Task HandleOnItemClick(TItem item)
     {
         if (GetIsEnabled(item) is false) return;
+        if (GetIsLoading(item)) return;
+
+        _focusedKey = GetItemKey(item);
 
         await OnItemClick.InvokeAsync(item);
 
@@ -371,13 +542,179 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         await UpdateItemToggle(item);
     }
 
+    // The whole group is a single tab stop: the toggled item (or the first focusable one) holds the
+    // tabindex and the arrow keys move the focus between the items, as described by the WAI-ARIA
+    // radiogroup and toolbar patterns.
+    internal async Task HandleOnKeyDown(KeyboardEventArgs e)
+    {
+        // ArrowUp, ArrowDown, Home and End scroll the page by default, so their default action is
+        // suppressed while the group navigates with them. Kept key-scoped so Space, Enter, Tab and
+        // the horizontal arrows outside of a vertical group still behave normally.
+        _preventKeyDownDefault = Navigable && IsEnabled && e.Key is "ArrowUp" or "ArrowDown" or "Home" or "End";
+
+        if (Navigable is false) return;
+        if (IsEnabled is false) return;
+
+        var focusables = _items.Where(IsItemFocusable).ToList();
+        if (focusables.Count == 0) return;
+
+        var current = GetActiveItem();
+        var index = current is null ? -1 : focusables.IndexOf(current);
+        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
+
+        int next;
+        switch (e.Key)
+        {
+            case "ArrowRight":
+                if (Vertical) return;
+                next = isRtl ? index - 1 : index + 1;
+                break;
+            case "ArrowLeft":
+                if (Vertical) return;
+                next = isRtl ? index + 1 : index - 1;
+                break;
+            case "ArrowDown":
+                if (Vertical is false) return;
+                next = index + 1;
+                break;
+            case "ArrowUp":
+                if (Vertical is false) return;
+                next = index - 1;
+                break;
+            case "Home":
+                next = 0;
+                break;
+            case "End":
+                next = focusables.Count - 1;
+                break;
+            default:
+                return;
+        }
+
+        // The navigation wraps around at both ends of the group.
+        if (next < 0) next = focusables.Count - 1;
+        else if (next >= focusables.Count) next = 0;
+
+        var item = focusables[next];
+
+        _focusedKey = GetItemKey(item);
+
+        if (_itemElements.TryGetValue(item, out var element))
+        {
+            try
+            {
+                await element.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        if (SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)
+        {
+            await UpdateItemToggle(item);
+        }
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    internal string? GetItemTabIndex(TItem item)
+    {
+        if (Navigable is false) return IsItemFocusable(item) ? "0" : "-1";
+
+        return GetActiveItem() == item ? "0" : "-1";
+    }
+
+    /// <summary>
+    /// The role of an individual button, which follows the selection mode of the group.
+    /// </summary>
+    internal string? GetItemRole()
+    {
+        return _Mode is BitButtonGroupSelectionMode.Single ? "radio" : null;
+    }
+
+    /// <summary>
+    /// In the Single selection mode the toggle state is announced by aria-checked (radio semantics),
+    /// so aria-pressed must not be rendered as well.
+    /// </summary>
+    internal string? GetItemAriaPressed(TItem item)
+    {
+        if (_Mode is not BitButtonGroupSelectionMode.Multiple) return null;
+
+        return IsItemToggled(item) ? "true" : "false";
+    }
+
+    internal string? GetItemAriaChecked(TItem item)
+    {
+        if (_Mode is not BitButtonGroupSelectionMode.Single) return null;
+
+        return IsItemToggled(item) ? "true" : "false";
+    }
+
+    /// <summary>
+    /// The role of the root element, which follows the WAI-ARIA pattern matching the selection mode.
+    /// </summary>
+    internal string _RootRole => _Mode switch
+    {
+        BitButtonGroupSelectionMode.Single => "radiogroup",
+        BitButtonGroupSelectionMode.Multiple => Navigable ? "toolbar" : "group",
+        _ => Navigable ? "toolbar" : "group"
+    };
+
+    /// <summary>
+    /// The aria-orientation is only supported by the radiogroup and toolbar roles, not by the plain group role.
+    /// </summary>
+    internal string? _AriaOrientation => _RootRole is "group" ? null : (Vertical ? "vertical" : "horizontal");
+
+    // The item that owns the group's tabindex: the last focused one, otherwise the toggled one,
+    // otherwise the first focusable item.
+    private TItem? GetActiveItem()
+    {
+        var focusables = _items.Where(IsItemFocusable).ToList();
+        if (focusables.Count == 0) return null;
+
+        if (_focusedKey.HasValue())
+        {
+            var focused = focusables.FirstOrDefault(i => GetItemKey(i) == _focusedKey);
+            if (focused is not null) return focused;
+        }
+
+        var toggled = focusables.FirstOrDefault(IsItemToggled);
+        if (toggled is not null) return toggled;
+
+        return focusables[0];
+    }
+
+    // Disabled items stay focusable in the DisabledInteractive mode, which the WAI-ARIA toolbar
+    // pattern recommends so that they remain discoverable by assistive technologies.
+    private bool IsItemFocusable(TItem item)
+    {
+        return DisabledInteractive || GetIsEnabled(item);
+    }
+
     internal string? GetItemClass(TItem item)
     {
         List<string> classes = ["bit-btg-itm"];
 
+        // The first/last buttons are marked explicitly instead of relying on :first-child/:last-child,
+        // which break as soon as a button is wrapped by another element.
+        var index = _items.IndexOf(item);
+        if (index == 0)
+        {
+            classes.Add("bit-btg-fst");
+        }
+        if (index == _items.Count - 1)
+        {
+            classes.Add("bit-btg-lst");
+        }
+
         if (GetReversedIcon(item))
         {
             classes.Add("bit-btg-rvi");
+        }
+
+        if (GetIsLoading(item))
+        {
+            classes.Add("bit-btg-ldg");
         }
 
         if (IsItemToggled(item))
@@ -431,7 +768,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (IconOnly) return null;
 
-        if (Toggle)
+        if (_Mode is not BitButtonGroupSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -456,7 +793,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal string? GetItemTitle(TItem item)
     {
-        if (Toggle)
+        if (_Mode is not BitButtonGroupSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -481,7 +818,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal BitIconInfo? GetItemIcon(TItem item)
     {
-        if (Toggle)
+        if (_Mode is not BitButtonGroupSelectionMode.None)
         {
             if (IsItemToggled(item))
             {
@@ -507,8 +844,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     private async Task UpdateItemToggle(TItem? item, bool isToggled = true)
     {
         if (item is null) return;
-        if (Toggle is false) return;
         if (_items is null || _items.Count == 0) return;
+
+        if (_Mode is BitButtonGroupSelectionMode.Multiple)
+        {
+            await UpdateItemToggleMultiple(item);
+            return;
+        }
+
+        if (_Mode is not BitButtonGroupSelectionMode.Single) return;
         if (ToggleKeyHasBeenSet && ToggleKeyChanged.HasDelegate is false) return;
 
         string? toggleKey = GetItemKey(_toggleItem);
@@ -543,9 +887,73 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         StateHasChanged();
     }
 
+    private async Task UpdateItemToggleMultiple(TItem item)
+    {
+        if (ToggleKeysHasBeenSet && ToggleKeysChanged.HasDelegate is false) return;
+
+        if (_toggledItems.Contains(item))
+        {
+            // FixedToggle keeps at least one item toggled, so the last one cannot be un-toggled.
+            if (FixedToggle && _toggledItems.Count == 1) return;
+
+            _toggledItems.Remove(item);
+            SetIsToggled(item, false);
+        }
+        else
+        {
+            if (MaxToggles is int max && max > 0 && _toggledItems.Count >= max) return;
+
+            _toggledItems.Add(item);
+            SetIsToggled(item, true);
+        }
+
+        var keys = GetToggledKeys();
+        _internalToggleKeys = keys;
+        await AssignToggleKeys(keys);
+        await OnToggleChange.InvokeAsync(item);
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    // Rebuilds the toggled items from the given keys without raising the change callbacks,
+    // which is what both the initial toggle keys and the two-way bound updates need.
+    private void ApplyToggleKeys(IEnumerable<string> keys)
+    {
+        var keySet = keys.ToHashSet();
+
+        foreach (var item in _toggledItems)
+        {
+            SetIsToggled(item, false);
+        }
+
+        _toggledItems = [];
+
+        foreach (var item in _items)
+        {
+            var key = GetItemKey(item);
+            if (key.HasNoValue() || keySet.Contains(key!) is false) continue;
+            if (MaxToggles is int max && max > 0 && _toggledItems.Count >= max) break;
+
+            _toggledItems.Add(item);
+            SetIsToggled(item, true);
+        }
+    }
+
+    // The keys always follow the order of the items, not the order they were toggled in.
+    private List<string> GetToggledKeys()
+    {
+        return [.. _items.Where(_toggledItems.Contains)
+                         .Select(GetItemKey)
+                         .Where(k => k.HasValue())
+                         .Select(k => k!)];
+    }
+
     private bool IsItemToggled(TItem item)
     {
-        return _toggleItem == item;
+        return _Mode is BitButtonGroupSelectionMode.Multiple
+                ? _toggledItems.Contains(item)
+                : _toggleItem == item;
     }
 
     private void SetIsToggled(TItem item, bool value)
@@ -772,6 +1180,126 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.OffIconName.Name);
+    }
+
+    internal string? GetAriaLabel(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.AriaLabel;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.AriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
+    internal string? GetBadge(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.Badge;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.Badge;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Badge.Selector is not null)
+        {
+            return NameSelectors.Badge.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Badge.Name);
+    }
+
+    internal string? GetHref(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.Href;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.Href;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Href.Selector is not null)
+        {
+            return NameSelectors.Href.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Href.Name);
+    }
+
+    internal string? GetTarget(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.Target;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.Target;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Target.Selector is not null)
+        {
+            return NameSelectors.Target.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
+    }
+
+    internal bool GetIsLoading(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.IsLoading;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.IsLoading;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsLoading.Selector is not null)
+        {
+            return NameSelectors.IsLoading.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsLoading.Name, false);
     }
 
     internal bool GetIsEnabled(TItem? item)

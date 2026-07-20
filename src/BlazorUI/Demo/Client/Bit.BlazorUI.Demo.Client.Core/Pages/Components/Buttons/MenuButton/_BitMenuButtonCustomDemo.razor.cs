@@ -13,12 +13,19 @@ public partial class _BitMenuButtonCustomDemo
     private bool oneWayIsOpen;
     private bool twoWayIsOpen;
 
+    private bool customIsLoading;
+    private bool customAutoIsLoading;
+
     private static BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     {
         Text = { Name = nameof(Operation.Name) },
         Key = { Name = nameof(Operation.Id) },
         IconName = { Name = nameof(Operation.Image) },
         IsEnabled = { Selector = m => m.Disabled is false },
+        IsSeparator = { Name = nameof(Operation.IsDivider) },
+        Href = { Name = nameof(Operation.Url) },
+        Target = { Name = nameof(Operation.UrlTarget) },
+        Title = { Name = nameof(Operation.Tooltip) },
         Template = { Name = nameof(Operation.Fragment) }
     };
 
@@ -80,6 +87,28 @@ public partial class _BitMenuButtonCustomDemo
         new() { Name = "Delete", IconInfo = BitIconInfo.Fa("solid trash") }
     ];
 
+    private static List<Operation> separatorCustoms =
+    [
+        new() { Name = "New", Id = "new", Image = BitIconName.Add },
+        new() { Name = "Open", Id = "open", Image = BitIconName.OpenFile },
+        new() { IsDivider = true },
+        new() { Name = "Save", Id = "save", Image = BitIconName.Save },
+        new() { Name = "Save as", Id = "save-as", Image = BitIconName.SaveAs },
+        new() { IsDivider = true },
+        new() { Name = "Delete", Id = "delete", Image = BitIconName.Delete }
+    ];
+
+    private static List<Operation> linkCustoms =
+    [
+        new() { Name = "bit platform", Id = "bit", Image = BitIconName.Globe, Url = "https://bitplatform.dev", UrlTarget = "_blank", Tooltip = "The bit platform website" },
+        new() { Name = "GitHub repo", Id = "github", Image = BitIconName.Link, Url = "https://github.com/bitfoundation/bitplatform", UrlTarget = "_blank", Tooltip = "The bit platform GitHub repository" },
+        new() { IsDivider = true },
+        new() { Name = "Custom C", Id = "C", Image = BitIconName.Emoji2, Tooltip = "A regular item" }
+    ];
+
+    private static List<Operation> dropDirectionCustoms =
+        Enumerable.Range(1, 8).Select(i => new Operation { Name = $"Custom {i}", Id = i.ToString() }).ToList();
+
     private static List<Operation> rtlCustoms =
     [
         new() { Name = "گزینه الف", Id = "A", Image = BitIconName.Emoji },
@@ -101,5 +130,12 @@ public partial class _BitMenuButtonCustomDemo
         };
 
         basicCustomsOnClick.ForEach(i => i.Clicked = onClick);
+    }
+
+    private async Task HandleOnLoadingClick()
+    {
+        customAutoIsLoading = true;
+        await Task.Delay(2000);
+        customAutoIsLoading = false;
     }
 }

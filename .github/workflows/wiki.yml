@@ -26,7 +26,10 @@ jobs:
         id: run-mcp-query
         run: |
           chmod +x ./.github/workflows/wiki.sh
-          echo "wiki_url=$(./.github/workflows/wiki.sh)" >> $GITHUB_OUTPUT
+          # Assign first so a failing script fails this step instead of silently
+          # producing an empty output and skipping the comment.
+          wiki_url=$(./.github/workflows/wiki.sh)
+          echo "wiki_url=$wiki_url" >> $GITHUB_OUTPUT
         env:
           ISSUE_TITLE: ${{ github.event.issue.title || github.event.discussion.title }}
           ISSUE_BODY: ${{ github.event.issue.body || github.event.discussion.body }}

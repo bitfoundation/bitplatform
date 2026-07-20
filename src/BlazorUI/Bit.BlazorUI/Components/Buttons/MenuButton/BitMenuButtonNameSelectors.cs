@@ -8,6 +8,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitMenuButtonItem.Class));
 
     /// <summary>
+    /// Href field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Href { get; set; } = new(nameof(BitMenuButtonItem.Href));
+
+    /// <summary>
     /// Icon field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitMenuButtonItem.Icon));
@@ -28,6 +33,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool> IsSelected { get; set; } = new(nameof(BitMenuButtonItem.IsSelected));
 
     /// <summary>
+    /// IsSeparator field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> IsSeparator { get; set; } = new(nameof(BitMenuButtonItem.IsSeparator));
+
+    /// <summary>
     /// Key field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Key { get; set; } = new(nameof(BitMenuButtonItem.Key));
@@ -43,6 +53,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitMenuButtonItem.Style));
 
     /// <summary>
+    /// Target field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Target { get; set; } = new(nameof(BitMenuButtonItem.Target));
+
+    /// <summary>
     /// Template field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> Template { get; set; } = new(nameof(BitMenuButtonItem.Template));
@@ -51,4 +66,9 @@ public class BitMenuButtonNameSelectors<TItem>
     /// Text field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Text { get; set; } = new(nameof(BitMenuButtonItem.Text));
+
+    /// <summary>
+    /// Title field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Title { get; set; } = new(nameof(BitMenuButtonItem.Title));
 }

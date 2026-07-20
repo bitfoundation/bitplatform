@@ -13,6 +13,9 @@ public partial class _BitMenuButtonItemDemo
     private bool oneWayIsOpen;
     private bool twoWayIsOpen;
 
+    private bool itemIsLoading;
+    private bool itemAutoIsLoading;
+
     private static List<BitMenuButtonItem> basicItems =
     [
         new() { Text = "Item A", Key = "A" },
@@ -62,6 +65,28 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Delete", Icon = BitIconInfo.Fa("solid trash") }
     ];
 
+    private static List<BitMenuButtonItem> separatorItems =
+    [
+        new() { Text = "New", Key = "new", IconName = BitIconName.Add },
+        new() { Text = "Open", Key = "open", IconName = BitIconName.OpenFile },
+        new() { IsSeparator = true },
+        new() { Text = "Save", Key = "save", IconName = BitIconName.Save },
+        new() { Text = "Save as", Key = "save-as", IconName = BitIconName.SaveAs },
+        new() { IsSeparator = true },
+        new() { Text = "Delete", Key = "delete", IconName = BitIconName.Delete }
+    ];
+
+    private static List<BitMenuButtonItem> linkItems =
+    [
+        new() { Text = "bit platform", Key = "bit", IconName = BitIconName.Globe, Href = "https://bitplatform.dev", Target = "_blank", Title = "The bit platform website" },
+        new() { Text = "GitHub repo", Key = "github", IconName = BitIconName.Link, Href = "https://github.com/bitfoundation/bitplatform", Target = "_blank", Title = "The bit platform GitHub repository" },
+        new() { IsSeparator = true },
+        new() { Text = "Item C", Key = "C", IconName = BitIconName.Emoji2, Title = "A regular item" }
+    ];
+
+    private static List<BitMenuButtonItem> dropDirectionItems =
+        Enumerable.Range(1, 8).Select(i => new BitMenuButtonItem { Text = $"Item {i}", Key = i.ToString() }).ToList();
+
     private static List<BitMenuButtonItem> rtlItemsIcon =
     [
         new() { Text = "گزینه الف", Key = "A", IconName = BitIconName.Emoji },
@@ -83,5 +108,12 @@ public partial class _BitMenuButtonItemDemo
         };
 
         basicItemsOnClick.ForEach(i => i.OnClick = onClick);
+    }
+
+    private async Task HandleOnLoadingClick()
+    {
+        itemAutoIsLoading = true;
+        await Task.Delay(2000);
+        itemAutoIsLoading = false;
     }
 }

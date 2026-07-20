@@ -376,4 +376,146 @@ public class BitMenuButtonTests : BunitTestContext
         var selectedButtons = com.FindAll(".bit-mnb-sel");
         Assert.AreEqual(0, selectedButtons.Count);
     }
+
+    [TestMethod]
+    public void BitMenuButtonShouldRenderSeparatorItems()
+    {
+        var separatorItems = new List<BitMenuButtonItem>()
+        {
+            new() { Text = "Item A", Key = "A" },
+            new() { IsSeparator = true },
+            new() { Text = "Item B", Key = "B" }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, separatorItems);
+        });
+
+        var separators = com.FindAll(".bit-mnb-isp");
+
+        Assert.AreEqual(1, separators.Count);
+        Assert.AreEqual("separator", separators[0].GetAttribute("role"));
+
+        var itemButtons = com.FindAll(".bit-mnb-itm");
+        Assert.AreEqual(2, itemButtons.Count);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldRenderLinkItems()
+    {
+        var linkItems = new List<BitMenuButtonItem>()
+        {
+            new() { Text = "Link item", Key = "A", Href = "https://bitplatform.dev", Target = "_blank", Title = "the title" },
+            new() { Text = "Button item", Key = "B" }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, linkItems);
+        });
+
+        var anchor = com.Find("a.bit-mnb-itm");
+
+        Assert.AreEqual("https://bitplatform.dev", anchor.GetAttribute("href"));
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
+        Assert.AreEqual("the title", anchor.GetAttribute("title"));
+        Assert.AreEqual("menuitem", anchor.GetAttribute("role"));
+
+        var buttons = com.FindAll("button.bit-mnb-itm");
+        Assert.AreEqual(1, buttons.Count);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldHaveCorrectAriaAttributes()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var operatorButton = com.Find(".bit-mnb-opb");
+
+        Assert.AreEqual("menu", operatorButton.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("false", operatorButton.GetAttribute("aria-expanded"));
+        Assert.IsNotNull(operatorButton.GetAttribute("aria-controls"));
+
+        var menu = com.Find(".bit-mnb-cul");
+        Assert.AreEqual("menu", menu.GetAttribute("role"));
+        Assert.IsNotNull(menu.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonSplitChevronButtonShouldHaveCorrectAriaAttributes()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.ChevronDownAriaLabel, "Open menu");
+        });
+
+        var chevronButton = com.Find(".bit-mnb-chb");
+
+        Assert.AreEqual("menu", chevronButton.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("false", chevronButton.GetAttribute("aria-expanded"));
+        Assert.IsNotNull(chevronButton.GetAttribute("aria-controls"));
+        Assert.AreEqual("Open menu", chevronButton.GetAttribute("aria-label"));
+
+        var operatorButton = com.Find(".bit-mnb-opb");
+        Assert.IsNull(operatorButton.GetAttribute("aria-haspopup"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMenuButtonFullWidthTest(bool fullWidth)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.FullWidth, fullWidth);
+        });
+
+        var root = com.Find(".bit-mnb");
+
+        Assert.AreEqual(fullWidth, root.ClassList.Contains("bit-mnb-flw"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitMenuButtonIsLoadingTest(bool isLoading)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Text, "loading test");
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.IsLoading, isLoading);
+        });
+
+        var spinners = com.FindAll(".bit-mnb-spn");
+        var icons = com.FindAll(".bit-mnb-opb .bit-icon--Add");
+
+        Assert.AreEqual(isLoading ? 1 : 0, spinners.Count);
+        Assert.AreEqual(isLoading ? 0 : 1, icons.Count);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonTitleTest()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Title, "menu button title");
+        });
+
+        var operatorButton = com.Find(".bit-mnb-opb");
+
+        Assert.AreEqual("menu button title", operatorButton.GetAttribute("title"));
+    }
 }

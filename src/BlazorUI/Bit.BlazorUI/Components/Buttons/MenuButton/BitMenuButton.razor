@@ -10,12 +10,19 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <button @onclick="() => HandleOnHeaderClick(_selectedItem)"
+    <button @ref="_operatorButtonRef"
+            @onclick="() => HandleOnHeaderClick(_selectedItem)"
+            @onkeydown="e => HandleOnTriggerKeyDown(e, Split is false)"
             type="button"
+            id="@(_Id + "-opb")"
+            title="@Title"
             tabindex="@(IsEnabled ? 0 : -1)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
+            aria-haspopup="@(Split ? null : "menu")"
+            aria-controls="@(Split ? null : _calloutId)"
+            aria-expanded="@(Split ? null : IsOpen.ToString().ToLower())"
             style="@GetStyle(_selectedItem);@Styles?.OperatorButton"
             class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton"
             aria-pressed="@(Toggle && Split ? IsToggled.ToString().ToLower() : null)">
@@ -33,7 +40,11 @@
             else
             {
                 var icon = GetIcon(_selectedItem);
-                @if (NoIcon is false && icon is not null)
+                @if (IsLoading)
+                {
+                    <div style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
+                }
+                else if (NoIcon is false && icon is not null)
                 {
                     <i style="@Styles?.OperatorButtonIcon" class="@icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
@@ -51,14 +62,18 @@
             }
             else
             {
-                @if (NoIcon is false && headerIcon is not null)
+                @if (IsLoading)
+                {
+                    <div style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
+                }
+                else if (NoIcon is false && headerIcon is not null)
                 {
                     <i style="@Styles?.Icon" class="@headerIcon.GetCssClasses() @Classes?.Icon" />
                 }
 
                 @if (Text.HasValue())
                 {
-                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>   
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>
                 }
             }
         }
@@ -74,9 +89,16 @@
     {
         <span style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
 
-        <button @onclick="OpenCallout"
+        <button @ref="_chevronButtonRef"
+                @onclick="async () => await OpenCallout()"
+                @onkeydown="e => HandleOnTriggerKeyDown(e, true)"
                 type="button"
+                id="@(_Id + "-chb")"
                 tabindex="@(IsEnabled ? 0 : -1)"
+                aria-haspopup="menu"
+                aria-controls="@_calloutId"
+                aria-label="@ChevronDownAriaLabel"
+                aria-expanded="@IsOpen.ToString().ToLower()"
                 style="@Styles?.ChevronDownButton"
                 class="bit-mnb-chb @Classes?.ChevronDownButton">
             @{
@@ -91,11 +113,15 @@
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
      class="bit-mnb-ovl @Classes?.Overlay"></div>
-     
-<div id="@_calloutId"
+
+<div @onkeydown="HandleOnCalloutKeyDown"
+     id="@_calloutId"
      style="@Styles?.Callout"
      class="bit-mnb-cal @GetCalloutCss() @Classes?.Callout">
-    <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
+    <ul role="menu"
+        aria-labelledby="@(_Id + (Split && ChevronDownAriaLabel.HasValue() ? "-chb" : "-opb"))"
+        style="@Styles?.CalloutContainer"
+        class="bit-mnb-cul @Classes?.CalloutContainer">
         @if (Options is not null || ChildContent is not null)
         {
             <CascadingValue Value="this" IsFixed="true">

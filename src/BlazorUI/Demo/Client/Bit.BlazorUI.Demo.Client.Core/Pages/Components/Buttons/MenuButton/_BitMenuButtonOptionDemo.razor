@@ -1,4 +1,6 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <div>The basic usage of BitMenuButton, declaring its items as BitMenuButtonOption components directly in the markup.</div>
+    <br />
     <div class="example-content">
         <BitMenuButton Text="MenuButton" TItem="BitMenuButtonOption">
             <BitMenuButtonOption Text="Option A" Key="A" />
@@ -9,7 +11,7 @@
 </DemoExample>
 
 <DemoExample Title="Split" RazorCode="@example2RazorCode" Id="example2" PreventRenderForMcpClient>
-    <div>Explore the Split behavior of BitMenuButton, demonstrating buttons divided into two sections. One section triggers an action on click, while the other section opens a callout to reveal additional options.</div>
+    <div>In Split mode, the menu button renders in two parts: a main button that raises the OnClick event and a separate chevron button that opens the options callout.</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="Split" TItem="BitMenuButtonOption" Split>
@@ -21,7 +23,7 @@
 </DemoExample>
 
 <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3" PreventRenderForMcpClient>
-    <div>The MenuButton offers three variants: Fill (default), Outline, and Text.</div>
+    <div>The Variant parameter offers three visual variants: Fill (default), Outline, and Text, available in both normal and Split modes with proper disabled styling.</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="Fill" TItem="BitMenuButtonOption" Variant="BitVariant.Fill">
@@ -97,7 +99,7 @@
 </DemoExample>
 
 <DemoExample Title="Sticky" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
-    <div>Experience the Sticky functionality of BitMenuButton, showcasing a button that remains sticky after an item selection. The button displays the selected item and retains its state for continuous user interaction.</div>
+    <div>In Sticky mode, clicking an option selects it and renders it as the header button, removing it from the callout list while it stays selected.</div>
     <br />
     <div class="example-content">
         <BitMenuButton TItem="BitMenuButtonOption" Variant="BitVariant.Fill" Sticky>
@@ -140,7 +142,7 @@
 </DemoExample>
 
 <DemoExample Title="Icons" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
-    <div>Present BitMenuButton instances with customized icons, enriching the visual options for representing menu buttons.</div>
+    <div>Customize the icons of the menu button: IconName sets the header icon, ChevronDownIconName replaces the default chevron icon, and each option can render its own icon next to its text.</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="IconName" IconName="@BitIconName.Edit" TItem="BitMenuButtonOption">
@@ -157,68 +159,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
-    <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
-    <br />
-    <div><b>Component's Style & Class</b>:</div>
-    <br />
-    <div class="example-content">
-        <BitMenuButton Text="Styled Button" TItem="BitMenuButtonOption" Style="border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;">
-            <BitMenuButtonOption Text="Option A" Key="A" />
-            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" />
-        </BitMenuButton>
-
-        <BitMenuButton Text="Classed Button" TItem="BitMenuButtonOption" Class="custom-class" Variant="BitVariant.Outline">
-            <BitMenuButtonOption Text="Option A" Key="A" />
-            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" />
-        </BitMenuButton>
-    </div>
-    <br /><br /><br />
-    <div><b>Option's Style & Class</b>:</div>
-    <br />
-    <div>Non-Sticky:</div>
-    <BitMenuButton Text="Non-Sticky" TItem="BitMenuButtonOption" Variant="BitVariant.Text">
-        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color: brown" />
-        <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
-        <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
-    </BitMenuButton>
-    <br />
-    <div>Sticky:</div>
-    <BitMenuButton Text="Sticky" Sticky TItem="BitMenuButtonOption" Variant="BitVariant.Text">
-        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color:brown" />
-        <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
-        <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
-    </BitMenuButton>
-    <br /><br /><br />
-    <div><b>Styles</b> & <b>Classes</b>:</div>
-    <br />
-    <div>
-        <BitMenuButton Text="Classes" TItem="BitMenuButtonOption" IconName="@BitIconName.FormatPainter" Variant="BitVariant.Text"
-                       Classes="@(new() { OperatorButton = "custom-button",
-                                         Opened = "custom-opened",
-                                         Callout = "custom-callout",
-                                         ItemButton = "custom-item-button" })">
-            <BitMenuButtonOption Text="Option A" Key="A" />
-            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" />
-        </BitMenuButton>
-        <br />
-        <BitMenuButton Text="Styles" TItem="BitMenuButtonOption" IconName="@BitIconName.Brush"
-                       Styles="@(new() { Root = "--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;",
-                                        Opened = "--button-background: orangered;",
-                                        OperatorButton = "background: var(--button-background);",
-                                        ItemButton = "background: lightcoral;",
-                                        Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;" })">
-            <BitMenuButtonOption Text="Option A" Key="A" />
-            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" />
-        </BitMenuButton>
-    </div>
-</DemoExample>
-
-<DemoExample Title="Background" RazorCode="@example7RazorCode" Id="example7" PreventRenderForMcpClient>
+<DemoExample Title="Background" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
     <div>Use the Background parameter to control the background color of the callout using BitColorKind values.</div>
     <br />
     <div class="example-content">
@@ -245,7 +186,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Toggle" RazorCode="@example8RazorCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="Toggle" RazorCode="@example7RazorCode" Id="example7" PreventRenderForMcpClient>
     <div>
         Enable toggle behavior on the header button in Split mode. Clicking the operator button toggles the IsToggled state, while the chevron button still opens the callout.
     </div>
@@ -290,8 +231,8 @@
     </BitMenuButton>
 </DemoExample>
 
-<DemoExample Title="NoIcon" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
-    <div>Use the NoIcon parameter to hide the header icon of the menu button.</div>
+<DemoExample Title="NoIcon" RazorCode="@example8RazorCode" Id="example8" PreventRenderForMcpClient>
+    <div>Use the NoIcon parameter to hide the header icon of the menu button, including the selected option's icon in Sticky mode.</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="With icon" TItem="BitMenuButtonOption" IconName="@BitIconName.Edit">
@@ -320,9 +261,9 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example10RazorCode" Id="example10" PreventRenderForMcpClient>
-    <div>Explore BitMenuButton's customization capabilities.</div>
-    <div>Note that if <strong>Sticky</strong> set to true, HeaderTemplate and Text will be ignored.</div>
+<DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
+    <div>Customize the rendering of the menu button using HeaderTemplate for the header content, ItemTemplate for all options, or the Template parameter of an individual option.</div>
+    <div>Note that if <strong>Sticky</strong> is set to true, HeaderTemplate and Text will be ignored.</div>
     <br />
     <div>HeaderTemplate</div>
     <BitMenuButton TItem="BitMenuButtonOption">
@@ -366,8 +307,8 @@
     </BitMenuButton>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
-    <div>Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.</div>
+<DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+    <div>Handle the click events of the menu button: OnClick is raised when an option (or the main button in Split mode) is clicked, and OnChange is raised in Sticky mode whenever the selected option changes. Each option can also provide its own OnClick handler.</div>
     <br />
     <div>Non-Sticky</div>
     <div class="example-content">
@@ -411,8 +352,8 @@
     <div>Clicked option: @exampleClickedOption</div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
-    <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
+<DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
+    <div>Control the state of the menu button with bindings: SelectedItem supports two-way binding, the IsSelected parameter pre-selects an option, and the IsOpen parameter controls the callout with one-way or two-way bindings.</div>
     <br /><br /><br /><br />
     <div>
         <div>DefaultSelectedItem:</div>
@@ -468,88 +409,136 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13" PreventRenderForMcpClient>
-    <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
-    
+<DemoExample Title="Separators" RazorCode="@example12RazorCode" Id="example12" PreventRenderForMcpClient>
+    <div>Use the IsSeparator parameter of the options to group related options using separator lines.</div>
     <br />
-    <br />
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
     <div class="example-content">
-        <BitMenuButton Text="Actions" 
-                       TItem="BitMenuButtonOption"
-                       Icon="@("fa-solid fa-house")">
-            <BitMenuButtonOption Text="Add" Icon="@("fa-solid fa-plus")" />
-            <BitMenuButtonOption Text="Edit" Icon="@("fa-solid fa-pen")" />
-            <BitMenuButtonOption Text="Delete" Icon="@("fa-solid fa-trash")" />
+        <BitMenuButton Text="File" TItem="BitMenuButtonOption" IconName="@BitIconName.OpenFile">
+            <BitMenuButtonOption Text="New" Key="new" IconName="@BitIconName.Add" />
+            <BitMenuButtonOption Text="Open" Key="open" IconName="@BitIconName.OpenFile" />
+            <BitMenuButtonOption IsSeparator />
+            <BitMenuButtonOption Text="Save" Key="save" IconName="@BitIconName.Save" />
+            <BitMenuButtonOption Text="Save as" Key="save-as" IconName="@BitIconName.SaveAs" />
+            <BitMenuButtonOption IsSeparator />
+            <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete" />
         </BitMenuButton>
 
-        <BitMenuButton Split 
-                       Text="Actions" 
-                       TItem="BitMenuButtonOption"
-                       Icon="@("fa-brands fa-github")">
-            <BitMenuButtonOption Text="Add" Icon="@("fa-solid fa-plus")" />
-            <BitMenuButtonOption Text="Edit" Icon="@("fa-solid fa-pen")" />
-            <BitMenuButtonOption Text="Delete" Icon="@("fa-solid fa-trash")" />
-        </BitMenuButton>
-    </div>
-
-    <br />
-    <br />
-
-    <div class="example-content">
-        <BitMenuButton Text="Actions" 
-                       Color="BitColor.Secondary"
-                       TItem="BitMenuButtonOption" 
-                       Variant="BitVariant.Outline"
-                       Icon="@BitIconInfo.Css("fa-solid fa-house")">
-            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Css("fa-solid fa-plus")" />
-            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Css("fa-solid fa-pen")" />
-            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Css("fa-solid fa-trash")" />
-        </BitMenuButton>
-
-        <BitMenuButton Split 
-                       Text="Actions" 
-                       Color="BitColor.Secondary"
-                       TItem="BitMenuButtonOption" 
-                       Variant="BitVariant.Outline"
-                       Icon="@BitIconInfo.Css("fa-brands fa-github")">
-            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Css("fa-solid fa-plus")" />
-            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Css("fa-solid fa-pen")" />
-            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Css("fa-solid fa-trash")" />
-        </BitMenuButton>
-    </div>
-
-    <br />
-    <br />
-
-    <div class="example-content">
-        <BitMenuButton Text="Actions" 
-                       Variant="BitVariant.Text"
-                       Color="BitColor.Tertiary"
-                       TItem="BitMenuButtonOption" 
-                       Icon="@BitIconInfo.Fa("solid house")">
-            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Fa("solid plus")" />
-            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Fa("solid pen")" />
-            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Fa("solid trash")" />
-        </BitMenuButton>
-
-        <BitMenuButton Split 
-                       Text="Actions"
-                       Color="BitColor.Tertiary"
-                       Variant="BitVariant.Text"
-                       TItem="BitMenuButtonOption" 
-                       Icon="@BitIconInfo.Fa("brands github")">
-            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Fa("solid plus")" />
-            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Fa("solid pen")" />
-            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Fa("solid trash")" />
+        <BitMenuButton Split Sticky TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="New" Key="new" IconName="@BitIconName.Add" />
+            <BitMenuButtonOption Text="Open" Key="open" IconName="@BitIconName.OpenFile" />
+            <BitMenuButtonOption IsSeparator />
+            <BitMenuButtonOption Text="Save" Key="save" IconName="@BitIconName.Save" />
+            <BitMenuButtonOption Text="Save as" Key="save-as" IconName="@BitIconName.SaveAs" />
+            <BitMenuButtonOption IsSeparator />
+            <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete" />
         </BitMenuButton>
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
-    <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+<DemoExample Title="Links" RazorCode="@example13RazorCode" Id="example13" PreventRenderForMcpClient>
+    <div>
+        Use the Href parameter of the options to render them as links (anchor tags) navigating to the provided url.
+        The Target parameter customizes the navigation behavior and the Title parameter adds a tooltip to each option.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Links" TItem="BitMenuButtonOption" IconName="@BitIconName.Globe">
+            <BitMenuButtonOption Text="bit platform" Key="bit" IconName="@BitIconName.Globe" Href="https://bitplatform.dev" Target="_blank" Title="The bit platform website" />
+            <BitMenuButtonOption Text="GitHub repo" Key="github" IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform" Target="_blank" Title="The bit platform GitHub repository" />
+            <BitMenuButtonOption IsSeparator />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" Title="A regular option" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="FullWidth" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
+    <div>Use the FullWidth parameter to expand the menu button to 100% of the available width.</div>
+    <br />
+    <BitMenuButton Text="Full width" TItem="BitMenuButtonOption" FullWidth>
+        <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+        <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+        <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+    </BitMenuButton>
+    <br />
+    <BitMenuButton Text="Full width split" TItem="BitMenuButtonOption" FullWidth Split>
+        <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+        <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+        <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+    </BitMenuButton>
+</DemoExample>
+
+<DemoExample Title="Loading" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+    <div>
+        Use the IsLoading parameter to show a spinner in the header button while a long running operation is in progress.
+        In Split mode, the chevron button still opens the callout during the loading state.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Split Text="Save" IconName="@BitIconName.Save" IsLoading="optionAutoIsLoading" OnClick="(BitMenuButtonOption option) => HandleOnLoadingClick()" TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+
+        <BitMenuButton Text="Loading" IsLoading="optionIsLoading" TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+        <BitCheckbox Label="IsLoading" @bind-Value="optionIsLoading" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Title" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
+    <div>
+        Use the Title parameter to show a tooltip on hover over the header button.
+        In Split mode, the ChevronDownAriaLabel parameter provides an accessible name for the chevron button for the benefit of screen readers.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Hover over me" Title="The menu button tooltip" TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+
+        <BitMenuButton Split Text="Split" Title="The main button tooltip" ChevronDownAriaLabel="Open the menu" TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="DropDirection" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
+    <div>
+        Use the DropDirection parameter to control the directions in which the callout is allowed to open:
+        TopAndBottom (default), or All which also allows opening to the sides when the vertical space is limited.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="TopAndBottom" DropDirection="BitDropDirection.TopAndBottom" TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+            <BitMenuButtonOption Text="Option D" Key="D" />
+            <BitMenuButtonOption Text="Option E" Key="E" />
+            <BitMenuButtonOption Text="Option F" Key="F" />
+        </BitMenuButton>
+
+        <BitMenuButton Text="All" DropDirection="BitDropDirection.All" TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+            <BitMenuButtonOption Text="Option D" Key="D" />
+            <BitMenuButtonOption Text="Option E" Key="E" />
+            <BitMenuButtonOption Text="Option F" Key="F" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
+    <div>The Color parameter applies the general theme colors of bit BlazorUI (Primary being the default) to the menu button across all variants, in both normal and Split modes.</div>
     <br /><br />
     <div class="example-content">
         <BitMenuButton Text="Primary" TItem="BitMenuButtonOption" Variant="BitVariant.Fill" Color="BitColor.Primary">
@@ -1234,8 +1223,89 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15" PreventRenderForMcpClient>
-    <div>Varying sizes for menu buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+<DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
+    <div>Icons from external libraries, like Font Awesome, can be used with the Icon parameter of both the menu button and its options, either as a plain CSS class string or a BitIconInfo instance. The ChevronDownIcon parameter accepts external icons in the same way.</div>
+    
+    <br />
+    <br />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div class="example-content">
+        <BitMenuButton Text="Actions" 
+                       TItem="BitMenuButtonOption"
+                       Icon="@("fa-solid fa-house")">
+            <BitMenuButtonOption Text="Add" Icon="@("fa-solid fa-plus")" />
+            <BitMenuButtonOption Text="Edit" Icon="@("fa-solid fa-pen")" />
+            <BitMenuButtonOption Text="Delete" Icon="@("fa-solid fa-trash")" />
+        </BitMenuButton>
+
+        <BitMenuButton Split 
+                       Text="Actions" 
+                       TItem="BitMenuButtonOption"
+                       Icon="@("fa-brands fa-github")">
+            <BitMenuButtonOption Text="Add" Icon="@("fa-solid fa-plus")" />
+            <BitMenuButtonOption Text="Edit" Icon="@("fa-solid fa-pen")" />
+            <BitMenuButtonOption Text="Delete" Icon="@("fa-solid fa-trash")" />
+        </BitMenuButton>
+    </div>
+
+    <br />
+    <br />
+
+    <div class="example-content">
+        <BitMenuButton Text="Actions" 
+                       Color="BitColor.Secondary"
+                       TItem="BitMenuButtonOption" 
+                       Variant="BitVariant.Outline"
+                       Icon="@BitIconInfo.Css("fa-solid fa-house")">
+            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Css("fa-solid fa-plus")" />
+            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Css("fa-solid fa-pen")" />
+            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Css("fa-solid fa-trash")" />
+        </BitMenuButton>
+
+        <BitMenuButton Split 
+                       Text="Actions" 
+                       Color="BitColor.Secondary"
+                       TItem="BitMenuButtonOption" 
+                       Variant="BitVariant.Outline"
+                       Icon="@BitIconInfo.Css("fa-brands fa-github")">
+            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Css("fa-solid fa-plus")" />
+            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Css("fa-solid fa-pen")" />
+            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Css("fa-solid fa-trash")" />
+        </BitMenuButton>
+    </div>
+
+    <br />
+    <br />
+
+    <div class="example-content">
+        <BitMenuButton Text="Actions" 
+                       Variant="BitVariant.Text"
+                       Color="BitColor.Tertiary"
+                       TItem="BitMenuButtonOption" 
+                       Icon="@BitIconInfo.Fa("solid house")">
+            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Fa("solid plus")" />
+            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Fa("solid pen")" />
+            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Fa("solid trash")" />
+        </BitMenuButton>
+
+        <BitMenuButton Split
+                       Text="Actions"
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text"
+                       TItem="BitMenuButtonOption"
+                       Icon="@BitIconInfo.Fa("brands github")"
+                       ChevronDownIcon="@BitIconInfo.Fa("solid angles-down")">
+            <BitMenuButtonOption Text="Add" Icon="@BitIconInfo.Fa("solid plus")" />
+            <BitMenuButtonOption Text="Edit" Icon="@BitIconInfo.Fa("solid pen")" />
+            <BitMenuButtonOption Text="Delete" Icon="@BitIconInfo.Fa("solid trash")" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
+    <div>The Size parameter adjusts the size of the menu button among Small, Medium (default), and Large.</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="Small" TItem="BitMenuButtonOption" Variant="BitVariant.Fill" Size="BitSize.Small">
@@ -1292,8 +1362,69 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
-    <div>Use BitMenuButton in right-to-left (RTL).</div>
+<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
+    <div>Customize the look of the menu button at any level: the Style and Class parameters of the root element, the Style and Class of each option, and the Styles and Classes parameters targeting the internal parts of the component.</div>
+    <br />
+    <div><b>Component's Style & Class</b>:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Styled Button" TItem="BitMenuButtonOption" Style="border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+
+        <BitMenuButton Text="Classed Button" TItem="BitMenuButtonOption" Class="custom-class" Variant="BitVariant.Outline">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+    <br /><br /><br />
+    <div><b>Option's Style & Class</b>:</div>
+    <br />
+    <div>Non-Sticky:</div>
+    <BitMenuButton Text="Non-Sticky" TItem="BitMenuButtonOption" Variant="BitVariant.Text">
+        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color: brown" />
+        <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
+        <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
+    </BitMenuButton>
+    <br />
+    <div>Sticky:</div>
+    <BitMenuButton Text="Sticky" Sticky TItem="BitMenuButtonOption" Variant="BitVariant.Text">
+        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color:brown" />
+        <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
+        <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
+    </BitMenuButton>
+    <br /><br /><br />
+    <div><b>Styles</b> & <b>Classes</b>:</div>
+    <br />
+    <div>
+        <BitMenuButton Text="Classes" TItem="BitMenuButtonOption" IconName="@BitIconName.FormatPainter" Variant="BitVariant.Text"
+                       Classes="@(new() { OperatorButton = "custom-button",
+                                         Opened = "custom-opened",
+                                         Callout = "custom-callout",
+                                         ItemButton = "custom-item-button" })">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <br />
+        <BitMenuButton Text="Styles" TItem="BitMenuButtonOption" IconName="@BitIconName.Brush"
+                       Styles="@(new() { Root = "--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;",
+                                        Opened = "--button-background: orangered;",
+                                        OperatorButton = "background: var(--button-background);",
+                                        ItemButton = "background: lightcoral;",
+                                        Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;" })">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
+    <div>Use the Dir parameter to render the menu button in right-to-left (RTL) direction.</div>
     <br />
     <div class="example-content" dir="rtl">
         <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" TItem="BitMenuButtonOption" IconName="@BitIconName.Edit">
