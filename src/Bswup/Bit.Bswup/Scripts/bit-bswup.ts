@@ -93,18 +93,62 @@ if (!BitBswup.initialized) {
             let hadActiveWorkerAtStartup = false;
 
             try {
-                navigator.serviceWorker
-                    .register(options.sw, { scope: options.scope, updateViaCache: 'none' })
-                    .then(prepareRegistration)
-                    .catch((err) => {
-                        startBlazor(true);
-                        error('serviceWorker register promise failed', err);
-                    });
+                registerServiceWorker();
                 navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
                 navigator.serviceWorker.addEventListener('message', handleMessage);
             } catch (e) {
                 startBlazor(true);
                 error('serviceWorker registration failed', e);
+            }
+
+            // Registers the service worker, retrying once without the configured scope if the
+            // browser refuses it.
+            //
+            // A service worker may only control URLs beneath its own directory unless the
+            // response carries a Service-Worker-Allowed header, so the default scope of '/' is
+            // rejected outright for any app mounted on a sub-path (https://host/myapp/). That
+            // used to be masked for apps that defined a partial `window.bitBswup` object: the
+            // options were taken wholesale instead of merged, so `scope` came out undefined and
+            // the browser quietly applied its own default. Now that options are merged with the
+            // defaults (a fix - it also stops handlerName and blazorScript from coming out
+            // undefined), those apps get the explicit '/' and the registration would fail.
+            //
+            // Retrying with the scope omitted reproduces exactly what the browser would have
+            // done on its own - scope = the folder containing the service-worker script - so a
+            // sub-path app keeps working instead of silently losing offline support. Apps that
+            // legitimately serve a sub-directory worker at '/' via Service-Worker-Allowed are
+            // untouched: their first attempt succeeds and the retry never runs.
+            function registerServiceWorker() {
+                navigator.serviceWorker
+                    .register(options.sw, { scope: options.scope, updateViaCache: 'none' })
+                    .then(prepareRegistration)
+                    .catch((err) => {
+                        // Only a scope rejection is worth retrying. Retrying on *any* failure
+                        // would be actively harmful: a transient first attempt (or a 404 that
+                        // later resolves) could then succeed on the narrower default scope,
+                        // leaving the worker silently controlling less of the origin than
+                        // configured - the kind of bug that only shows up as "offline mode
+                        // doesn't work on some pages". The spec requires SecurityError for a
+                        // scope the worker isn't allowed to control, and every engine follows
+                        // it; matching on the error *name* keeps this precise. Deliberately no
+                        // message-text probe: Chrome's script-fetch failures also contain the
+                        // word "scope" ("Failed to register a ServiceWorker for scope (...): A
+                        // bad HTTP response code (404) ..."), which would defeat the check.
+                        if (!options.scope || !err || err.name !== 'SecurityError') {
+                            startBlazor(true);
+                            return error('serviceWorker register promise failed', err);
+                        }
+
+                        warn(`serviceWorker registration was not allowed for scope "${options.scope}" - retrying with the default scope (the folder containing "${options.sw}").`, err);
+
+                        navigator.serviceWorker
+                            .register(options.sw, { updateViaCache: 'none' })
+                            .then(prepareRegistration)
+                            .catch((retryErr) => {
+                                startBlazor(true);
+                                error('serviceWorker register promise failed', retryErr);
+                            });
+                    });
             }
 
             function prepareRegistration(reg) {
@@ -345,6 +389,21 @@ if (!BitBswup.initialized) {
                 if (type === 'error') {
                     error('install error:', data);
                     handle(BswupMessage.error, { ...data, reload });
+
+                    // Last-resort boot guarantee. A fatal failure means the install aborted, so
+                    // this worker never reaches 'active'. On a *first* install that is fatal to
+                    // the page as well: nothing controls it, progress never reaches 100% (failed
+                    // assets aren't counted), so downloadFinished -> reload() -> CLAIM_CLIENTS
+                    // never happens and Blazor is never started - the app hangs behind the
+                    // splash forever. Start it directly instead: the network still works, this
+                    // page just serves everything from origin as if there were no service
+                    // worker, and the next load can retry the install. startBlazorCore is
+                    // idempotent, so this is a no-op when the app is already running (the update
+                    // case, where the previous worker keeps serving normally).
+                    if (data && data.fatal !== false && !hadActiveWorkerAtStartup && !navigator.serviceWorker.controller) {
+                        warn('install failed before the app could start - starting Blazor without a service worker.');
+                        startBlazor(true);
+                    }
                 }
 
                 if (type === 'bypass') {
@@ -606,15 +665,27 @@ if (!BitBswup.initialized) {
         await reg?.update();
     }
 
-    // `forceRefresh` is the last-resort "reset" when a client is wedged. Because it is a full
-    // reset it now clears *every* CacheStorage bucket by default - not just the Bswup and
-    // Blazor framework caches - so app-owned caches (Workbox add-ons, app-data, third-party
-    // API caches, etc.) can't survive and re-poison the freshly reloaded app. Callers that
-    // need to be selective can pass a filter:
+    // Cache buckets forceRefresh clears when the caller doesn't say otherwise: Bswup's own
+    // version-suffixed caches and Blazor's framework cache. This is deliberately the same set
+    // previous versions cleared.
+    const DEFAULT_REFRESH_CACHE_PREFIXES = ['bit-bswup', 'blazor-resources'];
+
+    // `forceRefresh` is the last-resort "reset" when a client is wedged: clear the caches,
+    // unregister this app's service worker, reload.
+    //
+    // By default it clears only the caches Bswup and Blazor own. It is tempting to wipe every
+    // CacheStorage bucket instead - a stale app-owned cache can in principle re-poison the
+    // freshly reloaded app - but forceRefresh is a public API that apps already call, and
+    // CacheStorage is shared with everything else on the origin: Workbox add-ons, offline
+    // app-data, cached API responses, other sub-apps mounted on the same host. Silently
+    // widening the blast radius on upgrade could destroy data an app deliberately persisted
+    // (and, for offline-first apps, data with no other copy). Deleting more than the caller
+    // asked for is not recoverable, so the destructive option is opt-in:
+    //   - omitted:  the Bswup + Blazor caches (default, and the historical behavior)
     //   - string:   prefix match against the cache name (e.g. 'bit-bswup')
     //   - RegExp:   tested against the cache name
     //   - function: predicate receiving the cache name, return true to delete
-    // Anything else (or omitted) means "clear all".
+    // Pass `() => true` to clear every cache on the origin.
     BitBswup.forceRefresh = async (cacheFilter?: string | RegExp | ((key: string) => boolean)): Promise<void> => {
         if (!('serviceWorker' in navigator)) {
             return console.warn('no serviceWorker in navigator');
@@ -623,11 +694,13 @@ if (!BitBswup.initialized) {
         const shouldDelete =
             typeof cacheFilter === 'function' ? cacheFilter :
                 cacheFilter instanceof RegExp ? (key: string) => {
+                    // Reset lastIndex: a /g or /y pattern is stateful across .test() calls and
+                    // would otherwise skip cache names depending on the previous match.
                     cacheFilter.lastIndex = 0;
                     return cacheFilter.test(key);
                 } :
                     typeof cacheFilter === 'string' ? (key: string) => key.startsWith(cacheFilter) :
-                        () => true;
+                        (key: string) => DEFAULT_REFRESH_CACHE_PREFIXES.some(prefix => key.startsWith(prefix));
 
         const cacheKeys = await caches.keys();
         const cachePromises = cacheKeys.filter(shouldDelete).map(key => caches.delete(key));
@@ -676,7 +749,17 @@ var BswupMessage = BswupMessage || {
     updateNotFound: 'UPDATE_NOT_FOUND',
     updateCheckFailed: 'UPDATE_CHECK_FAILED',
     stateChanged: 'STATE_CHANGED',
-    error: 'ERROR'
+    error: 'ERROR',
+
+    // DEPRECATED - kept only so existing handlers keep resolving it. This constant has never
+    // been raised by any version of Bswup: it was declared, never emitted, and never
+    // documented. Dropping it would turn a `case BswupMessage.updateInstalled:` in app code
+    // into `case undefined:` - still dead, but now dead for a different reason, and one that
+    // silently shifts if `message` were ever undefined. Keeping the original value costs a
+    // line and guarantees those handlers behave exactly as they did before upgrading.
+    // Use updateReady instead: it fires when a new version has finished installing and is
+    // waiting to activate, which is what this name suggested. Do not add new uses.
+    updateInstalled: 'UPDATE_INSTALLED'
 };
 
 declare const Blazor: { start: () => Promise<unknown> }

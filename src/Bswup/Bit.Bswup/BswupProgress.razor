@@ -20,9 +20,15 @@
        statically-rendered host document.
    Razor attribute-encodes these values and the script reads them back via getAttribute, so
    no value can break out of the attribute into markup or script. Make sure
-   _content/Bit.Bswup/bit-bswup.progress.js is referenced on the page. *@
+   _content/Bit.Bswup/bit-bswup.progress.js is referenced on the page.
+
+   The hidden-until-needed default deliberately lives in bit-bswup.progress.css
+   (`#bit-bswup { display: none }`), NOT in an inline style here - same as #bit-bswup-reload.
+   An inline style wins over every stylesheet rule, so hardcoding it would silently override
+   apps that restyle #bit-bswup (a custom ChildContent splash meant to be visible during
+   startup, or a layout that needs flex/grid) and apps that skip the bundled stylesheet
+   entirely. bit-bswup.progress.js still toggles display inline at runtime as it always has. *@
 <div id="bit-bswup"
-     style="display: none;"
      data-bit-bswup-config="true"
      data-bit-bswup-auto-reload="@(AutoReload ? "true" : "false")"
      data-bit-bswup-show-logs="@(ShowLogs ? "true" : "false")"

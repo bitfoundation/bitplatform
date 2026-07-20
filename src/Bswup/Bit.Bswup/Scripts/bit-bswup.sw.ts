@@ -90,6 +90,7 @@ if (!MANIFEST_VALID) {
         reason: 'manifest',
         message: 'service-worker-assets.js is missing or malformed: ' + MANIFEST_ERRORS.join('; '),
         url: ASSETS_URL,
+        fatal: true, // handleInstall aborts below regardless of errorTolerance
     });
 
     // Normalize to a benign, fully-formed shape so the rest of this module - which reads
@@ -153,14 +154,18 @@ switch (self.mode) {
         break;
 }
 
-// Default error tolerance when no mode preset applies. 'strict' matches the standard
-// Microsoft template / Workbox semantics: any precache failure aborts the install and
-// the previous SW keeps serving. Set 'lax' explicitly to opt into best-effort installs
-// (e.g. when listing optional externalAssets that may legitimately 404).
-self.errorTolerance ||= 'strict';
+// Default error tolerance when no mode preset applies. 'lax' is the default because it
+// preserves the behavior every existing app was already getting: previous versions never
+// awaited (and never rejected) the install, so a failed asset was always best-effort. It is
+// also the safe default - a single optional externalAssets entry that 404s must not be able
+// to abort a *first* install, which would leave the app with no active worker and no way to
+// reach the start-Blazor handshake.
+// Set 'strict' explicitly to opt into the standard Microsoft template / Workbox semantics:
+// any precache failure aborts the install and the previous SW (if any) keeps serving.
+self.errorTolerance ||= 'lax';
 if (self.errorTolerance !== 'strict' && self.errorTolerance !== 'lax') {
-    diag('*** unknown errorTolerance, falling back to strict:', self.errorTolerance);
-    self.errorTolerance = 'strict';
+    diag('*** unknown errorTolerance, falling back to lax:', self.errorTolerance);
+    self.errorTolerance = 'lax';
 }
 
 // Transient-failure retry policy for asset downloads. A single flaky request (CDN blip,
@@ -313,10 +318,27 @@ async function handleFetch(e: any) {
     if (PROHIBITED_URLS.some(pattern => pattern.test(req.url))) {
         diagFetch('+++ handleFetch ended - prohibited:', e, req);
 
+        // 403 Forbidden: the request was understood and is being refused. Versions before
+        // 10.5.0 answered 405 Method Not Allowed, which is wrong on both counts - it says the
+        // *method* is unsupported for this resource (the URL is blocked here regardless of
+        // method) and RFC 9110 requires a 405 to carry an Allow header listing the permitted
+        // methods, which there is no meaningful value for. Code that detects a Bswup-blocked
+        // URL by checking for status 405 needs to look for 403 instead.
+        //
+        // The offending URL is deliberately not echoed back. It used to be interpolated into
+        // statusText, which is an HTTP reason-phrase: it cannot carry arbitrary text, and the
+        // Response constructor throws on an invalid one - turning a blocked request into an
+        // exception inside the fetch handler. Keeping the body a fixed string means nothing
+        // attacker-influenced is ever reflected; nosniff stops the text/plain body from being
+        // re-interpreted as HTML by content sniffing. The URL is still available via
+        // enableFetchDiagnostics (logged above).
         return new Response('This URL is prohibited!', {
             status: 403,
             statusText: 'Prohibited',
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'X-Content-Type-Options': 'nosniff',
+            }
         });
     }
 
@@ -576,13 +598,20 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // Nothing to download: every asset is already cached and up to date (e.g. an update
     // whose only change lives outside the asset set, or a misconfigured defaultUrl that
     // matches no manifest asset). Without an asset to drive a 'progress' message to 100%,
-    // the page would never receive downloadFinished and the splash would hang. Emit an
-    // explicit completion so the UI can settle. The post-BLAZOR_STARTED top-up
+    // the page would never receive downloadFinished and the splash would hang, so we still
+    // have to signal completion. 'bypass' is the right signal rather than a synthetic
+    // 'progress': it already means "nothing to download, we're done" (it is what the passive
+    // first-run path sends) and bit-bswup.ts maps it straight to downloadFinished. A fake
+    // progress tick would instead have to carry an asset, and every handler in the wild -
+    // including the built-in ShowAssets list and the example in the README - dereferences
+    // data.asset.url, so a null there would throw in app code. The post-BLAZOR_STARTED top-up
     // (ignoreProgressReport) stays silent because the page UI is already gone by then.
     if (total === 0) {
         diag('createAssetsCache - nothing to cache; reporting completion.');
         if (!ignoreProgressReport) {
-            sendMessage({ type: 'progress', data: { asset: null, percent: 100, index: 0 } });
+            // No firstTime flag: whether this counts as a first install is decided on the page
+            // from whether a worker was already active at startup.
+            sendMessage({ type: 'bypass', data: {} });
         }
         diagGroupEnd();
         return;
@@ -596,17 +625,23 @@ async function createAssetsCache(ignoreProgressReport = false) {
     const promises = assetsToCache.map(addCache.bind(null, !ignoreProgressReport));
 
     // Await install batch so SRI/network failures surface as install rejections instead of
-    // unhandled promise rejections. We keep using allSettled (rather than Promise.all) so a
-    // single failure doesn't cancel sibling fetches: we want every asset attempted and
-    // reported even when the install will ultimately fail.
-    const results = await Promise.allSettled(promises);
-    const rejectedCount = results.reduce((n, r) => n + (r.status === 'rejected' ? 1 : 0), 0);
+    // unhandled promise rejections. A bare Promise.all would settle on the first rejection and
+    // leave the siblings' rejections unhandled; we want every asset attempted and reported even
+    // when the install will ultimately fail. Mapping each promise to a never-rejecting boolean
+    // first gives exactly that, and unlike Promise.allSettled (ES2020) it runs on the ES2019
+    // baseline this bundle targets - a service worker is the last place to depend on a recent
+    // runtime, since a browser too old to parse it fails the whole offline story silently.
+    const outcomes = await Promise.all(promises.map((p: Promise<any>) => p.then(() => true, () => false)));
+    const rejectedCount = outcomes.reduce((n, succeeded) => n + (succeeded ? 0 : 1), 0);
 
     if (integrityFailureCount > 0 && !ignoreProgressReport) {
         sendError({
             reason: 'install-incomplete',
             message: `Install completed with ${integrityFailureCount} integrity failure(s). The service worker will not activate cleanly; check that service-worker-assets.js, blazor.boot.json, and the framework files are served byte-identical (no on-the-fly gzip/minify by a CDN or proxy).`,
             count: integrityFailureCount,
+            // Under 'strict' the abort below tears the install down; under 'lax' the install
+            // still succeeds and the affected assets lazy-fill, so this is advisory only.
+            fatal: self.errorTolerance === 'strict',
         });
     }
 
@@ -621,10 +656,18 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // path must never reject because install has already activated.
     if (!ignoreProgressReport && self.errorTolerance === 'strict' && rejectedCount > 0) {
         try { await caches.delete(CACHE_NAME); } catch { /* best effort */ }
-        throw new Error(
+
+        const abortMessage =
             `Install aborted under errorTolerance 'strict': ${rejectedCount} of ${total} asset(s) failed. ` +
-            `Switch to errorTolerance 'lax' to allow a partial cache plus runtime fallback.`
-        );
+            `Switch to errorTolerance 'lax' (the default) to allow a partial cache plus runtime fallback.`;
+
+        // Announce the abort as its own terminal error before throwing. The per-asset errors
+        // above each describe one failure; this is the one message that says the *install* is
+        // over. The page needs it to force-start Blazor on a first install - without an active
+        // worker there is no CLAIM_CLIENTS handshake, so nothing else would ever start the app.
+        sendError({ reason: 'install-aborted', message: abortMessage, count: rejectedCount, total, fatal: true });
+
+        throw new Error(abortMessage);
     }
 
     async function addCache(report: boolean, asset: any) {
@@ -638,6 +681,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 message: 'Failed to build asset request: ' + (err && (err as any).message || String(err)),
                 url: asset && asset.reqUrl,
                 hash: asset && asset.hash,
+                fatal: isFatalAssetFailure(),
             });
             doReport(true);
             return Promise.reject(err);
@@ -693,6 +737,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                     url: asset.reqUrl,
                     hash: asset.hash,
                     integrity: hasIntegrity,
+                    fatal: isFatalAssetFailure(),
                 });
                 doReport(true);
                 return Promise.reject(fetchErr);
@@ -715,6 +760,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                     hash: asset.hash,
                     status: response.status,
                     integrity: hasIntegrity,
+                    fatal: isFatalAssetFailure(),
                 });
                 doReport(true);
                 return Promise.reject(response);
@@ -734,6 +780,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                     message: 'Failed to store asset in cache: ' + (err && (err as any).message || String(err)),
                     url: asset.reqUrl,
                     hash: asset.hash,
+                    fatal: isFatalAssetFailure(),
                 });
                 doReport(true);
                 return Promise.reject(err);
@@ -744,12 +791,21 @@ async function createAssetsCache(ignoreProgressReport = false) {
         // attempt), but keep a defensive fallback so the promise always settles.
         return Promise.reject(lastError);
 
+        // Whether a single asset failure will actually bring the install down. Under 'strict'
+        // any rejection aborts the install (see the throw above), so the page must treat it as
+        // terminal. Under 'lax' the install still completes and the asset lazily fills on first
+        // fetch, so it is reported for visibility only. The post-BLAZOR_STARTED top-up run
+        // (report === false) can never abort anything - the install already activated.
+        function isFatalAssetFailure() {
+            return report && self.errorTolerance === 'strict';
+        }
+
         function doReport(rejected = false) {
             if (!report) return;
             if (rejected && self.errorTolerance !== 'lax') return;
 
             const percent = (++current) / total * 100;
-            sendMessage({ type: 'progress', data: { asset, percent, index: current } });
+            sendMessage({ type: 'progress', data: { asset: toMessageAsset(asset), percent, index: current } });
         }
     }
 }
@@ -792,7 +848,11 @@ function normalizeNonNegativeInt(value: any, fallback: number) {
 // `integrity` attribute so the browser rejects tampered/mismatched bytes; enableCacheControl
 // adds no-store/no-cache headers to bypass the HTTP cache and force a fresh fetch.
 function createNewAssetRequest(asset: any) {
-    const version = ((asset.hash || self.assetsManifest.version) as string).replaceAll('+', '-').replaceAll('/', '_');
+    // Global .replace() rather than .replaceAll(): identical result for these single-character
+    // literals, but replaceAll is ES2021 and this bundle targets ES2019. (This call predates
+    // the ES2019 target and silently raised the real runtime floor to Chrome 85 / Safari 13.4
+    // even while tsconfig claimed ES2019 - `target` downlevels syntax, never library methods.)
+    const version = ((asset.hash || self.assetsManifest.version) as string).replace(/\+/g, '-').replace(/\//g, '_');
     const trimmedVersion = encodeURIComponent(trimEnd(version, '='));
 
     const url = new URL(asset.reqUrl, self.location.origin);
@@ -842,6 +902,11 @@ async function deleteOldCaches() {
 //             is undefined for pattern assets, whose concrete URL is only known when a matching
 //             request arrives (they are cached lazily by that request URL instead).
 //   - `isDefault` flags the SPA default document, since `url` is no longer comparable by string.
+//   - `srcUrl` preserves the original `url` exactly as the app/manifest declared it (the relative
+//             manifest path, e.g. '_framework/blazor.boot.json', or a pattern entry's source
+//             text). `url` is overwritten with the matcher, and a RegExp is not JSON
+//             serializable - it stringifies to `{}` - so this is what gets reported to the page
+//             in progress messages. See toMessageAsset.
 // The manifest entries are shallow-copied rather than mutated in place, since self.assetsManifest
 // / externalAssets are caller-owned and read elsewhere.
 function uniqueAssets(assets: any) {
@@ -858,11 +923,24 @@ function uniqueAssets(assets: any) {
         distinct.push({
             ...a,
             url: isPattern ? applyUrlCaseSensitivity(a.url) : urlToRegExp(reqUrl as string),
+            srcUrl: isPattern ? String(a.url) : a.url,
             reqUrl,
             isDefault: !isPattern && a.url === DEFAULT_URL,
         });
     }
     return distinct;
+}
+
+// Converts an internal asset into a shape that survives JSON.stringify on its way to the page.
+// Internally `asset.url` is a RegExp matcher, and JSON.stringify turns a RegExp into `{}` - so
+// posting the raw asset would hand every `bitBswupHandler` (and the built-in ShowAssets list)
+// an empty object where the documented API promises a URL string. Restore `url` to the string
+// the app declared, keeping the rest of the entry (hash, reqUrl, isDefault, plus any custom
+// fields an app attached to its externalAssets) intact.
+function toMessageAsset(asset: any) {
+    if (!asset) return asset;
+
+    return { ...asset, url: asset.srcUrl ?? asset.reqUrl ?? String(asset.url) };
 }
 
 // Escapes RegExp metacharacters so a literal string can be embedded in a pattern.
@@ -890,7 +968,17 @@ function sendMessage(message: any) {
 // Reports a structured install/runtime failure: logs it for diagnostics, also writes to the
 // console as a best-effort signal in case no client is connected yet, then forwards it to the
 // page as an 'error' message so the progress UI can show it (see bit-bswup.progress.ts).
-function sendError(data: { reason: string; message: string;[key: string]: any }) {
+//
+// `fatal` tells the page whether this failure actually stops the install:
+//   - true  => the install is aborting (invalid manifest, or a strict-mode abort). The page
+//              must surface it and, on a first install, force-start Blazor so the app still
+//              boots from the network instead of hanging behind the splash.
+//   - false => best-effort failure under 'lax'; the install continues and the asset will be
+//              lazily filled on first fetch. The page logs it but must NOT replace the
+//              progress UI with a failure panel for what is a recoverable, expected case
+//              (e.g. an optional externalAssets entry that 404s).
+// Callers always pass it explicitly; an omitted value is treated as fatal by the page.
+function sendError(data: { reason: string; message: string; fatal?: boolean;[key: string]: any }) {
     diag('*** error:', data);
     try {
         // Best-effort console output so the failure is visible even before any client connects.
@@ -973,7 +1061,8 @@ function prepareRegExpArray(value: any) {
     //   - avoid nested/overlapping quantifiers such as (a+)+, (a*)*, (.*)*
     //   - prefer anchored, specific patterns over broad .* wildcards
     //   - keep pattern length bounded; very long patterns are a smell
-    // Invalid patterns are caught below and skipped rather than throwing.
+    // Invalid patterns are caught below and skipped rather than throwing. String entries are
+    // escaped to literals (see below), so they can never introduce backtracking.
     const array = value ? (value instanceof Array ? value : [value]) : [];
 
     return array.map(p => {
@@ -981,17 +1070,25 @@ function prepareRegExpArray(value: any) {
             return applyUrlCaseSensitivity(p);
         }
 
-        // NOTE: string entries are compiled as *regular-expression source*, not matched
-        // literally. So '/admin/v1.0/' is an unanchored pattern where '.' matches any
-        // character and there are no ^/$ boundaries - it can both over-match (e.g. '1X0')
-        // and match as a substring anywhere in the URL. This matters most for the
-        // security-relevant prohibitedUrls list. To match a literal path, escape regex
-        // metacharacters and anchor it (e.g. '^/admin/v1\\.0/$'), or pass a RegExp directly.
+        // String entries are matched LITERALLY: the text is regex-escaped, so it matches
+        // itself as a substring of the URL and nothing else. Pass a real RegExp when you want
+        // pattern semantics - that is what every example in the README does.
+        //
+        // The tempting alternative, compiling the string as regular-expression *source*, is a
+        // trap. '/admin/v1.0/' would silently become an unanchored pattern where '.' matches
+        // any character, so it also matches '/admin/v1X0/'; and 'app.css' in assetsExclude
+        // would match 'myapp1css'. Worse, previous releases dropped string entries entirely,
+        // so any string sitting in one of these lists today has never actually been applied -
+        // upgrading would suddenly activate it with over-matching semantics its author never
+        // reviewed. That is a bad surprise for assetsExclude (silently stops caching) and a
+        // genuinely dangerous one for prohibitedUrls (a broader block, or a substring match
+        // that lets an unexpected URL through a serverHandledUrls bypass). Literal matching
+        // makes the string do exactly, and only, what it looks like it does.
         if (typeof p === 'string') {
             try {
-                return applyUrlCaseSensitivity(new RegExp(p));
+                return applyUrlCaseSensitivity(new RegExp(escapeRegExp(p)));
             } catch (err) {
-                console.warn('BitBswup SW: ignoring invalid RegExp pattern:', p, err);
+                console.warn('BitBswup SW: ignoring invalid pattern:', p, err);
                 return null;
             }
         }

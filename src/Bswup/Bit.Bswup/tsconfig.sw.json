@@ -2,8 +2,8 @@
     "compileOnSave": true,
     "compilerOptions": {
         "allowJs": true,
-        "target": "ES2021",
-        "lib": [ "WebWorker", "ESNext" ],
+        "target": "ES2019",
+        "lib": [ "WebWorker", "ES2019" ],
         "outDir": "wwwroot"
     },
     "include": [ "./Scripts/bit-bswup.sw.ts", "./Scripts/bit-bswup.sw-cleanup.ts" ]

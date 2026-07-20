@@ -5,6 +5,15 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
+        <!-- ECMAScript level the shipped JS bundles are emitted at. Must match "target" in both
+             tsconfig.json and tsconfig.sw.json: tsc downlevels the syntax, and the Release
+             minifier is given this same value so it does not raise it back (see MinifyAssets).
+             ES2019 keeps the service worker parseable by older Safari/iOS, which matters because
+             a browser that cannot parse it loses offline support with no visible error. Raising
+             this is a breaking change for consumers, so also drop the matching lib entries in
+             the tsconfigs (they are pinned to the same level to make violations compile errors
+             rather than runtime failures on old devices). -->
+        <BswupJsTarget>es2019</BswupJsTarget>
     </PropertyGroup>
 
     <ItemGroup>
@@ -113,13 +122,22 @@
         <!-- The outer cross-targeting build never compiles, so MSBuild has not created its
              intermediate directory; create it before Touch writes the stamp there. -->
         <MakeDir Directories="$(BaseIntermediateOutputPath)$(Configuration)" />
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <!-- The esbuild target below is NOT optional, and must stay in sync with "target" in
+             tsconfig.json / tsconfig.sw.json. esbuild defaults to esnext, and its minifier
+             actively rewrites code *up* to the target: it collapses the
+             `a === null || a === void 0 ? void 0 : a.b` that tsc emits when downleveling back
+             into `a?.b`. With no explicit target the Release bundles (the ones that ship in the
+             NuGet package) silently regain optional chaining and nullish coalescing, discarding
+             the whole point of the tsc target and raising the browser floor only for published
+             apps - Debug builds, being unminified, would still look fine. Keep BswupJsTarget in
+             lockstep with the tsconfigs. -->
+        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move SourceFiles="wwwroot/bit-bswup.min.js" DestinationFiles="wwwroot/bit-bswup.js" OverwriteReadOnlyFiles="true" />
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.progress.js --minify --outfile=wwwroot/bit-bswup.progress.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.progress.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.progress.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move SourceFiles="wwwroot/bit-bswup.progress.min.js" DestinationFiles="wwwroot/bit-bswup.progress.js" OverwriteReadOnlyFiles="true" />
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.sw.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move SourceFiles="wwwroot/bit-bswup.sw.min.js" DestinationFiles="wwwroot/bit-bswup.sw.js" OverwriteReadOnlyFiles="true" />
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw-cleanup.js --minify --outfile=wwwroot/bit-bswup.sw-cleanup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw-cleanup.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.sw-cleanup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move SourceFiles="wwwroot/bit-bswup.sw-cleanup.min.js" DestinationFiles="wwwroot/bit-bswup.sw-cleanup.js" OverwriteReadOnlyFiles="true" />
         <!-- Touched last so the stamp is always newer than the (re-minified) bundles, keeping the
              target up to date until tsc next rewrites them. -->

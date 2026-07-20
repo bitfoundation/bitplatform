@@ -161,6 +161,19 @@
                         return showLogs_ ? console.log('new update is ready.') : undefined;
 
                     case BswupMessage.error:
+                        // Always log errors regardless of showLogs - this is actionable info.
+                        console.error('BitBswup install error:', data);
+
+                        // Non-fatal failures (the default 'lax' tolerance) do not stop the
+                        // install: the asset is skipped now and lazily fetched on first use. An
+                        // optional externalAssets entry that 404s is the common case. Replacing
+                        // a live progress bar with "Update failed to install" for something the
+                        // app recovers from on its own would be actively misleading, so report
+                        // it to the console (above) and to the user handler, and leave the
+                        // splash alone. Only a fatal error - an invalid manifest, or a
+                        // 'strict' abort - takes over the UI below.
+                        if (data && data.fatal === false) return;
+
                         // Reveal the install panel even if no progress event landed first
                         // (manifest validation failures fire before any progress message).
                         hideApp_ && appEl && (appEl.style.display = 'none');
@@ -198,6 +211,9 @@
                                 // don't invite a pointless reload loop; keep it for transient
                                 // failures (network/fetch/cache) where reloading can genuinely help.
                                 const nonRetriableReasons = ['manifest', 'integrity', 'install-incomplete'];
+                                // 'install-aborted' is deliberately absent: a strict abort is
+                                // usually triggered by a transient asset failure, and a reload
+                                // genuinely can succeed on the next attempt.
                                 const isRetriable = !(data && nonRetriableReasons.indexOf(data.reason) !== -1);
                                 if (isRetriable) {
                                     errorRetryButton.style.display = 'inline-block';
@@ -214,8 +230,6 @@
                                 }
                             }
                         }
-                        // Always log errors regardless of showLogs - this is actionable info.
-                        console.error('BitBswup install error:', data);
                         return;
                 }
             }
@@ -279,24 +293,72 @@
         autoStart();
     }
 
+    // How long to keep watching for a late-rendered #bit-bswup before giving up. The observer
+    // below is subtree-wide on documentElement, and a Blazor app mutates the DOM continuously
+    // for its entire lifetime, so leaving it attached forever means the browser keeps queueing
+    // and delivering mutation records for a page that is never going to produce the element.
+    // The window only has to cover app startup (the element is either in the host document from
+    // the start, or injected when the app first renders); a minute is far beyond that even on a
+    // slow first WebAssembly download, and anything later can still call
+    // BitBswupProgress.start(...) directly.
+    const OBSERVE_TIMEOUT = 60000;
+
     // The splash element can also appear *after* load - e.g. an interactive Blazor render
     // or any host that injects #bit-bswup once the app is mounted. A one-shot autoStart()
     // would have already returned (element missing) and never run again, so window
     // .bitBswupHandler would never be installed and BitBswupProgress would stay dark. Watch
     // for the element with a MutationObserver and initialize once it shows up; the
     // data-bit-bswup-initialized guard inside autoStart() keeps this from clashing with the
-    // DOMContentLoaded/immediate path above, and we disconnect as soon as it initializes.
+    // DOMContentLoaded/immediate path above.
+    //
+    // Disconnecting promptly matters as much as connecting: every path out of "there is still
+    // something to wait for" tears the observer down, and a timer bounds the case where the
+    // element never appears at all (an app that loads this script but never renders
+    // BswupProgress).
     if (typeof MutationObserver !== 'undefined') {
-        const observer = new MutationObserver(() => {
+        let observer: MutationObserver | undefined;
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+        const stopObserving = () => {
+            observer?.disconnect();
+            observer = undefined;
+            if (timeoutId !== undefined) {
+                clearTimeout(timeoutId);
+                timeoutId = undefined;
+            }
+        };
+
+        observer = new MutationObserver(() => {
             const el = document.getElementById('bit-bswup');
-            if (el && el.getAttribute('data-bit-bswup-initialized') !== 'true') {
-                autoStart();
-            }
-            if (el && el.getAttribute('data-bit-bswup-initialized') === 'true') {
-                observer.disconnect();
-            }
+
+            // Not rendered yet - this is the one case where we keep waiting.
+            if (!el) return;
+
+            if (el.getAttribute('data-bit-bswup-initialized') === 'true') return stopObserving();
+
+            // An #bit-bswup that carries no config attributes is markup we don't own - a
+            // hand-written splash driven by an explicit BitBswupProgress.start(...) call.
+            // autoStart() declines it by design and always will, so there is nothing left to
+            // watch for; staying attached would just burn a callback on every DOM mutation.
+            if (el.getAttribute('data-bit-bswup-config') !== 'true') return stopObserving();
+
+            autoStart();
+
+            // Stop once initialization took hold. If start() threw, the flag is still unset and
+            // we stay attached so the next mutation can retry.
+            if (el.getAttribute('data-bit-bswup-initialized') === 'true') stopObserving();
         });
-        const startObserving = () => observer.observe(document.documentElement, { childList: true, subtree: true });
+
+        const startObserving = () => {
+            // autoStart() may have already succeeded on the DOMContentLoaded/immediate path, in
+            // which case there is nothing to observe for in the first place.
+            const el = document.getElementById('bit-bswup');
+            if (el && el.getAttribute('data-bit-bswup-initialized') === 'true') return stopObserving();
+
+            observer?.observe(document.documentElement, { childList: true, subtree: true });
+            timeoutId = setTimeout(stopObserving, OBSERVE_TIMEOUT);
+        };
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', startObserving);
         } else {

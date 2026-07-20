@@ -2,8 +2,8 @@
     "compileOnSave": true,
     "compilerOptions": {
         "allowJs": true,
-        "target": "ES2021",
-        "lib": [ "DOM", "ESNext" ],
+        "target": "ES2019",
+        "lib": [ "DOM", "ES2019" ],
         "outDir": "wwwroot"
     },
     "include": [ "./Scripts/bit-bswup.ts", "./Scripts/bit-bswup.progress.ts" ]

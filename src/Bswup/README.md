@@ -45,7 +45,7 @@ app.UseStaticFiles(new StaticFileOptions
         updateOnVisibility="true"></script>
 ```
 
-- `scope`: The scope of the service-worker ([read more](https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope)).
+- `scope`: The scope of the service-worker ([read more](https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope)). Defaults to `/`. A service-worker can only control URLs beneath its own folder unless the server sends a `Service-Worker-Allowed` header, so if your app is mounted on a sub-path (e.g. `https://host/myapp/`) set this to that sub-path. If the browser refuses the configured scope, Bswup automatically retries with the default scope - the folder containing the service-worker script - so the app keeps working with offline support rather than losing the service-worker entirely; the fallback is reported as a warning in the console.
 - `log`: The log level of the Bswup logger. Available options are: `none`, `error`, `warn`, `info`, `verbose`, and `debug`. Each level includes everything above it (e.g. `info` also shows `warn` and `error`). Defaults to `warn`. Use `none` to silence all output.
 - `sw`: The file path of the service-worker file.
 - `handler`: The name of the handler function for the service-worker events.
@@ -78,9 +78,13 @@ function bitBswupHandler(type, data) {
             return console.log('downloading assets started:', data?.version);
 
         case BswupMessage.downloadProgress:
+            // data.percent is 0-100, data.index is the 1-based count of assets handled so far,
+            // and data.asset describes the asset that just finished: `url` (the path as declared
+            // in service-worker-assets.js / externalAssets), `reqUrl` (the absolute URL it was
+            // fetched from) and `hash` when the asset has one.
             const percent = Math.round(data.percent);
             progressBar.style.width = `${percent}%`;
-            return console.log('asset downloaded:', data);
+            return console.log('asset downloaded:', data.asset.url, data);
 
         case BswupMessage.downloadFinished:
             if (data.firstInstall) {
@@ -104,8 +108,20 @@ function bitBswupHandler(type, data) {
 
         case BswupMessage.error:
             // Structured install failure. data.reason is one of 'manifest' | 'integrity' |
-            // 'fetch' | 'cache' | 'request' | 'install-incomplete'; data.message is human
-            // readable, and data.url / data.hash point at the offending asset when known.
+            // 'fetch' | 'cache' | 'request' | 'install-incomplete' | 'install-aborted';
+            // data.message is human readable, and data.url / data.hash point at the offending
+            // asset when known.
+            //
+            // data.fatal says whether the install actually stopped. Under the default 'lax'
+            // tolerance a failed asset is reported with `fatal: false` - the install still
+            // succeeds and that asset is fetched from the network on first use - so treat it
+            // as a warning, not a dead app. Only `fatal: true` (an invalid manifest, or an
+            // abort under errorTolerance 'strict') means no new version was installed; in that
+            // case Bswup starts the app without a service worker so it still boots.
+            if (data.fatal === false) {
+                console.warn('Bswup asset skipped:', data.reason, data.message, data);
+                return;
+            }
             console.error('Bswup install error:', data.reason, data.message,
                 ...(data.url ? [`url: ${data.url}`] : []),
                 ...(data.hash ? [`hash: ${data.hash}`] : []),
@@ -184,12 +200,24 @@ self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 
 The other settings are:
 
+> **How the URL-matching lists are matched.** `assetsInclude`, `assetsExclude`, `prohibitedUrls`,
+> `serverHandledUrls` and `serverRenderedUrls` all accept the same two kinds of entry:
+> - a **`RegExp`** (e.g. `/\/admin\//`) is used as the pattern it is - this is what the
+>   examples below use, and what you want for anything non-trivial;
+> - a **string** (e.g. `'/admin/'`) is matched **literally** as a substring of the URL. It is
+>   regex-escaped, so `'v1.0'` matches only `v1.0` and never `v1X0`.
+>
+> Prefer a `RegExp` whenever you need anchoring, alternation or wildcards - a literal string
+> cannot express "ends with" or "starts with". Note that a string is a *substring* match, so
+> `'app.css'` matches `/css/app.css` anywhere in the URL; anchor with a `RegExp` such as
+> `/\/app\.css$/` if that is too broad.
+
 - `assetsInclude`: The list of file names from the assets list to **include** when the Bswup tries to store them in the cache storage (regex supported).
 - `assetsExclude`: The list of file names from the assets list to **exclude** when the Bswup tries to store them in the cache storage (regex supported).
 - `externalAssets`: The list of external assets to cache that are not included in the auto-generated assets file. For example, if you're not using `index.html` (like `_host.cshtml`), then you should add `{ "url": "/" }`.
 - `defaultUrl`: The default page URL. Use `/` when using `_Host.cshtml`.
 - `assetsUrl`: The file path of the service-worker assets file generated at compile time (the default file name is `service-worker-assets.js`).
-- `prohibitedUrls`: The list of file names that should not be accessed (regex supported).
+- `prohibitedUrls`: The list of file names that should not be accessed (regex supported). Matching requests are answered by the service-worker with `403 Forbidden` and a short `text/plain` body, for every HTTP method. **Changed in 10.5.0:** previous versions answered `405 Method Not Allowed`; if your code detects a blocked URL by checking the status, look for `403`.
 - `caseInsensitiveUrl`: Enables case-insensitive URL checking. This applies both to the asset cache matching and to every URL-matching regex list (`prohibitedUrls`, `serverHandledUrls`, `serverRenderedUrls`, `assetsInclude`, `assetsExclude`): when enabled, those patterns are compiled with the `i` flag so e.g. `prohibitedUrls: [/\/admin\//]` also blocks `/ADMIN/`. Patterns that already specify the `i` flag are left unchanged.
 - `serverHandledUrls`: The list of URLs that do not enter the service-worker offline process and will be handled only by server (regex supported). such as `/api`, `/swagger`, ...
 - `serverRenderedUrls`: The list of URLs that should be rendered by the server and not client while navigating (regex supported). such as `/about.html`, `/privacy`, ...
@@ -206,8 +234,8 @@ The other settings are:
 - `isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
 - `enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
 - `errorTolerance`: Controls how the service worker reacts to asset download / cache failures during install. Possible values:
-    - `strict` (default): mirrors the standard Microsoft template / Workbox behavior. If any required asset fails to fetch or store during install, the install promise rejects, the partially populated cache is discarded, and the previous service-worker (if any) keeps serving the app. Failed assets are reported via the `error` message and are *not* counted toward the progress percentage, so 100% means every asset succeeded.
-    - `lax`: best-effort install. The install always succeeds; missing assets are filled in lazily on the first fetch (in both passive and non-passive modes). Failed assets are still reported as errors but are counted toward the progress so the bar can reach 100% even with failures. Use this only when you knowingly accept a partial cache, for example when listing optional `externalAssets` that may legitimately 404.
+    - `lax` (default): best-effort install. The install always succeeds; missing assets are filled in lazily on the first fetch (in both passive and non-passive modes). Failed assets are reported through the `error` message with `fatal: false` and are counted toward the progress so the bar can still reach 100%. This is the default because it tolerates optional `externalAssets` that may legitimately 404, and because a failed install on a *first* visit would otherwise leave the app with no service-worker to complete the startup handshake.
+    - `strict`: mirrors the standard Microsoft template / Workbox behavior. If any required asset fails to fetch or store during install, the install promise rejects, the partially populated cache is discarded, and the previous service-worker (if any) keeps serving the app. Failed assets are reported via the `error` message and are *not* counted toward the progress percentage, so 100% means every asset succeeded; the abort itself is reported once more with `reason: 'install-aborted'` and `fatal: true`. Choose this when a partial cache is unacceptable and you would rather stay on the previous version. On a first install (where there is no previous version to fall back to) Bswup starts the app without a service worker so it still boots from the network, and the install is retried on the next load.
 - `enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
 - `enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.
 - `disableHashlessAssetsUpdate`: Disables the update of hash-less assets. By default, Bswup automatically updates all hash-less assets (e.g. the external assets) every time an update is found for the app.
@@ -226,7 +254,14 @@ Bswup exposes a small global `BitBswup` object on the page so you can drive the 
 
 - `BitBswup.checkForUpdate()`: Asks the browser to re-fetch the service-worker script and check for a new version. If a new version is found, the normal update flow runs (`updateFound` -> `stateChanged` -> `updateReady`/`downloadFinished`). If the app is already on the latest version, Bswup raises the `updateNotFound` event so you can stop a spinner or show an "up to date" message. If the check itself fails for a transient reason (offline, server hiccup, a throttled background tab), Bswup raises the non-blocking `updateCheckFailed` event instead of the install-path `error` event, so the default progress handler does **not** hide the app or show the install-failed UI; the payload still carries `reason`/`message` so you can surface it yourself. This is the registration-aware version that powers the built-in polling; it is safe to call as often as you like.
 - `BitBswup.skipWaiting()`: If an update has finished downloading and is waiting, this activates it immediately (equivalent to calling the `reload` callback you receive in `updateReady`/`downloadFinished`). Returns `true` when there was a waiting worker to activate, otherwise `false`.
-- `BitBswup.forceRefresh(cacheFilter?)`: Clears caches, unregisters the service worker controlling the current page, and reloads. Use this as a last-resort "reset" when a client gets into a bad state. It only removes this app's own registration (the one whose scope controls the current page, via `navigator.serviceWorker.getRegistration()`), not every same-origin service worker - so other apps or sub-apps mounted under different scopes on the same origin are left untouched. By default it clears **every** CacheStorage bucket (Bswup, Blazor framework, and any app-owned caches such as Workbox add-ons or API caches) so nothing stale survives the reload. To narrow what gets cleared, pass an optional `cacheFilter`: a string (prefix match against the cache name, e.g. `'bit-bswup'`), a `RegExp` (tested against the cache name), or a predicate function `(key) => boolean` that returns `true` for caches to delete.
+- `BitBswup.forceRefresh(cacheFilter?)`: Clears caches, unregisters the service worker controlling the current page, and reloads. Use this as a last-resort "reset" when a client gets into a bad state. It only removes this app's own registration (the one whose scope controls the current page, via `navigator.serviceWorker.getRegistration()`), not every same-origin service worker - so other apps or sub-apps mounted under different scopes on the same origin are left untouched. By default it clears only the caches Bswup and Blazor own (names starting with `bit-bswup` or `blazor-resources`), leaving app-owned CacheStorage buckets - Workbox add-ons, offline app-data, cached API responses - intact, since those can hold data with no other copy. To change what gets cleared, pass an optional `cacheFilter`: a string (prefix match against the cache name, e.g. `'bit-bswup'`), a `RegExp` (tested against the cache name), or a predicate function `(key) => boolean` that returns `true` for caches to delete. Pass `() => true` to wipe **every** cache on the origin:
+
+```js
+BitBswup.forceRefresh();                          // Bswup + Blazor caches (default)
+BitBswup.forceRefresh(() => true);                // every cache on the origin
+BitBswup.forceRefresh('bit-bswup');               // only Bswup's own caches
+BitBswup.forceRefresh(/^(bit-bswup|my-app-data)/) // a specific set
+```
 
 ### Polling for updates
 
