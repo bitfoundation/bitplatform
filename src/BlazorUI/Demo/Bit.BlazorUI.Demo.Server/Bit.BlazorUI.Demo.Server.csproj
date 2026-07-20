@@ -33,11 +33,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <!-- Required at runtime by the Legacy BitChart's Newtonsoft.Json serialization when the chart renders
-             in Blazor Server mode (e.g. Debug). Bit.BlazorUI.Legacy references Newtonsoft.Json with
-             PrivateAssets="all" (so it can be lazy-loaded in the WASM client), so it does not flow here
-             transitively and must be referenced directly for the server-side render path. -->
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.8.0" />
