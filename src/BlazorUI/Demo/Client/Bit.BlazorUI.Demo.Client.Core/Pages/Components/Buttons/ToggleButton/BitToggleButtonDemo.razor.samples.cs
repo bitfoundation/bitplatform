@@ -317,8 +317,8 @@ private async Task HandleAutoLoadingChange()
                  OffIcon=""@BitIconInfo.Fa(""solid volume-high"")"" OffText=""Unmuted""
                  Color=""BitColor.Tertiary"" />
 
-<BitToggleButton OnIcon=""@BitIconInfo.Fa(""fa-regular fa-circle-pause"")"" OnText=""Paused""
-                 OffIcon=""@BitIconInfo.Fa(""fa-regular fa-circle-play"")"" OffText=""Playing""
+<BitToggleButton OnIcon=""@BitIconInfo.Fa(""regular circle-pause"")"" OnText=""Paused""
+                 OffIcon=""@BitIconInfo.Fa(""regular circle-play"")"" OffText=""Playing""
                  Color=""BitColor.Success"" />
 
 <BitToggleButton ShowCheckMark FixedCheckMark

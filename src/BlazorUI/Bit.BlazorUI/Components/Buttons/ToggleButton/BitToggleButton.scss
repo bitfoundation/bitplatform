@@ -112,8 +112,7 @@
 
     // the button's own foreground already contrasts with its background in every variant and state
     border-top-color: currentcolor;
-    animation: bit-tgb-spinner-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    animation: bit-tgb-spinner-animation 1.3s cubic-bezier(0.53, 0.21, 0.29, 0.67) infinite;
 
     @media (prefers-reduced-motion: reduce) {
         animation-duration: 4s;

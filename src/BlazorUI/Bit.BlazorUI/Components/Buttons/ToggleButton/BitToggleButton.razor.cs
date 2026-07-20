@@ -364,6 +364,8 @@ public partial class BitToggleButton : BitComponentBase
     /// </summary>
     public async Task ToggleAsync()
     {
+        if (IsLoading && Reclickable is false) return;
+
         await ChangeIsChecked(IsChecked is false);
 
         // unlike a click, a programmatic call has no event handler behind it to request a render
@@ -470,15 +472,6 @@ public partial class BitToggleButton : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        if (OnChanging.HasDelegate)
-        {
-            var args = new BitToggleButtonChangeArgs(value);
-
-            await OnChanging.InvokeAsync(args);
-
-            if (args.Cancel) return;
-        }
-
         if (AutoLoading)
         {
             await AssignIsLoading(true);
@@ -490,6 +483,15 @@ public partial class BitToggleButton : BitComponentBase
 
         try
         {
+            if (OnChanging.HasDelegate)
+            {
+                var args = new BitToggleButtonChangeArgs(value);
+
+                await OnChanging.InvokeAsync(args);
+
+                if (args.Cancel) return;
+            }
+
             if (await AssignIsChecked(value) is false) return;
 
             await OnChange.InvokeAsync(value);
