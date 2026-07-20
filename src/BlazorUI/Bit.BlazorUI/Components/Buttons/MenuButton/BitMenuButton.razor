@@ -90,7 +90,7 @@
         <span style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
 
         <button @ref="_chevronButtonRef"
-                @onclick="OpenCallout"
+                @onclick="async () => await OpenCallout()"
                 @onkeydown="e => HandleOnTriggerKeyDown(e, true)"
                 type="button"
                 id="@(_Id + "-chb")"

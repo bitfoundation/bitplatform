@@ -419,6 +419,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual("https://bitplatform.dev", anchor.GetAttribute("href"));
         Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
         Assert.AreEqual("the title", anchor.GetAttribute("title"));
         Assert.AreEqual("menuitem", anchor.GetAttribute("role"));
 

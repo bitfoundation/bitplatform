@@ -408,9 +408,13 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         if (firstRender)
         {
-            // Prevents the default behavior (scrolling) of the navigation keys handled by the
-            // keydown handlers, since Blazor cannot conditionally preventDefault per key.
-            await _js.BitMenuButtonsSetup(_Id, _calloutId);
+            try
+            {
+                // Prevents the default behavior (scrolling) of the navigation keys handled by the
+                // keydown handlers, since Blazor cannot conditionally preventDefault per key.
+                await _js.BitMenuButtonsSetup(_Id, _calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
     }
 
@@ -820,7 +824,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         if (e.Key is "ArrowDown" or "ArrowUp")
         {
-            await OpenCallout();
+            if (await OpenCallout() is false) return;
+
             await FocusItem(e.Key is "ArrowDown" ? "first" : "last");
         }
         else if (e.Key is "Enter" or " ")
@@ -881,14 +886,18 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private async Task OpenCallout()
+    /// <summary>
+    /// Opens the callout and reports whether it actually opened, so callers can skip
+    /// follow-up work (like focusing an item) on a menu that stayed closed.
+    /// </summary>
+    private async Task<bool> OpenCallout()
     {
-        if (IsLoading) return;
+        if (IsLoading) return false;
 
         var focusFirstItem = _focusFirstItemOnOpen;
         _focusFirstItemOnOpen = false;
 
-        if (await AssignIsOpen(true) is false) return;
+        if (await AssignIsOpen(true) is false) return false;
 
         await ToggleCallout();
 
@@ -896,6 +905,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         {
             await FocusItem("first");
         }
+
+        return true;
     }
 
     private async Task CloseCallout()
