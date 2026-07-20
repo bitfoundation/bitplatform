@@ -310,6 +310,7 @@ public partial class BitPivot : BitComponentBase
                     _jsSetup = true;
                 }
             }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
             finally
             {
                 _jsSetupRunning = false;
@@ -317,7 +318,11 @@ public partial class BitPivot : BitComponentBase
         }
         else if (_jsSetup)
         {
-            await _js.BitPivotRefresh(_Id);
+            try
+            {
+                await _js.BitPivotRefresh(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         await base.OnAfterRenderAsync(firstRender);
