@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Bit.BlazorUI.Legacy.Demo.Chart;
 
-public partial class BitChartDemo
+public partial class BitChartLegacyDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [

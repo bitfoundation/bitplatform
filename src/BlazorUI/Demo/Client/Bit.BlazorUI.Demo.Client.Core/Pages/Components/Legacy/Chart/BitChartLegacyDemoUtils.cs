@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace Bit.BlazorUI.Legacy.Demo.Chart;
 
-public static class BitChartDemoUtils
+public static class BitChartLegacyDemoUtils
 {
     public static readonly Random _rng = new();
 

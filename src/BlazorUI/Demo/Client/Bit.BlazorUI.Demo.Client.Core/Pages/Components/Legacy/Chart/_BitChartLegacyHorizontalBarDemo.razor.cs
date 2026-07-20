@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Legacy;
 namespace Bit.BlazorUI.Legacy.Demo.Chart;
 
-public partial class _BitChartHorizontalBarDemo
+public partial class _BitChartLegacyHorizontalBarDemo
 {
     private const int INITAL_COUNT = 5;
 
@@ -50,23 +50,23 @@ public partial class _BitChartHorizontalBarDemo
             }
         };
 
-        IDataset<int> dataset1 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+        IDataset<int> dataset1 = new BitChartLegacyBarDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
         {
             Label = "My first dataset",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red)),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartLegacyDemoColors.Red)),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
             BorderWidth = 1
         };
 
-        IDataset<int> dataset2 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+        IDataset<int> dataset2 = new BitChartLegacyBarDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
         {
             Label = "My second dataset",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue)),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartLegacyDemoColors.Blue)),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
             BorderWidth = 1
         };
 
-        _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
+        _config.Data.Labels.AddRange(BitChartLegacyDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset1);
         _config.Data.Datasets.Add(dataset2);
     }
@@ -123,28 +123,28 @@ protected override void OnInitialized()
         }
     };
 
-    IDataset<int> dataset1 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+    IDataset<int> dataset1 = new BitChartLegacyBarDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
     {
         Label = ""My first dataset"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red)),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartLegacyDemoColors.Red)),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
         BorderWidth = 1
     };
 
-    IDataset<int> dataset2 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+    IDataset<int> dataset2 = new BitChartLegacyBarDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
     {
         Label = ""My second dataset"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue)),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartLegacyDemoColors.Blue)),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
         BorderWidth = 1
     };
 
-    _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
+    _config.Data.Labels.AddRange(BitChartLegacyDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset1);
     _config.Data.Datasets.Add(dataset2);
 }
 
-public static class BitChartDemoColors
+public static class BitChartLegacyDemoColors
 {
     private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
     [
@@ -162,7 +162,7 @@ public static class BitChartDemoColors
     public static readonly System.Drawing.Color Grey = System.Drawing.Color.FromArgb(201, 203, 207);
 }
 
-public static class BitChartDemoUtils
+public static class BitChartLegacyDemoUtils
 {
     public static readonly Random _rng = new();
 

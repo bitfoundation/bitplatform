@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Legacy;
 namespace Bit.BlazorUI.Legacy.Demo.Chart;
 
-public static class BitChartDemoColors
+public static class BitChartLegacyDemoColors
 {
     private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
     [

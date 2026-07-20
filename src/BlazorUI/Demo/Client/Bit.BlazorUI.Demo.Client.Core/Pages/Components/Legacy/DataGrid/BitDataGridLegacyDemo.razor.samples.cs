@@ -2,7 +2,7 @@ using Bit.BlazorUI.Demo.Client.Core.Components;
 
 namespace Bit.BlazorUI.Legacy.Demo.DataGrid;
 
-public partial class BitDataGridDemo : AppComponentBase
+public partial class BitDataGridLegacyDemo : AppComponentBase
 {
     private readonly string example1RazorCode = @"
 <BitDataGridLegacy Items=""@FilteredItems"" Pagination=""@pagination"" ResizableColumns>

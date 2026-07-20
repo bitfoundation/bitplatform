@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Legacy;
 namespace Bit.BlazorUI.Legacy.Demo.Chart;
 
-public partial class _BitChartTimeDemo
+public partial class _BitChartLegacyTimeDemo
 {
     private const int INITAL_COUNT = 5;
 
@@ -68,37 +68,37 @@ public partial class _BitChartTimeDemo
             }
         };
 
-        _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString("o")));
+        _config.Data.Labels.AddRange(BitChartLegacyDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString("o")));
 
-        IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "My first dataset",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
             Fill = BitChartLegacyFillingMode.Disabled
         };
 
-        IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "My second dataset",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
             Fill = BitChartLegacyFillingMode.Disabled
         };
 
         IDataset<BitChartLegacyTimePoint> dataset3 = new BitChartLegacyLineDataset<BitChartLegacyTimePoint>()
         {
             Label = "Dataset with point data",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
             Fill = BitChartLegacyFillingMode.Disabled
         };
 
         var now = DateTimeOffset.Now;
-        dataset3.Add(new BitChartLegacyTimePoint(now.DateTime, BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(2).DateTime, BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(3).DateTime, BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(4).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.DateTime, BitChartLegacyDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(2).DateTime, BitChartLegacyDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(3).DateTime, BitChartLegacyDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(4).DateTime, BitChartLegacyDemoUtils.RandomScalingFactor()));
 
         _config.Data.Datasets.Add(dataset1);
         _config.Data.Datasets.Add(dataset2);
@@ -113,14 +113,14 @@ public partial class _BitChartTimeDemo
             {
                 for (int i = 0; i < pointDataset.Count; i++)
                 {
-                    pointDataset[i] = new BitChartLegacyTimePoint(pointDataset[i].Time, BitChartDemoUtils.RandomScalingFactor());
+                    pointDataset[i] = new BitChartLegacyTimePoint(pointDataset[i].Time, BitChartLegacyDemoUtils.RandomScalingFactor());
                 }
             }
             else if (dataset is IDataset<int> intDataset)
             {
                 int count = intDataset.Count;
                 intDataset.Clear();
-                foreach (var factor in BitChartDemoUtils.RandomScalingFactor(count))
+                foreach (var factor in BitChartLegacyDemoUtils.RandomScalingFactor(count))
                 {
                     intDataset.Add(factor);
                 }
@@ -132,8 +132,8 @@ public partial class _BitChartTimeDemo
 
     private void AddDataset()
     {
-        string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
-        IDataset<int> dataset = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+        string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.All[_config.Data.Datasets.Count % BitChartLegacyDemoColors.All.Count]);
+        IDataset<int> dataset = new BitChartLegacyLineDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
         {
             Label = $"Dataset {_config.Data.Datasets.Count}",
             BackgroundColor = color,
@@ -167,11 +167,11 @@ public partial class _BitChartTimeDemo
         {
             if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset)
             {
-                pointDataset.Add(new BitChartLegacyTimePoint(now.AddDays(pointDataset.Count).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+                pointDataset.Add(new BitChartLegacyTimePoint(now.AddDays(pointDataset.Count).DateTime, BitChartLegacyDemoUtils.RandomScalingFactor()));
             }
             else if (dataset is IDataset<int> intDataset)
             {
-                intDataset.Add(BitChartDemoUtils.RandomScalingFactor());
+                intDataset.Add(BitChartLegacyDemoUtils.RandomScalingFactor());
             }
         }
 
@@ -281,37 +281,37 @@ protected override void OnInitialized()
         }
     };
 
-    _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString(""o"")));
+    _config.Data.Labels.AddRange(BitChartLegacyDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString(""o"")));
 
-    IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""My first dataset"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
         Fill = BitChartLegacyFillingMode.Disabled
     };
 
-    IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""My second dataset"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
         Fill = BitChartLegacyFillingMode.Disabled
     };
 
     IDataset<BitChartLegacyTimePoint> dataset3 = new BitChartLegacyLineDataset<BitChartLegacyTimePoint>()
     {
         Label = ""Dataset with point data"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
         Fill = BitChartLegacyFillingMode.Disabled
     };
 
     DateTime now = DateTime.Now;
-    dataset3.Add(new BitChartLegacyTimePoint(now, BitChartDemoUtils.RandomScalingFactor()));
-    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(2), BitChartDemoUtils.RandomScalingFactor()));
-    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(3), BitChartDemoUtils.RandomScalingFactor()));
-    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(4), BitChartDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now, BitChartLegacyDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(2), BitChartLegacyDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(3), BitChartLegacyDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(4), BitChartLegacyDemoUtils.RandomScalingFactor()));
 
     _config.Data.Datasets.Add(dataset1);
     _config.Data.Datasets.Add(dataset2);
@@ -326,14 +326,14 @@ private void RandomizeData()
         {
             for (int i = 0; i < pointDataset.Count; i++)
             {
-                pointDataset[i] = new BitChartLegacyTimePoint(pointDataset[i].Time, BitChartDemoUtils.RandomScalingFactor());
+                pointDataset[i] = new BitChartLegacyTimePoint(pointDataset[i].Time, BitChartLegacyDemoUtils.RandomScalingFactor());
             }
         }
         else if (dataset is IDataset<int> intDataset)
         {
             int count = intDataset.Count;
             intDataset.Clear();
-            foreach (var factor in BitChartDemoUtils.RandomScalingFactor(count))
+            foreach (var factor in BitChartLegacyDemoUtils.RandomScalingFactor(count))
             {
                 intDataset.Add(factor);
             }
@@ -345,8 +345,8 @@ private void RandomizeData()
 
 private void AddDataset()
 {
-    string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
-    IDataset<int> dataset = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+    string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.All[_config.Data.Datasets.Count % BitChartLegacyDemoColors.All.Count]);
+    IDataset<int> dataset = new BitChartLegacyLineDataset<int>(BitChartLegacyDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
     {
         Label = $""Dataset {_config.Data.Datasets.Count}"",
         BackgroundColor = color,
@@ -380,11 +380,11 @@ private void AddData()
     {
         if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset)
         {
-            pointDataset.Add(new BitChartLegacyTimePoint(now.AddDays(pointDataset.Count), BitChartDemoUtils.RandomScalingFactor()));
+            pointDataset.Add(new BitChartLegacyTimePoint(now.AddDays(pointDataset.Count), BitChartLegacyDemoUtils.RandomScalingFactor()));
         }
         else if (dataset is IDataset<int> intDataset)
         {
-            intDataset.Add(BitChartDemoUtils.RandomScalingFactor());
+            intDataset.Add(BitChartLegacyDemoUtils.RandomScalingFactor());
         }
     }
 
@@ -417,7 +417,7 @@ private void RemoveData()
     _chart.Update();
 }
 
-public static class BitChartDemoColors
+public static class BitChartLegacyDemoColors
 {
     private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
     [
@@ -435,7 +435,7 @@ public static class BitChartDemoColors
     public static readonly System.Drawing.Color Grey = System.Drawing.Color.FromArgb(201, 203, 207);
 }
 
-public static class BitChartDemoUtils
+public static class BitChartLegacyDemoUtils
 {
     public static readonly Random _rng = new();
 

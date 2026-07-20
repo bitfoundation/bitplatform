@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Legacy;
 namespace Bit.BlazorUI.Legacy.Demo.MarkdownViewer;
 
-public partial class BitMarkdownViewerDemo
+public partial class BitMarkdownViewerLegacyDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [

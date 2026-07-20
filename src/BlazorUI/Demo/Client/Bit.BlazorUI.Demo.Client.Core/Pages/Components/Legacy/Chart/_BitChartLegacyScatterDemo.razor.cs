@@ -1,35 +1,19 @@
 ﻿using Bit.BlazorUI.Legacy;
 namespace Bit.BlazorUI.Legacy.Demo.Chart;
 
-public partial class _BitChartBubbleDemo
+public partial class _BitChartLegacyScatterDemo
 {
     private const int INITAL_COUNT = 5;
 
     private BitChartLegacy _chart = default!;
-    private BitChartLegacyBubbleConfig _config = default!;
+    private BitChartLegacyScatterConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartLegacyBubbleConfig
-        {
+        _config = new BitChartLegacyScatterConfig() 
+        { 
             Options = new BitChartLegacyLineOptions
             {
-                Responsive = true,
-                Title = new BitChartLegacyOptionsTitle
-                {
-                    Display = true,
-                    Text = "BitChartLegacy Bubble Chart"
-                },
-                Tooltips = new BitChartLegacyTooltips
-                {
-                    Mode = BitChartLegacyInteractionMode.Nearest,
-                    Intersect = true
-                },
-                Hover = new BitChartLegacyHover
-                {
-                    Mode = BitChartLegacyInteractionMode.Nearest,
-                    Intersect = true
-                },
                 Scales = new BitChartLegacyScales
                 {
                     XAxes =
@@ -64,27 +48,27 @@ public partial class _BitChartBubbleDemo
             }
         };
 
-        _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString("o")));
+        _config.Data.Labels.AddRange(BitChartLegacyDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString("o")));
 
-        var dataset1 = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(10))
+        var dataset1 = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(10))
         {
             Label = "My first dataset",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
         };
 
-        var dataset2 = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(10))
+        var dataset2 = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(10))
         {
             Label = "My second dataset",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
         };
 
-        var dataset3 = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(10))
+        var dataset3 = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(10))
         {
             Label = "Dataset with point data",
-            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
         };
 
         _config.Data.Datasets.Add(dataset1);
@@ -96,11 +80,11 @@ public partial class _BitChartBubbleDemo
     {
         foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
         {
-            if (dataset is BitChartLegacyBubbleDataset bubbleDataset)
+            if (dataset is BitChartLegacyScatterDataset scatterDataset)
             {
-                int count = bubbleDataset.Count;
-                bubbleDataset.Clear();
-                bubbleDataset.AddRange(BitChartDemoUtils.CreateRandomBubblePoints(count));
+                int count = scatterDataset.Count;
+                scatterDataset.Clear();
+                scatterDataset.AddRange(BitChartLegacyDemoUtils.CreateRandomPoints(count));
             }
         }
 
@@ -109,8 +93,8 @@ public partial class _BitChartBubbleDemo
 
     private void AddDataset()
     {
-        string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
-        var newDataset = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(_config.Data.Labels.Count))
+        string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.All[_config.Data.Datasets.Count % BitChartLegacyDemoColors.All.Count]);
+        var newDataset = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(_config.Data.Labels.Count))
         {
             Label = $"Dataset {_config.Data.Datasets.Count + 1}",
             BackgroundColor = color,
@@ -143,31 +127,14 @@ public partial class _BitChartBubbleDemo
 private const int INITAL_COUNT = 5;
 
 private BitChartLegacy _chart = default!;
-private BitChartLegacyBubbleConfig _config = default!;
-
+private BitChartLegacyScatterConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartLegacyBubbleConfig
-    {
+    _config = new BitChartLegacyScatterConfig() 
+    { 
         Options = new BitChartLegacyLineOptions
         {
-            Responsive = true,
-            Title = new BitChartLegacyOptionsTitle
-            {
-                Display = true,
-                Text = ""BitChartLegacy Bubble Chart""
-            },
-            Tooltips = new BitChartLegacyTooltips
-            {
-                Mode = BitChartLegacyInteractionMode.Nearest,
-                Intersect = true
-            },
-            Hover = new BitChartLegacyHover
-            {
-                Mode = BitChartLegacyInteractionMode.Nearest,
-                Intersect = true
-            },
             Scales = new BitChartLegacyScales
             {
                 XAxes =
@@ -202,27 +169,27 @@ protected override void OnInitialized()
         }
     };
 
-    _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString(""o"")));
+    _config.Data.Labels.AddRange(BitChartLegacyDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString(""o"")));
 
-    var dataset1 = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(10))
+    var dataset1 = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(10))
     {
         Label = ""My first dataset"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Red),
     };
 
-    var dataset2 = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(10))
+    var dataset2 = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(10))
     {
         Label = ""My second dataset"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Blue),
     };
 
-    var dataset3 = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(10))
+    var dataset3 = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(10))
     {
         Label = ""Dataset with point data"",
-        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.Green),
     };
 
     _config.Data.Datasets.Add(dataset1);
@@ -234,11 +201,11 @@ private void RandomizeData()
 {
     foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
     {
-        if (dataset is BitChartLegacyBubbleDataset bubbleDataset)
+        if (dataset is BitChartLegacyScatterDataset scatterDataset)
         {
-            int count = bubbleDataset.Count;
-            bubbleDataset.Clear();
-            bubbleDataset.AddRange(BitChartDemoUtils.CreateRandomBubblePoints(count));
+            int count = scatterDataset.Count;
+            scatterDataset.Clear();
+            scatterDataset.AddRange(BitChartLegacyDemoUtils.CreateRandomPoints(count));
         }
     }
 
@@ -247,8 +214,8 @@ private void RandomizeData()
 
 private void AddDataset()
 {
-    string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
-    var newDataset = new BitChartLegacyBubbleDataset(BitChartDemoUtils.CreateRandomBubblePoints(_config.Data.Labels.Count))
+    string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartLegacyDemoColors.All[_config.Data.Datasets.Count % BitChartLegacyDemoColors.All.Count]);
+    var newDataset = new BitChartLegacyScatterDataset(BitChartLegacyDemoUtils.CreateRandomPoints(_config.Data.Labels.Count))
     {
         Label = $""Dataset {_config.Data.Datasets.Count + 1}"",
         BackgroundColor = color,
@@ -269,7 +236,7 @@ private void RemoveDataset()
     _chart.Update();
 }
 
-public static class BitChartDemoColors
+public static class BitChartLegacyDemoColors
 {
     private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
     [
@@ -287,7 +254,7 @@ public static class BitChartDemoColors
     public static readonly System.Drawing.Color Grey = System.Drawing.Color.FromArgb(201, 203, 207);
 }
 
-public static class BitChartDemoUtils
+public static class BitChartLegacyDemoUtils
 {
     public static readonly Random _rng = new();
 
@@ -332,17 +299,16 @@ public static class BitChartDemoUtils
         return factors;
     }
 
-    public static List<BitChartLegacyBubblePoint> CreateRandomBubblePoints(int count)
+    public static List<BitChartLegacyPoint> CreateRandomPoints(int count)
     {
-        List<BitChartLegacyBubblePoint> points = new();
+        List<BitChartLegacyPoint> points = new();
 
         for (int i = 0; i < count; i++)
         {
             double x = RandomScalingFactor();
             double y = RandomScalingFactor();
-            double radius = RandomScalingFactor() % 20 + 5;
 
-            points.Add(new BitChartLegacyBubblePoint(x, y, radius));
+            points.Add(new BitChartLegacyPoint(x, y));
         }
 
         return points;

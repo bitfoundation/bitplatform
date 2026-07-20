@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Legacy;
 namespace Bit.BlazorUI.Legacy.Demo.RichTextEditor;
 
-public partial class BitRichTextEditorDemo
+public partial class BitRichTextEditorLegacyDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [

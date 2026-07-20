@@ -1,7 +1,7 @@
 ﻿using Bit.BlazorUI.Legacy;
 namespace Bit.BlazorUI.Legacy.Demo.PdfReader;
 
-public partial class BitPdfReaderDemo
+public partial class BitPdfReaderLegacyDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [

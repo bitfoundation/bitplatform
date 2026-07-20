@@ -3,7 +3,7 @@ using Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo;
 
 namespace Bit.BlazorUI.Legacy.Demo.DataGrid;
 
-public partial class BitDataGridDemo : AppComponentBase
+public partial class BitDataGridLegacyDemo : AppComponentBase
 {
     private readonly List<ComponentParameter> componentParameters =
     [
