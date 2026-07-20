@@ -8,6 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitToggleButton : BitComponentBase
 {
     private string? _tabIndex;
+    private int _pendingChanges;
 
 
 
@@ -481,6 +482,10 @@ public partial class BitToggleButton : BitComponentBase
         if (AutoLoading)
         {
             if (await AssignIsLoading(true) is false) return;
+
+            // Reclickable lets clicks overlap, so count the in-flight changes and only
+            // clear the loading state once the last one has completed
+            _pendingChanges++;
         }
 
         try
@@ -491,7 +496,7 @@ public partial class BitToggleButton : BitComponentBase
         }
         finally
         {
-            if (AutoLoading)
+            if (AutoLoading && --_pendingChanges == 0)
             {
                 await AssignIsLoading(false);
             }
@@ -572,9 +577,19 @@ public partial class BitToggleButton : BitComponentBase
     /// </summary>
     private bool AccessibleNameChanges()
     {
+        // aria-labelledby wins the accessible name computation, so a stable value there pins the name for both states
+        if (AriaLabelledBy.HasValue()) return false;
+
         // an aria-label that does not vary per state pins the accessible name down for both states
-        var onName = OnAriaLabel ?? AriaLabel ?? (IconOnly ? null : OnText ?? Text);
-        var offName = OffAriaLabel ?? AriaLabel ?? (IconOnly ? null : OffText ?? Text);
+        var onName = OnAriaLabel.HasValue() ? OnAriaLabel
+                   : AriaLabel.HasValue() ? AriaLabel
+                   : IconOnly ? null
+                   : OnText.HasValue() ? OnText : Text;
+
+        var offName = OffAriaLabel.HasValue() ? OffAriaLabel
+                    : AriaLabel.HasValue() ? AriaLabel
+                    : IconOnly ? null
+                    : OffText.HasValue() ? OffText : Text;
 
         return onName != offName;
     }

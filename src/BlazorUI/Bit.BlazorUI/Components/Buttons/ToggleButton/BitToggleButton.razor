@@ -84,9 +84,10 @@
             @LoadingTemplate
         }
     }
-
-    @if (AriaDescription.HasValue())
-    {
-        <span id="@($"{_Id}-dsc")" class="bit-tgb-dsc">@AriaDescription</span>
-    }
 </button>
+
+@* rendered as a sibling of the button so the description drives aria-describedby without leaking into the accessible name *@
+@if (AriaDescription.HasValue())
+{
+    <span id="@($"{_Id}-dsc")" class="bit-tgb-dsc">@AriaDescription</span>
+}
