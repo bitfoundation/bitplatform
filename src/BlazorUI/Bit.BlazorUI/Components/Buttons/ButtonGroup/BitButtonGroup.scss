@@ -41,6 +41,7 @@
 .bit-btg-scb {
     overflow-x: auto;
     overflow-y: hidden;
+
     // A swipe past either end scrolls the group only, never the page behind it.
     overscroll-behavior-x: contain;
 

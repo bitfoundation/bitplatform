@@ -33,10 +33,13 @@ else
        @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
        href="@(isInteractive ? href : null)"
        target="@ButtonGroup.GetTarget(Item)"
+       role="@ButtonGroup.GetItemRole()"
        tabindex="@ButtonGroup.GetItemTabIndex(Item)"
        aria-disabled="@(isInteractive ? null : "true")"
        aria-busy="@(isLoading ? "true" : null)"
        aria-label="@ButtonGroup.GetAriaLabel(Item)"
+       aria-pressed="@ButtonGroup.GetItemAriaPressed(Item)"
+       aria-checked="@ButtonGroup.GetItemAriaChecked(Item)"
        title="@ButtonGroup.GetItemTitle(Item)"
        style="@ButtonGroup.GetItemStyle(Item)"
        class="@ButtonGroup.GetItemClass(Item)">
