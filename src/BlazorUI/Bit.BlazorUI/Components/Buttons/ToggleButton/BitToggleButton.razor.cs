@@ -481,7 +481,7 @@ public partial class BitToggleButton : BitComponentBase
 
         if (AutoLoading)
         {
-            if (await AssignIsLoading(true) is false) return;
+            await AssignIsLoading(true);
 
             // Reclickable lets clicks overlap, so count the in-flight changes and only
             // clear the loading state once the last one has completed

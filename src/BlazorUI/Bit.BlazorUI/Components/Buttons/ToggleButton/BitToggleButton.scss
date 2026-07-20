@@ -15,6 +15,7 @@
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
     font-size: var(--bit-tgb-fontsize);
+
     // a gap rather than a margin on the icon, so reversing the icon position keeps the spacing on the right side
     gap: var(--bit-tgb-icn-margin);
     --bit-tgb-icn-margin: #{spacing(0.5)};
@@ -108,8 +109,9 @@
     height: var(--bit-tgb-spn-size);
     border-color: $clr-brd-sec;
     border-style: $shp-border-style;
+
     // the button's own foreground already contrasts with its background in every variant and state
-    border-top-color: currentColor;
+    border-top-color: currentcolor;
     animation: bit-tgb-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 

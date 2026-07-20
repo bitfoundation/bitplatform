@@ -90,7 +90,7 @@
             title="@Title"
             tabindex="@_tabIndex"
             aria-label="@AriaLabel"
-            aria-hidden="@AriaHidden"
+            aria-hidden="@(AriaHidden ? "true" : null)"
             aria-busy="@(IsLoading ? "true" : null)"
             aria-disabled="@(IsEnabled ? null : "true")"
             aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">
@@ -114,7 +114,7 @@ else
        download="@Download"
        tabindex="@_tabIndex"
        aria-label="@AriaLabel"
-       aria-hidden="@AriaHidden"
+       aria-hidden="@(AriaHidden ? "true" : null)"
        aria-busy="@(IsLoading ? "true" : null)"
        aria-disabled="@(IsEnabled ? null : "true")"
        aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">

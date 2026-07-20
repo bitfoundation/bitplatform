@@ -49,7 +49,7 @@
         autofocus="@AutoFocus"
         tabindex="@_tabIndex"
         aria-label="@GetAriaLabel()"
-        aria-hidden="@AriaHidden"
+        aria-hidden="@(AriaHidden ? "true" : null)"
         aria-controls="@AriaControls"
         aria-pressed="@GetAriaPressed()"
         aria-checked="@GetAriaChecked()"
