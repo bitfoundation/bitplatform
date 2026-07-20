@@ -1031,8 +1031,14 @@ public partial class BitButtonGroupDemo
                 new()
                 {
                     Name= "Scroll",
-                    Description="The items are kept on a single line and the group becomes scrollable.",
+                    Description="The items are kept on a single line and the group becomes scrollable, without rendering a scrollbar. It can still be scrolled by swiping, by shift+wheel, and through the arrow keys.",
                     Value="2",
+                },
+                new()
+                {
+                    Name= "Scrollbar",
+                    Description="The items are kept on a single line and the group becomes scrollable, with a visible scrollbar. The scrollbar is laid out inside the border of the group, which makes the group taller.",
+                    Value="3",
                 }
             ]
         },

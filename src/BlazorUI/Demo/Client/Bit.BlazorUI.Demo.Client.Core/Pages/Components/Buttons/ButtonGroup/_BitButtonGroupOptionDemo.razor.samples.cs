@@ -193,37 +193,6 @@ private int clickCounter;
 private string? clickedOption;";
 
     private readonly string example9RazorCode = @"
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>";
-
-    private readonly string example10RazorCode = @"
 <BitButtonGroup FullWidth Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
@@ -234,7 +203,259 @@ private string? clickedOption;";
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
+    private readonly string example10RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption""
+                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                @bind-ToggleKeys=""formatKeys"">
+    <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
+    <BitButtonGroupOption Key=""italic"" Text=""Italic"" IconName=""@BitIconName.Italic"" />
+    <BitButtonGroupOption Key=""underline"" Text=""Underline"" IconName=""@BitIconName.Underline"" />
+</BitButtonGroup>
+<div>Toggle keys: <b>@string.Join("", "", formatKeys ?? [])</b></div>
+
+<BitButtonGroup Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption""
+                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                MaxToggles=""2""
+                DefaultToggleKeys=""@defaultKeys"">
+    <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
+    <BitButtonGroupOption Key=""italic"" Text=""Italic"" IconName=""@BitIconName.Italic"" />
+    <BitButtonGroupOption Key=""underline"" Text=""Underline"" IconName=""@BitIconName.Underline"" />
+</BitButtonGroup>
+
+<BitButtonGroup Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption""
+                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                FixedToggle
+                DefaultToggleKeys=""@defaultKeys"">
+    <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
+    <BitButtonGroupOption Key=""italic"" Text=""Italic"" IconName=""@BitIconName.Italic"" />
+    <BitButtonGroupOption Key=""underline"" Text=""Underline"" IconName=""@BitIconName.Underline"" />
+</BitButtonGroup>";
+    private readonly string example10CsharpCode = @"
+private readonly string[] defaultKeys = [""bold""];
+private IEnumerable<string>? formatKeys = [""bold""];";
+
     private readonly string example11RazorCode = @"
+<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Day"" /><BitButtonGroupOption Text=""Week"" /><BitButtonGroupOption Text=""A whole month"" />
+</BitButtonGroup>
+
+<BitButtonGroup FullWidth Justified Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Day"" /><BitButtonGroupOption Text=""Week"" /><BitButtonGroupOption Text=""A whole month"" />
+</BitButtonGroup>";
+
+    private readonly string example12RazorCode = @"
+<BitButtonGroup Detached Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Detached Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Detached Gap=""1.5rem"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>";
+
+    private readonly string example13RazorCode = @"
+<BitButtonGroup Rounded Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Rounded Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Rounded Detached Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Rounded Detached Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>";
+
+    private readonly string example14RazorCode = @"
+<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" Overflow=""BitButtonGroupOverflow.Wrap"">
+    <BitButtonGroupOption Text=""January"" /><BitButtonGroupOption Text=""February"" /><BitButtonGroupOption Text=""March"" />
+    <BitButtonGroupOption Text=""April"" /><BitButtonGroupOption Text=""May"" /><BitButtonGroupOption Text=""June"" />
+    <BitButtonGroupOption Text=""July"" /><BitButtonGroupOption Text=""August"" /><BitButtonGroupOption Text=""September"" />
+</BitButtonGroup>
+
+<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" Overflow=""BitButtonGroupOverflow.Scroll"">
+    <BitButtonGroupOption Text=""January"" /><BitButtonGroupOption Text=""February"" /><BitButtonGroupOption Text=""March"" />
+    <BitButtonGroupOption Text=""April"" /><BitButtonGroupOption Text=""May"" /><BitButtonGroupOption Text=""June"" />
+    <BitButtonGroupOption Text=""July"" /><BitButtonGroupOption Text=""August"" /><BitButtonGroupOption Text=""September"" />
+</BitButtonGroup>
+
+<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" Overflow=""BitButtonGroupOverflow.Scrollbar"">
+    <BitButtonGroupOption Text=""January"" /><BitButtonGroupOption Text=""February"" /><BitButtonGroupOption Text=""March"" />
+    <BitButtonGroupOption Text=""April"" /><BitButtonGroupOption Text=""May"" /><BitButtonGroupOption Text=""June"" />
+    <BitButtonGroupOption Text=""July"" /><BitButtonGroupOption Text=""August"" /><BitButtonGroupOption Text=""September"" />
+</BitButtonGroup>";
+
+    private readonly string example15RazorCode = @"
+<BitButtonGroup ShowSelectionIndicator
+                Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption""
+                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                DefaultToggleKey=""list"">
+    <BitButtonGroupOption Key=""list"" Text=""List"" IconName=""@BitIconName.BulletedList"" />
+    <BitButtonGroupOption Key=""grid"" Text=""Grid"" IconName=""@BitIconName.GridViewMedium"" />
+    <BitButtonGroupOption Key=""tile"" Text=""Tile"" IconName=""@BitIconName.Tiles"" />
+</BitButtonGroup>
+
+<BitButtonGroup ShowSelectionIndicator
+                Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption""
+                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                DefaultToggleKeys=""@indicatorDefaultKeys"">
+    <BitButtonGroupOption Key=""name"" Text=""Name"" />
+    <BitButtonGroupOption Key=""size"" Text=""Size"" />
+    <BitButtonGroupOption Key=""date"" Text=""Date"" />
+</BitButtonGroup>";
+
+    private readonly string example16RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Save"" IconName=""@BitIconName.Save""
+                          IsLoading=""@(loadingKey == ""save"")"" OnClick=""@(() => HandleLoadingClick(""save""))"" />
+    <BitButtonGroupOption Text=""Sync"" IconName=""@BitIconName.Sync""
+                          IsLoading=""@(loadingKey == ""sync"")"" OnClick=""@(() => HandleLoadingClick(""sync""))"" />
+    <BitButtonGroupOption Text=""Publish"" IconName=""@BitIconName.PublishContent""
+                          IsLoading=""@(loadingKey == ""publish"")"" OnClick=""@(() => HandleLoadingClick(""publish""))"" />
+</BitButtonGroup>
+
+<BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Inbox"" IconName=""@BitIconName.Inbox"" Badge=""12"" />
+    <BitButtonGroupOption Text=""Drafts"" IconName=""@BitIconName.Edit"" Badge=""3"" />
+    <BitButtonGroupOption Text=""Sent"" IconName=""@BitIconName.Send"" />
+</BitButtonGroup>
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Inbox"" IconName=""@BitIconName.Inbox"" Badge=""12"" />
+    <BitButtonGroupOption Text=""Drafts"" IconName=""@BitIconName.Edit"" Badge=""3"" />
+    <BitButtonGroupOption Text=""Sent"" IconName=""@BitIconName.Send"" />
+</BitButtonGroup>";
+    private readonly string example16CsharpCode = @"
+private string? loadingKey;
+
+private async Task HandleLoadingClick(string key)
+{
+    loadingKey = key;
+    StateHasChanged();
+
+    await Task.Delay(2000);
+
+    loadingKey = null;
+    StateHasChanged();
+}";
+
+    private readonly string example17RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Home"" IconName=""@BitIconName.Home"" Href=""/"" />
+    <BitButtonGroupOption Text=""Components"" IconName=""@BitIconName.Puzzle"" Href=""/components"" />
+    <BitButtonGroupOption Text=""GitHub"" IconName=""@BitIconName.OpenInNewWindow"" Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
+</BitButtonGroup>";
+
+    private readonly string example18RazorCode = @"
+<style>
+    .custom-template {
+        gap: 0.25rem;
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+</style>
+
+
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <ItemTemplate Context=""option"">
+        <div class=""custom-template"">
+            <BitIcon IconName=""@option.IconName"" />
+            <span>@option.Text</span>
+        </div>
+    </ItemTemplate>
+    <Options>
+        <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
+        <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" />
+        <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
+    </Options>
+</BitButtonGroup>
+
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
+    <BitButtonGroupOption Text=""Edit"">
+        <Template Context=""option"">
+            <div class=""custom-template"">
+                <BitIcon IconName=""@BitIconName.Edit"" Color=""BitColor.Warning"" />
+                <b>@option.Text</b>
+            </div>
+        </Template>
+    </BitButtonGroupOption>
+    <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
+</BitButtonGroup>";
+
+    private readonly string example19RazorCode = @"
+<BitButtonGroup IconOnly Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" Title=""Add a new record"" AriaLabel=""Add"" />
+    <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" Title=""Edit the selected record"" AriaLabel=""Edit"" />
+    <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" Title=""Delete the selected record"" AriaLabel=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" DefaultToggleKey=""mute"">
+    <BitButtonGroupOption Key=""mute""
+                          AriaLabel=""Mute""
+                          OnText=""Muted""
+                          OffText=""Mute""
+                          OnTitle=""The sound is muted, click to unmute""
+                          OffTitle=""Click to mute the sound""
+                          OnIconName=""@BitIconName.Volume0""
+                          OffIconName=""@BitIconName.Volume3"" />
+    <BitButtonGroupOption Key=""repeat""
+                          AriaLabel=""Repeat""
+                          OnText=""Repeating""
+                          OffText=""Repeat""
+                          OnTitle=""Repeat is on, click to turn it off""
+                          OffTitle=""Click to repeat the playlist""
+                          OnIconName=""@BitIconName.RepeatOne""
+                          OffIconName=""@BitIconName.RepeatAll"" />
+</BitButtonGroup>";
+
+    private readonly string example20RazorCode = @"
+<BitButtonGroup AriaLabel=""Text alignment""
+                Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption""
+                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                DefaultToggleKey=""start"">
+    <BitButtonGroupOption Key=""start"" Text=""Start"" IconName=""@BitIconName.AlignLeft"" AriaLabel=""Align start"" />
+    <BitButtonGroupOption Key=""center"" Text=""Center"" IconName=""@BitIconName.AlignCenter"" AriaLabel=""Align center"" />
+    <BitButtonGroupOption Key=""end"" Text=""End"" IconName=""@BitIconName.AlignRight"" AriaLabel=""Align end"" />
+</BitButtonGroup>
+
+<BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
+                SelectOnFocus
+                Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption""
+                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                DefaultToggleKey=""start"">
+    <BitButtonGroupOption Key=""start"" Text=""Start"" IconName=""@BitIconName.AlignLeft"" AriaLabel=""Align start"" />
+    <BitButtonGroupOption Key=""center"" Text=""Center"" IconName=""@BitIconName.AlignCenter"" AriaLabel=""Align center"" />
+    <BitButtonGroupOption Key=""end"" Text=""End"" IconName=""@BitIconName.AlignRight"" AriaLabel=""Align end"" />
+</BitButtonGroup>
+
+<BitButtonGroup AriaLabel=""Operations with a disabled button""
+                DisabledInteractive
+                Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup AriaLabel=""Operations""
+                Navigable=""false""
+                Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>";
+
+    private readonly string example21RazorCode = @"
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
@@ -408,7 +629,7 @@ private string? clickedOption;";
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example22RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
     
     <BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
@@ -435,7 +656,38 @@ private string? clickedOption;";
         <BitButtonGroupOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
     </BitButtonGroup>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example23RazorCode = @"
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>";
+
+    private readonly string example24RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -490,242 +742,6 @@ private string? clickedOption;";
 <BitButtonGroup Variant=""BitVariant.Text""
                 TItem=""BitButtonGroupOption""
                 Classes=""@(new() { Button = ""custom-btn"" })"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>";
-
-    private readonly string example14RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
-                @bind-ToggleKeys=""formatKeys"">
-    <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
-    <BitButtonGroupOption Key=""italic"" Text=""Italic"" IconName=""@BitIconName.Italic"" />
-    <BitButtonGroupOption Key=""underline"" Text=""Underline"" IconName=""@BitIconName.Underline"" />
-</BitButtonGroup>
-<div>Toggle keys: <b>@string.Join("", "", formatKeys ?? [])</b></div>
-
-<BitButtonGroup Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
-                MaxToggles=""2""
-                DefaultToggleKeys=""@defaultKeys"">
-    <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
-    <BitButtonGroupOption Key=""italic"" Text=""Italic"" IconName=""@BitIconName.Italic"" />
-    <BitButtonGroupOption Key=""underline"" Text=""Underline"" IconName=""@BitIconName.Underline"" />
-</BitButtonGroup>
-
-<BitButtonGroup Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
-                FixedToggle
-                DefaultToggleKeys=""@defaultKeys"">
-    <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
-    <BitButtonGroupOption Key=""italic"" Text=""Italic"" IconName=""@BitIconName.Italic"" />
-    <BitButtonGroupOption Key=""underline"" Text=""Underline"" IconName=""@BitIconName.Underline"" />
-</BitButtonGroup>";
-    private readonly string example14CsharpCode = @"
-private readonly string[] defaultKeys = [""bold""];
-private IEnumerable<string>? formatKeys = [""bold""];";
-
-    private readonly string example15RazorCode = @"
-<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Day"" /><BitButtonGroupOption Text=""Week"" /><BitButtonGroupOption Text=""A whole month"" />
-</BitButtonGroup>
-
-<BitButtonGroup FullWidth Justified Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Day"" /><BitButtonGroupOption Text=""Week"" /><BitButtonGroupOption Text=""A whole month"" />
-</BitButtonGroup>";
-
-    private readonly string example16RazorCode = @"
-<BitButtonGroup Detached Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Detached Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Detached Gap=""1.5rem"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>";
-
-    private readonly string example17RazorCode = @"
-<BitButtonGroup Rounded Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Rounded Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Rounded Detached Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Rounded Detached Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>";
-
-    private readonly string example18RazorCode = @"
-<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" Overflow=""BitButtonGroupOverflow.Wrap"">
-    <BitButtonGroupOption Text=""January"" /><BitButtonGroupOption Text=""February"" /><BitButtonGroupOption Text=""March"" />
-    <BitButtonGroupOption Text=""April"" /><BitButtonGroupOption Text=""May"" /><BitButtonGroupOption Text=""June"" />
-</BitButtonGroup>
-
-<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" Overflow=""BitButtonGroupOverflow.Scroll"">
-    <BitButtonGroupOption Text=""January"" /><BitButtonGroupOption Text=""February"" /><BitButtonGroupOption Text=""March"" />
-    <BitButtonGroupOption Text=""April"" /><BitButtonGroupOption Text=""May"" /><BitButtonGroupOption Text=""June"" />
-</BitButtonGroup>";
-
-    private readonly string example19RazorCode = @"
-<BitButtonGroup ShowSelectionIndicator
-                Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
-                DefaultToggleKey=""list"">
-    <BitButtonGroupOption Key=""list"" Text=""List"" IconName=""@BitIconName.BulletedList"" />
-    <BitButtonGroupOption Key=""grid"" Text=""Grid"" IconName=""@BitIconName.GridViewMedium"" />
-    <BitButtonGroupOption Key=""tile"" Text=""Tile"" IconName=""@BitIconName.Tiles"" />
-</BitButtonGroup>
-
-<BitButtonGroup ShowSelectionIndicator
-                Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
-                DefaultToggleKeys=""@indicatorDefaultKeys"">
-    <BitButtonGroupOption Key=""name"" Text=""Name"" />
-    <BitButtonGroupOption Key=""size"" Text=""Size"" />
-    <BitButtonGroupOption Key=""date"" Text=""Date"" />
-</BitButtonGroup>";
-
-    private readonly string example20RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Save"" IconName=""@BitIconName.Save"" IsLoading=""isSaving"" OnClick=""HandleSaveClick"" />
-    <BitButtonGroupOption Text=""Sync"" IconName=""@BitIconName.Sync"" />
-    <BitButtonGroupOption Text=""Publish"" IconName=""@BitIconName.PublishContent"" />
-</BitButtonGroup>
-
-<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Inbox"" IconName=""@BitIconName.Inbox"" Badge=""12"" />
-    <BitButtonGroupOption Text=""Drafts"" IconName=""@BitIconName.Edit"" Badge=""3"" />
-    <BitButtonGroupOption Text=""Sent"" IconName=""@BitIconName.Send"" />
-</BitButtonGroup>";
-    private readonly string example20CsharpCode = @"
-private bool isSaving;
-
-private async Task HandleSaveClick()
-{
-    isSaving = true;
-    StateHasChanged();
-
-    await Task.Delay(2000);
-
-    isSaving = false;
-    StateHasChanged();
-}";
-
-    private readonly string example21RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Home"" IconName=""@BitIconName.Home"" Href=""/"" />
-    <BitButtonGroupOption Text=""Components"" IconName=""@BitIconName.Puzzle"" Href=""/components"" />
-    <BitButtonGroupOption Text=""GitHub"" IconName=""@BitIconName.OpenInNewWindow"" Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
-</BitButtonGroup>";
-
-    private readonly string example22RazorCode = @"
-<style>
-    .custom-template {
-        gap: 0.25rem;
-        display: flex;
-        align-items: center;
-        flex-flow: column nowrap;
-    }
-</style>
-
-
-<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <ItemTemplate Context=""option"">
-        <div class=""custom-template"">
-            <BitIcon IconName=""@option.IconName"" />
-            <span>@option.Text</span>
-        </div>
-    </ItemTemplate>
-    <Options>
-        <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
-        <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" />
-        <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
-    </Options>
-</BitButtonGroup>
-
-<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
-    <BitButtonGroupOption Text=""Edit"">
-        <Template Context=""option"">
-            <div class=""custom-template"">
-                <BitIcon IconName=""@BitIconName.Edit"" Color=""BitColor.Warning"" />
-                <b>@option.Text</b>
-            </div>
-        </Template>
-    </BitButtonGroupOption>
-    <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
-</BitButtonGroup>";
-
-    private readonly string example23RazorCode = @"
-<BitButtonGroup IconOnly Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" Title=""Add a new record"" AriaLabel=""Add"" />
-    <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" Title=""Edit the selected record"" AriaLabel=""Edit"" />
-    <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" Title=""Delete the selected record"" AriaLabel=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Toggle Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" DefaultToggleKey=""mute"">
-    <BitButtonGroupOption Key=""mute""
-                          AriaLabel=""Mute""
-                          OnText=""Muted""
-                          OffText=""Mute""
-                          OnTitle=""The sound is muted, click to unmute""
-                          OffTitle=""Click to mute the sound""
-                          OnIconName=""@BitIconName.Volume0""
-                          OffIconName=""@BitIconName.Volume3"" />
-    <BitButtonGroupOption Key=""repeat""
-                          AriaLabel=""Repeat""
-                          OnText=""Repeating""
-                          OffText=""Repeat""
-                          OnTitle=""Repeat is on, click to turn it off""
-                          OffTitle=""Click to repeat the playlist""
-                          OnIconName=""@BitIconName.RepeatOne""
-                          OffIconName=""@BitIconName.RepeatAll"" />
-</BitButtonGroup>";
-
-    private readonly string example24RazorCode = @"
-<BitButtonGroup AriaLabel=""Text alignment""
-                Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
-                DefaultToggleKey=""start"">
-    <BitButtonGroupOption Key=""start"" Text=""Start"" IconName=""@BitIconName.AlignLeft"" AriaLabel=""Align start"" />
-    <BitButtonGroupOption Key=""center"" Text=""Center"" IconName=""@BitIconName.AlignCenter"" AriaLabel=""Align center"" />
-    <BitButtonGroupOption Key=""end"" Text=""End"" IconName=""@BitIconName.AlignRight"" AriaLabel=""Align end"" />
-</BitButtonGroup>
-
-<BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
-                SelectOnFocus
-                Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
-                DefaultToggleKey=""start"">
-    <BitButtonGroupOption Key=""start"" Text=""Start"" IconName=""@BitIconName.AlignLeft"" AriaLabel=""Align start"" />
-    <BitButtonGroupOption Key=""center"" Text=""Center"" IconName=""@BitIconName.AlignCenter"" AriaLabel=""Align center"" />
-    <BitButtonGroupOption Key=""end"" Text=""End"" IconName=""@BitIconName.AlignRight"" AriaLabel=""Align end"" />
-</BitButtonGroup>
-
-<BitButtonGroup AriaLabel=""Operations with a disabled button""
-                DisabledInteractive
-                Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup AriaLabel=""Operations""
-                Navigable=""false""
-                Variant=""BitVariant.Outline""
-                TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 

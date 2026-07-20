@@ -375,7 +375,31 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-btg-rnd"));
         Assert.IsTrue(root.ClassList.Contains("bit-btg-dtc"));
         Assert.IsTrue(root.ClassList.Contains("bit-btg-scr"));
+        Assert.IsFalse(root.ClassList.Contains("bit-btg-scb"));
         Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-btg-gap:1rem"));
+    }
+
+    [TestMethod]
+    [DataRow(BitButtonGroupOverflow.Clip, "")]
+    [DataRow(BitButtonGroupOverflow.Wrap, "bit-btg-wrp")]
+    [DataRow(BitButtonGroupOverflow.Scroll, "bit-btg-scr")]
+    [DataRow(BitButtonGroupOverflow.Scrollbar, "bit-btg-scb")]
+    public void BitButtonGroupOverflowShouldMapToItsOwnClass(BitButtonGroupOverflow overflow, string expectedClass)
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitButtonGroupItem> { new() { Text = "A" } });
+            parameters.Add(p => p.Overflow, overflow);
+        });
+
+        var root = comp.Find(".bit-btg");
+
+        var overflowClasses = new[] { "bit-btg-wrp", "bit-btg-scr", "bit-btg-scb" };
+
+        foreach (var cls in overflowClasses)
+        {
+            Assert.AreEqual(cls == expectedClass, root.ClassList.Contains(cls), cls);
+        }
     }
 
     [TestMethod]

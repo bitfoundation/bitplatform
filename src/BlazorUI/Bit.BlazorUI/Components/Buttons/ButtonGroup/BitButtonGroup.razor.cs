@@ -360,6 +360,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             BitButtonGroupOverflow.Wrap => "bit-btg-wrp",
             BitButtonGroupOverflow.Scroll => "bit-btg-scr",
+            BitButtonGroupOverflow.Scrollbar => "bit-btg-scb",
             _ => string.Empty
         });
     }

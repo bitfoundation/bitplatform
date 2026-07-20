@@ -16,7 +16,14 @@ public enum BitButtonGroupOverflow
     Wrap,
 
     /// <summary>
-    /// The items are kept on a single line and the group becomes scrollable.
+    /// The items are kept on a single line and the group becomes scrollable, without rendering a scrollbar.
+    /// It can still be scrolled by swiping, by shift+wheel, and through the arrow keys.
     /// </summary>
-    Scroll
+    Scroll,
+
+    /// <summary>
+    /// The items are kept on a single line and the group becomes scrollable, with a visible scrollbar.
+    /// The scrollbar is laid out inside the border of the group, which makes the group taller.
+    /// </summary>
+    Scrollbar
 }

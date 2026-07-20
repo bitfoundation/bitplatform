@@ -37,14 +37,39 @@
     }
 }
 
-.bit-btg-scr {
+.bit-btg-scr,
+.bit-btg-scb {
     overflow-x: auto;
     overflow-y: hidden;
-    scrollbar-width: thin;
+    // A swipe past either end scrolls the group only, never the page behind it.
+    overscroll-behavior-x: contain;
 
     .bit-btg-itm {
         flex: 0 0 auto;
     }
+}
+
+// A native scrollbar is always laid out inside the element that scrolls, so leaving it visible
+// puts it within the group's border, where it crowds the buttons and gets clipped by the rounded
+// corners. Hiding it keeps the border hugging the buttons: the group still scrolls by swiping, by
+// shift+wheel, and through the arrow keys, which bring the focused button into view on their own.
+.bit-btg-scr {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+    }
+}
+
+// The opt-in variant that keeps the scrollbar visible as an affordance. It costs the height the
+// scrollbar occupies inside the border, so the buttons get a matching gap above it rather than
+// sitting directly on top of it.
+.bit-btg-scb {
+    scrollbar-width: thin;
+    padding-block-end: spacing(0.5);
 }
 
 .bit-btg-itm {
