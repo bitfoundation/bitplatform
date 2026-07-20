@@ -19,6 +19,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     private int _optionKeySeed;
     private TItem? _toggleItem;
     private string? _focusedKey;
+    private bool _preventKeyDownDefault;
     private List<TItem> _items = [];
     private string? _internalToggleKey;
     private List<TItem> _toggledItems = [];
@@ -546,6 +547,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     // radiogroup and toolbar patterns.
     internal async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
+        // ArrowUp, ArrowDown, Home and End scroll the page by default, so their default action is
+        // suppressed while the group navigates with them. Kept key-scoped so Space, Enter, Tab and
+        // the horizontal arrows outside of a vertical group still behave normally.
+        _preventKeyDownDefault = Navigable && IsEnabled && e.Key is "ArrowUp" or "ArrowDown" or "Home" or "End";
+
         if (Navigable is false) return;
         if (IsEnabled is false) return;
 

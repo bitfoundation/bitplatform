@@ -216,11 +216,12 @@
     padding: spacing(0.25) spacing(0.75);
     border-radius: 9999px;
     font-size: calc(var(--bit-btg-itm-fontsize) * 0.8);
+
     // Tinting the current foreground keeps the badge legible on every variant,
     // including the ones whose button background is transparent.
-    color: currentColor;
+    color: currentcolor;
     background-color: rgb(128 128 128 / 25%);
-    background-color: color-mix(in srgb, currentColor 20%, transparent);
+    background-color: color-mix(in srgb, currentcolor 20%, transparent);
 }
 
 .bit-btg-spn {
@@ -261,7 +262,7 @@
         transform: rotate(45deg);
         border-style: $shp-border-style;
         border-width: 0 spacing(0.25) spacing(0.25) 0;
-        border-color: currentColor;
+        border-color: currentcolor;
     }
 }
 

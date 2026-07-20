@@ -167,6 +167,8 @@ private List<Operation> reversedIconCustoms =
 public class Operation
 {
     public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Image { get; set; }
     public string? OnImage { get; set; }
     public string? OffImage { get; set; }
     public string? OnName { get; set; }
@@ -176,6 +178,14 @@ public class Operation
     public bool ReversedIcon { get; set; }
     public bool IsSelected { get; set; }
 }
+
+private BitButtonGroupNameSelectors<Operation> multiNameSelectors = new()
+{
+    Key = { Selector = i => i.Id },
+    Text = { Selector = i => i.Name },
+    IconName = { Selector = i => i.Image },
+    IsToggled = { Name = nameof(Operation.IsSelected) }
+};
 
 private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
 {
@@ -204,6 +214,13 @@ private List<Operation> changeToggledCustoms =
     new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnImage = BitIconName.RewindTwoX, OffImage = BitIconName.Rewind },
     new() { Id = ""play"", OnName = ""Resume"", OffName = ""Play"", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
     new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnImage = BitIconName.FastForwardTwoX, OffImage = BitIconName.FastForward, ReversedIcon = true }
+];
+
+private List<Operation> fixedSingleCustoms =
+[
+    new() { Id = ""low"", Name = ""Low"" },
+    new() { Id = ""medium"", Name = ""Medium"" },
+    new() { Id = ""high"", Name = ""High"" }
 ];";
 
     private readonly string example7RazorCode = @"

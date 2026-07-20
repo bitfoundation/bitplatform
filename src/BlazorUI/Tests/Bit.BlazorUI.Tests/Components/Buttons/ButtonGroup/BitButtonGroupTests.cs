@@ -158,10 +158,10 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("false", buttons[0].GetAttribute("aria-pressed"));
         Assert.IsFalse(buttons[0].HasAttribute("aria-checked"));
 
-        comp.FindAll("button")[0].Click();
         comp.FindAll("button")[2].Click();
+        comp.FindAll("button")[0].Click();
 
-        // Both stay toggled, and the keys follow the order of the items.
+        // Both stay toggled, and the keys follow the order of the items, not the order of the clicks.
         CollectionAssert.AreEqual(new[] { "a", "c" }, toggleKeys?.ToArray());
         Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
 
@@ -253,6 +253,79 @@ public class BitButtonGroupTests : BunitTestContext
 
         // Without the roving tabindex every enabled button is its own tab stop again.
         Assert.IsTrue(notNavigable.FindAll("button").All(b => b.GetAttribute("tabindex") == "0"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupNavigableShouldMoveTheFocusWithTheArrowHomeAndEndKeys()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "b");
+        });
+
+        var group = comp.Find(".bit-btg");
+
+        // The focused item owns the tabindex, so the roving tabindex is what the navigation is observed through.
+        group.KeyDown("ArrowRight");
+        Assert.AreEqual("0", comp.FindAll("button")[2].GetAttribute("tabindex"));
+
+        // The navigation wraps around at both ends.
+        group.KeyDown("ArrowRight");
+        Assert.AreEqual("0", comp.FindAll("button")[0].GetAttribute("tabindex"));
+
+        group.KeyDown("ArrowLeft");
+        Assert.AreEqual("0", comp.FindAll("button")[2].GetAttribute("tabindex"));
+
+        group.KeyDown("Home");
+        Assert.AreEqual("0", comp.FindAll("button")[0].GetAttribute("tabindex"));
+
+        group.KeyDown("End");
+        Assert.AreEqual("0", comp.FindAll("button")[2].GetAttribute("tabindex"));
+
+        // The vertical arrows belong to a vertical group only.
+        group.KeyDown("ArrowUp");
+        Assert.AreEqual("0", comp.FindAll("button")[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupSelectOnFocusShouldToggleTheItemTheNavigationLandsOn()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectOnFocus, true);
+            parameters.Add(p => p.DefaultToggleKey, "a");
+        });
+
+        var group = comp.Find(".bit-btg");
+
+        group.KeyDown("ArrowRight");
+
+        // Navigating toggles the item the focus landed on, and the single selection mode keeps only that one.
+        Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", comp.FindAll("button")[0].GetAttribute("aria-checked"));
+
+        group.KeyDown("End");
+
+        Assert.AreEqual("true", comp.FindAll("button")[2].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", comp.FindAll("button")[1].GetAttribute("aria-checked"));
     }
 
     [TestMethod]

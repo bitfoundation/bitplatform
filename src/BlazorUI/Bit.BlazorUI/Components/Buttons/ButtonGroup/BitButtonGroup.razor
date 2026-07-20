@@ -2,7 +2,7 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown"
+<div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown" @onkeydown:preventDefault="_preventKeyDownDefault"
      id="@_Id"
      role="@_RootRole"
      style="@StyleBuilder.Value"
