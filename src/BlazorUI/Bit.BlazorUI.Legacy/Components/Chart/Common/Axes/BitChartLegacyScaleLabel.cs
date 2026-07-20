@@ -3,13 +3,13 @@
 /// <summary>
 /// Defines options for how to display an axis title.
 /// </summary>
-public class BitChartScaleLabel
+public class BitChartLegacyScaleLabel
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartScaleLabel"/>
+    /// Creates a new instance of <see cref="BitChartLegacyScaleLabel"/>
     /// </summary>
     /// <param name="labelString">The initial value for <see cref="LabelString"/></param>
-    public BitChartScaleLabel(string? labelString = null)
+    public BitChartLegacyScaleLabel(string? labelString = null)
     {
         LabelString = labelString;
     }
@@ -26,7 +26,7 @@ public class BitChartScaleLabel
 
     /// <summary>
     /// Gets or sets the font color of the label.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? FontColor { get; set; }
 

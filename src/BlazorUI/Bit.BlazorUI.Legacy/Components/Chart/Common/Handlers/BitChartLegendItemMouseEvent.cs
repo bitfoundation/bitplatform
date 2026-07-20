@@ -7,4 +7,4 @@ namespace Bit.BlazorUI.Legacy;
 /// </summary>
 /// <param name="mouseEvent">The mouse event.</param>
 /// <param name="legendItem">The affected legend item.</param>
-public delegate void BitChartLegendItemMouseEvent(JObject mouseEvent, BitChartLegendItem legendItem);
+public delegate void BitChartLegendItemMouseEvent(JObject mouseEvent, BitChartLegacyLegendItem legendItem);

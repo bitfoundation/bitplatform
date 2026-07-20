@@ -5,7 +5,7 @@ namespace Bit.BlazorUI.Legacy;
 /// <summary>
 /// Provides useful methods for working with colors. Particularly the conversion from different kinds of C#-colors to string colors which are understood by javascript/css.
 /// </summary>
-public static class BitChartColorUtil
+public static class BitChartLegacyColorUtil
 {
     private static readonly Random _rand = new Random();
 

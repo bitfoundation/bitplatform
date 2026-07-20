@@ -5,8 +5,8 @@ namespace Bit.BlazorUI.Legacy.Demo.DataGrid;
 public partial class BitDataGridDemo : AppComponentBase
 {
     private readonly string example1RazorCode = @"
-<BitDataGrid Items=""@FilteredItems"" Pagination=""@pagination"" ResizableColumns>
-    <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
+<BitDataGridLegacy Items=""@FilteredItems"" Pagination=""@pagination"" ResizableColumns>
+    <BitDataGridLegacyPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridLegacySortDirection.Ascending"">
         <ColumnOptions>
             <BitSearchBox @bind-Value=""typicalSampleNameFilter""
                           AriaLabel=""Search by name""
@@ -15,17 +15,17 @@ public partial class BitDataGridDemo : AppComponentBase
                           Placeholder=""Search...""
                           InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
         </ColumnOptions>
-    </BitDataGridPropertyColumn>
-    <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
-    <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
-    <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
-    <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
-</BitDataGrid>
-<BitDataGridPaginator Value=""@pagination"" />";
+    </BitDataGridLegacyPropertyColumn>
+    <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
+    <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
+    <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
+    <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
+</BitDataGridLegacy>
+<BitDataGridLegacyPaginator Value=""@pagination"" />";
     private readonly string example1CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
 private string typicalSampleNameFilter = string.Empty;
-private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+private BitDataGridLegacyPaginationState pagination = new() { ItemsPerPage = 7 };
 private IQueryable<CountryModel> FilteredItems => 
     allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
 
@@ -196,8 +196,8 @@ public class MedalsModel
 
 <div class=""custom-grid"">
     <div class=""container"">
-        <BitDataGrid Items=""@FilteredItems"" Pagination=""@pagination"" ResizableColumns>
-            <BitDataGridPropertyColumn Property=""@(c => c.Name)"" IsDefaultSort=""BitDataGridSortDirection.Ascending"" Sortable=""true"" Class=""wide"">
+        <BitDataGridLegacy Items=""@FilteredItems"" Pagination=""@pagination"" ResizableColumns>
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Name)"" IsDefaultSort=""BitDataGridLegacySortDirection.Ascending"" Sortable=""true"" Class=""wide"">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value=""typicalSampleNameFilter""
                                   AriaLabel=""Search by name""
@@ -206,27 +206,27 @@ public class MedalsModel
                                   Placeholder=""Search on Name""
                                   InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
                 </ColumnOptions>
-            </BitDataGridPropertyColumn>
-            <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"">
+            </BitDataGridLegacyPropertyColumn>
+            <BitDataGridLegacyTemplateColumn Title=""Flag"" Align=""BitDataGridLegacyAlign.Center"">
                 <img class=""flag"" src=""_content/Bit.BlazorUI.Extras/flags/@(context.Code)-flat-16.webp"" loading=""lazy"" alt=""@(context.Code)"" />
-            </BitDataGridTemplateColumn>
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
-            <BitDataGridTemplateColumn Title=""Action"" Align=""BitDataGridAlign.Center"">
+            </BitDataGridLegacyTemplateColumn>
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
+            <BitDataGridLegacyTemplateColumn Title=""Action"" Align=""BitDataGridLegacyAlign.Center"">
                 <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Edit"" Title=""Edit"" AriaLabel=""Edit"" />
                 <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Delete"" Title=""Delete"" AriaLabel=""Delete"" />
-            </BitDataGridTemplateColumn>
-        </BitDataGrid>
+            </BitDataGridLegacyTemplateColumn>
+        </BitDataGridLegacy>
     </div>
-    <BitDataGridPaginator Value=""@pagination"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount}"")"">
+    <BitDataGridLegacyPaginator Value=""@pagination"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount}"")"">
         <TextTemplate Context=""state"">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
-    </BitDataGridPaginator>
+    </BitDataGridLegacyPaginator>
 </div>";
     private readonly string example2CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
 private string typicalSampleNameFilter = string.Empty;
-private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+private BitDataGridLegacyPaginationState pagination = new() { ItemsPerPage = 7 };
 private IQueryable<CountryModel> FilteredItems 
     => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
 
@@ -374,14 +374,14 @@ public class MedalsModel
 </style>
 
 <div class=""grid"">
-    <BitDataGrid @ref=""dataGrid"" ItemsProvider=""@foodRecallProvider"" TGridItem=""FoodRecall"" Virtualize ItemSize=""32"">
-        <BitDataGridPropertyColumn Property=""@(c=>c.EventId)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.State)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.City)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.RecallingFirm)"" Title=""Company"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Status)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.ReportDate)"" Title=""Report Date"" Sortable=""true"" />
-    </BitDataGrid>
+    <BitDataGridLegacy @ref=""dataGrid"" ItemsProvider=""@foodRecallProvider"" TGridItem=""FoodRecall"" Virtualize ItemSize=""32"">
+        <BitDataGridLegacyPropertyColumn Property=""@(c=>c.EventId)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.State)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.City)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.RecallingFirm)"" Title=""Company"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.Status)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.ReportDate)"" Title=""Report Date"" Sortable=""true"" />
+    </BitDataGridLegacy>
 </div>
 <div class=""search-panel"">
     <BitSearchBox @bind-Value=""VirtualSampleNameFilter"" 
@@ -390,7 +390,7 @@ public class MedalsModel
                   Placeholder=""Search...""/>
 </div>";
     private readonly string example3CsharpCode = @"
-BitDataGrid<FoodRecall>? dataGrid;
+BitDataGridLegacy<FoodRecall>? dataGrid;
 string _virtualSampleNameFilter = string.Empty;
 BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
 
@@ -438,14 +438,14 @@ protected override async Task OnInitializedAsync()
                     _ => throw new InvalidOperationException()
                 };
 
-                query.Add(""sort"", $""{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"");
+                query.Add(""sort"", $""{sortByColumnName}:{(sort.Direction == BitDataGridLegacySortDirection.Ascending ? ""asc"" : ""desc"")}"");
             }
 
             var url = NavManager.GetUriWithQueryParameters(""https://api.fda.gov/food/enforcement.json"", query);
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
-            return BitDataGridItemsProviderResult.From(
+            return BitDataGridLegacyItemsProviderResult.From(
                                             items: data!.Results,
                                             totalItemCount: data!.Meta.Results.Total);
         }
@@ -455,7 +455,7 @@ protected override async Task OnInitializedAsync()
         }
         catch
         {
-            return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            return BitDataGridLegacyItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
         }
     };
 }
@@ -627,11 +627,11 @@ public class Openfda
 </style>
 
 <div class=""grid"">
-    <BitDataGrid @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""@(p => p.Id)"" TGridItem=""ProductDto"" Virtualize ItemSize=""32"">
-        <BitDataGridPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"" />
-        <BitDataGridPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
-        <BitDataGridPropertyColumn Property=""@(p => p.Price)"" Sortable=""true"" />
-    </BitDataGrid>
+    <BitDataGridLegacy @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""@(p => p.Id)"" TGridItem=""ProductDto"" Virtualize ItemSize=""32"">
+        <BitDataGridLegacyPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitDataGridLegacySortDirection.Ascending"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(p => p.Price)"" Sortable=""true"" />
+    </BitDataGridLegacy>
 </div>
 <div class=""search-panel"">
     <BitSearchBox @bind-Value=""ODataSampleNameFilter"" 
@@ -716,7 +716,7 @@ public class PagedResult<T>
 // ========== Client code ==========
 
 
-BitDataGrid<ProductDto>? productsDataGrid;
+BitDataGridLegacy<ProductDto>? productsDataGrid;
 string _odataSampleNameFilter = string.Empty;
 BitDataGridItemsProvider<ProductDto> productsItemsProvider;
 
@@ -754,14 +754,14 @@ protected override async Task OnInitializedAsync()
 
             if (req.GetSortByProperties().Any())
             {
-                query.Add(""$orderby"", string.Join("", "", req.GetSortByProperties().Select(p => $""{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"")));
+                query.Add(""$orderby"", string.Join("", "", req.GetSortByProperties().Select(p => $""{p.PropertyName} {(p.Direction == BitDataGridLegacySortDirection.Ascending ? ""asc"" : ""desc"")}"")));
             }
 
             var url = NavManager.GetUriWithQueryParameters(""api/Products/GetProducts"", query);
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
-            return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+            return BitDataGridLegacyItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
         }
         catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
         {
@@ -769,7 +769,7 @@ protected override async Task OnInitializedAsync()
         }
         catch
         {
-            return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+            return BitDataGridLegacyItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
         }
     };
 }";
@@ -811,11 +811,11 @@ protected override async Task OnInitializedAsync()
 </style>
 
 <div class=""grid"">
-    <BitDataGrid @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""@(p => p.Id)"" TGridItem=""ProductDto"" Pagination=""@pagination"">
+    <BitDataGridLegacy @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""@(p => p.Id)"" TGridItem=""ProductDto"" Pagination=""@pagination"">
         <Columns>
-            <BitDataGridPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"" />
-            <BitDataGridPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(p => p.Price)"" Sortable=""true"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitDataGridLegacySortDirection.Ascending"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(p => p.Price)"" Sortable=""true"" />
         </Columns>
         <LoadingTemplate>
             <BitStack Alignment=""BitAlignment.Center"" Style=""height:185px"">
@@ -823,11 +823,11 @@ protected override async Task OnInitializedAsync()
                 <BitOrbitingDotsLoading Size=""BitSize.Large"" />
             </BitStack>
         </LoadingTemplate>
-    </BitDataGrid>
+    </BitDataGridLegacy>
 </div>
-<BitDataGridPaginator Value=""@pagination"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount?.ToString(""N0"")}"")"">
+<BitDataGridLegacyPaginator Value=""@pagination"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount?.ToString(""N0"")}"")"">
     <TextTemplate Context=""state"">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
-</BitDataGridPaginator>";
+</BitDataGridLegacyPaginator>";
     private readonly string example5CsharpCode = @"
 
 // ========== Server code ==========
@@ -907,9 +907,9 @@ public class PagedResult<T>
 // ========== Client code ==========
 
 
-BitDataGrid<ProductDto>? productsDataGrid;
+BitDataGridLegacy<ProductDto>? productsDataGrid;
 BitDataGridItemsProvider<ProductDto> productsItemsProvider;
-BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+BitDataGridLegacyPaginationState pagination = new() { ItemsPerPage = 7 };
 
 protected override async Task OnInitializedAsync()
 {
@@ -927,14 +927,14 @@ protected override async Task OnInitializedAsync()
 
             if (req.GetSortByProperties().Any())
             {
-                query.Add(""$orderby"", string.Join("", "", req.GetSortByProperties().Select(p => $""{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? ""asc"" : ""desc"")}"")));
+                query.Add(""$orderby"", string.Join("", "", req.GetSortByProperties().Select(p => $""{p.PropertyName} {(p.Direction == BitDataGridLegacySortDirection.Ascending ? ""asc"" : ""desc"")}"")));
             }
 
             var url = NavManager.GetUriWithQueryParameters(""api/Products/GetProducts"", query);
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
-            return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+            return BitDataGridLegacyItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
         }
         catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
         {
@@ -942,7 +942,7 @@ protected override async Task OnInitializedAsync()
         }
         catch
         {
-            return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+            return BitDataGridLegacyItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
         }
     };
 }";
@@ -986,18 +986,18 @@ protected override async Task OnInitializedAsync()
 </style>
 
 <div class=""responsive-grid"">
-    <BitDataGrid Items=""@allCountries"" Pagination=""@pagination"">
-        <BitDataGridPropertyColumn Property=""@(c => c.Name)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" />
-        <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" />
-    </BitDataGrid>
-    <BitDataGridPaginator Value=""@pagination"" />
+    <BitDataGridLegacy Items=""@allCountries"" Pagination=""@pagination"">
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.Name)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Gold)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Silver)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Bronze)"" />
+        <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Total)"" />
+    </BitDataGridLegacy>
+    <BitDataGridLegacyPaginator Value=""@pagination"" />
 </div>";
     private readonly string example6CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
-private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+private BitDataGridLegacyPaginationState pagination = new() { ItemsPerPage = 7 };
 
 protected override async Task OnInitializedAsync()
 {
@@ -1117,20 +1117,20 @@ public class MedalsModel
 </style>
 
 <div class=""row-template-grid"">
-    <BitDataGrid Items=""@allCountries"" Pagination=""@pagination"">
+    <BitDataGridLegacy Items=""@allCountries"" Pagination=""@pagination"">
         <Columns>
-            <BitDataGridTemplateColumn Class=""row-template-expand-col"">
+            <BitDataGridLegacyTemplateColumn Class=""row-template-expand-col"">
                 <BitButton Variant=""BitVariant.Text"" Size=""BitSize.Small""
                             IconName=""@(expandedRowTemplateCodes.Contains(context.Code) ? BitIconName.ChevronDown : BitIconName.ChevronRight)""
                             AriaLabel=""@(expandedRowTemplateCodes.Contains(context.Code) ? ""Collapse row details"" : ""Expand row details"")""
                             Title=""@(expandedRowTemplateCodes.Contains(context.Code) ? ""Collapse row details"" : ""Expand row details"")""
                             OnClick=""@(() => ToggleRowRendererExpand(context.Code))"" />
-            </BitDataGridTemplateColumn>
-            <BitDataGridPropertyColumn Property=""@(c => c.Name)"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" />
+            </BitDataGridLegacyTemplateColumn>
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Name)"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Gold)"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Silver)"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Bronze)"" />
+            <BitDataGridLegacyPropertyColumn Property=""@(c => c.Medals.Total)"" />
         </Columns>
         <RowTemplate Context=""args"">
             @args.OriginalRow
@@ -1150,12 +1150,12 @@ public class MedalsModel
                 </tr>
             }
         </RowTemplate>
-    </BitDataGrid>
-    <BitDataGridPaginator Value=""@pagination"" />
+    </BitDataGridLegacy>
+    <BitDataGridLegacyPaginator Value=""@pagination"" />
 </div>";
     private readonly string example7CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
-private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+private BitDataGridLegacyPaginationState pagination = new() { ItemsPerPage = 7 };
 
 protected override async Task OnInitializedAsync()
 {

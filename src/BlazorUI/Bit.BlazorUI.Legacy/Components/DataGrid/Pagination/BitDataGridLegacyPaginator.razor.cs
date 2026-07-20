@@ -1,11 +1,11 @@
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// A component that provides a user interface for <see cref="BitDataGridPaginationState"/>.
+/// A component that provides a user interface for <see cref="BitDataGridLegacyPaginationState"/>.
 /// </summary>
-public partial class BitDataGridPaginator : IDisposable
+public partial class BitDataGridLegacyPaginator : IDisposable
 {
-    private readonly EventCallbackSubscriber<BitDataGridPaginationState> _totalItemCountChanged;
+    private readonly EventCallbackSubscriber<BitDataGridLegacyPaginationState> _totalItemCountChanged;
 
     /// <summary>
     /// The title of the go to first page button.
@@ -30,39 +30,39 @@ public partial class BitDataGridPaginator : IDisposable
     /// <summary>
     /// Optionally supplies a format for rendering the page count summary.
     /// </summary>
-    [Parameter] public Func<BitDataGridPaginationState, string>? SummaryFormat { get; set; }
+    [Parameter] public Func<BitDataGridLegacyPaginationState, string>? SummaryFormat { get; set; }
 
     /// <summary>
     /// Optionally supplies a template for rendering the page count summary.
     /// </summary>
-    [Parameter] public RenderFragment<BitDataGridPaginationState>? SummaryTemplate { get; set; }
+    [Parameter] public RenderFragment<BitDataGridLegacyPaginationState>? SummaryTemplate { get; set; }
 
     /// <summary>
     /// The optional custom format for the main text of the paginator in the middle of it.
     /// </summary>
-    [Parameter] public Func<BitDataGridPaginationState, string>? TextFormat { get; set; }
+    [Parameter] public Func<BitDataGridLegacyPaginationState, string>? TextFormat { get; set; }
 
     /// <summary>
     /// The optional custom template for the main text of the paginator in the middle of it.
     /// </summary>
-    [Parameter] public RenderFragment<BitDataGridPaginationState>? TextTemplate { get; set; }
+    [Parameter] public RenderFragment<BitDataGridLegacyPaginationState>? TextTemplate { get; set; }
 
     /// <summary>
-    /// Specifies the associated <see cref="BitDataGridPaginationState"/>. This parameter is required.
+    /// Specifies the associated <see cref="BitDataGridLegacyPaginationState"/>. This parameter is required.
     /// </summary>
-    [Parameter, EditorRequired] public BitDataGridPaginationState Value { get; set; } = default!;
+    [Parameter, EditorRequired] public BitDataGridLegacyPaginationState Value { get; set; } = default!;
 
     /// <summary>
-    /// Constructs an instance of <see cref="BitDataGridPaginator" />.
+    /// Constructs an instance of <see cref="BitDataGridLegacyPaginator" />.
     /// </summary>
-    public BitDataGridPaginator()
+    public BitDataGridLegacyPaginator()
     {
         // The "total item count" handler doesn't need to do anything except cause this component to
         // re-render. Invoking this EventCallback already routes through the paginator's
         // IHandleEvent.HandleEventAsync (the receiver is `this`), which re-renders the component on its
         // own, so the callback body is intentionally empty - calling StateHasChanged() here as well
         // would queue a second, redundant render.
-        _totalItemCountChanged = new(EventCallback.Factory.Create<BitDataGridPaginationState>(this, () => { }));
+        _totalItemCountChanged = new(EventCallback.Factory.Create<BitDataGridLegacyPaginationState>(this, () => { }));
     }
 
     private Task GoFirstAsync() => GoToPageAsync(0);

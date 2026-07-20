@@ -1,11 +1,11 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
-internal static class BitMarkdownEditorJsRuntimeExtensions
+internal static class BitMarkdownEditorLegacyJsRuntimeExtensions
 {
     public static ValueTask BitMarkdownEditorInit(this IJSRuntime jsRuntime, 
                                                        string id, 
                                                        ElementReference element, 
-                                                       DotNetObjectReference<BitMarkdownEditor>? dotnetObj,
+                                                       DotNetObjectReference<BitMarkdownEditorLegacy>? dotnetObj,
                                                        string? defaultValue)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Legacy.MarkdownEditor.init", id, element, dotnetObj, defaultValue);

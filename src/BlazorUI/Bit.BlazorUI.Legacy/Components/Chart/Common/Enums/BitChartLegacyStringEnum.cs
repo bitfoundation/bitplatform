@@ -4,27 +4,27 @@
 /// The base class for enums that are meant to be serialized. They are more flexible
 /// than normal C# enums (through type safe enum pattern).
 /// <para>
-/// When implementing a <see cref="BitChartStringEnum"/>, make sure to only implement a single
+/// When implementing a <see cref="BitChartLegacyStringEnum"/>, make sure to only implement a single
 /// constructor that takes a single <see cref="string"/>. Make this constructor private!
 /// The actual enum values are static properties that pass the correct value to the private
 /// constructor. Make these properties return new values everytime so we don't create all
 /// the enum values even though we don't use them. In the classic use case, we don't call
 /// many of these properties anyway and usually only a few times.
-/// In the rare case that you need a <see cref="BitChartStringEnum"/> that can contain any
+/// In the rare case that you need a <see cref="BitChartLegacyStringEnum"/> that can contain any
 /// <see cref="string"/> value, expose a static factory method but don't make the constructor
 /// public. Also consider sealing your enum unless you have a specific reason not to.
 /// </para>
 /// </summary>
 [Newtonsoft.Json.JsonConverter(typeof(JsonStringEnumConverter))]
-public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
+public abstract class BitChartLegacyStringEnum : IEquatable<BitChartLegacyStringEnum>
 {
     private readonly string _value;
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartStringEnum"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyStringEnum"/>.
     /// </summary>
     /// <param name="stringRep">The <see cref="string"/> this instance should represent.</param>
-    protected BitChartStringEnum(string stringRep)
+    protected BitChartLegacyStringEnum(string stringRep)
     {
         _value = stringRep ?? throw new ArgumentNullException(nameof(stringRep));
     }
@@ -35,10 +35,10 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
     /// <paramref name="obj"/> is considered to be equal to this instance if it..
     /// <list type="bullet">
     /// <item>is the same instance as this instance.</item>
-    /// <item>is another <see cref="BitChartStringEnum"/> with the same internal <see cref="string"/>
+    /// <item>is another <see cref="BitChartLegacyStringEnum"/> with the same internal <see cref="string"/>
     /// value.</item>
     /// <item>is the same <see cref="string"/> value as the internal <see cref="string"/> value
-    /// of this <see cref="BitChartStringEnum"/>.</item>
+    /// of this <see cref="BitChartLegacyStringEnum"/>.</item>
     /// </list>
     /// </para>
     /// </summary>
@@ -47,7 +47,7 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
     /// object; otherwise, false.</returns>
     public override bool Equals(object? obj)
     {
-        if (obj is BitChartStringEnum asEnum)
+        if (obj is BitChartLegacyStringEnum asEnum)
         {
             return Equals(asEnum);
         }
@@ -66,7 +66,7 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
     /// <param name="other">An object to compare with this object.</param>
     /// <returns>true if the current object is equal to the other parameter;
     /// otherwise, false.</returns>
-    public bool Equals(BitChartStringEnum? other) => other is not null && _value == other._value;
+    public bool Equals(BitChartLegacyStringEnum? other) => other is not null && _value == other._value;
 
     /// <summary>
     /// Returns the hash code of the underlying <see cref="string"/> value.
@@ -80,11 +80,11 @@ public abstract class BitChartStringEnum : IEquatable<BitChartStringEnum>
     /// <returns>The underlying <see cref="string"/> value.</returns>
     public override string ToString() => _value;
 
-    public static bool operator ==(BitChartStringEnum left, BitChartStringEnum right) =>
+    public static bool operator ==(BitChartLegacyStringEnum left, BitChartLegacyStringEnum right) =>
         left?._value == right?._value;
 
-    public static bool operator !=(BitChartStringEnum left, BitChartStringEnum right) =>
+    public static bool operator !=(BitChartLegacyStringEnum left, BitChartLegacyStringEnum right) =>
         left?._value != right?._value;
 
-    public static explicit operator string(BitChartStringEnum stringEnum) => stringEnum._value;
+    public static explicit operator string(BitChartLegacyStringEnum stringEnum) => stringEnum._value;
 }

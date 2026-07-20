@@ -160,7 +160,7 @@ We welcome contributions! Many people all over the world have helped make this p
 
 
     private readonly string example1RazorCode = @"
-<BitMarkdownViewer Markdown=""@(""# Marked in the browser\n\nRendered by [**marked**](https://marked.js.org)."")"" />";
+<BitMarkdownViewerLegacy Markdown=""@(""# Marked in the browser\n\nRendered by [**marked**](https://marked.js.org)."")"" />";
 
     private readonly string example2RazorCode = @"
 <style>
@@ -170,7 +170,7 @@ We welcome contributions! Many people all over the world have helped make this p
         }
     }
 </style>
-<BitMarkdownViewer Markdown=""@advancedMarkdown"" Class=""advanced"" />";
+<BitMarkdownViewerLegacy Markdown=""@advancedMarkdown"" Class=""advanced"" />";
     private readonly string example2CsharpCode = @"
 private string advancedMarkdown = @""![Header](https://user-images.githubusercontent.com/6169846/251658486-b16e1db8-5481-46c4-9fc1-c9b279a4364a.png)
 
@@ -248,7 +248,7 @@ We welcome contributions! Many people all over the world have helped make this p
 ![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform open source contributions report"""")"";";
 
     private readonly string example3RazorCode = @"
-<BitMarkdownViewer Markdown=""@(""# Events of the BitMarkdownViewer:\n\n- OnParsing\n- OnParsed\n- OnRendered"")""
+<BitMarkdownViewerLegacy Markdown=""@(""# Events of the BitMarkdownViewerLegacy:\n\n- OnParsing\n- OnParsed\n- OnRendered"")""
                    Id=""test-mdv""
                    OnParsing=""OnParsing""
                    OnParsed=""OnParsed""

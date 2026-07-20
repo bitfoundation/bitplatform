@@ -3,18 +3,18 @@
 /// <summary>
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/axes/cartesian/time.html#scale-distribution">here (Chart.js)</a>.
 /// </summary>
-public sealed class BitChartTimeDistribution : BitChartStringEnum
+public sealed class BitChartLegacyTimeDistribution : BitChartLegacyStringEnum
 {
     /// <summary>
     /// Data are spread according to their time (distances can vary)
     /// </summary>
-    public static BitChartTimeDistribution Linear => new BitChartTimeDistribution("linear");
+    public static BitChartLegacyTimeDistribution Linear => new BitChartLegacyTimeDistribution("linear");
 
     /// <summary>
     /// Data are spread at the same distance from each other
     /// </summary>
-    public static BitChartTimeDistribution Series => new BitChartTimeDistribution("series");
+    public static BitChartLegacyTimeDistribution Series => new BitChartLegacyTimeDistribution("series");
 
 
-    private BitChartTimeDistribution(string stringRep) : base(stringRep) { }
+    private BitChartLegacyTimeDistribution(string stringRep) : base(stringRep) { }
 }

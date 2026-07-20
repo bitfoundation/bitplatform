@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Legacy;
 /// <summary>
 /// A utility service to parse Markdown texts into html strings. Works smoothly in both server and client.
 /// </summary>
-public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
+public class BitMarkdownServiceLegacy(IJSRuntime js, IServiceProvider serviceProvider)
 {
     private const string MARKED_FILE = "_content/Bit.BlazorUI.Legacy/marked/marked-15.0.7.js";
 

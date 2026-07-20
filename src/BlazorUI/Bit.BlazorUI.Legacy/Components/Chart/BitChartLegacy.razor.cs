@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Legacy;
 /// <summary>
 /// Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter.
 /// </summary>
-public partial class BitChart : IAsyncDisposable
+public partial class BitChartLegacy : IAsyncDisposable
 {
     private bool _disposed;
 
@@ -18,11 +18,11 @@ public partial class BitChart : IAsyncDisposable
     /// <summary>
     /// The configuration of the chart.
     /// </summary>
-    [Parameter] public BitChartConfigBase? Config { get; set; }
+    [Parameter] public BitChartLegacyConfigBase? Config { get; set; }
 
     /// <summary>
     /// The height of the canvas HTML element. 
-    /// Use <see langword="null"/> when using <see cref="BitChartBaseConfigOptions.AspectRatio"/>.
+    /// Use <see langword="null"/> when using <see cref="BitChartLegacyBaseConfigOptions.AspectRatio"/>.
     /// </summary>
     [Parameter] public int? Height { get; set; }
 
@@ -40,7 +40,7 @@ public partial class BitChart : IAsyncDisposable
 
     /// <summary>
     /// Whether the date adapter is required for the current configuration.
-    /// By default BitChart uses the date-fns adapter. you can change the adapter using <see cref="BitChart.DateAdapterScripts"/>.
+    /// By default BitChartLegacy uses the date-fns adapter. you can change the adapter using <see cref="BitChartLegacy.DateAdapterScripts"/>.
     /// for more info check out https://www.chartjs.org/docs/2.9.4/axes/cartesian/time.html#date-adapters
     /// </summary>
     [Parameter] public bool IsDateAdapterRequired { get; set; }
@@ -68,15 +68,15 @@ public partial class BitChart : IAsyncDisposable
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarConfig))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBubbleConfig))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLineConfig))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPieConfig))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPolarAreaConfig))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartRadarConfig))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartScatterConfig))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartConfigBase<,>))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartConfigBase<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBubbleConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLineConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyPieConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyPolarAreaConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyRadarConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyScatterConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyConfigBase<,>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyConfigBase<>))]
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsonStringEnumConverter))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexableOptionConverter))]
@@ -85,47 +85,47 @@ public partial class BitChart : IAsyncDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsonWriteOnlyConverter<>))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsonObjectEnumConverter))]
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBubbleOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBaseConfigOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLineOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPieOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPolarAreaOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartRadarOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartIndexableOption<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBubbleOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBaseConfigOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLineOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyPieOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyPolarAreaOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyRadarOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyIndexableOption<>))]
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarDataset<>))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBubbleDataset))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartDataset<>))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLineDataset<>))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPieDataset))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPolarAreaDataset))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartRadarDataset))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarDataset<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBubbleDataset))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyDataset<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLineDataset<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyPieDataset))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyPolarAreaDataset))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyRadarDataset))]
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegend))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPosition))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartTooltips))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartAnimation))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLegend))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyPosition))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyTooltips))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyAnimation))]
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarScales))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartScales))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarScales))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyScales))]
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCartesianTicks))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCategoryTicks))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLinearCartesianTicks))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLogarithmicTicks))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartTimeTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyCartesianTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyCategoryTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLinearCartesianTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLogarithmicTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyTimeTicks))]
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarCategoryAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarLinearCartesianAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarLogarithmicAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarTimeAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCartesianAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCartesianAxis<>))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCategoryAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLinearCartesianAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLogarithmicAxis))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartTimeAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarCategoryAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarLinearCartesianAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarLogarithmicAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyBarTimeAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyCartesianAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyCartesianAxis<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyCategoryAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLinearCartesianAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyLogarithmicAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegacyTimeAxis))]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

@@ -287,6 +287,20 @@ else
                         this component on GitHub.
                     </BitText>
                 }
+
+                @if (GitHubLegacyUrl.HasValue())
+                {
+                    <br />
+                    <BitText Element="p">
+                        Or you can
+                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
+                                 Target="_blank">review</BitLink>
+                        /
+                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
+                                 Target="_blank">edit</BitLink>
+                        this component on GitHub.
+                    </BitText>
+                }
             </section>
         </div>
         <SideRail />

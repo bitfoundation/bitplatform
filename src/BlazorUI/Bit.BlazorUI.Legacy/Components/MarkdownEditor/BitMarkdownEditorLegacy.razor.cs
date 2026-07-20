@@ -1,12 +1,12 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// BitMarkdownEditor is a simple editor like GitHub md editor.
+/// BitMarkdownEditorLegacy is a simple editor like GitHub md editor.
 /// </summary>
-public partial class BitMarkdownEditor : BitComponentBase
+public partial class BitMarkdownEditorLegacy : BitComponentBase
 {
     private ElementReference _textAreaRef = default!;
-    private DotNetObjectReference<BitMarkdownEditor>? _dotnetObj = null;
+    private DotNetObjectReference<BitMarkdownEditorLegacy>? _dotnetObj = null;
 
 
 
@@ -43,19 +43,19 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// <summary>
     /// Runs a specific command on the editor.
     /// </summary>
-    public async ValueTask Run(BitMarkdownEditorCommand command)
+    public async ValueTask Run(BitMarkdownEditorLegacyCommand command)
     {
         await _js.BitMarkdownEditorRun(_Id, command switch
         { 
-            BitMarkdownEditorCommand.Heading => "h",
-            BitMarkdownEditorCommand.Bold => "b",
-            BitMarkdownEditorCommand.Italic => "i",
-            BitMarkdownEditorCommand.Link => "l",
-            BitMarkdownEditorCommand.Picture => "p",
-            BitMarkdownEditorCommand.Quote => "q",
-            BitMarkdownEditorCommand.Code => "`",
+            BitMarkdownEditorLegacyCommand.Heading => "h",
+            BitMarkdownEditorLegacyCommand.Bold => "b",
+            BitMarkdownEditorLegacyCommand.Italic => "i",
+            BitMarkdownEditorLegacyCommand.Link => "l",
+            BitMarkdownEditorLegacyCommand.Picture => "p",
+            BitMarkdownEditorLegacyCommand.Quote => "q",
+            BitMarkdownEditorLegacyCommand.Code => "`",
             // -----------------------------------------
-            BitMarkdownEditorCommand.CodeBlock => "```",
+            BitMarkdownEditorLegacyCommand.CodeBlock => "```",
             _ => string.Empty
         });
     }
@@ -63,7 +63,7 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// <summary>
     /// Adds a specific content to the editor.
     /// </summary>
-    public async ValueTask Add(string value, BitMarkdownEditorContentType type = BitMarkdownEditorContentType.Block)
+    public async ValueTask Add(string value, BitMarkdownEditorLegacyContentType type = BitMarkdownEditorLegacyContentType.Block)
     {
         await _js.BitMarkdownEditorAdd(_Id, value, type.ToString().ToLower());
     }

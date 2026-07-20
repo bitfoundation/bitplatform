@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The options-subconfig of a <see cref="BitChartPieConfig"/>.
+/// The options-subconfig of a <see cref="BitChartLegacyPieConfig"/>.
 /// </summary>
-public class BitChartPieOptions : BitChartBaseConfigOptions
+public class BitChartLegacyPieOptions : BitChartLegacyBaseConfigOptions
 {
     /// <summary>
     /// Gets or sets the percentage of the chart that is cut out of the middle.
@@ -14,7 +14,7 @@ public class BitChartPieOptions : BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the animation-configuration for this chart.
     /// </summary>
-    public new BitChartArcAnimation? Animation { get; set; }
+    public new BitChartLegacyArcAnimation? Animation { get; set; }
 
     /// <summary>
     /// Gets or sets the starting angle to draw arcs from.

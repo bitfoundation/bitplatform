@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// BitMarkdownViewer is a SEO friendly Blazor wrapper around the famous markedjs library.
+/// BitMarkdownViewerLegacy is a SEO friendly Blazor wrapper around the famous markedjs library.
 /// <see href="https://github.com/markedjs/marked"/>
 /// </summary>
-public partial class BitMarkdownViewer : BitComponentBase
+public partial class BitMarkdownViewerLegacy : BitComponentBase
 {
     private string? _html;
     private bool _isRenderingParsedHtml;
@@ -13,7 +13,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
-    [Inject] private BitMarkdownService _markdownService { get; set; } = default!;
+    [Inject] private BitMarkdownServiceLegacy _markdownService { get; set; } = default!;
 
 
 
@@ -103,7 +103,7 @@ public partial class BitMarkdownViewer : BitComponentBase
         }
         catch
         {
-            _html = "<b>The BitMarkdownViewer failed to parse the markdown!</b>";
+            _html = "<b>The BitMarkdownViewerLegacy failed to parse the markdown!</b>";
         }
 
         _ = OnParsed.InvokeAsync(_html);

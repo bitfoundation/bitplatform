@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The ticks-subconfig of <see cref="BitChartCategoryAxis"/>.
+/// The ticks-subconfig of <see cref="BitChartLegacyCategoryAxis"/>.
 /// </summary>
-public class BitChartCategoryTicks : BitChartCartesianTicks
+public class BitChartLegacyCategoryTicks : BitChartLegacyCartesianTicks
 {
     /// <summary>
     /// Gets or sets an array of labels to display.

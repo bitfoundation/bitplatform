@@ -3,12 +3,12 @@
 /// <summary>
 /// The base config for the options-subconfig of a chart.
 /// </summary>
-public class BitChartBaseConfigOptions
+public class BitChartLegacyBaseConfigOptions
 {
     /// <summary>
     /// Gets or sets the title of this chart.
     /// </summary>
-    public BitChartOptionsTitle? Title { get; set; }
+    public BitChartLegacyOptionsTitle? Title { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the chart canvas should be resized when its container is.
@@ -35,17 +35,17 @@ public class BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the legend for this chart.
     /// </summary>
-    public BitChartLegend? Legend { get; set; }
+    public BitChartLegacyLegend? Legend { get; set; }
 
     /// <summary>
     /// Gets or sets the tooltip options for this chart.
     /// </summary>
-    public BitChartTooltips? Tooltips { get; set; }
+    public BitChartLegacyTooltips? Tooltips { get; set; }
 
     /// <summary>
     /// Gets or sets the animation-configuration for this chart.
     /// </summary>
-    public BitChartAnimation? Animation { get; set; }
+    public BitChartLegacyAnimation? Animation { get; set; }
 
     /// <summary>
     /// Gets the plugin options. The key has to be the unique
@@ -60,32 +60,32 @@ public class BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the browser events that the chart should listen to for tooltips and hovering.
     /// <para>
-    /// If <see langword="null"/>, this includes <see cref="BitChartBrowserEvent.MouseMove"/>, <see cref="BitChartBrowserEvent.MouseOut"/>,
-    /// <see cref="BitChartBrowserEvent.Click"/>, <see cref="BitChartBrowserEvent.TouchStart"/> and <see cref="BitChartBrowserEvent.TouchMove"/> (by default).
+    /// If <see langword="null"/>, this includes <see cref="BitChartLegacyBrowserEvent.MouseMove"/>, <see cref="BitChartLegacyBrowserEvent.MouseOut"/>,
+    /// <see cref="BitChartLegacyBrowserEvent.Click"/>, <see cref="BitChartLegacyBrowserEvent.TouchStart"/> and <see cref="BitChartLegacyBrowserEvent.TouchMove"/> (by default).
     /// </para>
     /// </summary>
-    public BitChartBrowserEvent[]? Events { get; set; }
+    public BitChartLegacyBrowserEvent[]? Events { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback to call when an event of type <see cref="BitChartBrowserEvent.MouseUp"/> or
-    /// <see cref="BitChartBrowserEvent.Click"/> fires on the chart.
+    /// Gets or sets the callback to call when an event of type <see cref="BitChartLegacyBrowserEvent.MouseUp"/> or
+    /// <see cref="BitChartLegacyBrowserEvent.Click"/> fires on the chart.
     /// Called in the context of the chart and passed the event and an array of active elements.
-    /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
+    /// <para>See <see cref="BitChartLegacyJavascriptHandler{T}"/> and <see cref="BitChartLegacyDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartChartMouseEvent>? OnClick { get; set; }
+    public IBitChartLegacyMethodHandler<BitChartChartMouseEvent>? OnClick { get; set; }
 
     /// <summary>
     /// Gets or sets the callback to call when any of the <see cref="Events"/> fire on the chart.
     /// Called in the context of the chart and passed the event and an array of
     /// active elements (bars, points, etc).
-    /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
+    /// <para>See <see cref="BitChartLegacyJavascriptHandler{T}"/> and <see cref="BitChartLegacyDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartChartMouseEvent>? OnHover { get; set; }
+    public IBitChartLegacyMethodHandler<BitChartChartMouseEvent>? OnHover { get; set; }
 
     /// <summary>
     /// Gets or sets the hover configuration for this chart.
     /// </summary>
-    public BitChartHover? Hover { get; set; }
+    public BitChartLegacyHover? Hover { get; set; }
 
     /// <summary>
     /// This method tells json.net to only serialize the plugin options when

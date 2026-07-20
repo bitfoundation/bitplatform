@@ -1,10 +1,10 @@
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Holds data being supplied to a <see cref="BitDataGrid{TGridItem}"/>'s <see cref="BitDataGrid{TGridItem}.ItemsProvider"/>.
+/// Holds data being supplied to a <see cref="BitDataGridLegacy{TGridItem}"/>'s <see cref="BitDataGridLegacy{TGridItem}.ItemsProvider"/>.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
-public struct BitDataGridItemsProviderResult<TGridItem>
+public struct BitDataGridLegacyItemsProviderResult<TGridItem>
 {
     /// <summary>
     /// The items being supplied.
@@ -20,11 +20,11 @@ public struct BitDataGridItemsProviderResult<TGridItem>
     public int TotalItemCount { get; set; }
 
     /// <summary>
-    /// Constructs an instance of <see cref="BitDataGridItemsProviderResult{TGridItem}"/>.
+    /// Constructs an instance of <see cref="BitDataGridLegacyItemsProviderResult{TGridItem}"/>.
     /// </summary>
     /// <param name="items">The items being supplied.</param>
     /// <param name="totalItemCount">The total number of items that exist. See <see cref="TotalItemCount"/> for details.</param>
-    public BitDataGridItemsProviderResult(ICollection<TGridItem> items, int totalItemCount)
+    public BitDataGridLegacyItemsProviderResult(ICollection<TGridItem> items, int totalItemCount)
     {
         Items = items;
         TotalItemCount = totalItemCount;
@@ -32,18 +32,18 @@ public struct BitDataGridItemsProviderResult<TGridItem>
 }
 
 /// <summary>
-/// Provides convenience methods for constructing <see cref="BitDataGridItemsProviderResult{TGridItem}"/> instances.
+/// Provides convenience methods for constructing <see cref="BitDataGridLegacyItemsProviderResult{TGridItem}"/> instances.
 /// </summary>
-public static class BitDataGridItemsProviderResult
+public static class BitDataGridLegacyItemsProviderResult
 {
     // This is just to provide generic type inference, so you don't have to specify TGridItem yet again.
 
     /// <summary>
-    /// Supplies an instance of <see cref="BitDataGridItemsProviderResult{TGridItem}"/>.
+    /// Supplies an instance of <see cref="BitDataGridLegacyItemsProviderResult{TGridItem}"/>.
     /// </summary>
     /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
     /// <param name="items">The items being supplied.</param>
-    /// <param name="totalItemCount">The total number of items that exist. See <see cref="BitDataGridItemsProviderResult{TGridItem}.TotalItemCount"/> for details.</param>
-    /// <returns>An instance of <see cref="BitDataGridItemsProviderResult{TGridItem}"/>.</returns>
-    public static BitDataGridItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount) => new(items, totalItemCount);
+    /// <param name="totalItemCount">The total number of items that exist. See <see cref="BitDataGridLegacyItemsProviderResult{TGridItem}.TotalItemCount"/> for details.</param>
+    /// <returns>An instance of <see cref="BitDataGridLegacyItemsProviderResult{TGridItem}"/>.</returns>
+    public static BitDataGridLegacyItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount) => new(items, totalItemCount);
 }

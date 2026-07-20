@@ -15,7 +15,7 @@ public class BitMarkdownViewerTests : BunitTestContext
     [TestInitialize]
     public void RegisterService()
     {
-        Services.AddSingleton<BitMarkdownService>();
+        Services.AddSingleton<BitMarkdownServiceLegacy>();
     }
 
     private void SetupMarkdownInterop(string markdown, string html)
@@ -34,7 +34,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         SetupMarkdownInterop(markdown, html);
 
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
         });
@@ -61,7 +61,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var renderedCalled = false;
         string? parsedValue = null;
 
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
 
@@ -101,7 +101,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         SetupMarkdownInterop(markdown, html);
 
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
         });
@@ -137,7 +137,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         SetupMarkdownInterop(markdown, html);
 
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
@@ -172,7 +172,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             return processedHtml;
         }
 
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
             parameters.Add(p => p.Middleware, middleware);
@@ -197,7 +197,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownViewer.parseAsync", markdown, jsMiddleware).SetResult(processedHtml);
 
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
             parameters.Add(p => p.JsMiddlewareIdentifier, jsMiddleware);
@@ -235,7 +235,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             return csharpProcessedHtml;
         }
 
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
             parameters.Add(p => p.JsMiddlewareIdentifier, jsMiddleware);

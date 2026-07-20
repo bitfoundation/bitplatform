@@ -3,12 +3,12 @@
 /// <summary>
 /// Represents a relative direction or position on a 2D canvas.
 /// </summary>
-public sealed class BitChartPosition : BitChartStringEnum
+public sealed class BitChartLegacyPosition : BitChartLegacyStringEnum
 {
-    public static BitChartPosition Left => new BitChartPosition("left");
-    public static BitChartPosition Right => new BitChartPosition("right");
-    public static BitChartPosition Top => new BitChartPosition("top");
-    public static BitChartPosition Bottom => new BitChartPosition("bottom");
+    public static BitChartLegacyPosition Left => new BitChartLegacyPosition("left");
+    public static BitChartLegacyPosition Right => new BitChartLegacyPosition("right");
+    public static BitChartLegacyPosition Top => new BitChartLegacyPosition("top");
+    public static BitChartLegacyPosition Bottom => new BitChartLegacyPosition("bottom");
 
-    private BitChartPosition(string stringRep) : base(stringRep) { }
+    private BitChartLegacyPosition(string stringRep) : base(stringRep) { }
 }

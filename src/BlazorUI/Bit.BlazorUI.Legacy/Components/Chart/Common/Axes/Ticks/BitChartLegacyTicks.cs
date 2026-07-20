@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The base class for all tick mark configurations. Ticks-subconfig of the common <see cref="BitChartAxis"/>.
+/// The base class for all tick mark configurations. Ticks-subconfig of the common <see cref="BitChartLegacyAxis"/>.
 /// <para>As per documentation <a href="https://www.chartjs.org/docs/latest/axes/styling.html#tick-configuration">here (Chart.js)</a>.</para>
 /// </summary>
-public abstract class BitChartTicks : BitChartSubTicks
+public abstract class BitChartLegacyTicks : BitChartLegacySubTicks
 {
     /// <summary>
     /// Gets or sets the value indicating whether this axis displays tick marks.
@@ -19,12 +19,12 @@ public abstract class BitChartTicks : BitChartSubTicks
     /// <summary>
     /// Gets or sets the minor ticks configuration. Omitted options are inherited.
     /// </summary>
-    public BitChartMinorTicks? Minor { get; set; }
+    public BitChartLegacyMinorTicks? Minor { get; set; }
 
     /// <summary>
     /// Gets or sets the major ticks configuration. Omitted options are inherited.
     /// </summary>
-    public BitChartMajorTicks? Major { get; set; }
+    public BitChartLegacyMajorTicks? Major { get; set; }
 
     /// <summary>
     /// Gets or sets the offset of the tick labels from the axis. When set on a vertical axis, this applies in the horizontal (X) direction.
@@ -40,7 +40,7 @@ public abstract class BitChartTicks : BitChartSubTicks
     /// <summary>
     /// Gets or sets the callback to customize the string representation of the tick value as it should be displayed on the chart.
     /// <para>More on <a href="https://www.chartjs.org/docs/latest/axes/labelling.html#creating-custom-tick-formats"/>.</para>
-    /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
+    /// <para>See <see cref="BitChartLegacyJavascriptHandler{T}"/> and <see cref="BitChartLegacyDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartAxisTickCallback>? Callback { get; set; }
+    public IBitChartLegacyMethodHandler<BitChartAxisTickCallback>? Callback { get; set; }
 }

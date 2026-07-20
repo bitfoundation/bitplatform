@@ -7,39 +7,39 @@
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/configuration/animations.html#easing">here (Chart.js)</a>.
 /// </para>
 /// </summary>
-public sealed class BitChartEasing : BitChartStringEnum
+public sealed class BitChartLegacyEasing : BitChartLegacyStringEnum
 {
-    public static BitChartEasing Linear => new BitChartEasing("linear");
-    public static BitChartEasing EaseInQuad => new BitChartEasing("easeInQuad");
-    public static BitChartEasing EaseOutQuad => new BitChartEasing("easeOutQuad");
-    public static BitChartEasing EaseInOutQuad => new BitChartEasing("easeInOutQuad");
-    public static BitChartEasing EaseInCubic => new BitChartEasing("easeInCubic");
-    public static BitChartEasing EaseOutCubic => new BitChartEasing("easeOutCubic");
-    public static BitChartEasing EaseInOutCubic => new BitChartEasing("easeInOutCubic");
-    public static BitChartEasing EaseInQuart => new BitChartEasing("easeInQuart");
-    public static BitChartEasing EaseOutQuart => new BitChartEasing("easeOutQuart");
-    public static BitChartEasing EaseInOutQuart => new BitChartEasing("easeInOutQuart");
-    public static BitChartEasing EaseInQuint => new BitChartEasing("easeInQuint");
-    public static BitChartEasing EaseOutQuint => new BitChartEasing("easeOutQuint");
-    public static BitChartEasing EaseInOutQuint => new BitChartEasing("easeInOutQuint");
-    public static BitChartEasing EaseInSine => new BitChartEasing("easeInSine");
-    public static BitChartEasing EaseOutSine => new BitChartEasing("easeOutSine");
-    public static BitChartEasing EaseInOutSine => new BitChartEasing("easeInOutSine");
-    public static BitChartEasing EaseInExpo => new BitChartEasing("easeInExpo");
-    public static BitChartEasing EaseOutExpo => new BitChartEasing("easeOutExpo");
-    public static BitChartEasing EaseInOutExpo => new BitChartEasing("easeInOutExpo");
-    public static BitChartEasing EaseInCirc => new BitChartEasing("easeInCirc");
-    public static BitChartEasing EaseOutCirc => new BitChartEasing("easeOutCirc");
-    public static BitChartEasing EaseInOutCirc => new BitChartEasing("easeInOutCirc");
-    public static BitChartEasing EaseInElastic => new BitChartEasing("easeInElastic");
-    public static BitChartEasing EaseOutElastic => new BitChartEasing("easeOutElastic");
-    public static BitChartEasing EaseInOutElastic => new BitChartEasing("easeInOutElastic");
-    public static BitChartEasing EaseInBack => new BitChartEasing("easeInBack");
-    public static BitChartEasing EaseOutBack => new BitChartEasing("easeOutBack");
-    public static BitChartEasing EaseInOutBack => new BitChartEasing("easeInOutBack");
-    public static BitChartEasing EaseInBounce => new BitChartEasing("easeInBounce");
-    public static BitChartEasing EaseOutBounce => new BitChartEasing("easeOutBounce");
-    public static BitChartEasing EaseInOutBounce => new BitChartEasing("easeInOutBounce");
+    public static BitChartLegacyEasing Linear => new BitChartLegacyEasing("linear");
+    public static BitChartLegacyEasing EaseInQuad => new BitChartLegacyEasing("easeInQuad");
+    public static BitChartLegacyEasing EaseOutQuad => new BitChartLegacyEasing("easeOutQuad");
+    public static BitChartLegacyEasing EaseInOutQuad => new BitChartLegacyEasing("easeInOutQuad");
+    public static BitChartLegacyEasing EaseInCubic => new BitChartLegacyEasing("easeInCubic");
+    public static BitChartLegacyEasing EaseOutCubic => new BitChartLegacyEasing("easeOutCubic");
+    public static BitChartLegacyEasing EaseInOutCubic => new BitChartLegacyEasing("easeInOutCubic");
+    public static BitChartLegacyEasing EaseInQuart => new BitChartLegacyEasing("easeInQuart");
+    public static BitChartLegacyEasing EaseOutQuart => new BitChartLegacyEasing("easeOutQuart");
+    public static BitChartLegacyEasing EaseInOutQuart => new BitChartLegacyEasing("easeInOutQuart");
+    public static BitChartLegacyEasing EaseInQuint => new BitChartLegacyEasing("easeInQuint");
+    public static BitChartLegacyEasing EaseOutQuint => new BitChartLegacyEasing("easeOutQuint");
+    public static BitChartLegacyEasing EaseInOutQuint => new BitChartLegacyEasing("easeInOutQuint");
+    public static BitChartLegacyEasing EaseInSine => new BitChartLegacyEasing("easeInSine");
+    public static BitChartLegacyEasing EaseOutSine => new BitChartLegacyEasing("easeOutSine");
+    public static BitChartLegacyEasing EaseInOutSine => new BitChartLegacyEasing("easeInOutSine");
+    public static BitChartLegacyEasing EaseInExpo => new BitChartLegacyEasing("easeInExpo");
+    public static BitChartLegacyEasing EaseOutExpo => new BitChartLegacyEasing("easeOutExpo");
+    public static BitChartLegacyEasing EaseInOutExpo => new BitChartLegacyEasing("easeInOutExpo");
+    public static BitChartLegacyEasing EaseInCirc => new BitChartLegacyEasing("easeInCirc");
+    public static BitChartLegacyEasing EaseOutCirc => new BitChartLegacyEasing("easeOutCirc");
+    public static BitChartLegacyEasing EaseInOutCirc => new BitChartLegacyEasing("easeInOutCirc");
+    public static BitChartLegacyEasing EaseInElastic => new BitChartLegacyEasing("easeInElastic");
+    public static BitChartLegacyEasing EaseOutElastic => new BitChartLegacyEasing("easeOutElastic");
+    public static BitChartLegacyEasing EaseInOutElastic => new BitChartLegacyEasing("easeInOutElastic");
+    public static BitChartLegacyEasing EaseInBack => new BitChartLegacyEasing("easeInBack");
+    public static BitChartLegacyEasing EaseOutBack => new BitChartLegacyEasing("easeOutBack");
+    public static BitChartLegacyEasing EaseInOutBack => new BitChartLegacyEasing("easeInOutBack");
+    public static BitChartLegacyEasing EaseInBounce => new BitChartLegacyEasing("easeInBounce");
+    public static BitChartLegacyEasing EaseOutBounce => new BitChartLegacyEasing("easeOutBounce");
+    public static BitChartLegacyEasing EaseInOutBounce => new BitChartLegacyEasing("easeInOutBounce");
 
-    private BitChartEasing(string stringRep) : base(stringRep) { }
+    private BitChartLegacyEasing(string stringRep) : base(stringRep) { }
 }

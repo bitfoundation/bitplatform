@@ -40,7 +40,7 @@ public partial class BitMarkdownEditorDemo
         new()
         {
             Name = "Run",
-            Type = "Func<BitMarkdownEditorCommand, ValueTask>",
+            Type = "Func<BitMarkdownEditorLegacyCommand, ValueTask>",
             DefaultValue = "",
             Description = "Runs a specific command on the editor.",
             LinkType = LinkType.Link,
@@ -49,7 +49,7 @@ public partial class BitMarkdownEditorDemo
         new()
         {
             Name = "Add",
-            Type = "Func<string, BitMarkdownEditorContentType, ValueTask>",
+            Type = "Func<string, BitMarkdownEditorLegacyContentType, ValueTask>",
             DefaultValue = "",
             Description = "Adds a specific content to the editor.",
             LinkType = LinkType.Link,
@@ -62,8 +62,8 @@ public partial class BitMarkdownEditorDemo
         new()
         {
             Id = "command-enum",
-            Name = "BitMarkdownEditorCommand",
-            Description = "Available commands to run by a BitMarkdownEditor on its current value.",
+            Name = "BitMarkdownEditorLegacyCommand",
+            Description = "Available commands to run by a BitMarkdownEditorLegacy on its current value.",
             Items =
             [
                 new()
@@ -119,8 +119,8 @@ public partial class BitMarkdownEditorDemo
         new()
         {
             Id = "content-type-enum",
-            Name = "BitMarkdownEditorContentType",
-            Description = "The type of the content to add to the BitMarkdownEditor.",
+            Name = "BitMarkdownEditorLegacyContentType",
+            Description = "The type of the content to add to the BitMarkdownEditorLegacy.",
             Items =
             [
                 new()
@@ -146,9 +146,9 @@ public partial class BitMarkdownEditorDemo
     ];
 
 
-    private string? introValue = "# BitMarkdownEditor in action\n\n- Ctrl+H  =>  Heading\n- Ctrl+B  =>  Bold\n- Ctrl+I  =>  Italic\n- Ctrl+L  =>  Link\n- Ctrl+P  =>  Picture/Image\n- Ctrl+Q  =>  Quote\n- auto handling ordered/unordered lists\n- auto handling Ctrl+X and Ctrl+C\n- Ctrl+Z  =>  Undo\n- Ctrl+Y / Ctrl+Shift+Z  =>  Redo\n\n### Missing features:\n1. Multi-level unordered lists\n2. Tab to go deeper list level\n\nStart typing here...";
+    private string? introValue = "# BitMarkdownEditorLegacy in action\n\n- Ctrl+H  =>  Heading\n- Ctrl+B  =>  Bold\n- Ctrl+I  =>  Italic\n- Ctrl+L  =>  Link\n- Ctrl+P  =>  Picture/Image\n- Ctrl+Q  =>  Quote\n- auto handling ordered/unordered lists\n- auto handling Ctrl+X and Ctrl+C\n- Ctrl+Z  =>  Undo\n- Ctrl+Y / Ctrl+Shift+Z  =>  Redo\n\n### Missing features:\n1. Multi-level unordered lists\n2. Tab to go deeper list level\n\nStart typing here...";
 
-    private BitMarkdownEditor editorRef = default!;
+    private BitMarkdownEditorLegacy editorRef = default!;
     private string? value;
     private async Task GetValue()
     {
@@ -161,25 +161,25 @@ public partial class BitMarkdownEditorDemo
 
     private bool showPreview;
     private string? advancedValue;
-    private BitMarkdownEditor advancedRef = default!;
+    private BitMarkdownEditorLegacy advancedRef = default!;
 
 
 
     private readonly string example1RazorCode = @"
 <div style=""height:300px"">
-    <BitMarkdownEditor />
+    <BitMarkdownEditorLegacy />
 </div>";
 
     private readonly string example2RazorCode = @"
 <div style=""display:flex;gap:1rem;height:300px"">
-    <BitMarkdownEditor @ref=""editorRef"" />
+    <BitMarkdownEditorLegacy @ref=""editorRef"" />
     <BitButton OnClick=""GetValue"">=></BitButton>
     <pre style=""padding:1rem;width:100%"">
         @value
     </pre>
 </div>";
     private readonly string example2CsharpCode = @"
-private BitMarkdownEditor editorRef = default!;
+private BitMarkdownEditorLegacy editorRef = default!;
 private string? value;
 private async Task GetValue()
 {
@@ -188,7 +188,7 @@ private async Task GetValue()
 
     private readonly string example3RazorCode = @"
 <div style=""display:flex;gap:1rem;height:300px"">
-    <BitMarkdownEditor DefaultValue=""# This is the default value"" OnChange=""v => onChangeValue = v"" />
+    <BitMarkdownEditorLegacy DefaultValue=""# This is the default value"" OnChange=""v => onChangeValue = v"" />
     <pre style=""padding:1rem;width:100%"">
         @onChangeValue
     </pre>
@@ -198,7 +198,7 @@ private string? onChangeValue;";
 
     private readonly string example4RazorCode = @"
 <div style=""display:flex;gap:1rem;height:300px"">
-    <BitMarkdownEditor @bind-Value=""bindingValue"" />
+    <BitMarkdownEditorLegacy @bind-Value=""bindingValue"" />
     <textarea @bind-value=""@bindingValue"" @bind-value:event=""oninput"" style=""width:100%;background:transparent""/>
 </div>";
     private readonly string example4CsharpCode = @"
@@ -206,7 +206,7 @@ private string? bindingValue;";
 
     private readonly string example5RazorCode = @"
 <div style=""height:300px"">
-    <BitMarkdownEditor DefaultValue=""# Undo/Redo Demo"" />
+    <BitMarkdownEditorLegacy DefaultValue=""# Undo/Redo Demo"" />
 </div>";
 
     private readonly string example6RazorCode = @"
@@ -217,34 +217,34 @@ private string? bindingValue;";
 
     <div style=""display:@(showPreview ? ""none"" : ""flex"");gap:0.5rem;align-items:center"">
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Heading"" 
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Heading)"">H</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Heading)"">H</BitButton>
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Bold""
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Bold)"">B</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Bold)"">B</BitButton>
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Italic""
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Italic)"">I</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Italic)"">I</BitButton>
         |
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Link""
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Link)"">L</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Link)"">L</BitButton>
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Picture""
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Picture)"">P</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Picture)"">P</BitButton>
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Quote""
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Quote)"">Q</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Quote)"">Q</BitButton>
         |
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Code""
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.Code)"">C</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Code)"">C</BitButton>
         <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" FixedColor Title=""Code block""
-                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorCommand.CodeBlock)"">CB</BitButton>
+                   OnClick=""async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.CodeBlock)"">CB</BitButton>
     </div>
 </div>
 
 <div style=""height:300px"">
-    <BitMarkdownEditor @ref=""advancedRef"" @bind-Value=""advancedValue"" 
+    <BitMarkdownEditorLegacy @ref=""advancedRef"" @bind-Value=""advancedValue"" 
                        Style=""@($""display:{(showPreview ? ""none"" : ""block"")}"")"" />
-    <BitMarkdownViewer Markdown=""@advancedValue"" 
+    <BitMarkdownViewerLegacy Markdown=""@advancedValue"" 
                        Style=""@($""display:{(showPreview ? ""block"" : ""none"")}"")"" />
 </div>";
     private readonly string example6CsharpCode = @"
 private bool showPreview;
 private string? advancedValue;
-private BitMarkdownEditor advancedRef = default!;";
+private BitMarkdownEditorLegacy advancedRef = default!;";
 }

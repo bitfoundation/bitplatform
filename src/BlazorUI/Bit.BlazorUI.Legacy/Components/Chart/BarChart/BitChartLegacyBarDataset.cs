@@ -6,58 +6,58 @@ namespace Bit.BlazorUI.Legacy;
 /// Represents a dataset for a bar chart.
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/charts/bar.html#dataset-properties">here (Chart.js)</a>.
 /// </summary>
-/// <typeparam name="T">The type of data this <see cref="BitChartBarDataset{T}"/> contains.</typeparam>
-public class BitChartBarDataset<T> : BitChartDataset<T>
+/// <typeparam name="T">The type of data this <see cref="BitChartLegacyBarDataset{T}"/> contains.</typeparam>
+public class BitChartLegacyBarDataset<T> : BitChartLegacyDataset<T>
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartBarDataset{T}"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyBarDataset{T}"/>.
     /// </summary>
     /// <param name="horizontal">
-    /// If <see langword="true"/>, the dataset-type will be set to <see cref="BitChartChartType.HorizontalBar"/>
-    /// instead of <see cref="BitChartChartType.Bar"/>. Set this to <see langword="true"/> when using a horizontal
+    /// If <see langword="true"/>, the dataset-type will be set to <see cref="BitChartLegacyChartType.HorizontalBar"/>
+    /// instead of <see cref="BitChartLegacyChartType.Bar"/>. Set this to <see langword="true"/> when using a horizontal
     /// bar chart. If this is set to <see langword="false"/> in a horizontal bar chart, the bars won't be displayed.
     /// </param>
-    public BitChartBarDataset(bool horizontal = false) : base(horizontal ? BitChartChartType.HorizontalBar : BitChartChartType.Bar) { }
+    public BitChartLegacyBarDataset(bool horizontal = false) : base(horizontal ? BitChartLegacyChartType.HorizontalBar : BitChartLegacyChartType.Bar) { }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartBarDataset{T}"/> with initial data.
+    /// Creates a new instance of <see cref="BitChartLegacyBarDataset{T}"/> with initial data.
     /// </summary>
-    /// <inheritdoc cref="BitChartBarDataset(bool)"/>
-    public BitChartBarDataset(IEnumerable<T> data, bool horizontal = false) : this(horizontal)
+    /// <inheritdoc cref="BitChartLegacyBarDataset(bool)"/>
+    public BitChartLegacyBarDataset(IEnumerable<T> data, bool horizontal = false) : this(horizontal)
     {
         AddRange(data);
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartBarDataset{T}"/> with
-    /// a custom <see cref="BitChartChartType"/>. Use this constructor when
+    /// Creates a new instance of <see cref="BitChartLegacyBarDataset{T}"/> with
+    /// a custom <see cref="BitChartLegacyChartType"/>. Use this constructor when
     /// you implement a bar-like chart.
     /// </summary>
-    /// <param name="type">The <see cref="BitChartChartType"/> to use instead of <see cref="BitChartChartType.Bar"/>.</param>
-    protected BitChartBarDataset(BitChartChartType type) : base(type) { }
+    /// <param name="type">The <see cref="BitChartLegacyChartType"/> to use instead of <see cref="BitChartLegacyChartType.Bar"/>.</param>
+    protected BitChartLegacyBarDataset(BitChartLegacyChartType type) : base(type) { }
 
     /// <summary>
     /// Gets or sets the fill color of the bars in the dataset.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string>? BackgroundColor { get; set; }
+    public BitChartLegacyIndexableOption<string>? BackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets the border color of the bars in the dataset.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string>? BorderColor { get; set; }
+    public BitChartLegacyIndexableOption<string>? BorderColor { get; set; }
 
     /// <summary>
     /// Gets or sets a value to avoid drawing the bar stroke at the base of the fill.
     /// In general, this does not need to be changed except when creating chart types that derive from a bar chart.
     /// </summary>
-    public BitChartIndexableOption<BitChartBorderSkipped>? BorderSkipped { get; set; }
+    public BitChartLegacyIndexableOption<BitChartLegacyBorderSkipped>? BorderSkipped { get; set; }
 
     /// <summary>
     /// Gets or sets the border width of the bars in the dataset.
     /// </summary>
-    public BitChartIndexableOption<int>? BorderWidth { get; set; }
+    public BitChartLegacyIndexableOption<int>? BorderWidth { get; set; }
 
     /// <summary>
     /// Gets or sets the percentage (0-1) of the available width each bar should be within the category
@@ -74,33 +74,33 @@ public class BitChartBarDataset<T> : BitChartDataset<T>
 
     /// <summary>
     /// Gets or sets the width of each bar in pixels.
-    /// If set to <see cref="BitChartBarThickness.Flex"/>, it computes "optimal" sample widths that globally
+    /// If set to <see cref="BitChartLegacyBarThickness.Flex"/>, it computes "optimal" sample widths that globally
     /// arrange bars side by side. If not set (default), bars are equally sized based on the smallest interval.
     /// </summary>
-    public BitChartBarThickness? BarThickness { get; set; }
+    public BitChartLegacyBarThickness? BarThickness { get; set; }
 
     /// <summary>
     /// Gets or sets how to clip relative to the chart area. Positive values allow overflow,
     /// negative values clip that many pixels inside the chart area.
     /// </summary>
-    public BitChartClipping? Clip { get; set; }
+    public BitChartLegacyClipping? Clip { get; set; }
 
     /// <summary>
     /// Gets or sets the fill color of the bars when hovered.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string>? HoverBackgroundColor { get; set; }
+    public BitChartLegacyIndexableOption<string>? HoverBackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets the stroke color of the bars when hovered.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string>? HoverBorderColor { get; set; }
+    public BitChartLegacyIndexableOption<string>? HoverBorderColor { get; set; }
 
     /// <summary>
     /// Gets or sets the stroke width of the bars when hovered.
     /// </summary>
-    public BitChartIndexableOption<int>? HoverBorderWidth { get; set; }
+    public BitChartLegacyIndexableOption<int>? HoverBorderWidth { get; set; }
 
     /// <summary>
     /// Gets or sets the label for the dataset which appears in the legend and tooltips.

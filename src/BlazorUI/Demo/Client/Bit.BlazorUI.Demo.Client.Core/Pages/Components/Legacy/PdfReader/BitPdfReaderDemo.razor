@@ -2,14 +2,14 @@
 @page "/components/legacy/pdfreader"
 
 <PageOutlet Url="components/legacy/pdfreader"
-            Title="PdfReader"
-            Description="BitPdfReader is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world." />
+            Title="PdfReaderLegacy"
+            Description="BitPdfReaderLegacy is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world." />
 
-<DemoPage Name="PdfReader"
-          Description="BitPdfReader is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world."
+<DemoPage Name="PdfReaderLegacy"
+          Description="BitPdfReaderLegacy is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
-          GitHubExtrasUrl="PdfReader/BitPdfReader.razor"
+          GitHubLegacyUrl="PdfReader/BitPdfReaderLegacy.razor"
           GitHubDemoUrl="Legacy/PdfReader/BitPdfReaderDemo.razor">
     <NotesTemplate>
         <BitText>
@@ -25,11 +25,11 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <Bit.BlazorUI.Legacy.BitPdfReader Config="basicConfig" />
+            <Bit.BlazorUI.Legacy.BitPdfReaderLegacy Config="basicConfig" />
         </DemoExample>
 
         <DemoExample Title="RenderAllPages" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <Bit.BlazorUI.Legacy.BitPdfReader RenderAllPages Horizontal Config="renderAllConfig" />
+            <Bit.BlazorUI.Legacy.BitPdfReaderLegacy RenderAllPages Horizontal Config="renderAllConfig" />
         </DemoExample>
 
         <DemoExample Title="Public API" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
@@ -43,7 +43,7 @@
                 <BitButton OnClick="ZoomIn">Zoom +</BitButton>
             </div>
             <br />
-            <Bit.BlazorUI.Legacy.BitPdfReader @ref="publicApiPdfReaderRef" Config="publicApiConfig" OnPdfLoaded="() => StateHasChanged()" />
+            <Bit.BlazorUI.Legacy.BitPdfReaderLegacy @ref="publicApiPdfReaderRef" Config="publicApiConfig" OnPdfLoaded="() => StateHasChanged()" />
         </DemoExample>
     </Examples>
 </DemoPage>

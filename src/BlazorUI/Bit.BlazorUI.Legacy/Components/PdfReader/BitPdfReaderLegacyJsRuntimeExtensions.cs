@@ -1,8 +1,8 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
-internal static class BitPdfReaderJsRuntimeExtensions
+internal static class BitPdfReaderLegacyJsRuntimeExtensions
 {
-    public static ValueTask<int> BitPdfReaderSetup(this IJSRuntime jsRuntime, BitPdfReaderConfig config)
+    public static ValueTask<int> BitPdfReaderSetup(this IJSRuntime jsRuntime, BitPdfReaderLegacyConfig config)
     {
         return jsRuntime.Invoke<int>("BitBlazorUI.Legacy.PdfReader.setup", config);
     }
@@ -12,7 +12,7 @@ internal static class BitPdfReaderJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Legacy.PdfReader.renderPage", id, pageNumber);
     }
 
-    public static ValueTask BitPdfReaderRefreshPage(this IJSRuntime jsRuntime, BitPdfReaderConfig config, int pageNumber)
+    public static ValueTask BitPdfReaderRefreshPage(this IJSRuntime jsRuntime, BitPdfReaderLegacyConfig config, int pageNumber)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Legacy.PdfReader.refreshPage", config, pageNumber);
     }

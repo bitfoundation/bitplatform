@@ -1,14 +1,14 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// BitRichTextEditor is a WYSIWYG text editor, utilizing the famous Quill js library (<see href="https://quilljs.com/"/>).
+/// BitRichTextEditorLegacy is a WYSIWYG text editor, utilizing the famous Quill js library (<see href="https://quilljs.com/"/>).
 /// </summary>
-public partial class BitRichTextEditor : BitComponentBase
+public partial class BitRichTextEditorLegacy : BitComponentBase
 {
     private ElementReference _editorRef = default!;
     private ElementReference _toolbarRef = default!;
     private TaskCompletionSource _readyTcs = new();
-    private DotNetObjectReference<BitRichTextEditor>? _dotnetObj = null;
+    private DotNetObjectReference<BitRichTextEditorLegacy>? _dotnetObj = null;
 
 
 
@@ -19,7 +19,7 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the rich text editor.
     /// </summary>
-    [Parameter] public BitRichTextEditorClassStyles? Classes { get; set; }
+    [Parameter] public BitRichTextEditorLegacyClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Custom template for the editor content.
@@ -34,7 +34,7 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>
     /// Custom Quill modules to be registered at first render (<see href="https://quilljs.com/docs/guides/building-a-custom-module"/>).
     /// </summary>
-    [Parameter] public IEnumerable<BitRichTextEditorModule>? Modules { get; set; }
+    [Parameter] public IEnumerable<BitRichTextEditorLegacyModule>? Modules { get; set; }
 
     /// <summary>
     /// Callback for when the editor instance is created and ready to use.
@@ -70,12 +70,12 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the rich text editor.
     /// </summary>
-    [Parameter] public BitRichTextEditorClassStyles? Styles { get; set; }
+    [Parameter] public BitRichTextEditorLegacyClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The theme of the editor.
     /// </summary>
-    [Parameter] public BitRichTextEditorTheme? Theme { get; set; }
+    [Parameter] public BitRichTextEditorLegacyTheme? Theme { get; set; }
 
     /// <summary>
     /// Custom template for the toolbar content.
@@ -164,7 +164,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
         _ = OnQuillReady.InvokeAsync();
 
-        var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
+        var theme = (Theme ?? BitRichTextEditorLegacyTheme.Snow).ToString().ToLower();
         await _js.BitLegacyInitStylesheets([$"_content/Bit.BlazorUI.Legacy/quilljs/quill.{theme}-2.0.3.css"]);
 
         List<QuillModule> quillModules = [];

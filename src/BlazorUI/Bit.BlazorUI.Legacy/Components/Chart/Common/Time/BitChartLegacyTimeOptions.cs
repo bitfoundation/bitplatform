@@ -3,15 +3,15 @@
 /// <summary>
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/axes/cartesian/time.html#configuration-options">here (Chart.js)</a>.
 /// </summary>
-public class BitChartTimeOptions
+public class BitChartLegacyTimeOptions
 {
     /// <summary>
     /// Sets how different time units are displayed. See <a href="https://www.chartjs.org/docs/latest/axes/cartesian/time.html#data-sets"/> for more details.
     /// </summary>
-    public Dictionary<BitChartTimeMeasurement, string>? DisplayFormats { get; set; }
+    public Dictionary<BitChartLegacyTimeMeasurement, string>? DisplayFormats { get; set; }
 
     /// <summary>
-    /// If true and the <see cref="Unit"/> is set to <see cref="BitChartTimeMeasurement.Week"/>, then the first day of the week will be Monday. Otherwise, it will be Sunday.
+    /// If true and the <see cref="Unit"/> is set to <see cref="BitChartLegacyTimeMeasurement.Week"/>, then the first day of the week will be Monday. Otherwise, it will be Sunday.
     /// </summary>
     public bool? IsoWeek { get; set; }
 
@@ -28,7 +28,7 @@ public class BitChartTimeOptions
     /// <summary>
     /// If defined, dates will be rounded to the start of this unit.
     /// </summary>
-    public BitChartTimeMeasurement? Round { get; set; }
+    public BitChartLegacyTimeMeasurement? Round { get; set; }
 
     /// <summary>
     /// The Moment.js format string to use for the tooltip.
@@ -39,7 +39,7 @@ public class BitChartTimeOptions
     /// <summary>
     /// If defined, will force the unit to be a certain type.
     /// </summary>
-    public BitChartTimeMeasurement? Unit { get; set; }
+    public BitChartLegacyTimeMeasurement? Unit { get; set; }
 
     /// <summary>
     /// The number of units between grid lines.
@@ -49,5 +49,5 @@ public class BitChartTimeOptions
     /// <summary>
     /// The minimum display format to be used for a time unit.
     /// </summary>
-    public BitChartTimeMeasurement? MinUnit { get; set; }
+    public BitChartLegacyTimeMeasurement? MinUnit { get; set; }
 }

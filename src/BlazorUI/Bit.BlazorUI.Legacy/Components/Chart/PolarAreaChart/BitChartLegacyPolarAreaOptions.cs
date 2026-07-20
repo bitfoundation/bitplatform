@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The options-subconfig of a <see cref="BitChartPolarAreaConfig"/>.
+/// The options-subconfig of a <see cref="BitChartLegacyPolarAreaConfig"/>.
 /// </summary>
-public class BitChartPolarAreaOptions : BitChartBaseConfigOptions
+public class BitChartLegacyPolarAreaOptions : BitChartLegacyBaseConfigOptions
 {
     /// <summary>
     /// Gets or sets the starting angle to draw arcs for the first item in a dataset.
@@ -13,10 +13,10 @@ public class BitChartPolarAreaOptions : BitChartBaseConfigOptions
     /// <summary>
     /// Gets or sets the animation-configuration for this chart.
     /// </summary>
-    public new BitChartArcAnimation? Animation { get; set; }
+    public new BitChartLegacyArcAnimation? Animation { get; set; }
 
     /// <summary>
     /// The scale (axis) for this chart.
     /// </summary>
-    public BitChartLinearRadialAxis? Scale { get; set; }
+    public BitChartLegacyLinearRadialAxis? Scale { get; set; }
 }

@@ -5,27 +5,27 @@ public partial class _BitChartPieDemo
 {
     private const int INITAL_COUNT = 5;
 
-    private BitChart _chart = default!;
-    private BitChartPieConfig _config = default!;
+    private BitChartLegacy _chart = default!;
+    private BitChartLegacyPieConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartPieConfig
+        _config = new BitChartLegacyPieConfig
         {
-            Options = new BitChartPieOptions
+            Options = new BitChartLegacyPieOptions
             {
                 Responsive = true,
-                Title = new BitChartOptionsTitle
+                Title = new BitChartLegacyOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart Pie Chart"
+                    Text = "BitChartLegacy Pie Chart"
                 }
             }
         };
 
-        var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        var dataset = new BitChartLegacyPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -56,9 +56,9 @@ public partial class _BitChartPieDemo
     private void AddPieDataset()
     {
         int count = _config.Data.Labels.Count;
-        var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+        var dataset = new BitChartLegacyPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -67,7 +67,7 @@ public partial class _BitChartPieDemo
 
     private void RemovePieDataset()
     {
-        IList<IBitChartDataset> datasets = _config.Data.Datasets;
+        IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
@@ -78,7 +78,7 @@ public partial class _BitChartPieDemo
 
 
     private readonly string razorCode = @"
-<BitChart Config=""_config"" @ref=""_chart"" />
+<BitChartLegacy Config=""_config"" @ref=""_chart"" />
 
 <BitButton OnClick=""RandomizePieData"">Randomize Data</BitButton>
 <BitButton OnClick=""AddPieDataset"">Add Dataset</BitButton>
@@ -86,28 +86,28 @@ public partial class _BitChartPieDemo
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
-private BitChart _chart = default!;
-private BitChartPieConfig _config = default!;
+private BitChartLegacy _chart = default!;
+private BitChartLegacyPieConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartPieConfig
+    _config = new BitChartLegacyPieConfig
     {
-        Options = new BitChartPieOptions
+        Options = new BitChartLegacyPieOptions
         {
             Responsive = true,
-            Title = new BitChartOptionsTitle
+            Title = new BitChartLegacyOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart Pie Chart""
+                Text = ""BitChartLegacy Pie Chart""
             }
         }
     };
 
     
-    var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    var dataset = new BitChartLegacyPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -138,9 +138,9 @@ private void RandomizePieData()
 private void AddPieDataset()
 {
     int count = _config.Data.Labels.Count;
-    var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+    var dataset = new BitChartLegacyPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
     };
 
     _config.Data.Datasets.Add(dataset);
@@ -149,7 +149,7 @@ private void AddPieDataset()
 
 private void RemovePieDataset()
 {
-    IList<IBitChartDataset> datasets = _config.Data.Datasets;
+    IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
     if (datasets.Count == 0)
         return;
 

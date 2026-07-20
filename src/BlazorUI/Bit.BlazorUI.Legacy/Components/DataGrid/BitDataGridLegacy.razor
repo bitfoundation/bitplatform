@@ -6,11 +6,11 @@
         StartCollectingColumns();
     }
     @(Columns ?? ChildContent)
-    <BitDataGridDefer>
+    <BitDataGridLegacyDefer>
         @{
             FinishCollectingColumns();
         }
-        <BitDataGridColumnsCollectedNotifier TGridItem="TGridItem" />
+        <BitDataGridLegacyColumnsCollectedNotifier TGridItem="TGridItem" />
 
         <table class="@GridClass()" theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions">
             <thead>
@@ -57,7 +57,7 @@
                 }
             </tbody>
         </table>
-    </BitDataGridDefer>
+    </BitDataGridLegacyDefer>
 </CascadingValue>
 
 @code {
@@ -92,7 +92,7 @@
         }
         else
         {
-            var args = new BitDataGridRowTemplateArgs<TGridItem>
+            var args = new BitDataGridLegacyRowTemplateArgs<TGridItem>
             {
                 RowIndex = rowIndex,
                 RowItem = item,

@@ -3,24 +3,24 @@
 /// <summary>
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/axes/#common-configuration">here (Chart.js)</a>.
 /// </summary>
-public sealed class BitChartAxisDisplay : BitChartObjectEnum
+public sealed class BitChartLegacyAxisDisplay : BitChartLegacyObjectEnum
 {
     /// <summary>
     /// Hidden
     /// </summary>
-    public static BitChartAxisDisplay False => new BitChartAxisDisplay(false);
+    public static BitChartLegacyAxisDisplay False => new BitChartLegacyAxisDisplay(false);
 
     /// <summary>
     /// Visible
     /// </summary>
-    public static BitChartAxisDisplay True => new BitChartAxisDisplay(true);
+    public static BitChartLegacyAxisDisplay True => new BitChartLegacyAxisDisplay(true);
 
     /// <summary>
     /// Visible only if at least one associated dataset is visible
     /// </summary>
-    public static BitChartAxisDisplay Auto => new BitChartAxisDisplay("auto");
+    public static BitChartLegacyAxisDisplay Auto => new BitChartLegacyAxisDisplay("auto");
 
 
-    private BitChartAxisDisplay(string stringValue) : base(stringValue) { }
-    private BitChartAxisDisplay(bool boolValue) : base(boolValue) { }
+    private BitChartLegacyAxisDisplay(string stringValue) : base(stringValue) { }
+    private BitChartLegacyAxisDisplay(bool boolValue) : base(boolValue) { }
 }

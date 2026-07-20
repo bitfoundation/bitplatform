@@ -1,10 +1,10 @@
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Represents a <see cref="BitDataGrid{TGridItem}"/> column whose cells render a supplied template.
+/// Represents a <see cref="BitDataGridLegacy{TGridItem}"/> column whose cells render a supplied template.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
-public class BitDataGridTemplateColumn<TGridItem> : BitDataGridColumnBase<TGridItem>, IBitDataGridSortBuilderColumn<TGridItem>
+public class BitDataGridLegacyTemplateColumn<TGridItem> : BitDataGridLegacyColumnBase<TGridItem>, IBitDataGridLegacySortBuilderColumn<TGridItem>
 {
     private readonly static RenderFragment<TGridItem> EmptyChildContent = _ => builder => { };
 
@@ -16,9 +16,9 @@ public class BitDataGridTemplateColumn<TGridItem> : BitDataGridColumnBase<TGridI
     /// <summary>
     /// Optionally specifies sorting rules for this column.
     /// </summary>
-    [Parameter] public BitDataGridSort<TGridItem>? SortBy { get; set; }
+    [Parameter] public BitDataGridLegacySort<TGridItem>? SortBy { get; set; }
 
-    BitDataGridSort<TGridItem>? IBitDataGridSortBuilderColumn<TGridItem>.SortBuilder => SortBy;
+    BitDataGridLegacySort<TGridItem>? IBitDataGridLegacySortBuilderColumn<TGridItem>.SortBuilder => SortBy;
 
     /// <inheritdoc />
     protected internal override void CellContent(RenderTreeBuilder builder, TGridItem item)

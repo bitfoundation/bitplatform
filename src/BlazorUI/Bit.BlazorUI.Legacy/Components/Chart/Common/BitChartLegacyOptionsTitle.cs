@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The title-subconfig of <see cref="BitChartBaseConfigOptions"/>. Specifies how the chart title is displayed.
+/// The title-subconfig of <see cref="BitChartLegacyBaseConfigOptions"/>. Specifies how the chart title is displayed.
 /// </summary>
-public class BitChartOptionsTitle
+public class BitChartLegacyOptionsTitle
 {
     /// <summary>
     /// Gets or sets a value indicating whether the title should be displayed or not.
@@ -13,7 +13,7 @@ public class BitChartOptionsTitle
     /// <summary>
     /// Gets or sets the position of the title.
     /// </summary>
-    public BitChartPosition? Position { get; set; }
+    public BitChartLegacyPosition? Position { get; set; }
 
     /// <summary>
     /// Gets or sets the font size for the title text.
@@ -27,14 +27,14 @@ public class BitChartOptionsTitle
 
     /// <summary>
     /// Gets or sets the font color for the title text.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? FontColor { get; set; }
 
     /// <summary>
     /// Gets or sets the font style for the title text.
     /// </summary>
-    public BitChartFontStyle? FontStyle { get; set; }
+    public BitChartLegacyFontStyle? FontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the number of pixels to add above and below the title text.
@@ -50,5 +50,5 @@ public class BitChartOptionsTitle
     /// <summary>
     /// Gets or sets the title text to display. If specified as an array, text is rendered on multiple lines.
     /// </summary>
-    public BitChartIndexableOption<string>? Text { get; set; }
+    public BitChartLegacyIndexableOption<string>? Text { get; set; }
 }

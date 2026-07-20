@@ -4,7 +4,7 @@
 /// The chart legend displays data about the datasets that are appearing on the chart.
 /// <para>As per documentation <a href="http://www.chartjs.org/docs/latest/configuration/legend.html">here (Chart.js)</a>.</para>
 /// </summary>
-public class BitChartLegend
+public class BitChartLegacyLegend
 {
     /// <summary>
     /// Determines if the legend is displayed
@@ -14,7 +14,7 @@ public class BitChartLegend
     /// <summary>
     /// Position of the legend
     /// </summary>
-    public BitChartPosition? Position { get; set; }
+    public BitChartLegacyPosition? Position { get; set; }
 
     /// <summary>
     /// Marks that this box should take the full width of the canvas (pushing down other boxes).
@@ -24,15 +24,15 @@ public class BitChartLegend
 
     /// <summary>
     /// Gets or sets the callback to call when a click event is registered on a label item.
-    /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
+    /// <para>See <see cref="BitChartLegacyJavascriptHandler{T}"/> and <see cref="BitChartLegacyDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartLegendItemMouseEvent>? OnClick { get; set; }
+    public IBitChartLegacyMethodHandler<BitChartLegendItemMouseEvent>? OnClick { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback to call when a <see cref="BitChartBrowserEvent.MouseMove"/> event is registered on top of a label item.
-    /// <para>See <see cref="BitChartJavascriptHandler{T}"/> and <see cref="BitChartDelegateHandler{T}"/>.</para>
+    /// Gets or sets the callback to call when a <see cref="BitChartLegacyBrowserEvent.MouseMove"/> event is registered on top of a label item.
+    /// <para>See <see cref="BitChartLegacyJavascriptHandler{T}"/> and <see cref="BitChartLegacyDelegateHandler{T}"/>.</para>
     /// </summary>
-    public IBitChartMethodHandler<BitChartLegendItemMouseEvent>? OnHover { get; set; }
+    public IBitChartLegacyMethodHandler<BitChartLegendItemMouseEvent>? OnHover { get; set; }
 
     /// <summary>
     /// Legend will show datasets in reverse order.
@@ -42,5 +42,5 @@ public class BitChartLegend
     /// <summary>
     /// Configuration options for the legend-labels
     /// </summary>
-    public BitChartLegendLabels? Labels { get; set; }
+    public BitChartLegacyLegendLabels? Labels { get; set; }
 }

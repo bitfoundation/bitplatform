@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI.Legacy;
 
-// One awkwardness of the way BitDataGrid collects its list of child columns is that, during OnParametersSetAsync,
+// One awkwardness of the way BitDataGridLegacy collects its list of child columns is that, during OnParametersSetAsync,
 // it only knows about the set of columns that were present on the *previous* render. If it's going to trigger a
 // data load during OnParametersSetAsync, that operation can't depend on the current set of columns as it might
 // have changed, or might even still be empty (i.e., on the first render).
@@ -9,10 +9,10 @@ namespace Bit.BlazorUI.Legacy;
 //
 // - In the future, we could implement the long-wanted feature of being able to query the contents of a RenderFragment
 //   separately from rendering. Then the whole trick of collection-during-rendering would not be needed.
-// - Or, we could factor out most of BitDataGrid's internals into some new component BitDataGridCore. The parent component,
-//   BitDataGrid, would then only be responsible for collecting columns followed by rendering BitDataGridCore. So each time
+// - Or, we could factor out most of BitDataGridLegacy's internals into some new component BitDataGridCore. The parent component,
+//   BitDataGridLegacy, would then only be responsible for collecting columns followed by rendering BitDataGridCore. So each time
 //   BitDataGridCore renders, we'd already have the latest set of columns
-//    - Drawback: since BitDataGrid has public API, it's much messier to have to forward all of that to some new child type.
+//    - Drawback: since BitDataGridLegacy has public API, it's much messier to have to forward all of that to some new child type.
 //    - However, this is arguably the most correct solution in general (at least until option 1 above is implemented)
 // - Or, we could decide it's enough to fix this on the first render (since that's the only time we're going to guarantee
 //   to apply a default sort order), and then as a special case put in some extra component in the render flow that raises
@@ -27,7 +27,7 @@ namespace Bit.BlazorUI.Legacy;
 /// For internal use only. Do not use.
 /// </summary>
 /// <typeparam name="TGridItem">For internal use only. Do not use.</typeparam>
-public class BitDataGridColumnsCollectedNotifier<TGridItem> : IComponent
+public class BitDataGridLegacyColumnsCollectedNotifier<TGridItem> : IComponent
 {
     private bool _isFirstRender = true;
 

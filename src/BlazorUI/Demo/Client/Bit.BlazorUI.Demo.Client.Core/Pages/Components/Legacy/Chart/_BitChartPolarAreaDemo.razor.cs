@@ -5,24 +5,24 @@ public partial class _BitChartPolarAreaDemo
 {
     private const int INITAL_COUNT = 6;
 
-    private BitChart _chart = default!;
-    private BitChartPolarAreaConfig _config = default!;
+    private BitChartLegacy _chart = default!;
+    private BitChartLegacyPolarAreaConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartPolarAreaConfig
+        _config = new BitChartLegacyPolarAreaConfig
         {
-            Options = new BitChartPolarAreaOptions
+            Options = new BitChartLegacyPolarAreaOptions
             {
                 Responsive = true,
-                Title = new BitChartOptionsTitle
+                Title = new BitChartLegacyOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart PolarArea Chart"
+                    Text = "BitChartLegacy PolarArea Chart"
                 },
-                Scale = new BitChartLinearRadialAxis
+                Scale = new BitChartLegacyLinearRadialAxis
                 {
-                    GridLines = new BitChartGridLines
+                    GridLines = new BitChartLegacyGridLines
                     {
                         Color = "gray"
                     }
@@ -30,9 +30,9 @@ public partial class _BitChartPolarAreaDemo
             }
         };
 
-        var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        var dataset = new BitChartLegacyPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -63,9 +63,9 @@ public partial class _BitChartPolarAreaDemo
     private void AddPolarAreaDataset()
     {
         int count = _config.Data.Labels.Count;
-        BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+        BitChartLegacyPolarAreaDataset<int> dataset = new BitChartLegacyPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -74,7 +74,7 @@ public partial class _BitChartPolarAreaDemo
 
     private void RemovePolarAreaDataset()
     {
-        IList<IBitChartDataset> datasets = _config.Data.Datasets;
+        IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
@@ -85,7 +85,7 @@ public partial class _BitChartPolarAreaDemo
 
 
     private readonly string razorCode = @"
-<BitChart Config=""_config"" @ref=""_chart"" />
+<BitChartLegacy Config=""_config"" @ref=""_chart"" />
 
 <BitButton OnClick=""RandomizePolarAreaData"">Randomize Data</BitButton>
 <BitButton OnClick= ""AddPolarAreaDataset"" > Add Dataset</BitButton>
@@ -93,24 +93,24 @@ public partial class _BitChartPolarAreaDemo
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
-private BitChart _chart = default!;
-private BitChartPolarAreaConfig _config = default!;
+private BitChartLegacy _chart = default!;
+private BitChartLegacyPolarAreaConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartPolarAreaConfig
+    _config = new BitChartLegacyPolarAreaConfig
     {
-        Options = new BitChartPolarAreaOptions
+        Options = new BitChartLegacyPolarAreaOptions
         {
             Responsive = true,
-            Title = new BitChartOptionsTitle
+            Title = new BitChartLegacyOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart PolarArea Chart""
+                Text = ""BitChartLegacy PolarArea Chart""
             },
-            Scale = new BitChartLinearRadialAxis
+            Scale = new BitChartLegacyLinearRadialAxis
             {
-                GridLines = new BitChartGridLines
+                GridLines = new BitChartLegacyGridLines
                 {
                     Color = ""gray""
                 }
@@ -118,9 +118,9 @@ protected override void OnInitialized()
         }
     };
 
-    var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    var dataset = new BitChartLegacyPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -151,9 +151,9 @@ private void RandomizePolarAreaData()
 private void AddPolarAreaDataset()
 {
     int count = _config.Data.Labels.Count;
-    BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+    BitChartLegacyPolarAreaDataset<int> dataset = new BitChartLegacyPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartLegacyColorUtil.FromDrawingColor(color)).ToArray()
     };
 
     _config.Data.Datasets.Add(dataset);
@@ -162,7 +162,7 @@ private void AddPolarAreaDataset()
 
 private void RemovePolarAreaDataset()
 {
-    IList<IBitChartDataset> datasets = _config.Data.Datasets;
+    IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
     if (datasets.Count == 0)
         return;
 

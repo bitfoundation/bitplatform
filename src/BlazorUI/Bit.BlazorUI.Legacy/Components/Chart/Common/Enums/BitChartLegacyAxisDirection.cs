@@ -3,22 +3,22 @@
 /// <summary>
 /// Represents the possible axis directions.
 /// </summary>
-public sealed class BitChartAxisDirection : BitChartStringEnum
+public sealed class BitChartLegacyAxisDirection : BitChartLegacyStringEnum
 {
     /// <summary>
     /// The X-axis direction.
     /// </summary>
-    public static BitChartAxisDirection X => new BitChartAxisDirection("x");
+    public static BitChartLegacyAxisDirection X => new BitChartLegacyAxisDirection("x");
 
     /// <summary>
     /// The Y-axis direction.
     /// </summary>
-    public static BitChartAxisDirection Y => new BitChartAxisDirection("y");
+    public static BitChartLegacyAxisDirection Y => new BitChartLegacyAxisDirection("y");
 
     /// <summary>
     /// Both the X- and Y-axis direction.
     /// </summary>
-    public static BitChartAxisDirection XY => new BitChartAxisDirection("xy");
+    public static BitChartLegacyAxisDirection XY => new BitChartLegacyAxisDirection("xy");
 
-    private BitChartAxisDirection(string stringRep) : base(stringRep) { }
+    private BitChartLegacyAxisDirection(string stringRep) : base(stringRep) { }
 }

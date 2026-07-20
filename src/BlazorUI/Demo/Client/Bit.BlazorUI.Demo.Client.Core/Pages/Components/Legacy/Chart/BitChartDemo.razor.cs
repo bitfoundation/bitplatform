@@ -17,7 +17,7 @@ public partial class BitChartDemo
          new()
         {
             Name = "Config",
-            Type = "BitChartConfigBase",
+            Type = "BitChartLegacyConfigBase",
             Description = "Gets or sets the configuration of the chart.",
             LinkType = LinkType.Link,
             Href = "#chart-config"
@@ -44,13 +44,13 @@ public partial class BitChartDemo
         new()
         {
             Id="chart-config",
-            Title="BitChartConfigBase",
+            Title="BitChartLegacyConfigBase",
             Parameters=
             [
                 new()
                 {
                     Name = "Type",
-                    Type = "BitChartChartType",
+                    Type = "BitChartLegacyChartType",
                     DefaultValue = "null",
                     Description = "Gets the type of chart this config is for."
                 },

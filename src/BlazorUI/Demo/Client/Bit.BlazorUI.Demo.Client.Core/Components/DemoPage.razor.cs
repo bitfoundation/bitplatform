@@ -21,6 +21,7 @@ public partial class DemoPage
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
     [Parameter] public string? GitHubUrl { get; set; }
     [Parameter] public string? GitHubExtrasUrl { get; set; }
+    [Parameter] public string? GitHubLegacyUrl { get; set; }
     [Parameter] public string? GitHubDemoUrl { get; set; }
     [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 

@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Legacy;
 /// <typeparam name="T">The type of the delegate you want to invoke from JavaScript.</typeparam>
 // This class will be serialized by System.Text.Json in the end since we restore the objects
 // before passing them to IJsRuntime. Therefore fields to serialize have to be public properties.
-public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T> : IBitChartMethodHandler<T>, IDisposable
+public sealed class BitChartLegacyDelegateHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T> : IBitChartLegacyMethodHandler<T>, IDisposable
     where T : Delegate
 {
     private static readonly ParameterInfo[] _delegateParameters;
@@ -31,7 +31,7 @@ public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(Dynamica
     /// Gets a reference to this object which is used to invoke the stored delegate from JavaScript.
     /// </summary>
     [JsonIgnore] // This property only has to be serialized by the JSRuntime where a custom converter will be used.
-    public DotNetObjectReference<BitChartDelegateHandler<T>> HandlerReference { get; }
+    public DotNetObjectReference<BitChartLegacyDelegateHandler<T>> HandlerReference { get; }
 
     /// <summary>
     /// Gets a value indicating whether or not this delegate will return a value.
@@ -41,11 +41,11 @@ public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(Dynamica
     /// <summary>
     /// Gets the indices of the ignored callback parameters. The parameters at these indices won't
     /// be sent to C# and won't be deserialized. These indices are defined by the
-    /// <see cref="BitChartIgnoreCallbackValueAttribute"/>s on the delegate passed to this instance.
+    /// <see cref="BitChartLegacyIgnoreCallbackValueAttribute"/>s on the delegate passed to this instance.
     /// </summary>
     public IReadOnlyCollection<int> IgnoredIndices { get; }
 
-    static BitChartDelegateHandler()
+    static BitChartLegacyDelegateHandler()
     {
         // https://stackoverflow.com/a/429564/10883465
         var internalDelegateMethod = typeof(T).GetMethod("Invoke")!;
@@ -55,10 +55,10 @@ public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(Dynamica
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartDelegateHandler{T}"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyDelegateHandler{T}"/>.
     /// </summary>
     /// <param name="function">The delegate you want to invoke from JavaScript.</param>
-    public BitChartDelegateHandler(T function)
+    public BitChartLegacyDelegateHandler(T function)
     {
         _function = function ?? throw new ArgumentNullException(nameof(function));
         ParameterInfo[] parameters = _function.GetMethodInfo().GetParameters();
@@ -66,7 +66,7 @@ public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(Dynamica
         IgnoredIndices = new ReadOnlyCollection<int>(_ignoredIndices);
         for (int i = 0; i < parameters.Length; i++)
         {
-            if (parameters[i].GetCustomAttribute<BitChartIgnoreCallbackValueAttribute>(false) != null)
+            if (parameters[i].GetCustomAttribute<BitChartLegacyIgnoreCallbackValueAttribute>(false) != null)
             {
                 _ignoredIndices.Add(i);
             }
@@ -108,7 +108,7 @@ public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(Dynamica
 #if DEBUG
                 Console.WriteLine($"Deserializing: {jsonArgs[i]} to {deserializeType.Name}");
 #endif
-                invokationArgs[i] = JsonConvert.DeserializeObject(jsonArgs[i], deserializeType, BitChartJsInterop.JsonSerializerSettings);
+                invokationArgs[i] = JsonConvert.DeserializeObject(jsonArgs[i], deserializeType, BitChartLegacyJsInterop.JsonSerializerSettings);
             }
         }
 
@@ -125,17 +125,17 @@ public sealed class BitChartDelegateHandler<[DynamicallyAccessedMembers(Dynamica
     /// <summary>
     /// The <see cref="Dispose"/> method doesn't have any unmanaged resources to free BUT once this object is finalized
     /// we need to prevent any further use of the <see cref="DotNetObjectReference"/> to this object. Since the <see cref="HandlerReference"/>
-    /// will only be disposed if this <see cref="BitChartDelegateHandler{T}"/> instance is disposed or when <c>dispose</c> is called from JavaScript
+    /// will only be disposed if this <see cref="BitChartLegacyDelegateHandler{T}"/> instance is disposed or when <c>dispose</c> is called from JavaScript
     /// (which shouldn't happen) we HAVE to dispose the reference when this instance is finalized.
     /// </summary>
-    ~BitChartDelegateHandler()
+    ~BitChartLegacyDelegateHandler()
     {
         Dispose();
     }
 
     /// <summary>
-    /// Converts a delegate of type <typeparamref name="T"/> to a <see cref="BitChartDelegateHandler{T}"/> implicitly.
+    /// Converts a delegate of type <typeparamref name="T"/> to a <see cref="BitChartLegacyDelegateHandler{T}"/> implicitly.
     /// </summary>
     /// <param name="function"></param>
-    public static implicit operator BitChartDelegateHandler<T>(T function) => new BitChartDelegateHandler<T>(function);
+    public static implicit operator BitChartLegacyDelegateHandler<T>(T function) => new BitChartLegacyDelegateHandler<T>(function);
 }

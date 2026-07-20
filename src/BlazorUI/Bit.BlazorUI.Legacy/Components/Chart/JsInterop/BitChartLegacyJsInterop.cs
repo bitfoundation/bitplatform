@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Legacy;
 /// <summary>
 /// Interop layer from C# to JavaScript.
 /// </summary>
-internal static class BitChartJsInterop
+internal static class BitChartLegacyJsInterop
 {
     internal static JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
     {
@@ -22,7 +22,7 @@ internal static class BitChartJsInterop
 
     public static ValueTask BitChartJsRemoveChart(this IJSRuntime jsRuntime, string? canvasId)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Legacy.BitChart.removeChart", canvasId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Legacy.BitChartLegacy.removeChart", canvasId);
     }
 
     /// <summary>
@@ -31,24 +31,24 @@ internal static class BitChartJsInterop
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The config for the new chart.</param>
     /// <returns></returns>
-    public static ValueTask<bool> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
+    public static ValueTask<bool> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartLegacyConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam!);
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Legacy.BitChart.setupChart", param);
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Legacy.BitChartLegacy.setupChart", param);
     }
 
     /// <summary>
-    /// Update an existing chart. Make sure that the Chart with this <see cref="BitChartConfigBase.CanvasId"/> already exists.
+    /// Update an existing chart. Make sure that the Chart with this <see cref="BitChartLegacyConfigBase.CanvasId"/> already exists.
     /// </summary>
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The updated config of the chart you want to update.</param>
     /// <returns></returns>
-    public static ValueTask<bool> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
+    public static ValueTask<bool> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartLegacyConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
         var param = ConvertExpandoObjectToDictionary(dynParam!);
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Legacy.BitChart.updateChart", param);
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Legacy.BitChartLegacy.updateChart", param);
     }
 
 
@@ -96,12 +96,12 @@ internal static class BitChartJsInterop
         );
 
     /// <summary>
-    /// Returns an object that is equivalent to the given parameter but without any null members AND it preserves <see cref="IBitChartMethodHandler"/>s intact.
-    /// <para>Preserving <see cref="IBitChartMethodHandler"/> members is important because they might be <see cref="BitChartDelegateHandler{T}"/> instances which contain
+    /// Returns an object that is equivalent to the given parameter but without any null members AND it preserves <see cref="IBitChartLegacyMethodHandler"/>s intact.
+    /// <para>Preserving <see cref="IBitChartLegacyMethodHandler"/> members is important because they might be <see cref="BitChartLegacyDelegateHandler{T}"/> instances which contain
     /// delegates that can't be (de)serialized.</para>
     /// <para>Stripping null members is only needed because chartJs doesn't handle null values and undefined values the same and with JSRuntime null gets
     /// serialized to null instead of undefined (not at all) and WE CAN'T CHANGE THAT (see https://github.com/aspnet/AspNetCore/issues/12685).
-    /// If this were not the case, no null member stripping were necessary -> no json.net serialize-deserialize magic -> no loss of <see cref="BitChartDelegateHandler{T}"/>
+    /// If this were not the case, no null member stripping were necessary -> no json.net serialize-deserialize magic -> no loss of <see cref="BitChartLegacyDelegateHandler{T}"/>
     /// instances -> no recovery of those. Everything would be better with AspNetCore#12685 finally being implemented but to fully migrate to System.Text.Json
     /// we might also need corefx#38650 and corefx#39905.
     /// Nevertheless, The Show must go on!</para>
@@ -109,7 +109,7 @@ internal static class BitChartJsInterop
     /// <param name="chartConfig">The config you want to strip of null members.</param>
     /// <returns></returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    private static ExpandoObject? StripNulls(BitChartConfigBase chartConfig)
+    private static ExpandoObject? StripNulls(BitChartLegacyConfigBase chartConfig)
     {
         // Serializing with the custom serializer settings remove null members
         string cleanChartConfigStr = JsonConvert.SerializeObject(chartConfig, JsonSerializerSettings);
@@ -120,32 +120,32 @@ internal static class BitChartJsInterop
         // Restore any .net refs that need to be passed intact
         // TODO Find a way to do this dynamically. Maybe with attributes or something like that?
         dynamic dynamicChartConfig = chartConfig;
-        if (dynamicChartConfig?.Options?.OnClick is IBitChartMethodHandler chartOnClick)
+        if (dynamicChartConfig?.Options?.OnClick is IBitChartLegacyMethodHandler chartOnClick)
         {
             cleanChartConfig?.SetValue(path: "options.onClick", chartOnClick);
         }
 
-        if (dynamicChartConfig?.Options?.OnHover is IBitChartMethodHandler chartOnHover)
+        if (dynamicChartConfig?.Options?.OnHover is IBitChartLegacyMethodHandler chartOnHover)
         {
             cleanChartConfig?.SetValue(path: "options.onHover", chartOnHover);
         }
 
-        if (dynamicChartConfig?.Options?.Legend?.OnClick is IBitChartMethodHandler legendOnClick)
+        if (dynamicChartConfig?.Options?.Legend?.OnClick is IBitChartLegacyMethodHandler legendOnClick)
         {
             cleanChartConfig?.SetValue(path: "options.legend.onClick", legendOnClick);
         }
 
-        if (dynamicChartConfig?.Options?.Legend?.OnHover is IBitChartMethodHandler legendOnHover)
+        if (dynamicChartConfig?.Options?.Legend?.OnHover is IBitChartLegacyMethodHandler legendOnHover)
         {
             cleanChartConfig?.SetValue(path: "options.legend.onHover", legendOnHover);
         }
 
-        if (dynamicChartConfig?.Options?.Legend?.Labels?.GenerateLabels is IBitChartMethodHandler generateLabels)
+        if (dynamicChartConfig?.Options?.Legend?.Labels?.GenerateLabels is IBitChartLegacyMethodHandler generateLabels)
         {
             cleanChartConfig?.SetValue(path: "options.legend.labels.generateLabels", generateLabels);
         }
 
-        if (dynamicChartConfig?.Options?.Legend?.Labels?.Filter is IBitChartMethodHandler filter)
+        if (dynamicChartConfig?.Options?.Legend?.Labels?.Filter is IBitChartLegacyMethodHandler filter)
         {
             cleanChartConfig?.SetValue(path: "options.legend.labels.filter", filter);
         }
@@ -154,7 +154,7 @@ internal static class BitChartJsInterop
         // it's really ugly (and quite slow), I hope we can improve this later on. Also ms, PLEASE, give us customizable jsruntime serialization.
         try
         {
-            if (dynamicChartConfig?.Options?.Scale?.Callback is IBitChartMethodHandler singleScaleTickCallback)
+            if (dynamicChartConfig?.Options?.Scale?.Callback is IBitChartLegacyMethodHandler singleScaleTickCallback)
             {
                 cleanChartConfig?.SetValue(path: "options.scale.callback", singleScaleTickCallback);
             }
@@ -185,7 +185,7 @@ internal static class BitChartJsInterop
 
             foreach ((object axis, ExpandoObject axisInDynamic) in axes.Zip(axesInDynamic!, (axis, axisInDynamic) => (axis, (ExpandoObject)axisInDynamic)))
             {
-                if (((dynamic)axis)?.Ticks?.Callback is IBitChartMethodHandler axisTickCallback)
+                if (((dynamic)axis)?.Ticks?.Callback is IBitChartLegacyMethodHandler axisTickCallback)
                 {
                     axisInDynamic.SetValue("ticks.callback", axisTickCallback);
                 }

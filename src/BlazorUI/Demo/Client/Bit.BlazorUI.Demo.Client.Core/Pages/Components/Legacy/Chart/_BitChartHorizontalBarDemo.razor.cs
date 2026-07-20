@@ -5,32 +5,32 @@ public partial class _BitChartHorizontalBarDemo
 {
     private const int INITAL_COUNT = 5;
 
-    private BitChart _chart = default!;
-    private BitChartBarConfig _config = default!;
+    private BitChartLegacy _chart = default!;
+    private BitChartLegacyBarConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartBarConfig(horizontal: true)
+        _config = new BitChartLegacyBarConfig(horizontal: true)
         {
-            Options = new BitChartBarOptions
+            Options = new BitChartLegacyBarOptions
             {
                 Responsive = true,
-                Legend = new BitChartLegend
+                Legend = new BitChartLegacyLegend
                 {
-                    Position = BitChartPosition.Right
+                    Position = BitChartLegacyPosition.Right
                 },
-                Title = new BitChartOptionsTitle
+                Title = new BitChartLegacyOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart Horizontal Bar Chart"
+                    Text = "BitChartLegacy Horizontal Bar Chart"
                 },
-                Scales = new BitChartBarScales
+                Scales = new BitChartLegacyBarScales
                 {
                     XAxes =
                     [
-                        new BitChartLinearCartesianAxis
+                        new BitChartLegacyLinearCartesianAxis
                         {
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -38,9 +38,9 @@ public partial class _BitChartHorizontalBarDemo
                     ],
                     YAxes =
                     [
-                        new BitChartBarCategoryAxis
+                        new BitChartLegacyBarCategoryAxis
                         {
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -50,19 +50,19 @@ public partial class _BitChartHorizontalBarDemo
             }
         };
 
-        IDataset<int> dataset1 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+        IDataset<int> dataset1 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
         {
             Label = "My first dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red)),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red)),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
             BorderWidth = 1
         };
 
-        IDataset<int> dataset2 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+        IDataset<int> dataset2 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
         {
             Label = "My second dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue)),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue)),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
             BorderWidth = 1
         };
 
@@ -74,36 +74,36 @@ public partial class _BitChartHorizontalBarDemo
 
 
     private readonly string razorCode = @"
-<BitChart Config=""_config"" @ref=""_chart"" />";
+<BitChartLegacy Config=""_config"" @ref=""_chart"" />";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
-private BitChart _chart = default!;
-private BitChartBarConfig _config = default!;
+private BitChartLegacy _chart = default!;
+private BitChartLegacyBarConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartBarConfig(horizontal: true)
+    _config = new BitChartLegacyBarConfig(horizontal: true)
     {
-        Options = new BitChartBarOptions
+        Options = new BitChartLegacyBarOptions
         {
             Responsive = true,
-            Legend = new BitChartLegend
+            Legend = new BitChartLegacyLegend
             {
-                Position = BitChartPosition.Right
+                Position = BitChartLegacyPosition.Right
             },
-            Title = new BitChartOptionsTitle
+            Title = new BitChartLegacyOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart Horizontal Bar Chart""
+                Text = ""BitChartLegacy Horizontal Bar Chart""
             },
-            Scales = new BitChartBarScales
+            Scales = new BitChartLegacyBarScales
             {
                 XAxes =
                 [
-                    new BitChartLinearCartesianAxis
+                    new BitChartLegacyLinearCartesianAxis
                     {
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -111,9 +111,9 @@ protected override void OnInitialized()
                 ],
                 YAxes =
                 [
-                    new BitChartBarCategoryAxis
+                    new BitChartLegacyBarCategoryAxis
                     {
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -123,19 +123,19 @@ protected override void OnInitialized()
         }
     };
 
-    IDataset<int> dataset1 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+    IDataset<int> dataset1 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
     {
         Label = ""My first dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red)),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red)),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
         BorderWidth = 1
     };
 
-    IDataset<int> dataset2 = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
+    IDataset<int> dataset2 = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT, -100), horizontal: true)
     {
         Label = ""My second dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue)),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue)),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
         BorderWidth = 1
     };
 

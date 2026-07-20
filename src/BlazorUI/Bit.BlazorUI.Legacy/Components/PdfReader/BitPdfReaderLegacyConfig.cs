@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
-public class BitPdfReaderConfig
+public class BitPdfReaderLegacyConfig
 {
     /// <summary>
     /// The id of the pdf reader instance and its canvas element(s).

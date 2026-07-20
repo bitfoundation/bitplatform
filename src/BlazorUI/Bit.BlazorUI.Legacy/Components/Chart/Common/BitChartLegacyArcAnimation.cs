@@ -3,7 +3,7 @@
 /// <summary>
 /// The animation-subconfig of the options for a radial chart.
 /// </summary>
-public class BitChartArcAnimation : BitChartAnimation
+public class BitChartLegacyArcAnimation : BitChartLegacyAnimation
 {
     /// <summary>
     /// Gets or sets a value indicating whether the chart will

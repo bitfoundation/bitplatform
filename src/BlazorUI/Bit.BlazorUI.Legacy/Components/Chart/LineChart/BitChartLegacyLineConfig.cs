@@ -3,10 +3,10 @@
 /// <summary>
 /// Represents the config for a line chart.
 /// </summary>
-public class BitChartLineConfig : BitChartConfigBase<BitChartLineOptions>
+public class BitChartLegacyLineConfig : BitChartLegacyConfigBase<BitChartLegacyLineOptions>
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartLineConfig"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyLineConfig"/>.
     /// </summary>
-    public BitChartLineConfig() : base(BitChartChartType.Line) { }
+    public BitChartLegacyLineConfig() : base(BitChartLegacyChartType.Line) { }
 }

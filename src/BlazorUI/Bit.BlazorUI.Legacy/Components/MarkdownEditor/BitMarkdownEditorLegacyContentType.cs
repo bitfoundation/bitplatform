@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The type of the content to add to the BitMarkdownEditor.
+/// The type of the content to add to the BitMarkdownEditorLegacy.
 /// </summary>
-public enum BitMarkdownEditorContentType
+public enum BitMarkdownEditorLegacyContentType
 {
     /// <summary>
     /// Inline content type.

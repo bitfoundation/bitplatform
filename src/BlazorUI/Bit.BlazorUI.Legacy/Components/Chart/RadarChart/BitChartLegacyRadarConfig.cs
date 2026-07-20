@@ -3,10 +3,10 @@
 /// <summary>
 /// Represents the config for a radar chart.
 /// </summary>
-public class BitChartRadarConfig : BitChartConfigBase<BitChartRadarOptions>
+public class BitChartLegacyRadarConfig : BitChartLegacyConfigBase<BitChartLegacyRadarOptions>
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartRadarConfig"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyRadarConfig"/>.
     /// </summary>
-    public BitChartRadarConfig() : base(BitChartChartType.Radar) { }
+    public BitChartLegacyRadarConfig() : base(BitChartLegacyChartType.Radar) { }
 }

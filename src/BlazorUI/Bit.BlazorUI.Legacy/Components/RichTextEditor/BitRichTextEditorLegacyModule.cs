@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a Quill custom module specifications.
 /// </summary>
-public class BitRichTextEditorModule
+public class BitRichTextEditorLegacyModule
 {
     /// <summary>
     /// The name of the Quill custom module.

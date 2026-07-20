@@ -23,13 +23,13 @@
 /// </para>
 /// </summary>
 [Newtonsoft.Json.JsonConverter(typeof(JsonObjectEnumConverter))]
-public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
+public abstract class BitChartLegacyObjectEnum : IEquatable<BitChartLegacyObjectEnum>
 {
     /// <summary>
     /// Gets the <see cref="Type"/>s that are supported for serialization and deserialization.
-    /// <see cref="BitChartObjectEnum"/> can contain objects of different types but you will get a
+    /// <see cref="BitChartLegacyObjectEnum"/> can contain objects of different types but you will get a
     /// <see cref="NotSupportedException"/> once you try to serialize (or deserialize) that
-    /// <see cref="BitChartObjectEnum"/>.
+    /// <see cref="BitChartLegacyObjectEnum"/>.
     /// </summary>
     private static readonly Type[] _supportedSerializationTypes = new[]
     {
@@ -42,21 +42,21 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     internal object Value { get; }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartObjectEnum"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyObjectEnum"/>.
     /// </summary>
     /// <param name="value">The value this instance is supposed to represent.</param>
-    protected BitChartObjectEnum(object value)
+    protected BitChartLegacyObjectEnum(object value)
     {
         Value = value ?? throw new ArgumentNullException(nameof(value));
 
-        if (value is BitChartObjectEnum)
+        if (value is BitChartLegacyObjectEnum)
             throw new ArgumentException("The value cannot be an ObjectEnum. Recursive ObjectEnums aren't allowed.");
     }
 
     /// <summary>
     /// Checks if a <see cref="Type"/> is in the list of supported serialization types.
     /// If this function returns <see langword="false"/>, de-/serialization will fail on
-    /// <see cref="BitChartObjectEnum"/>s containing an instance of that <see cref="Type"/>
+    /// <see cref="BitChartLegacyObjectEnum"/>s containing an instance of that <see cref="Type"/>
     /// (<paramref name="type"/>).
     /// </summary>
     /// <param name="type">The <see cref="Type"/> to check.</param>
@@ -69,8 +69,8 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// <paramref name="obj"/> is considered to be equal to this instance if it..
     /// <list type="bullet">
     /// <item>is the same instance as this instance.</item>
-    /// <item>is another <see cref="BitChartObjectEnum"/> with the same internal value.</item>
-    /// <item>is the same value as the internal value of this <see cref="BitChartObjectEnum"/>.</item>
+    /// <item>is another <see cref="BitChartLegacyObjectEnum"/> with the same internal value.</item>
+    /// <item>is the same value as the internal value of this <see cref="BitChartLegacyObjectEnum"/>.</item>
     /// </list>
     /// </para>
     /// </summary>
@@ -79,7 +79,7 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// otherwise, false.</returns>
     public override bool Equals(object? obj)
     {
-        if (obj is BitChartObjectEnum asEnum)
+        if (obj is BitChartLegacyObjectEnum asEnum)
         {
             return Equals(asEnum);
         }
@@ -93,7 +93,7 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// <param name="other">An object to compare with this object.</param>
     /// <returns>true if the current object is equal to the other parameter; otherwise, false.
     /// </returns>
-    public bool Equals(BitChartObjectEnum? other) => other is not null && Value.Equals(other.Value);
+    public bool Equals(BitChartLegacyObjectEnum? other) => other is not null && Value.Equals(other.Value);
 
     /// <summary>
     /// Returns the hash code of the underlying value.
@@ -108,8 +108,8 @@ public abstract class BitChartObjectEnum : IEquatable<BitChartObjectEnum>
     /// <returns>The <see cref="string"/> representation of the underlying object.</returns>
     public override string? ToString() => Value.ToString();
 
-    public static bool operator ==(BitChartObjectEnum left, BitChartObjectEnum right) =>
+    public static bool operator ==(BitChartLegacyObjectEnum left, BitChartLegacyObjectEnum right) =>
         EqualityComparer<object>.Default.Equals(left?.Value, right?.Value);
 
-    public static bool operator !=(BitChartObjectEnum left, BitChartObjectEnum right) => !(left == right);
+    public static bool operator !=(BitChartLegacyObjectEnum left, BitChartLegacyObjectEnum right) => !(left == right);
 }

@@ -3,10 +3,10 @@
 /// <summary>
 /// Represents the config for a bubble chart.
 /// </summary>
-public class BitChartBubbleConfig : BitChartConfigBase<BitChartLineOptions>
+public class BitChartLegacyBubbleConfig : BitChartLegacyConfigBase<BitChartLegacyLineOptions>
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartBubbleConfig"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyBubbleConfig"/>.
     /// </summary>
-    public BitChartBubbleConfig() : base(BitChartChartType.Bubble) { }
+    public BitChartLegacyBubbleConfig() : base(BitChartLegacyChartType.Bubble) { }
 }

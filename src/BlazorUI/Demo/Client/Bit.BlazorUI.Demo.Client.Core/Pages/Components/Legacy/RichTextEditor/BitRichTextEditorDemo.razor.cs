@@ -8,7 +8,7 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Name = "Classes",
-            Type = "BitRichTextEditorClassStyles?",
+            Type = "BitRichTextEditorLegacyClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the rich text editor.",
             LinkType = LinkType.Link,
@@ -31,7 +31,7 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Name = "Modules",
-            Type = "IEnumerable<BitRichTextEditorModule>?",
+            Type = "IEnumerable<BitRichTextEditorLegacyModule>?",
             DefaultValue = "null",
             Description = "Custom Quill modules to be registered at first render (<see href=\"https://quilljs.com/docs/guides/building-a-custom-module\"/>).",
             LinkType = LinkType.Link,
@@ -82,7 +82,7 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Name = "Styles",
-            Type = "BitRichTextEditorClassStyles?",
+            Type = "BitRichTextEditorLegacyClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the rich text editor.",
             LinkType = LinkType.Link,
@@ -91,7 +91,7 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Name = "Theme",
-            Type = "BitRichTextEditorTheme?",
+            Type = "BitRichTextEditorLegacyTheme?",
             DefaultValue = "null",
             Description = "The theme of the editor.",
             LinkType = LinkType.Link,
@@ -151,7 +151,7 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Id = "class-styles",
-            Title = "BitRichTextEditorClassStyles",
+            Title = "BitRichTextEditorLegacyClassStyles",
             Parameters =
             [
                 new()
@@ -159,28 +159,28 @@ public partial class BitRichTextEditorDemo
                     Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the root of the BitRichTextEditor.",
+                    Description = "Custom CSS classes/styles for the root of the BitRichTextEditorLegacy.",
                 },
                 new()
                 {
                     Name = "Toolbar",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the toolbar of the BitRichTextEditor.",
+                    Description = "Custom CSS classes/styles for the toolbar of the BitRichTextEditorLegacy.",
                 },
                 new()
                 {
                     Name = "Editor",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the editor container of the BitRichTextEditor.",
+                    Description = "Custom CSS classes/styles for the editor container of the BitRichTextEditorLegacy.",
                 },
             ]
         },
         new()
         {
             Id = "rich-text-editor-module",
-            Title = "BitRichTextEditorModule",
+            Title = "BitRichTextEditorLegacyModule",
             Description = "Represents a Quill custom module specifications.",
             Parameters =
             [
@@ -214,7 +214,7 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Id = "rich-text-editor-theme",
-            Name = "BitRichTextEditorTheme",
+            Name = "BitRichTextEditorLegacyTheme",
             Description = "",
             Items =
             [
@@ -226,7 +226,7 @@ public partial class BitRichTextEditorDemo
 
 
 
-    private BitRichTextEditor getEditorRef = default!;
+    private BitRichTextEditorLegacy getEditorRef = default!;
     private string? result;
     private async Task GetText()
     {
@@ -241,7 +241,7 @@ public partial class BitRichTextEditorDemo
         result = await getEditorRef.GetContent();
     }
 
-    private BitRichTextEditor setEditorRef = default!;
+    private BitRichTextEditorLegacy setEditorRef = default!;
     private string? setValue;
     private async Task SetText()
     {
@@ -261,7 +261,7 @@ public partial class BitRichTextEditorDemo
         await JSRuntime.InvokeVoidAsync("registerQuillCustomFonts");
     }
 
-    private List<BitRichTextEditorModule> modules = [
+    private List<BitRichTextEditorLegacyModule> modules = [
         new()
         {
             Name = "imageResize",
@@ -273,25 +273,25 @@ public partial class BitRichTextEditorDemo
 
 
     private readonly string example1RazorCode = @"
-<BitRichTextEditor />";
+<BitRichTextEditorLegacy />";
 
     private readonly string example2RazorCode = @"
-<BitRichTextEditor Placeholder=""This is a custom placeholder"" />";
+<BitRichTextEditorLegacy Placeholder=""This is a custom placeholder"" />";
 
     private readonly string example3RazorCode = @"
-<BitRichTextEditor Placeholder=""This is a custom placeholder"" />";
+<BitRichTextEditorLegacy Placeholder=""This is a custom placeholder"" />";
 
     private readonly string example4RazorCode = @"
-<BitRichTextEditor Placeholder=""The toolbar location is reversed!"" Reversed />";
+<BitRichTextEditorLegacy Placeholder=""The toolbar location is reversed!"" Reversed />";
 
     private readonly string example5RazorCode = @"
-<BitRichTextEditor Style=""min-height: 300px"" FullToolbar />";
+<BitRichTextEditorLegacy Style=""min-height: 300px"" FullToolbar />";
 
     private readonly string example6RazorCode = @"
-<BitRichTextEditor Styles=""@(new() { Toolbar = ""border-color: red"", Editor = ""border-color: blue""})"" />";
+<BitRichTextEditorLegacy Styles=""@(new() { Toolbar = ""border-color: red"", Editor = ""border-color: blue""})"" />";
 
     private readonly string example7RazorCode = @"
-<BitRichTextEditor @ref=""getEditorRef"" />
+<BitRichTextEditorLegacy @ref=""getEditorRef"" />
 
 <BitButton OnClick=""GetText"">GetText</BitButton>
 <BitButton OnClick=""GetHtml"">GetHtml</BitButton>
@@ -300,7 +300,7 @@ public partial class BitRichTextEditorDemo
 <div>result:</div>
 <pre>@result</pre>";
     private readonly string example7CsharpCode = @"
-private BitRichTextEditor getEditorRef = default!;
+private BitRichTextEditorLegacy getEditorRef = default!;
 private string? result;
 private async Task GetText()
 {
@@ -322,9 +322,9 @@ private async Task GetContent()
 <BitButton OnClick=""SetHtml"">SetHtml</BitButton>
 <BitButton OnClick=""SetContent"">SetContent</BitButton>
 
-<BitRichTextEditor @ref=""setEditorRef"" />";
+<BitRichTextEditorLegacy @ref=""setEditorRef"" />";
     private readonly string example8CsharpCode = @"
-private BitRichTextEditor setEditorRef = default!;
+private BitRichTextEditorLegacy setEditorRef = default!;
 private string? setValue;
 private async Task SetText()
 {
@@ -340,7 +340,7 @@ private async Task SetContent()
 }";
 
     private readonly string example9RazorCode = @"
-<BitRichTextEditor Style=""min-height: 300px"">
+<BitRichTextEditorLegacy Style=""min-height: 300px"">
     <ToolbarTemplate>
         <span class=""ql-formats"">
             <select class=""ql-font""></select>
@@ -388,7 +388,7 @@ private async Task SetContent()
         <div><em>this is italic</em></div>
         <div><b><em>this is italic & bold</em></b></div>
     </EditorTemplate>
-</BitRichTextEditor>";
+</BitRichTextEditorLegacy>";
 
     private readonly string example10RazorCode = @"
 <link rel=""stylesheet"" href=""https://fonts.googleapis.com/css?family=Aref+Ruqaa|Mirza|Roboto"" />
@@ -437,7 +437,7 @@ private async Task SetContent()
     };
 </script>
 
-<BitRichTextEditor OnQuillReady=""HandleOnQuillReady""
+<BitRichTextEditorLegacy OnQuillReady=""HandleOnQuillReady""
                    Classes=""@(new() { Editor = ""custom-font-editor"", Toolbar = ""custom-font-toolbar"" })"">
     <ToolbarTemplate>
         <select class=""ql-font"">
@@ -448,9 +448,9 @@ private async Task SetContent()
         </select>
     </ToolbarTemplate>
     <EditorTemplate>
-        <p>this is a sample of adding custom fonts to the BitRichTextEditor!</p>
+        <p>this is a sample of adding custom fonts to the BitRichTextEditorLegacy!</p>
     </EditorTemplate>
-</BitRichTextEditor>";
+</BitRichTextEditorLegacy>";
     private readonly string example10CsharpCode = @"
 private async Task HandleOnQuillReady()
 {
@@ -458,9 +458,9 @@ private async Task HandleOnQuillReady()
 }";
 
     private readonly string example11RazorCode = @"
-<BitRichTextEditor FullToolbar Modules=""@modules"" />";
+<BitRichTextEditorLegacy FullToolbar Modules=""@modules"" />";
     private readonly string example11CsharpCode = @"
-private List<BitRichTextEditorModule> modules = [
+private List<BitRichTextEditorLegacyModule> modules = [
     new()
     {
         Name = ""imageResize"",

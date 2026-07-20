@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Bit.BlazorUI.Legacy;
 
@@ -18,7 +15,7 @@ namespace Bit.BlazorUI.Legacy;
 /// </para>
 /// </summary>
 [JsonConverter(typeof(ClippingJsonConverter))]
-public readonly struct BitChartClipping : IEquatable<BitChartClipping>
+public readonly struct BitChartLegacyClipping : IEquatable<BitChartLegacyClipping>
 {
     internal readonly bool _equalSides;
 
@@ -43,25 +40,25 @@ public readonly struct BitChartClipping : IEquatable<BitChartClipping>
     public int? Left { get; }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartClipping"/>
+    /// Creates a new instance of <see cref="BitChartLegacyClipping"/>
     /// using the supplied value for all edges.
     /// </summary>
     /// <param name="all">The clipping value for all edges.</param>
-    public BitChartClipping(int all)
+    public BitChartLegacyClipping(int all)
     {
         Top = Right = Bottom = Left = all;
         _equalSides = true;
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartClipping"/>
+    /// Creates a new instance of <see cref="BitChartLegacyClipping"/>
     /// using individual values for all edges.
     /// </summary>
     /// <param name="bottom">The clipping value for the bottom edge.</param>
     /// <param name="left">The clipping value for the left edge.</param>
     /// <param name="top">The clipping value for the top edge.</param>
     /// <param name="right">The clipping value for the right edge.</param>
-    public BitChartClipping(int? top = null, int? right = null, int? bottom = null, int? left = null)
+    public BitChartLegacyClipping(int? top = null, int? right = null, int? bottom = null, int? left = null)
     {
         Top = top;
         Right = right;
@@ -71,11 +68,11 @@ public readonly struct BitChartClipping : IEquatable<BitChartClipping>
     }
 
     /// <summary>
-    /// Converts an <see cref="int"/> value to a <see cref="BitChartClipping"/> implicitly.
+    /// Converts an <see cref="int"/> value to a <see cref="BitChartLegacyClipping"/> implicitly.
     /// The supplied value will be used for all edges.
     /// </summary>
     /// <param name="value">The clipping value for all edges.</param>
-    public static implicit operator BitChartClipping(int value) => new BitChartClipping(value);
+    public static implicit operator BitChartLegacyClipping(int value) => new BitChartLegacyClipping(value);
 
     /// <inheritdoc />
     public override string ToString()
@@ -88,9 +85,9 @@ public readonly struct BitChartClipping : IEquatable<BitChartClipping>
         static string ValOrNull(int? value) => value.HasValue ? value.Value.ToString() : "null";
     }
 
-    public override bool Equals(object? obj) => obj is BitChartClipping clipping && Equals(clipping);
+    public override bool Equals(object? obj) => obj is BitChartLegacyClipping clipping && Equals(clipping);
 
-    public bool Equals(BitChartClipping other)
+    public bool Equals(BitChartLegacyClipping other)
     {
         if (_equalSides && other._equalSides) return Top == other.Top;
 
@@ -102,89 +99,6 @@ public readonly struct BitChartClipping : IEquatable<BitChartClipping>
 
     public override int GetHashCode() => HashCode.Combine(Bottom, Left, Top, Right);
 
-    public static bool operator ==(BitChartClipping left, BitChartClipping right) => left.Equals(right);
-    public static bool operator !=(BitChartClipping left, BitChartClipping right) => !(left == right);
-}
-
-internal class ClippingJsonConverter : JsonConverter<BitChartClipping>
-{
-    public override BitChartClipping ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartClipping existingValue, bool hasExistingValue, JsonSerializer serializer)
-    {
-        if (reader.TokenType == JsonToken.Integer)
-            return new BitChartClipping((int?)(long?)reader.Value);
-
-        if (reader.TokenType != JsonToken.StartObject)
-            throw new JsonReaderException();
-
-        JObject obj = JObject.Load(reader);
-        int? top = GetClippingValue(obj, nameof(BitChartClipping.Top));
-        int? right = GetClippingValue(obj, nameof(BitChartClipping.Right));
-        int? bottom = GetClippingValue(obj, nameof(BitChartClipping.Bottom));
-        int? left = GetClippingValue(obj, nameof(BitChartClipping.Left));
-
-        return new BitChartClipping(top, right, bottom, left);
-    }
-
-    private static int? GetClippingValue(JObject obj, string name)
-    {
-        if (!obj.TryGetValue(name, StringComparison.OrdinalIgnoreCase, out JToken? token))
-            return null;
-
-        if (token.Type == JTokenType.Boolean && (bool)token is false)
-            return null;
-
-        if (token.Type == JTokenType.Integer)
-            return (int)token;
-
-        throw new JsonWriterException();
-    }
-
-    public override void WriteJson(JsonWriter writer, [AllowNull] BitChartClipping value, JsonSerializer serializer)
-    {
-        if (value._equalSides)
-        {
-            writer.WriteValue(value.Bottom!.Value);
-            return;
-        }
-
-        var naming = (serializer.ContractResolver as DefaultContractResolver)?.NamingStrategy;
-
-        writer.WriteStartObject();
-
-        WriteAdjustedName(writer, naming, nameof(BitChartClipping.Top));
-        WriteValueOrFalse(writer, value.Top);
-
-        WriteAdjustedName(writer, naming, nameof(BitChartClipping.Right));
-        WriteValueOrFalse(writer, value.Right);
-
-        WriteAdjustedName(writer, naming, nameof(BitChartClipping.Bottom));
-        WriteValueOrFalse(writer, value.Bottom);
-
-        WriteAdjustedName(writer, naming, nameof(BitChartClipping.Left));
-        WriteValueOrFalse(writer, value.Left);
-
-        writer.WriteEndObject();
-    }
-
-    private static void WriteAdjustedName(JsonWriter writer, NamingStrategy? namingStrategy, string name)
-    {
-        if (namingStrategy != null)
-        {
-            name = namingStrategy.GetPropertyName(name, false);
-        }
-
-        writer.WritePropertyName(name);
-    }
-
-    private static void WriteValueOrFalse(JsonWriter writer, int? value)
-    {
-        if (value.HasValue)
-        {
-            writer.WriteValue(value.Value);
-        }
-        else
-        {
-            writer.WriteValue(false);
-        }
-    }
+    public static bool operator ==(BitChartLegacyClipping left, BitChartLegacyClipping right) => left.Equals(right);
+    public static bool operator !=(BitChartLegacyClipping left, BitChartLegacyClipping right) => !(left == right);
 }

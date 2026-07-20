@@ -4,13 +4,13 @@
 /// Base class for chart-configs
 /// <para>Contains the most basic required information about a chart.</para>
 /// </summary>
-public abstract class BitChartConfigBase
+public abstract class BitChartLegacyConfigBase
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartConfigBase"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyConfigBase"/>.
     /// </summary>
-    /// <param name="chartType">The <see cref="BitChartChartType"/> this config is for.</param>
-    protected BitChartConfigBase(BitChartChartType chartType)
+    /// <param name="chartType">The <see cref="BitChartLegacyChartType"/> this config is for.</param>
+    protected BitChartLegacyConfigBase(BitChartLegacyChartType chartType)
     {
         Type = chartType;
     }
@@ -18,7 +18,7 @@ public abstract class BitChartConfigBase
     /// <summary>
     /// Gets the type of chart this config is for.
     /// </summary>
-    public BitChartChartType Type { get; }
+    public BitChartLegacyChartType Type { get; }
 
     /// <summary>
     /// Gets the id for the html canvas element associated with this chart.
@@ -38,7 +38,7 @@ public abstract class BitChartConfigBase
     /// </para>
     /// <para>
     /// For configuring plugins (plugin options), you need to use
-    /// <see cref="BitChartBaseConfigOptions.Plugins"/> instead.
+    /// <see cref="BitChartLegacyBaseConfigOptions.Plugins"/> instead.
     /// </para>
     /// </summary>
     public List<object> Plugins { get; } = new List<object>();
@@ -56,15 +56,15 @@ public abstract class BitChartConfigBase
 /// </summary>
 /// <typeparam name="TOptions">The type of the options subconfig.</typeparam>
 /// <typeparam name="TData">The type of the data subconfig.</typeparam>
-public abstract class BitChartConfigBase<TOptions, TData> : BitChartConfigBase
-    where TOptions : BitChartBaseConfigOptions
-    where TData : BitChartChartData, new()
+public abstract class BitChartLegacyConfigBase<TOptions, TData> : BitChartLegacyConfigBase
+    where TOptions : BitChartLegacyBaseConfigOptions
+    where TData : BitChartLegacyChartData, new()
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartConfigBase"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyConfigBase"/>.
     /// </summary>
-    /// <param name="chartType">The <see cref="BitChartChartType"/> this config is for.</param>
-    protected BitChartConfigBase(BitChartChartType chartType) : base(chartType)
+    /// <param name="chartType">The <see cref="BitChartLegacyChartType"/> this config is for.</param>
+    protected BitChartLegacyConfigBase(BitChartLegacyChartType chartType) : base(chartType)
     {
         Data = new TData();
     }
@@ -80,10 +80,10 @@ public abstract class BitChartConfigBase<TOptions, TData> : BitChartConfigBase
     public TData Data { get; }
 }
 
-/// <inheritdoc cref="BitChartConfigBase{TOptions, TData}"/>
-public abstract class BitChartConfigBase<TOptions> : BitChartConfigBase<TOptions, BitChartChartData>
-    where TOptions : BitChartBaseConfigOptions
+/// <inheritdoc cref="BitChartLegacyConfigBase{TOptions, TData}"/>
+public abstract class BitChartLegacyConfigBase<TOptions> : BitChartLegacyConfigBase<TOptions, BitChartLegacyChartData>
+    where TOptions : BitChartLegacyBaseConfigOptions
 {
     /// <inheritdoc/>
-    protected BitChartConfigBase(BitChartChartType chartType) : base(chartType) { }
+    protected BitChartLegacyConfigBase(BitChartLegacyChartType chartType) : base(chartType) { }
 }

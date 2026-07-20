@@ -20,14 +20,14 @@ internal class ObjectEnumFactory
     /// <summary>
     /// Gets (and creates if needed) the singleton-factory for this <paramref name="enumType"/>.
     /// </summary>
-    /// <param name="enumType">The <see cref="BitChartObjectEnum"/>-type whose factory to get.</param>
+    /// <param name="enumType">The <see cref="BitChartLegacyObjectEnum"/>-type whose factory to get.</param>
     [SuppressMessage("Trimming", "IL2067:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.", Justification = "<Pending>")]
     public static ObjectEnumFactory GetFactory(Type? enumType)
     {
         ArgumentNullException.ThrowIfNull(enumType);
 
-        if (!typeof(BitChartObjectEnum).IsAssignableFrom(enumType))
-            throw new ArgumentException($"The type '{enumType.FullName}' doesn't inherit from '{typeof(BitChartObjectEnum).FullName}'");
+        if (!typeof(BitChartLegacyObjectEnum).IsAssignableFrom(enumType))
+            throw new ArgumentException($"The type '{enumType.FullName}' doesn't inherit from '{typeof(BitChartLegacyObjectEnum).FullName}'");
 
         return _factorySingletons.GetOrAdd(enumType, type => new ObjectEnumFactory(type));
     }
@@ -40,15 +40,15 @@ internal class ObjectEnumFactory
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="BitChartObjectEnum"/>-type this factory is for.
+    /// Creates a new instance of the <see cref="BitChartLegacyObjectEnum"/>-type this factory is for.
     /// If there is no suitable constructor for the <paramref name="value"/>, a
     /// <see cref="NotSupportedException"/> will be thrown.
     /// </summary>
-    /// <param name="value">The value used for instantiating the <see cref="BitChartObjectEnum"/>.</param>
-    public BitChartObjectEnum Create(object value) => Create(value, value.GetType());
+    /// <param name="value">The value used for instantiating the <see cref="BitChartLegacyObjectEnum"/>.</param>
+    public BitChartLegacyObjectEnum Create(object value) => Create(value, value.GetType());
 
     /// <summary>
-    /// Creates a new instance of the <see cref="BitChartObjectEnum"/>-type this factory is for.
+    /// Creates a new instance of the <see cref="BitChartLegacyObjectEnum"/>-type this factory is for.
     /// If there is no suitable constructor for the type <paramref name="valueType"/>, a
     /// <see cref="NotSupportedException"/> will be thrown.
     /// <para>
@@ -56,29 +56,29 @@ internal class ObjectEnumFactory
     /// (and you're sure about it).
     /// </para>
     /// </summary>
-    /// <param name="value">The value used for instantiating the <see cref="BitChartObjectEnum"/>.</param>
+    /// <param name="value">The value used for instantiating the <see cref="BitChartLegacyObjectEnum"/>.</param>
     /// <param name="valueType">The <see cref="Type"/> of <paramref name="value"/>.</param>
-    public BitChartObjectEnum Create(object value, Type valueType)
+    public BitChartLegacyObjectEnum Create(object value, Type valueType)
     {
         if (_constructorCache.TryGetValue(valueType, out ConstructorInfo? constructor))
         {
-            return (BitChartObjectEnum)constructor.Invoke([value]);
+            return (BitChartLegacyObjectEnum)constructor.Invoke([value]);
         }
 
-        if (BitChartObjectEnum.IsSupportedSerializationType(valueType))
+        if (BitChartLegacyObjectEnum.IsSupportedSerializationType(valueType))
         {
             throw new NotSupportedException($"The object enum '{_enumType.FullName}' doesn't have a constructor which takes a single " +
                                             $"argument of type '{valueType.FullName}'.");
         }
         else
         {
-            throw new NotSupportedException($"The type '{valueType}' isn't supported for serialization within {nameof(BitChartObjectEnum)}.");
+            throw new NotSupportedException($"The type '{valueType}' isn't supported for serialization within {nameof(BitChartLegacyObjectEnum)}.");
         }
     }
 
     /// <summary>
     /// Checks if a suitable constructor for this <paramref name="contentType"/> exists which
-    /// can be used to create a new instance of that <see cref="BitChartObjectEnum"/>-type.
+    /// can be used to create a new instance of that <see cref="BitChartLegacyObjectEnum"/>-type.
     /// </summary>
     /// <param name="contentType">The <see cref="Type"/> of the enum-content to look for.</param>
     /// <returns><see langword="true"/> if there is a suitable constructor for that <paramref name="contentType"/>;
@@ -98,7 +98,7 @@ internal class ObjectEnumFactory
             }
 
             Type paramType = constructorParams[0].ParameterType;
-            if (BitChartObjectEnum.IsSupportedSerializationType(paramType))
+            if (BitChartLegacyObjectEnum.IsSupportedSerializationType(paramType))
             {
                 dict.Add(paramType, constructor);
             }
@@ -106,7 +106,7 @@ internal class ObjectEnumFactory
 
         if (dict.Count == 0)
         {
-            throw new NotSupportedException($"The {nameof(BitChartObjectEnum)} type '{_enumType.FullName}' doesn't have any " +
+            throw new NotSupportedException($"The {nameof(BitChartLegacyObjectEnum)} type '{_enumType.FullName}' doesn't have any " +
                                             $"suitable constructors for deserialization.");
         }
 

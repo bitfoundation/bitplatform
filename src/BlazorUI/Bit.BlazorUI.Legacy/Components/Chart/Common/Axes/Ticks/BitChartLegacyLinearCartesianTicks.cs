@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The ticks-subconfig of <see cref="BitChartLinearCartesianAxis"/>.
+/// The ticks-subconfig of <see cref="BitChartLegacyLinearCartesianAxis"/>.
 /// <para>As per documentation <a href="https://www.chartjs.org/docs/latest/axes/cartesian/linear.html#tick-configuration-options">here (Chart.js)</a>.</para>
 /// </summary>
-public class BitChartLinearCartesianTicks : BitChartCartesianTicks
+public class BitChartLegacyLinearCartesianTicks : BitChartLegacyCartesianTicks
 {
     /// <summary>
     /// If true, scale will include 0 if it is not already included.

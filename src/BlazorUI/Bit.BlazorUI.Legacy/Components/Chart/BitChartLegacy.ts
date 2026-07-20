@@ -21,53 +21,53 @@ namespace BitBlazorUI.Legacy {
         ignoredIndices: number[];
     }
 
-    export class BitChart {
+    export class BitChartLegacy {
         private static _bitCharts = new Map<string, Chart>();
 
         public static getChartJs(canvasId: string) {
-            if (!BitChart._bitCharts.has(canvasId)) return null;
+            if (!BitChartLegacy._bitCharts.has(canvasId)) return null;
 
-            return BitChart._bitCharts.get(canvasId)!;
+            return BitChartLegacy._bitCharts.get(canvasId)!;
         }
 
         public static removeChart(canvasId: string) {
-            if (!BitChart._bitCharts.has(canvasId)) return;
+            if (!BitChartLegacy._bitCharts.has(canvasId)) return;
 
-            var chart = BitChart._bitCharts.get(canvasId)!;
+            var chart = BitChartLegacy._bitCharts.get(canvasId)!;
             chart.destroy();
             chart.config = {};
-            BitChart._bitCharts.delete(canvasId);
+            BitChartLegacy._bitCharts.delete(canvasId);
         }
 
         public static setupChart(config: BitChartConfiguration): boolean {
-            if (BitChart._bitCharts.has(config.canvasId)) {
-                return BitChart.updateChart(config);
+            if (BitChartLegacy._bitCharts.has(config.canvasId)) {
+                return BitChartLegacy.updateChart(config);
             } else {
-                BitChart.wireUpCallbacks(config);
+                BitChartLegacy.wireUpCallbacks(config);
 
                 let chart = new Chart(config.canvasId, config);
-                BitChart._bitCharts.set(config.canvasId, chart);
+                BitChartLegacy._bitCharts.set(config.canvasId, chart);
 
                 return true;
             }
         }
 
         public static updateChart(config: BitChartConfiguration): boolean {
-            if (!BitChart._bitCharts.has(config.canvasId))
+            if (!BitChartLegacy._bitCharts.has(config.canvasId))
                 throw `Could not find a chart with the given id. ${config.canvasId}`;
 
-            let myChart = BitChart._bitCharts.get(config.canvasId);
+            let myChart = BitChartLegacy._bitCharts.get(config.canvasId);
 
             if (!myChart) return false;
 
             // Update datasets. This breaks the data-array-references; more in the function.
-            BitChart.mergeDatasets(myChart.config.data!.datasets!, config.data!.datasets!);
+            BitChartLegacy.mergeDatasets(myChart.config.data!.datasets!, config.data!.datasets!);
             // Update labels while keeping array references intact.
-            BitChart.mergeLabels(myChart.config.data!, config.data!);
+            BitChartLegacy.mergeLabels(myChart.config.data!, config.data!);
             // Currently we only merge the datasets and the labels of the data subconfig but that
             // could be expanded in a similar fashion as the dataset's data (if there's a use-case).
 
-            BitChart.wireUpCallbacks(config);
+            BitChartLegacy.wireUpCallbacks(config);
 
             // This will add new options and update existing ones. Nothing is deleted.
             // Calling extend instead of merge avoids the unnecessary deep copy as
@@ -87,7 +87,7 @@ namespace BitBlazorUI.Legacy {
                     oldDatasets.splice(i, 1);
                 } else {
                     // This comment below would be the 'correct' way of updating the data while retaining the same reference.
-                    // However, there's quite a big issue with BitChart. Chart.js actually listenes for modifications on
+                    // However, there's quite a big issue with BitChartLegacy. Chart.js actually listenes for modifications on
                     // the data array and will decide on the update-animation by looking at the latest modifications.
                     // Since this would clear the whole array and then add all the new data, Chart.js thinks every data
                     // point is fresh and plays the same animation it plays when initially creating the chart.
@@ -150,13 +150,13 @@ namespace BitBlazorUI.Legacy {
             // Replace IMethodHandler objects with actual function (if present)
             // This should be "automated" in some way. We shouldn't have to add
             // (much) new code for a new callback.
-            BitChart.wireUpOptionsOnClick(config);
-            BitChart.wireUpOptionsOnHover(config);
-            BitChart.wireUpLegendOnClick(config);
-            BitChart.wireUpLegendOnHover(config);
-            BitChart.wireUpLegendItemFilter(config);
-            BitChart.wireUpGenerateLabels(config);
-            BitChart.wireUpTickCallback(config);
+            BitChartLegacy.wireUpOptionsOnClick(config);
+            BitChartLegacy.wireUpOptionsOnHover(config);
+            BitChartLegacy.wireUpLegendOnClick(config);
+            BitChartLegacy.wireUpLegendOnHover(config);
+            BitChartLegacy.wireUpLegendItemFilter(config);
+            BitChartLegacy.wireUpGenerateLabels(config);
+            BitChartLegacy.wireUpTickCallback(config);
         }
 
         private static wireUpOptionsOnClick(config: BitChartConfiguration) {
@@ -167,7 +167,7 @@ namespace BitBlazorUI.Legacy {
 
             if (!config.options) return;
 
-            config.options.onClick = BitChart.getMethodHandler(<IMethodHandler>config.options.onClick, getDefaultFunc(config.type));
+            config.options.onClick = BitChartLegacy.getMethodHandler(<IMethodHandler>config.options.onClick, getDefaultFunc(config.type));
         }
 
         private static wireUpOptionsOnHover(config: BitChartConfiguration) {
@@ -179,7 +179,7 @@ namespace BitBlazorUI.Legacy {
             if (!config.options)
                 return;
 
-            config.options.onHover = BitChart.getMethodHandler(<IMethodHandler>config.options.onHover, getDefaultFunc(config.type));
+            config.options.onHover = BitChartLegacy.getMethodHandler(<IMethodHandler>config.options.onHover, getDefaultFunc(config.type));
         }
 
         private static wireUpLegendOnClick(config: BitChartConfiguration) {
@@ -191,7 +191,7 @@ namespace BitBlazorUI.Legacy {
             if (!config.options?.legend)
                 return;
 
-            config.options.legend.onClick = BitChart.getMethodHandler(<IMethodHandler>config.options.legend.onClick, getDefaultHandler(config.type));
+            config.options.legend.onClick = BitChartLegacy.getMethodHandler(<IMethodHandler>config.options.legend.onClick, getDefaultHandler(config.type));
         }
 
         private static wireUpLegendOnHover(config: BitChartConfiguration) {
@@ -203,7 +203,7 @@ namespace BitBlazorUI.Legacy {
             if (!config.options?.legend)
                 return;
 
-            config.options.legend.onHover = BitChart.getMethodHandler(<IMethodHandler>config.options.legend.onHover, getDefaultFunc(config.type));
+            config.options.legend.onHover = BitChartLegacy.getMethodHandler(<IMethodHandler>config.options.legend.onHover, getDefaultFunc(config.type));
         }
 
         private static wireUpLegendItemFilter(config: BitChartConfiguration) {
@@ -215,7 +215,7 @@ namespace BitBlazorUI.Legacy {
             if (!config.options?.legend?.labels)
                 return;
 
-            config.options.legend.labels.filter = BitChart.getMethodHandler(<IMethodHandler>config.options.legend.labels.filter, getDefaultFunc(config.type));
+            config.options.legend.labels.filter = BitChartLegacy.getMethodHandler(<IMethodHandler>config.options.legend.labels.filter, getDefaultFunc(config.type));
         }
 
         private static wireUpGenerateLabels(config: BitChartConfiguration) {
@@ -227,7 +227,7 @@ namespace BitBlazorUI.Legacy {
             if (!config.options?.legend?.labels)
                 return;
 
-            config.options.legend.labels.generateLabels = BitChart.getMethodHandler(<IMethodHandler>config.options.legend.labels.generateLabels, getDefaultFunc(config.type));
+            config.options.legend.labels.generateLabels = BitChartLegacy.getMethodHandler(<IMethodHandler>config.options.legend.labels.generateLabels, getDefaultFunc(config.type));
         }
 
         private static wireUpTickCallback(config: BitChartConfiguration) {
@@ -246,7 +246,7 @@ namespace BitBlazorUI.Legacy {
                 if (axes) {
                     for (let i = 0; i < axes.length; i++) {
                         if (!axes[i].ticks) continue;
-                        axes[i].ticks.callback = BitChart.getMethodHandler(axes[i].ticks.callback, undefined);
+                        axes[i].ticks.callback = BitChartLegacy.getMethodHandler(axes[i].ticks.callback, undefined);
                         if (!axes[i].ticks.callback) {
                             delete axes[i].ticks.callback; // undefined != deleted, Chart.js throws an error if it's undefined so we have to delete it
                         }
@@ -260,7 +260,7 @@ namespace BitBlazorUI.Legacy {
             }
 
             if (config.options?.scale?.ticks) {
-                config.options.scale.ticks.callback = BitChart.getMethodHandler(<IMethodHandler>config.options.scale.ticks.callback, undefined);
+                config.options.scale.ticks.callback = BitChartLegacy.getMethodHandler(<IMethodHandler>config.options.scale.ticks.callback, undefined);
 
                 if (!config.options.scale.ticks.callback) {
                     delete config.options.scale.ticks.callback; // undefined != deleted, Chart.js throws an error if it's undefined so we have to delete it
@@ -283,7 +283,7 @@ namespace BitBlazorUI.Legacy {
                 return defaultFunc;
             }
 
-            if (BitChart.isDelegateHandler(handler)) {
+            if (BitChartLegacy.isDelegateHandler(handler)) {
                 // stringify args and ignore all circular references. This means that objects of type DotNetObject will not be
                 // deserialized correctly (since it's already a string when it reaches JSON.stringify in the blazor interop layer)
                 // but the values passed to chart callbacks should never contain such objects anyway.
@@ -293,7 +293,7 @@ namespace BitBlazorUI.Legacy {
                         if (handler.ignoredIndices.includes(i)) {
                             args[i] = '';
                         } else {
-                            args[i] = BitChart.stringifyObjectIgnoreCircular(args[i]);
+                            args[i] = BitChartLegacy.stringifyObjectIgnoreCircular(args[i]);
                         }
                     }
 

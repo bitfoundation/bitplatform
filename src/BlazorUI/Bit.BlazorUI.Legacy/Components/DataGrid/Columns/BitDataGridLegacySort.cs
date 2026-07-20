@@ -3,10 +3,10 @@ using System.Linq.Expressions;
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Represents a sort order specification used within <see cref="BitDataGrid{TGridItem}"/>.
+/// Represents a sort order specification used within <see cref="BitDataGridLegacy{TGridItem}"/>.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
-public class BitDataGridSort<TGridItem>
+public class BitDataGridLegacySort<TGridItem>
 {
     private const string ExpressionNotRepresentableMessage = "The supplied expression can't be represented as a property name for sorting. Only simple member expressions, such as @(x => x.SomeProperty), can be converted to property names.";
 
@@ -16,10 +16,10 @@ public class BitDataGridSort<TGridItem>
     private (LambdaExpression, bool) _firstExpression;
     private List<(LambdaExpression, bool)>? _thenExpressions;
 
-    private IReadOnlyCollection<(string PropertyName, BitDataGridSortDirection Direction)>? _cachedPropertyListAscending;
-    private IReadOnlyCollection<(string PropertyName, BitDataGridSortDirection Direction)>? _cachedPropertyListDescending;
+    private IReadOnlyCollection<(string PropertyName, BitDataGridLegacySortDirection Direction)>? _cachedPropertyListAscending;
+    private IReadOnlyCollection<(string PropertyName, BitDataGridLegacySortDirection Direction)>? _cachedPropertyListDescending;
 
-    internal BitDataGridSort(Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> first, (LambdaExpression, bool) firstExpression)
+    internal BitDataGridLegacySort(Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> first, (LambdaExpression, bool) firstExpression)
     {
         _first = first;
         _firstExpression = firstExpression;
@@ -28,32 +28,32 @@ public class BitDataGridSort<TGridItem>
     }
 
     /// <summary>
-    /// Produces a <see cref="BitDataGridSort{TGridItem}"/> instance that sorts according to the specified <paramref name="expression"/>, ascending.
+    /// Produces a <see cref="BitDataGridLegacySort{TGridItem}"/> instance that sorts according to the specified <paramref name="expression"/>, ascending.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitDataGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
-    public static BitDataGridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
-        => new BitDataGridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
+    /// <returns>A <see cref="BitDataGridLegacySort{TGridItem}"/> instance representing the specified sorting rule.</returns>
+    public static BitDataGridLegacySort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
+        => new BitDataGridLegacySort<TGridItem>((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
             (expression, true));
 
     /// <summary>
-    /// Produces a <see cref="BitDataGridSort{TGridItem}"/> instance that sorts according to the specified <paramref name="expression"/>, descending.
+    /// Produces a <see cref="BitDataGridLegacySort{TGridItem}"/> instance that sorts according to the specified <paramref name="expression"/>, descending.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitDataGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
-    public static BitDataGridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
-        => new BitDataGridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
+    /// <returns>A <see cref="BitDataGridLegacySort{TGridItem}"/> instance representing the specified sorting rule.</returns>
+    public static BitDataGridLegacySort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
+        => new BitDataGridLegacySort<TGridItem>((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
             (expression, false));
 
     /// <summary>
-    /// Updates a <see cref="BitDataGridSort{TGridItem}"/> instance by appending a further sorting rule.
+    /// Updates a <see cref="BitDataGridLegacySort{TGridItem}"/> instance by appending a further sorting rule.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitDataGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
-    public BitDataGridSort<TGridItem> ThenAscending<U>(Expression<Func<TGridItem, U>> expression)
+    /// <returns>A <see cref="BitDataGridLegacySort{TGridItem}"/> instance representing the specified sorting rule.</returns>
+    public BitDataGridLegacySort<TGridItem> ThenAscending<U>(Expression<Func<TGridItem, U>> expression)
     {
         _then ??= new();
         _thenExpressions ??= new();
@@ -65,12 +65,12 @@ public class BitDataGridSort<TGridItem>
     }
 
     /// <summary>
-    /// Updates a <see cref="BitDataGridSort{TGridItem}"/> instance by appending a further sorting rule.
+    /// Updates a <see cref="BitDataGridLegacySort{TGridItem}"/> instance by appending a further sorting rule.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitDataGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
-    public BitDataGridSort<TGridItem> ThenDescending<U>(Expression<Func<TGridItem, U>> expression)
+    /// <returns>A <see cref="BitDataGridLegacySort{TGridItem}"/> instance representing the specified sorting rule.</returns>
+    public BitDataGridLegacySort<TGridItem> ThenDescending<U>(Expression<Func<TGridItem, U>> expression)
     {
         _then ??= new();
         _thenExpressions ??= new();
@@ -96,7 +96,7 @@ public class BitDataGridSort<TGridItem>
         return orderedQueryable;
     }
 
-    internal IReadOnlyCollection<(string PropertyName, BitDataGridSortDirection Direction)> ToPropertyList(bool ascending)
+    internal IReadOnlyCollection<(string PropertyName, BitDataGridLegacySortDirection Direction)> ToPropertyList(bool ascending)
     {
         if (ascending)
         {
@@ -110,16 +110,16 @@ public class BitDataGridSort<TGridItem>
         }
     }
 
-    private IReadOnlyCollection<(string PropertyName, BitDataGridSortDirection Direction)> BuildPropertyList(bool ascending)
+    private IReadOnlyCollection<(string PropertyName, BitDataGridLegacySortDirection Direction)> BuildPropertyList(bool ascending)
     {
-        var result = new List<(string, BitDataGridSortDirection)>();
-        result.Add((ToPropertyName(_firstExpression.Item1), (_firstExpression.Item2 ^ ascending) ? BitDataGridSortDirection.Descending : BitDataGridSortDirection.Ascending));
+        var result = new List<(string, BitDataGridLegacySortDirection)>();
+        result.Add((ToPropertyName(_firstExpression.Item1), (_firstExpression.Item2 ^ ascending) ? BitDataGridLegacySortDirection.Descending : BitDataGridLegacySortDirection.Ascending));
 
         if (_thenExpressions is not null)
         {
             foreach (var (thenLambda, thenAscending) in _thenExpressions)
             {
-                result.Add((ToPropertyName(thenLambda), (thenAscending ^ ascending) ? BitDataGridSortDirection.Descending : BitDataGridSortDirection.Ascending));
+                result.Add((ToPropertyName(thenLambda), (thenAscending ^ ascending) ? BitDataGridLegacySortDirection.Descending : BitDataGridLegacySortDirection.Ascending));
             }
         }
 

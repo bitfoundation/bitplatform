@@ -8,7 +8,7 @@
 /// nothing more than a convention which tells you what parameters and return type is expected from the JavaScript function.
 /// Just like you might mistype the method name, you might return the wrong value from JavaScript. These cases can't be caught
 /// by the compiler so make sure to double-check those.</typeparam>
-public class BitChartJavascriptHandler<T> : IBitChartMethodHandler<T>
+public class BitChartLegacyJavascriptHandler<T> : IBitChartLegacyMethodHandler<T>
     where T : Delegate
 {
     /// <summary>
@@ -20,10 +20,10 @@ public class BitChartJavascriptHandler<T> : IBitChartMethodHandler<T>
     public string MethodName { get; }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartJavascriptHandler{T}"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyJavascriptHandler{T}"/>.
     /// </summary>
     /// <param name="methodName">The namespace and name of a JavaScript function (see <see cref="MethodName"/> for details).</param>
-    public BitChartJavascriptHandler(string methodName)
+    public BitChartLegacyJavascriptHandler(string methodName)
     {
         if (methodName.HasNoValue())
             throw new ArgumentException("The method name cannot be null or whitespace. It has to include the namespace and name of the js-function.");
@@ -35,8 +35,8 @@ public class BitChartJavascriptHandler<T> : IBitChartMethodHandler<T>
     }
 
     /// <summary>
-    /// Converts a string to a <see cref="BitChartJavascriptHandler{T}"/> implicitly.
+    /// Converts a string to a <see cref="BitChartLegacyJavascriptHandler{T}"/> implicitly.
     /// </summary>
     /// <param name="methodName">The namespace and name of a JavaScript function to be called, separated by a point (see <see cref="MethodName"/> for details).</param>
-    public static implicit operator BitChartJavascriptHandler<T>(string methodName) => new BitChartJavascriptHandler<T>(methodName);
+    public static implicit operator BitChartLegacyJavascriptHandler<T>(string methodName) => new BitChartLegacyJavascriptHandler<T>(methodName);
 }

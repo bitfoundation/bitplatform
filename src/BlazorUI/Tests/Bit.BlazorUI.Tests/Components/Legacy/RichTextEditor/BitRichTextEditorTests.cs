@@ -29,7 +29,7 @@ public class BitRichTextEditorTests : BunitTestContext
     {
         SetupJsInterop();
 
-        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        var component = RenderComponent<BitRichTextEditorLegacy>(parameters =>
         {
             parameters.Add(p => p.ToolbarTemplate, b => b.AddContent(0, "Toolbar"));
             parameters.Add(p => p.EditorTemplate, b => b.AddContent(1, "Editor"));
@@ -47,9 +47,9 @@ public class BitRichTextEditorTests : BunitTestContext
     {
         SetupJsInterop();
 
-        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        var component = RenderComponent<BitRichTextEditorLegacy>(parameters =>
         {
-            parameters.Add(p => p.Classes, new BitRichTextEditorClassStyles
+            parameters.Add(p => p.Classes, new BitRichTextEditorLegacyClassStyles
             {
                 Editor = "custom-editor",
                 Toolbar = "custom-toolbar",
@@ -72,7 +72,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var readyCalled = false;
 
-        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        var component = RenderComponent<BitRichTextEditorLegacy>(parameters =>
         {
             parameters.Add(p => p.OnEditorReady, EventCallback.Factory.Create<string>(this, _ => readyCalled = true));
         });
@@ -87,7 +87,7 @@ public class BitRichTextEditorTests : BunitTestContext
     {
         SetupJsInterop();
 
-        var component = RenderComponent<BitRichTextEditor>();
+        var component = RenderComponent<BitRichTextEditorLegacy>();
 
         var text = await component.Instance.GetText();
         var html = await component.Instance.GetHtml();
@@ -111,11 +111,11 @@ public class BitRichTextEditorTests : BunitTestContext
     {
         SetupJsInterop();
 
-        var module = new BitRichTextEditorModule { Name = "mentions", Src = "/mention.js", Config = new { } };
+        var module = new BitRichTextEditorLegacyModule { Name = "mentions", Src = "/mention.js", Config = new { } };
 
-        RenderComponent<BitRichTextEditor>(parameters =>
+        RenderComponent<BitRichTextEditorLegacy>(parameters =>
         {
-            parameters.Add(p => p.Modules, new List<BitRichTextEditorModule> { module });
+            parameters.Add(p => p.Modules, new List<BitRichTextEditorLegacyModule> { module });
         });
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.Utils.initScripts", 2);
@@ -126,9 +126,9 @@ public class BitRichTextEditorTests : BunitTestContext
     {
         SetupJsInterop();
 
-        RenderComponent<BitRichTextEditor>(parameters =>
+        RenderComponent<BitRichTextEditorLegacy>(parameters =>
         {
-            parameters.Add(p => p.Theme, BitRichTextEditorTheme.Bubble);
+            parameters.Add(p => p.Theme, BitRichTextEditorLegacyTheme.Bubble);
             parameters.Add(p => p.Placeholder, "Type here");
             parameters.Add(p => p.ReadOnly, true);
             parameters.Add(p => p.FullToolbar, true);
@@ -143,7 +143,7 @@ public class BitRichTextEditorTests : BunitTestContext
     {
         SetupJsInterop();
 
-        var component = RenderComponent<BitRichTextEditor>();
+        var component = RenderComponent<BitRichTextEditorLegacy>();
 
         await component.Instance.DisposeAsync();
 

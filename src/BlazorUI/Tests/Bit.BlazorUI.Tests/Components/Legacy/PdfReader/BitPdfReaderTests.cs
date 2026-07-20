@@ -28,9 +28,9 @@ public class BitPdfReaderTests : BunitTestContext
     {
         SetupJSInterop(3);
 
-        var component = RenderComponent<BitPdfReader>(parameters =>
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
         {
-            parameters.Add(p => p.Config, new BitPdfReaderConfig { Id = PdfId });
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
             parameters.Add(p => p.RenderAllPages, false);
         });
 
@@ -48,9 +48,9 @@ public class BitPdfReaderTests : BunitTestContext
     {
         SetupJSInterop(4);
 
-        var component = RenderComponent<BitPdfReader>(parameters =>
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
         {
-            parameters.Add(p => p.Config, new BitPdfReaderConfig { Id = PdfId });
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
             parameters.Add(p => p.RenderAllPages, true);
         });
 
@@ -72,9 +72,9 @@ public class BitPdfReaderTests : BunitTestContext
         var loaded = false;
         var rendered = false;
 
-        var component = RenderComponent<BitPdfReader>(parameters =>
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
         {
-            parameters.Add(p => p.Config, new BitPdfReaderConfig { Id = PdfId });
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
             parameters.Add(p => p.OnPdfLoaded, EventCallback.Factory.Create(this, () => loaded = true));
             parameters.Add(p => p.OnPdfPageRendered, EventCallback.Factory.Create(this, () => rendered = true));
         });
@@ -88,9 +88,9 @@ public class BitPdfReaderTests : BunitTestContext
     {
         SetupJSInterop(3);
 
-        var component = RenderComponent<BitPdfReader>(parameters =>
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
         {
-            parameters.Add(p => p.Config, new BitPdfReaderConfig { Id = PdfId });
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
         });
 
         await component.Instance.Next();
@@ -110,9 +110,9 @@ public class BitPdfReaderTests : BunitTestContext
     {
         SetupJSInterop(3);
 
-        var component = RenderComponent<BitPdfReader>(parameters =>
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
         {
-            parameters.Add(p => p.Config, new BitPdfReaderConfig { Id = PdfId });
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
             parameters.Add(p => p.RenderAllPages, true);
         });
 
@@ -128,9 +128,9 @@ public class BitPdfReaderTests : BunitTestContext
     {
         SetupJSInterop();
 
-        var component = RenderComponent<BitPdfReader>(parameters =>
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
         {
-            parameters.Add(p => p.Config, new BitPdfReaderConfig { Id = PdfId });
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
             parameters.Add(p => p.Horizontal, true);
             parameters.Add(p => p.IsEnabled, false);
         });
@@ -146,9 +146,9 @@ public class BitPdfReaderTests : BunitTestContext
     {
         SetupJSInterop();
 
-        var component = RenderComponent<BitPdfReader>(parameters =>
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
         {
-            parameters.Add(p => p.Config, new BitPdfReaderConfig { Id = PdfId });
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
             parameters.Add(p => p.CanvasClass, "canvas-class");
             parameters.Add(p => p.CanvasStyle, "height:100px;");
         });

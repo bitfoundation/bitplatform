@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
-public enum BitRichTextEditorTheme
+public enum BitRichTextEditorLegacyTheme
 {
     Snow,
     Bubble

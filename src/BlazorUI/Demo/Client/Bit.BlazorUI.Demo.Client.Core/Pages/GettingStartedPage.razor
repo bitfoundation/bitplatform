@@ -298,12 +298,12 @@
 
             <BitText>
                 <ul>
-                    <li><b>BitChart</b>: the original Chart.js based charting component.</li>
-                    <li><b>BitDataGrid</b>: the original data grid (previously renamed to <BitTag>BitQuickGrid</BitTag>).</li>
-                    <li><b>BitMarkdownViewer</b>: the original markedjs based markdown viewer.</li>
-                    <li><b>BitMarkdownEditor</b>: the original markdown editor.</li>
-                    <li><b>BitRichTextEditor</b>: the original Quill based rich text editor.</li>
-                    <li><b>BitPdfReader</b>: the original pdf.js based pdf reader.</li>
+                    <li><b>BitChartLegacy</b>: the original Chart.js based charting component.</li>
+                    <li><b>BitDataGridLegacy</b>: the original data grid (previously renamed to <BitTag>BitQuickGrid</BitTag>).</li>
+                    <li><b>BitMarkdownViewerLegacy</b>: the original markedjs based markdown viewer.</li>
+                    <li><b>BitMarkdownEditorLegacy</b>: the original markdown editor.</li>
+                    <li><b>BitRichTextEditorLegacy</b>: the original Quill based rich text editor.</li>
+                    <li><b>BitPdfReaderLegacy</b>: the original pdf.js based pdf reader.</li>
                 </ul>
             </BitText>
 
@@ -348,10 +348,10 @@
             <br />
 
             <BitText>
-                <b>Note</b>: the legacy components keep their original type names but live in the
-                <BitTag>Bit.BlazorUI.Legacy</BitTag> namespace. When you reference a component whose name also exists in
-                the new packages (like <BitTag>BitChart</BitTag>), fully qualify it (for example
-                <BitTag>Bit.BlazorUI.Legacy.BitChart</BitTag>) to disambiguate it from the new implementation.
+                <b>Note</b>: the legacy components are suffixed with <BitTag>Legacy</BitTag> (for example
+                <BitTag>BitChartLegacy</BitTag>) and live in the <BitTag>Bit.BlazorUI.Legacy</BitTag> namespace, so their
+                names never conflict with the new components (like <BitTag>BitChart</BitTag>) and you can use them side by
+                side without having to fully qualify them.
             </BitText>
         </BitCard>
 

@@ -1,9 +1,9 @@
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Holds state to represent pagination in a <see cref="BitDataGrid{TGridItem}"/>.
+/// Holds state to represent pagination in a <see cref="BitDataGridLegacy{TGridItem}"/>.
 /// </summary>
-public class BitDataGridPaginationState
+public class BitDataGridLegacyPaginationState
 {
     /// <summary>
     /// Gets the current zero-based page index. To set it, call <see cref="SetCurrentPageIndexAsync(int)" />.
@@ -22,7 +22,7 @@ public class BitDataGridPaginationState
 
     /// <summary>
     /// Gets the total number of items across all pages, if known. The value will be null until an
-    /// associated <see cref="BitDataGrid{TGridItem}"/> assigns a value after loading data.
+    /// associated <see cref="BitDataGridLegacy{TGridItem}"/> assigns a value after loading data.
     /// </summary>
     public int? TotalItemCount { get; private set; }
 
@@ -31,15 +31,15 @@ public class BitDataGridPaginationState
     /// </summary>
     public event EventHandler<int?>? TotalItemCountChanged;
 
-    internal EventCallbackSubscribable<BitDataGridPaginationState> CurrentPageItemsChanged { get; } = new();
-    internal EventCallbackSubscribable<BitDataGridPaginationState> TotalItemCountChangedSubscribable { get; } = new();
+    internal EventCallbackSubscribable<BitDataGridLegacyPaginationState> CurrentPageItemsChanged { get; } = new();
+    internal EventCallbackSubscribable<BitDataGridLegacyPaginationState> TotalItemCountChangedSubscribable { get; } = new();
 
     /// <inheritdoc />
     public override int GetHashCode()
         => HashCode.Combine(ItemsPerPage, CurrentPageIndex, TotalItemCount);
 
     /// <summary>
-    /// Sets the current page index, and notifies any associated <see cref="BitDataGrid{TGridItem}"/>
+    /// Sets the current page index, and notifies any associated <see cref="BitDataGridLegacy{TGridItem}"/>
     /// to fetch and render updated data.
     /// </summary>
     /// <param name="pageIndex">The new, zero-based page index.</param>
@@ -50,7 +50,7 @@ public class BitDataGridPaginationState
         return CurrentPageItemsChanged.InvokeCallbacksAsync(this);
     }
 
-    // Can be internal because this only needs to be called by BitDataGrid itself, not any custom pagination UI components.
+    // Can be internal because this only needs to be called by BitDataGridLegacy itself, not any custom pagination UI components.
     internal Task SetTotalItemCountAsync(int totalItemCount)
     {
         if (totalItemCount == TotalItemCount)

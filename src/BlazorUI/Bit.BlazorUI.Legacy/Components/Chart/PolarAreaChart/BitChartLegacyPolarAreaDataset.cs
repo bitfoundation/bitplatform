@@ -1,16 +1,16 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <inheritdoc/>
-public class BitChartPolarAreaDataset : BitChartPolarAreaDataset<double>
+public class BitChartLegacyPolarAreaDataset : BitChartLegacyPolarAreaDataset<double>
 {
     /// <inheritdoc/>
-    public BitChartPolarAreaDataset() { }
+    public BitChartLegacyPolarAreaDataset() { }
 
     /// <inheritdoc/>
-    public BitChartPolarAreaDataset(IEnumerable<double> data) : base(data) { }
+    public BitChartLegacyPolarAreaDataset(IEnumerable<double> data) : base(data) { }
 
     /// <inheritdoc/>
-    protected BitChartPolarAreaDataset(BitChartChartType type) : base(type) { }
+    protected BitChartLegacyPolarAreaDataset(BitChartLegacyChartType type) : base(type) { }
 }
 
 /// <summary>
@@ -18,47 +18,47 @@ public class BitChartPolarAreaDataset : BitChartPolarAreaDataset<double>
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/charts/polar.html#dataset-properties">here (Chart.js)</a>.
 /// </summary>
 // Very similar to PieDataset, so the summaries are inherited.
-public class BitChartPolarAreaDataset<T> : BitChartDataset<T>
+public class BitChartLegacyPolarAreaDataset<T> : BitChartLegacyDataset<T>
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartPolarAreaDataset{T}"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyPolarAreaDataset{T}"/>.
     /// </summary>
-    public BitChartPolarAreaDataset() : base(BitChartChartType.PolarArea) { }
+    public BitChartLegacyPolarAreaDataset() : base(BitChartLegacyChartType.PolarArea) { }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartPolarAreaDataset{T}"/> with initial data.
+    /// Creates a new instance of <see cref="BitChartLegacyPolarAreaDataset{T}"/> with initial data.
     /// </summary>
-    public BitChartPolarAreaDataset(IEnumerable<T> data) : this()
+    public BitChartLegacyPolarAreaDataset(IEnumerable<T> data) : this()
     {
         AddRange(data);
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartPolarAreaDataset{T}"/> with
-    /// a custom <see cref="BitChartChartType"/>. Use this constructor when
+    /// Creates a new instance of <see cref="BitChartLegacyPolarAreaDataset{T}"/> with
+    /// a custom <see cref="BitChartLegacyChartType"/>. Use this constructor when
     /// you implement a polar-area-like chart.
     /// </summary>
-    /// <param name="type">The <see cref="BitChartChartType"/> to use instead of <see cref="BitChartChartType.PolarArea"/>.</param>
-    protected BitChartPolarAreaDataset(BitChartChartType type) : base(type) { }
+    /// <param name="type">The <see cref="BitChartLegacyChartType"/> to use instead of <see cref="BitChartLegacyChartType.PolarArea"/>.</param>
+    protected BitChartLegacyPolarAreaDataset(BitChartLegacyChartType type) : base(type) { }
 
-    /// <inheritdoc cref="BitChartPieDataset{T}.BackgroundColor"/>
-    public BitChartIndexableOption<string>? BackgroundColor { get; set; }
+    /// <inheritdoc cref="BitChartLegacyPieDataset{T}.BackgroundColor"/>
+    public BitChartLegacyIndexableOption<string>? BackgroundColor { get; set; }
 
-    /// <inheritdoc cref="BitChartPieDataset{T}.BorderAlign"/>
-    public BitChartIndexableOption<BitChartBorderAlign>? BorderAlign { get; set; }
+    /// <inheritdoc cref="BitChartLegacyPieDataset{T}.BorderAlign"/>
+    public BitChartLegacyIndexableOption<BitChartLegacyBorderAlign>? BorderAlign { get; set; }
 
-    /// <inheritdoc cref="BitChartPieDataset{T}.BorderColor"/>
-    public BitChartIndexableOption<string>? BorderColor { get; set; }
+    /// <inheritdoc cref="BitChartLegacyPieDataset{T}.BorderColor"/>
+    public BitChartLegacyIndexableOption<string>? BorderColor { get; set; }
 
-    /// <inheritdoc cref="BitChartPieDataset{T}.BorderWidth"/>
-    public BitChartIndexableOption<int>? BorderWidth { get; set; }
+    /// <inheritdoc cref="BitChartLegacyPieDataset{T}.BorderWidth"/>
+    public BitChartLegacyIndexableOption<int>? BorderWidth { get; set; }
 
-    /// <inheritdoc cref="BitChartPieDataset{T}.HoverBackgroundColor"/>
-    public BitChartIndexableOption<string>? HoverBackgroundColor { get; set; }
+    /// <inheritdoc cref="BitChartLegacyPieDataset{T}.HoverBackgroundColor"/>
+    public BitChartLegacyIndexableOption<string>? HoverBackgroundColor { get; set; }
 
-    /// <inheritdoc cref="BitChartPieDataset{T}.HoverBorderColor"/>
-    public BitChartIndexableOption<string>? HoverBorderColor { get; set; }
+    /// <inheritdoc cref="BitChartLegacyPieDataset{T}.HoverBorderColor"/>
+    public BitChartLegacyIndexableOption<string>? HoverBorderColor { get; set; }
 
-    /// <inheritdoc cref="BitChartPieDataset{T}.HoverBorderWidth"/>
-    public BitChartIndexableOption<int>? HoverBorderWidth { get; set; }
+    /// <inheritdoc cref="BitChartLegacyPieDataset{T}.HoverBorderWidth"/>
+    public BitChartLegacyIndexableOption<int>? HoverBorderWidth { get; set; }
 }

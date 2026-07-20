@@ -3,17 +3,17 @@
 /// <summary>
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/axes/cartesian/time.html#time-units">here (Chart.js)</a>.
 /// </summary>
-public sealed class BitChartTimeMeasurement : BitChartStringEnum
+public sealed class BitChartLegacyTimeMeasurement : BitChartLegacyStringEnum
 {
-    public static BitChartTimeMeasurement Millisecond => new BitChartTimeMeasurement("millisecond");
-    public static BitChartTimeMeasurement Second => new BitChartTimeMeasurement("second");
-    public static BitChartTimeMeasurement Minute => new BitChartTimeMeasurement("minute");
-    public static BitChartTimeMeasurement Hour => new BitChartTimeMeasurement("hour");
-    public static BitChartTimeMeasurement Day => new BitChartTimeMeasurement("day");
-    public static BitChartTimeMeasurement Week => new BitChartTimeMeasurement("week");
-    public static BitChartTimeMeasurement Month => new BitChartTimeMeasurement("month");
-    public static BitChartTimeMeasurement Quarter => new BitChartTimeMeasurement("quarter");
-    public static BitChartTimeMeasurement Year => new BitChartTimeMeasurement("year");
+    public static BitChartLegacyTimeMeasurement Millisecond => new BitChartLegacyTimeMeasurement("millisecond");
+    public static BitChartLegacyTimeMeasurement Second => new BitChartLegacyTimeMeasurement("second");
+    public static BitChartLegacyTimeMeasurement Minute => new BitChartLegacyTimeMeasurement("minute");
+    public static BitChartLegacyTimeMeasurement Hour => new BitChartLegacyTimeMeasurement("hour");
+    public static BitChartLegacyTimeMeasurement Day => new BitChartLegacyTimeMeasurement("day");
+    public static BitChartLegacyTimeMeasurement Week => new BitChartLegacyTimeMeasurement("week");
+    public static BitChartLegacyTimeMeasurement Month => new BitChartLegacyTimeMeasurement("month");
+    public static BitChartLegacyTimeMeasurement Quarter => new BitChartLegacyTimeMeasurement("quarter");
+    public static BitChartLegacyTimeMeasurement Year => new BitChartLegacyTimeMeasurement("year");
 
-    private BitChartTimeMeasurement(string stringRep) : base(stringRep) { }
+    private BitChartLegacyTimeMeasurement(string stringRep) : base(stringRep) { }
 }

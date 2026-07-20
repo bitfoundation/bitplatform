@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The base class for all tick mark configurations of cartesian axes (see <see cref="BitChartCartesianAxis"/>). Ticks-subconfig of <see cref="BitChartCartesianAxis"/>.
+/// The base class for all tick mark configurations of cartesian axes (see <see cref="BitChartLegacyCartesianAxis"/>). Ticks-subconfig of <see cref="BitChartLegacyCartesianAxis"/>.
 /// <para>As per documentation <a href="https://www.chartjs.org/docs/latest/axes/cartesian/#tick-configuration">here (Chart.js)</a>.</para>
 /// </summary>
-public abstract class BitChartCartesianTicks : BitChartTicks
+public abstract class BitChartLegacyCartesianTicks : BitChartLegacyTicks
 {
     /// <summary>
     /// Gets or sets the user defined minimum number for the scale, overrides minimum value from data.

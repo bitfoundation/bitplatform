@@ -3,11 +3,11 @@
 /// <summary>
 /// The ultimate base class for tick mark configurations.
 /// </summary>
-public abstract class BitChartSubTicks
+public abstract class BitChartLegacySubTicks
 {
     /// <summary>
     /// Gets or sets the font color for a tick's label.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? FontColor { get; set; }
 
@@ -24,7 +24,7 @@ public abstract class BitChartSubTicks
     /// <summary>
     /// Gets or sets the font style for a tick's label.
     /// </summary>
-    public BitChartFontStyle? FontStyle { get; set; }
+    public BitChartLegacyFontStyle? FontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the height of an individual line of text.

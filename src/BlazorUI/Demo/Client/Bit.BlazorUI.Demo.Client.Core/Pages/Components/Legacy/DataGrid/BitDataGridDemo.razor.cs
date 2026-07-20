@@ -13,7 +13,7 @@ public partial class BitDataGridDemo : AppComponentBase
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = @"Defines the child components of this instance. 
-                            For example, you may define columns by adding components derived from the BitDataGridColumnBase<TGridItem>.",
+                            For example, you may define columns by adding components derived from the BitDataGridLegacyColumnBase<TGridItem>.",
          },
          new()
          {
@@ -78,12 +78,12 @@ public partial class BitDataGridDemo : AppComponentBase
          new()
          {
              Name = "Pagination",
-             Type = "BitDataGridPaginationState?",
+             Type = "BitDataGridLegacyPaginationState?",
              DefaultValue = "null",
-             Description = @"Optionally links this BitDataGrid<TGridItem> instance with a BitDataGridPaginationState model,
+             Description = @"Optionally links this BitDataGridLegacy<TGridItem> instance with a BitDataGridLegacyPaginationState model,
                              causing the grid to fetch and render only the current page of data.
                              This is normally used in conjunction with a Paginator component or some other UI logic
-                             that displays and updates the supplied BitDataGridPaginationState instance.",
+                             that displays and updates the supplied BitDataGridLegacyPaginationState instance.",
              LinkType = LinkType.Link,
              Href = "#pagination-state",
          },
@@ -100,35 +100,35 @@ public partial class BitDataGridDemo : AppComponentBase
             Name = "RowClass",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The CSS class of all rows of the BitDataGrid.",
+            Description = @"The CSS class of all rows of the BitDataGridLegacy.",
          },
          new()
          {
             Name = "RowClassSelector",
             Type = "Func<TGridItem, string>?",
             DefaultValue = "null",
-            Description = @"The function to generate the CSS class of each row of the BitDataGrid.",
+            Description = @"The function to generate the CSS class of each row of the BitDataGridLegacy.",
          },
          new()
          {
             Name = "RowStyle",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The CSS style of all rows of the BitDataGrid.",
+            Description = @"The CSS style of all rows of the BitDataGridLegacy.",
          },
          new()
          {
             Name = "RowStyleSelector",
             Type = "Func<TGridItem, string>?",
             DefaultValue = "null",
-            Description = @"The function to generate the CSS style of each row of the BitDataGrid.",
+            Description = @"The function to generate the CSS style of each row of the BitDataGridLegacy.",
          },
          new()
          {
             Name = "RowTemplate",
-            Type = "RenderFragment<BitDataGridRowTemplateArgs<TGridItem>>?",
+            Type = "RenderFragment<BitDataGridLegacyRowTemplateArgs<TGridItem>>?",
             DefaultValue = "null",
-            Description = @"Optional template to customize row rendering. Receives BitDataGridRowTemplateArgs with OriginalRow 
+            Description = @"Optional template to customize row rendering. Receives BitDataGridLegacyRowTemplateArgs with OriginalRow 
                             set to the default row content; render it to include the original row, or omit to replace entirely.",
             LinkType = LinkType.Link,
             Href = "#row-template-args",
@@ -155,9 +155,9 @@ public partial class BitDataGridDemo : AppComponentBase
     [
         new()
         {
-            Id = "BitDataGridColumnBase",
-            Title = "BitDataGridColumnBase",
-            Description = "BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing the BitDataGridColumnBase type, which all columns must derive from. It offers some common parameters.",
+            Id = "BitDataGridLegacyColumnBase",
+            Title = "BitDataGridLegacyColumnBase",
+            Description = "BitDataGridLegacy has two built-in column types, BitDataGridLegacyPropertyColumn and BitDataGridLegacyTemplateColumn. You can also create your own column types by subclassing the BitDataGridLegacyColumnBase type, which all columns must derive from. It offers some common parameters.",
             Parameters=
             [
                 new()
@@ -177,14 +177,14 @@ public partial class BitDataGridDemo : AppComponentBase
                 new()
                 {
                     Name = "Align",
-                    Type = "BitDataGridAlign?",
+                    Type = "BitDataGridLegacyAlign?",
                     DefaultValue = "null",
                     Description = "If specified, controls the justification of table header and body cells for this column.",
                 },
                 new()
                 {
                     Name = "HeaderTemplate",
-                    Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
+                    Type = "RenderFragment<BitDataGridLegacyColumnBase<TGridItem>>?",
                     DefaultValue = "null",
                     Description = @"An optional template for this column's header cell. If not specified, the default header template
                                     includes the Title along with any applicable sort indicators and options buttons.",
@@ -192,12 +192,12 @@ public partial class BitDataGridDemo : AppComponentBase
                 new()
                 {
                     Name = "ColumnOptions",
-                    Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
+                    Type = "RenderFragment<BitDataGridLegacyColumnBase<TGridItem>>?",
                     DefaultValue = "null",
                     Description = @"If specified, indicates that this column has this associated options UI. A button to display this
                                     UI will be included in the header cell by default.
                                     If HeaderTemplate is used, it is left up to that template to render any relevant
-                                    ""show options"" UI and invoke the grid's BitDataGrid<TGridItem>.ShowColumnOptions(BitDataGridColumnBase<TGridItem>).",
+                                    ""show options"" UI and invoke the grid's BitDataGridLegacy<TGridItem>.ShowColumnOptions(BitDataGridLegacyColumnBase<TGridItem>).",
                 },
                 new()
                 {
@@ -205,13 +205,13 @@ public partial class BitDataGridDemo : AppComponentBase
                     Type = "bool?",
                     DefaultValue = "null",
                     Description = @"Indicates whether the data should be sortable by this column.
-                                    The default value may vary according to the column type (for example, a BitDataGridTemplateColumn<TGridItem>
-                                    is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).",
+                                    The default value may vary according to the column type (for example, a BitDataGridLegacyTemplateColumn<TGridItem>
+                                    is sortable by default if any BitDataGridLegacyTemplateColumn<TGridItem>.SortBy parameter is specified).",
                 },
                 new()
                 {
                     Name = "IsDefaultSort",
-                    Type = "BitDataGridSortDirection?",
+                    Type = "BitDataGridLegacySortDirection?",
                     DefaultValue = "null",
                     Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
                 },
@@ -227,8 +227,8 @@ public partial class BitDataGridDemo : AppComponentBase
         },
         new()
         {
-            Id="BitDataGridPropertyColumn",
-            Title = "BitDataGridPropertyColumn",
+            Id="BitDataGridLegacyPropertyColumn",
+            Title = "BitDataGridLegacyPropertyColumn",
             Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
             Parameters=
             [
@@ -249,8 +249,8 @@ public partial class BitDataGridDemo : AppComponentBase
         },
         new()
         {
-            Id = "BitDataGridTemplateColumn",
-            Title = "BitDataGridTemplateColumn",
+            Id = "BitDataGridLegacyTemplateColumn",
+            Title = "BitDataGridLegacyTemplateColumn",
             Description = @"It uses arbitrary Razor fragments to supply contents for its cells. It can't infer the column's title or sort order automatically. Also, it's possible to add arbitrary Blazor components to your table cells. Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid.",
             Parameters =
             [
@@ -263,7 +263,7 @@ public partial class BitDataGridDemo : AppComponentBase
                  new()
                  {
                     Name = "SortBy",
-                    Type = "BitDataGridSort<TGridItem>?",
+                    Type = "BitDataGridLegacySort<TGridItem>?",
                     DefaultValue = "null",
                     Description = "Optionally specifies sorting rules for this column.",
                  },
@@ -271,8 +271,8 @@ public partial class BitDataGridDemo : AppComponentBase
         },
         new()
          {
-            Id = "BitDataGridPaginator",
-            Title = "BitDataGridPaginator",
+            Id = "BitDataGridLegacyPaginator",
+            Title = "BitDataGridLegacyPaginator",
             Description = "A component that provides a user interface for pagination.",
             Parameters=
             [
@@ -307,7 +307,7 @@ public partial class BitDataGridDemo : AppComponentBase
                 new()
                 {
                     Name = "SummaryFormat",
-                    Type = "Func<BitDataGridPaginationState, string>?",
+                    Type = "Func<BitDataGridLegacyPaginationState, string>?",
                     DefaultValue = "null",
                     Description = "Optionally supplies a format for rendering the page count summary.",
                     LinkType = LinkType.Link,
@@ -316,7 +316,7 @@ public partial class BitDataGridDemo : AppComponentBase
                 new()
                 {
                     Name = "SummaryTemplate",
-                    Type = "RenderFragment<BitDataGridPaginationState>?",
+                    Type = "RenderFragment<BitDataGridLegacyPaginationState>?",
                     DefaultValue = "null",
                     Description = "Optionally supplies a template for rendering the page count summary.",
                     LinkType = LinkType.Link,
@@ -325,7 +325,7 @@ public partial class BitDataGridDemo : AppComponentBase
                 new()
                 {
                     Name = "TextFormat",
-                    Type = "Func<BitDataGridPaginationState, string>?",
+                    Type = "Func<BitDataGridLegacyPaginationState, string>?",
                     DefaultValue = "null",
                     Description = "The optional custom format for the main text of the paginator in the middle of it.",
                     LinkType = LinkType.Link,
@@ -334,7 +334,7 @@ public partial class BitDataGridDemo : AppComponentBase
                 new()
                 {
                     Name = "TextTemplate",
-                    Type = "RenderFragment<BitDataGridPaginationState>?",
+                    Type = "RenderFragment<BitDataGridLegacyPaginationState>?",
                     DefaultValue = "null",
                     Description = "The optional custom template for the main text of the paginator in the middle of it.",
                     LinkType = LinkType.Link,
@@ -343,7 +343,7 @@ public partial class BitDataGridDemo : AppComponentBase
                 new()
                 {
                     Name = "Value",
-                    Type = "BitDataGridPaginationState",
+                    Type = "BitDataGridLegacyPaginationState",
                     DefaultValue = "",
                     Description = "Specifies the associated pagination state. This parameter is required.",
                     LinkType = LinkType.Link,
@@ -355,8 +355,8 @@ public partial class BitDataGridDemo : AppComponentBase
         new()
          {
             Id = "pagination-state",
-            Title = "BitDataGridPaginationState",
-            Description = "Holds state to represent the pagination of a BitDataGrid. Tracks the current page index, the number of items per page, and the total item count so a paginator UI and the grid stay in sync.",
+            Title = "BitDataGridLegacyPaginationState",
+            Description = "Holds state to represent the pagination of a BitDataGridLegacy. Tracks the current page index, the number of items per page, and the total item count so a paginator UI and the grid stay in sync.",
             Parameters=
             [
                 new()
@@ -385,7 +385,7 @@ public partial class BitDataGridDemo : AppComponentBase
                     Name = "TotalItemCount",
                     Type = "int?",
                     DefaultValue = "null",
-                    Description = "Gets the total number of items across all pages, if known. The value will be null until an associated BitDataGrid assigns a value after loading data.",
+                    Description = "Gets the total number of items across all pages, if known. The value will be null until an associated BitDataGridLegacy assigns a value after loading data.",
                 },
                 new()
                 {
@@ -400,7 +400,7 @@ public partial class BitDataGridDemo : AppComponentBase
         new()
         {
             Id = "row-template-args",
-            Title = "BitDataGridRowTemplateArgs<TGridItem>",
+            Title = "BitDataGridLegacyRowTemplateArgs<TGridItem>",
             Description = "Arguments passed to the RowTemplate render fragment.",
             Parameters =
             [
@@ -433,9 +433,9 @@ public partial class BitDataGridDemo : AppComponentBase
     [
         new()
         {
-             Id = "BitDataGridAlign",
-             Name = "BitDataGridAlign",
-             Description = "Describes alignment for a BitDataGrid<TGridItem> column.",
+             Id = "BitDataGridLegacyAlign",
+             Name = "BitDataGridLegacyAlign",
+             Description = "Describes alignment for a BitDataGridLegacy<TGridItem> column.",
              Items =
              [
                  new()
@@ -552,16 +552,16 @@ public partial class BitDataGridDemo : AppComponentBase
 
 
     private IQueryable<CountryModel> allCountries = default!;
-    private BitDataGrid<FoodRecall> dataGrid = default!;
-    private BitDataGrid<ProductDto> productsDataGrid = default!;
-    private BitDataGrid<ProductDto> loadingProductsDataGrid = default!;
+    private BitDataGridLegacy<FoodRecall> dataGrid = default!;
+    private BitDataGridLegacy<ProductDto> productsDataGrid = default!;
+    private BitDataGridLegacy<ProductDto> loadingProductsDataGrid = default!;
     private BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
     private BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
-    private BitDataGridPaginationState pagination1 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination2 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination3 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination6 = new() { ItemsPerPage = 7 };
-    private BitDataGridPaginationState pagination7 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination1 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination2 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination3 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination6 = new() { ItemsPerPage = 7 };
+    private BitDataGridLegacyPaginationState pagination7 = new() { ItemsPerPage = 7 };
 
     private HashSet<string> expandedRowTemplateCodes = [];
 
@@ -642,14 +642,14 @@ public partial class BitDataGridDemo : AppComponentBase
                         _ => throw new InvalidOperationException()
                     };
 
-                    query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}");
+                    query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridLegacySortDirection.Ascending ? "asc" : "desc")}");
                 }
 
                 var url = NavigationManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
-                return BitDataGridItemsProviderResult.From(data!.Results!, data!.Meta!.Results!.Total);
+                return BitDataGridLegacyItemsProviderResult.From(data!.Results!, data!.Meta!.Results!.Total);
             }
             catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
             {
@@ -659,7 +659,7 @@ public partial class BitDataGridDemo : AppComponentBase
             }
             catch
             {
-                return BitDataGridItemsProviderResult.From<FoodRecall>([], 0);
+                return BitDataGridLegacyItemsProviderResult.From<FoodRecall>([], 0);
             }
         };
 
@@ -685,14 +685,14 @@ public partial class BitDataGridDemo : AppComponentBase
 
                 if (req.GetSortByProperties().Any())
                 {
-                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridLegacySortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
                 var url = NavigationManager.GetUriWithQueryParameters("api/Products/GetProducts", query);
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
-                return BitDataGridItemsProviderResult.From(data!.Items!, data!.TotalCount);
+                return BitDataGridLegacyItemsProviderResult.From(data!.Items!, data!.TotalCount);
             }
             catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
             {
@@ -702,7 +702,7 @@ public partial class BitDataGridDemo : AppComponentBase
             }
             catch
             {
-                return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+                return BitDataGridLegacyItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
             }
         };
 

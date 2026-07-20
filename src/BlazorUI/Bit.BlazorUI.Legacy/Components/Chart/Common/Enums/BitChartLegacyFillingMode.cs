@@ -7,10 +7,10 @@
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/charts/area.html#filling-modes">here (Chart.js)</a>.
 /// </para>
 /// </summary>
-public sealed class BitChartFillingMode : BitChartObjectEnum
+public sealed class BitChartLegacyFillingMode : BitChartLegacyObjectEnum
 {
     /// <summary>
-    /// Gets a <see cref="BitChartFillingMode"/> that represents filling the area between the current
+    /// Gets a <see cref="BitChartLegacyFillingMode"/> that represents filling the area between the current
     /// dataset and the dataset at the specified relative index.
     /// <para>
     /// Example: Specifying -1 for the third dataset in the chart will cause the area between
@@ -18,23 +18,23 @@ public sealed class BitChartFillingMode : BitChartObjectEnum
     /// </para>
     /// </summary>
     /// <param name="relativeDatasetIndex">The relative index of the dataset to fill to.</param>
-    public static BitChartFillingMode Relative(int relativeDatasetIndex)
+    public static BitChartLegacyFillingMode Relative(int relativeDatasetIndex)
     {
         if (relativeDatasetIndex == 0)
             throw new ArgumentOutOfRangeException(nameof(relativeDatasetIndex));
 
         if (relativeDatasetIndex < 0)
         {
-            return new BitChartFillingMode(relativeDatasetIndex.ToString());
+            return new BitChartLegacyFillingMode(relativeDatasetIndex.ToString());
         }
         else
         {
-            return new BitChartFillingMode($"+{relativeDatasetIndex}");
+            return new BitChartLegacyFillingMode($"+{relativeDatasetIndex}");
         }
     }
 
     /// <summary>
-    /// Gets a <see cref="BitChartFillingMode"/> that represents filling the area between the current
+    /// Gets a <see cref="BitChartLegacyFillingMode"/> that represents filling the area between the current
     /// dataset and the dataset at the specified (zero-based) index.
     /// <para>
     /// Example: Specifying 1 for the third dataset in the chart will cause the area between
@@ -42,46 +42,46 @@ public sealed class BitChartFillingMode : BitChartObjectEnum
     /// </para>
     /// </summary>
     /// <param name="absoluteDatasetIndex">The absolute (zero-based) index of the dataset to fill to.</param>
-    public static BitChartFillingMode Absolute(int absoluteDatasetIndex)
+    public static BitChartLegacyFillingMode Absolute(int absoluteDatasetIndex)
     {
         if (absoluteDatasetIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(absoluteDatasetIndex));
 
-        return new BitChartFillingMode(absoluteDatasetIndex);
+        return new BitChartLegacyFillingMode(absoluteDatasetIndex);
     }
 
     /// <summary>
-    /// Gets a <see cref="BitChartFillingMode"/> that represents no filling.
+    /// Gets a <see cref="BitChartLegacyFillingMode"/> that represents no filling.
     /// </summary>
-    public static BitChartFillingMode Disabled => new BitChartFillingMode(false);
+    public static BitChartLegacyFillingMode Disabled => new BitChartLegacyFillingMode(false);
 
     /// <summary>
-    /// Gets a <see cref="BitChartFillingMode"/> that represents filling the area between
+    /// Gets a <see cref="BitChartLegacyFillingMode"/> that represents filling the area between
     /// the current dataset and the origin.
     /// </summary>
-    public static BitChartFillingMode Origin => new BitChartFillingMode("origin");
+    public static BitChartLegacyFillingMode Origin => new BitChartLegacyFillingMode("origin");
 
     /// <summary>
-    /// Gets a <see cref="BitChartFillingMode"/> that represents filling the area between
+    /// Gets a <see cref="BitChartLegacyFillingMode"/> that represents filling the area between
     /// the current dataset and the start.
     /// </summary>
-    public static BitChartFillingMode Start => new BitChartFillingMode("start");
+    public static BitChartLegacyFillingMode Start => new BitChartLegacyFillingMode("start");
 
     /// <summary>
-    /// Gets a <see cref="BitChartFillingMode"/> that represents filling the area between
+    /// Gets a <see cref="BitChartLegacyFillingMode"/> that represents filling the area between
     /// the current dataset and the end.
     /// </summary>
-    public static BitChartFillingMode End => new BitChartFillingMode("end");
+    public static BitChartLegacyFillingMode End => new BitChartLegacyFillingMode("end");
 
     /// <summary>
-    /// Converts a <see cref="bool"/> value to a <see cref="BitChartFillingMode"/> value.
+    /// Converts a <see cref="bool"/> value to a <see cref="BitChartLegacyFillingMode"/> value.
     /// <see langword="false"/> is equal to <see cref="Disabled"/> and <see langword="true"/>
     /// is equal to <see cref="Origin"/>.
     /// </summary>
     /// <param name="filled">A value indicating whether or not to fill the area.</param>
-    public static implicit operator BitChartFillingMode(bool filled) => new BitChartFillingMode(filled);
+    public static implicit operator BitChartLegacyFillingMode(bool filled) => new BitChartLegacyFillingMode(filled);
 
-    private BitChartFillingMode(int value) : base(value) { }
-    private BitChartFillingMode(string value) : base(value) { }
-    private BitChartFillingMode(bool value) : base(value) { }
+    private BitChartLegacyFillingMode(int value) : base(value) { }
+    private BitChartLegacyFillingMode(string value) : base(value) { }
+    private BitChartLegacyFillingMode(bool value) : base(value) { }
 }

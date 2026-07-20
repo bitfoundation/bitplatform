@@ -3,10 +3,10 @@
 /// <summary>
 /// Represents the config for a polar area chart.
 /// </summary>
-public class BitChartPolarAreaConfig : BitChartConfigBase<BitChartPolarAreaOptions>
+public class BitChartLegacyPolarAreaConfig : BitChartLegacyConfigBase<BitChartLegacyPolarAreaOptions>
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartPolarAreaConfig"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyPolarAreaConfig"/>.
     /// </summary>
-    public BitChartPolarAreaConfig() : base(BitChartChartType.PolarArea) { }
+    public BitChartLegacyPolarAreaConfig() : base(BitChartLegacyChartType.PolarArea) { }
 }

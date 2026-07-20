@@ -5,42 +5,42 @@ public partial class _BitChartLineDemo
 {
     private const int INITAL_COUNT = 5;
 
-    private BitChart _chart = default!;
-    private BitChartLineConfig _config = default!;
+    private BitChartLegacy _chart = default!;
+    private BitChartLegacyLineConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartLineConfig
+        _config = new BitChartLegacyLineConfig
         {
-            Options = new BitChartLineOptions
+            Options = new BitChartLegacyLineOptions
             {
                 Responsive = true,
-                Title = new BitChartOptionsTitle
+                Title = new BitChartLegacyOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart Line Chart"
+                    Text = "BitChartLegacy Line Chart"
                 },
-                Tooltips = new BitChartTooltips
+                Tooltips = new BitChartLegacyTooltips
                 {
-                    Mode = BitChartInteractionMode.Nearest,
+                    Mode = BitChartLegacyInteractionMode.Nearest,
                     Intersect = true
                 },
-                Hover = new BitChartHover
+                Hover = new BitChartLegacyHover
                 {
-                    Mode = BitChartInteractionMode.Nearest,
+                    Mode = BitChartLegacyInteractionMode.Nearest,
                     Intersect = true
                 },
-                Scales = new BitChartScales
+                Scales = new BitChartLegacyScales
                 {
                     XAxes =
                     [
-                        new BitChartCategoryAxis
+                        new BitChartLegacyCategoryAxis
                         {
-                            ScaleLabel = new BitChartScaleLabel
+                            ScaleLabel = new BitChartLegacyScaleLabel
                             {
                                 LabelString = "Month"
                             },
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -48,13 +48,13 @@ public partial class _BitChartLineDemo
                     ],
                     YAxes =
                     [
-                        new BitChartLinearCartesianAxis
+                        new BitChartLegacyLinearCartesianAxis
                         {
-                            ScaleLabel = new BitChartScaleLabel
+                            ScaleLabel = new BitChartLegacyScaleLabel
                             {
                                 LabelString = "Value"
                             },
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -64,20 +64,20 @@ public partial class _BitChartLineDemo
             }
         };
 
-        IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "My first dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            Fill = BitChartFillingMode.Disabled
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            Fill = BitChartLegacyFillingMode.Disabled
         };
 
-        IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "My second dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            Fill = BitChartFillingMode.Disabled
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            Fill = BitChartLegacyFillingMode.Disabled
         };
 
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
@@ -88,46 +88,46 @@ public partial class _BitChartLineDemo
 
 
     private readonly string razorCode = @"
-<BitChart Config=""_config"" @ref=""_chart"" />";
+<BitChartLegacy Config=""_config"" @ref=""_chart"" />";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
-private BitChart _chart = default!;
-private BitChartLineConfig _config = default!;
+private BitChartLegacy _chart = default!;
+private BitChartLegacyLineConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartLineConfig
+    _config = new BitChartLegacyLineConfig
     {
-        Options = new BitChartLineOptions
+        Options = new BitChartLegacyLineOptions
         {
             Responsive = true,
-            Title = new BitChartOptionsTitle
+            Title = new BitChartLegacyOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart Line Chart""
+                Text = ""BitChartLegacy Line Chart""
             },
-            Tooltips = new BitChartTooltips
+            Tooltips = new BitChartLegacyTooltips
             {
-                Mode = BitChartInteractionMode.Nearest,
+                Mode = BitChartLegacyInteractionMode.Nearest,
                 Intersect = true
             },
-            Hover = new BitChartHover
+            Hover = new BitChartLegacyHover
             {
-                Mode = BitChartInteractionMode.Nearest,
+                Mode = BitChartLegacyInteractionMode.Nearest,
                 Intersect = true
             },
-            Scales = new BitChartScales
+            Scales = new BitChartLegacyScales
             {
                 XAxes =
                 [
-                    new BitChartCategoryAxis
+                    new BitChartLegacyCategoryAxis
                     {
-                        ScaleLabel = new BitChartScaleLabel
+                        ScaleLabel = new BitChartLegacyScaleLabel
                         {
                             LabelString = ""Month""
                         },
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -135,13 +135,13 @@ protected override void OnInitialized()
                 ],
                 YAxes =
                 [
-                    new BitChartLinearCartesianAxis
+                    new BitChartLegacyLinearCartesianAxis
                     {
-                        ScaleLabel = new BitChartScaleLabel
+                        ScaleLabel = new BitChartLegacyScaleLabel
                         {
                             LabelString = ""Value""
                         },
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -151,20 +151,20 @@ protected override void OnInitialized()
         }
     };
 
-    IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""My first dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        Fill = BitChartFillingMode.Disabled
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        Fill = BitChartLegacyFillingMode.Disabled
     };
 
-    IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""My second dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        Fill = BitChartFillingMode.Disabled
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        Fill = BitChartLegacyFillingMode.Disabled
     };
 
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));

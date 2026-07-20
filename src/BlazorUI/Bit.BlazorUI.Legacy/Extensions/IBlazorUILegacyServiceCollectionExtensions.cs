@@ -18,7 +18,7 @@ public static class IBlazorUILegacyServiceCollectionExtensions
     {
         services.AddBitBlazorUIServices(trySingleton);
 
-        services.TryAddScoped<BitMarkdownService>();
+        services.TryAddScoped<BitMarkdownServiceLegacy>();
 
         return services;
     }

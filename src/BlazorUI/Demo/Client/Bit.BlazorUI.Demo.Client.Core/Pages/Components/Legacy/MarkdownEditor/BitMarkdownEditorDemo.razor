@@ -2,16 +2,16 @@
 @page "/components/legacy/markdowneditor"
 
 <PageOutlet Url="components/legacy/markdowneditor"
-            Title="MarkdownEditor"
-            Description="BitMarkdownEditor is a simple markdown editor like the GitHub editor." />
+            Title="MarkdownEditorLegacy"
+            Description="BitMarkdownEditorLegacy is a simple markdown editor like the GitHub editor." />
 
-<DemoPage Name="MarkdownEditor"
-          Description="BitMarkdownEditor is a simple markdown editor like the GitHub editor."
+<DemoPage Name="MarkdownEditorLegacy"
+          Description="BitMarkdownEditorLegacy is a simple markdown editor like the GitHub editor."
           SecondaryNames="@(["MdEditor"])"
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
-          GitHubExtrasUrl="MarkdownEditor/BitMarkdownEditor.razor"
+          GitHubLegacyUrl="MarkdownEditor/BitMarkdownEditorLegacy.razor"
           GitHubDemoUrl="Legacy/MarkdownEditor/BitMarkdownEditorDemo.razor">
     <NotesTemplate>
         <BitText>
@@ -33,30 +33,30 @@
         </BitText>
         <br/>
         <div style="display:flex;gap:1rem;height:300px">
-            <Bit.BlazorUI.Legacy.BitMarkdownEditor @bind-Value="@introValue" />
-            <Bit.BlazorUI.Legacy.BitMarkdownViewer Markdown="@introValue" Style="overflow:auto" />
+            <Bit.BlazorUI.Legacy.BitMarkdownEditorLegacy @bind-Value="@introValue" />
+            <Bit.BlazorUI.Legacy.BitMarkdownViewerLegacy Markdown="@introValue" Style="overflow:auto" />
         </div>
     </IntroductionTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
-                The simplest usage of a BitMarkdownEditor is without any specific configuration.
+                The simplest usage of a BitMarkdownEditorLegacy is without any specific configuration.
                 You can start typing and discover it's basic features.
             </div>
             <br />
             <div style="height:300px">
-                <Bit.BlazorUI.Legacy.BitMarkdownEditor />
+                <Bit.BlazorUI.Legacy.BitMarkdownEditorLegacy />
             </div>
         </DemoExample>
 
         <DemoExample Title="GetValue" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                Using GetValue public api of the BitMarkdownEditor you can have access to the current value of it 
+                Using GetValue public api of the BitMarkdownEditorLegacy you can have access to the current value of it 
                 without creating any dotnet object that is the most optimized way to have the content of the editor.
             </div>
             <br />
             <div style="display:flex;gap:1rem;height:300px">
-                <Bit.BlazorUI.Legacy.BitMarkdownEditor @ref="editorRef" />
+                <Bit.BlazorUI.Legacy.BitMarkdownEditorLegacy @ref="editorRef" />
                 <BitButton OnClick="GetValue">=></BitButton>
                 <pre style="padding:1rem;width:100%">
                     @value
@@ -67,7 +67,7 @@
         <DemoExample Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>By utilizing the OnChange and DefaultValue parameters you can have another way to access the content of the editor.</div><br />
             <div style="display:flex;gap:1rem;height:300px">
-                <Bit.BlazorUI.Legacy.BitMarkdownEditor DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
+                <Bit.BlazorUI.Legacy.BitMarkdownEditorLegacy DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
                 <pre style="padding:1rem;width:100%">
                     @onChangeValue
                 </pre>
@@ -81,25 +81,25 @@
             </div>
             <br />
             <div style="display:flex;gap:1rem;height:300px">
-                <Bit.BlazorUI.Legacy.BitMarkdownEditor @bind-Value="bindingValue" />
+                <Bit.BlazorUI.Legacy.BitMarkdownEditorLegacy @bind-Value="bindingValue" />
                 <textarea @bind-value="@bindingValue" @bind-value:event="oninput" style="width:100%;background:transparent"/>
             </div>
         </DemoExample>
 
         <DemoExample Title="Undo/Redo" RazorCode="@example5RazorCode" Id="example5">
             <div>
-                The BitMarkdownEditor has built-in undo/redo support that tracks all your changes automatically.
+                The BitMarkdownEditorLegacy has built-in undo/redo support that tracks all your changes automatically.
                 Use <strong>Ctrl+Z</strong> to undo the last change and <strong>Ctrl+Y</strong> (or <strong>Ctrl+Shift+Z</strong>) to redo it.
             </div>
             <br />
             <div style="height:300px">
-                <Bit.BlazorUI.Legacy.BitMarkdownEditor DefaultValue="# Undo/Redo Demo" />
+                <Bit.BlazorUI.Legacy.BitMarkdownEditorLegacy DefaultValue="# Undo/Redo Demo" />
             </div>
         </DemoExample>
 
         <DemoExample Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                In this example you can see all advanced features of the BitMarkdownEditor in shaping an editor very similar 
+                In this example you can see all advanced features of the BitMarkdownEditorLegacy in shaping an editor very similar 
                 to the github one.
             </div>
             <br />
@@ -110,30 +110,30 @@
 
                 <div style="display:@(showPreview ? "none" : "flex");gap:0.5rem;align-items:center">
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Heading" 
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.Heading)">H</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.Heading)">H</BitButton>
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Bold"
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.Bold)">B</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.Bold)">B</BitButton>
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Italic"
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.Italic)">I</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.Italic)">I</BitButton>
                     |
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Link"
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.Link)">L</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.Link)">L</BitButton>
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Picture"
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.Picture)">P</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.Picture)">P</BitButton>
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Quote"
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.Quote)">Q</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.Quote)">Q</BitButton>
                     |
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code"
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.Code)">C</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.Code)">C</BitButton>
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code block"
-                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorCommand.CodeBlock)">CB</BitButton>
+                               OnClick="async () => await advancedRef.Run(Bit.BlazorUI.Legacy.BitMarkdownEditorLegacyCommand.CodeBlock)">CB</BitButton>
                 </div>
             </div>
 
             <div style="height:300px">
-                <Bit.BlazorUI.Legacy.BitMarkdownEditor @ref="advancedRef" @bind-Value="advancedValue" 
+                <Bit.BlazorUI.Legacy.BitMarkdownEditorLegacy @ref="advancedRef" @bind-Value="advancedValue" 
                                    Style="@($"display:{(showPreview ? "none" : "block")}")" />
-                <Bit.BlazorUI.Legacy.BitMarkdownViewer Markdown="@advancedValue" 
+                <Bit.BlazorUI.Legacy.BitMarkdownViewerLegacy Markdown="@advancedValue" 
                                    Style="@($"display:{(showPreview ? "block" : "none")}")" />
             </div>
         </DemoExample>

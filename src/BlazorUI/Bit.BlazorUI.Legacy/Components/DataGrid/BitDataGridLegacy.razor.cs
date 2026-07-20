@@ -3,11 +3,11 @@
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content.
+/// BitDataGridLegacy is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 [CascadingTypeParameter(nameof(TGridItem))]
-public partial class BitDataGrid<TGridItem> : IAsyncDisposable
+public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
 {
     private bool _disposed;
     private int _ariaBodyRowCount;
@@ -22,12 +22,12 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     // We cascade the InternalGridContext to descendants, which in turn call it to add themselves to _columns
     // This happens on every render so that the column list can be updated dynamically
     private InternalGridContext<TGridItem> _internalGridContext;
-    private List<BitDataGridColumnBase<TGridItem>> _columns;
+    private List<BitDataGridLegacyColumnBase<TGridItem>> _columns;
     private bool _collectingColumns; // Columns might re-render themselves arbitrarily. We only want to capture them at a defined time.
 
     // Tracking state for options and sorting
-    private BitDataGridColumnBase<TGridItem>? _displayOptionsForColumn;
-    private BitDataGridColumnBase<TGridItem>? _sortByColumn;
+    private BitDataGridLegacyColumnBase<TGridItem>? _displayOptionsForColumn;
+    private BitDataGridLegacyColumnBase<TGridItem>? _sortByColumn;
     private bool _sortByAscending;
     private bool _checkColumnOptionsPosition;
     // Set when column recollection drops the active sort column; triggers a data refresh after render
@@ -37,12 +37,12 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     // start of a collection pass, so a *new* default sort applied during a later recollection can also
     // queue a refresh (the very first collection already loads data via ColumnsFirstCollected).
     private bool _columnsCollectedOnce;
-    private BitDataGridColumnBase<TGridItem>? _sortByColumnBeforeCollect;
+    private BitDataGridLegacyColumnBase<TGridItem>? _sortByColumnBeforeCollect;
     // Captures the first default-sort column (and its direction) discovered during the current
     // collection pass, so FinishCollectingColumns can adopt it when the previously active sort column
     // is no longer present after recollection instead of clearing sorting outright.
-    private BitDataGridColumnBase<TGridItem>? _defaultSortColumnDuringCollect;
-    private BitDataGridSortDirection? _defaultSortDirectionDuringCollect;
+    private BitDataGridLegacyColumnBase<TGridItem>? _defaultSortColumnDuringCollect;
+    private BitDataGridLegacySortDirection? _defaultSortDirectionDuringCollect;
 
     // The associated ES6 module, which uses document-level event listeners
     //private IJSObjectReference? _jsModule;
@@ -70,7 +70,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     private bool _lastResizableColumns;
 
     // If the PaginationState mutates, it raises this event. We use it to trigger a re-render.
-    private readonly EventCallbackSubscriber<BitDataGridPaginationState> _currentPageItemsChanged;
+    private readonly EventCallbackSubscriber<BitDataGridLegacyPaginationState> _currentPageItemsChanged;
 
 
 
@@ -80,13 +80,13 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
 
     /// <summary>
-    /// Constructs an instance of <see cref="BitDataGrid{TGridItem}"/>.
+    /// Constructs an instance of <see cref="BitDataGridLegacy{TGridItem}"/>.
     /// </summary>
-    public BitDataGrid()
+    public BitDataGridLegacy()
     {
         _columns = new();
         _internalGridContext = new(this);
-        _currentPageItemsChanged = new(EventCallback.Factory.Create<BitDataGridPaginationState>(this, RefreshDataCoreAsync));
+        _currentPageItemsChanged = new(EventCallback.Factory.Create<BitDataGridLegacyPaginationState>(this, RefreshDataCoreAsync));
         _renderColumnHeaders = RenderColumnHeaders;
         _renderNonVirtualizedRows = RenderNonVirtualizedRows;
 
@@ -104,7 +104,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
     /// <summary>
     /// Defines the child components of this instance. For example, you may define columns by adding
-    /// components derived from the <see cref="BitDataGridColumnBase{TGridItem}"/> base class.
+    /// components derived from the <see cref="BitDataGridLegacyColumnBase{TGridItem}"/> base class.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -164,13 +164,13 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// Optionally links this <see cref="BitDataGrid{TGridItem}"/> instance with a <see cref="BitDataGridPaginationState"/> model,
+    /// Optionally links this <see cref="BitDataGridLegacy{TGridItem}"/> instance with a <see cref="BitDataGridLegacyPaginationState"/> model,
     /// causing the grid to fetch and render only the current page of data.
     ///
-    /// This is normally used in conjunction with a <see cref="BitDataGridPaginator"/> component or some other UI logic
-    /// that displays and updates the supplied <see cref="BitDataGridPaginationState"/> instance.
+    /// This is normally used in conjunction with a <see cref="BitDataGridLegacyPaginator"/> component or some other UI logic
+    /// that displays and updates the supplied <see cref="BitDataGridLegacyPaginationState"/> instance.
     /// </summary>
-    [Parameter] public BitDataGridPaginationState? Pagination { get; set; }
+    [Parameter] public BitDataGridLegacyPaginationState? Pagination { get; set; }
 
     /// <summary>
     /// If true, renders draggable handles around the column headers, allowing the user to resize the columns
@@ -199,10 +199,10 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     [Parameter] public Func<TGridItem, string>? RowStyleSelector { get; set; }
 
     /// <summary>
-    /// Optional template to customize row rendering. Receives <see cref="BitDataGridRowTemplateArgs{TGridItem}"/> with
-    /// <see cref="BitDataGridRowTemplateArgs{T}.OriginalRow"/> set to the default row content; call it to render the original cells or replace with custom content.
+    /// Optional template to customize row rendering. Receives <see cref="BitDataGridLegacyRowTemplateArgs{TGridItem}"/> with
+    /// <see cref="BitDataGridLegacyRowTemplateArgs{T}.OriginalRow"/> set to the default row content; call it to render the original cells or replace with custom content.
     /// </summary>
-    [Parameter] public RenderFragment<BitDataGridRowTemplateArgs<TGridItem>>? RowTemplate { get; set; }
+    [Parameter] public RenderFragment<BitDataGridLegacyRowTemplateArgs<TGridItem>>? RowTemplate { get; set; }
 
     /// <summary>
     /// A theme name, with default value "default". This affects which styling rules match the table.
@@ -228,15 +228,15 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// Sets the grid's current sort column to the specified <paramref name="column"/>.
     /// </summary>
     /// <param name="column">The column that defines the new sort order.</param>
-    /// <param name="direction">The direction of sorting. If the value is <see cref="BitDataGridSortDirection.Auto"/>, then it will toggle the direction on each call.</param>
+    /// <param name="direction">The direction of sorting. If the value is <see cref="BitDataGridLegacySortDirection.Auto"/>, then it will toggle the direction on each call.</param>
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
-    public Task SortByColumnAsync(BitDataGridColumnBase<TGridItem> column, BitDataGridSortDirection direction = BitDataGridSortDirection.Auto)
+    public Task SortByColumnAsync(BitDataGridLegacyColumnBase<TGridItem> column, BitDataGridLegacySortDirection direction = BitDataGridLegacySortDirection.Auto)
     {
         _sortByAscending = direction switch
         {
-            BitDataGridSortDirection.Ascending => true,
-            BitDataGridSortDirection.Descending => false,
-            BitDataGridSortDirection.Auto => _sortByColumn == column ? !_sortByAscending : true,
+            BitDataGridLegacySortDirection.Ascending => true,
+            BitDataGridLegacySortDirection.Descending => false,
+            BitDataGridLegacySortDirection.Auto => _sortByColumn == column ? !_sortByAscending : true,
             _ => throw new NotSupportedException($"Unknown sort direction {direction}"),
         };
 
@@ -247,11 +247,11 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     }
 
     /// <summary>
-    /// Displays the <see cref="BitDataGridColumnBase{TGridItem}.ColumnOptions"/> UI for the specified column, closing any other column
+    /// Displays the <see cref="BitDataGridLegacyColumnBase{TGridItem}.ColumnOptions"/> UI for the specified column, closing any other column
     /// options UI that was previously displayed.
     /// </summary>
     /// <param name="column">The column whose options are to be displayed, if any are available.</param>
-    public void ShowColumnOptions(BitDataGridColumnBase<TGridItem> column)
+    public void ShowColumnOptions(BitDataGridLegacyColumnBase<TGridItem> column)
     {
         _displayOptionsForColumn = column;
         _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
@@ -280,7 +280,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
 
     // Invoked by descendant columns at a special time during rendering
-    internal void AddColumn(BitDataGridColumnBase<TGridItem> column, BitDataGridSortDirection? isDefaultSortDirection)
+    internal void AddColumn(BitDataGridLegacyColumnBase<TGridItem> column, BitDataGridLegacySortDirection? isDefaultSortDirection)
     {
         if (_collectingColumns)
         {
@@ -289,7 +289,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
             if (_sortByColumn is null && isDefaultSortDirection.HasValue)
             {
                 _sortByColumn = column;
-                _sortByAscending = isDefaultSortDirection.Value != BitDataGridSortDirection.Descending;
+                _sortByAscending = isDefaultSortDirection.Value != BitDataGridLegacySortDirection.Descending;
             }
 
             // Remember the first default-sort column collected in this pass even when a (possibly stale)
@@ -313,7 +313,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
         if (Items is not null && ItemsProvider is not null)
         {
-            throw new InvalidOperationException($"BitDataGrid requires one of {nameof(Items)} or {nameof(ItemsProvider)}, but both were specified.");
+            throw new InvalidOperationException($"BitDataGridLegacy requires one of {nameof(Items)} or {nameof(ItemsProvider)}, but both were specified.");
         }
 
         // Perform a re-query only if the data source or something else has changed
@@ -443,7 +443,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
                 // A newly collected column declares a default sort, so adopt it instead of clearing
                 // sorting; otherwise a dynamic column swap would drop the intended default order.
                 _sortByColumn = _defaultSortColumnDuringCollect;
-                _sortByAscending = _defaultSortDirectionDuringCollect!.Value != BitDataGridSortDirection.Descending;
+                _sortByAscending = _defaultSortDirectionDuringCollect!.Value != BitDataGridLegacySortDirection.Descending;
             }
             else
             {
@@ -528,7 +528,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
         {
             // If we're not using Virtualize, we build and execute a request against the items provider directly
             var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
-            var request = new BitDataGridItemsProviderRequest<TGridItem>(
+            var request = new BitDataGridLegacyItemsProviderRequest<TGridItem>(
                 startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
             try
             {
@@ -590,9 +590,9 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
             count = Math.Max(0, Math.Min(request.Count, Pagination.ItemsPerPage - request.StartIndex));
         }
 
-        var providerRequest = new BitDataGridItemsProviderRequest<TGridItem>(
+        var providerRequest = new BitDataGridLegacyItemsProviderRequest<TGridItem>(
             startIndex, count, _sortByColumn, _sortByAscending, request.CancellationToken);
-        BitDataGridItemsProviderResult<TGridItem> providerResult;
+        BitDataGridLegacyItemsProviderResult<TGridItem> providerResult;
         try
         {
             providerResult = await ResolveItemsRequestAsync(providerRequest);
@@ -631,7 +631,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     }
 
     // Normalizes all the different ways of configuring a data source so they have common GridItemsProvider-shaped API
-    private async ValueTask<BitDataGridItemsProviderResult<TGridItem>> ResolveItemsRequestAsync(BitDataGridItemsProviderRequest<TGridItem> request)
+    private async ValueTask<BitDataGridLegacyItemsProviderResult<TGridItem>> ResolveItemsRequestAsync(BitDataGridLegacyItemsProviderRequest<TGridItem> request)
     {
         if (ItemsProvider is not null)
         {
@@ -646,20 +646,20 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
                 result = result.Take(request.Count.Value);
             }
             var resultArray = _asyncQueryExecutor is null ? result.ToArray() : await _asyncQueryExecutor.ToArrayAsync(result);
-            return BitDataGridItemsProviderResult.From(resultArray, totalItemCount);
+            return BitDataGridLegacyItemsProviderResult.From(resultArray, totalItemCount);
         }
         else
         {
-            return BitDataGridItemsProviderResult.From(Array.Empty<TGridItem>(), 0);
+            return BitDataGridLegacyItemsProviderResult.From(Array.Empty<TGridItem>(), 0);
         }
     }
 
-    private string AriaSortValue(BitDataGridColumnBase<TGridItem> column)
+    private string AriaSortValue(BitDataGridLegacyColumnBase<TGridItem> column)
         => _sortByColumn == column
             ? (_sortByAscending ? "ascending" : "descending")
             : "none";
 
-    private string? ColumnHeaderClass(BitDataGridColumnBase<TGridItem> column)
+    private string? ColumnHeaderClass(BitDataGridLegacyColumnBase<TGridItem> column)
         => _sortByColumn == column
         ? $"{ColumnClass(column)} {(_sortByAscending ? "bit-qkg-csa" : "bit-qkg-csd")}"
         : ColumnClass(column);
@@ -692,10 +692,10 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
 
 
 
-    private static string? ColumnClass(BitDataGridColumnBase<TGridItem> column) => column.Align switch
+    private static string? ColumnClass(BitDataGridLegacyColumnBase<TGridItem> column) => column.Align switch
     {
-        BitDataGridAlign.Center => $"bit-qkg-cjc {column.Class}",
-        BitDataGridAlign.Right => $"bit-qkg-cje {column.Class}",
+        BitDataGridLegacyAlign.Center => $"bit-qkg-cjc {column.Class}",
+        BitDataGridLegacyAlign.Right => $"bit-qkg-cje {column.Class}",
         _ => column.Class,
     };
 

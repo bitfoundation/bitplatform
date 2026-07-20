@@ -1,14 +1,14 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Represents the options-subconfig of a <see cref="BitChartRadarConfig"/>.
+/// Represents the options-subconfig of a <see cref="BitChartLegacyRadarConfig"/>.
 /// </summary>
-public class BitChartRadarOptions : BitChartBaseConfigOptions
+public class BitChartLegacyRadarOptions : BitChartLegacyBaseConfigOptions
 {
     /// <summary>
     /// Gets or sets the scale configuration for this chart.
     /// </summary>
-    public BitChartLinearRadialAxis? Scale { get; set; }
+    public BitChartLegacyLinearRadialAxis? Scale { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether or not line gaps (by NaN data) will be spanned.

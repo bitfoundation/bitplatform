@@ -23,28 +23,28 @@
     /// <summary>
     /// If specified, controls the justification of table header and body cells for this column.
     /// </summary>
-    [Parameter] public BitDataGridAlign Align { get; set; }
+    [Parameter] public BitDataGridLegacyAlign Align { get; set; }
 
     /// <summary>
     /// An optional template for this column's header cell. If not specified, the default header template
     /// includes the <see cref="Title" /> along with any applicable sort indicators and options buttons.
     /// </summary>
-    [Parameter] public RenderFragment<BitDataGridColumnBase<TGridItem>>? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment<BitDataGridLegacyColumnBase<TGridItem>>? HeaderTemplate { get; set; }
 
     /// <summary>
     /// If specified, indicates that this column has this associated options UI. A button to display this
     /// UI will be included in the header cell by default.
     ///
     /// If <see cref="HeaderTemplate" /> is used, it is left up to that template to render any relevant
-    /// "show options" UI and invoke the grid's <see cref="BitDataGrid{TGridItem}.ShowColumnOptions(BitDataGridColumnBase{TGridItem})" />).
+    /// "show options" UI and invoke the grid's <see cref="BitDataGridLegacy{TGridItem}.ShowColumnOptions(BitDataGridLegacyColumnBase{TGridItem})" />).
     /// </summary>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
 
     /// <summary>
     /// Indicates whether the data should be sortable by this column.
     ///
-    /// The default value may vary according to the column type (for example, a <see cref="BitDataGridTemplateColumn{TGridItem}" />
-    /// is sortable by default if any <see cref="BitDataGridTemplateColumn{TGridItem}.SortBy" /> parameter is specified).
+    /// The default value may vary according to the column type (for example, a <see cref="BitDataGridLegacyTemplateColumn{TGridItem}" />
+    /// is sortable by default if any <see cref="BitDataGridLegacyTemplateColumn{TGridItem}.SortBy" /> parameter is specified).
     /// </summary>
     [Parameter] public bool? Sortable { get; set; }
 
@@ -52,7 +52,7 @@
     /// If specified and not null, indicates that this column represents the initial sort order
     /// for the grid. The supplied value controls the default sort direction.
     /// </summary>
-    [Parameter] public BitDataGridSortDirection? IsDefaultSort { get; set; }
+    [Parameter] public BitDataGridLegacySortDirection? IsDefaultSort { get; set; }
 
     /// <summary>
     /// If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.
@@ -60,9 +60,9 @@
     [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderTemplate { get; set; }
 
     /// <summary>
-    /// Gets a reference to the enclosing <see cref="BitDataGrid{TGridItem}" />.
+    /// Gets a reference to the enclosing <see cref="BitDataGridLegacy{TGridItem}" />.
     /// </summary>
-    public BitDataGrid<TGridItem> Grid => InternalGridContext.Grid;
+    public BitDataGridLegacy<TGridItem> Grid => InternalGridContext.Grid;
 
     /// <summary>
     /// Overridden by derived components to provide rendering logic for the column's cells.
@@ -81,8 +81,8 @@
 
     /// <summary>
     /// Get a value indicating whether this column should act as sortable if no value was set for the
-    /// <see cref="BitDataGridColumnBase{TGridItem}.Sortable" /> parameter. The default behavior is not to be
-    /// sortable unless <see cref="BitDataGridColumnBase{TGridItem}.Sortable" /> is true.
+    /// <see cref="BitDataGridLegacyColumnBase{TGridItem}.Sortable" /> parameter. The default behavior is not to be
+    /// sortable unless <see cref="BitDataGridLegacyColumnBase{TGridItem}.Sortable" /> is true.
     ///
     /// Derived components may override this to implement alternative default sortability rules.
     /// </summary>
@@ -90,9 +90,9 @@
     protected virtual bool IsSortableByDefault() => false;
 
     /// <summary>
-    /// Constructs an instance of <see cref="BitDataGridColumnBase{TGridItem}" />.
+    /// Constructs an instance of <see cref="BitDataGridLegacyColumnBase{TGridItem}" />.
     /// </summary>
-    public BitDataGridColumnBase()
+    public BitDataGridLegacyColumnBase()
     {
         HeaderContent = RenderDefaultHeaderContent;
     }
@@ -111,7 +111,7 @@
         }
         else
         {
-            @if (ColumnOptions is not null && Align != BitDataGridAlign.Right)
+            @if (ColumnOptions is not null && Align != BitDataGridLegacyAlign.Right)
             {
                 <button type="button" class="bit-qkg-cob" aria-label="@ColumnOptionsLabel()" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }
@@ -130,7 +130,7 @@
                 </div>
             }
 
-            @if (ColumnOptions is not null && Align == BitDataGridAlign.Right)
+            @if (ColumnOptions is not null && Align == BitDataGridLegacyAlign.Right)
             {
                 <button type="button" class="bit-qkg-cob" aria-label="@ColumnOptionsLabel()" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }

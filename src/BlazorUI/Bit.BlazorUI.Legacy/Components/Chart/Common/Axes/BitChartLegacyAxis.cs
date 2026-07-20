@@ -3,13 +3,13 @@
 /// <summary>
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/axes/#common-configuration">here (Chart.js)</a>.
 /// </summary>
-public abstract class BitChartAxis
+public abstract class BitChartLegacyAxis
 {
     /// <summary>
-    /// Controls the axis global visibility (visible when <see cref="BitChartAxisDisplay.True"/>, hidden when <see cref="BitChartAxisDisplay.False"/>).
-    /// When display: <see cref="BitChartAxisDisplay.Auto"/>, the axis is visible only if at least one associated dataset is visible.
+    /// Controls the axis global visibility (visible when <see cref="BitChartLegacyAxisDisplay.True"/>, hidden when <see cref="BitChartLegacyAxisDisplay.False"/>).
+    /// When display: <see cref="BitChartLegacyAxisDisplay.Auto"/>, the axis is visible only if at least one associated dataset is visible.
     /// </summary>
-    public BitChartAxisDisplay? Display { get; set; }
+    public BitChartLegacyAxisDisplay? Display { get; set; }
 
     /// <summary>
     /// The weight used to sort the axis. Higher weights are further away from the chart area.

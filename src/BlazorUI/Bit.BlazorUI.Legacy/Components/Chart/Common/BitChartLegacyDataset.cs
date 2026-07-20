@@ -6,9 +6,9 @@ namespace Bit.BlazorUI.Legacy;
 /// <summary>
 /// Represents a dataset containing a collection of values.
 /// </summary>
-/// <typeparam name="T">The type of data this <see cref="BitChartDataset{T}"/> contains.</typeparam>
+/// <typeparam name="T">The type of data this <see cref="BitChartLegacyDataset{T}"/> contains.</typeparam>
 [JsonObject]
-public abstract class BitChartDataset<T> : Collection<T>, IDataset<T>
+public abstract class BitChartLegacyDataset<T> : Collection<T>, IDataset<T>
 {
     /// <summary>
     /// Gets the ID of this dataset. Used to keep track of the datasets
@@ -23,18 +23,18 @@ public abstract class BitChartDataset<T> : Collection<T>, IDataset<T>
     public IReadOnlyList<T> Data { get; }
 
     /// <summary>
-    /// Gets the <see cref="BitChartChartType"/> this dataset is for.
+    /// Gets the <see cref="BitChartLegacyChartType"/> this dataset is for.
     /// Important to set in mixed charts.
     /// </summary>
-    public BitChartChartType Type { get; }
+    public BitChartLegacyChartType Type { get; }
 
     /// <summary>
-    /// Creates a new <see cref="BitChartDataset{T}"/>.
+    /// Creates a new <see cref="BitChartLegacyDataset{T}"/>.
     /// </summary>
-    /// <param name="type">The <see cref="BitChartChartType"/> this dataset is for.</param>
+    /// <param name="type">The <see cref="BitChartLegacyChartType"/> this dataset is for.</param>
     /// <param name="id">The id for this dataset. If <see langword="null"/>,
     /// a random GUID string will be used.</param>
-    protected BitChartDataset(BitChartChartType type, string? id = null) : base([])
+    protected BitChartLegacyDataset(BitChartLegacyChartType type, string? id = null) : base([])
     {
         Data = new ReadOnlyCollection<T>(Items);
         Id = id ?? Guid.NewGuid().ToString();
@@ -42,18 +42,18 @@ public abstract class BitChartDataset<T> : Collection<T>, IDataset<T>
     }
 
     /// <summary>
-    /// Adds the elements of the specified collection to the end of the <see cref="BitChartDataset{T}"/>.
+    /// Adds the elements of the specified collection to the end of the <see cref="BitChartLegacyDataset{T}"/>.
     /// </summary>
     /// <param name="items">
-    /// The collection whose elements should be added to the end of the <see cref="BitChartDataset{T}"/>.
+    /// The collection whose elements should be added to the end of the <see cref="BitChartLegacyDataset{T}"/>.
     /// </param>
     public void AddRange(IEnumerable<T> items) => ((List<T>)Items).AddRange(items ?? throw new ArgumentNullException(nameof(items)));
 
     /// <summary>
-    /// Adds the elements of the specified collection to the end of the <see cref="BitChartDataset{T}"/>.
+    /// Adds the elements of the specified collection to the end of the <see cref="BitChartLegacyDataset{T}"/>.
     /// </summary>
     /// <param name="items">
-    /// The collection whose elements should be added to the end of the <see cref="BitChartDataset{T}"/>.
+    /// The collection whose elements should be added to the end of the <see cref="BitChartLegacyDataset{T}"/>.
     /// </param>
     public void AddRange(params T[] items) => AddRange(items as IEnumerable<T>);
 
@@ -63,18 +63,18 @@ public abstract class BitChartDataset<T> : Collection<T>, IDataset<T>
     /// <param name="obj">The object to compare with the current object.</param>
     /// <returns><see langword="true"/> if the specified object is considered to be equal
     /// to the current object; otherwise, <see langword="false"/>.</returns>
-    public override bool Equals(object? obj) => obj is BitChartDataset<T> set &&
+    public override bool Equals(object? obj) => obj is BitChartLegacyDataset<T> set &&
                                                 Id == set.Id &&
                                                 EqualityComparer<IList<T>>.Default.Equals(Items, set.Items);
 
     /// <summary>
-    /// Returns the hash code for this <see cref="BitChartDataset{T}"/>.
+    /// Returns the hash code for this <see cref="BitChartLegacyDataset{T}"/>.
     /// </summary>
-    /// <returns>The hash code for this <see cref="BitChartDataset{T}"/>.</returns>
+    /// <returns>The hash code for this <see cref="BitChartLegacyDataset{T}"/>.</returns>
     public override int GetHashCode() => HashCode.Combine(Items, Id);
 
-    public static bool operator ==(BitChartDataset<T> left, BitChartDataset<T> right) =>
-            EqualityComparer<BitChartDataset<T>>.Default.Equals(left, right);
+    public static bool operator ==(BitChartLegacyDataset<T> left, BitChartLegacyDataset<T> right) =>
+            EqualityComparer<BitChartLegacyDataset<T>>.Default.Equals(left, right);
 
-    public static bool operator !=(BitChartDataset<T> left, BitChartDataset<T> right) => !(left == right);
+    public static bool operator !=(BitChartLegacyDataset<T> left, BitChartLegacyDataset<T> right) => !(left == right);
 }

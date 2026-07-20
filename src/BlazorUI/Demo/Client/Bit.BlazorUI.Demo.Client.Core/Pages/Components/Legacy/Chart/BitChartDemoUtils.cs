@@ -49,24 +49,24 @@ public static class BitChartDemoUtils
         return factors;
     }
 
-    public static List<BitChartPoint> CreateRandomPoints(int count)
+    public static List<BitChartLegacyPoint> CreateRandomPoints(int count)
     {
-        List<BitChartPoint> points = [];
+        List<BitChartLegacyPoint> points = [];
 
         for (int i = 0; i < count; i++)
         {
             double x = RandomScalingFactor();
             double y = RandomScalingFactor();
 
-            points.Add(new BitChartPoint(x, y));
+            points.Add(new BitChartLegacyPoint(x, y));
         }
 
         return points;
     }
 
-    public static List<BitChartBubblePoint> CreateRandomBubblePoints(int count)
+    public static List<BitChartLegacyBubblePoint> CreateRandomBubblePoints(int count)
     {
-        List<BitChartBubblePoint> points = [];
+        List<BitChartLegacyBubblePoint> points = [];
 
         for (int i = 0; i < count; i++)
         {
@@ -74,7 +74,7 @@ public static class BitChartDemoUtils
             double y = RandomScalingFactor();
             double radius = RandomScalingFactor() % 20 + 5;
 
-            points.Add(new BitChartBubblePoint(x, y, radius));
+            points.Add(new BitChartLegacyBubblePoint(x, y, radius));
         }
 
         return points;

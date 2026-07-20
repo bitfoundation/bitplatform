@@ -22,7 +22,7 @@ public partial class BitPdfReaderDemo
          new()
          {
             Name = "Config",
-            Type = "BitPdfReaderConfig",
+            Type = "BitPdfReaderLegacyConfig",
             DefaultValue = "",
             Description = "The configuration of the pdf reader.",
             LinkType = LinkType.Link,
@@ -70,7 +70,7 @@ public partial class BitPdfReaderDemo
         new()
          {
             Id = "pdf-reader-config",
-            Title = "BitPdfReaderConfig",
+            Title = "BitPdfReaderLegacyConfig",
             Parameters=
             [
                 new()
@@ -105,14 +105,14 @@ public partial class BitPdfReaderDemo
         }
     ];
 
-    private readonly BitPdfReaderConfig basicConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/hello-world.pdf" };
+    private readonly BitPdfReaderLegacyConfig basicConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/hello-world.pdf" };
 
-    private readonly BitPdfReaderConfig renderAllConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf" };
+    private readonly BitPdfReaderLegacyConfig renderAllConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf" };
 
 
     private double scale = 1;
-    private BitPdfReader publicApiPdfReaderRef = default!;
-    private BitPdfReaderConfig publicApiConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf" };
+    private BitPdfReaderLegacy publicApiPdfReaderRef = default!;
+    private BitPdfReaderLegacyConfig publicApiConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf" };
 
     private async Task ZoomIn()
     {
@@ -134,14 +134,14 @@ public partial class BitPdfReaderDemo
 
 
     private readonly string example1RazorCode = @"
-<BitPdfReader Config=""basicConfig"" />";
+<BitPdfReaderLegacy Config=""basicConfig"" />";
     private readonly string example1CsharpCode = @"
-private readonly BitPdfReaderConfig basicConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };";
+private readonly BitPdfReaderLegacyConfig basicConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };";
 
     private readonly string example2RazorCode = @"
-<BitPdfReader RenderAllPages Horizontal Config=""renderAllConfig"" />";
+<BitPdfReaderLegacy RenderAllPages Horizontal Config=""renderAllConfig"" />";
     private readonly string example2CsharpCode = @"
-private readonly BitPdfReaderConfig renderAllConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };";
+private readonly BitPdfReaderLegacyConfig renderAllConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };";
 
     private readonly string example3RazorCode = @"
 <BitButton OnClick=""() => publicApiPdfReaderRef!.First()"">First</BitButton>
@@ -152,11 +152,11 @@ private readonly BitPdfReaderConfig renderAllConfig = new() { Url = ""url-to-the
 <BitButton OnClick=""ZoomOut"">Zoom -</BitButton>
 <BitButton OnClick=""ZoomIn"">Zoom +</BitButton>
 
-<BitPdfReader @ref=""publicApiPdfReaderRef"" Config=""publicApiConfig"" />";
+<BitPdfReaderLegacy @ref=""publicApiPdfReaderRef"" Config=""publicApiConfig"" />";
     private readonly string example3CsharpCode = @"
 private double scale = 1;
-private BitPdfReader publicApiPdfReaderRef = default!;
-private BitPdfReaderConfig publicApiConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };
+private BitPdfReaderLegacy publicApiPdfReaderRef = default!;
+private BitPdfReaderLegacyConfig publicApiConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };
 
 private async Task ZoomIn()
 {

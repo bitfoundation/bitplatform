@@ -3,33 +3,33 @@
 /// <summary>
 /// As per documentation <a href="https://www.chartjs.org/docs/latest/charts/line.html#stepped-line">here (Chart.js)</a>.
 /// </summary>
-public sealed class BitChartSteppedLine : BitChartObjectEnum
+public sealed class BitChartLegacySteppedLine : BitChartLegacyObjectEnum
 {
     /// <summary>
     /// No Step Interpolation (default)
     /// </summary>
-    public static BitChartSteppedLine False => new BitChartSteppedLine(false);
+    public static BitChartLegacySteppedLine False => new BitChartLegacySteppedLine(false);
 
     /// <summary>
     /// Step-before Interpolation (same as <see cref="Before"/>)
     /// </summary>
-    public static BitChartSteppedLine True => new BitChartSteppedLine(true);
+    public static BitChartLegacySteppedLine True => new BitChartLegacySteppedLine(true);
 
     /// <summary>
     /// Step-before Interpolation
     /// </summary>
-    public static BitChartSteppedLine Before => new BitChartSteppedLine("before");
+    public static BitChartLegacySteppedLine Before => new BitChartLegacySteppedLine("before");
 
     /// <summary>
     /// Step-after Interpolation
     /// </summary>
-    public static BitChartSteppedLine After => new BitChartSteppedLine("after");
+    public static BitChartLegacySteppedLine After => new BitChartLegacySteppedLine("after");
 
     /// <summary>
     /// Step-middle Interpolation
     /// </summary>
-    public static BitChartSteppedLine Middle => new BitChartSteppedLine("middle");
+    public static BitChartLegacySteppedLine Middle => new BitChartLegacySteppedLine("middle");
 
-    private BitChartSteppedLine(string stringValue) : base(stringValue) { }
-    private BitChartSteppedLine(bool boolValue) : base(boolValue) { }
+    private BitChartLegacySteppedLine(string stringValue) : base(stringValue) { }
+    private BitChartLegacySteppedLine(bool boolValue) : base(boolValue) { }
 }

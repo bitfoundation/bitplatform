@@ -5,28 +5,28 @@ public partial class _BitChartBarDemo
 {
     private const int INITAL_COUNT = 5;
 
-    private BitChart _chart = default!;
-    private BitChartBarConfig _config = default!;
+    private BitChartLegacy _chart = default!;
+    private BitChartLegacyBarConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartBarConfig
+        _config = new BitChartLegacyBarConfig
         {
-            Options = new BitChartBarOptions
+            Options = new BitChartLegacyBarOptions
             {
                 Responsive = true,
-                Title = new BitChartOptionsTitle
+                Title = new BitChartLegacyOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart bar Chart"
+                    Text = "BitChartLegacy bar Chart"
                 },
-                Scales = new BitChartBarScales
+                Scales = new BitChartLegacyBarScales
                 {
                     XAxes =
                     [
-                        new BitChartBarCategoryAxis
+                        new BitChartLegacyBarCategoryAxis
                         {
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -34,9 +34,9 @@ public partial class _BitChartBarDemo
                     ],
                     YAxes =
                     [
-                        new BitChartLinearCartesianAxis
+                        new BitChartLegacyLinearCartesianAxis
                         {
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -47,10 +47,10 @@ public partial class _BitChartBarDemo
         };
 
         System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
-        var dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        var dataset = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "Dataset 1",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -81,11 +81,11 @@ public partial class _BitChartBarDemo
     private void AddBarDataset()
     {
         System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-        IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+        IDataset<int> dataset = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
         {
             Label = $"Dataset {_config.Data.Datasets.Count + 1}",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
-            BorderColor = BitChartColorUtil.FromDrawingColor(color),
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(color),
             BorderWidth = 1
         };
 
@@ -95,7 +95,7 @@ public partial class _BitChartBarDemo
 
     private void RemoveBarDataset()
     {
-        IList<IBitChartDataset> datasets = _config.Data.Datasets;
+        IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
@@ -140,7 +140,7 @@ public partial class _BitChartBarDemo
 
 
     private readonly string razorCode = @"
-<BitChart Config=""_config"" @ref=""_chart"" />
+<BitChartLegacy Config=""_config"" @ref=""_chart"" />
 
 <BitButton OnClick=""RandomizeBarData"">Randomize Data</BitButton>
 <BitButton OnClick= ""AddBarDataset"" > Add Dataset</BitButton>
@@ -150,28 +150,28 @@ public partial class _BitChartBarDemo
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
-private BitChart _chart = default!;
-private BitChartBarConfig _config = default!;
+private BitChartLegacy _chart = default!;
+private BitChartLegacyBarConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartBarConfig
+    _config = new BitChartLegacyBarConfig
     {
-        Options = new BitChartBarOptions
+        Options = new BitChartLegacyBarOptions
         {
             Responsive = true,
-            Title = new BitChartOptionsTitle
+            Title = new BitChartLegacyOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart bar Chart""
+                Text = ""BitChartLegacy bar Chart""
             },
-            Scales = new BitChartBarScales
+            Scales = new BitChartLegacyBarScales
             {
                 XAxes =
                 [
-                    new BitChartBarCategoryAxis
+                    new BitChartLegacyBarCategoryAxis
                     {
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -179,9 +179,9 @@ protected override void OnInitialized()
                 ],
                 YAxes =
                 [
-                    new BitChartLinearCartesianAxis
+                    new BitChartLegacyLinearCartesianAxis
                     {
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -192,10 +192,10 @@ protected override void OnInitialized()
     };
 
     System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
-    var dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    var dataset = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""Dataset 1"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -226,11 +226,11 @@ private void RandomizeBarData()
 private void AddBarDataset()
 {
     System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-    IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+    IDataset<int> dataset = new BitChartLegacyBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
     {
         Label = $""Dataset {_config.Data.Datasets.Count + 1}"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
-        BorderColor = BitChartColorUtil.FromDrawingColor(color),
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(color),
         BorderWidth = 1
     };
 
@@ -240,7 +240,7 @@ private void AddBarDataset()
 
 private void RemoveBarDataset()
 {
-    IList<IBitChartDataset> datasets = _config.Data.Datasets;
+    IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
     if (datasets.Count == 0)
         return;
 

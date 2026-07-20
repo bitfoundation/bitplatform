@@ -1,8 +1,8 @@
 namespace BitBlazorUI.Legacy {
     export class PdfReader {
-        private static _bitPdfReaders = new Map<string, BitPdfReaderConfig>();
+        private static _bitPdfReaders = new Map<string, BitPdfReaderLegacyConfig>();
 
-        public static async setup(config: BitPdfReaderConfig) {
+        public static async setup(config: BitPdfReaderLegacyConfig) {
             const { pdfjsLib } = globalThis as unknown as { pdfjsLib: PdfJsLib };
 
             const loadingTask = pdfjsLib.getDocument(config.url);
@@ -14,7 +14,7 @@ namespace BitBlazorUI.Legacy {
             return pdfDoc.numPages;
         }
 
-        public static async refreshPage(config: BitPdfReaderConfig, pageNumber: number) {
+        public static async refreshPage(config: BitPdfReaderLegacyConfig, pageNumber: number) {
             let oldConfig = PdfReader._bitPdfReaders.get(config.id);
             if (oldConfig) {
                 PdfReader._bitPdfReaders.set(config.id, Object.assign(oldConfig, config));
@@ -88,7 +88,7 @@ declare type PdfJsLib = {
     GlobalWorkerOptions: GlobalWorkerOptions
 }
 
-declare type BitPdfReaderConfig = {
+declare type BitPdfReaderLegacyConfig = {
     id: string;
     url: string;
     scale: number;

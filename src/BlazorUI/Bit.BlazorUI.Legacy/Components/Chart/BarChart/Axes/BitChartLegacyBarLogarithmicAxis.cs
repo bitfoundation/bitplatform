@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Extended version of <see cref="BitChartLogarithmicAxis"/> for use in a bar chart.
+/// Extended version of <see cref="BitChartLegacyLogarithmicAxis"/> for use in a bar chart.
 /// <para>As per documentation <a href="https://www.chartjs.org/docs/latest/charts/bar.html#scale-configuration">here (Chart.js)</a>.</para>
 /// </summary>
-public class BitChartBarLogarithmicAxis : BitChartLogarithmicAxis
+public class BitChartLegacyBarLogarithmicAxis : BitChartLegacyLogarithmicAxis
 {
     /// <summary>
     /// Gets or sets the percentage (0-1) of the available width each bar should be within the category width.
@@ -19,9 +19,9 @@ public class BitChartBarLogarithmicAxis : BitChartLogarithmicAxis
 
     /// <summary>
     /// Gets or sets the width of each bar in pixels.
-    /// If set to <see cref="BitChartBarThickness.Flex"/>, it computes "optimal" sample widths that globally arrange bars side by side. If not set (default), bars are equally sized based on the smallest interval.
+    /// If set to <see cref="BitChartLegacyBarThickness.Flex"/>, it computes "optimal" sample widths that globally arrange bars side by side. If not set (default), bars are equally sized based on the smallest interval.
     /// </summary>
-    public BitChartBarThickness BarThickness { get; set; } = default!;
+    public BitChartLegacyBarThickness BarThickness { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the maximum bar thickness.
@@ -40,7 +40,7 @@ public class BitChartBarLogarithmicAxis : BitChartLogarithmicAxis
     /// If <see langword="true"/>, the bars for a particular data point fall between the grid lines.
     /// The grid line will move to the left by one half of the tick interval.
     /// If <see langword="false"/>, the grid line will go right down the middle of the bars.
-    /// <para>Changing this value will directly affect <see cref="BitChartGridLines.OffsetGridLines"/> of the property <see cref="BitChartCartesianAxis.GridLines"/> in this instance.</para>
+    /// <para>Changing this value will directly affect <see cref="BitChartLegacyGridLines.OffsetGridLines"/> of the property <see cref="BitChartLegacyCartesianAxis.GridLines"/> in this instance.</para>
     /// </summary>
     public bool? OffsetGridLines
     {
@@ -55,7 +55,7 @@ public class BitChartBarLogarithmicAxis : BitChartLogarithmicAxis
                 }
                 else
                 {
-                    GridLines = new BitChartGridLines();
+                    GridLines = new BitChartLegacyGridLines();
                 }
             }
 

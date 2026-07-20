@@ -1,10 +1,10 @@
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Arguments passed to the <see cref="BitDataGrid{T}.RowTemplate"/> render fragment.
+/// Arguments passed to the <see cref="BitDataGridLegacy{T}.RowTemplate"/> render fragment.
 /// </summary>
 /// <typeparam name="T">The type of data represented by each row in the grid.</typeparam>
-public class BitDataGridRowTemplateArgs<T>
+public class BitDataGridLegacyRowTemplateArgs<T>
 {
     /// <summary>
     /// A render fragment that produces the original row markup (the default <c>&lt;tr&gt;</c> with all column cells).

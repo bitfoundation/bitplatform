@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
-internal static class BitRichTextEditorJsRuntimeExtensions
+internal static class BitRichTextEditorLegacyJsRuntimeExtensions
 {
     public static ValueTask BitRichTextEditorSetup(this IJSRuntime jsRuntime,
                                                         string id,
-                                                        DotNetObjectReference<BitRichTextEditor>? dotnetObj,
+                                                        DotNetObjectReference<BitRichTextEditorLegacy>? dotnetObj,
                                                         ElementReference editorContainer,
                                                         ElementReference? toolbarContainer,
                                                         string? theme,

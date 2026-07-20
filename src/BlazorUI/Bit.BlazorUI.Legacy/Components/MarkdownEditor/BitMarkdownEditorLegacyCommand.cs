@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Available commands to run by a BitMarkdownEditor on its current value.
+/// Available commands to run by a BitMarkdownEditorLegacy on its current value.
 /// </summary>
-public enum BitMarkdownEditorCommand
+public enum BitMarkdownEditorLegacyCommand
 {
     /// <summary>
     /// Makes the current line a heading.

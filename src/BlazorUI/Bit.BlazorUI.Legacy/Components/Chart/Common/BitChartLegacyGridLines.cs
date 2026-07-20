@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The grid lines sub-config of the axis-configuration (see <see cref="BitChartAxis"/>).
+/// The grid lines sub-config of the axis-configuration (see <see cref="BitChartLegacyAxis"/>).
 /// </summary>
-public class BitChartGridLines
+public class BitChartLegacyGridLines
 {
     /// <summary>
     /// If false, do not display grid lines for this axis.
@@ -17,9 +17,9 @@ public class BitChartGridLines
 
     /// <summary>
     /// The color of the grid lines. If specified as an array, the first color applies to the first grid line, the second to the second grid line and so on.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
-    public BitChartIndexableOption<string>? Color { get; set; }
+    public BitChartLegacyIndexableOption<string>? Color { get; set; }
 
     /// <summary>
     /// Length and spacing of dashes on grid lines
@@ -30,7 +30,7 @@ public class BitChartGridLines
     /// <summary>
     /// Stroke width of grid lines.
     /// </summary>
-    public BitChartIndexableOption<double>? LineWidth { get; set; }
+    public BitChartLegacyIndexableOption<double>? LineWidth { get; set; }
 
     /// <summary>
     /// If true, draw border at the edge between the axis and the chart area.
@@ -59,7 +59,7 @@ public class BitChartGridLines
 
     /// <summary>
     /// Stroke color of the grid line for the first index (index 0).
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? ZeroLineColor { get; set; }
 

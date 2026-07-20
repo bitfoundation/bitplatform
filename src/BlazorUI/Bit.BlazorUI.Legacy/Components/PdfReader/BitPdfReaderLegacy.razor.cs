@@ -3,9 +3,9 @@
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// BitPdfReader is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world.
+/// BitPdfReaderLegacy is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world.
 /// </summary>
-public partial class BitPdfReader : BitComponentBase
+public partial class BitPdfReaderLegacy : BitComponentBase
 {
     private bool _allPageRendered;
     private int _numberOfPages = 1;
@@ -29,9 +29,9 @@ public partial class BitPdfReader : BitComponentBase
     [Parameter] public string? CanvasStyle { get; set; }
 
     /// <summary>
-    /// The configuration of the pdf reader (<see cref="BitPdfReaderConfig"/>).
+    /// The configuration of the pdf reader (<see cref="BitPdfReaderLegacyConfig"/>).
     /// </summary>
-    [Parameter] public BitPdfReaderConfig Config { get; set; } = new();
+    [Parameter] public BitPdfReaderLegacyConfig Config { get; set; } = new();
 
     /// <summary>
     /// Renders the pages horizontally.
@@ -163,7 +163,7 @@ public partial class BitPdfReader : BitComponentBase
         return base.OnParametersSetAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPdfReaderConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPdfReaderLegacyConfig))]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

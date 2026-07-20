@@ -1,14 +1,14 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The options-subconfig of a <see cref="BitChartLineConfig"/>
+/// The options-subconfig of a <see cref="BitChartLegacyLineConfig"/>
 /// </summary>
-public class BitChartLineOptions : BitChartBaseConfigOptions
+public class BitChartLegacyLineOptions : BitChartLegacyBaseConfigOptions
 {
     /// <summary>
-    /// The scales for this chart. You can use any <see cref="BitChartCartesianAxis"/> for x and y.
+    /// The scales for this chart. You can use any <see cref="BitChartLegacyCartesianAxis"/> for x and y.
     /// </summary>
-    public BitChartScales? Scales { get; set; }
+    public BitChartLegacyScales? Scales { get; set; }
 
     /// <summary>
     /// If false, the lines between points are not drawn.

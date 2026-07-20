@@ -4,10 +4,10 @@ namespace Bit.BlazorUI.Legacy;
 // so that it doesn't show up by mistake in unrelated components.
 internal class InternalGridContext<TGridItem>
 {
-    public BitDataGrid<TGridItem> Grid { get; }
+    public BitDataGridLegacy<TGridItem> Grid { get; }
     public EventCallbackSubscribable<object?> ColumnsFirstCollected { get; } = new();
 
-    public InternalGridContext(BitDataGrid<TGridItem> grid)
+    public InternalGridContext(BitDataGridLegacy<TGridItem> grid)
     {
         Grid = grid;
     }

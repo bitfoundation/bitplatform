@@ -4,12 +4,12 @@
 /// The tooltips-subconfig of the common options (applies to all charts).
 /// <para>As per documentation <a href="https://www.chartjs.org/docs/latest/configuration/tooltip.html#tooltip-configuration">here (Chart.js)</a>.</para>
 /// </summary>
-public class BitChartTooltips
+public class BitChartLegacyTooltips
 {
     /// <summary>
     /// Gets or sets which elements appear in the tooltip.
     /// </summary>
-    public BitChartInteractionMode? Mode { get; set; }
+    public BitChartLegacyInteractionMode? Mode { get; set; }
 
     /// <summary>
     /// Gets or sets the value indicating if the hover mode only applies when the mouse position intersects an item on the chart.
@@ -24,11 +24,11 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the mode for positioning the tooltip.
     /// </summary>
-    public BitChartTooltipPosition? Position { get; set; }
+    public BitChartLegacyTooltipPosition? Position { get; set; }
 
     /// <summary>
     /// Gets or sets the background color of the tooltip.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? BackgroundColor { get; set; }
 
@@ -45,11 +45,11 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the title font style.
     /// </summary>
-    public BitChartFontStyle? TitleFontStyle { get; set; }
+    public BitChartLegacyFontStyle? TitleFontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the title font color.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? TitleFontColor { get; set; }
 
@@ -76,11 +76,11 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the body font style.
     /// </summary>
-    public BitChartFontStyle? BodyFontStyle { get; set; }
+    public BitChartLegacyFontStyle? BodyFontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the body font color.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? BodyFontColor { get; set; }
 
@@ -102,11 +102,11 @@ public class BitChartTooltips
     /// <summary>
     /// Gets or sets the footer font style.
     /// </summary>
-    public BitChartFontStyle? FooterFontStyle { get; set; }
+    public BitChartLegacyFontStyle? FooterFontStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the footer font color.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? FooterFontColor { get; set; }
 
@@ -147,7 +147,7 @@ public class BitChartTooltips
 
     /// <summary>
     /// Gets or sets the color to draw behind the colored boxes when multiple items are in the tooltip.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? MultiKeyBackground { get; set; }
 
@@ -158,7 +158,7 @@ public class BitChartTooltips
 
     /// <summary>
     /// Gets or sets the color of the border.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? BorderColor { get; set; }
 

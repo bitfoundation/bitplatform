@@ -3,17 +3,17 @@ using System.Linq.Expressions;
 namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Represents a <see cref="BitDataGrid{TGridItem}"/> column whose cells display a single value.
+/// Represents a <see cref="BitDataGridLegacy{TGridItem}"/> column whose cells display a single value.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 /// <typeparam name="TProp">The type of the value being displayed in the column's cells.</typeparam>
-public class BitDataGridPropertyColumn<TGridItem, TProp> : BitDataGridColumnBase<TGridItem>, IBitDataGridSortBuilderColumn<TGridItem>
+public class BitDataGridLegacyPropertyColumn<TGridItem, TProp> : BitDataGridLegacyColumnBase<TGridItem>, IBitDataGridLegacySortBuilderColumn<TGridItem>
 {
     private Expression<Func<TGridItem, TProp>>? _lastAssignedProperty;
     private string? _lastAssignedFormat;
     private bool _titleWasExplicitlySet;
     private Func<TGridItem, string?>? _cellTextFunc;
-    private BitDataGridSort<TGridItem>? _sortBuilder;
+    private BitDataGridLegacySort<TGridItem>? _sortBuilder;
 
     /// <summary>
     /// Defines the value to be displayed in this column's cells.
@@ -27,7 +27,7 @@ public class BitDataGridPropertyColumn<TGridItem, TProp> : BitDataGridColumnBase
     /// </summary>
     [Parameter] public string? Format { get; set; }
 
-    BitDataGridSort<TGridItem>? IBitDataGridSortBuilderColumn<TGridItem>.SortBuilder => _sortBuilder;
+    BitDataGridLegacySort<TGridItem>? IBitDataGridLegacySortBuilderColumn<TGridItem>.SortBuilder => _sortBuilder;
 
 
     /// <inheritdoc />
@@ -84,7 +84,7 @@ public class BitDataGridPropertyColumn<TGridItem, TProp> : BitDataGridColumnBase
             }
 
             _cellTextFunc = cellTextFunc;
-            _sortBuilder = BitDataGridSort<TGridItem>.ByAscending(Property);
+            _sortBuilder = BitDataGridLegacySort<TGridItem>.ByAscending(Property);
 
             // Only record the assignments after the formatter has been built and validated, so a failed
             // Format/TProp validation above doesn't suppress a retry on the next parameters set (which

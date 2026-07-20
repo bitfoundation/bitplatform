@@ -5,46 +5,46 @@ public partial class _BitChartTimeDemo
 {
     private const int INITAL_COUNT = 5;
 
-    private BitChart _chart = default!;
-    private BitChartLineConfig _config = default!;
+    private BitChartLegacy _chart = default!;
+    private BitChartLegacyLineConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartLineConfig
+        _config = new BitChartLegacyLineConfig
         {
-            Options = new BitChartLineOptions
+            Options = new BitChartLegacyLineOptions
             {
                 Responsive = true,
-                Title = new BitChartOptionsTitle
+                Title = new BitChartLegacyOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart Time Scale Chart"
+                    Text = "BitChartLegacy Time Scale Chart"
                 },
-                Tooltips = new BitChartTooltips
+                Tooltips = new BitChartLegacyTooltips
                 {
-                    Mode = BitChartInteractionMode.Nearest,
+                    Mode = BitChartLegacyInteractionMode.Nearest,
                     Intersect = true
                 },
-                Hover = new BitChartHover
+                Hover = new BitChartLegacyHover
                 {
-                    Mode = BitChartInteractionMode.Nearest,
+                    Mode = BitChartLegacyInteractionMode.Nearest,
                     Intersect = true
                 },
-                Scales = new BitChartScales
+                Scales = new BitChartLegacyScales
                 {
                     XAxes =
                     [
-                        new BitChartTimeAxis
+                        new BitChartLegacyTimeAxis
                         {
-                            ScaleLabel = new BitChartScaleLabel
+                            ScaleLabel = new BitChartLegacyScaleLabel
                             {
                                 LabelString = "Date"
                             },
-                            Time = new BitChartTimeOptions
+                            Time = new BitChartLegacyTimeOptions
                             {
                                 TooltipFormat = "dd MMM HH:mm"
                             },
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -52,13 +52,13 @@ public partial class _BitChartTimeDemo
                     ],
                     YAxes =
                     [
-                        new BitChartLinearCartesianAxis
+                        new BitChartLegacyLinearCartesianAxis
                         {
-                            ScaleLabel = new BitChartScaleLabel
+                            ScaleLabel = new BitChartLegacyScaleLabel
                             {
                                 LabelString = "Value"
                             },
-                            GridLines = new BitChartGridLines
+                            GridLines = new BitChartLegacyGridLines
                             {
                                 Color = "gray"
                             }
@@ -70,35 +70,35 @@ public partial class _BitChartTimeDemo
 
         _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString("o")));
 
-        IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "My first dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            Fill = BitChartFillingMode.Disabled
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+            Fill = BitChartLegacyFillingMode.Disabled
         };
 
-        IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "My second dataset",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            Fill = BitChartFillingMode.Disabled
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+            Fill = BitChartLegacyFillingMode.Disabled
         };
 
-        IDataset<BitChartTimePoint> dataset3 = new BitChartLineDataset<BitChartTimePoint>()
+        IDataset<BitChartLegacyTimePoint> dataset3 = new BitChartLegacyLineDataset<BitChartLegacyTimePoint>()
         {
             Label = "Dataset with point data",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-            Fill = BitChartFillingMode.Disabled
+            BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+            BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+            Fill = BitChartLegacyFillingMode.Disabled
         };
 
         var now = DateTimeOffset.Now;
-        dataset3.Add(new BitChartTimePoint(now.DateTime, BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartTimePoint(now.AddDays(2).DateTime, BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartTimePoint(now.AddDays(3).DateTime, BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartTimePoint(now.AddDays(4).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(2).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(3).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(4).DateTime, BitChartDemoUtils.RandomScalingFactor()));
 
         _config.Data.Datasets.Add(dataset1);
         _config.Data.Datasets.Add(dataset2);
@@ -107,13 +107,13 @@ public partial class _BitChartTimeDemo
 
     private void RandomizeData()
     {
-        foreach (IBitChartDataset dataset in _config.Data.Datasets)
+        foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
         {
-            if (dataset is IDataset<BitChartTimePoint> pointDataset)
+            if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset)
             {
                 for (int i = 0; i < pointDataset.Count; i++)
                 {
-                    pointDataset[i] = new BitChartTimePoint(pointDataset[i].Time, BitChartDemoUtils.RandomScalingFactor());
+                    pointDataset[i] = new BitChartLegacyTimePoint(pointDataset[i].Time, BitChartDemoUtils.RandomScalingFactor());
                 }
             }
             else if (dataset is IDataset<int> intDataset)
@@ -132,13 +132,13 @@ public partial class _BitChartTimeDemo
 
     private void AddDataset()
     {
-        string color = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
-        IDataset<int> dataset = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+        string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
+        IDataset<int> dataset = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
         {
             Label = $"Dataset {_config.Data.Datasets.Count}",
             BackgroundColor = color,
             BorderColor = color,
-            Fill = BitChartFillingMode.Disabled
+            Fill = BitChartLegacyFillingMode.Disabled
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -147,7 +147,7 @@ public partial class _BitChartTimeDemo
 
     private void RemoveDataset()
     {
-        IList<IBitChartDataset> datasets = _config.Data.Datasets;
+        IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
@@ -163,11 +163,11 @@ public partial class _BitChartTimeDemo
         var now = DateTimeOffset.Now;
         _config.Data.Labels.Add(now.AddDays(_config.Data.Labels.Count).ToString("o"));
 
-        foreach (IBitChartDataset dataset in _config.Data.Datasets)
+        foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
         {
-            if (dataset is IDataset<BitChartTimePoint> pointDataset)
+            if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset)
             {
-                pointDataset.Add(new BitChartTimePoint(now.AddDays(pointDataset.Count).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+                pointDataset.Add(new BitChartLegacyTimePoint(now.AddDays(pointDataset.Count).DateTime, BitChartDemoUtils.RandomScalingFactor()));
             }
             else if (dataset is IDataset<int> intDataset)
             {
@@ -187,9 +187,9 @@ public partial class _BitChartTimeDemo
         if (labels.Count > 0)
             labels.RemoveAt(labels.Count - 1);
 
-        foreach (IBitChartDataset dataset in _config.Data.Datasets)
+        foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
         {
-            if (dataset is IDataset<BitChartTimePoint> pointDataset &&
+            if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset &&
                 pointDataset.Count > 0)
             {
                 pointDataset.RemoveAt(pointDataset.Count - 1);
@@ -207,7 +207,7 @@ public partial class _BitChartTimeDemo
 
 
     private readonly string razorCode = @"
-<BitChart Config=""_config"" IsDateAdapterRequired=""true"" @ref=""_chart"" />
+<BitChartLegacy Config=""_config"" IsDateAdapterRequired=""true"" @ref=""_chart"" />
 
 <BitButton OnClick=""RandomizeData"">Randomize Data</BitButton>
 <BitButton OnClick=""AddDataset"">Add Dataset</BitButton>
@@ -217,47 +217,47 @@ public partial class _BitChartTimeDemo
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
-private BitChart _chart = default!;
-private BitChartLineConfig _config = default!;
+private BitChartLegacy _chart = default!;
+private BitChartLegacyLineConfig _config = default!;
 
 
 protected override void OnInitialized()
 {
-    _config = new BitChartLineConfig
+    _config = new BitChartLegacyLineConfig
     {
-        Options = new BitChartLineOptions
+        Options = new BitChartLegacyLineOptions
         {
             Responsive = true,
-            Title = new BitChartOptionsTitle
+            Title = new BitChartLegacyOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart Time Scale Chart""
+                Text = ""BitChartLegacy Time Scale Chart""
             },
-            Tooltips = new BitChartTooltips
+            Tooltips = new BitChartLegacyTooltips
             {
-                Mode = BitChartInteractionMode.Nearest,
+                Mode = BitChartLegacyInteractionMode.Nearest,
                 Intersect = true
             },
-            Hover = new BitChartHover
+            Hover = new BitChartLegacyHover
             {
-                Mode = BitChartInteractionMode.Nearest,
+                Mode = BitChartLegacyInteractionMode.Nearest,
                 Intersect = true
             },
-            Scales = new BitChartScales
+            Scales = new BitChartLegacyScales
             {
                 XAxes =
                 [
-                    new BitChartTimeAxis
+                    new BitChartLegacyTimeAxis
                     {
-                        ScaleLabel = new BitChartScaleLabel
+                        ScaleLabel = new BitChartLegacyScaleLabel
                         {
                             LabelString = ""Date""
                         },
-                        Time = new BitChartTimeOptions
+                        Time = new BitChartLegacyTimeOptions
                         {
                             TooltipFormat = ""dd MMM HH:mm""
                         },
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -265,13 +265,13 @@ protected override void OnInitialized()
                 ],
                 YAxes =
                 [
-                    new BitChartLinearCartesianAxis
+                    new BitChartLegacyLinearCartesianAxis
                     {
-                        ScaleLabel = new BitChartScaleLabel
+                        ScaleLabel = new BitChartLegacyScaleLabel
                         {
                             LabelString = ""Value""
                         },
-                        GridLines = new BitChartGridLines
+                        GridLines = new BitChartLegacyGridLines
                         {
                             Color = ""gray""
                         }
@@ -283,35 +283,35 @@ protected override void OnInitialized()
 
     _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString(""o"")));
 
-    IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset1 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""My first dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        Fill = BitChartFillingMode.Disabled
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Red),
+        Fill = BitChartLegacyFillingMode.Disabled
     };
 
-    IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset2 = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""My second dataset"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        Fill = BitChartFillingMode.Disabled
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
+        Fill = BitChartLegacyFillingMode.Disabled
     };
 
-    IDataset<BitChartTimePoint> dataset3 = new BitChartLineDataset<BitChartTimePoint>()
+    IDataset<BitChartLegacyTimePoint> dataset3 = new BitChartLegacyLineDataset<BitChartLegacyTimePoint>()
     {
         Label = ""Dataset with point data"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
-        Fill = BitChartFillingMode.Disabled
+        BackgroundColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+        BorderColor = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+        Fill = BitChartLegacyFillingMode.Disabled
     };
 
     DateTime now = DateTime.Now;
-    dataset3.Add(new BitChartTimePoint(now, BitChartDemoUtils.RandomScalingFactor()));
-    dataset3.Add(new BitChartTimePoint(now.AddDays(2), BitChartDemoUtils.RandomScalingFactor()));
-    dataset3.Add(new BitChartTimePoint(now.AddDays(3), BitChartDemoUtils.RandomScalingFactor()));
-    dataset3.Add(new BitChartTimePoint(now.AddDays(4), BitChartDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now, BitChartDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(2), BitChartDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(3), BitChartDemoUtils.RandomScalingFactor()));
+    dataset3.Add(new BitChartLegacyTimePoint(now.AddDays(4), BitChartDemoUtils.RandomScalingFactor()));
 
     _config.Data.Datasets.Add(dataset1);
     _config.Data.Datasets.Add(dataset2);
@@ -320,13 +320,13 @@ protected override void OnInitialized()
 
 private void RandomizeData()
 {
-    foreach (IBitChartDataset dataset in _config.Data.Datasets)
+    foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
     {
-        if (dataset is IDataset<BitChartTimePoint> pointDataset)
+        if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset)
         {
             for (int i = 0; i < pointDataset.Count; i++)
             {
-                pointDataset[i] = new BitChartTimePoint(pointDataset[i].Time, BitChartDemoUtils.RandomScalingFactor());
+                pointDataset[i] = new BitChartLegacyTimePoint(pointDataset[i].Time, BitChartDemoUtils.RandomScalingFactor());
             }
         }
         else if (dataset is IDataset<int> intDataset)
@@ -345,13 +345,13 @@ private void RandomizeData()
 
 private void AddDataset()
 {
-    string color = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
-    IDataset<int> dataset = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+    string color = BitChartLegacyColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
+    IDataset<int> dataset = new BitChartLegacyLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
     {
         Label = $""Dataset {_config.Data.Datasets.Count}"",
         BackgroundColor = color,
         BorderColor = color,
-        Fill = BitChartFillingMode.Disabled
+        Fill = BitChartLegacyFillingMode.Disabled
     };
 
     _config.Data.Datasets.Add(dataset);
@@ -360,7 +360,7 @@ private void AddDataset()
 
 private void RemoveDataset()
 {
-    IList<IBitChartDataset> datasets = _config.Data.Datasets;
+    IList<IBitChartLegacyDataset> datasets = _config.Data.Datasets;
     if (datasets.Count == 0)
         return;
 
@@ -376,11 +376,11 @@ private void AddData()
     DateTime now = DateTime.Now;
     _config.Data.Labels.Add(now.AddDays(_config.Data.Labels.Count).ToString(""o""));
 
-    foreach (IBitChartDataset dataset in _config.Data.Datasets)
+    foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
     {
-        if (dataset is IDataset<BitChartTimePoint> pointDataset)
+        if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset)
         {
-            pointDataset.Add(new BitChartTimePoint(now.AddDays(pointDataset.Count), BitChartDemoUtils.RandomScalingFactor()));
+            pointDataset.Add(new BitChartLegacyTimePoint(now.AddDays(pointDataset.Count), BitChartDemoUtils.RandomScalingFactor()));
         }
         else if (dataset is IDataset<int> intDataset)
         {
@@ -400,9 +400,9 @@ private void RemoveData()
     if (labels.Count > 0)
         labels.RemoveAt(labels.Count - 1);
 
-    foreach (IBitChartDataset dataset in _config.Data.Datasets)
+    foreach (IBitChartLegacyDataset dataset in _config.Data.Datasets)
     {
-        if (dataset is IDataset<BitChartTimePoint> pointDataset &&
+        if (dataset is IDataset<BitChartLegacyTimePoint> pointDataset &&
             pointDataset.Count > 0)
         {
             pointDataset.RemoveAt(pointDataset.Count - 1);

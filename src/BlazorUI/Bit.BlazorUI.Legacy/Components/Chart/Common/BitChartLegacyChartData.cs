@@ -1,14 +1,14 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// Represents the data-subconfig of any <see cref="BitChartConfigBase"/>.
+/// Represents the data-subconfig of any <see cref="BitChartLegacyConfigBase"/>.
 /// </summary>
-public class BitChartChartData
+public class BitChartLegacyChartData
 {
     /// <summary>
-    /// Creates a new instance of <see cref="BitChartChartData"/>.
+    /// Creates a new instance of <see cref="BitChartLegacyChartData"/>.
     /// </summary>
-    public BitChartChartData()
+    public BitChartLegacyChartData()
     {
         Labels = [];
         XLabels = [];
@@ -20,7 +20,7 @@ public class BitChartChartData
     /// Gets the labels the chart will use.
     /// <para>
     /// If defined (1 or more labels) the corresponding axis has to be of type
-    /// <see cref="BitChartAxisType.Category"/> for the chart to work correctly.
+    /// <see cref="BitChartLegacyAxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
     public virtual List<string> Labels { get; }
@@ -29,7 +29,7 @@ public class BitChartChartData
     /// Gets the labels the horizontal axes will use.
     /// <para>
     /// If defined (1 or more labels) the x-axis has to be of type
-    /// <see cref="BitChartAxisType.Category"/> for the chart to work correctly.
+    /// <see cref="BitChartLegacyAxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
     public virtual List<string> XLabels { get; }
@@ -38,7 +38,7 @@ public class BitChartChartData
     /// Gets the labels the vertical axes will use.
     /// <para>
     /// If defined (1 or more labels) the y-axis has to be of type
-    /// <see cref="BitChartAxisType.Category"/> for the chart to work correctly.
+    /// <see cref="BitChartLegacyAxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
     public virtual List<string> YLabels { get; }
@@ -46,7 +46,7 @@ public class BitChartChartData
     /// <summary>
     /// Gets the datasets displayed in this chart.
     /// </summary>
-    public List<IBitChartDataset> Datasets { get; }
+    public List<IBitChartLegacyDataset> Datasets { get; }
 
     [Obsolete("json.net", true)]
     public bool ShouldSerializeLabels() => Labels?.Count > 0;

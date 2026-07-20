@@ -1,14 +1,14 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The ticks sub-config of the <see cref="BitChartLinearRadialAxis"/>.
+/// The ticks sub-config of the <see cref="BitChartLegacyLinearRadialAxis"/>.
 /// <para>As per documentation <a href="https://www.chartjs.org/docs/latest/axes/radial/linear.html#point-label-options">here (Chart.js)</a>.</para>
 /// </summary>
-public class BitChartLinearRadialTicks : BitChartTicks
+public class BitChartLegacyLinearRadialTicks : BitChartLegacyTicks
 {
     /// <summary>
     /// Gets or sets the color of the label backdrops.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? BackdropColor { get; set; }
 

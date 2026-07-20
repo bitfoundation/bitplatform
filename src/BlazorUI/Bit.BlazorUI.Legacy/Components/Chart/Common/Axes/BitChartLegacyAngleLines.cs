@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
-/// The angle lines sub-config of the linear-radial-axis-configuration (see <see cref="BitChartLinearRadialAxis"/>).
+/// The angle lines sub-config of the linear-radial-axis-configuration (see <see cref="BitChartLegacyLinearRadialAxis"/>).
 /// <para>As per documentation <a href="https://www.chartjs.org/docs/latest/axes/cartesian/linear.html">here (Chart.js)</a>.</para>
 /// </summary>
-public class BitChartAngleLines
+public class BitChartLegacyAngleLines
 {
     /// <summary>
     /// Gets or sets the value indicating whether the angle line is displayed or not.
@@ -13,7 +13,7 @@ public class BitChartAngleLines
 
     /// <summary>
     /// Gets or sets the color of the angled lines.
-    /// <para>See <see cref="BitChartColorUtil"/> for working with colors.</para>
+    /// <para>See <see cref="BitChartLegacyColorUtil"/> for working with colors.</para>
     /// </summary>
     public string? Color { get; set; }
 

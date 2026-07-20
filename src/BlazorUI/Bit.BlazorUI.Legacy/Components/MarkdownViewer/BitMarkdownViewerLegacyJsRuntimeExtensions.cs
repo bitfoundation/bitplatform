@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Legacy;
 
-internal static class BitMarkdownViewerJsRuntimeExtensions
+internal static class BitMarkdownViewerLegacyJsRuntimeExtensions
 {
     public static ValueTask<bool> BitMarkdownViewerCheckScriptLoaded(this IJSRuntime jsRuntime, string script)
     {
