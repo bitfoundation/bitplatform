@@ -472,7 +472,10 @@ public partial class BitToggleButton : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        if (AutoLoading)
+        // snapshot so the finally cleanup pairs with the entry increment even if the parameter changes mid-await
+        var autoLoading = AutoLoading;
+
+        if (autoLoading)
         {
             await AssignIsLoading(true);
 
@@ -498,7 +501,7 @@ public partial class BitToggleButton : BitComponentBase
         }
         finally
         {
-            if (AutoLoading && --_pendingChanges == 0)
+            if (autoLoading && --_pendingChanges == 0)
             {
                 await AssignIsLoading(false);
             }
