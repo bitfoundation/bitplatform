@@ -15,6 +15,7 @@
         var template = MenuButton.GetTemplate(Item);
         var isEnabled = MenuButton.IsEnabled && MenuButton.GetIsEnabled(Item);
         var href = MenuButton.GetHref(Item);
+        var target = MenuButton.GetTarget(Item);
 
         RenderFragment content =
             @<text>
@@ -46,7 +47,8 @@
                    role="menuitem"
                    href="@href"
                    tabindex="0"
-                   target="@MenuButton.GetTarget(Item)"
+                   target="@target"
+                   rel="@(target is "_blank" ? "noopener noreferrer" : null)"
                    title="@MenuButton.GetTitle(Item)"
                    style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
                    class="bit-mnb-itm @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
