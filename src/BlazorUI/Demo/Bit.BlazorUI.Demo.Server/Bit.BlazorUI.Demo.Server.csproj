@@ -7,8 +7,9 @@
         <!-- In Debug the app renders in Blazor Server mode (see AppRenderMode.Current), so building the
              Blazor WebAssembly client (webcil, boot json, service worker manifest, compression) on every
              inner-loop build is pure overhead. The WASM client is therefore only referenced in Release
-             builds, or on demand via `dotnet build/run -p:IncludeWasm=true` (required to run/debug the
-             Blazor WebAssembly client or the ?no-prerender WASM mode in Debug). -->
+             builds, or on demand via `dotnet build/run -p:IncludeWasm=true`. Passing that flag both bundles
+             the WASM client and boots the app as Blazor WebAssembly in Debug (it defines INCLUDE_WASM, which
+             AppRenderMode.WasmEnabled reads), so it is all that's needed to run/debug the WASM client. -->
         <IncludeWasm Condition=" '$(IncludeWasm)' == '' And '$(Configuration)' == 'Release' ">true</IncludeWasm>
         <IncludeWasm Condition=" '$(IncludeWasm)' == '' ">false</IncludeWasm>
         <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
