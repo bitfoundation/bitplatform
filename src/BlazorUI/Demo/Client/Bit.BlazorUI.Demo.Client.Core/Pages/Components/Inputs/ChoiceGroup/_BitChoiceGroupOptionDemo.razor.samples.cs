@@ -618,8 +618,8 @@ private void ReverseDynamicOptions()
 <BitChoiceGroup Size=""BitSize.Small""
                 Label=""Small""
                 DefaultValue=""@(""Day"")""
-                TItem=""BitChoiceGroupOption<string>"" 
-                TValue=""string"" Horizontal Inline>
+                TItem=""BitChoiceGroupOption<string>""
+                TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
@@ -628,8 +628,8 @@ private void ReverseDynamicOptions()
 <BitChoiceGroup Size=""BitSize.Medium""
                 Label=""Medium""
                 DefaultValue=""@(""Day"")""
-                TItem=""BitChoiceGroupOption<string>"" 
-                TValue=""string"" Horizontal Inline>
+                TItem=""BitChoiceGroupOption<string>""
+                TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
@@ -638,8 +638,8 @@ private void ReverseDynamicOptions()
 <BitChoiceGroup Size=""BitSize.Large""
                 Label=""Large""
                 DefaultValue=""@(""Day"")""
-                TItem=""BitChoiceGroupOption<string>"" 
-                TValue=""string"" Horizontal Inline>
+                TItem=""BitChoiceGroupOption<string>""
+                TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
