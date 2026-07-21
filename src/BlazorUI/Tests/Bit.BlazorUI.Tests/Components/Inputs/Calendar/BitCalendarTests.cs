@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Globalization;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.Calendar;
@@ -1077,5 +1079,287 @@ public class BitCalendarTests : BunitTestContext
         });
 
         Assert.AreEqual(defaultValue, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectDisabledDaysOfWeek()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-cal-dbt[disabled]"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.DisabledDaysOfWeek, [DayOfWeek.Saturday, DayOfWeek.Sunday]);
+        });
+
+        var disabledButtons = component.FindAll(".bit-cal-dbt[disabled]");
+
+        // two disabled days per rendered week
+        Assert.AreEqual(component.FindAll(".bit-cal-dgr").Count * 2, disabledButtons.Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectDisabledDates()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15)))]);
+        });
+
+        var disabledButtons = component.FindAll(".bit-cal-dbt[disabled]");
+
+        Assert.HasCount(1, disabledButtons);
+        Assert.AreEqual("15", disabledButtons[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectIsDateDisabled()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.IsDateDisabled, d => d.Day % 2 == 1);
+        });
+
+        var disabledButtons = component.FindAll(".bit-cal-dbt[disabled]");
+
+        Assert.IsNotEmpty(disabledButtons);
+        Assert.IsTrue(disabledButtons.All(b => int.Parse(b.TextContent.Trim()) % 2 == 1));
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldNotSelectDisabledDate()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15)))]);
+        });
+
+        var disabledButton = component.Find(".bit-cal-dbt[disabled]");
+
+        disabledButton.Click();
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectHighlightedDates()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.HighlightedDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15)))]);
+        });
+
+        var highlightedButton = component.Find(".bit-cal-dhl");
+
+        Assert.AreEqual("15", highlightedButton.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectGetDayClass()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.GetDayClass, d => d.Day == 15 ? "custom-day-class" : null);
+        });
+
+        var customButtons = component.FindAll(".custom-day-class");
+
+        Assert.HasCount(1, customButtons);
+        Assert.AreEqual("15", customButtons[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectFirstDayOfWeek()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Monday);
+        });
+
+        var firstDayHeader = component.Find(".bit-cal-dgh .bit-cal-wlb");
+
+        Assert.AreEqual(CultureInfo.CurrentUICulture.DateTimeFormat.GetShortestDayName(DayOfWeek.Monday), firstDayHeader.GetAttribute("title"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void BitCalendarShouldRespectFixedWeeks(bool fixedWeeks)
+    {
+        // February 2026 fits in exactly 4 weeks when the week starts on Sunday
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 2, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
+            parameters.Add(p => p.FixedWeeks, fixedWeeks);
+        });
+
+        Assert.HasCount(fixedWeeks ? 6 : 4, component.FindAll(".bit-cal-dgr"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void BitCalendarShouldRespectShowOutsideDays(bool showOutsideDays)
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
+            parameters.Add(p => p.ShowOutsideDays, showOutsideDays);
+        });
+
+        if (showOutsideDays)
+        {
+            Assert.IsNotEmpty(component.FindAll(".bit-cal-dbo"));
+            Assert.IsEmpty(component.FindAll(".bit-cal-dbe"));
+        }
+        else
+        {
+            Assert.IsEmpty(component.FindAll(".bit-cal-dbo"));
+            Assert.IsNotEmpty(component.FindAll(".bit-cal-dbe"));
+        }
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectToday()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Today, new DateTimeOffset(2021, 3, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2021, 3, 15))));
+        });
+
+        var todayButton = component.Find(".bit-cal-dtd");
+
+        Assert.AreEqual("15", todayButton.TextContent.Trim());
+        Assert.AreEqual("date", todayButton.GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldRespectOnMonthChange()
+    {
+        DateTimeOffset? changedMonth = null;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.OnMonthChange, (DateTimeOffset month) => changedMonth = month);
+        });
+
+        var nextMonthButton = component.FindAll(".bit-cal-nbt")[1];
+
+        nextMonthButton.Click();
+
+        Assert.IsNotNull(changedMonth);
+        Assert.AreEqual(new DateTime(2026, 2, 1), changedMonth!.Value.Date);
+    }
+
+    [TestMethod]
+    public void BitCalendarKeyboardNavigationShouldMoveFocusToNextDay()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+
+        Assert.AreEqual("15", focusedButton.TextContent.Trim());
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual("16", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarKeyboardNavigationShouldSkipDisabledDays()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 16, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 16)))]);
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual("17", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarKeyboardNavigationShouldChangeMonthOnPageDown()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+
+        var monthTitle = component.Find(".bit-cal-pkt, .bit-cal-ptb");
+
+        Assert.Contains("February", monthTitle.TextContent);
+        Assert.AreEqual("15", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow("ArrowLeft", "14"),
+        DataRow("ArrowUp", "8"),
+        DataRow("ArrowDown", "22"),
+        DataRow("Home", "11"),
+        DataRow("End", "17")]
+    public void BitCalendarKeyboardNavigationShouldMoveFocusWithinMonth(string key, string expectedDay)
+    {
+        // January 15, 2026 is a Thursday; the week starts on Sunday, January 11 and ends on Saturday, January 17
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+
+        Assert.AreEqual("15", focusedButton.TextContent.Trim());
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expectedDay, component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow("PageUp", "January 2025"),
+        DataRow("PageDown", "January 2027")]
+    public void BitCalendarKeyboardNavigationShouldChangeYearOnShiftPage(string key, string expectedTitle)
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = key, ShiftKey = true });
+
+        var monthTitle = component.Find(".bit-cal-pkt, .bit-cal-ptb");
+
+        Assert.Contains(expectedTitle, monthTitle.TextContent);
+        Assert.AreEqual("15", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
     }
 }

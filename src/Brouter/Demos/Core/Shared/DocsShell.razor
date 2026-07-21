@@ -1,0 +1,60 @@
+@inject IBrouter brouter
+@implements IDisposable
+
+@* The documentation shell - rendered as the Content of the parent /docs route, with every
+   docs page nested under it. The sidebar stays mounted while the outlet swaps pages, so
+   scroll position and expanded state survive navigation (nested routes doing what they're for).
+   Sidebar and pager are both driven by DocsCatalog. *@
+
+<div class="bb-docs">
+    <button type="button" class="bb-docs-menu-toggle btn btn-outline" @onclick="() => _menuOpen = !_menuOpen">
+        @(_menuOpen ? "Hide" : "Show") docs menu
+    </button>
+
+    <aside class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" aria-label="Documentation navigation">
+        @foreach (var section in DocsCatalog.Sections)
+        {
+            <div class="bb-docs-section">
+                <h4>@section.Title</h4>
+                <ul>
+                    @foreach (var entry in section.Pages)
+                    {
+                        <li @key="entry.Url">
+                            <BrouterLink Href="@entry.Url" Match="BrouterLinkMatch.All">@entry.Title</BrouterLink>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </aside>
+
+    <div class="bb-docs-content">
+        <BrouterOutlet />
+        <DocsPager />
+    </div>
+</div>
+
+@code {
+    private bool _menuOpen;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigated;
+
+    protected override void OnInitialized()
+    {
+        // Collapse the mobile menu after a sidebar link commits.
+        _onNavigated = ctx =>
+        {
+            if (_menuOpen)
+            {
+                _menuOpen = false;
+                _ = InvokeAsync(StateHasChanged);
+            }
+            return ValueTask.CompletedTask;
+        };
+        brouter.OnNavigated += _onNavigated;
+    }
+
+    public void Dispose()
+    {
+        if (_onNavigated is not null) brouter.OnNavigated -= _onNavigated;
+    }
+}

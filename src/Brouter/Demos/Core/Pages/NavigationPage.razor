@@ -1,3 +1,5 @@
+<PageTitle>Navigation &amp; history · Brouter docs</PageTitle>
+
 @* Topic page: imperative navigation - awaited outcomes, history, functional query updates,
    named routes, relative URLs, and BrouterLink's full surface. Live links point at /outcomes and
    /history-state declared in AppRouter.razor. *@
@@ -83,7 +85,7 @@ brouter.NavigateWithQuery(q =&gt; q.SetAll(<span class="s">"tag"</span>, tags).R
         fill the template (parameters that aren't in the template are appended as query pairs;
         enumerable values emit repeated pairs). Pair them with the generated
         <code>BrouterRoutes.Names</code> constants - see the
-        <BrouterLink Href="/generator">generator page</BrouterLink>. URLs are also
+        <BrouterLink Href="/docs/typed-routes">generator page</BrouterLink>. URLs are also
         <em>route-relative</em> everywhere Brouter accepts one (links, <code>Navigate</code>,
         guard redirects): <code>./sibling</code>, <code>../up</code>, <code>.</code> and
         <code>..</code> resolve against the current path by segment math, clamped at the root.
@@ -107,7 +109,7 @@ brouter.NavigateWithQuery(q =&gt; q.SetAll(<span class="s">"tag"</span>, tags).R
             <tr><td>Match</td><td>Active detection: <code>Prefix</code> (default, segment-boundary aware) or <code>All</code> (exact). Root <code>/</code> always matches exactly.</td></tr>
             <tr><td>ActiveClass</td><td>Class added when active (default <code>"active"</code>); also sets <code>aria-current="page"</code>.</td></tr>
             <tr><td>Replace</td><td>Replaces the current history entry instead of pushing.</td></tr>
-            <tr><td>Preload</td><td><code>Intent</code> / <code>Viewport</code> / <code>Render</code> - see <BrouterLink Href="/loaders">Data loading</BrouterLink>.</td></tr>
+            <tr><td>Preload</td><td><code>Intent</code> / <code>Viewport</code> / <code>Render</code> - see <BrouterLink Href="/docs/data-loading">Data loading</BrouterLink>.</td></tr>
             <tr><td>HistoryState</td><td>State attached to the entry created by the click.</td></tr>
         </tbody>
     </table>

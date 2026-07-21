@@ -570,6 +570,7 @@ button.btn-outline:hover {
 /* ---------- Code samples & feature tables (TemplatesPage / ConstraintsPage) ---------- */
 
 .bb-code {
+    position: relative;
     background: var(--bb-code-bg);
     color: var(--bb-code-fg);
     border: 1px solid var(--bb-border);
@@ -581,6 +582,47 @@ button.btn-outline:hover {
     overflow-x: auto;
     margin: 0 0 1rem;
     white-space: pre;
+}
+
+/* Copy button injected by site.js into every .bb-code block. */
+.bb-copy-btn {
+    position: absolute;
+    top: .5rem;
+    right: .5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    background: var(--bb-surface);
+    color: var(--bb-text-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.bb-code:hover .bb-copy-btn,
+.bb-copy-btn:focus-visible {
+    opacity: 1;
+}
+
+.bb-copy-btn:hover {
+    color: var(--bb-primary);
+    border-color: var(--bb-primary);
+}
+
+.bb-copy-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.bb-copy-btn.bb-copied {
+    color: var(--bb-success);
+    border-color: var(--bb-success);
+    opacity: 1;
 }
 
 .bb-code .c { color: var(--bb-code-comment); }   /* comment */
@@ -636,6 +678,63 @@ button.btn-outline:hover {
     flex-wrap: wrap;
     gap: .5rem;
     margin: .25rem 0 1rem;
+}
+
+/* ---------- Docs pager (DocsPager, rendered by DocsShell) ---------- */
+
+.bb-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.bb-pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    padding: .7rem 1rem;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface);
+    text-decoration: none;
+    min-width: 0;
+    transition: border-color .15s ease, background .15s ease;
+}
+
+.bb-pager-link:hover {
+    border-color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+    text-decoration: none;
+}
+
+.bb-pager-next {
+    margin-left: auto;
+    text-align: right;
+}
+
+.bb-pager-label {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--bb-text-soft);
+}
+
+.bb-pager-title {
+    font-weight: 600;
+    color: var(--bb-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- Large call-to-action buttons (landing page) ---------- */
+
+.bb-btn-lg {
+    padding: .65rem 1.35rem;
+    font-size: 1rem;
 }
 
 /* ---------- Theme toggle ----------

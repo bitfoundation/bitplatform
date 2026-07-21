@@ -26,10 +26,11 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
-A runnable tour of every feature below lives in [`Demos`](Demos/) - run the
-[Server](Demos/Server/) project (`dotnet run`) and click through the home page cards; the
-same shared demo pages also run under [WASM](Demos/Wasm/) and [Auto](Demos/Auto/)
-render modes.
+Brouter's documentation website lives in [`Demos`](Demos/) - run the
+[Server](Demos/Server/) project (`dotnet run`) for the full site: a landing page, a docs hub
+under `/docs` with a page per feature area, and a `/playground` index of live, clickable demo
+routes. The same shared site also runs under [WASM](Demos/Wasm/) and [Auto](Demos/Auto/)
+render modes - and it is routed by Brouter itself.
 
 ## Quick start
 

@@ -1,0 +1,106 @@
+.bb-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.bb-search-icon {
+    position: absolute;
+    left: .55rem;
+    width: 14px;
+    height: 14px;
+    color: var(--bb-text-soft);
+    pointer-events: none;
+}
+
+.bb-search input {
+    width: 180px;
+    max-width: 100%;
+    padding: .4rem .6rem .4rem 1.9rem;
+    font-size: .85rem;
+    font-family: inherit;
+    color: var(--bb-text);
+    background: var(--bb-bg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    outline: none;
+    transition: border-color .15s ease, width .2s ease;
+}
+
+.bb-search input:focus {
+    border-color: var(--bb-primary);
+    width: 230px;
+}
+
+.bb-search input::placeholder {
+    color: var(--bb-text-soft);
+}
+
+.bb-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 320px;
+    max-width: 84vw;
+    margin: 0;
+    padding: .35rem;
+    list-style: none;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--bb-shadow);
+    z-index: 30;
+}
+
+.bb-search-results li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .45rem .6rem;
+    border-radius: var(--bb-radius-sm);
+    cursor: pointer;
+    font-size: .875rem;
+}
+
+.bb-search-results li:hover,
+.bb-search-results li.bb-active {
+    background: var(--bb-primary-soft);
+}
+
+.bb-search-result-title {
+    color: var(--bb-text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bb-search-result-section {
+    color: var(--bb-text-soft);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    flex-shrink: 0;
+}
+
+.bb-search-empty {
+    color: var(--bb-text-muted);
+    cursor: default;
+}
+
+.bb-search-results li.bb-search-empty:hover {
+    background: none;
+}
+
+/* Narrow viewports: keep search usable as a compact input instead of hiding it. */
+@media (max-width: 760px) {
+    .bb-search input {
+        width: 96px;
+    }
+
+    .bb-search input:focus {
+        width: 150px;
+    }
+}

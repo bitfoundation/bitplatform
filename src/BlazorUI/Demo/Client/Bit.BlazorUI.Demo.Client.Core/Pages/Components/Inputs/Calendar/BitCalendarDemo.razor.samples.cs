@@ -7,9 +7,12 @@ public partial class BitCalendarDemo
 <BitCalendar IsEnabled=""false"" />
 <BitCalendar ShowWeekNumbers=""true"" />
 <BitCalendar HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
-<BitCalendar ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+<BitCalendar ShowTimePicker=""true"" StartingValue=""startingValue"" />
+<BitCalendar Today=""customToday"" />
+<BitCalendar ShowGoToToday=""false"" />";
     private readonly string example1CsharpCode = @"
-private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);";
+private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
+private DateTimeOffset? customToday = new DateTimeOffset(2021, 3, 15, 0, 0, 0, DateTimeOffset.Now.Offset);";
 
     private readonly string example2RazorCode = @"
 <BitCalendar MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
@@ -47,9 +50,19 @@ private DateTimeOffset? timeZoneDate2;";
 
     private readonly string example6RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDate"" />
-<div>Selected date: @selectedDate.ToString()</div>";
+<div>Selected date: @selectedDate.ToString()</div>
+
+<BitCalendar OnSelectDate=""HandleOnSelectDate"" />
+<div>Selected date: @(onSelectDate.HasValue ? onSelectDate.ToString() : ""-"")</div>";
     private readonly string example6CsharpCode = @"
-private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);";
+private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);
+
+private DateTimeOffset? onSelectDate;
+
+private void HandleOnSelectDate(DateTimeOffset? date)
+{
+    onSelectDate = date;
+}";
 
     private readonly string example7RazorCode = @"
 <BitCalendar ReadOnly @bind-Value=""readOnlyDate"" />
@@ -69,7 +82,13 @@ private bool showMonthPickerAsOverlay;";
 
     private readonly string example9RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDateTime"" ShowTimePicker=""true"" />
-<div>Selected DateTime: @selectedDateTime.ToString()</div>";
+<div>Selected DateTime: @selectedDateTime.ToString()</div>
+
+<BitCalendar ShowTimePicker TimeFormat=""BitTimeFormat.TwelveHours"" />
+
+<BitCalendar ShowTimePicker ShowTimePickerAsOverlay />
+
+<BitCalendar ShowTimePicker ShowGoToNow=""false"" />";
     private readonly string example9CsharpCode = @"
 private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
 
@@ -207,6 +226,98 @@ private void HandleInvalidSubmit()
 </BitCalendar>";
 
     private readonly string example13RazorCode = @"
+<BitCalendar DisabledDaysOfWeek=""@weekendDays"" />
+
+<BitCalendar DisabledDates=""@disabledDates"" />
+
+<BitCalendar IsDateDisabled=""@(d => d.Day % 2 == 1)"" />";
+    private readonly string example13CsharpCode = @"
+private DayOfWeek[] weekendDays = [DayOfWeek.Saturday, DayOfWeek.Sunday];
+
+private DateTimeOffset[] disabledDates =
+[
+    DateTimeOffset.Now.AddDays(1),
+    DateTimeOffset.Now.AddDays(2),
+    DateTimeOffset.Now.AddDays(5)
+];";
+
+    private readonly string example14RazorCode = @"
+<style>
+    .sunday-cell {
+        color: red;
+    }
+</style>
+
+<BitCalendar HighlightedDates=""@highlightedDates"" />
+
+<BitCalendar GetDayClass=""@(d => d.DayOfWeek == DayOfWeek.Sunday ? ""sunday-cell"" : null)"" />";
+    private readonly string example14CsharpCode = @"
+private DateTimeOffset[] highlightedDates =
+[
+    DateTimeOffset.Now.AddDays(3),
+    DateTimeOffset.Now.AddDays(7),
+    DateTimeOffset.Now.AddDays(14)
+];";
+
+    private readonly string example15RazorCode = @"
+<BitCalendar FirstDayOfWeek=""DayOfWeek.Monday"" />
+
+<BitCalendar ShowWeekNumbers WeekNumberRule=""CalendarWeekRule.FirstFourDayWeek"" FirstDayOfWeek=""DayOfWeek.Monday"" />
+
+<BitCalendar ShowOutsideDays=""false"" />
+
+<BitCalendar FixedWeeks />";
+
+    private readonly string example16RazorCode = @"
+<BitCalendar OnMonthChange=""HandleOnMonthChange"" />
+<div>Displayed month: @(displayedMonth.HasValue ? displayedMonth.Value.ToString(""MMMM yyyy"") : ""-"")</div>";
+    private readonly string example16CsharpCode = @"
+private DateTimeOffset? displayedMonth;
+
+private void HandleOnMonthChange(DateTimeOffset month)
+{
+    displayedMonth = month;
+}";
+
+    private readonly string example17RazorCode = @"
+<BitCalendar />";
+
+    private readonly string example18RazorCode = @"
+<BitCalendar Color=""BitColor.Primary"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Secondary"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Tertiary"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Info"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Success"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Warning"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SevereWarning"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Error"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.PrimaryBackground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SecondaryBackground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.TertiaryBackground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.PrimaryForeground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SecondaryForeground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.TertiaryForeground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.PrimaryBorder"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SecondaryBorder"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.TertiaryBorder"" HighlightCurrentMonth />";
+
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCalendar GoToTodayIcon=""@BitIconInfo.Fa(""solid calendar-day"")""
@@ -226,7 +337,7 @@ private void HandleInvalidSubmit()
              TimePickerIncreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-up"")""
              TimePickerDecreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-down"")"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -316,6 +427,6 @@ private void HandleInvalidSubmit()
                              WeekNumbersHeader = ""custom-week-header"",
                              YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitCalendar Dir=""BitDir.Rtl"" />";
 }

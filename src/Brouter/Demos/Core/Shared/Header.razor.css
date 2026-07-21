@@ -104,6 +104,29 @@
     font-weight: 600;
 }
 
+.bb-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: var(--bb-radius-sm);
+    color: var(--bb-text-muted);
+    transition: background .15s ease, color .15s ease;
+}
+
+.bb-header-icon:hover {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    text-decoration: none;
+}
+
+.bb-header-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
 @media (max-width: 640px) {
     .bb-header-inner {
         padding: .65rem 1rem;

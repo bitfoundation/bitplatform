@@ -1,4 +1,4 @@
-﻿@inject IBrouter brouter
+@inject IBrouter brouter
 @inject DemoState demoState
 @implements IDisposable
 
@@ -84,7 +84,7 @@
         return $"Fresh data loaded at {DateTime.Now:HH:mm:ss}.";
     }
 
-    // ===== guards for the new demos =====
+    // ===== guards for the demos =====
 
     // Leave guard for /editor: while the editor is dirty, cancel preventively - the URL never moves.
     private ValueTask GuardEditorLeave(BrouterNavigationContext ctx)
@@ -120,23 +120,64 @@
    OnNavigateAsync is the lazy route-loading hook (see OnNavigate above). *@
 <Brouter NotFoundUrl="404" AppAssembly="@GetType().Assembly" OnNavigateAsync="OnNavigate">
     <Routes>
-        <Broute Path="/" RedirectTo="/home" />
+        @*============================================================================*@
+        @* The site itself: landing page, docs hub (a nested-route tree whose parent renders
+           the sidebar shell and whose children fill its outlet), and the playground index. *@
 
-        <Broute Name="home" Path="/home" Component="@typeof(HomePage)" />
+        <Broute Path="/" Component="@typeof(LandingPage)" />
+        <Broute Path="/playground" Component="@typeof(PlaygroundPage)" />
 
-        @* Topic pages: each explains one feature area and links into the live routes below.
-       ParametersPage receives the host's shared count to demonstrate host-state sharing
-       through <Content>. *@
-        <Broute Path="/parameters">
+        <Broute Path="/docs">
             <Content>
-                <ParametersPage CountValue="@_currentCount" />
+                <DocsShell />
             </Content>
+            <Routes>
+                @* Empty path = the index route: it matches /docs exactly. *@
+                <Broute Path="" Component="@typeof(DocsOverviewPage)" />
+                <Broute Path="getting-started" Component="@typeof(GettingStartedPage)" />
+
+                <Broute Path="route-templates" Component="@typeof(TemplatesPage)" />
+                <Broute Path="constraints" Component="@typeof(ConstraintsPage)" />
+                @* ParametersPage receives the host's shared count to demonstrate host-state
+                   sharing through <Content>. *@
+                <Broute Path="route-parameters">
+                    <Content>
+                        <ParametersPage CountValue="@_currentCount" />
+                    </Content>
+                </Broute>
+                <Broute Path="nested-routes" Component="@typeof(OutletsPage)" />
+                <Broute Path="page-discovery" Component="@typeof(PageDiscoveryPage)" />
+
+                <Broute Path="navigation" Component="@typeof(NavigationPage)" />
+                <Broute Path="guards" Component="@typeof(GuardsPage)" />
+                <Broute Path="scroll-and-focus" Component="@typeof(ScrollFocusPage)" />
+
+                <Broute Path="data-loading" Component="@typeof(LoadersPage)" />
+
+                <Broute Path="view-transitions" Component="@typeof(TransitionsPage)" />
+                <Broute Path="lifecycle" Component="@typeof(LifecycleOverviewPage)" />
+
+                <Broute Path="typed-routes" Component="@typeof(GeneratorPage)" />
+                <Broute Path="migration" Component="@typeof(MigrationPage)" />
+                <Broute Path="performance" Component="@typeof(PerformancePage)" />
+            </Routes>
         </Broute>
-        <Broute Path="/outlets" Component="@typeof(OutletsPage)" />
-        <Broute Path="/guards" Component="@typeof(GuardsPage)" />
-        <Broute Path="/loaders" Component="@typeof(LoadersPage)" />
-        <Broute Path="/navigation" Component="@typeof(NavigationPage)" />
-        <Broute Path="/transitions" Component="@typeof(TransitionsPage)" />
+
+        @* Redirects keep the site's previous flat URLs working (and dogfood RedirectTo). *@
+        <Broute Path="/home" RedirectTo="/" />
+        <Broute Path="/templates" RedirectTo="/docs/route-templates" />
+        <Broute Path="/constraints" RedirectTo="/docs/constraints" />
+        <Broute Path="/parameters" RedirectTo="/docs/route-parameters" />
+        <Broute Path="/outlets" RedirectTo="/docs/nested-routes" />
+        <Broute Path="/guards" RedirectTo="/docs/guards" />
+        <Broute Path="/loaders" RedirectTo="/docs/data-loading" />
+        <Broute Path="/navigation" RedirectTo="/docs/navigation" />
+        <Broute Path="/transitions" RedirectTo="/docs/view-transitions" />
+        <Broute Path="/lifecycle" RedirectTo="/docs/lifecycle" />
+        <Broute Path="/generator" RedirectTo="/docs/typed-routes" />
+
+        @*============================================================================*@
+        @* Live playground routes: real, clickable proofs for the docs pages above. *@
 
         <Broute Path="/counter">
             <Content>
@@ -190,15 +231,14 @@
         </Broute>
 
         @*============================================================================*@
-        @* Framework-parity template features - the /templates page documents every shape with
-       code samples and links into the live routes below: middle optionals (ProductsListPage),
-       constrained middle optionals (WelcomePage), default values (BlogPage), complex segments
-       (FileDetailPage / ApiVersionPage), and a constrained single-star catch-all (AssetsPage). *@
-
-        <Broute Path="/templates" Component="@typeof(TemplatesPage)" />
+        @* Framework-parity template features - the route-templates docs page documents every
+           shape with code samples and links into the live routes below: middle optionals
+           (ProductsListPage), constrained middle optionals (WelcomePage), default values
+           (BlogPage), complex segments (FileDetailPage / ApiVersionPage), and a constrained
+           single-star catch-all (AssetsPage). *@
 
         @* Middle optional: parses like the built-in router; required at match time, so
-       /products/en/list matches but /products/list does not. *@
+           /products/en/list matches but /products/list does not. *@
         <Broute Path="/products/{culture?}/list" Component="@typeof(ProductsListPage)" />
 
         @* Constrained middle optional: nonfile rejects first segments that look like file names. *@
@@ -212,7 +252,7 @@
         <Broute Path="/api/v{major:int}-{minor:int}" Component="@typeof(ApiVersionPage)" />
 
         @* Constrained catch-all ({*path} == {**path} for matching): the constraint validates the
-       whole remainder; nonfile also accepts the empty remainder, so /assets itself matches. *@
+           whole remainder; nonfile also accepts the empty remainder, so /assets itself matches. *@
         <Broute Path="/assets/{*path:nonfile}" Component="@typeof(AssetsPage)" />
 
         @* Constraint chaining: validators gate the match, the last TYPE constraint (int) binds. *@
@@ -228,23 +268,16 @@
                 <div class="bb-try">
                     <BrouterLink Href="/rate/5" class="btn btn-outline">/rate/5</BrouterLink>
                     <BrouterLink Href="/rate/9" class="btn btn-outline">/rate/9 → 404</BrouterLink>
-                    <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+                    <BrouterLink Href="/docs/route-templates" class="btn btn-primary">← All template shapes</BrouterLink>
                 </div>
             </Content>
         </Broute>
 
         @*============================================================================*@
-        @* Bit.Brouter.Generators - the /generator page explains the source generator behind the
-       BrouterRoutes URL builders used across this demo (Header.razor, GeneratorPage itself). *@
-
-        <Broute Path="/generator" Component="@typeof(GeneratorPage)" />
-
-        @*============================================================================*@
-        @* Interactive constraint tester (ConstraintsPage). One constrained route per catalog
-       entry plus one unconstrained fallback: both can match /c/x/y, and specificity picks the
-       winner - the fallback only renders when the constrained sibling rejected the value. *@
-
-        <Broute Path="/constraints" Component="@typeof(ConstraintsPage)" />
+        @* Interactive constraint tester (ConstraintsPage, under /docs/constraints). One
+           constrained route per catalog entry plus one unconstrained fallback: both can match
+           /c/x/y, and specificity picks the winner - the fallback only renders when the
+           constrained sibling rejected the value. *@
 
         @foreach (var c in ConstraintCatalog.All)
         {
@@ -431,7 +464,7 @@
 
         @*============================================================================*@
         @* Data layer: loader + StaleTime cache + revalidation + query updates (DataPage),
-       deferred/streamed data (DeferredPage), error boundary with retry (UnstablePage). *@
+           deferred/streamed data (DeferredPage), error boundary with retry (UnstablePage). *@
 
         <Broute Name="data" Path="/data" Loader="LoadData" StaleTime="TimeSpan.FromSeconds(30)"
                 Meta="@("Data & caching demo")">
@@ -464,7 +497,7 @@
 
         @*============================================================================*@
         @* Navigation control: leave guard (unsaved changes), history entry state,
-       awaited navigation outcomes, and the always-cancelling /blocked target. *@
+           awaited navigation outcomes, and the always-cancelling /blocked target. *@
 
         <Broute Path="/editor" LeaveGuard="GuardEditorLeave">
             <Content>
@@ -473,8 +506,8 @@
         </Broute>
 
         @* Component-level navigation lock: the PAGE holds the veto (OnDeactivating/OnRenavigating
-       on BrouterRouteBase) and shows a custom confirmation dialog - including for /lock/1 ->
-       /lock/2 parameter changes, which the route-declared LeaveGuard above can never see. *@
+           on BrouterRouteBase) and shows a custom confirmation dialog - including for /lock/1 ->
+           /lock/2 parameter changes, which the route-declared LeaveGuard above can never see. *@
         <Broute Path="/lock" RedirectTo="/lock/1" />
         <Broute Path="/lock/{id:int}" Component="@typeof(NavigationLockPage)" />
 
@@ -498,9 +531,9 @@
 
         @*============================================================================*@
         @* Keep-alive: /sticky vs the /fleeting control shows singleton retention plus the
-       route lifecycle (StickyNotePage derives from BrouterRouteBase and pauses its timer in
-       OnDeactivated / resumes it in OnActivated); /notes/{id} shows per-parameter caching
-       (KeepAliveMax) with LRU eviction and IBrouter.ClearKeepAlive(). *@
+           route lifecycle (StickyNotePage derives from BrouterRouteBase and pauses its timer in
+           OnDeactivated / resumes it in OnActivated); /notes/{id} shows per-parameter caching
+           (KeepAliveMax) with LRU eviction and IBrouter.ClearKeepAlive(). *@
 
         <Broute Path="/sticky" KeepAlive="true">
             <Content>
@@ -519,24 +552,23 @@
 
         @*============================================================================*@
         @* Route lifecycle: /lifecycle/{id} is a singleton Component route whose page implements
-       IBrouterRoute directly (auto-discovered by the router - no base class needed). The same
-       instance is re-committed across id/query changes (OnRenavigated); leaving fires
-       OnDeactivated with reason Disposing. Contrast with /sticky above, where keep-alive
-       retention makes the reason Hidden. *@
+           IBrouterRoute directly (auto-discovered by the router - no base class needed). The same
+           instance is re-committed across id/query changes (OnRenavigated); leaving fires
+           OnDeactivated with reason Disposing. Contrast with /sticky above, where keep-alive
+           retention makes the reason Hidden. *@
 
-        <Broute Path="/lifecycle" Component="@typeof(LifecycleOverviewPage)" />
         <Broute Path="/lifecycle/{id:int}" Component="@typeof(LifecyclePage)" />
 
         @*============================================================================*@
         @* View Transitions showcase: shared-element morphs between the gallery grid and the item
-       detail hero via matching view-transition-name declarations (pure CSS wiring). *@
+           detail hero via matching view-transition-name declarations (pure CSS wiring). *@
 
         <Broute Name="gallery" Path="/gallery" Component="@typeof(GalleryPage)" />
         <Broute Path="/gallery/{id:int}" Component="@typeof(GalleryItemPage)" />
 
         @*============================================================================*@
         @* Named outlets + pathless group: one child route fills two layout regions; the group
-       attaches a shared guard to every dashboard child without adding a URL segment. *@
+           attaches a shared guard to every dashboard child without adding a URL segment. *@
 
         <Broute Path="/dashboard">
             <Content>

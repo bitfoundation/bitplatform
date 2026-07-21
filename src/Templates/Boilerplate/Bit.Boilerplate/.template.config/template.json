@@ -449,7 +449,11 @@
                         "**/.git/**",
                         "**/*.nuspec",
                         "src/Server/**/Data/Migrations/**",
-                        "src/**/App_Data/**"
+                        "src/**/App_Data/**",
+                        // Needs ProductController (Admin module) and ProductViewController + the product page (Sales
+                        // module) at once, and "module" is a single choice, so it can only ever run against the
+                        // template's own source tree.
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
                     ]
                 },
                 {
@@ -547,7 +551,8 @@
                         "src/Tests/Features/Identity/PhoneNumberNormalizationUITests.cs",
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
                         "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
-                        "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs"
+                        "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
                     ]
                 },
                 {

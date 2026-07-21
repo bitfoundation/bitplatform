@@ -23,7 +23,7 @@ public partial class ResponseCacheService
     {
         foreach (var relativePath in relativePaths)
         {
-            await outputCacheStore.EvictByTagAsync(relativePath, default);
+            await outputCacheStore.EvictByTagAsync(relativePath.ToLowerInvariant(), default);
         }
         //#if (cloudflare == true)
         await PurgeCloudflareCache(relativePaths);

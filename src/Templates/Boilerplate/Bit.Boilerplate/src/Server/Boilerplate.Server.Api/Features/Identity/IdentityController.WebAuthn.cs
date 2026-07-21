@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using Fido2NetLib;
 using Fido2NetLib.Objects;
+using System.Buffers.Text;
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Features.Identity.Models;
 
@@ -40,18 +41,24 @@ public partial class IdentityController
             UserVerification = UserVerificationRequirement.Required,
         });
 
-        var key = new string([.. options.Challenge.Select(b => (char)b)]);
-        await cache.SetAsync(key, options,
+        await cache.SetAsync(GetAssertionOptionsCacheKey(options.Challenge), options,
             options => options.Duration = TimeSpan.FromMinutes(3),
             cancellationToken);
 
         return options;
     }
 
+    /// <summary>
+    /// A WebAuthn challenge is raw bytes, so it's base64url encoded to keep the cache key printable.
+    /// Mapping each byte to a char instead would put NUL and control characters inside the Redis key,
+    /// making the entry unreadable in cache tooling and in logs.
+    /// </summary>
+    private static string GetAssertionOptionsCacheKey(byte[] challenge) => $"WebAuthn_AssertionOptions_{Base64Url.EncodeToString(challenge)}";
+
     [HttpPost]
     public async Task<VerifyAssertionResult> VerifyWebAuthAssertion(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
-        var (verifyResult, _) = await Verify(clientResponse, cancellationToken);
+        var (verifyResult, _, _) = await Verify(clientResponse, cancellationToken);
 
         return verifyResult;
     }
@@ -59,14 +66,18 @@ public partial class IdentityController
     [HttpPost, Produces<SignInResponseDto>()]
     public async Task VerifyWebAuthAndSignIn(VerifyWebAuthnAndSignInRequestDto<AuthenticatorAssertionRawResponse> request, CancellationToken cancellationToken)
     {
-        var (verifyResult, credential) = await Verify(request.ClientResponse, cancellationToken);
+        var (verifyResult, credential, assertionOptionsCacheKey) = await Verify(request.ClientResponse, cancellationToken);
 
         var user = await userManager.FindByIdAsync(credential.UserId.ToString())
                     ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         var (otp, _) = await GenerateAutomaticSignInLink(user, null, "WebAuthn");
 
-        if (user.TwoFactorEnabled is false || request.TfaCode is not null)
+        // When two factor is enabled and no code has been supplied yet, SignIn below responds with RequiresTwoFactor and the
+        // client repeats this action with the code, verifying the very same client response. Only the final step is terminal.
+        var isFinalStep = user.TwoFactorEnabled is false || request.TfaCode is not null;
+
+        if (isFinalStep)
         {
             credential.SignCount = verifyResult.SignCount;
             DbContext.WebAuthnCredential.Update(credential);
@@ -74,12 +85,17 @@ public partial class IdentityController
         }
 
         await SignIn(new() { Otp = otp, TwoFactorCode = request.TfaCode }, user, cancellationToken);
+
+        if (isFinalStep)
+        {
+            await cache.RemoveAsync(assertionOptionsCacheKey, token: cancellationToken);
+        }
     }
 
     [HttpPost]
     public async Task VerifyWebAuthAndSendTwoFactorToken(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
-        var (verifyResult, credential) = await Verify(clientResponse, cancellationToken);
+        var (verifyResult, credential, _) = await Verify(clientResponse, cancellationToken);
 
         var user = await userManager.FindByIdAsync(credential.UserId.ToString())
                     ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
@@ -90,19 +106,15 @@ public partial class IdentityController
     }
 
 
-    private async Task<(VerifyAssertionResult, WebAuthnCredential)> Verify(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
+    private async Task<(VerifyAssertionResult VerifyResult, WebAuthnCredential Credential, string AssertionOptionsCacheKey)> Verify(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
         var response = JsonSerializer.Deserialize(clientResponse.Response.ClientDataJson, jsonSerializerOptions.GetTypeInfo<AuthenticatorResponse>())
                         ?? throw new InvalidOperationException("Invalid client data.");
 
-        var key = new string([.. response.Challenge.Select(b => (char)b)]);
+        var key = GetAssertionOptionsCacheKey(response.Challenge);
         var options = await cache.GetOrSetAsync<AssertionOptions>(key,
             async _ => throw new ResourceNotFoundException().WithData("Reason", "Assertion options not found in cache."),
             token: cancellationToken);
-
-
-        // since the TFA needs this option we won't remove it from cache manually and just wait for it to expire.
-        // await cache.RemoveAsync(key, token: cancellationToken);
 
         var credential = (await DbContext.WebAuthnCredential.FirstOrDefaultAsync(c => c.Id == clientResponse.RawId, cancellationToken))
                             ?? throw new ResourceNotFoundException().WithData("Reason", "WebAuthn credential not found.");
@@ -116,7 +128,7 @@ public partial class IdentityController
             IsUserHandleOwnerOfCredentialIdCallback = IsUserHandleOwnerOfCredentialId
         }, cancellationToken);
 
-        return (verifyResult, credential);
+        return (verifyResult, credential, key);
     }
 
     private async Task<bool> IsUserHandleOwnerOfCredentialId(IsUserHandleOwnerOfCredentialIdParams args, CancellationToken cancellationToken)
