@@ -1,0 +1,53 @@
+<PageTitle>Overview · Brouter docs</PageTitle>
+
+<div class="bb-intro">
+    <h1>Brouter documentation</h1>
+    <p class="bb-subtitle">
+        Brouter is a modern, declarative, nestable router for Blazor - framework-parity route
+        templates plus the capabilities modern router libraries are measured by: guards, data
+        loaders with stale-while-revalidate caching, keep-alive, view transitions, and a source
+        generator for compile-time-safe URLs.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why another router?</h3>
+    <p class="bb-card-desc">
+        Blazor's built-in <code>Router</code> stops at matching a URL to a component. Everything
+        else a modern SPA expects from its router - nested layouts, navigation guards, route-level
+        data loading with caching, page transitions, kept-alive page state - is left to every app
+        to hand-roll. Brouter provides all of it declaratively, while staying superset-compatible:
+        every <code>&#64;page</code> template matches identically, <code>[Authorize]</code> keeps
+        being enforced by the framework's own components, and the built-in Router's templates port
+        over verbatim. Its API design is informed by React Router, Vue Router, Angular Router,
+        SvelteKit and TanStack Router - and by ASP.NET Core's route matcher.
+    </p>
+    <p class="bb-card-desc">
+        These docs are a working showcase: this site is a Blazor app routed by Brouter itself, and
+        nearly every page links to live routes you can click. The
+        <BrouterLink Href="/playground">playground</BrouterLink> indexes all of them.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/getting-started" class="btn btn-primary">Getting started →</BrouterLink>
+        <BrouterLink Href="/docs/migration" class="btn btn-outline">Migrating from the built-in Router →</BrouterLink>
+    </div>
+</div>
+
+<h2 style="margin: 1.5rem 0 .75rem;">Find your topic</h2>
+
+<div class="bb-grid">
+    @foreach (var section in DocsCatalog.Sections)
+    {
+        <section class="bb-card" @key="section.Title">
+            <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> @section.Title</h3>
+            <ul class="bb-link-list">
+                @foreach (var entry in section.Pages.Where(p => p.Slug.Length > 0))
+                {
+                    <li @key="entry.Slug">
+                        <BrouterLink Href="@entry.Url" title="@entry.Description">@entry.Title</BrouterLink>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>

@@ -1,0 +1,322 @@
+<PageTitle>Brouter - A modern, declarative, nestable router for Blazor</PageTitle>
+
+@* The marketing landing page: hero → proof strip → feature grid → code walkthrough →
+   comparison with the built-in Router → persona CTAs → FAQ → final CTA. Docs live under
+   /docs (DocsShell); live demos under /playground. *@
+
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">Open source · MIT · net8.0 / net9.0 / net10.0</span>
+            <h1>Client-side routing for Blazor,<br /><span class="bb-hero-accent">done right.</span></h1>
+            <p class="bb-hero-sub">
+                Brouter is a modern, declarative, nestable router with everything today's router
+                libraries are measured by: async guards, data loaders with stale-while-revalidate
+                caching, keep-alive, view transitions, and compile-time-safe URLs - while your
+                existing <code>&#64;page</code> components keep working unchanged.
+            </p>
+            <pre class="bb-code bb-hero-install"><span class="c"># the router</span>
+dotnet add package Bit.Brouter
+<span class="c"># optional: typed, compile-time-safe URL builders</span>
+dotnet add package Bit.Brouter.Generators</pre>
+            <div class="bb-hero-actions">
+                <BrouterLink Href="/docs/getting-started" class="btn btn-primary bb-btn-lg">Get started →</BrouterLink>
+                <BrouterLink Href="/playground" class="btn btn-outline bb-btn-lg">Live playground</BrouterLink>
+                <a class="btn btn-outline bb-btn-lg" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">GitHub</a>
+            </div>
+        </div>
+        <div class="bb-hero-code">
+            <pre class="bb-code"><span class="c">@@* App.razor - routes are components, so nesting is just markup *@@</span>
+&lt;<span class="k">Brouter</span> NotFoundUrl=<span class="s">"404"</span> AppAssembly=<span class="s">"@@GetType().Assembly"</span>&gt;
+    &lt;<span class="k">Broute</span> Path=<span class="s">"/"</span> Component=<span class="s">"@@typeof(HomePage)"</span> /&gt;
+
+    &lt;<span class="k">Broute</span> Path=<span class="s">"/users/{id:int}"</span>
+            Guard=<span class="s">"@@RequireSignIn"</span>
+            Loader=<span class="s">"@@LoadUser"</span>
+            StaleTime=<span class="s">"@@TimeSpan.FromMinutes(1)"</span>&gt;
+        &lt;<span class="k">Content</span>&gt;&lt;UserPage /&gt;&lt;/<span class="k">Content</span>&gt;
+        &lt;<span class="k">Routes</span>&gt;
+            &lt;<span class="k">Broute</span> Path=<span class="s">"/orders"</span> Component=<span class="s">"@@typeof(OrdersPage)"</span> /&gt;
+        &lt;/<span class="k">Routes</span>&gt;
+    &lt;/<span class="k">Broute</span>&gt;
+&lt;/<span class="k">Brouter</span>&gt;</pre>
+        </div>
+    </section>
+
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Framework parity</strong><span>every <code>&#64;page</code> template matches identically</span></div>
+        <div><strong>Prerender-ready</strong><span>Server, WebAssembly &amp; Auto render modes</span></div>
+        <div><strong>Zero JS setup</strong><span>scripts ship as static web assets</span></div>
+        <div><strong>Fails closed</strong><span>authorization stays Microsoft's code</span></div>
+    </section>
+
+    @* ============================== Feature grid ============================== *@
+
+    <section class="bb-section">
+        <h2>Everything a modern router does - in Blazor</h2>
+        <p class="bb-section-sub">
+            API design informed by React Router, Vue Router, Angular Router, SvelteKit and
+            TanStack Router - built on ASP.NET Core's route-template semantics.
+        </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Full template grammar</h3>
+                <p class="bb-card-desc">
+                    Literals, typed parameters, optionals, defaults, complex segments
+                    (<code>{name}.{ext?}</code>), catch-alls - a superset-compatible match of the
+                    built-in router, with specificity-based conflict resolution.
+                </p>
+                <BrouterLink Href="/docs/route-templates" class="btn btn-outline">Route templates →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested routes &amp; outlets</h3>
+                <p class="bb-card-desc">
+                    Parents render persistent layout, children fill outlets - including multiple
+                    named regions per route and pathless groups for shared guards and loaders.
+                </p>
+                <BrouterLink Href="/docs/nested-routes" class="btn btn-outline">Nested routes →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Guards &amp; navigation locks</h3>
+                <p class="bb-card-desc">
+                    Async enter and leave guards that cancel <em>preventively</em> - the URL never
+                    flickers - plus component-level locks that can hold a navigation open for a
+                    custom "unsaved changes" dialog.
+                </p>
+                <BrouterLink Href="/docs/guards" class="btn btn-outline">Guards →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Data loaders &amp; caching</h3>
+                <p class="bb-card-desc">
+                    Fetch before render with stale-while-revalidate caching, hover/viewport
+                    preloading, streamed deferred data, revalidation after mutations, and error
+                    boundaries with retry.
+                </p>
+                <BrouterLink Href="/docs/data-loading" class="btn btn-outline">Data loading →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> View transitions</h3>
+                <p class="bb-card-desc">
+                    Direction-aware page animations and shared-element morphs via the browser View
+                    Transitions API - one option to enable, overridable with plain CSS.
+                </p>
+                <BrouterLink Href="/docs/view-transitions" class="btn btn-outline">View transitions →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keep-alive &amp; lifecycle</h3>
+                <p class="bb-card-desc">
+                    Keep pages mounted (per route or per parameter, LRU-bounded) so Back restores
+                    exact state - with activate/deactivate/renavigate callbacks to pause and resume
+                    background work.
+                </p>
+                <BrouterLink Href="/docs/lifecycle" class="btn btn-outline">Lifecycle →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Typed routes</h3>
+                <p class="bb-card-desc">
+                    A source generator turns your route declarations into compile-time-safe URL
+                    builders - <code>BrouterRoutes.Counter(42)</code> instead of a string, so broken
+                    links become build errors.
+                </p>
+                <BrouterLink Href="/docs/typed-routes" class="btn btn-outline">Typed routes →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Awaitable navigation</h3>
+                <p class="bb-card-desc">
+                    <code>NavigateAsync</code> tells you how a navigation actually ended - succeeded,
+                    cancelled, redirected, not found, failed or superseded - plus history entry
+                    state and functional query updates.
+                </p>
+                <BrouterLink Href="/docs/navigation" class="btn btn-outline">Navigation →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Drop-in migration</h3>
+                <p class="bb-card-desc">
+                    <code>&#64;page</code> discovery, the <code>Found</code> template, zero-template
+                    authorization and layouts all keep the built-in Router's behavior - migrate
+                    first, adopt features incrementally.
+                </p>
+                <BrouterLink Href="/docs/migration" class="btn btn-outline">Migration →</BrouterLink>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== Code walkthrough ============================== *@
+
+    <section class="bb-section">
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <h3>Guard it - preventively</h3>
+                    <p>
+                        Guards run <em>before</em> the URL commits. Cancel or redirect and the
+                        address bar never moves - no flicker, no corrupted Back button, and real
+                        "unsaved changes" prompts become possible.
+                    </p>
+                    <BrouterLink Href="/docs/guards">Guards &amp; locks →</BrouterLink>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/admin"</span> Guard=<span class="s">"@@CheckAdmin"</span>&gt;…&lt;/<span class="k">Broute</span>&gt;
+
+<span class="k">private async</span> ValueTask CheckAdmin(BrouterNavigationContext ctx)
+{
+    <span class="k">if</span> (<span class="k">await</span> auth.IsAdminAsync(ctx.CancellationToken) <span class="k">is false</span>)
+        ctx.Redirect(<span class="s">"/login"</span>);   <span class="c">// URL never committed</span>
+}</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <h3>Load data before render</h3>
+                    <p>
+                        A route's loader runs after guards pass; its result cascades to the page as
+                        a typed wrapper. Add a <code>StaleTime</code> and Back/Forward becomes
+                        instant; add <code>Preload</code> on a link and the data is ready before
+                        the click.
+                    </p>
+                    <BrouterLink Href="/docs/data-loading">Data loading →</BrouterLink>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/users/{id:int}"</span> Loader=<span class="s">"@@LoadUser"</span>
+        StaleTime=<span class="s">"@@TimeSpan.FromMinutes(1)"</span>&gt;…&lt;/<span class="k">Broute</span>&gt;
+
+&lt;<span class="k">BrouterLink</span> Href=<span class="s">"/users/42"</span> Preload=<span class="s">"BrouterLinkPreload.Intent"</span>&gt;
+    Saleh
+&lt;/<span class="k">BrouterLink</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <h3>Never ship a broken link</h3>
+                    <p>
+                        The optional source generator reads your <code>&#64;page</code> directives
+                        and <code>&lt;Broute&gt;</code> declarations and emits typed URL builders -
+                        constraint types included, so <code>{id:int}</code> becomes an
+                        <code>int</code> argument.
+                    </p>
+                    <BrouterLink Href="/docs/typed-routes">Typed routes →</BrouterLink>
+                </div>
+                <pre class="bb-code"><span class="c">@@* generated from: &lt;Broute Name="counter" Path="/counter/{init:int}" /&gt; *@@</span>
+&lt;<span class="k">BrouterLink</span> Href=<span class="s">"@@BrouterRoutes.Counter(1234)"</span>&gt;Counter&lt;/<span class="k">BrouterLink</span>&gt;
+
+brouter.Navigate(BrouterRoutes.ProfileByUsername(<span class="s">"saleh"</span>, query: <span class="s">"tab=posts"</span>));</pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <h2>Why not the built-in Router?</h2>
+        <p class="bb-section-sub">
+            Because the built-in Router stops at matching. Everything it does, Brouter does the
+            same way - and then keeps going. (And where the framework's implementation is the right
+            one - authorization, layouts - Brouter composes it instead of replacing it.)
+        </p>
+        <table class="bb-table bb-compare">
+            <thead>
+                <tr><th>Capability</th><th>Built-in Router</th><th>Brouter</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Route templates &amp; constraints</td><td>Full grammar</td><td>Same grammar, identical matching semantics</td></tr>
+                <tr><td>Nested routes &amp; outlets</td><td>-</td><td>Route trees, outlets, named views, pathless groups</td></tr>
+                <tr><td>Navigation guards</td><td>-</td><td>Async enter/leave guards + component-level locks, all preventive</td></tr>
+                <tr><td>Route data loading</td><td>Per-component <code>OnParametersSetAsync</code></td><td>Loaders + SWR cache + preloading + deferred data + error boundaries</td></tr>
+                <tr><td>Navigation result</td><td>Fire-and-forget</td><td>Awaitable outcome (succeeded / cancelled / redirected / …)</td></tr>
+                <tr><td>View transitions</td><td>Hand-rolled JS</td><td>One option, direction-aware defaults, plain-CSS overrides</td></tr>
+                <tr><td>Keep-alive page state</td><td>-</td><td>Per-route or per-parameter retention with LRU eviction</td></tr>
+                <tr><td>Typed URLs</td><td>Strings</td><td>Source-generated <code>BrouterRoutes</code> builders</td></tr>
+                <tr><td>Scroll &amp; focus management</td><td><code>FocusOnNavigate</code></td><td>Scroll-to-top, fragment scrolling, position restoration, focus-on-navigate</td></tr>
+                <tr><td><code>&#64;page</code> components &amp; <code>[Authorize]</code></td><td>✓</td><td>✓ unchanged - discovery, <code>Found</code> template and the framework's own <code>AuthorizeRouteView</code></td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Brouter?</h3>
+                <p class="bb-card-desc">Install, register, declare two routes - running in five minutes.</p>
+                <BrouterLink Href="/docs/getting-started" class="btn btn-primary">Getting started →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> On the built-in Router?</h3>
+                <p class="bb-card-desc">Your <code>Found</code> template ports verbatim; <code>&#64;page</code> pages just keep working.</p>
+                <BrouterLink Href="/docs/migration" class="btn btn-outline">Migration guide →</BrouterLink>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Want to see it live?</h3>
+                <p class="bb-card-desc">Every feature on this site has a clickable demo - this site <em>is</em> the router.</p>
+                <BrouterLink Href="/playground" class="btn btn-outline">Open the playground →</BrouterLink>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <h2>Frequently asked questions</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Does Brouter replace the built-in Blazor Router?</summary>
+                <p>
+                    Yes - it is a drop-in replacement. Point <code>AppAssembly</code> at your app and
+                    every <code>&#64;page</code> component is discovered and matched with identical
+                    template semantics; the built-in Router's <code>&lt;Found&gt;</code> /
+                    <code>&lt;NotFound&gt;</code> / <code>&lt;Navigating&gt;</code> templates port over
+                    as-is. See the <BrouterLink Href="/docs/migration">migration guide</BrouterLink>.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work with Server, WebAssembly and Auto render modes - and prerendering?</summary>
+                <p>
+                    Yes. This site runs the same shared pages under all three hosts. Loader results
+                    captured during prerender can be persisted so they don't double-fetch, and on
+                    .NET 10 an unmatched URL during static SSR produces a real HTTP 404.
+                </p>
+            </details>
+            <details>
+                <summary>What about <code>[Authorize]</code> pages?</summary>
+                <p>
+                    Set <code>NotAuthorized</code> / <code>Authorizing</code> on <code>&lt;Brouter&gt;</code>
+                    and Brouter composes the framework's own <code>AuthorizeRouteView</code> internally -
+                    authorization correctness stays Microsoft's code, and native rendering fails closed
+                    on <code>[Authorize]</code> components it can't enforce.
+                </p>
+            </details>
+            <details>
+                <summary>Is there any JavaScript to set up?</summary>
+                <p>
+                    No. Brouter brings its script along as a static web asset - there is no script tag
+                    to add and nothing to bundle. On browsers without the View Transitions API the
+                    animations are simply inert.
+                </p>
+            </details>
+            <details>
+                <summary>What does it cost at scale?</summary>
+                <p>
+                    Every route is a live component instance: roughly 3-6&nbsp;KB of retained memory
+                    each, so ~500 routes add about 2.5&nbsp;MB and ~4&nbsp;ms of startup. A
+                    first-segment index keeps per-navigation matching fast regardless. Details and a
+                    runnable benchmark on the <BrouterLink Href="/docs/performance">performance page</BrouterLink>.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Route your Blazor app the modern way</h2>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Brouter</pre>
+        <div class="bb-hero-actions">
+            <BrouterLink Href="/docs/getting-started" class="btn btn-primary bb-btn-lg">Get started →</BrouterLink>
+            <BrouterLink Href="/docs" class="btn btn-outline bb-btn-lg">Read the docs</BrouterLink>
+        </div>
+    </section>
+</div>
