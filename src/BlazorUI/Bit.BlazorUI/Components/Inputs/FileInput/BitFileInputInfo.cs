@@ -65,4 +65,7 @@ public class BitFileInputInfo
     /// This is null by default and only loaded on demand to avoid unnecessary memory usage.
     /// </summary>
     [JsonIgnore] public byte[]? Content { get; internal set; }
+
+    // Tracks whether the file was invalidated by the MaxCount limit, so it can become valid again once removals free up room.
+    [JsonIgnore] internal bool MaxCountExceeded { get; set; }
 }

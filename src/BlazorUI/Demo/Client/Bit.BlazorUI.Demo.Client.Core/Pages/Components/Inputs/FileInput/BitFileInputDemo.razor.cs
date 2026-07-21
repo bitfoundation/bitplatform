@@ -115,7 +115,7 @@ public partial class BitFileInputDemo
             Name = "MaxCount",
             Type = "int",
             DefaultValue = "0",
-            Description = "Maximum allowed number of files in the file list. Files selected beyond this count will be marked as invalid. Set to 0 for no count limit."
+            Description = "Maximum allowed number of files in the file list. Files selected beyond this count will be marked as invalid, becoming valid again once removals free up room. Set to 0 for no count limit."
         },
         new()
         {

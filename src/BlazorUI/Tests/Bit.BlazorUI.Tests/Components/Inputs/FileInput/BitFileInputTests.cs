@@ -524,6 +524,15 @@ public class BitFileInputTests : BunitTestContext
         DataRow(BitColor.Warning, "bit-fin-wrn"),
         DataRow(BitColor.SevereWarning, "bit-fin-swr"),
         DataRow(BitColor.Error, "bit-fin-err"),
+        DataRow(BitColor.PrimaryBackground, "bit-fin-pbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-fin-sbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-fin-tbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-fin-pfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-fin-sfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-fin-tfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-fin-pbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-fin-sbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-fin-tbr"),
         DataRow(null, "bit-fin-pri")
     ]
     public void BitFileInputShouldRespectColor(BitColor? color, string expectedClass)

@@ -125,13 +125,14 @@
         <div>
             <b>MaxCount</b> caps how many files the list can hold — 3 in this example. Files arriving beyond the
             cap stay visible but are marked invalid with the <b>MaxCountErrorMessage</b>, so the user sees exactly
-            which files did not make it instead of them disappearing silently. Combined with <b>Append</b> the cap
-            applies to the whole accumulated list, not just a single selection.
+            which files did not make it instead of them disappearing silently; removing files frees up room and
+            the over-cap files become valid again. Combined with <b>Append</b> the cap applies to the whole
+            accumulated list, not just a single selection.
         </div>
 
         <br />
 
-        <BitFileInput Label="Browse or drop files" Multiple Append MaxCount="3" />
+        <BitFileInput Label="Browse or drop files" Multiple Append MaxCount="3" ShowRemoveButton />
     </DemoExample>
 
     <DemoExample Title="FileValidator" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">

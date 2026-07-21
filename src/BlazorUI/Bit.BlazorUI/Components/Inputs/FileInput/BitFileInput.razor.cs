@@ -100,7 +100,8 @@ public partial class BitFileInput : BitComponentBase
 
     /// <summary>
     /// Maximum allowed number of files in the file list.
-    /// Files selected beyond this count will be marked as invalid. Set to 0 for no count limit.
+    /// Files selected beyond this count will be marked as invalid, becoming valid again once removals free up room.
+    /// Set to 0 for no count limit.
     /// </summary>
     [Parameter] public int MaxCount { get; set; }
 
@@ -259,7 +260,7 @@ public partial class BitFileInput : BitComponentBase
 
             _files.Clear();
 
-            await _js.BitFileInputClear(UniqueId);
+            await _js.BitFileInputReset(UniqueId, _inputRef);
 
             foreach (var file in removedFiles)
             {
@@ -274,6 +275,8 @@ public partial class BitFileInput : BitComponentBase
 
             await OnRemove.InvokeAsync(fileInfo);
         }
+
+        ApplyMaxCountValidation();
 
         await OnChange.InvokeAsync([.. _files]);
 
@@ -338,7 +341,7 @@ public partial class BitFileInput : BitComponentBase
 
         var dragClass = $"bit-fin-drg {Classes?.Dragging}".Trim();
 
-        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef, dragClass);
+        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef, dragClass, Styles?.Dragging);
     }
 
 
@@ -412,18 +415,33 @@ public partial class BitFileInput : BitComponentBase
 
         _files.AddRange(newFiles);
 
-        if (MaxCount > 0 && _files.Count > MaxCount)
-        {
-            foreach (var file in _files.Skip(MaxCount))
-            {
-                if (file.IsValid is false) continue;
+        ApplyMaxCountValidation();
 
+        await OnChange.InvokeAsync([.. _files]);
+    }
+
+    private void ApplyMaxCountValidation()
+    {
+        if (MaxCount <= 0) return;
+
+        var index = 0;
+        foreach (var file in _files)
+        {
+            if (index++ < MaxCount)
+            {
+                if (file.MaxCountExceeded is false) continue;
+
+                file.MaxCountExceeded = false;
+                file.IsValid = true;
+                file.Message = null;
+            }
+            else if (file.IsValid)
+            {
+                file.MaxCountExceeded = true;
                 file.IsValid = false;
                 file.Message = MaxCountErrorMessage ?? "The maximum number of files is exceeded";
             }
         }
-
-        await OnChange.InvokeAsync([.. _files]);
     }
 
     private string GetFileElClass(bool isValid)

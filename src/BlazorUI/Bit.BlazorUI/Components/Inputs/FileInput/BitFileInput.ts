@@ -34,20 +34,48 @@ namespace BitBlazorUI {
             return files;
         }
 
-        public static setupDragDrop(dropZoneElement: HTMLElement, inputElement: HTMLInputElement, dragClass: string) {
+        public static setupDragDrop(dropZoneElement: HTMLElement, inputElement: HTMLInputElement, dragClass: string, dragStyle: string | null) {
             let dragCounter = 0;
+            let originalStyle: string | null = null;
             const dragClasses = dragClass.split(' ').filter(c => c.length > 0);
 
             function hasFiles(e: DragEvent) {
                 return !!e.dataTransfer && Array.prototype.includes.call(e.dataTransfer.types, 'Files');
             }
 
+            function addDragState() {
+                dragCounter++;
+                if (dragCounter > 1) return;
+
+                dropZoneElement.classList.add(...dragClasses);
+
+                if (!dragStyle) return;
+                originalStyle = dropZoneElement.getAttribute('style');
+                dropZoneElement.setAttribute('style', [originalStyle, dragStyle].filter(s => s).join(';'));
+            }
+
+            function removeDragState(force: boolean) {
+                if (dragCounter === 0) return;
+
+                dragCounter = force ? 0 : dragCounter - 1;
+                if (dragCounter > 0) return;
+
+                dropZoneElement.classList.remove(...dragClasses);
+
+                if (!dragStyle) return;
+                if (originalStyle) {
+                    dropZoneElement.setAttribute('style', originalStyle);
+                } else {
+                    dropZoneElement.removeAttribute('style');
+                }
+                originalStyle = null;
+            }
+
             function onDragEnter(e: DragEvent) {
                 e.preventDefault();
-                if (!hasFiles(e)) return;
+                if (inputElement.disabled || !hasFiles(e)) return;
 
-                dragCounter++;
-                dropZoneElement.classList.add(...dragClasses);
+                addDragState();
             }
 
             function onDragOver(e: DragEvent) {
@@ -58,11 +86,7 @@ namespace BitBlazorUI {
                 e.preventDefault();
                 if (!hasFiles(e)) return;
 
-                dragCounter--;
-                if (dragCounter <= 0) {
-                    dragCounter = 0;
-                    dropZoneElement.classList.remove(...dragClasses);
-                }
+                removeDragState(false);
             }
 
             function setFiles(files: FileList) {
@@ -82,8 +106,7 @@ namespace BitBlazorUI {
 
             function onDrop(e: DragEvent) {
                 e.preventDefault();
-                dragCounter = 0;
-                dropZoneElement.classList.remove(...dragClasses);
+                removeDragState(true);
 
                 if (inputElement.disabled) return;
 

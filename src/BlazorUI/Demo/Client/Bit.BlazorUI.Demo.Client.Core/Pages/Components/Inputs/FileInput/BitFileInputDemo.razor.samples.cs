@@ -31,7 +31,7 @@ public partial class BitFileInputDemo
 <BitFileInput Label=""Browse or drop a file"" AllowedExtensions=""@(["".gif"","".jpg"","".png"","".bmp""])"" />";
 
     private readonly string example7RazorCode = @"
-<BitFileInput Label=""Browse or drop files"" Multiple Append MaxCount=""3"" />";
+<BitFileInput Label=""Browse or drop files"" Multiple Append MaxCount=""3"" ShowRemoveButton />";
 
     private readonly string example8RazorCode = @"
 <BitFileInput Label=""Browse or drop files"" Multiple FileValidator=""@ValidateEmptyFile"" />";

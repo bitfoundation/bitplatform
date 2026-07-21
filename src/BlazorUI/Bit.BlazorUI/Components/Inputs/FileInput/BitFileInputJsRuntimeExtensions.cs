@@ -22,14 +22,15 @@ internal static class BitFileInputJsRuntimeExtensions
 
     /// <summary>
     /// Sets up drag-and-drop and paste event handlers on the drop zone element to forward files to the input element,
-    /// toggling the provided CSS class on the drop zone while files are being dragged over it.
+    /// toggling the provided CSS class and inline style on the drop zone while files are being dragged over it.
     /// </summary>
     internal static ValueTask<IJSObjectReference> BitFileInputSetupDragDrop(this IJSRuntime jsRuntime,
                                                                             ElementReference dragDropZoneElement,
                                                                             ElementReference inputFileElement,
-                                                                            string dragClass)
+                                                                            string dragClass,
+                                                                            string? dragStyle)
     {
-        return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileInput.setupDragDrop", dragDropZoneElement, inputFileElement, dragClass);
+        return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileInput.setupDragDrop", dragDropZoneElement, inputFileElement, dragClass, dragStyle);
     }
 
     /// <summary>
