@@ -70,6 +70,13 @@ class FakeResponse {
         copy.cloned = true;
         return copy;
     }
+    // Response.error() is what a worker returns from respondWith to signal "network error"
+    // without rejecting. Marked so tests can tell it apart from a real response.
+    static error() {
+        const r = new FakeResponse(null, { status: 0 });
+        r.type = 'error';
+        return r;
+    }
 }
 
 class FakeCache {
@@ -106,12 +113,16 @@ class FakeCacheStorage {
  * (`self.assetsManifest`, `self.mode`, ...) must be assigned first, because bit-bswup.sw.js
  * reads it during module evaluation. Call `load()` when the config is in place.
  */
-export function createServiceWorkerContext({ fetchHandler } = {}) {
+export function createServiceWorkerContext({ fetchHandler, cacheStorageError } = {}) {
     const clients = [];
     const posted = [];      // everything the worker broadcast to clients
     const fetchLog = [];
     const handlers = {};
     const caches = new FakeCacheStorage();
+    // Simulates CacheStorage being unusable (quota exhausted, private mode, storage pressure).
+    if (cacheStorageError) {
+        caches.open = async () => { throw cacheStorageError; };
+    }
 
     const addClient = (id = `client-${clients.length + 1}`) => {
         const client = { id, type: 'window', url: ORIGIN + '/', postMessage: m => posted.push(m) };
@@ -198,6 +209,24 @@ export function createServiceWorkerContext({ fetchHandler } = {}) {
         },
         messagesOfType(type) {
             return api.messages().filter(m => m && m.type === type);
+        },
+        /**
+         * Dispatch a fetch event. `handled` reports whether the worker called respondWith at
+         * all - when it does not, the browser performs its own default request and the worker
+         * is entirely out of the failure path, which is the point of the sync router.
+         */
+        async fetchEvent({ url, method = 'GET', mode = 'cors' } = {}) {
+            const request = new FakeRequest(url, { method, mode });
+            let responded, waited;
+            const e = {
+                request,
+                respondWith: p => { responded = p; },
+                waitUntil: p => { waited = p; },
+            };
+            handlers.fetch(e);
+            const response = responded === undefined ? undefined : await responded;
+            if (waited) await waited.catch(() => { });
+            return { handled: responded !== undefined, response };
         },
         /** Drive a lifecycle event and await whatever it passed to waitUntil/respondWith. */
         async fire(type, event = {}) {

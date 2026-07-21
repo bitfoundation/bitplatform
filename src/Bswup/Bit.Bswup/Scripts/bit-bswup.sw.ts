@@ -187,7 +187,9 @@ diag('MAX_RETRIES:', MAX_RETRIES, 'RETRY_DELAY:', RETRY_DELAY);
 // page<->worker commands (SKIP_WAITING, CLAIM_CLIENTS, BLAZOR_STARTED, CLEAN_UP).
 self.addEventListener('install', (e) => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', (e) => e.waitUntil(handleActivate(e)));
-self.addEventListener('fetch', (e) => e.respondWith(handleFetch(e)));
+// handleFetch decides *synchronously* whether to call respondWith, so requests Bswup does not
+// manage stay on the browser's own network path (see the comment on handleFetch).
+self.addEventListener('fetch', handleFetch);
 self.addEventListener('message', handleMessage);
 
 async function handleInstall(e: any) {
@@ -301,9 +303,8 @@ diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 diagGroupEnd();
 
 // Runtime request router. For every GET this decides whether to serve the request from the
-// Bswup cache, fall back to the SPA default document, or pass the request straight to the
-// network. High-level flow:
-//   1. Block prohibited URLs (403) and pass through non-GET / server-handled requests.
+// Bswup cache, fall back to the SPA default document, or leave it alone. High-level flow:
+//   1. Block prohibited URLs (403) and IGNORE non-GET / server-handled requests.
 //   2. For navigations, serve the default document unless the URL is server-rendered or
 //      forcePrerender is on (then the server owns the HTML).
 //   3. Resolve the request to an asset by testing each asset's (RegExp) url against it.
@@ -312,7 +313,23 @@ diagGroupEnd();
 //      pattern assets like resource-collection.<hash>.js); in active mode a precached asset that
 //      misses simply goes to the network. Hash-less assets carry no version to diff, so they are
 //      re-downloaded on every update (see createAssetsCache), not on every request.
-async function handleFetch(e: any) {
+//
+// THIS FUNCTION IS DELIBERATELY SYNCHRONOUS. respondWith() is a commitment: the moment it is
+// called the worker owns the response and the browser will NOT fall back to its own network
+// stack, so a rejected promise turns into a hard network error for that request - even for a
+// request Bswup has no interest in. Previous versions called
+// `e.respondWith(handleFetch(e))` unconditionally and then decided, which meant every request
+// on the origin was routed through a `fetch()` inside the worker whose failure it could not
+// recover from. That is the "frozen progress bar" failure: during an install the page is
+// pulling Blazor's boot assets, one of those proxied fetches blips, the request hard-fails,
+// Blazor never finishes starting, and the splash sits at whatever percent it had reached until
+// the user refreshes.
+//
+// So: decide first, commit second. Every check needed to route a request is synchronous, and
+// for anything we do not manage we simply return without calling respondWith - leaving the
+// browser to do exactly what it would have done with no service worker installed. Only the
+// managed path calls respondWith, and it is handed serveAsset(), which never rejects.
+function handleFetch(e: any) {
     const req = e.request as Request;
 
     if (PROHIBITED_URLS.some(pattern => pattern.test(req.url))) {
@@ -332,23 +349,24 @@ async function handleFetch(e: any) {
         // attacker-influenced is ever reflected; nosniff stops the text/plain body from being
         // re-interpreted as HTML by content sniffing. The URL is still available via
         // enableFetchDiagnostics (logged above).
-        return new Response('This URL is prohibited!', {
+        return e.respondWith(new Response('This URL is prohibited!', {
             status: 403,
             statusText: 'Prohibited',
             headers: {
                 'Content-Type': 'text/plain; charset=utf-8',
                 'X-Content-Type-Options': 'nosniff',
             }
-        });
+        }));
     }
 
+    // Not ours: no respondWith, so the browser handles it exactly as it would with no service
+    // worker installed. Proxying these through a fetch() in the worker only added a failure
+    // mode - it could never produce a better response than the browser's own request.
     const isServerHandled = SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url));
     if (req.method !== 'GET' || isServerHandled) {
-        diagFetch('*** handleFetch ended - skipped - !GET or SERVER_HANDLED_URLS:', e, req);
-        return fetch(req);
+        diagFetch('*** handleFetch ended - ignored - !GET or SERVER_HANDLED_URLS:', e, req);
+        return;
     }
-
-
 
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url));
     const shouldServeDefaultDoc = (req.mode === 'navigate') && !isServerRendered && !self.forcePrerender;
@@ -364,50 +382,125 @@ async function handleFetch(e: any) {
         : UNIQUE_ASSETS.find(a => a.url.test(req.url));
 
     if (!asset) {
-        diagFetch('+++ handleFetch ended - asset not found:', start, req.url, e, req);
-
-        return fetch(req);
+        diagFetch('+++ handleFetch ended - ignored - asset not found:', start, req.url, e, req);
+        return;
     }
 
     if (self.forcePrerender && asset.isDefault) {
-        diagFetch('+++ handleFetch ended - skipped - forcePrerender defaultDoc:', start, asset, e, req);
-
-        return fetch(req);
+        diagFetch('+++ handleFetch ended - ignored - forcePrerender defaultDoc:', start, asset, e, req);
+        return;
     }
 
+    // From here on the request is one Bswup manages, so it is worth taking over.
+    e.respondWith(serveAsset(e, req, asset, start));
+}
+
+// Produces the response for a request Bswup manages. This must NEVER reject: it is handed
+// straight to respondWith, and a rejection there is an unrecoverable network error for the
+// page rather than a fallback to the network. Every await is therefore guarded, and the
+// degradation order is cache -> network -> stale cache -> explicit network error.
+async function serveAsset(e: any, req: Request, asset: any, start: string) {
     // Concrete assets are keyed/fetched via their reqUrl (+ hash / ?v= cache-buster). A pattern
     // asset (a RegExp externalAssets entry, e.g. resource-collection.<hash>.js) has no precomputed
     // URL, so it is keyed and fetched by the actual request.
     const cacheUrl = asset.reqUrl ? createCacheUrl(asset) : req.url;
 
-    const bitBswupCache = await caches.open(CACHE_NAME);
-    const cachedResponse = await bitBswupCache.match(cacheUrl);
+    // CacheStorage is not guaranteed available: it throws under storage pressure, in some
+    // private-browsing modes, and when the origin's quota is exhausted. Losing the cache is
+    // survivable (we fall through to the network); letting it reject is not.
+    const bitBswupCache = await tryCacheOpen();
+    const cachedResponse = bitBswupCache ? await tryCacheMatch(bitBswupCache, cacheUrl) : undefined;
 
-    // Serve from cache when present. In active (non-passive) mode a precached asset that missed
-    // the cache goes straight to the network; pattern assets are never precached (their concrete
+    if (cachedResponse) {
+        diagFetch('+++ serveAsset ended - using cache.', start, asset);
+        return cachedResponse;
+    }
+
+    // In active (non-passive) mode a precached asset that missed the cache goes straight to the
+    // network with the page's own request; pattern assets are never precached (their concrete
     // URL isn't known ahead of time), so they must lazily fill the cache even in active mode.
-    if (cachedResponse || (!self.isPassive && asset.reqUrl)) {
-        diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', start, asset);
-
-        return cachedResponse || fetch(req);
+    if (!self.isPassive && asset.reqUrl) {
+        diagFetch('+++ serveAsset ended - NOT using cache.', start, asset);
+        return (await tryFetch(req)) || await lastResort(bitBswupCache, req, asset);
     }
 
     const request = asset.reqUrl ? createNewAssetRequest(asset) : req;
-    const response = await fetch(request);
+    let response = await tryFetch(request);
 
-    if (response.ok) {
+    // The versioned request carries a `?v=` buster and, with enableCacheControl, no-store
+    // headers - either of which a fussy proxy or an offline-ish network can reject while the
+    // page's own plain request still succeeds. Retry with it before giving up.
+    //
+    // Not when the request carried an integrity hash, though: SRI failures surface as a
+    // rejected fetch, and retrying without integrity would serve exactly the unverified bytes
+    // the check exists to reject. A tampered asset must fail, not silently downgrade.
+    if (!response && asset.reqUrl && !(request as any).integrity) {
+        diagFetch('*** serveAsset - versioned request failed, retrying with the plain request:', start, asset);
+        response = await tryFetch(req);
+    }
+
+    if (!response) {
+        return await lastResort(bitBswupCache, req, asset);
+    }
+
+    if (response.ok && bitBswupCache) {
         // Stream the response to the page immediately and write to the cache in the background.
         // response.clone() tees the stream so the page and the cache write consume bytes as they
         // arrive; e.waitUntil keeps the worker alive until the background write completes.
         const cachePut = bitBswupCache.put(cacheUrl, response.clone()).catch(err => {
-            diagFetch('+++ handleFetch - lazy-fill put failed:', err, asset);
+            diagFetch('+++ serveAsset - lazy-fill put failed:', err, asset);
         });
         e.waitUntil(cachePut);
     }
 
-    diagFetch('+++ handleFetch ended - lazily caching asset:', start, asset, e, req);
+    diagFetch('+++ serveAsset ended - lazily caching asset:', start, asset, e, req);
 
     return response;
+}
+
+// The network is gone and we already committed to responding. Anything previously cached under
+// the raw request URL beats a hard failure - it is how an offline reload still boots - and when
+// there is nothing at all, Response.error() produces the same network error the page would have
+// seen without a service worker (rather than an unhandled rejection).
+async function lastResort(cache: any, req: Request, asset: any) {
+    if (cache) {
+        const stale = await tryCacheMatch(cache, req.url);
+        if (stale) {
+            diagFetch('*** serveAsset - network failed, serving a stale cached copy:', req.url, asset);
+            return stale;
+        }
+    }
+
+    diagFetch('*** serveAsset - network failed and nothing cached:', req.url, asset);
+    return Response.error();
+}
+
+// fetch() that reports failure as `undefined` instead of a rejection, so callers can fall back.
+async function tryFetch(request: Request) {
+    try {
+        return await fetch(request);
+    } catch (err) {
+        diagFetch('*** tryFetch - request failed:', (request && request.url) || request, err);
+        return undefined;
+    }
+}
+
+async function tryCacheOpen() {
+    try {
+        return await caches.open(CACHE_NAME);
+    } catch (err) {
+        diagFetch('*** tryCacheOpen - cache unavailable:', err);
+        return undefined;
+    }
+}
+
+async function tryCacheMatch(cache: any, url: string) {
+    try {
+        return await cache.match(url);
+    } catch (err) {
+        diagFetch('*** tryCacheMatch - lookup failed:', url, err);
+        return undefined;
+    }
 }
 
 // Handles commands posted from the page (bit-bswup.ts). Each branch corresponds to a string
