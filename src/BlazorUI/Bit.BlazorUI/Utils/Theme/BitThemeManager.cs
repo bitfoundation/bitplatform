@@ -195,6 +195,12 @@ public class BitThemeManager : IAsyncDisposable
                 // methods keep their null-on-disconnect behavior, and leave the flag false to retry later.
                 return;
             }
+            catch (OperationCanceledException)
+            {
+                // Teardown raced the interop call (covers TaskCanceledException, e.g. the JS interop
+                // timeout). Same contract as above: swallow, and leave the flag false to retry later.
+                return;
+            }
 
             // InvokeVoid silently no-ops when the runtime is invalid; if it became invalid between the
             // initial check and the awaited call, leave the flag false so a later call can retry.

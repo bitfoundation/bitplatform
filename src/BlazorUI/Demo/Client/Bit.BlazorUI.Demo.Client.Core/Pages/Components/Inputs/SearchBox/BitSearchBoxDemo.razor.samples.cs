@@ -262,14 +262,16 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 <BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" />
 <BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" Underlined />
 
-<BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" />
-<BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" Underlined />
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" />
+    <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" Underlined />
 
-<BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" />
-<BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" Underlined />
+    <BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" />
+    <BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" Underlined />
 
-<BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" />
-<BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" Underlined />
+    <BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" />
+    <BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" Underlined />
+</div>
 
 <BitSearchBox Placeholder=""PrimaryForeground"" ShowSearchButton Color=""BitColor.PrimaryForeground"" />
 <BitSearchBox Placeholder=""PrimaryForeground"" ShowSearchButton Color=""BitColor.PrimaryForeground"" Underlined />
@@ -314,7 +316,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 <BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" IsEnabled=""false"" />
 <BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" IsEnabled=""false"" Underlined />
 
-<div style=""background:var(--bit-clr-bg-dis);padding:1rem"">
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
     <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" />
     <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Underlined />
 
