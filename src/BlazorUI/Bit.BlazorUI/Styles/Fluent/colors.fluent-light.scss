@@ -231,9 +231,11 @@
     --bit-clr-fg-pri-focus: var(--bit-clr-fg-pri);
     --bit-clr-fg-sec-focus: var(--bit-clr-fg-sec);
     --bit-clr-fg-ter-focus: var(--bit-clr-fg-ter);
-    --bit-clr-bg-pri-focus: var(--bit-clr-bg-pri);
-    --bit-clr-bg-sec-focus: var(--bit-clr-bg-sec);
-    --bit-clr-bg-ter-focus: var(--bit-clr-bg-ter);
+    //The background roles are aliased to the foreground color instead of their own background,
+    //otherwise the focus indicator would be drawn in the very color it sits on and stay invisible.
+    --bit-clr-bg-pri-focus: var(--bit-clr-fg-pri);
+    --bit-clr-bg-sec-focus: var(--bit-clr-fg-pri);
+    --bit-clr-bg-ter-focus: var(--bit-clr-fg-pri);
     --bit-clr-brd-pri-focus: var(--bit-clr-brd-pri);
     --bit-clr-brd-sec-focus: var(--bit-clr-brd-sec);
     --bit-clr-brd-ter-focus: var(--bit-clr-brd-ter);

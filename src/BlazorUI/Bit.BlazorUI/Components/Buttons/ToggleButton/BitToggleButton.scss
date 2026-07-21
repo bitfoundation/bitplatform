@@ -22,8 +22,6 @@
 
     &:focus-visible {
         @include focus-ring(var(--bit-tgb-clr-focus));
-        outline-offset: spacing(0.25);
-        outline: spacing(0.25) solid var(--bit-tgb-clr);
     }
 
     &.bit-dis {
