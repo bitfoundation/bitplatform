@@ -14,7 +14,7 @@
            aria-label="Search documentation"
            role="combobox"
            aria-autocomplete="list"
-           aria-expanded="@(_results is { Length: > 0 } ? "true" : "false")"
+           aria-expanded="@(_results is null ? "false" : "true")"
            aria-controls="bb-search-listbox"
            aria-activedescendant="@(_results is { Length: > 0 } ? $"bb-search-option-{_activeIndex}" : null)"
            value="@_query"
@@ -43,8 +43,8 @@
     }
     else if (_results is { Length: 0 })
     {
-        <ul class="bb-search-results">
-            <li class="bb-search-empty">No results for “@_query”</li>
+        <ul id="bb-search-listbox" class="bb-search-results" role="listbox">
+            <li class="bb-search-empty" role="presentation">No results for “@_query”</li>
         </ul>
     }
 </div>
