@@ -42,6 +42,7 @@ public class BitThemeManager : IAsyncDisposable
     }
 
     /// <summary>Returns the active <c>bit-theme</c> name from the document element.</summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask<string?> GetCurrentThemeAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -65,6 +66,7 @@ public class BitThemeManager : IAsyncDisposable
     /// stricter token rule (or use <see cref="BitThemeName.Custom(string)"/>): the SSR path rejects
     /// non-conforming tokens and would treat such a persisted preference as "missing".
     /// </remarks>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask<string?> SetThemeAsync(string themeName)
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -98,6 +100,7 @@ public class BitThemeManager : IAsyncDisposable
     /// Toggles between configured light and dark theme names.
     /// Returns <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
     /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask<string?> ToggleDarkLightAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -105,6 +108,7 @@ public class BitThemeManager : IAsyncDisposable
     }
 
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask ApplyBitThemeAsync(BitTheme? bitTheme, ElementReference? element = null)
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -115,6 +119,7 @@ public class BitThemeManager : IAsyncDisposable
     /// Removes custom properties previously applied by <see cref="ApplyBitThemeAsync"/> on <paramref name="element"/> (default: document body).
     /// Prefer scoping token overrides under <see cref="BitThemeProvider"/> when possible.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask ClearBitThemeOverridesAsync(ElementReference? element = null)
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -125,6 +130,7 @@ public class BitThemeManager : IAsyncDisposable
     /// Returns true when the OS / browser reports a dark <c>prefers-color-scheme</c>. Returns
     /// <see langword="false"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
     /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask<bool> IsSystemInDarkModeAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -141,6 +147,7 @@ public class BitThemeManager : IAsyncDisposable
     /// off, nothing has been stored yet, or JS interop is unavailable (e.g. prerendering /
     /// disconnected circuit).
     /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask<string?> GetCurrentPersistedThemeAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -158,6 +165,7 @@ public class BitThemeManager : IAsyncDisposable
     /// method. Safe to call multiple times - registration is idempotent and serialized by an
     /// internal semaphore.
     /// </remarks>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask EnsureThemeNotificationsRegisteredAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
