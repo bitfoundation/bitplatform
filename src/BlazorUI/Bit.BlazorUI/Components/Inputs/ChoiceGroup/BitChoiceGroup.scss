@@ -132,12 +132,44 @@
     }
 }
 
+// The input is visually hidden but stays focusable, so the browser provides the full native radio
+// group keyboard interaction (a single tab stop landing on the checked item, arrow keys moving the
+// selection with wrapping and RTL awareness, and Space checking the focused item).
+.bit-chg-inp {
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    border: none;
+    overflow: hidden;
+    position: absolute;
+    pointer-events: none;
+    clip-path: inset(50%);
+}
+
+.bit-chg-inp:focus-visible + .bit-chg-itl {
+    outline-offset: spacing(0.25);
+    outline: spacing(0.25) solid var(--bit-chg-clr);
+}
+
 .bit-chg-itl {
     display: flex;
     cursor: pointer;
     gap: spacing(0.75);
     align-items: center;
     flex-direction: var(--bit-chg-flex-direction);
+}
+
+.bit-chg-txd {
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-chg-dsc {
+    display: block;
+    color: $clr-fg-sec;
+    font-size: calc(var(--bit-chg-fontsize) - #{spacing(0.25)});
 }
 
 .bit-chg-ili {
@@ -337,6 +369,10 @@
     }
 
     .bit-chg-ico {
+        color: $clr-fg-dis;
+    }
+
+    .bit-chg-dsc {
         color: $clr-fg-dis;
     }
 }

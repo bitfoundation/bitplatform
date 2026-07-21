@@ -7,9 +7,27 @@
     var inputId = ChoiceGroup.GetInputId(Item);
     var template = ChoiceGroup.GetTemplate(Item);
     var isChecked = ChoiceGroup.GetIsCheckedItem(Item);
+    var description = ChoiceGroup.GetDescription(Item);
+    var descriptionId = ChoiceGroup.GetDescriptionId(Item);
 }
 
 <div style="@ChoiceGroup.GetItemContainerCssStyles(Item)" class="@ChoiceGroup.GetItemContainerCssClasses(Item)" @attributes="ChoiceGroup.GetItemMarkerAttributes(Item)">
+    <input @ref="_inputElement" @attributes="ChoiceGroup.InputHtmlAttributes"
+           @onclick="e => ChoiceGroup.HandleClick(Item)"
+           @onclick:preventDefault="ChoiceGroup.ReadOnly"
+           @onchange="e => ChoiceGroup.HandleChange(Item)"
+           type="radio"
+           id="@inputId"
+           checked=@isChecked
+           class="bit-chg-inp"
+           name="@ChoiceGroup.GetName()"
+           required="@ChoiceGroup.Required"
+           tabindex="@(ChoiceGroup.ReadOnly ? "-1" : null)"
+           aria-label="@ChoiceGroup.GetAriaLabel(Item)"
+           aria-describedby="@(description.HasValue() ? descriptionId : null)"
+           value="@ChoiceGroup.GetValue(Item)?.ToString()"
+           disabled="@(ChoiceGroup.GetIsEnabled(Item) is false)" />
+
     <label for="@inputId" style="@ChoiceGroup.Styles?.ItemLabel" class="bit-chg-itl @ChoiceGroup.GetItemLabelCssClasses(Item) @ChoiceGroup.Classes?.ItemLabel">
         @if (template is not null)
         {
@@ -71,6 +89,17 @@
                 {
                     <div style="@ChoiceGroup.Styles?.ItemTextWrapper" class="bit-chg-itw @ChoiceGroup.Classes?.ItemTextWrapper">
                         <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
+                        @if (description.HasValue())
+                        {
+                            <span id="@descriptionId" style="@ChoiceGroup.Styles?.ItemDescription" class="bit-chg-dsc @ChoiceGroup.Classes?.ItemDescription">@description</span>
+                        }
+                    </div>
+                }
+                else if (description.HasValue())
+                {
+                    <div class="bit-chg-txd">
+                        <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
+                        <span id="@descriptionId" style="@ChoiceGroup.Styles?.ItemDescription" class="bit-chg-dsc @ChoiceGroup.Classes?.ItemDescription">@description</span>
                     </div>
                 }
                 else
@@ -80,17 +109,4 @@
             }
         }
     </label>
-
-    <input @attributes="ChoiceGroup.InputHtmlAttributes"
-           @onclick="e => ChoiceGroup.HandleClick(Item)"
-           @onchange="e => ChoiceGroup.HandleChange(Item)"
-           hidden
-           type="radio"
-           name="@ChoiceGroup.GetName()"
-           id="@inputId"
-           checked=@isChecked
-           required="@ChoiceGroup.Required"
-           aria-label="@ChoiceGroup.GetAriaLabel(Item)"
-           value="@ChoiceGroup.GetValue(Item)?.ToString()"
-           disabled="@(ChoiceGroup.GetIsEnabled(Item) is false)" />
 </div>

@@ -21,6 +21,11 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// The secondary text to show under the text of the BitChoiceGroup option.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
     /// Id attribute of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? Id { get; set; }

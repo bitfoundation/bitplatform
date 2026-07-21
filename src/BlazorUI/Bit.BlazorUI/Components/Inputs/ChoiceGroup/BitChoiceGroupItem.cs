@@ -13,6 +13,11 @@ public class BitChoiceGroupItem<TValue>
     public string? Class { get; set; }
 
     /// <summary>
+    /// The secondary text to show under the text of the BitChoiceGroup item.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Id attribute of the BitChoiceGroup item.
     /// </summary>
     public string? Id { get; set; }

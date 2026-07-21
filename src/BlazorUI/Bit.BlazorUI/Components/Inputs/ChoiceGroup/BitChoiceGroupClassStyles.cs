@@ -81,4 +81,9 @@ public class BitChoiceGroupClassStyles
     /// Custom CSS classes/styles for the text of each item of the BitChoiceGroup.
     /// </summary>
     public string? ItemText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description of each item of the BitChoiceGroup.
+    /// </summary>
+    public string? ItemDescription { get; set; }
 }

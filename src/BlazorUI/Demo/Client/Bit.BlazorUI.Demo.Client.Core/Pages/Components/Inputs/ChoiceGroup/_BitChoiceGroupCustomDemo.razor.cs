@@ -4,6 +4,19 @@ public partial class _BitChoiceGroupCustomDemo
 {
     private string oneWayValue = "A";
     private string twoWayValue = "A";
+    private string readOnlyValue = "A";
+
+    private string? changedValue;
+    private string? clickedCustom;
+
+    private int dynamicCounter = 3;
+    private string? dynamicValue = "1";
+    private List<Order> dynamicCustoms =
+    [
+        new() { Name = "Custom 1", ItemValue = "1" },
+        new() { Name = "Custom 2", ItemValue = "2" },
+        new() { Name = "Custom 3", ItemValue = "3" }
+    ];
     private string itemTemplateValue = "Day";
     private string itemTemplateValue2 = "Day";
     private string itemLabelTemplateValue = "Day";
@@ -93,6 +106,20 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "Custom D", ItemValue = "D", Class = "custom-item" }
     ];
 
+    private readonly List<Order> prefixCustoms =
+    [
+        new() { Name = "Standard", ItemValue = "Standard", Prefix = "$0 — " },
+        new() { Name = "Express", ItemValue = "Express", Prefix = "$10 — " },
+        new() { Name = "Overnight", ItemValue = "Overnight", Prefix = "$25 — " }
+    ];
+
+    private readonly List<Order> descriptionCustoms =
+    [
+        new() { Name = "Daily", ItemValue = "Daily", Summary = "Backs up every night at 2 AM." },
+        new() { Name = "Weekly", ItemValue = "Weekly", Summary = "Backs up every Sunday at 2 AM." },
+        new() { Name = "Monthly", ItemValue = "Monthly", Summary = "Backs up on the first day of each month." }
+    ];
+
     private readonly List<Order> itemLabelTemplateCustoms =
     [
         new() { Name = "Day", ItemValue = "Day", IconName = BitIconName.CalendarDay },
@@ -115,6 +142,24 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "ویژه ت", ItemValue = "D" }
     ];
 
+
+    private void AddDynamicCustom()
+    {
+        dynamicCounter++;
+        dynamicCustoms = [.. dynamicCustoms, new Order { Name = $"Custom {dynamicCounter}", ItemValue = $"{dynamicCounter}" }];
+    }
+
+    private void RemoveDynamicCustom()
+    {
+        if (dynamicCustoms.Count <= 1) return;
+
+        dynamicCustoms = [.. dynamicCustoms.Take(dynamicCustoms.Count - 1)];
+    }
+
+    private void ReverseDynamicCustoms()
+    {
+        dynamicCustoms = [.. Enumerable.Reverse(dynamicCustoms)];
+    }
 
     private void HandleValidSubmit()
     {

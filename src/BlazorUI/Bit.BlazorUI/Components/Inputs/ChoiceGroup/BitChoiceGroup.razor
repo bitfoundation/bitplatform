@@ -10,7 +10,11 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel"
-     aria-labelledby="@GetAriaLabelledBy()">
+     aria-labelledby="@GetAriaLabelledBy()"
+     aria-required="@(Required ? "true" : null)"
+     aria-readonly="@(ReadOnly ? "true" : null)"
+     aria-disabled="@(IsEnabled ? null : "true")"
+     aria-orientation="@(Horizontal ? "horizontal" : "vertical")">
 
     <label id="@_labelId"
            disabled="@(IsEnabled is false)"

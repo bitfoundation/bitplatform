@@ -234,6 +234,102 @@ public class BitChoiceGroupTests : BunitTestContext
         }
     }
 
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderFocusableInputs()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+        });
+
+        var inputs = component.FindAll(".bit-chg-icn input");
+
+        Assert.AreEqual(4, inputs.Count);
+
+        foreach (var input in inputs)
+        {
+            Assert.IsFalse(input.HasAttribute("hidden"));
+            Assert.IsTrue(input.ClassList.Contains("bit-chg-inp"));
+            Assert.IsFalse(input.HasAttribute("tabindex"));
+        }
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRemoveInputsFromTabOrderWhenReadOnly()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        var inputs = component.FindAll(".bit-chg-icn input");
+
+        foreach (var input in inputs)
+        {
+            Assert.AreEqual("-1", input.GetAttribute("tabindex"));
+        }
+
+        var bitChoiceGroup = component.Find(".bit-chg");
+        Assert.AreEqual("true", bitChoiceGroup.GetAttribute("aria-readonly"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderDescriptions()
+    {
+        var items = new List<BitChoiceGroupItem<string>>()
+        {
+            new() { Text = "Item A", Value = "A", Description = "Description A" },
+            new() { Text = "Item B", Value = "B" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var descriptions = component.FindAll(".bit-chg-dsc");
+
+        Assert.AreEqual(1, descriptions.Count);
+        Assert.AreEqual("Description A", descriptions[0].TextContent);
+
+        var describedInput = component.Find(".bit-chg-icn input");
+        Assert.AreEqual(descriptions[0].Id, describedInput.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldTakeCustomGap()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Gap, "2rem");
+        });
+
+        var bitChoiceGroup = component.Find(".bit-chg");
+
+        Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("--bit-chg-item-gap:2rem"));
+    }
+
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitChoiceGroupShouldTakeCorrectGroupAria(bool horizontal)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Horizontal, horizontal);
+        });
+
+        var bitChoiceGroup = component.Find(".bit-chg");
+
+        Assert.AreEqual("true", bitChoiceGroup.GetAttribute("aria-required"));
+        Assert.AreEqual(horizontal ? "horizontal" : "vertical", bitChoiceGroup.GetAttribute("aria-orientation"));
+    }
+
     private List<BitChoiceGroupItem<string>> GetChoiceGroupItems()
     {
         return new List<BitChoiceGroupItem<string>>()

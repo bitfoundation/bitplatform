@@ -15,6 +15,20 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the ChoiceGroup is auto focused on first render, focusing its checked item (or its first item)."
+        },
+        new()
+        {
+            Name = "AutoReorderOptions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the assigned Index of each option in sync with the markup order of the options, even when an option is added, removed, or reordered conditionally after the first render."
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -37,6 +51,13 @@ public partial class BitChoiceGroupDemo
             Description = "The general color of the ChoiceGroup.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "Gap",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The gap between the items of the ChoiceGroup."
         },
         new()
         {
@@ -119,9 +140,15 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "OnChange",
+            Type = "EventCallback<TValue?>",
+            Description = "Callback for when the selected value changes.",
+        },
+        new()
+        {
             Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the option clicked.",
+            Type = "EventCallback<TItem>",
+            Description = "Callback for when an enabled item is clicked, even the already selected one.",
         },
         new()
         {
@@ -129,6 +156,20 @@ public partial class BitChoiceGroupDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Alias of ChildContent."
+        },
+        new()
+        {
+            Name = "ReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents changing the value of the ChoiceGroup while keeping its normal (non-disabled) appearance."
+        },
+        new()
+        {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the ChoiceGroup required and adds the required asterisk to its label."
         },
         new()
         {
@@ -323,6 +364,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The secondary text to show under the text of the BitChoiceGroup item.",
+               },
+               new()
+               {
                    Name = "Id",
                    Type = "string?",
                    DefaultValue = "null",
@@ -452,6 +500,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The secondary text to show under the text of the BitChoiceGroup option.",
+               },
+               new()
+               {
                    Name = "Id",
                    Type = "string?",
                    DefaultValue = "null",
@@ -578,6 +633,13 @@ public partial class BitChoiceGroupDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Class))",
                    Description = "CSS class attribute for the BitChoiceGroup option.",
+               },
+               new()
+               {
+                   Name = "Description",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Description))",
+                   Description = "The secondary text to show under the text of the BitChoiceGroup option.",
                },
                new()
                {
@@ -798,6 +860,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the text of each item of the BitChoiceGroup.",
+               },
+               new()
+               {
+                   Name = "ItemDescription",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the description of each item of the BitChoiceGroup.",
                },
             ]
         },

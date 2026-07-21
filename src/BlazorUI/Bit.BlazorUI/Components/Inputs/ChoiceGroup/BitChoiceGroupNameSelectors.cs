@@ -13,6 +13,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Class));
 
     /// <summary>
+    /// The Description field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Description { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Description));
+
+    /// <summary>
     /// The Id field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Id { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Id));

@@ -10,6 +10,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 {
     private List<TItem> _items = [];
     private string _name = default!;
+    private bool _autoFocusDone;
     private string _labelId = default!;
     private bool _optionsOrderDirty;
     private string _optionsContainerId = default!;
@@ -25,6 +26,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? AriaLabelledBy { get; set; }
+
+    /// <summary>
+    /// Determines if the ChoiceGroup is auto focused on first render, focusing its checked item (or its first item).
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// Keeps the assigned Index of each option in sync with the markup order of the options, even when
@@ -51,6 +57,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The gap between the items of the ChoiceGroup.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Gap { get; set; }
 
     /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
@@ -313,6 +325,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-chg-item-gap:{Gap}" : string.Empty);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -356,6 +370,30 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
 
     internal string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
+
+    internal string GetDescriptionId(TItem item) => $"{GetInputId(item)}-description";
+
+    // Keeps the InputElement of the base class pointing at the input of the checked item (or the first
+    // item when nothing is checked), so FocusAsync targets the same input the Tab key would land on.
+    // Called by each item after render; also performs the one-time AutoFocus on that input.
+    internal async Task SetInputElement(TItem item, ElementReference inputElement)
+    {
+        var isChecked = GetIsCheckedItem(item);
+
+        if (isChecked is false)
+        {
+            if (_items.Any(GetIsCheckedItem)) return;
+            if (ReferenceEquals(_items.FirstOrDefault(), item) is false) return;
+        }
+
+        InputElement = inputElement;
+
+        if (AutoFocus && _autoFocusDone is false && IsEnabled && ReadOnly is false && GetIsEnabled(item))
+        {
+            _autoFocusDone = true;
+            await InputElement.FocusAsync();
+        }
+    }
 
     internal async Task HandleClick(TItem item)
     {
@@ -678,6 +716,28 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
+    }
+
+    internal string? GetDescription(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Description;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Description;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Description.Selector is not null)
+        {
+            return NameSelectors.Description.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Description.Name);
     }
 
     internal string? GetText(TItem item)
