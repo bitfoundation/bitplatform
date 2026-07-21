@@ -115,6 +115,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public BitCalendarClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the calendar that applies to the today day button, the highlighted current month,
+    /// the selected AM/PM button, and the event indicators.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// CultureInfo for the Calendar.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -560,6 +567,28 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-cal-pri",
+            BitColor.Secondary => "bit-cal-sec",
+            BitColor.Tertiary => "bit-cal-ter",
+            BitColor.Info => "bit-cal-inf",
+            BitColor.Success => "bit-cal-suc",
+            BitColor.Warning => "bit-cal-wrn",
+            BitColor.SevereWarning => "bit-cal-swr",
+            BitColor.Error => "bit-cal-err",
+            BitColor.PrimaryBackground => "bit-cal-pbg",
+            BitColor.SecondaryBackground => "bit-cal-sbg",
+            BitColor.TertiaryBackground => "bit-cal-tbg",
+            BitColor.PrimaryForeground => "bit-cal-pfg",
+            BitColor.SecondaryForeground => "bit-cal-sfg",
+            BitColor.TertiaryForeground => "bit-cal-tfg",
+            BitColor.PrimaryBorder => "bit-cal-pbr",
+            BitColor.SecondaryBorder => "bit-cal-sbr",
+            BitColor.TertiaryBorder => "bit-cal-tbr",
+            _ => "bit-cal-pri"
+        });
 
         ClassBuilder.Register(() => (Dir is null && _culture.TextInfo.IsRightToLeft) ? "bit-rtl" : string.Empty);
     }
@@ -1189,8 +1218,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void BuildDatesLookups()
     {
-        _disabledDates = DisabledDates is null ? [] : DisabledDates.Select(d => d.Date).ToHashSet();
-        _highlightedDates = HighlightedDates is null ? [] : HighlightedDates.Select(d => d.Date).ToHashSet();
+        _disabledDates = DisabledDates is null ? [] : DisabledDates.Select(d => GetDateTime(d).Date).ToHashSet();
+        _highlightedDates = HighlightedDates is null ? [] : HighlightedDates.Select(d => GetDateTime(d).Date).ToHashSet();
         _disabledDaysOfWeek = DisabledDaysOfWeek is null ? [] : DisabledDaysOfWeek.ToHashSet();
     }
 

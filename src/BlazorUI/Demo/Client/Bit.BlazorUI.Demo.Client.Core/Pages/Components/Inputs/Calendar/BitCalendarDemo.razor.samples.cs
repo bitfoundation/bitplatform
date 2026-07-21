@@ -283,6 +283,41 @@ private void HandleOnMonthChange(DateTimeOffset month)
 <BitCalendar />";
 
     private readonly string example18RazorCode = @"
+<BitCalendar Color=""BitColor.Primary"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Secondary"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Tertiary"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Info"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Success"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Warning"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SevereWarning"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.Error"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.PrimaryBackground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SecondaryBackground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.TertiaryBackground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.PrimaryForeground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SecondaryForeground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.TertiaryForeground"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.PrimaryBorder"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.SecondaryBorder"" HighlightCurrentMonth />
+
+<BitCalendar Color=""BitColor.TertiaryBorder"" HighlightCurrentMonth />";
+
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCalendar GoToTodayIcon=""@BitIconInfo.Fa(""solid calendar-day"")""
@@ -302,7 +337,7 @@ private void HandleOnMonthChange(DateTimeOffset month)
              TimePickerIncreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-up"")""
              TimePickerDecreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-down"")"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -392,6 +427,6 @@ private void HandleOnMonthChange(DateTimeOffset month)
                              WeekNumbersHeader = ""custom-week-header"",
                              YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitCalendar Dir=""BitDir.Rtl"" />";
 }

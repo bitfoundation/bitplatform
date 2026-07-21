@@ -1109,7 +1109,7 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
-            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero)]);
+            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15)))]);
         });
 
         var disabledButtons = component.FindAll(".bit-cal-dbt[disabled]");
@@ -1139,7 +1139,7 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
-            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero)]);
+            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15)))]);
         });
 
         var disabledButton = component.Find(".bit-cal-dbt[disabled]");
@@ -1155,7 +1155,7 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
-            parameters.Add(p => p.HighlightedDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero)]);
+            parameters.Add(p => p.HighlightedDates, [new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15)))]);
         });
 
         var highlightedButton = component.Find(".bit-cal-dhl");
@@ -1288,7 +1288,7 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
-            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 16, 0, 0, 0, TimeSpan.Zero)]);
+            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2026, 1, 16, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 16)))]);
         });
 
         var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
@@ -1314,6 +1314,52 @@ public class BitCalendarTests : BunitTestContext
         var monthTitle = component.Find(".bit-cal-pkt, .bit-cal-ptb");
 
         Assert.Contains("February", monthTitle.TextContent);
+        Assert.AreEqual("15", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow("ArrowLeft", "14"),
+        DataRow("ArrowUp", "8"),
+        DataRow("ArrowDown", "22"),
+        DataRow("Home", "11"),
+        DataRow("End", "17")]
+    public void BitCalendarKeyboardNavigationShouldMoveFocusWithinMonth(string key, string expectedDay)
+    {
+        // January 15, 2026 is a Thursday; the week starts on Sunday, January 11 and ends on Saturday, January 17
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+
+        Assert.AreEqual("15", focusedButton.TextContent.Trim());
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expectedDay, component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow("PageUp", "January 2025"),
+        DataRow("PageDown", "January 2027")]
+    public void BitCalendarKeyboardNavigationShouldChangeYearOnShiftPage(string key, string expectedTitle)
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = key, ShiftKey = true });
+
+        var monthTitle = component.Find(".bit-cal-pkt, .bit-cal-ptb");
+
+        Assert.Contains(expectedTitle, monthTitle.TextContent);
         Assert.AreEqual("15", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
     }
 }
