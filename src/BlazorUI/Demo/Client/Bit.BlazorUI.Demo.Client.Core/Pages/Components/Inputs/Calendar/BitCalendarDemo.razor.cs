@@ -663,7 +663,7 @@ public partial class BitCalendarDemo
                 new()
                 {
                     Name= "Primary",
-                    Description="Info Primary general color.",
+                    Description="Primary general color.",
                     Value="0",
                 },
                 new()
@@ -926,6 +926,13 @@ public partial class BitCalendarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the header of the week numbers of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "DayNameHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the weekday-name headers of the BitCalendar."
                 },
                 new()
                 {

@@ -724,6 +724,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         _currentYear = _culture.Calendar.GetYear(selectedDate);
         _currentMonth = _culture.Calendar.GetMonth(selectedDate);
 
+        if (_currentYear != previousYear || _currentMonth != previousMonth)
+        {
+            _focusAfterRender = true;
+        }
+
         GenerateMonthData(_currentYear, _currentMonth);
 
         await OnSelectDate.InvokeAsync(CurrentValue);
@@ -852,7 +857,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         await NotifyMonthChange(previousYear, previousMonth);
     }
 
-    private async Task HandleGoToNow()
+    private void HandleGoToNow()
     {
         if (IsEnabled is false) return;
 
@@ -1253,12 +1258,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private DateTime GetFocusableDay()
     {
-        if (_focusedDate.HasValue && IsInCurrentMonth(_focusedDate.Value)) return _focusedDate.Value;
+        if (_focusedDate.HasValue && IsInCurrentMonth(_focusedDate.Value) && IsDayDisabled(_focusedDate.Value) is false) return _focusedDate.Value;
 
         if (CurrentValue.HasValue)
         {
             var selectedDate = GetDateTime(CurrentValue.Value).Date;
-            if (IsInCurrentMonth(selectedDate)) return selectedDate;
+            if (IsInCurrentMonth(selectedDate) && IsDayDisabled(selectedDate) is false) return selectedDate;
         }
 
         var today = GetToday().Date;

@@ -98,6 +98,11 @@ public class BitCalendarClassStyles
     public string? WeekNumbersHeader { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the weekday-name headers of the BitCalendar.
+    /// </summary>
+    public string? DayNameHeader { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for each row of the days of the BitCalendar.
     /// </summary>
     public string? DaysRow { get; set; }
