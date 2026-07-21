@@ -17,7 +17,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
 [TestClass]
 public class BitPdfOpCodeTests
 {
-    // Every operator keyword BitPdfOpCodes.Resolve maps — kept in sync with Resolve.
+    // Every operator keyword BitPdfOpCodes.Resolve maps - kept in sync with Resolve.
     private static readonly string[] AllKeywords =
     [
         "q", "Q", "cm", "w", "d", "J", "j", "M", "ri", "i", "gs",
@@ -76,7 +76,7 @@ public class BitPdfOpCodeTests
     public void RangeBlocksShouldContainNoUnmappedMembers()
     {
         // A member inserted into a block would satisfy the renderer's range compare
-        // without being one of the operators the predicate stands in for — even a
+        // without being one of the operators the predicate stands in for - even a
         // brand-new keyword AllKeywords doesn't know about yet gets caught here.
         var colorCodes = ColorKeywords.Select(BitPdfOpCodes.Resolve).ToHashSet();
         var textCodes = TextKeywords.Select(BitPdfOpCodes.Resolve).ToHashSet();

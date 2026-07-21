@@ -694,7 +694,7 @@ public sealed class BitPdfFont
     /// Decodes a show-text operand into its glyphs. The glyph count is known up
     /// front (one per byte for simple fonts, one per <c>step</c> bytes for Type0),
     /// so the result is materialized into an exactly-sized list filled through a
-    /// span — no lazy iterator state machine and no intermediate re-grows.
+    /// span - no lazy iterator state machine and no intermediate re-grows.
     /// </summary>
     public List<BitPdfGlyph> Decode(byte[] bytes)
     {

@@ -6,7 +6,7 @@
             Description="A button that stays pressed, with its own text, icon and color per state, a loading state, and proper aria-pressed semantics." />
 
 <DemoPage Name="ToggleButton"
-          Description="ToggleButton is a button that stays pressed. Instead of firing an action and forgetting it, it holds an on/off state and shows which one it is currently in. It suits the kind of setting that belongs right next to the thing it affects — muting a microphone, bolding a selection, pinning an item — where a toolbar button reads better than a checkbox or a switch. Its text, icon, color and variant can all differ between the two states, it can stay in a loading state while an async toggle is being saved, and it exposes its state to screen readers through aria-pressed."
+          Description="ToggleButton is a button that stays pressed. Instead of firing an action and forgetting it, it holds an on/off state and shows which one it is currently in. It suits the kind of setting that belongs right next to the thing it affects - muting a microphone, bolding a selection, pinning an item - where a toolbar button reads better than a checkbox or a switch. Its text, icon, color and variant can all differ between the two states, it can stay in a loading state while an async toggle is being saved, and it exposes its state to screen readers through aria-pressed."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -54,7 +54,7 @@
         <div>
             <b>Text</b> labels both states the same way, leaving the color to carry the state.
             <b>OnText</b> and <b>OffText</b> label each state separately, which reads well when the wording is the
-            clearest signal of what is going on — though it also changes the accessible name, so the BitToggleButton
+            clearest signal of what is going on - though it also changes the accessible name, so the BitToggleButton
             stops announcing <b>aria-pressed</b>. The
             <BitLink Href="#example13">Accessibility</BitLink> section covers why, and what to do about it.
         </div><br />
@@ -67,7 +67,7 @@
         <div>
             <b>Title</b> follows the same shape and fills the native tooltip, with <b>OnTitle</b> and <b>OffTitle</b>
             overriding it per state. It is the natural companion to <b>IconOnly</b>, where the button has no visible
-            wording of its own — though a tooltip never reaches keyboard or touch users, so it supplements an
+            wording of its own - though a tooltip never reaches keyboard or touch users, so it supplements an
             <b>AriaLabel</b> rather than replacing one. Hover the two below:
         </div><br />
         <div class="example-box">
@@ -84,7 +84,7 @@
         <div>
             Icons follow the same shape as the text: <b>IconName</b> for both states, <b>OnIconName</b> and
             <b>OffIconName</b> for one each. <b>IconPosition</b> moves the icon after the content, and <b>IconOnly</b>
-            drops the text and squares up the padding for a compact, toolbar-style button — which leaves nothing behind
+            drops the text and squares up the padding for a compact, toolbar-style button - which leaves nothing behind
             to name it, so give an icon-only BitToggleButton an <b>AriaLabel</b>.
         </div><br />
         <div>IconName:</div><br />
@@ -251,7 +251,7 @@
         <div>
             <b>OnChanging</b> is the veto point: setting <b>Cancel</b> on its arguments leaves the BitToggleButton
             where it was, so a toggle can be refused instead of silently reverted afterwards. It is awaited, so it can
-            take its time — asking for confirmation, or checking with the server before letting the state through.
+            take its time - asking for confirmation, or checking with the server before letting the state through.
         </div><br />
         <BitCheckbox Label="Allow the change" @bind-Value="allowChange" />
         <br />
@@ -339,7 +339,7 @@
     <DemoExample Title="FixedColor" RazorCode="@example12RazorCode" Id="example12">
         <div>
             The foreground color normally shifts on hover and focus to reinforce that something is happening.
-            With the background colors that is counterproductive — the hover shade is close enough to the content
+            With the background colors that is counterproductive - the hover shade is close enough to the content
             that the text and the icon wash out. <b>FixedColor</b> pins the foreground so it stays legible throughout.
         </div><br />
         <div class="example-box">
@@ -381,8 +381,8 @@
         <br /><br /><br />
         <div>
             <b>AriaMode</b> takes the decision back from the automatic one. <b>Pressed</b> always renders
-            <b>aria-pressed</b>, <b>Switch</b> renders <b>role="switch"</b> with <b>aria-checked</b> instead — which
-            reads better for an on/off setting than a pressed/not pressed one — and <b>None</b> renders no state
+            <b>aria-pressed</b>, <b>Switch</b> renders <b>role="switch"</b> with <b>aria-checked</b> instead - which
+            reads better for an on/off setting than a pressed/not pressed one - and <b>None</b> renders no state
             attribute at all, for a button like play/pause whose own content already says which state it is in:
         </div><br />
         <div class="example-box">
@@ -395,7 +395,7 @@
         <br /><br /><br />
         <div>
             An icon-only BitToggleButton has no visible wording at all, so its <b>AriaLabel</b> is its whole name.
-            <b>OnAriaLabel</b> and <b>OffAriaLabel</b> let that name change with the state — useful when the name is
+            <b>OnAriaLabel</b> and <b>OffAriaLabel</b> let that name change with the state - useful when the name is
             better phrased as the action the click performs than as the state it is in. Being a changing name, it
             drops <b>aria-pressed</b> for the same reason the changing text does:
         </div><br />
@@ -544,7 +544,7 @@
     <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>
             The built-in icon set is not a requirement. <b>Icon</b>, <b>OnIcon</b> and <b>OffIcon</b> take a
-            <b>BitIconInfo</b> that renders whatever CSS classes you give it, so any icon font works —
+            <b>BitIconInfo</b> that renders whatever CSS classes you give it, so any icon font works -
             <b>BitIconInfo.Fa</b> for FontAwesome, <b>BitIconInfo.Bi</b> for Bootstrap Icons, or
             <b>BitIconInfo.Css</b> for anything else. Just remember to reference the library's stylesheet yourself.
         </div>
@@ -657,7 +657,7 @@
     <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element, while <b>Styles</b> and <b>Classes</b> address the
-            individual parts — the root, the icon, the text, the check mark and the loading pieces. Both of them also
+            individual parts - the root, the icon, the text, the check mark and the loading pieces. Both of them also
             carry a <b>Checked</b> entry, which is layered on top of the rest whenever the BitToggleButton is checked,
             so a state-specific override does not need a conditional in your markup.
         </div><br />
