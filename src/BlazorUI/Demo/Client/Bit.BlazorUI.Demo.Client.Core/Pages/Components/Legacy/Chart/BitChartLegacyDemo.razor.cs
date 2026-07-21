@@ -1,7 +1,6 @@
-﻿using Bit.BlazorUI.Legacy;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-namespace Bit.BlazorUI.Legacy.Demo.Chart;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.Chart;
 
 public partial class BitChartLegacyDemo
 {

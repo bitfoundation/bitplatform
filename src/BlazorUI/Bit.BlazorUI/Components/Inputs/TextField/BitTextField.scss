@@ -196,7 +196,7 @@
     font-family: $tg-font-family;
     background-color: transparent;
     border-radius: 0 spacing(0.125) spacing(0.125) 0;
-    min-height: calc(var(--bit-spa-scaling-factor) * 3.75);
+    min-height: spacing(3.75);
 
     i {
         width: unset;
