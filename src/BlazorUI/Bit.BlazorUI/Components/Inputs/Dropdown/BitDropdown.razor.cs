@@ -18,6 +18,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private HashSet<TItem>? _searchedItemsCache;
     private bool _isResponsiveMode;
     private bool _inputSearchHasFocus;
+    private bool _inputComboHasFocus;
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
     private Virtualize<TItem>? _virtualizeElement;
@@ -36,7 +37,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private ElementReference _searchInputRef;
     private ElementReference _comboBoxInputRef;
+    private ElementReference _dropdownWrapperRef;
     private ElementReference _comboBoxInputResponsiveRef;
+
+    private string _typeAheadBuffer = string.Empty;
+    private DateTimeOffset _lastTypeAheadStamp;
 
 
 
@@ -178,6 +183,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public Func<TItem?, TValue>? DynamicValueGenerator { get; set; }
 
     /// <summary>
+    /// The custom template to render in the callout when there is no item to show.
+    /// </summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The text to render in the callout when there is no item to show.
+    /// </summary>
+    [Parameter] public string? EmptyText { get; set; }
+
+    /// <summary>
     /// Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.
     /// </summary>
     [Parameter] public Func<ICollection<TItem>, string, bool>? ExistsSelectedItemFunction { get; set; }
@@ -258,6 +273,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The custom template for the label of the dropdown.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// The maximum number of items that can be selected in multi select mode. Zero or null means no limit.
+    /// </summary>
+    [Parameter] public int? MaxSelectedItems { get; set; }
 
     /// <summary>
     /// Enables the multi select mode.
@@ -404,6 +424,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
 
     /// <summary>
+    /// The text of the select all item in multi select mode.
+    /// </summary>
+    [Parameter] public string? SelectAllText { get; set; }
+
+    /// <summary>
     /// Shows the clear button when an item is selected.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
@@ -412,6 +437,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Shows the SearchBox element in the callout.
     /// </summary>
     [Parameter] public bool ShowSearchBox { get; set; }
+
+    /// <summary>
+    /// Shows the select all item in the callout in multi select mode.
+    /// </summary>
+    [Parameter] public bool ShowSelectAll { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitDropdown.
@@ -652,6 +682,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         await AddOrRemoveSelectedItem(item);
 
+        if (MultiSelect is false)
+        {
+            // Selecting an item hides the callout along with the focused option,
+            // so return the focus to the dropdown (or its combo input).
+            if (Combo)
+            {
+                await FocusComboInputAsync();
+            }
+            else
+            {
+                await _dropdownWrapperRef.FocusAsync();
+            }
+        }
+
         StateHasChanged();
     }
 
@@ -659,18 +703,22 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         var stringBuilder = new StringBuilder("bit-drp-iwr");
 
-        if (GetIsSelected(item))
+        var isSelected = GetIsSelected(item);
+
+        if (isSelected)
         {
             stringBuilder.Append(" bit-drp-chd");
         }
 
-        if (GetIsEnabled(item) is false)
+        if (GetIsEnabled(item) is false || (isSelected is false && IsMaxSelectedItemsReached))
         {
             stringBuilder.Append(" bit-drp-ids");
         }
 
         return stringBuilder.ToString();
     }
+
+    internal bool IsMaxSelectedItemsReached => MultiSelect && MaxSelectedItems is > 0 && (Values?.Count() ?? 0) >= MaxSelectedItems.Value;
 
     internal int? GetTotalItems()
     {
@@ -1102,6 +1150,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
+        try
+        {
+            // Prevents the default behavior (scrolling) of the navigation keys handled by the
+            // keydown handlers, since Blazor cannot conditionally preventDefault per key.
+            await _js.BitDropdownsSetup(_Id, _calloutId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
         if (Responsive is false) return;
 
         await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
@@ -1136,6 +1192,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
             var isSelected = GetIsSelected(item) is false;
+
+            if (isSelected && IsMaxSelectedItemsReached) return;
 
             var tempValue = Values?.ToList() ?? [];
 
@@ -1283,6 +1341,122 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await FocusOnSearchBox();
     }
 
+    private async Task HandleOnTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            await CloseCallout();
+            return;
+        }
+
+        if (Combo)
+        {
+            // Typing is handled by the combo input itself; only the arrow keys manage the callout here.
+            if (e.Key is "ArrowDown" or "ArrowUp")
+            {
+                await OpenCallout();
+                await FocusItem("selected");
+            }
+            return;
+        }
+
+        if (e.Key is "Enter" or " ")
+        {
+            if (IsOpen)
+            {
+                await CloseCallout();
+            }
+            else
+            {
+                await OpenCallout();
+                await FocusItem("selected");
+            }
+        }
+        else if (e.Key is "ArrowDown" or "ArrowUp")
+        {
+            await OpenCallout();
+            await FocusItem("selected");
+        }
+        else if (IsPrintableKey(e))
+        {
+            await OpenCallout();
+            await FocusItem("char", GetTypeAheadBuffer(e.Key!));
+        }
+    }
+
+    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false || IsOpen is false) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                await FocusItem("next");
+                break;
+            case "ArrowUp":
+                await FocusItem("prev");
+                break;
+            case "PageDown":
+                await FocusItem("nextPage");
+                break;
+            case "PageUp":
+                await FocusItem("prevPage");
+                break;
+            case "Home":
+            case "End":
+                // Home/End keep their caret behavior while typing in the search/combo inputs.
+                if (_inputSearchHasFocus is false && _inputComboHasFocus is false)
+                {
+                    await FocusItem(e.Key is "Home" ? "first" : "last");
+                }
+                break;
+            case "Escape":
+                await CloseCallout();
+                await _dropdownWrapperRef.FocusAsync();
+                break;
+            case "Tab":
+                await CloseCallout();
+                break;
+            default:
+                // In Combo mode the combo input is the type-ahead, and printable keys
+                // typed into the search box must keep filtering instead of moving focus.
+                if (Combo is false && _inputSearchHasFocus is false && IsPrintableKey(e))
+                {
+                    await FocusItem("char", GetTypeAheadBuffer(e.Key!));
+                }
+                break;
+        }
+    }
+
+    private static bool IsPrintableKey(KeyboardEventArgs e)
+    {
+        return e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false;
+    }
+
+    private string GetTypeAheadBuffer(string key)
+    {
+        // Accumulates the keys typed in quick succession so the type-ahead matches the
+        // full string, and starts over after a pause (the common 500ms convention).
+        var now = DateTimeOffset.UtcNow;
+
+        if ((now - _lastTypeAheadStamp).TotalMilliseconds > 500)
+        {
+            _typeAheadBuffer = string.Empty;
+        }
+
+        _lastTypeAheadStamp = now;
+        _typeAheadBuffer += key;
+
+        return _typeAheadBuffer;
+    }
+
+    private ValueTask FocusItem(string mode, string? character = null)
+    {
+        return _js.BitDropdownsFocusItem(_calloutId, mode, character);
+    }
+
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         UpdateSelectedItemsFromValues();
@@ -1296,6 +1470,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private void HandleSearchBoxFocusOut()
     {
         _inputSearchHasFocus = false;
+    }
+
+    private void HandleComboInputFocusIn()
+    {
+        _inputComboHasFocus = true;
+    }
+
+    private void HandleComboInputFocusOut()
+    {
+        _inputComboHasFocus = false;
     }
 
     private Task HandleSearchBoxOnClear()
@@ -1454,6 +1638,63 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
 
         UpdateSelectedItemsFromValues();
+    }
+
+    private bool HasNoVisibleItems()
+    {
+        return GetSearchedItems().Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
+    }
+
+    private (bool AllSelected, bool AnySelected) GetSelectAllState()
+    {
+        var candidates = GetSelectAllCandidateItems();
+        if (candidates.Count == 0) return (false, false);
+
+        var selectedCount = candidates.Count(GetIsSelected);
+
+        return (selectedCount == candidates.Count, selectedCount > 0);
+    }
+
+    private List<TItem> GetSelectAllCandidateItems()
+    {
+        return [.. GetSearchedItems().Where(i => GetItemType(i) == BitDropdownItemType.Normal &&
+                                                 GetIsHidden(i) is false &&
+                                                 GetIsEnabled(i))];
+    }
+
+    private async Task HandleOnSelectAllClick()
+    {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+        if (MultiSelect is false) return;
+        if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
+
+        var candidates = GetSelectAllCandidateItems();
+        if (candidates.Count == 0) return;
+
+        List<TValue?> newValues;
+        if (candidates.TrueForAll(GetIsSelected))
+        {
+            // All (searched) items are selected, so the select all item clears them, keeping
+            // the selected values that are not part of the current search results.
+            var comparer = EqualityComparer<TValue>.Default;
+            var candidateValues = candidates.Select(GetValue).ToList();
+            newValues = [.. (Values ?? []).Where(v => candidateValues.Exists(cv => comparer.Equals(cv, v)) is false)];
+        }
+        else
+        {
+            newValues = Values?.ToList() ?? [];
+            foreach (var item in candidates)
+            {
+                if (GetIsSelected(item)) continue;
+                if (MaxSelectedItems is > 0 && newValues.Count >= MaxSelectedItems.Value) break;
+
+                newValues.Add(GetValue(item));
+            }
+        }
+
+        await AssignValues(newValues);
+        await OnValuesChange.InvokeAsync([.. (Values ?? [])!]);
     }
 
     private async Task HandleOnAddItemComboClick()
@@ -1866,6 +2107,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         try
         {
+            await _js.BitDropdownsDispose(_Id);
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitSwipesDispose(_calloutId);
         }

@@ -12,6 +12,18 @@
     var searchBoxClearIconCss = BitIconInfo.From(SearchBoxClearIcon, SearchBoxClearIconName ?? "Cancel")?.GetCssClasses();
     var comboBoxAddButtonIconCss = BitIconInfo.From(ComboBoxAddButtonIcon, ComboBoxAddButtonIconName ?? "Add")?.GetCssClasses();
     var itemCheckIconCss = GetItemCheckIconCss();
+
+    RenderFragment emptyContent =
+        @<div style="@Styles?.EmptyContent" class="bit-drp-emp @Classes?.EmptyContent">
+            @if (EmptyTemplate is not null)
+            {
+                @EmptyTemplate
+            }
+            else
+            {
+                @(EmptyText ?? "No items found")
+            }
+        </div>;
 }
 
 @if (Virtualize && (Options ?? ChildContent) is not null)
@@ -42,7 +54,9 @@
         </label>
     }
 
-    <div @onclick="HandleOnClick"
+    <div @ref="_dropdownWrapperRef"
+         @onclick="HandleOnClick"
+         @onkeydown="HandleOnTriggerKeyDown"
          title="@Title"
          role="combobox"
          id="@_dropdownId"
@@ -104,6 +118,8 @@
                        @onkeydown="@HandleOnKeyDown"
                        @oninput="@HandleOnComboInput"
                        @onchange="@HandleOnComboChange"
+                       @onfocusin="HandleComboInputFocusIn"
+                       @onfocusout="HandleComboInputFocusOut"
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
@@ -176,12 +192,14 @@
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
 
-<div id="@_calloutId"
+<div @onkeydown="HandleOnCalloutKeyDown"
+     id="@_calloutId"
      tabindex="0"
      role="listbox"
      style="@Styles?.Callout"
      class="@GetCalloutCssClasses()"
-     aria-labelledby="@_labelId">
+     aria-labelledby="@_labelId"
+     aria-multiselectable="@(MultiSelect ? "true" : null)">
 
     @if (Responsive)
     {
@@ -263,7 +281,7 @@
     {
         <div style="@Styles?.ResponsiveComboInputContainer"
              class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
-            <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange"
+            <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange" @onfocusin="HandleComboInputFocusIn" @onfocusout="HandleComboInputFocusOut"
                    style="@Styles?.ComboBoxInput"
                    class="bit-drp-icb @Classes?.ComboBoxInput"
                    type="text"
@@ -283,6 +301,36 @@
         </div>
     }
 
+    @if (MultiSelect && ShowSelectAll && ItemsProvider is null)
+    {
+        var (allSelected, anySelected) = GetSelectAllState();
+        var selectAllClasses = "bit-drp-sac bit-drp-iwr" +
+                               (allSelected ? " bit-drp-chd" : string.Empty) +
+                               (anySelected && allSelected is false ? " bit-drp-sai" : string.Empty) +
+                               (IsEnabled ? string.Empty : " bit-drp-ids");
+        var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
+        <div style="@Styles?.SelectAllContainer"
+             class="@selectAllClasses @Classes?.SelectAllContainer">
+            <button @onclick="HandleOnSelectAllClick"
+                    type="button"
+                    role="checkbox"
+                    style="@Styles?.SelectAllButton"
+                    class="bit-drp-mcn @Classes?.SelectAllButton"
+                    aria-checked="@selectAllAriaChecked">
+                <div style="@Styles?.SelectAllCheckBox"
+                     class="bit-drp-chb @Classes?.SelectAllCheckBox">
+                    <i aria-hidden="true"
+                       style="@Styles?.SelectAllCheckIcon"
+                       class="bit-drp-chm @itemCheckIconCss @Classes?.SelectAllCheckIcon" />
+                </div>
+                <span style="@Styles?.SelectAllText"
+                      class="bit-drp-itx @Classes?.SelectAllText">
+                    @(SelectAllText ?? "Select all")
+                </span>
+            </button>
+        </div>
+    }
+
     <div id="@_scrollContainerId"
          style="@Styles?.ScrollContainer"
          class="bit-drp-scn @Classes?.ScrollContainer">
@@ -291,21 +339,29 @@
             if (ItemsProvider is null)
             {
                 <Virtualize Items="GetSearchedItems()"
-                            Context="item"
                             ItemSize="ItemSize"
                             OverscanCount="OverscanCount"
                             Placeholder="VirtualizePlaceholder">
-                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    <ItemContent Context="item">
+                        <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    </ItemContent>
+                    <EmptyContent>
+                        @emptyContent
+                    </EmptyContent>
                 </Virtualize>
             }
             else
             {
                 <Virtualize @ref="_virtualizeElement"
-                            Context="item"
                             OverscanCount="OverscanCount"
                             Placeholder="VirtualizePlaceholder"
                             ItemsProvider="InternalItemsProvider">
-                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    <ItemContent Context="item">
+                        <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                    </ItemContent>
+                    <EmptyContent>
+                        @emptyContent
+                    </EmptyContent>
                 </Virtualize>
             }
         }
@@ -314,12 +370,24 @@
             <CascadingValue Value="this" IsFixed="true">
                 @(Options ?? ChildContent)
             </CascadingValue>
+
+            @if (HasNoVisibleItems())
+            {
+                @emptyContent
+            }
         }
         else
         {
-            @foreach (var item in GetSearchedItems())
+            @if (HasNoVisibleItems())
             {
-                <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                @emptyContent
+            }
+            else
+            {
+                @foreach (var item in GetSearchedItems())
+                {
+                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                }
             }
         }
     </div>

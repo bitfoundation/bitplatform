@@ -37,8 +37,15 @@
                         id="@id"
                         type="button"
                         role="option"
+                        title="@Dropdown.GetTitle(Item)"
+                        disabled=@(isEnabled is false)
                         style="@Dropdown.Styles?.ItemButton"
-                        class="bit-drp-mcn @Dropdown.Classes?.ItemButton">
+                        class="bit-drp-mcn @Dropdown.Classes?.ItemButton"
+                        aria-label="@Dropdown.GetAriaLabel(Item)"
+                        aria-setsize="@Dropdown.GetTotalItems()"
+                        aria-disabled="@(isEnabled is false)"
+                        aria-selected="@(isSelected ? "true" : "false")"
+                        aria-posinset="@Dropdown.GetItemPosInSet(Item)">
                     <div style="@Dropdown.Styles?.ItemCheckBox"
                          class="bit-drp-chb @Dropdown.Classes?.ItemCheckBox">
                         <i aria-hidden="true"

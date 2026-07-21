@@ -69,6 +69,12 @@ public partial class _BitDropdownOptionDemo
     ];
 
 
+    private IEnumerable<string?> selectAllValues = [];
+    private IEnumerable<string?> maxSelectedValues = [];
+
+    private bool isDropdownOpen;
+    private int selectItemCounter;
+
     private string controlledValue = "f-app";
     private IEnumerable<string?> controlledValues = ["f-app", "f-ban"];
 

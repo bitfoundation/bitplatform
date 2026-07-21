@@ -86,6 +86,12 @@
             color: #ff4600;
             font-weight: bold;
         }
+
+        &.custom-drp-empty {
+            color: orangered;
+            padding: 5px 12px;
+            justify-content: center;
+        }
     }
 
     .grid-wrap {

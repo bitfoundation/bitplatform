@@ -722,6 +722,60 @@
     background-color: $clr-bg-sec;
 }
 
+.bit-drp-emp {
+    display: flex;
+    cursor: default;
+    user-select: none;
+    color: $clr-fg-sec;
+    align-items: center;
+    height: spacing(4.5);
+    padding: 0 spacing(1);
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: spacing(1.75);
+}
+
+.bit-drp-sac {
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+.bit-drp-sai {
+    .bit-drp-chb {
+        border-color: var(--bit-drp-clr);
+
+        .bit-drp-chm {
+            opacity: 0;
+        }
+
+        &::after {
+            inset: 0;
+            content: "";
+            margin: auto;
+            position: absolute;
+            width: spacing(1.25);
+            height: spacing(1.25);
+            border-radius: spacing(0.125);
+            background-color: var(--bit-drp-clr);
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            .bit-drp-chb {
+                border-color: var(--bit-drp-clr-hover);
+
+                .bit-drp-chm {
+                    opacity: 0;
+                }
+
+                &::after {
+                    background-color: var(--bit-drp-clr-hover);
+                }
+            }
+        }
+    }
+}
+
 .bit-drp-cls {
     border: none;
     cursor: pointer;
