@@ -64,7 +64,8 @@
     font-size: .875rem;
 }
 
-.bb-search-results li:hover {
+.bb-search-results li:hover,
+.bb-search-results li.bb-active {
     background: var(--bb-primary-soft);
 }
 
@@ -93,8 +94,13 @@
     background: none;
 }
 
+/* Narrow viewports: keep search usable as a compact input instead of hiding it. */
 @media (max-width: 760px) {
-    .bb-search {
-        display: none;
+    .bb-search input {
+        width: 96px;
+    }
+
+    .bb-search input:focus {
+        width: 150px;
     }
 }
