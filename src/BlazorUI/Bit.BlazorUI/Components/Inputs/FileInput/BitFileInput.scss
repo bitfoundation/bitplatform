@@ -11,14 +11,21 @@
         border-color: $clr-brd-dis;
         background-color: $clr-bg-dis;
 
-        @media (hover: hover) {
-            &:hover {
-                border-color: $clr-brd-dis;
-            }
-        }
+        .bit-fin-lbl {
+            cursor: default;
+            color: $clr-fg-dis;
+            border-color: $clr-brd-dis;
 
-        &:active {
-            background-color: $clr-bg-dis;
+            @media (hover: hover) {
+                &:hover {
+                    color: $clr-fg-dis;
+                    border-color: $clr-brd-dis;
+                }
+            }
+
+            &:active {
+                background-color: $clr-bg-dis;
+            }
         }
     }
 }
@@ -33,19 +40,20 @@
     cursor: pointer;
     font-weight: 300;
     user-select: none;
-    color: $clr-fg-pri;
     align-items: center;
-    font-size: spacing(2);
     justify-content: center;
-    min-height: spacing(4.5);
     border-radius: spacing(0.5);
-    padding: spacing(0.5) spacing(2);
+    color: var(--bit-fin-clr);
     background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    min-height: var(--bit-fin-lbl-height);
+    font-size: var(--bit-fin-lbl-fontsize);
+    padding: var(--bit-fin-lbl-padding);
+    border: $shp-border-width $shp-border-style var(--bit-fin-clr);
 
     @media (hover: hover) {
         &:hover {
-            border-color: $clr-brd-pri-hover;
+            color: var(--bit-fin-clr-hover);
+            border-color: var(--bit-fin-clr-hover);
         }
     }
 
@@ -54,7 +62,16 @@
     }
 
     i {
-        padding-right: spacing(0.625);
+        margin-inline-end: spacing(0.625);
+    }
+}
+
+.bit-fin-drg {
+    .bit-fin-lbl {
+        border-style: dashed;
+        color: var(--bit-fin-clr-hover);
+        border-color: var(--bit-fin-clr-hover);
+        background-color: $clr-bg-pri-hover;
     }
 }
 
@@ -70,10 +87,10 @@
     color: $clr-fg-pri;
     align-items: center;
     flex-flow: row nowrap;
-    font-size: spacing(1.75);
     margin-top: spacing(0.375);
     border-radius: spacing(0.625);
     justify-content: space-between;
+    font-size: var(--bit-fin-itm-fontsize);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
@@ -98,6 +115,15 @@
     .bit-fin-msg {
         color: $clr-err;
     }
+}
+
+.bit-fin-prv {
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: spacing(0.5);
+    width: var(--bit-fin-prv-size);
+    height: var(--bit-fin-prv-size);
+    margin-inline-start: spacing(0.5);
 }
 
 .bit-fin-fic {
@@ -127,8 +153,8 @@
     color: $clr-fg-sec;
     align-items: center;
     flex-flow: row nowrap;
-    font-size: spacing(1.625);
     margin-top: spacing(0.25);
+    font-size: var(--bit-fin-fs-fontsize);
 }
 
 .bit-fin-fs {
@@ -139,13 +165,14 @@
 
 .bit-fin-rbt {
     display: flex;
+    flex-shrink: 0;
     cursor: pointer;
     color: $clr-fg-pri;
-    width: spacing(4.5);
     align-items: center;
-    height: spacing(4.5);
     justify-content: center;
     background-color: $clr-bg-sec;
+    width: var(--bit-fin-rbt-size);
+    height: var(--bit-fin-rbt-size);
 
     @media (hover: hover) {
         &:hover {
@@ -158,6 +185,124 @@
     }
 
     i {
-        font-size: spacing(2);
+        font-size: var(--bit-fin-ico-fontsize);
     }
+}
+
+.bit-fin-pri {
+    --bit-fin-clr: #{$clr-pri};
+    --bit-fin-clr-hover: #{$clr-pri-hover};
+}
+
+.bit-fin-sec {
+    --bit-fin-clr: #{$clr-sec};
+    --bit-fin-clr-hover: #{$clr-sec-hover};
+}
+
+.bit-fin-ter {
+    --bit-fin-clr: #{$clr-ter};
+    --bit-fin-clr-hover: #{$clr-ter-hover};
+}
+
+.bit-fin-inf {
+    --bit-fin-clr: #{$clr-inf};
+    --bit-fin-clr-hover: #{$clr-inf-hover};
+}
+
+.bit-fin-suc {
+    --bit-fin-clr: #{$clr-suc};
+    --bit-fin-clr-hover: #{$clr-suc-hover};
+}
+
+.bit-fin-wrn {
+    --bit-fin-clr: #{$clr-wrn};
+    --bit-fin-clr-hover: #{$clr-wrn-hover};
+}
+
+.bit-fin-swr {
+    --bit-fin-clr: #{$clr-swr};
+    --bit-fin-clr-hover: #{$clr-swr-hover};
+}
+
+.bit-fin-err {
+    --bit-fin-clr: #{$clr-err};
+    --bit-fin-clr-hover: #{$clr-err-hover};
+}
+
+.bit-fin-pbg {
+    --bit-fin-clr: #{$clr-bg-pri};
+    --bit-fin-clr-hover: #{$clr-bg-pri-hover};
+}
+
+.bit-fin-sbg {
+    --bit-fin-clr: #{$clr-bg-sec};
+    --bit-fin-clr-hover: #{$clr-bg-sec-hover};
+}
+
+.bit-fin-tbg {
+    --bit-fin-clr: #{$clr-bg-ter};
+    --bit-fin-clr-hover: #{$clr-bg-ter-hover};
+}
+
+.bit-fin-pfg {
+    --bit-fin-clr: #{$clr-fg-pri};
+    --bit-fin-clr-hover: #{$clr-fg-pri-hover};
+}
+
+.bit-fin-sfg {
+    --bit-fin-clr: #{$clr-fg-sec};
+    --bit-fin-clr-hover: #{$clr-fg-sec-hover};
+}
+
+.bit-fin-tfg {
+    --bit-fin-clr: #{$clr-fg-ter};
+    --bit-fin-clr-hover: #{$clr-fg-ter-hover};
+}
+
+.bit-fin-pbr {
+    --bit-fin-clr: #{$clr-brd-pri};
+    --bit-fin-clr-hover: #{$clr-brd-pri-hover};
+}
+
+.bit-fin-sbr {
+    --bit-fin-clr: #{$clr-brd-sec};
+    --bit-fin-clr-hover: #{$clr-brd-sec-hover};
+}
+
+.bit-fin-tbr {
+    --bit-fin-clr: #{$clr-brd-ter};
+    --bit-fin-clr-hover: #{$clr-brd-ter-hover};
+}
+
+.bit-fin-sm {
+    --bit-fin-lbl-height: #{spacing(3.5)};
+    --bit-fin-lbl-fontsize: #{spacing(1.5)};
+    --bit-fin-lbl-padding: #{spacing(0.25)} #{spacing(1.5)};
+    --bit-fin-itm-fontsize: #{spacing(1.5)};
+    --bit-fin-fs-fontsize: #{spacing(1.375)};
+    --bit-fin-prv-size: #{spacing(4)};
+    --bit-fin-rbt-size: #{spacing(3.5)};
+    --bit-fin-ico-fontsize: #{spacing(1.5)};
+}
+
+.bit-fin-md {
+    --bit-fin-lbl-height: #{spacing(4.5)};
+    --bit-fin-lbl-fontsize: #{spacing(2)};
+    --bit-fin-lbl-padding: #{spacing(0.5)} #{spacing(2)};
+    --bit-fin-itm-fontsize: #{spacing(1.75)};
+    --bit-fin-fs-fontsize: #{spacing(1.625)};
+    --bit-fin-prv-size: #{spacing(5)};
+    --bit-fin-rbt-size: #{spacing(4.5)};
+    --bit-fin-ico-fontsize: #{spacing(2)};
+}
+
+.bit-fin-lg {
+    --bit-fin-lbl-height: #{spacing(5.5)};
+    --bit-fin-lbl-fontsize: #{spacing(2.25)};
+    --bit-fin-lbl-padding: #{spacing(0.75)} #{spacing(2.5)};
+    --bit-fin-itm-fontsize: #{spacing(2)};
+    --bit-fin-fs-fontsize: #{spacing(1.75)};
+    --bit-fin-prv-size: #{spacing(6.5)};
+    --bit-fin-rbt-size: #{spacing(5.5)};
+    --bit-fin-ico-fontsize: #{spacing(2.5)};
 }

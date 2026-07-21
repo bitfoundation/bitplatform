@@ -1,3 +1,35 @@
+.example-box {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border: 2px dashed mediumseagreen;
+    }
+
+    .custom-label {
+        color: mediumseagreen;
+        border-color: mediumseagreen;
+    }
+
+    .custom-dragging {
+        background-color: honeydew;
+    }
+
+    .custom-item {
+        border-color: mediumseagreen;
+    }
+
+    .custom-remove {
+        color: white;
+        background-color: mediumseagreen;
+    }
+}
+
 .files-info {
     margin-top: 16px;
     padding: 12px;

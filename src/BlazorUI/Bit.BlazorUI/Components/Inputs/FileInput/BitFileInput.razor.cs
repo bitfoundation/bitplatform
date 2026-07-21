@@ -1,8 +1,8 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileInput is a file input component that wraps the HTML file input element and enables file selection
-/// with support for validation, drag-and-drop, and customization.
+/// with support for validation, drag-and-drop, paste, image previews, and customization.
 /// The selected files' metadata and content can be accessed and processed from C# code.
 /// </summary>
 public partial class BitFileInput : BitComponentBase
@@ -21,6 +21,7 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Accepted file types for the file browser using MIME types or file extensions (e.g., "image/*", ".pdf,.doc").
     /// Applied to the underlying HTML input element's accept attribute.
+    /// When not set, the accept attribute is generated from <see cref="AllowedExtensions"/>.
     /// </summary>
     [Parameter] public string? Accept { get; set; }
 
@@ -40,6 +41,36 @@ public partial class BitFileInput : BitComponentBase
     /// allowing the same file to be selected multiple times consecutively.
     /// </summary>
     [Parameter] public bool AutoReset { get; set; }
+
+    /// <summary>
+    /// The capture behavior of the file input on devices with a camera or microphone,
+    /// rendered as the capture attribute of the input element (e.g., "user" for the front camera,
+    /// "environment" for the rear camera).
+    /// </summary>
+    [Parameter] public string? Capture { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitFileInput.
+    /// </summary>
+    [Parameter] public BitFileInputClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the file input, applied to the browse button and the drag-and-drop indicator.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// Whether to select folders (directories) instead of files, rendered as the webkitdirectory attribute.
+    /// All files inside the selected folder and its subfolders will be added to the file list.
+    /// </summary>
+    [Parameter] public bool Directory { get; set; }
+
+    /// <summary>
+    /// Custom validation function called for each newly selected file after the built-in validations pass.
+    /// Return an error message to mark the file as invalid, or null to accept it.
+    /// </summary>
+    [Parameter] public Func<BitFileInputInfo, string?>? FileValidator { get; set; }
 
     /// <summary>
     /// Custom Razor template for rendering individual file items in the file list.
@@ -68,6 +99,18 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// Maximum allowed number of files in the file list.
+    /// Files selected beyond this count will be marked as invalid. Set to 0 for no count limit.
+    /// </summary>
+    [Parameter] public int MaxCount { get; set; }
+
+    /// <summary>
+    /// Custom error message displayed when the number of files exceeds the maximum count limit.
+    /// Defaults to "The maximum number of files is exceeded".
+    /// </summary>
+    [Parameter] public string? MaxCountErrorMessage { get; set; }
+
+    /// <summary>
     /// Maximum allowed file size in bytes for validation.
     /// Files exceeding this size will be marked as invalid. Set to 0 for no size limit.
     /// </summary>
@@ -78,6 +121,18 @@ public partial class BitFileInput : BitComponentBase
     /// Defaults to "The file size is larger than the max size".
     /// </summary>
     [Parameter] public string? MaxSizeErrorMessage { get; set; }
+
+    /// <summary>
+    /// Minimum allowed file size in bytes for validation.
+    /// Files smaller than this size will be marked as invalid. Set to 0 for no size limit.
+    /// </summary>
+    [Parameter] public long MinSize { get; set; }
+
+    /// <summary>
+    /// Custom error message displayed when a file is smaller than the minimum size limit.
+    /// Defaults to "The file size is smaller than the min size".
+    /// </summary>
+    [Parameter] public string? MinSizeErrorMessage { get; set; }
 
     /// <summary>
     /// Whether to allow selecting multiple files simultaneously through the file browser dialog.
@@ -92,8 +147,15 @@ public partial class BitFileInput : BitComponentBase
 
     /// <summary>
     /// Callback invoked when the file selection changes, providing an array of <see cref="BitFileInputInfo"/> representing all selected files.
+    /// It is also invoked after removing a file through the remove button or the <see cref="RemoveFile"/> method.
     /// </summary>
     [Parameter] public EventCallback<BitFileInputInfo[]> OnChange { get; set; }
+
+    /// <summary>
+    /// Callback invoked for each file that gets removed from the file list,
+    /// either through the remove button or the <see cref="RemoveFile"/> method.
+    /// </summary>
+    [Parameter] public EventCallback<BitFileInputInfo> OnRemove { get; set; }
 
     /// <summary>
     /// Gets or sets the remove button icon using custom CSS classes for external icon libraries.
@@ -107,9 +169,25 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public string? RemoveButtonIconName { get; set; }
 
     /// <summary>
+    /// Whether to display a preview thumbnail for image files in the file list.
+    /// </summary>
+    [Parameter] public bool ShowPreview { get; set; }
+
+    /// <summary>
     /// Whether to display a remove button next to each file in the file list, allowing individual file removal.
     /// </summary>
     [Parameter] public bool ShowRemoveButton { get; set; }
+
+    /// <summary>
+    /// The size of the file input, applied to the browse button and the file list items.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitFileInput.
+    /// </summary>
+    [Parameter] public BitFileInputClassStyles? Styles { get; set; }
 
 
 
@@ -142,7 +220,7 @@ public partial class BitFileInput : BitComponentBase
     }
 
     /// <summary>
-    /// Clears all selected files and resets the file input to its initial state.
+    /// Clears all selected files and resets the file input to its initial state without invoking any callback.
     /// </summary>
     public async Task Reset()
     {
@@ -167,21 +245,37 @@ public partial class BitFileInput : BitComponentBase
     }
 
     /// <summary>
-    /// Removes a specific file from the selected files list, or clears all files when no file is specified.
+    /// Removes a specific file from the selected files list, or clears all files when no file is specified,
+    /// invoking the <see cref="OnRemove"/> callback for each removed file and the <see cref="OnChange"/> callback afterwards.
     /// </summary>
     /// <param name="fileInfo">The file to remove, or null to remove all files.</param>
-    public void RemoveFile(BitFileInputInfo? fileInfo = null)
+    public async Task RemoveFile(BitFileInputInfo? fileInfo = null)
     {
         if (_files.Any() is false) return;
 
         if (fileInfo is null)
         {
+            var removedFiles = _files.ToArray();
+
             _files.Clear();
+
+            await _js.BitFileInputClear(UniqueId);
+
+            foreach (var file in removedFiles)
+            {
+                await OnRemove.InvokeAsync(file);
+            }
         }
         else
         {
-            _files.Remove(fileInfo);
+            if (_files.Remove(fileInfo) is false) return;
+
+            await _js.BitFileInputRemoveFile(UniqueId, fileInfo.FileId);
+
+            await OnRemove.InvokeAsync(fileInfo);
         }
+
+        await OnChange.InvokeAsync([.. _files]);
 
         StateHasChanged();
     }
@@ -189,6 +283,46 @@ public partial class BitFileInput : BitComponentBase
 
 
     protected override string RootElementClass => "bit-fin";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-fin-pri",
+            BitColor.Secondary => "bit-fin-sec",
+            BitColor.Tertiary => "bit-fin-ter",
+            BitColor.Info => "bit-fin-inf",
+            BitColor.Success => "bit-fin-suc",
+            BitColor.Warning => "bit-fin-wrn",
+            BitColor.SevereWarning => "bit-fin-swr",
+            BitColor.Error => "bit-fin-err",
+            BitColor.PrimaryBackground => "bit-fin-pbg",
+            BitColor.SecondaryBackground => "bit-fin-sbg",
+            BitColor.TertiaryBackground => "bit-fin-tbg",
+            BitColor.PrimaryForeground => "bit-fin-pfg",
+            BitColor.SecondaryForeground => "bit-fin-sfg",
+            BitColor.TertiaryForeground => "bit-fin-tfg",
+            BitColor.PrimaryBorder => "bit-fin-pbr",
+            BitColor.SecondaryBorder => "bit-fin-sbr",
+            BitColor.TertiaryBorder => "bit-fin-tbr",
+            _ => "bit-fin-pri"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-fin-sm",
+            BitSize.Medium => "bit-fin-md",
+            BitSize.Large => "bit-fin-lg",
+            _ => "bit-fin-md"
+        });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override Task OnInitializedAsync()
     {
@@ -202,63 +336,99 @@ public partial class BitFileInput : BitComponentBase
     {
         if (firstRender is false) return;
 
-        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef);
+        var dragClass = $"bit-fin-drg {Classes?.Dragging}".Trim();
+
+        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef, dragClass);
     }
 
 
 
+    private string? GetAcceptValue()
+    {
+        if (Accept.HasValue()) return Accept;
+
+        if (AllowedExtensions.Count == 0 || AllowedExtensions.Any(ext => ext == "*")) return null;
+
+        return string.Join(",", AllowedExtensions);
+    }
+
     private bool IsFileTypeNotAllowed(BitFileInputInfo file)
     {
-        //if (Accept.HasNoValue()) return false;
+        // If AllowedExtensions contains "*", all file types are allowed
+        if (AllowedExtensions.Count == 0 || AllowedExtensions.Any(ext => ext == "*")) return false;
 
-        // If AllowedExtensions only contains "*", all files are allowed
-        if (AllowedExtensions.Count == 0 || AllowedExtensions.All(ext => ext == "*")) return false;
+        var extension = Path.GetExtension(file.Name);
 
-        var fileSections = file.Name.Split('.');
+        // Files without an extension are not in the allowed list
+        if (extension.HasNoValue()) return true;
 
-        // Handle files without an extension
-        if (fileSections.Length < 2) return true; // No extension, not in allowed list
+        return AllowedExtensions.Any(ext => ext.Equals(extension, StringComparison.OrdinalIgnoreCase)) is false;
+    }
 
-        var extension = $".{fileSections?.Last()}";
+    private void ValidateFile(BitFileInputInfo file)
+    {
+        if (MaxSize > 0 && file.Size > MaxSize)
+        {
+            file.IsValid = false;
+            file.Message = MaxSizeErrorMessage ?? "The file size is larger than the max size";
+        }
+        else if (MinSize > 0 && file.Size < MinSize)
+        {
+            file.IsValid = false;
+            file.Message = MinSizeErrorMessage ?? "The file size is smaller than the min size";
+        }
+        else if (IsFileTypeNotAllowed(file))
+        {
+            file.IsValid = false;
+            file.Message = NotAllowedExtensionErrorMessage ?? "The file type is not allowed";
+        }
+        else if (FileValidator is not null)
+        {
+            var message = FileValidator(file);
 
-        return AllowedExtensions.All(ext => ext.Equals(extension, StringComparison.OrdinalIgnoreCase) is false);
+            if (message.HasValue())
+            {
+                file.IsValid = false;
+                file.Message = message;
+            }
+        }
     }
 
     private async Task HandleOnChange()
     {
+        if (IsDisposed) return;
+
         if (Append is false)
         {
             _files.Clear();
         }
 
-        if (IsDisposed) return;
-
-        var newFiles = await _js.BitFileInputSetup(UniqueId, _inputRef, Append);
+        var newFiles = await _js.BitFileInputSetup(UniqueId, _inputRef, Append, ShowPreview);
 
         foreach (var file in newFiles)
         {
-            // Validate file size
-            if (MaxSize > 0 && file.Size > MaxSize)
-            {
-                file.IsValid = false;
-                file.Message = MaxSizeErrorMessage ?? "The file size is larger than the max size";
-            }
-            // Validate file extension
-            else if (IsFileTypeNotAllowed(file))
-            {
-                file.IsValid = false;
-                file.Message = NotAllowedExtensionErrorMessage ?? "The file type is not allowed";
-            }
+            ValidateFile(file);
         }
 
         _files.AddRange(newFiles);
 
-        _ = OnChange.InvokeAsync([.. _files]);
+        if (MaxCount > 0 && _files.Count > MaxCount)
+        {
+            foreach (var file in _files.Skip(MaxCount))
+            {
+                if (file.IsValid is false) continue;
+
+                file.IsValid = false;
+                file.Message = MaxCountErrorMessage ?? "The maximum number of files is exceeded";
+            }
+        }
+
+        await OnChange.InvokeAsync([.. _files]);
     }
 
     private string GetFileElClass(bool isValid)
     {
-        return isValid ? $"bit-fin-vld" : $"bit-fin-inv";
+        return isValid ? "bit-fin-vld" : "bit-fin-inv";
     }
 
 

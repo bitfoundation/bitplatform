@@ -1,4 +1,6 @@
-﻿using Bunit;
+﻿using System.Threading.Tasks;
+
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.FileInput;
@@ -79,6 +81,17 @@ public class BitFileInputTests : BunitTestContext
         var fileInput = component.Find(".bit-fin-fi");
 
         Assert.AreEqual(accept, fileInput.GetAttribute("accept"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldNotSetAcceptAttributeByDefault()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        // the default AllowedExtensions (["*"]) must not produce an accept attribute
+        Assert.IsFalse(fileInput.HasAttribute("accept"));
     }
 
     [TestMethod]
@@ -372,15 +385,15 @@ public class BitFileInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFileInputRemoveFileShouldClearAllFilesWhenNullProvided()
+    public async Task BitFileInputRemoveFileShouldClearAllFilesWhenNullProvided()
     {
         var component = RenderComponent<BitFileInput>();
 
         var instance = component.Instance;
 
         // RemoveFile with null should not throw
-        instance.RemoveFile(null);
-        
+        await instance.RemoveFile(null);
+
         Assert.IsEmpty(instance.Files);
     }
 
@@ -458,6 +471,154 @@ public class BitFileInputTests : BunitTestContext
         
         Assert.IsNotNull(labelButton);
         Assert.AreEqual("button", labelButton.GetAttribute("type"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitFileInputShouldSetWebkitDirectoryAttribute(bool directory)
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Directory, directory);
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.AreEqual(directory, fileInput.HasAttribute("webkitdirectory"));
+    }
+
+    [TestMethod,
+        DataRow("user"),
+        DataRow("environment")
+    ]
+    public void BitFileInputShouldSetCaptureAttribute(string capture)
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Capture, capture);
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.AreEqual(capture, fileInput.GetAttribute("capture"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldNotSetCaptureAttributeByDefault()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.IsFalse(fileInput.HasAttribute("capture"));
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-fin-pri"),
+        DataRow(BitColor.Secondary, "bit-fin-sec"),
+        DataRow(BitColor.Tertiary, "bit-fin-ter"),
+        DataRow(BitColor.Info, "bit-fin-inf"),
+        DataRow(BitColor.Success, "bit-fin-suc"),
+        DataRow(BitColor.Warning, "bit-fin-wrn"),
+        DataRow(BitColor.SevereWarning, "bit-fin-swr"),
+        DataRow(BitColor.Error, "bit-fin-err"),
+        DataRow(null, "bit-fin-pri")
+    ]
+    public void BitFileInputShouldRespectColor(BitColor? color, string expectedClass)
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            if (color.HasValue)
+            {
+                parameters.Add(p => p.Color, color.Value);
+            }
+        });
+
+        var container = component.Find(".bit-fin");
+
+        Assert.IsTrue(container.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-fin-sm"),
+        DataRow(BitSize.Medium, "bit-fin-md"),
+        DataRow(BitSize.Large, "bit-fin-lg"),
+        DataRow(null, "bit-fin-md")
+    ]
+    public void BitFileInputShouldRespectSize(BitSize? size, string expectedClass)
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            if (size.HasValue)
+            {
+                parameters.Add(p => p.Size, size.Value);
+            }
+        });
+
+        var container = component.Find(".bit-fin");
+
+        Assert.IsTrue(container.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRespectClassStyles()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitFileInputClassStyles { Root = "custom-root", Label = "custom-label" });
+            parameters.Add(p => p.Styles, new BitFileInputClassStyles { Root = "margin: 1px;", Label = "padding: 1px;" });
+        });
+
+        var container = component.Find(".bit-fin");
+        var label = component.Find(".bit-fin-lbl");
+
+        Assert.IsTrue(container.ClassList.Contains("custom-root"));
+        Assert.Contains("margin: 1px", container.GetAttribute("style") ?? string.Empty);
+        Assert.IsTrue(label.ClassList.Contains("custom-label"));
+        Assert.Contains("padding: 1px", label.GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void BitFileInputFileListShouldHaveListRole()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        var fileList = component.Find(".bit-fin-fl");
+
+        Assert.AreEqual("list", fileList.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldSetAriaLabelOnInput()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Select a document");
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.AreEqual("Select a document", fileInput.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldNotSetAriaLabelledByWhenLabelTemplateIsProvided()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.LabelTemplate, builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddContent(1, "Custom label");
+                builder.CloseElement();
+            });
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.IsFalse(fileInput.HasAttribute("aria-labelledby"));
     }
 
     [TestMethod,

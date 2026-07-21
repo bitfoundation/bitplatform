@@ -34,6 +34,22 @@ public class BitFileInputInfo
     [JsonPropertyName("index")] public int Index { get; set; }
 
     /// <summary>
+    /// The last modified time of the file reported by the browser, in milliseconds since the Unix epoch.
+    /// </summary>
+    [JsonPropertyName("lastModified")] public long LastModified { get; set; }
+
+    /// <summary>
+    /// An object URL of the file content that can be used as the source of an img element to preview image files.
+    /// This is only populated for image files when the ShowPreview parameter of the BitFileInput is enabled.
+    /// </summary>
+    [JsonPropertyName("previewUrl")] public string? PreviewUrl { get; set; }
+
+    /// <summary>
+    /// The last modified time of the file reported by the browser, as a DateTimeOffset.
+    /// </summary>
+    [JsonIgnore] public DateTimeOffset LastModifiedDate => DateTimeOffset.FromUnixTimeMilliseconds(LastModified);
+
+    /// <summary>
     /// The validation error message when the file has failed a validation check (e.g., size or extension).
     /// This is null when the file is valid.
     /// </summary>
