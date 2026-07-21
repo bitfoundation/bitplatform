@@ -14,8 +14,25 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting started</h3>
     <p class="bb-card-desc">
-        Register the services, then declare routes in markup with <code>&lt;Brouter&gt;</code> and
-        <code>&lt;Broute&gt;</code>. Templates are a superset-compatible match of the built-in
+        Install the package into your Blazor app. <code>Bit.Brouter</code> targets net8.0, net9.0
+        and net10.0, and brings its own JavaScript along as a static web asset - there is no script
+        tag to add. The optional <code>Bit.Brouter.Generators</code> package is an analyzer-only
+        companion that generates the typed <code>BrouterRoutes</code> URL builders.
+    </p>
+    <pre class="bb-code"><span class="c"># The router itself:</span>
+dotnet add package Bit.Brouter
+
+<span class="c"># Optional - typed, compile-time-safe URL builders:</span>
+dotnet add package Bit.Brouter.Generators
+
+<span class="c">&lt;!-- ...or declare them in your .csproj. PrivateAssets="all" on the generator keeps
+     the analyzer out of your own package's dependencies: --&gt;</span>
+&lt;<span class="k">PackageReference</span> Include=<span class="s">"Bit.Brouter"</span> Version=<span class="s">"10.5.0"</span> /&gt;
+&lt;<span class="k">PackageReference</span> Include=<span class="s">"Bit.Brouter.Generators"</span> Version=<span class="s">"10.5.0"</span> PrivateAssets=<span class="s">"all"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        Then register the services, add <code>@@using Bit.Brouter</code> to your
+        <code>_Imports.razor</code>, and declare routes in markup with <code>&lt;Brouter&gt;</code>
+        and <code>&lt;Broute&gt;</code>. Templates are a superset-compatible match of the built-in
         router's, so <code>@@page</code> components keep working - <code>AppAssembly</code>
         discovers them alongside the hand-declared tree.
     </p>

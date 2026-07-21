@@ -13,7 +13,7 @@ internal class IndexableOptionConverter : JsonConverter
     {
         if (!objectType.IsGenericType) return false;
 
-        return objectType.GetGenericTypeDefinition() == typeof(BitChartIndexableOption<>);
+        return objectType.GetGenericTypeDefinition() == typeof(BitChartLegacyIndexableOption<>);
     }
 
     public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
@@ -27,7 +27,7 @@ internal class IndexableOptionConverter : JsonConverter
         ArgumentNullException.ThrowIfNull(value);
 
         // get the correct property using reflection
-        var prop = value.GetType().GetProperty(BitChartIndexableOption<object>.PropertyName, BindingFlags.Instance | BindingFlags.NonPublic);
+        var prop = value.GetType().GetProperty(BitChartLegacyIndexableOption<object>.PropertyName, BindingFlags.Instance | BindingFlags.NonPublic);
 
 
         try

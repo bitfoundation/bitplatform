@@ -15,9 +15,20 @@ public static class AppRenderMode
     public static IComponentRenderMode NoPrerenderBlazorWebAssembly { get; } = new InteractiveWebAssemblyRenderMode(prerender: false);
     public static IComponentRenderMode NoPrerenderBlazorServer { get; } = new InteractiveServerRenderMode(prerender: false);
 
-    public static IComponentRenderMode Current => BuildConfiguration.IsDebug() 
-                                                    ? BlazorServer /*For better development experience*/ 
-                                                    : BlazorWebAssembly;
+    // Whether the app boots as Blazor WebAssembly rather than Blazor Server. Release always does; in Debug the
+    // default is Blazor Server for a faster inner loop (see Current), unless the build opts the WASM client in
+    // with -p:IncludeWasm=true (which defines INCLUDE_WASM, see the csproj). The WASM client itself is always
+    // WebAssembly (OperatingSystem.IsBrowser()).
+    public static bool WasmEnabled { get; set; } =
+#if INCLUDE_WASM
+        true;
+#else
+        BuildConfiguration.IsRelease() || OperatingSystem.IsBrowser();
+#endif
+
+    public static IComponentRenderMode Current => WasmEnabled
+                                                    ? BlazorWebAssembly
+                                                    : BlazorServer /*For better development experience*/;
 
     /// <summary>
     /// Is running under .NET MAUI?

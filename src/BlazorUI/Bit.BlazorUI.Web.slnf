@@ -5,12 +5,14 @@
       "Bit.BlazorUI\\Bit.BlazorUI.csproj",
       "Bit.BlazorUI.Assets\\Bit.BlazorUI.Assets.csproj",
       "Bit.BlazorUI.Extras\\Bit.BlazorUI.Extras.csproj",
+      "Bit.BlazorUI.Legacy\\Bit.BlazorUI.Legacy.csproj",
       "Bit.BlazorUI.Icons\\Bit.BlazorUI.Icons.csproj",
       "Bit.BlazorUI.SourceGenerators\\Bit.BlazorUI.SourceGenerators.csproj",
       "Tests\\Bit.BlazorUI.Tests\\Bit.BlazorUI.Tests.csproj",
       "Demo\\Bit.BlazorUI.Demo.Server\\Bit.BlazorUI.Demo.Server.csproj",
       "Demo\\Bit.BlazorUI.Demo.Shared\\Bit.BlazorUI.Demo.Shared.csproj",
       "Demo\\Client\\Bit.BlazorUI.Demo.Client.Core\\Bit.BlazorUI.Demo.Client.Core.csproj",
+	  "Demo\\Client\\Bit.BlazorUI.Demo.Client.Web.Shared\\Bit.BlazorUI.Demo.Client.Web.Shared.csproj",
       "Demo\\Client\\Bit.BlazorUI.Demo.Client.Web\\Bit.BlazorUI.Demo.Client.Web.csproj"
     ]
   }

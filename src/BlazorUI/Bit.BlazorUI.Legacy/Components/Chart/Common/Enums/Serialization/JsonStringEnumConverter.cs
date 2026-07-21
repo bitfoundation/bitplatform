@@ -5,13 +5,13 @@ using Newtonsoft.Json;
 
 namespace Bit.BlazorUI.Legacy;
 
-internal class JsonStringEnumConverter : JsonConverter<BitChartStringEnum>
+internal class JsonStringEnumConverter : JsonConverter<BitChartLegacyStringEnum>
 {
     private static readonly Type[] _stringParameterArray = [typeof(string)];
     private static readonly ConcurrentDictionary<Type, ConstructorInfo?> _constructorCache = new();
 
     [SuppressMessage("Trimming", "IL2111:Method with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.", Justification = "<Pending>")]
-    public override BitChartStringEnum? ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartStringEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override BitChartLegacyStringEnum? ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartLegacyStringEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         switch (reader.TokenType)
         {
@@ -21,13 +21,13 @@ internal class JsonStringEnumConverter : JsonConverter<BitChartStringEnum>
             case JsonToken.String:
                 var constructor = _constructorCache.GetOrAdd(objectType, GetStringConstructor);
 
-                return (BitChartStringEnum?)constructor?.Invoke([reader.Value]);
+                return (BitChartLegacyStringEnum?)constructor?.Invoke([reader.Value]);
             default:
                 throw new NotSupportedException($"Deserializing StringEnums from token type '{reader.TokenType}' isn't supported.");
         }
     }
 
-    public override void WriteJson(JsonWriter writer, BitChartStringEnum? value, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, BitChartLegacyStringEnum? value, JsonSerializer serializer)
     {
         ArgumentNullException.ThrowIfNull(value);
 

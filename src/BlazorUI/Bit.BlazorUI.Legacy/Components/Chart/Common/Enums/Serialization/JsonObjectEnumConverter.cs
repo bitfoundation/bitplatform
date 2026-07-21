@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 
 namespace Bit.BlazorUI.Legacy;
 
-internal class JsonObjectEnumConverter : JsonConverter<BitChartObjectEnum>
+internal class JsonObjectEnumConverter : JsonConverter<BitChartLegacyObjectEnum>
 {
-    public override BitChartObjectEnum? ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartObjectEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override BitChartLegacyObjectEnum? ReadJson(JsonReader reader, Type objectType, [AllowNull] BitChartLegacyObjectEnum existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         if (reader.TokenType == JsonToken.Null ||
             reader.TokenType == JsonToken.Undefined)
@@ -70,23 +70,23 @@ internal class JsonObjectEnumConverter : JsonConverter<BitChartObjectEnum>
             }
             else
             {
-                throw new NotSupportedException($"Deserialization {nameof(BitChartObjectEnum)} '{objectType.FullName}' from '{readerValueType.Name}' isn't supported.");
+                throw new NotSupportedException($"Deserialization {nameof(BitChartLegacyObjectEnum)} '{objectType.FullName}' from '{readerValueType.Name}' isn't supported.");
             }
         }
 
         return factory.Create(value, readerValueType);
     }
 
-    public override void WriteJson(JsonWriter writer, BitChartObjectEnum? wrapper, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, BitChartLegacyObjectEnum? wrapper, JsonSerializer serializer)
     {
         ArgumentNullException.ThrowIfNull(wrapper);
 
         // Note: wrapper won't be null (json.net wouldn't call this method if it were null)
         var wrappedType = wrapper.Value.GetType();
-        if (!BitChartObjectEnum.IsSupportedSerializationType(wrappedType))
+        if (!BitChartLegacyObjectEnum.IsSupportedSerializationType(wrappedType))
         {
             throw new NotSupportedException($"The type '{wrappedType.FullName}' isn't supported for serialization " +
-                                            $"within an instance of any {nameof(BitChartObjectEnum)}-type.");
+                                            $"within an instance of any {nameof(BitChartLegacyObjectEnum)}-type.");
         }
 
         // The types we support can always be written in a single Token.

@@ -9,7 +9,7 @@ internal static class AsyncQueryExecutorSupplier
     // The primary goal with this is to ensure that:
     //  - If you're using EF Core, then we resolve queries efficiently using its ToXyzAsync async extensions and don't
     //    just fall back on the synchronous IQueryable ToXyz calls
-    //  - ... but without BitDataGrid referencing Microsoft.EntityFramework directly. That's because it would bring in
+    //  - ... but without BitDataGridLegacy referencing Microsoft.EntityFramework directly. That's because it would bring in
     //    heavy dependencies you may not be using (and relying on trimming isn't enough, as it's still desirable to have
     //    heavy unused dependencies for Blazor Server).
     //

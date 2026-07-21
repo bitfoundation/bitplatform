@@ -1,0 +1,203 @@
+@namespace Bit.BlazorUI.Legacy.Demo.DataGrid
+@page "/components/legacy/datagrid"
+@inherits AppComponentBase
+@using Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo
+
+<PageOutlet Url="components/legacy/datagrid"
+            Title="DataGridLegacy"
+            Description="BitDataGridLegacy displays an information-rich collection of items and lets users sort and filter the content when information density is critical." />
+
+<DemoPage Name="DataGridLegacy"
+          Description="BitDataGridLegacy is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubLegacyUrl="DataGrid/BitDataGridLegacy.razor"
+          GitHubDemoUrl="Legacy/DataGrid/BitDataGridLegacyDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Legacy"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            NuGet package, as described in the <BitLink Href="/getting-started#legacy-components">Legacy components</BitLink> section of the Getting started page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <Bit.BlazorUI.Legacy.BitDataGridLegacy Items="@FilteredItems1" Pagination="@pagination1" ResizableColumns>
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Name)" Sortable="true" IsDefaultSort="Bit.BlazorUI.Legacy.BitDataGridLegacySortDirection.Ascending">
+                    <ColumnOptions>
+                        <BitSearchBox @bind-Value="typicalSampleNameFilter1"
+                                      AriaLabel="Search by name"
+                                      FixedIcon
+                                      Immediate DebounceTime="300"
+                                      Placeholder="Search..."
+                                      InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
+                    </ColumnOptions>
+                </Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn>
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
+            </Bit.BlazorUI.Legacy.BitDataGridLegacy>
+            <Bit.BlazorUI.Legacy.BitDataGridLegacyPaginator Value="@pagination1" />
+        </DemoExample>
+
+        <DemoExample Title="Customized" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div class="custom-grid">
+                <div class="container">
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacy Items="@FilteredItems2" Pagination="@pagination2" ResizableColumns>
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Name)" IsDefaultSort="Bit.BlazorUI.Legacy.BitDataGridLegacySortDirection.Ascending" Sortable="true" Class="wide">
+                            <ColumnOptions>
+                                <BitSearchBox @bind-Value="typicalSampleNameFilter2"
+                                              AriaLabel="Search by name"
+                                              FixedIcon
+                                              Immediate DebounceTime="300"
+                                              Placeholder="Search on Name"
+                                              InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
+                            </ColumnOptions>
+                        </Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn>
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyTemplateColumn Title="Flag" Align="BitDataGridLegacyAlign.Center">
+                            <img class="flag" src="_content/Bit.BlazorUI.Extras/flags/@(context.Code)-flat-16.webp" loading="lazy" alt="@(context.Code)" />
+                        </Bit.BlazorUI.Legacy.BitDataGridLegacyTemplateColumn>
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyTemplateColumn Title="Action" Align="BitDataGridLegacyAlign.Center">
+                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit" Title="Edit" AriaLabel="Edit" />
+                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Delete" Title="Delete" AriaLabel="Delete" />
+                        </Bit.BlazorUI.Legacy.BitDataGridLegacyTemplateColumn>
+                    </Bit.BlazorUI.Legacy.BitDataGridLegacy>
+                </div>
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPaginator Value="@pagination2" SummaryFormat="@(v => $"Total: {v.TotalItemCount}")">
+                    <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
+                </Bit.BlazorUI.Legacy.BitDataGridLegacyPaginator>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Virtualize" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div class="grid">
+                <Bit.BlazorUI.Legacy.BitDataGridLegacy @ref="dataGrid" ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize ItemSize="32">
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.EventId)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.State)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.City)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.RecallingFirm)" Title="Company" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Status)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.ReportDate)" Title="Report Date" Sortable="true" />
+                </Bit.BlazorUI.Legacy.BitDataGridLegacy>
+            </div>
+            <div class="search-panel">
+                <BitSearchBox @bind-Value="VirtualSampleNameFilter"
+                              AriaLabel="Search by name"
+                              Immediate DebounceTime="300"
+                              Placeholder="Search..." />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="OData" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div class="grid">
+                <Bit.BlazorUI.Legacy.BitDataGridLegacy @ref="productsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="@(p => p.Id)" TGridItem="ProductDto" Virtualize ItemSize="32">
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="Bit.BlazorUI.Legacy.BitDataGridLegacySortDirection.Ascending" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(p => p.Price)" Sortable="true" />
+                </Bit.BlazorUI.Legacy.BitDataGridLegacy>
+            </div>
+            <div class="search-panel">
+                <BitSearchBox @bind-Value="ODataSampleNameFilter"
+                              AriaLabel="Search by name"
+                              Immediate DebounceTime="300"
+                              Placeholder="Search on Name" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="LoadingTemplate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div class="grid">
+                <Bit.BlazorUI.Legacy.BitDataGridLegacy @ref="loadingProductsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="@(p => p.Id)" TGridItem="ProductDto" Pagination="pagination3">
+                    <Columns>
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="Bit.BlazorUI.Legacy.BitDataGridLegacySortDirection.Ascending" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(p => p.Price)" Sortable="true" />
+                    </Columns>
+                    <LoadingTemplate>
+                        <BitStack Alignment="BitAlignment.Center" Style="height:185px">
+                            <b>Loading items...</b>
+                            <BitOrbitingDotsLoading Size="BitSize.Large" />
+                        </BitStack>
+                    </LoadingTemplate>
+                </Bit.BlazorUI.Legacy.BitDataGridLegacy>
+            </div>
+            <Bit.BlazorUI.Legacy.BitDataGridLegacyPaginator Value="@pagination3" SummaryFormat="@(v => $"Total: {v.TotalItemCount?.ToString("N0")}")">
+                <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
+            </Bit.BlazorUI.Legacy.BitDataGridLegacyPaginator>
+        </DemoExample>
+
+        <DemoExample Title="Responsive" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                The BitDataGridLegacy does not have the Responsive feature built-in, 
+                but you can achieve some level of responsiveness like what we did in this sample:
+            </div>
+            
+            <br />
+            
+            <div class="responsive-grid">
+                <Bit.BlazorUI.Legacy.BitDataGridLegacy Items="@allCountries" Pagination="@pagination6">
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Name)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Gold)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Silver)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Bronze)" />
+                    <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Total)" />
+                </Bit.BlazorUI.Legacy.BitDataGridLegacy>
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPaginator Value="@pagination6" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RowTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>See the RowTemplate parameter in action:</div>
+            
+            <br />
+
+            <div class="row-template-grid">
+                <Bit.BlazorUI.Legacy.BitDataGridLegacy Items="@allCountries" Pagination="@pagination7">
+                    <Columns>
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyTemplateColumn Class="row-template-expand-col">
+                            <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                                       IconName="@(expandedRowTemplateCodes.Contains(context.Code) ? BitIconName.ChevronDown : BitIconName.ChevronRight)"
+                                       AriaLabel="@(expandedRowTemplateCodes.Contains(context.Code) ? "Collapse row details" : "Expand row details")"
+                                       Title="@(expandedRowTemplateCodes.Contains(context.Code) ? "Collapse row details" : "Expand row details")"
+                                       OnClick="@(() => ToggleRowRendererExpand(context.Code))" />
+                        </Bit.BlazorUI.Legacy.BitDataGridLegacyTemplateColumn>
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Name)" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Gold)" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Silver)" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Bronze)" />
+                        <Bit.BlazorUI.Legacy.BitDataGridLegacyPropertyColumn Property="@(c => c.Medals.Total)" />
+                    </Columns>
+                    <RowTemplate Context="args">
+                        @args.OriginalRow
+                        @if (expandedRowTemplateCodes.Contains(args.RowItem.Code))
+                        {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="row-template-detail">
+                                        <strong>Additional data:</strong> 
+                                        Code: [@args.RowItem.Code] - 
+                                        Gold: [@args.RowItem.Medals.Gold], 
+                                        Silver: [@args.RowItem.Medals.Silver], 
+                                        Bronze: [@args.RowItem.Medals.Bronze] 
+                                        (Total: @args.RowItem.Medals.Total)
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </RowTemplate>
+                </Bit.BlazorUI.Legacy.BitDataGridLegacy>
+                <Bit.BlazorUI.Legacy.BitDataGridLegacyPaginator Value="@pagination7" />
+            </div>
+        </DemoExample>
+
+    </Examples>
+</DemoPage>

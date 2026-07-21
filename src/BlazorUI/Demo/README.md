@@ -9,3 +9,7 @@ Debug builds render in Blazor Server mode; the WASM client is excluded by defaul
 build with the WASM client included, e.g.:
 
     dotnet run --project Bit.BlazorUI.Demo.Server -p:IncludeWasm=true
+
+That flag alone both bundles the WASM client and boots the app as Blazor
+WebAssembly in Debug (it defines `INCLUDE_WASM`, which `AppRenderMode.WasmEnabled`
+reads).

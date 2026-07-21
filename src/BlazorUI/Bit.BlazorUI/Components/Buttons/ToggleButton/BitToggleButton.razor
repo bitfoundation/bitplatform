@@ -1,33 +1,93 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    var template = GetTemplate();
+
+    RenderFragment content = @<text>
+        @if (template is not null)
+        {
+            @template
+        }
+        else
+        {
+            var icon = GetIcon();
+            var text = GetText();
+
+            if (ShowCheckMark && (IsChecked || FixedCheckMark))
+            {
+                var checkMark = GetCheckMarkIcon();
+                <i aria-hidden="true"
+                   style="@Styles?.CheckMark"
+                   class="bit-tgb-chm @(IsChecked ? null : "bit-tgb-chmh") @checkMark?.GetCssClasses() @Classes?.CheckMark" />
+            }
+
+            if (icon is not null)
+            {
+                <i aria-hidden="true" style="@Styles?.Icon" class="bit-tgb-ico @icon.GetCssClasses() @Classes?.Icon" />
+            }
+
+            if (IconOnly is false && text.HasValue())
+            {
+                <span style="@Styles?.Text" class="bit-tgb-btx @Classes?.Text">@text</span>
+            }
+        }
+    </text>;
+}
+
 <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+        @onclick:stopPropagation="StopPropagation"
+        @onclick:preventDefault="@(IsEnabled is false || (IsLoading && Reclickable is false))"
         id="@_Id"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         dir="@Dir?.ToString().ToLower()"
         type="button"
+        role="@GetRole()"
         title="@GetTitle()"
+        disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+        autofocus="@AutoFocus"
         tabindex="@_tabIndex"
-        aria-label="@AriaLabel"
-        aria-hidden="@AriaHidden"
-        aria-describedby="@AriaDescription">
-    @if (ChildContent is not null)
+        aria-label="@GetAriaLabel()"
+        aria-hidden="@(AriaHidden ? "true" : null)"
+        aria-controls="@AriaControls"
+        aria-pressed="@GetAriaPressed()"
+        aria-checked="@GetAriaChecked()"
+        aria-busy="@(IsLoading ? "true" : null)"
+        aria-disabled="@(IsEnabled ? null : "true")"
+        aria-labelledby="@AriaLabelledBy"
+        aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">
+    @if (IsLoading is false)
     {
-        @ChildContent
+        @content
     }
     else
     {
-        var icon = GetIcon();
-        var text = GetText();
-        if (icon is not null)
-        {
-            <i style="@Styles?.Icon" class="bit-tgb-ico @icon.GetCssClasses() @Classes?.Icon" />
-        }
+        <div aria-hidden="true" style="@Styles?.HiddenContent" class="bit-tgb-hcn @Classes?.HiddenContent">
+            @content
+        </div>
 
-        if (IconOnly is false && text.HasValue())
+        @if (LoadingTemplate is null)
         {
-            <span style="@Styles?.Text" class="bit-tgb-btx @Classes?.Text">@text</span>
+            <div style="@Styles?.LoadingContainer" class="bit-tgb-ldg @GetLoadingLabelPositionClass() @Classes?.LoadingContainer">
+                <div style="@Styles?.Spinner" class="bit-tgb-spn @Classes?.Spinner"></div>
+                @if (LoadingLabel.HasValue())
+                {
+                    <div style="@Styles?.LoadingLabel" class="bit-tgb-lbl @Classes?.LoadingLabel">
+                        @LoadingLabel
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            @LoadingTemplate
         }
     }
 </button>
+
+@* rendered as a sibling of the button so the description drives aria-describedby without leaking into the accessible name *@
+@if (AriaDescription.HasValue())
+{
+    <span id="@($"{_Id}-dsc")" class="bit-tgb-dsc">@AriaDescription</span>
+}

@@ -71,11 +71,6 @@
                 @LoadingTemplate
             }
         }
-
-        @if (AriaDescription.HasValue())
-        {
-            <span id="@($"{_Id}-dsc")" class="bit-btn-dsc">@AriaDescription</span>
-        }
     </text>;
 }
 
@@ -95,7 +90,7 @@
             title="@Title"
             tabindex="@_tabIndex"
             aria-label="@AriaLabel"
-            aria-hidden="@AriaHidden"
+            aria-hidden="@(AriaHidden ? "true" : null)"
             aria-busy="@(IsLoading ? "true" : null)"
             aria-disabled="@(IsEnabled ? null : "true")"
             aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">
@@ -119,10 +114,16 @@ else
        download="@Download"
        tabindex="@_tabIndex"
        aria-label="@AriaLabel"
-       aria-hidden="@AriaHidden"
+       aria-hidden="@(AriaHidden ? "true" : null)"
        aria-busy="@(IsLoading ? "true" : null)"
        aria-disabled="@(IsEnabled ? null : "true")"
        aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">
         @body
     </a>
+}
+
+@* rendered as a sibling of the button/anchor so the description drives aria-describedby without leaking into the accessible name *@
+@if (AriaDescription.HasValue())
+{
+    <span id="@($"{_Id}-dsc")" class="bit-btn-dsc">@AriaDescription</span>
 }

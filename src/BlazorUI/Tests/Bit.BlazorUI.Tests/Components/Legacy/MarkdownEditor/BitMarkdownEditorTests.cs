@@ -17,7 +17,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.init");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
 
-        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
@@ -40,7 +40,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.init");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
 
-        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
         {
             parameters.Add(p => p.Id, "id");
             parameters.Add(p => p.DefaultValue, "hello");
@@ -57,7 +57,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.init");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
 
-        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
         {
             parameters.Add(p => p.OnChange, EventCallback.Factory.Create(this, (string? value) =>
             {
@@ -78,7 +78,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.init");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
 
-        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
         {
             parameters.Add(p => p.Value, "initial");
         });
@@ -104,9 +104,9 @@ public class BitMarkdownEditorTests : BunitTestContext
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.run");
 
-        var component = RenderComponent<BitMarkdownEditor>();
+        var component = RenderComponent<BitMarkdownEditorLegacy>();
 
-        await component.Instance.Run(BitMarkdownEditorCommand.Bold);
+        await component.Instance.Run(BitMarkdownEditorLegacyCommand.Bold);
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.MarkdownEditor.run");
     }
@@ -118,10 +118,10 @@ public class BitMarkdownEditorTests : BunitTestContext
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.add");
 
-        var component = RenderComponent<BitMarkdownEditor>();
+        var component = RenderComponent<BitMarkdownEditorLegacy>();
 
-        await component.Instance.Add("block", BitMarkdownEditorContentType.Block);
-        await component.Instance.Add("inline", BitMarkdownEditorContentType.Inline);
+        await component.Instance.Add("block", BitMarkdownEditorLegacyContentType.Block);
+        await component.Instance.Add("inline", BitMarkdownEditorLegacyContentType.Inline);
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.MarkdownEditor.add", 2);
     }
@@ -133,7 +133,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.dispose");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
 
-        var component = RenderComponent<BitMarkdownEditor>();
+        var component = RenderComponent<BitMarkdownEditorLegacy>();
 
         await component.Instance.DisposeAsync();
 

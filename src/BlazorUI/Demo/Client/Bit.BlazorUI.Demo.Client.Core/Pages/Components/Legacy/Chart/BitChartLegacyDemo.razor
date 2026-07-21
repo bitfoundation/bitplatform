@@ -1,0 +1,58 @@
+@namespace Bit.BlazorUI.Legacy.Demo.Chart
+@page "/components/legacy/chart"
+
+<PageOutlet Url="components/legacy/chart"
+            Title="ChartLegacy"
+            Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter." />
+
+<div>
+    @if (isLoadingAssemblies)
+    {
+        <LoadingComponent />
+    }
+    else
+    {
+        <DemoPage Name="ChartLegacy"
+                  Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
+                  Parameters="componentParameters"
+                  SubClasses="componentSubClasses"
+                  GitHubLegacyUrl="Chart/BitChartLegacy.razor"
+                  GitHubDemoUrl="Legacy/Chart/BitChartLegacyDemo.razor">
+            <NotesTemplate>
+                <BitText>
+                    To use this component, you need to install the
+                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Legacy" Target="_blank">
+                        <BitTag Reversed
+                                Text="Bit.BlazorUI.Legacy"
+                                Color="BitColor.SecondaryBackground"
+                                IconName="@BitIconName.NavigateExternalInline" />
+                    </BitLink>
+                    nuget package, as described in the <BitLink Href="/getting-started#legacy-components">Legacy components</BitLink> section of the Getting started page.
+                </BitText>
+            </NotesTemplate>
+            <Examples>
+                <_BitChartLegacyBarDemo />
+
+                <_BitChartLegacyHorizontalBarDemo />
+
+                <_BitChartLegacyStackedBarDemo />
+
+                <_BitChartLegacyLineDemo />
+
+                <_BitChartLegacyPieDemo />
+
+                <_BitChartLegacyDoughnutDemo />
+
+                <_BitChartLegacyPolarAreaDemo />
+
+                <_BitChartLegacyTimeDemo />
+
+                <_BitChartLegacyScatterDemo />
+
+                <_BitChartLegacyBubbleDemo />
+
+                <_BitChartLegacyRadarDemo />
+            </Examples>
+        </DemoPage>
+    }
+</div>

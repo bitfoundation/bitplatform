@@ -184,12 +184,12 @@ public partial class MainLayout
             Text = "Legacy",
             ChildItems =
             [
-                new() { Text = "Chart", Url = "/components/legacy/chart" },
-                new() { Text = "DataGrid", Url = "/components/legacy/datagrid" },
-                new() { Text = "MarkdownEditor", Url = "/components/legacy/markdowneditor" },
-                new() { Text = "MarkdownViewer", Url = "/components/legacy/markdownviewer" },
-                new() { Text = "PdfReader", Url = "/components/legacy/pdfreader" },
-                new() { Text = "RichTextEditor", Url = "/components/legacy/richtexteditor" },
+                new() { Text = "ChartLegacy", Url = "/components/legacy/chart" },
+                new() { Text = "DataGridLegacy", Url = "/components/legacy/datagrid" },
+                new() { Text = "MarkdownEditorLegacy", Url = "/components/legacy/markdowneditor" },
+                new() { Text = "MarkdownViewerLegacy", Url = "/components/legacy/markdownviewer" },
+                new() { Text = "PdfReaderLegacy", Url = "/components/legacy/pdfreader" },
+                new() { Text = "RichTextEditorLegacy", Url = "/components/legacy/richtexteditor" },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

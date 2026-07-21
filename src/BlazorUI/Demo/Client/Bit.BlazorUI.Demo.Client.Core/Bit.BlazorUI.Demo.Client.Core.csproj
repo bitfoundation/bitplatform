@@ -2,6 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <!-- -p:IncludeWasm=true is a global (command-line) property, so it flows into this project too.
+             Defining INCLUDE_WASM here lets AppRenderMode.WasmEnabled know the WASM client is part of the
+             build and boot the app as Blazor WebAssembly even in Debug. See AppRenderMode.Current. -->
+        <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -16,14 +20,15 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-10">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0-pre-10">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.10" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
