@@ -77,6 +77,11 @@
     border-collapse: collapse;
 }
 
+.bit-cal-grd {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
 .bit-cal-dgh,
 .bit-cal-dgr {
     width: 100%;
@@ -137,6 +142,21 @@
         pointer-events: none;
         background-color: transparent;
     }
+
+    &:focus-visible {
+        z-index: 1;
+        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+}
+
+.bit-cal-dbe {
+    width: spacing(3.5);
+    height: spacing(3.5);
+}
+
+.bit-cal-dhl {
+    font-weight: 600;
+    background-color: $clr-bg-sec;
 }
 
 .bit-cal-dbs {

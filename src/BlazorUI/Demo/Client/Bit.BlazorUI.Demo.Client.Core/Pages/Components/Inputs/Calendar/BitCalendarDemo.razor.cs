@@ -36,6 +36,20 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "DisabledDates",
+            Type = "IEnumerable<DateTimeOffset>?",
+            DefaultValue = "null",
+            Description = "The list of dates that are disabled (not selectable) in the calendar, in addition to MinDate and MaxDate."
+        },
+        new()
+        {
+            Name = "DisabledDaysOfWeek",
+            Type = "IEnumerable<DayOfWeek>?",
+            DefaultValue = "null",
+            Description = "The days of the week that are disabled (not selectable) in the calendar (e.g. weekends)."
+        },
+        new()
+        {
             Name = "Events",
             Type = "IEnumerable<BitCalendarEvent>?",
             DefaultValue = "null",
@@ -56,6 +70,27 @@ public partial class BitCalendarDemo
             Type = "string",
             DefaultValue = "Until",
             Description = "The text shown before the end time of an event when only an end time is present (e.g. \"Until 17:00\"). Supports localization."
+        },
+        new()
+        {
+            Name = "FirstDayOfWeek",
+            Type = "DayOfWeek?",
+            DefaultValue = "null",
+            Description = "Overrides the first day of the week in the day picker. If not set, the first day of the week of the Culture is used."
+        },
+        new()
+        {
+            Name = "FixedWeeks",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the calendar height fixed while navigating between months."
+        },
+        new()
+        {
+            Name = "GetDayClass",
+            Type = "Func<DateTimeOffset, string?>?",
+            DefaultValue = "null",
+            Description = "Custom function to provide additional CSS classes for each day button of the calendar."
         },
         new()
         {
@@ -183,6 +218,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "HighlightedDates",
+            Type = "IEnumerable<DateTimeOffset>?",
+            DefaultValue = "null",
+            Description = "The list of dates that are highlighted (marked) in the day picker."
+        },
+        new()
+        {
             Name = "HighlightSelectedMonth",
             Type = "bool",
             DefaultValue = "false",
@@ -204,8 +246,15 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "IsDateDisabled",
+            Type = "Func<DateTimeOffset, bool>?",
+            DefaultValue = "null",
+            Description = "Custom function to determine if a specific date is disabled (not selectable) in the calendar."
+        },
+        new()
+        {
             Name = "MaxDate",
-            Type = "DateTimeOffset",
+            Type = "DateTimeOffset?",
             DefaultValue = "null",
             Description = "The maximum allowable date of the calendar."
         },
@@ -290,6 +339,12 @@ public partial class BitCalendarDemo
             Description = "Gets or sets the name of the icon to display in the Go to next year range button from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "OnMonthChange",
+            Type = "EventCallback<DateTimeOffset>",
+            Description = "Callback for when the displayed month of the day picker changes. The argument is the first day of the newly displayed month."
         },
         new()
         {
@@ -388,10 +443,24 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "ShowOutsideDays",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the days of the previous and next months should be shown in the day picker."
+        },
+        new()
+        {
             Name = "ShowTimePicker",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the time picker should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowTimePickerAsOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Show time picker on top of date picker when visible."
         },
         new()
         {
@@ -528,6 +597,20 @@ public partial class BitCalendarDemo
             Type = "TimeZoneInfo?",
             DefaultValue = "null",
             Description = "TimeZone for the BitCalendar."
+        },
+        new()
+        {
+            Name = "Today",
+            Type = "DateTimeOffset?",
+            DefaultValue = "null",
+            Description = "Overrides the current date and time considered as \"today\" and \"now\" in the calendar (useful for testing or custom time providers)."
+        },
+        new()
+        {
+            Name = "WeekNumberRule",
+            Type = "CalendarWeekRule?",
+            DefaultValue = "null",
+            Description = "The rule used to calculate the week numbers. Defaults to the FirstFullWeek rule."
         },
         new()
         {
@@ -705,6 +788,13 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
+                    Name = "DaysGrid",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the days' grid of the BitCalendar."
+                },
+                new()
+                {
                     Name = "DaysHeaderRow",
                     Type = "string?",
                     DefaultValue = "null",
@@ -751,6 +841,13 @@ public partial class BitCalendarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for selected day button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "HighlightedDayButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for highlighted day buttons of the BitCalendar."
                 },
                 new()
                 {
@@ -1071,6 +1168,13 @@ public partial class BitCalendarDemo
 
     private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);
 
+    private DateTimeOffset? onSelectDate;
+
+    private void HandleOnSelectDate(DateTimeOffset? date)
+    {
+        onSelectDate = date;
+    }
+
     private List<BitCalendarEvent> calendarEvents =
     [
         new() { Title = "Team standup",
@@ -1099,6 +1203,30 @@ public partial class BitCalendarDemo
 
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
     private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
+    private DateTimeOffset? customToday = new DateTimeOffset(2021, 3, 15, 0, 0, 0, DateTimeOffset.Now.Offset);
+
+    private DayOfWeek[] weekendDays = [DayOfWeek.Saturday, DayOfWeek.Sunday];
+
+    private DateTimeOffset[] disabledDates =
+    [
+        DateTimeOffset.Now.AddDays(1),
+        DateTimeOffset.Now.AddDays(2),
+        DateTimeOffset.Now.AddDays(5)
+    ];
+
+    private DateTimeOffset[] highlightedDates =
+    [
+        DateTimeOffset.Now.AddDays(3),
+        DateTimeOffset.Now.AddDays(7),
+        DateTimeOffset.Now.AddDays(14)
+    ];
+
+    private DateTimeOffset? displayedMonth;
+
+    private void HandleOnMonthChange(DateTimeOffset month)
+    {
+        displayedMonth = month;
+    }
 
     private DateTimeOffset? timeZoneDate1;
     private DateTimeOffset? timeZoneDate2;
