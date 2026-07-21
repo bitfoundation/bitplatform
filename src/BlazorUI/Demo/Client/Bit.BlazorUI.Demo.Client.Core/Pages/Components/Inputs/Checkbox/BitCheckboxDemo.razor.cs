@@ -104,7 +104,7 @@ public partial class BitCheckboxDemo
             Name = "Indeterminate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.",
+            Description = "An indeterminate visual state for checkbox. The indeterminate state takes visual precedence over the checked state but does not affect the Value.",
         },
         new()
         {

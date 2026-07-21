@@ -91,7 +91,7 @@ public partial class BitCheckbox : BitInputBase<bool>
 
     /// <summary>
     /// An indeterminate visual state for checkbox.
-    /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
+    /// The indeterminate state takes visual precedence over the checked state but does not affect the Value.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
     [CallOnSet(nameof(OnSetIndeterminate))]
@@ -349,6 +349,8 @@ public partial class BitCheckbox : BitInputBase<bool>
             if (changingArgs.Cancel)
             {
                 await SyncInputCheckedProperty(oldValue);
+                // the browser also clears the native indeterminate property on every click, so it gets put back too
+                await SetIndeterminate();
                 return;
             }
         }
