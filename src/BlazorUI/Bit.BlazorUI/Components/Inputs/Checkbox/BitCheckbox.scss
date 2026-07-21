@@ -6,7 +6,7 @@
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
     --bit-chb-box-clr-brd: #{$clr-brd-pri};
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-sec)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt-sec);
 
     @media (hover: hover) {
         &:hover {
@@ -155,35 +155,35 @@
 }
 
 .bit-chb-ckd {
-    --bit-chb-box-clr-bg: #{var(--bit-chb-clr)};
-    --bit-chb-box-clr-brd: #{var(--bit-chb-clr)};
+    --bit-chb-box-clr-bg: var(--bit-chb-clr);
+    --bit-chb-box-clr-brd: var(--bit-chb-clr);
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
 
     @media (hover: hover) {
         &:hover {
-            --bit-chb-box-clr-bg: #{var(--bit-chb-clr-hover)};
-            --bit-chb-box-clr-brd: #{var(--bit-chb-clr-hover)};
+            --bit-chb-box-clr-bg: var(--bit-chb-clr-hover);
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
             --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-hover)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
         }
     }
 }
 
 .bit-chb-ind {
     --bit-chb-box-clr-bg: transparent;
-    --bit-chb-box-clr-brd: #{var(--bit-chb-clr)};
+    --bit-chb-box-clr-brd: var(--bit-chb-clr);
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt)};
-    --bit-chb-ico-clr-bg: #{var(--bit-chb-clr)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
+    --bit-chb-ico-clr-bg: var(--bit-chb-clr);
 
     @media (hover: hover) {
         &:hover {
             --bit-chb-box-clr-bg: transparent;
-            --bit-chb-box-clr-brd: #{var(--bit-chb-clr-hover)};
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
             --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-hover)};
-            --bit-chb-ico-clr-bg: #{var(--bit-chb-clr-hover)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
+            --bit-chb-ico-clr-bg: var(--bit-chb-clr-hover);
         }
     }
 
@@ -202,11 +202,11 @@
 
 // a custom indeterminate icon sits on the transparent box, so it takes the box color rather than the on-color text
 .bit-chb-cii.bit-chb-ind {
-    --bit-chb-ico-clr: #{var(--bit-chb-clr)};
+    --bit-chb-ico-clr: var(--bit-chb-clr);
 
     @media (hover: hover) {
         &:hover {
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-hover)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-hover);
         }
     }
 
@@ -223,10 +223,12 @@
 // label position classes come after the reversed one, so an explicit LabelPosition wins over Reversed
 
 .bit-chb-ltp {
+    --bit-chb-lbl-justify-content: flex-start;
     --bit-chb-lbl-flex-direction: column-reverse;
 }
 
 .bit-chb-lbt {
+    --bit-chb-lbl-justify-content: flex-start;
     --bit-chb-lbl-flex-direction: column;
 }
 

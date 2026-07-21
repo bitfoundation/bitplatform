@@ -340,12 +340,6 @@ public partial class BitCheckbox : BitInputBase<bool>
         var oldValue = CurrentValue;
         var (newValue, newIndeterminate) = GetNextState();
 
-        if (newIndeterminate != Indeterminate && IndeterminateHasBeenSet && IndeterminateChanged.HasDelegate is false)
-        {
-            await SyncInputCheckedProperty(oldValue);
-            return;
-        }
-
         if (OnChanging.HasDelegate)
         {
             var changingArgs = new BitCheckboxChangeArgs(newValue, newIndeterminate);
