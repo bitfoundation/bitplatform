@@ -2285,7 +2285,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // held across arbitrary awaits) and immediately before the renders below mutate the page.
             // The completion (which lets the browser animate to the new state) runs in
             // OnAfterRenderAsync once the new DOM is committed.
-            if (Options.ViewTransitions)
+            //
+            // The initial load (empty `from`, matching SaveScrollPositionAsync's convention) never
+            // animates: there is no meaningful outgoing page - just the blank document, or, after
+            // prerendering, static HTML visually identical to what the interactive pass is about to
+            // render, where a transition reads as a spurious double-render flash of the same page.
+            if (Options.ViewTransitions && string.IsNullOrEmpty(from.FullUri) is false)
             {
                 viewTransitionStarted = await service.BeginViewTransitionAsync(navType);
                 if (token.IsCancellationRequested || version != _navVersion) return;
@@ -2354,15 +2359,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // supersession bail-outs above so an abandoned pipeline never strands stale arrivals.
             StageArrivals(ctx, matchedChain);
 
-            StateHasChanged();
-
-            // Hand the open transition to OnAfterRenderAsync: it completes once the render above has
-            // been applied to the DOM, which is exactly when the browser should snapshot the new state.
+            // Hand the open transition to OnAfterRenderAsync: it completes once the render below has
+            // been applied to the DOM, which is exactly when the browser should snapshot the new
+            // state. Staged BEFORE StateHasChanged: when every await in OnAfterRenderAsync completes
+            // synchronously (bUnit's mocked interop; any environment without a real yield), the
+            // whole OnAfterRenderAsync runs inside StateHasChanged - staging afterwards would let it
+            // consume a still-false flag and strand the transition until the JS watchdog frees it.
             if (viewTransitionStarted)
             {
                 viewTransitionStaged = true;
                 _pendingViewTransitionCompletion = true;
             }
+
+            StateHasChanged();
 
             ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.Success());
 

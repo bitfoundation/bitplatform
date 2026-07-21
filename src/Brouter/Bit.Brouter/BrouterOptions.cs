@@ -169,6 +169,9 @@ public sealed class BrouterOptions
     /// the outgoing and incoming pages by default and enabling per-element morph animations via the
     /// standard <c>view-transition-name</c> CSS property - no Blazor-specific animation code needed.
     /// Mirrors Angular's <c>withViewTransitions</c> and React Router's <c>viewTransition</c>.
+    /// Only actual navigations animate - the initial load never does (with prerendering it would
+    /// otherwise re-animate over static HTML identical to the interactive render, appearing as a
+    /// double render of the first page).
     /// Gracefully inert on browsers without the API, during prerender, and in non-browser hosts.
     /// Defaults to <c>false</c>. See also <see cref="ViewTransitionDefaultAnimations"/>.
     /// </summary>
