@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// renderer dispatches on this (a dense <c>switch</c> jump table) instead of
 /// re-hashing and comparing the operator string on every operation. Resolution
 /// runs once per interned <see cref="BitPdfCmd"/> keyword (a few dozen per
-/// document), not once per occurrence — see <see cref="BitPdfCmd.OpCode"/>.
+/// document), not once per occurrence - see <see cref="BitPdfCmd.OpCode"/>.
 ///
 /// Members are grouped so two hot renderer predicates collapse to a single
 /// range compare: the colour operators form one contiguous block
@@ -23,7 +23,7 @@ internal enum BitPdfOpCode : byte
     SaveState, RestoreState, ConcatMatrix, LineWidth, Dash, LineCap, LineJoin,
     MiterLimit, RenderingIntent, Flatness, ExtGState,
 
-    // Colour — KEEP CONTIGUOUS (FillGray..StrokeColorN); the Type3 `d1` colour
+    // Colour - KEEP CONTIGUOUS (FillGray..StrokeColorN); the Type3 `d1` colour
     // lock is a single range compare over this block.
     FillGray, StrokeGray, FillRgb, StrokeRgb, FillCmyk, StrokeCmyk,
     FillColorSpace, StrokeColorSpace, FillColorN, StrokeColorN,
@@ -44,7 +44,7 @@ internal enum BitPdfOpCode : byte
     // Marked / optional content.
     BeginMarkedContentDict, BeginMarkedContent, EndMarkedContent,
 
-    // Text — KEEP CONTIGUOUS (BeginText..NextLineShowTextSpacing); a pending
+    // Text - KEEP CONTIGUOUS (BeginText..NextLineShowTextSpacing); a pending
     // coalesced painted line may survive across exactly this block, tested as a
     // single range compare.
     BeginText, EndText, CharSpacing, WordSpacing, HorizScale, Leading, TextRise,

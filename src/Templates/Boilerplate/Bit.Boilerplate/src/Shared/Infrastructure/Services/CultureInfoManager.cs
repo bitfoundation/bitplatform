@@ -15,9 +15,9 @@ public partial class CultureInfoManager
     false;
 #endif
 
-    public static CultureInfo DefaultCulture => CreateCultureInfo("en-US");
+    public static CultureInfo DefaultCulture => field ??= CreateCultureInfo("en-US");
 
-    public static (string DisplayName, CultureInfo Culture)[] SupportedCultures =>
+    public static (string DisplayName, CultureInfo Culture)[] SupportedCultures => field ??=
     [
         ("English US", CreateCultureInfo("en-US")),
         ("English UK", CreateCultureInfo("en-GB")),

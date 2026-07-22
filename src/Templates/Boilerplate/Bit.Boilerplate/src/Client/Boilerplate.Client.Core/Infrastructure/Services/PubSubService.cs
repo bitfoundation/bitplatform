@@ -41,12 +41,25 @@ public partial class PubSubService
         weakHandlers.Add(weakHandler);
 
         // If persistent messages exist for this message, publish them immediately.
-        foreach (var (notHandledMessage, payload) in persistentMessages)
+        // A ConcurrentBag can't remove a specific item (TryTake removes an arbitrary one), so we drain it
+        // once: matching messages are dispatched and dropped, the rest are put back.
+        if (persistentMessages.IsEmpty is false)
         {
-            if (notHandledMessage == message)
+            var retained = new List<(string message, object? payload)>();
+            while (persistentMessages.TryTake(out var pending))
             {
-                weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
-                persistentMessages.TryTake(out _);
+                if (pending.message == message)
+                {
+                    weakHandler.Invoke(pending.payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                }
+                else
+                {
+                    retained.Add(pending);
+                }
+            }
+            foreach (var pending in retained)
+            {
+                persistentMessages.Add(pending);
             }
         }
 

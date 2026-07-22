@@ -20,7 +20,9 @@
         navigations glide in, Back/Forward mirror the motion, replaces cross-fade - the router
         detects direction from the navigation type (<code>Push</code> / <code>Replace</code> /
         <code>Pop</code>) and exposes it as <code>data-brouter-nav</code> on the root element for
-        your own CSS. On browsers without the API everything is inert; nothing breaks.
+        your own CSS. On browsers without the API everything is inert; nothing breaks. Only actual
+        navigations animate - the initial load never does, so with prerendering the interactive
+        takeover doesn't replay the animation over the already-visible page.
     </p>
     <pre class="bb-code">services.AddBitBrouterServices(o =&gt;
 {

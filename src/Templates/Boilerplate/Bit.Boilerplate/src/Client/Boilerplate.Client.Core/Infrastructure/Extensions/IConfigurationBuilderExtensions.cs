@@ -1,10 +1,14 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Microsoft.Extensions.Configuration;
 
 public static partial class IConfigurationBuilderExtensions
 {
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_providers")]
+    private static extern ref List<IConfigurationProvider> GetProviders(WebAssemblyHostConfiguration configuration);
+
     extension(IConfigurationBuilder builder)
     {
         /// <summary>
@@ -68,8 +72,8 @@ public static partial class IConfigurationBuilderExtensions
 
             if (AppPlatform.IsBrowser)
             {
-                var providersField = builder.GetType().GetField("_providers", BindingFlags.NonPublic | BindingFlags.Instance)!;
-                providersField.SetValue(builder, (((IConfigurationRoot)configBuilder).Providers).Union(((IConfigurationRoot)builder).Providers).ToList());
+                GetProviders((WebAssemblyHostConfiguration)builder) =
+                    [.. ((IConfigurationRoot)configBuilder).Providers.Union(((IConfigurationRoot)builder).Providers)];
             }
             else if (AppPlatform.IsBlazorHybrid)
             {

@@ -492,7 +492,7 @@ public interface ITenantAware
 }
 ```
 
-In [`AppDbContext.OnModelCreating`](/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs), a small reflection loop applies the **same tenant filter to every `ITenantAware` entity** — you never write the filter by hand:
+In [`AppDbContext.OnModelCreating`](/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs), a small reflection loop applies the **same tenant filter to every `ITenantAware` entity** - you never write the filter by hand:
 
 ```csharp
 private void ConfigureTenantAwareEntities(ModelBuilder modelBuilder)
@@ -518,7 +518,7 @@ private Guid CurrentTenantId => tenantProvider.GetCurrentTenantId();
 
 Out of the box, `Product`, `Category`, and `SystemPrompt` are the `ITenantAware` entities. The filter is the **only** global query filter in the model, so there is no soft-delete or other filter to combine with.
 
-> ⚠️ **Reads only.** A global query filter constrains `SELECT`s. It does **not** stamp `TenantId` on `INSERT`, and it does **not** apply to `DELETE`/`UPDATE` of a detached (stub) entity. Those paths must be handled explicitly — see the rules below.
+> ⚠️ **Reads only.** A global query filter constrains `SELECT`s. It does **not** stamp `TenantId` on `INSERT`, and it does **not** apply to `DELETE`/`UPDATE` of a detached (stub) entity. Those paths must be handled explicitly - see the rules below.
 
 #### Identity tables are tenant-scoped by *convention*, not by the filter
 
@@ -540,8 +540,8 @@ The singleton [`TenantProvider`](/src/Server/Boilerplate.Server.Api/Features/Ide
 
 | # | Source | When it applies |
 |---|--------|-----------------|
-| 1 | **Throw** if there is no `HttpContext` | Background jobs — fails closed rather than guessing a tenant |
-| 2 | **`t-id` claim** of the signed-in user (`User.GetTenantId()`) | Authenticated requests — the trusted, server-issued tenant |
+| 1 | **Throw** if there is no `HttpContext` | Background jobs - fails closed rather than guessing a tenant |
+| 2 | **`t-id` claim** of the signed-in user (`User.GetTenantId()`) | Authenticated requests - the trusted, server-issued tenant |
 | 3 | **Custom domain**: the tenant whose `Tenant.Domain` equals the complete request `Host` | Anonymous requests on a vanity domain, e.g. `shop.contoso.com` |
 | 4 | **Sub-domain** of the request `Host` (matched against active tenants by `Tenant.Name`) | Anonymous requests, e.g. the public Sales product pages on `tenant.example.com` |
 | 5 | **Fallback** to `TenantConfiguration.FallbackTenantId` (the seeded `"store"` tenant) | Nothing else matched (apex domain, unknown sub-domain, authenticated user with no tenant) |
@@ -569,17 +569,17 @@ public Guid GetCurrentTenantId()
 
 Follow these rules whenever you add a new tenant-owned entity or a create/update/delete endpoint.
 
-**1. Make the entity `ITenantAware`.** Implement the interface (add `TenantId` + `Tenant` nav). The global filter is applied automatically — no per-entity wiring needed. If a value must be unique *within* a tenant, make the index tenant-scoped, e.g. `builder.HasIndex(p => new { p.TenantId, p.Name }).IsUnique();`, then add a migration.
+**1. Make the entity `ITenantAware`.** Implement the interface (add `TenantId` + `Tenant` nav). The global filter is applied automatically - no per-entity wiring needed. If a value must be unique *within* a tenant, make the index tenant-scoped, e.g. `builder.HasIndex(p => new { p.TenantId, p.Name }).IsUnique();`, then add a migration.
 
-**2. Stamp `TenantId` on create — server-side, from the trusted claim.** The query filter does not do this for you. Always:
+**2. Stamp `TenantId` on create - server-side, from the trusted claim.** The query filter does not do this for you. Always:
 
 ```csharp
 entityToAdd.TenantId = User.GetTenantId() ?? throw new InvalidOperationException();
 ```
 
-Never bind `TenantId` from the client DTO. (The shared DTOs intentionally expose no `TenantId`, so the mapper cannot smuggle one — keep it that way.)
+Never bind `TenantId` from the client DTO. (The shared DTOs intentionally expose no `TenantId`, so the mapper cannot smuggle one - keep it that way.)
 
-**3. On update/delete, fetch the row through a filtered query first — never a detached stub.** Loading via `FindAsync` / `FirstOrDefaultAsync` / `Where(...)` applies the tenant filter, so a row in another tenant simply returns `null` (→ `ResourceNotFoundException`). Deleting or updating a hand-constructed stub (`Remove(new() { Id = id })`) **bypasses the filter** and can reach another tenant's row.
+**3. On update/delete, fetch the row through a filtered query first - never a detached stub.** Loading via `FindAsync` / `FirstOrDefaultAsync` / `Where(...)` applies the tenant filter, so a row in another tenant simply returns `null` (→ `ResourceNotFoundException`). Deleting or updating a hand-constructed stub (`Remove(new() { Id = id })`) **bypasses the filter** and can reach another tenant's row.
 
 Always carry the `long Version` concurrency token through updates/deletes.
 
@@ -591,11 +591,11 @@ Always carry the `long Version` concurrency token through updates/deletes.
 
 ### Security Caveats
 
-- **`IgnoreQueryFilters()` removes tenant isolation.** Any query that calls it must **re-apply** a tenant check explicitly. The one legitimate use in the template — [`AttachmentController.EnsureProductIsInCurrentTenant`](/src/Server/Boilerplate.Server.Api/Features/Attachments/AttachmentController.cs) — bypasses the filter to look up a product's real tenant and then compares it against `TenantProvider.GetCurrentTenantId()`, rejecting cross-tenant products. Follow that pattern; never return `IgnoreQueryFilters()` results to a caller unscoped.
+- **`IgnoreQueryFilters()` removes tenant isolation.** Any query that calls it must **re-apply** a tenant check explicitly. The one legitimate use in the template - [`AttachmentController.EnsureProductIsInCurrentTenant`](/src/Server/Boilerplate.Server.Api/Features/Attachments/AttachmentController.cs) - bypasses the filter to look up a product's real tenant and then compares it against `TenantProvider.GetCurrentTenantId()`, rejecting cross-tenant products. Follow that pattern; never return `IgnoreQueryFilters()` results to a caller unscoped.
 - **Background jobs have no `HttpContext`.** `GetCurrentTenantId()` throws by design instead of silently using the fallback tenant, so a job that touches `ITenantAware` data has to use `IgnoreQueryFilters()` and re-apply the tenant predicate itself (`Where(x => x.TenantId == tenantId)`) for each tenant it processes.
-- **The fallback tenant is a fail-open surface.** Anonymous requests to the apex domain or an unknown sub-domain — and any authenticated request that reaches tenant data without a tenant claim — resolve to the seeded `"store"` tenant. Keep real or sensitive data out of the default tenant, and pin the accepted hosts (`AllowedHosts`) so the sub-domain that selects a tenant cannot be spoofed via the `Host` header. Only expose genuinely public, per-tenant data through anonymous, sub-domain-resolved endpoints.
-- **Identity tables are not filtered by the model.** Because `Role`/`UserRole`/`UserClaim`/`UserSession` rely on manual scoping, any new query against them must add the `TenantId == User.GetTenantId()` (or `TenantId == null`) predicate itself — the global filter will not save you.
-- **Privilege changes are eventually-consistent (short-lived tokens).** When an admin **removes** a user from a tenant, `RemoveUserFromCurrentTenant` revokes that user's sessions signed into the tenant (deletes them + a SignalR `SESSION_REVOKED` nudge, like `KickOutTenantUsers`), so the removed member cannot refresh back in. When a user **leaves** a tenant themselves, their session is instead re-pointed to their next tenant and the client refreshes immediately (they keep their own access). In every case a JWT is stateless and there is no per-request session/security-stamp check on ordinary API calls, so an *already-issued* access token stays valid until it expires (default 5 minutes) — that residual window is inherent to short-lived JWTs and applies to all privilege changes.
+- **The fallback tenant is a fail-open surface.** Anonymous requests to the apex domain or an unknown sub-domain - and any authenticated request that reaches tenant data without a tenant claim - resolve to the seeded `"store"` tenant. Keep real or sensitive data out of the default tenant, and pin the accepted hosts (`AllowedHosts`) so the sub-domain that selects a tenant cannot be spoofed via the `Host` header. Only expose genuinely public, per-tenant data through anonymous, sub-domain-resolved endpoints.
+- **Identity tables are not filtered by the model.** Because `Role`/`UserRole`/`UserClaim`/`UserSession` rely on manual scoping, any new query against them must add the `TenantId == User.GetTenantId()` (or `TenantId == null`) predicate itself - the global filter will not save you.
+- **Privilege changes are eventually-consistent (short-lived tokens).** When an admin **removes** a user from a tenant, `RemoveUserFromCurrentTenant` revokes that user's sessions signed into the tenant (deletes them + a SignalR `SESSION_REVOKED` nudge, like `KickOutTenantUsers`), so the removed member cannot refresh back in. When a user **leaves** a tenant themselves, their session is instead re-pointed to their next tenant and the client refreshes immediately (they keep their own access). In every case a JWT is stateless and there is no per-request session/security-stamp check on ordinary API calls, so an *already-issued* access token stays valid until it expires (default 5 minutes) - that residual window is inherent to short-lived JWTs and applies to all privilege changes.
 
 ---
 
