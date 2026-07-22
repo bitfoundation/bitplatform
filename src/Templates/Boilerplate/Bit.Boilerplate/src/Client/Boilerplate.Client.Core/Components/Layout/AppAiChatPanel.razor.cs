@@ -224,6 +224,7 @@ public partial class AppAiChatPanel
         await StartChannel();
     }
 
+    protected override bool CoalesceRenders => true;
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

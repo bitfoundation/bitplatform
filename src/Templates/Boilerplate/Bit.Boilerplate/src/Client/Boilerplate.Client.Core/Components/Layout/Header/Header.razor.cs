@@ -48,6 +48,7 @@ public partial class Header : AppComponentBase
         StateHasChanged();
     }
 
+    protected override bool CoalesceRenders => true;
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

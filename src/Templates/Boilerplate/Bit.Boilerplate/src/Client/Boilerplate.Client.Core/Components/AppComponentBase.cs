@@ -265,8 +265,16 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         await currentCts.TryCancel();
     }
 
+    /// <summary>
+    /// Implemented in the rendering partial (<c>AppComponentBase.Rendering.cs</c>) to release the
+    /// render-coalescing timer on disposal. Keeps that feature's logic fully isolated in its own file.
+    /// </summary>
+    partial void DisposeRenderCoalescing();
+
     public async ValueTask DisposeAsync()
     {
+        DisposeRenderCoalescing();
+
         try
         {
             if (cts != null)
