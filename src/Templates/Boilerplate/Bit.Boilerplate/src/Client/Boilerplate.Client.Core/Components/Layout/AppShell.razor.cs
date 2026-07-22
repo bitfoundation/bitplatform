@@ -74,6 +74,7 @@ public partial class AppShell
         StateHasChanged();
     }
 
+    protected override bool CoalesceRenders => true;
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

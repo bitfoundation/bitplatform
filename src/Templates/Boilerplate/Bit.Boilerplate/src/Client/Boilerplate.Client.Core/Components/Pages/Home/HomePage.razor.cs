@@ -77,4 +77,6 @@ public partial class HomePage
         PubSubService.Publish(ClientAppMessages.SEARCH_PRODUCTS);
     }
     //#endif
+
+    protected override bool CoalesceRenders => true;
 }

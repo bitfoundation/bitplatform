@@ -8,44 +8,46 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     [CascadingParameter(Name = Parameters.IsOnline)] protected bool? IsOnline { get; set; }
     [CascadingParameter] protected Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-    [AutoInject] protected IJSRuntime JSRuntime = default!;
+    [AutoInject] private IServiceProvider serviceProvider = default!;
 
-    [AutoInject] protected IStorageService StorageService = default!;
+    protected IJSRuntime JSRuntime => field ??= serviceProvider.GetRequiredService<IJSRuntime>();
 
-    [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
+    protected IStorageService StorageService => field ??= serviceProvider.GetRequiredService<IStorageService>();
 
-    [AutoInject] protected TimeProvider TimeProvider = default!;
+    protected JsonSerializerOptions JsonSerializerOptions => field ??= serviceProvider.GetRequiredService<JsonSerializerOptions>();
+
+    protected TimeProvider TimeProvider => field ??= serviceProvider.GetRequiredService<TimeProvider>();
 
     /// <summary>
     /// <inheritdoc cref="Infrastructure.Services.PubSubService"/>
     /// </summary>
-    [AutoInject] protected PubSubService PubSubService = default!;
+    protected PubSubService PubSubService => field ??= serviceProvider.GetRequiredService<PubSubService>();
 
-    [AutoInject] protected IConfiguration Configuration = default!;
+    protected IConfiguration Configuration => field ??= serviceProvider.GetRequiredService<IConfiguration>();
 
-    [AutoInject] protected NavigationManager NavigationManager = default!;
+    protected NavigationManager NavigationManager => field ??= serviceProvider.GetRequiredService<NavigationManager>();
 
-    [AutoInject] protected IAuthTokenProvider AuthTokenProvider = default!;
+    protected IAuthTokenProvider AuthTokenProvider => field ??= serviceProvider.GetRequiredService<IAuthTokenProvider>();
 
-    [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
+    protected IStringLocalizer<AppStrings> Localizer => field ??= serviceProvider.GetRequiredService<IStringLocalizer<AppStrings>>();
 
-    [AutoInject] protected ClientExceptionHandlerBase ExceptionHandler = default!;
+    protected ClientExceptionHandlerBase ExceptionHandler => field ??= serviceProvider.GetRequiredService<ClientExceptionHandlerBase>();
 
-    [AutoInject] protected AuthManager AuthManager = default!;
+    protected AuthManager AuthManager => field ??= serviceProvider.GetRequiredService<AuthManager>();
 
-    [AutoInject] protected SnackBarService SnackBarService = default!;
+    protected SnackBarService SnackBarService => field ??= serviceProvider.GetRequiredService<SnackBarService>();
 
-    [AutoInject] protected ITelemetryContext TelemetryContext = default!;
+    protected ITelemetryContext TelemetryContext => field ??= serviceProvider.GetRequiredService<ITelemetryContext>();
 
     /// <summary>
     /// <inheritdoc cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
     /// </summary>
-    [AutoInject] protected IAuthorizationService AuthorizationService = default!;
+    protected IAuthorizationService AuthorizationService => field ??= serviceProvider.GetRequiredService<IAuthorizationService>();
 
     /// <summary>
     /// <inheritdoc cref="AbsoluteServerAddressProvider" />
     /// </summary>
-    [AutoInject] protected AbsoluteServerAddressProvider AbsoluteServerAddress { get; set; } = default!;
+    protected AbsoluteServerAddressProvider AbsoluteServerAddress => field ??= serviceProvider.GetRequiredService<AbsoluteServerAddressProvider>();
 
 
     private CancellationTokenSource? cts = new();
@@ -263,8 +265,16 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         await currentCts.TryCancel();
     }
 
+    /// <summary>
+    /// Implemented in the rendering partial (<c>AppComponentBase.Rendering.cs</c>) to release the
+    /// render-coalescing timer on disposal. Keeps that feature's logic fully isolated in its own file.
+    /// </summary>
+    partial void DisposeRenderCoalescing();
+
     public async ValueTask DisposeAsync()
     {
+        DisposeRenderCoalescing();
+
         try
         {
             if (cts != null)
