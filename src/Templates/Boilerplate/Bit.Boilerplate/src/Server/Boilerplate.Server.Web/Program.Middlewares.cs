@@ -55,16 +55,23 @@ public static partial class Program
                 app.UseDirectoryBrowser();
             }
 
-            app.UseStaticFiles(options: new()
+            app.Use(async (context, next) =>
             {
-                OnPrepareResponse = staticFileResponseContext =>
+                context.Response.OnStarting(async () =>
                 {
-                    if (env.IsDevelopment() is false)
+                    if (env.IsDevelopment())
+                    {
+                        context.Response.GetTypedHeaders().CacheControl = new()
+                        {
+                            NoCache = true
+                        };
+                    }
+                    else
                     {
                         // Caching static files on the Browser and CDN's edge servers.
-                        if (staticFileResponseContext.Context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)))
+                        if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)))
                         {
-                            staticFileResponseContext.Context.Response.GetTypedHeaders().CacheControl = new()
+                            context.Response.GetTypedHeaders().CacheControl = new()
                             {
                                 Public = true,
                                 NoTransform = true,
@@ -72,8 +79,12 @@ public static partial class Program
                             };
                         }
                     }
-                }
+                });
+
+                await next.Invoke();
             });
+
+            app.UseStaticFiles();
 
             // https://yurl.chayev.com/
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/.well-known"), wellKnownApp =>

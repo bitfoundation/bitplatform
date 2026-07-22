@@ -144,7 +144,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     /// <summary>
     /// Handles the process of determining the user's authentication state based on the availability of access and refresh tokens.
-    /// 
+    ///
     /// - If no access / refresh token exists, an anonymous user object is returned to Blazor.
     /// - If an access token exists, a ClaimsPrincipal is created from it regardless of its expiration status. This ensures:
     ///   - Users can access anonymous-allowed pages without unnecessary delays caused by token refresh attempts **during app startup**.
@@ -219,7 +219,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         if (string.IsNullOrEmpty(accessToken))
             return null;
 
-        var isValid = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated();
+        var isValid = await Task.Run(() => IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated());
 
         if (isValid) return accessToken;
 

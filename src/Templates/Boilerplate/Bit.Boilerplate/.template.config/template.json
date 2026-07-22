@@ -543,6 +543,7 @@
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
                         "src/Tests/Infrastructure/Configuration/AppConfigurationBuilderTests.cs",
+                        "src/Tests/Features/PubSub/PubSubServiceTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
