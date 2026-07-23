@@ -141,6 +141,348 @@ describe('fatal install failure', () => {
         await ctx.settle();
         expect(ctx.window.__blazorStarted).toBeUndefined();
     });
+
+    // The error payload must say where the failure landed: the built-in progress UI keys its
+    // take-over decision off firstInstall (panel on a first install, stay out of the way when
+    // a background update fails and the app is running fine on the previous version).
+    it('marks a fatal error on a first install with firstInstall: true', async () => {
+        const ctx = page();
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message(JSON.stringify({ type: 'error', data: { reason: 'manifest', message: 'bad', fatal: true } }));
+        await ctx.settle();
+
+        const [, data] = seen.find(([message]) => message === 'ERROR');
+        expect(data.firstInstall).toBe(true);
+    });
+
+    it('marks a fatal error during an update with firstInstall: false', async () => {
+        // An active worker at registration time is what makes this an update, not a first install.
+        const registration = {
+            active: { postMessage() { } },
+            installing: null, waiting: null,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message(JSON.stringify({ type: 'error', data: { reason: 'install-aborted', message: 'bad', fatal: true } }));
+        await ctx.settle();
+
+        const [, data] = seen.find(([message]) => message === 'ERROR');
+        expect(data.firstInstall).toBe(false);
+    });
+});
+
+// A fake ServiceWorker whose lifecycle the test drives by hand.
+function fakeWorker(state) {
+    const listeners = [];
+    return {
+        state,
+        posted: [],
+        postMessage(message) { this.posted.push(message); },
+        addEventListener(type, fn) { if (type === 'statechange') listeners.push(fn); },
+        fireStateChange() { listeners.forEach(fn => fn({ currentTarget: this })); },
+    };
+}
+
+// The 100% progress message is sent just before the SW's install promise resolves, so when a
+// handler calls reload() the new worker can still be 'installing'. reload() must wait for the
+// state each flow needs instead of racing the lifecycle (the old code picked between a seamless
+// claim, a SKIP_WAITING reload, and a hard reload depending on which instant the message landed).
+describe('reload determinism', () => {
+    const progress100 = JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } });
+
+    it('first install: waits for activation, then claims - no reload on any path', async () => {
+        const installing = fakeWorker('installing');
+        const registration = { active: null, waiting: null, installing, addEventListener() { }, update: async () => { } };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message(progress100);
+        await ctx.settle();
+        const [, finished] = seen.find(([message]) => message === 'DOWNLOAD_FINISHED');
+        finished.reload();
+        await ctx.settle();
+
+        // Still installing: nothing posted anywhere, and crucially no hard reload (the old
+        // code fell through to window.location.reload() exactly here).
+        expect(installing.posted).toEqual([]);
+        expect(ctx.reloads.count).toBe(0);
+
+        // The worker activates - a first install never stays waiting.
+        registration.installing = null;
+        registration.active = installing;
+        installing.state = 'activated';
+        installing.fireStateChange();
+        await ctx.settle();
+
+        expect(installing.posted).toEqual(['CLAIM_CLIENTS']);
+        expect(ctx.reloads.count).toBe(0);
+    });
+
+    it('update: waits for the staged worker instead of claiming the old active one', async () => {
+        const oldActive = fakeWorker('activated');
+        const installing = fakeWorker('installing');
+        const registration = { active: oldActive, waiting: null, installing, addEventListener() { }, update: async () => { } };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message(progress100);
+        await ctx.settle();
+        const [, finished] = seen.find(([message]) => message === 'DOWNLOAD_FINISHED');
+        finished.reload();
+        await ctx.settle();
+
+        // The old worker must never receive CLAIM_CLIENTS: its deleteOldCaches() would wipe
+        // the freshly installed new cache.
+        expect(oldActive.posted).toEqual([]);
+
+        // The new worker finishes installing and is staged.
+        registration.installing = null;
+        registration.waiting = installing;
+        installing.state = 'installed';
+        installing.fireStateChange();
+        await ctx.settle();
+
+        expect(installing.posted).toEqual(['SKIP_WAITING']);
+    });
+
+    it('falls back to a plain reload when no worker is in the pipeline (retry after failure)', async () => {
+        const ctx = page();
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message(JSON.stringify({ type: 'error', data: { reason: 'install-aborted', message: 'x', fatal: true } }));
+        await ctx.settle();
+        const [, err] = seen.find(([message]) => message === 'ERROR');
+        err.reload();
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(1);
+    });
+
+    it('does not announce updateReady while a first install is staging', async () => {
+        const regListeners = {};
+        const installing = fakeWorker('installing');
+        const registration = {
+            active: null, waiting: null, installing,
+            addEventListener: (type, fn) => { (regListeners[type] ||= []).push(fn); },
+            update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        (regListeners.updatefound || []).forEach(fn => fn({}));
+        // The worker reaches 'installed' - transiently the waiting worker on a first install.
+        registration.waiting = installing;
+        installing.state = 'installed';
+        installing.fireStateChange();
+        await ctx.settle();
+
+        // Announcing "an update is staged and ready" here made autoReload handlers post
+        // SKIP_WAITING against a first install, needlessly reloading the page.
+        expect(seen.some(([message]) => message === 'UPDATE_READY')).toBe(false);
+        expect(seen.some(([message]) => message === 'STATE_CHANGED')).toBe(true);
+    });
+
+    it('still announces updateReady when a real update finishes staging', async () => {
+        const regListeners = {};
+        const oldActive = fakeWorker('activated');
+        const installing = fakeWorker('installing');
+        const registration = {
+            active: oldActive, waiting: null, installing,
+            addEventListener: (type, fn) => { (regListeners[type] ||= []).push(fn); },
+            update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        (regListeners.updatefound || []).forEach(fn => fn({}));
+        registration.waiting = installing;
+        installing.state = 'installed';
+        installing.fireStateChange();
+        await ctx.settle();
+
+        expect(seen.some(([message]) => message === 'UPDATE_READY')).toBe(true);
+    });
+
+    it('WAITING_SKIPPED on a first install starts Blazor in place instead of reloading', async () => {
+        const ctx = page();
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message('WAITING_SKIPPED');
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(0);
+        expect(ctx.window.__blazorStarted).toBe(1);
+    });
+
+    it('WAITING_SKIPPED during an update still reloads exactly once', async () => {
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: null,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message('WAITING_SKIPPED');
+        ctx.message('WAITING_SKIPPED'); // a second signal must not reload again
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(1);
+    });
+});
+
+// .NET 9+ templates reference the entry script through @Assets[...] / the ImportMap, which
+// emits a fingerprinted name (_framework/blazor.web.<fingerprint>.js). With autostart="false"
+// a missed match means Blazor is never started - a dead app behind the splash.
+describe('Blazor entry-script detection', () => {
+    function pageWithBlazorSrc(src, extra = {}) {
+        const ctx = page({}, { blazor: false });
+        ctx.addBlazorScriptTag({ src, ...extra });
+        return ctx;
+    }
+
+    async function started(ctx) {
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+        ctx.message('START_BLAZOR'); // drives startBlazor(true) directly
+        await ctx.settle();
+        return ctx.window.__blazorStarted === 1;
+    }
+
+    it('detects the fingerprinted Blazor Web App script', async () => {
+        expect(await started(pageWithBlazorSrc('_framework/blazor.web.bl98zn3vgs.js'))).toBe(true);
+    });
+
+    it('detects the fingerprinted standalone WebAssembly script', async () => {
+        expect(await started(pageWithBlazorSrc('_framework/blazor.webassembly.k3j2h1x9.js'))).toBe(true);
+    });
+
+    it('still detects the plain script with a query string', async () => {
+        expect(await started(pageWithBlazorSrc('_framework/blazor.web.js?v=10.0.0'))).toBe(true);
+    });
+
+    it('does not match lookalike names', async () => {
+        expect(await started(pageWithBlazorSrc('_framework/blazor.website.js'))).toBe(false);
+        expect(await started(pageWithBlazorSrc('_framework/blazor.web.jsx'))).toBe(false);
+    });
+
+    it('still requires autostart="false" on a fingerprinted tag', async () => {
+        expect(await started(pageWithBlazorSrc('_framework/blazor.web.bl98zn3vgs.js', { autostart: 'true' }))).toBe(false);
+    });
+});
+
+describe('Blazor.start() rejection', () => {
+    it('releases the single-start latch so a later trigger can retry', async () => {
+        const ctx = page();
+        let attempts = 0;
+        ctx.window.Blazor = {
+            start: async () => {
+                attempts++;
+                if (attempts === 1) throw new Error('boot resources failed');
+                ctx.window.__blazorStarted = (ctx.window.__blazorStarted || 0) + 1;
+            },
+        };
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message('START_BLAZOR'); // first attempt rejects
+        await ctx.settle();
+        expect(attempts).toBe(1);
+        expect(ctx.window.__blazorStarted).toBeUndefined();
+
+        // Previously blazorStarted stayed stuck at true here, so this returned the same dead
+        // promise and Blazor.start was never reached again.
+        ctx.message('START_BLAZOR');
+        await ctx.settle();
+        expect(attempts).toBe(2);
+        expect(ctx.window.__blazorStarted).toBe(1);
+    });
+
+    it('still never double-starts after a successful start', async () => {
+        const ctx = page();
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message('START_BLAZOR');
+        ctx.message('START_BLAZOR');
+        await ctx.settle();
+
+        expect(ctx.window.__blazorStarted).toBe(1);
+    });
+});
+
+// Best-effort storage can be evicted (disk pressure, Safari's 7-day rule), wiping the whole
+// offline story. persist() is a Window-only API, so the page script owns the request.
+describe('persistent storage', () => {
+    function withStorage(ctx, { persisted = false, grant = true } = {}) {
+        const calls = { persisted: 0, persist: 0 };
+        ctx.window.navigator.storage = {
+            persisted: async () => { calls.persisted++; return persisted; },
+            persist: async () => { calls.persist++; return grant; },
+        };
+        return calls;
+    }
+
+    it('requests persistence at startup when persistStorage="true"', async () => {
+        const ctx = page({ scriptAttributes: { persistStorage: 'true' } });
+        const calls = withStorage(ctx);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        expect(calls.persist).toBe(1);
+    });
+
+    it('does not request persistence by default', async () => {
+        const ctx = page();
+        const calls = withStorage(ctx);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        expect(calls.persist).toBe(0);
+    });
+
+    it('BitBswup.persistStorage() skips the request when already persistent', async () => {
+        const ctx = page();
+        const calls = withStorage(ctx, { persisted: true });
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        expect(await ctx.window.BitBswup.persistStorage()).toBe(true);
+        expect(calls.persist).toBe(0);
+    });
+
+    it('BitBswup.persistStorage() resolves false gracefully when unsupported', async () => {
+        const ctx = page(); // harness navigator has no storage object at all
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        expect(await ctx.window.BitBswup.persistStorage()).toBe(false);
+    });
 });
 
 describe('malformed worker messages', () => {

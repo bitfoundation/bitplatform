@@ -81,6 +81,31 @@ describe('the managed path never rejects', () => {
         expect(response.body).toBe('stale');
     });
 
+    // Hashed assets are keyed `reqUrl.<hash>`, so a raw-URL lookup can never hit them: when
+    // the current-hash entry is missing and the network is down, a previous version's copy of
+    // the same URL is the only thing left that can keep the app alive.
+    it('serves a previous-hash copy when the network is down', async () => {
+        const sw = boot({ config: { isPassive: true }, assets: [{ url: 'app.js', hash: 'sha256-new' }], fetchHandler: NETWORK_DOWN });
+        const cache = await sw.caches.open('bit-bswup - v1');
+        await cache.put(`${ORIGIN}/app.js.sha256-old`, { ok: true, status: 200, body: 'previous-version', clone: () => ({}) });
+
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('previous-version');
+    });
+
+    it('never serves a sibling file (app.js.map / app.js.br) as the stale fallback', async () => {
+        const sw = boot({ config: { isPassive: true }, assets: [{ url: 'app.js', hash: 'sha256-new' }], fetchHandler: NETWORK_DOWN });
+        const cache = await sw.caches.open('bit-bswup - v1');
+        await cache.put(`${ORIGIN}/app.js.map`, { ok: true, status: 200, body: 'a source map', clone: () => ({}) });
+        await cache.put(`${ORIGIN}/app.js.br`, { ok: true, status: 200, body: 'brotli bytes', clone: () => ({}) });
+        await cache.put(`${ORIGIN}/app.js.map.sha256-x`, { ok: true, status: 200, body: 'hashed map', clone: () => ({}) });
+
+        // A hard network error beats silently serving the wrong file's bytes.
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
+        expect(response.type).toBe('error');
+    });
+
     it('returns a network-error response rather than rejecting when nothing is cached', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN });
 
@@ -154,5 +179,62 @@ describe('the managed path never rejects', () => {
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
         expect(handled).toBe(true);
         expect(response.body).toBe('stale');
+    });
+});
+
+// A miss in active mode means the asset failed to precache during a lax install or its cache
+// entry was evicted. Install does not re-run until the next update, so the fetch path is the
+// only chance to get the asset back into the cache - the documented lax semantics ("missing
+// assets are filled in lazily on the first fetch" in both modes) depend on this write-back.
+describe('active mode lazily heals the cache', () => {
+    const managed = { url: 'app.js', hash: 'h1' };
+    const networkResponse = () =>
+        ({ ok: true, status: 200, body: 'from-network', clone: () => ({ ok: true, status: 200, body: 'from-network' }) });
+
+    it('writes a cache-miss response back under the hash-suffixed key', async () => {
+        const sw = boot({ config: { isPassive: false }, assets: [managed], fetchHandler: async () => networkResponse() });
+
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('from-network');
+        expect(sw.caches.snapshot()['bit-bswup - v1']).toContain(`${ORIGIN}/app.js.h1`);
+
+        // The healed entry now serves offline: the second request never touches the network.
+        const again = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
+        expect(again.response.body).toBe('from-network');
+        expect(sw.fetchLog.length).toBe(1);
+    });
+
+    it('does not cache non-ok responses', async () => {
+        const sw = boot({
+            config: { isPassive: false },
+            assets: [managed],
+            fetchHandler: async () => ({ ok: false, status: 404, body: 'nope', clone: () => ({}) }),
+        });
+
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
+        expect(response.status).toBe(404); // passed through to the page untouched
+        expect(sw.caches.snapshot()['bit-bswup - v1'] || []).toHaveLength(0);
+    });
+
+    // A cross-origin externalAssets host without CORS headers rejects the worker's cors-mode
+    // request; the page's own no-cors request (a script/img tag) succeeds with an opaque
+    // response. That opaque response must be cached - it is the asset's only offline story.
+    it('lazily caches the opaque response of a cross-origin asset', async () => {
+        const CDN = 'https://cdn.example.com/lib.js';
+        const sw = boot({
+            config: { isPassive: true },
+            assets: [],
+            fetchHandler: (url, req) => {
+                if (req && req.mode === 'no-cors') return { ok: false, status: 0, type: 'opaque', body: 'opaque-bytes', clone: () => ({ type: 'opaque', body: 'opaque-bytes' }) };
+                throw new TypeError('Failed to fetch');
+            },
+            configure: c => { c.self.externalAssets = c.array([{ url: CDN }]); },
+        });
+
+        const { handled, response } = await sw.fetchEvent({ url: CDN, mode: 'no-cors' });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('opaque-bytes');
+        expect(sw.caches.snapshot()['bit-bswup - v1']).toContain(CDN);
     });
 });

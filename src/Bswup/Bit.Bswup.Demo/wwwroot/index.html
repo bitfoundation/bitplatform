@@ -111,12 +111,16 @@
                     return console.log('downloading assets started:', data?.version);
 
                 case BswupMessage.downloadProgress:
+                    // Built with textContent (not innerHTML) so asset names can never be
+                    // parsed as markup - the same hardening as the bundled progress script.
                     const li = document.createElement('li');
-                    li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
+                    const urlEl = document.createElement('b');
+                    urlEl.textContent = data.asset.url;
+                    li.append(`${data.index}: `, urlEl, `: ${data.asset.hash}`);
                     assetsUl.prepend(li);
                     const percent = Math.round(data.percent);
                     progressBar.style.width = `${percent}%`;
-                    percentLabel.innerHTML = `${percent} %`;
+                    percentLabel.textContent = `${percent} %`;
                     return console.log('asset downloaded:', data);
 
                 case BswupMessage.downloadFinished:

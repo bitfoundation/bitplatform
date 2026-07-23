@@ -124,6 +124,27 @@ describe('error handling', () => {
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('none');
     });
 
+    it('clears the download splash instead of hijacking a running app when an update fails', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        // An update download was underway - the splash is visible mid-progress.
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 47, index: 9, asset: { url: 'a.js' } });
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+
+        ctx.window.bitBswupHandler('ERROR', { reason: 'install-aborted', message: 'update failed', fatal: true, firstInstall: false });
+
+        // The app keeps running on the previous version: no failure panel, the splash is not
+        // left frozen at 47%, and no button invites the user to activate the failed update.
+        expect(ctx.elements['bit-bswup-error'].style.display).not.toBe('block');
+        expect(ctx.elements['bit-bswup'].style.display).toBe('none');
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('none');
+    });
+
+    it('still shows the failure panel when a first install fails (firstInstall: true)', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('ERROR', { reason: 'install-aborted', message: 'first install failed', fatal: true, firstInstall: true });
+        expect(ctx.elements['bit-bswup-error'].style.display).toBe('block');
+    });
+
     it('hides Retry for deterministic failures that a reload cannot fix', () => {
         const ctx = progressPage({ elements: fullSplash });
         ctx.window.bitBswupHandler('ERROR', { reason: 'manifest', message: 'malformed', fatal: true });
@@ -138,6 +159,29 @@ describe('error handling', () => {
 });
 
 describe('update ready', () => {
+    // CHANGED in 10.5.0: an unprompted reload discards the user's in-page state, so updates
+    // now default to the prompt-then-reload pattern; auto-reload is opt-in.
+    it('defaults to the manual reload button, not an automatic reload', () => {
+        const ctx = progressPage({ elements: fullSplash }); // no auto-reload attribute anywhere
+
+        let reloaded = 0;
+        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => { reloaded++; return Promise.resolve(); } });
+
+        expect(reloaded).toBe(0);
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+    });
+
+    it('honors an explicit data-bit-bswup-auto-reload="true"', () => {
+        const ctx = progressPage({
+            elements: { ...fullSplash, 'bit-bswup': { 'data-bit-bswup-config': 'true', 'data-bit-bswup-auto-reload': 'true' } },
+        });
+
+        let reloaded = 0;
+        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => { reloaded++; return Promise.resolve(); } });
+
+        expect(reloaded).toBe(1);
+    });
+
     it('wires the reload button when autoReload is off', () => {
         const ctx = progressPage({ elements: fullSplash });
         ctx.window.BitBswupProgress.config({ autoReload: false });

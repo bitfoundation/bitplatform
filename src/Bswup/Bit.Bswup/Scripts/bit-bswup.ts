@@ -1,5 +1,5 @@
-var BitBswup = BitBswup || {};
-BitBswup.version = window['bit-bswup version'] = '10.5.0';
+var BitBswup: any = BitBswup || {};
+BitBswup.version = (window as any)['bit-bswup version'] = '10.5.0';
 
 // Idempotency guard. bit-bswup.js wires up a DOMContentLoaded handler (and through it
 // the service-worker registration, event listeners, update timers and reload handlers)
@@ -11,6 +11,37 @@ BitBswup.version = window['bit-bswup version'] = '10.5.0';
 // installed by the first load. Run the setup exactly once; later inclusions are a no-op.
 if (!BitBswup.initialized) {
     BitBswup.initialized = true;
+
+    // Requests durable (eviction-resistant) storage for this origin via
+    // navigator.storage.persist() and resolves with whether it is now persistent. Best-effort
+    // storage - the default - can be reclaimed by the browser under disk pressure, and Safari
+    // erases all storage for a site after 7 days without interaction; either wipes the Bswup
+    // caches and with them the whole offline capability. persist() only exists on Window (the
+    // spec does not expose it to workers), which is why this lives in the page script. Calling
+    // it from a user gesture (a login, an "install app" button) has the best grant odds; the
+    // `persistStorage` script-tag attribute automates a startup-time request instead. Already
+    // -persistent origins resolve true without re-prompting; unsupported browsers resolve
+    // false with a console warning.
+    //
+    // Defined BEFORE the setup IIFE below, unlike the other BitBswup.* APIs: runBswup runs
+    // synchronously inside that IIFE when the document has already loaded, and the
+    // persistStorage option calls this function during that run.
+    BitBswup.persistStorage = async (): Promise<boolean> => {
+        try {
+            const storage = (navigator as any).storage;
+            if (!storage || typeof storage.persist !== 'function') {
+                console.warn('BitBswup: persistent storage is not supported by this browser.');
+                return false;
+            }
+
+            if (typeof storage.persisted === 'function' && await storage.persisted()) return true;
+
+            return !!(await storage.persist());
+        } catch (err) {
+            console.warn('BitBswup: persistent storage request failed', err);
+            return false;
+        }
+    }
 
     (function () {
         // Level ordering (lowest priority first). A message is logged when its
@@ -68,6 +99,20 @@ if (!BitBswup.initialized) {
 
             startBlazor();
 
+            if (options.persistStorage) {
+                // Opt-in: ask the browser to make this origin's storage durable. Without it the
+                // entire offline story sits in *best-effort* storage: under disk pressure
+                // browsers reclaim CacheStorage silently, and Safari deletes ALL storage for a
+                // site not interacted with for 7 days - the user comes back offline to an app
+                // that simply no longer boots. Opt-in rather than default because the request
+                // can show a permission prompt (Firefox) and grant odds are engagement-based
+                // elsewhere; for better odds an app can leave this off and call
+                // BitBswup.persistStorage() itself at a higher-signal moment (after login,
+                // from an "install app" action).
+                BitBswup.persistStorage().then((granted: boolean) =>
+                    granted ? info('persistent storage granted.') : warn('persistent storage was not granted - cached assets remain evictable.'));
+            }
+
             let reload: () => Promise<void>;
             let cleanup: () => void;
             let blazorStartResolver: (value: unknown) => void;
@@ -77,6 +122,7 @@ if (!BitBswup.initialized) {
             // reg.update() against the same registration without re-resolving it each time.
             let registration: ServiceWorkerRegistration;
             let updateTimer: ReturnType<typeof setInterval>;
+            let visibilityHandler: (() => void) | undefined;
 
             // Guards against reloading more than once. A single update can surface through
             // several channels (the 'WAITING_SKIPPED' message to the initiating tab and a
@@ -151,7 +197,7 @@ if (!BitBswup.initialized) {
                     });
             }
 
-            function prepareRegistration(reg) {
+            function prepareRegistration(reg: ServiceWorkerRegistration) {
                 // Capture the install/update discriminator exactly once, at the moment the
                 // registration resolves. reg.active being set here means a previous version
                 // was already installed => this is an update; otherwise it's a first install.
@@ -167,29 +213,93 @@ if (!BitBswup.initialized) {
                 // now that we have a live registration to work against.
                 BitBswup.checkForUpdate = checkForUpdate;
 
+                // reload() is handed to downloadFinished/updateReady/error handlers and must be
+                // deterministic. The 100% progress message is sent just before the SW's install
+                // promise resolves, so at the moment a caller reacts the new worker can still be
+                // in 'installing' - the previous implementation read reg.waiting/reg.active at
+                // that instant and picked between three different behaviors by racing the
+                // lifecycle:
+                //   - update:        a not-yet-waiting worker fell through to posting
+                //                    CLAIM_CLIENTS at the OLD active worker, whose
+                //                    deleteOldCaches() then wiped the freshly installed cache;
+                //   - first install: 'installing' meant a hard window.location.reload(), and a
+                //                    transiently-waiting worker meant SKIP_WAITING - both full
+                //                    reloads where the designed flow (claim + start Blazor, no
+                //                    reload) only happened when the activation race was won.
+                // Instead, wait for the worker to reach the state each flow actually needs.
                 reload = () => {
-                    // An update is staged (a new worker finished installing and is waiting).
-                    // Tell it to skip waiting; the resulting 'WAITING_SKIPPED' message triggers
-                    // the page reload. We deliberately keep the returned promise *pending*: the
-                    // page is about to navigate away, so resolving early would let callers run
-                    // teardown (e.g. hiding the splash) against a page that's already reloading.
-                    if (reg.waiting) {
-                        reg.waiting.postMessage('SKIP_WAITING');
+                    // Update: wait until the new worker is staged (waiting), then tell it to
+                    // skip waiting; the resulting 'WAITING_SKIPPED' message (and the
+                    // 'controllerchange' after the claim) reloads the page. The returned promise
+                    // is deliberately kept *pending*: the page is about to navigate away, so
+                    // resolving early would let callers run teardown (e.g. hiding the splash)
+                    // against a page that's already reloading.
+                    if (hadActiveWorkerAtStartup) {
+                        whenStaged().then((waiting) => {
+                            if (waiting) {
+                                waiting.postMessage('SKIP_WAITING');
+                            } else {
+                                // Nothing staged and nothing installing (e.g. the Retry button
+                                // after a failed update install): a plain reload re-checks for
+                                // the update and retries it.
+                                window.location.reload();
+                            }
+                        });
                         return new Promise<void>(() => { });
                     }
 
-                    // First install: a worker is active but not yet controlling this page.
-                    // Ask it to claim clients; once 'CLIENTS_CLAIMED' arrives we start Blazor
-                    // and resolve this promise so callers can finalize (e.g. hide the splash).
-                    if (reg.active) {
-                        reg.active.postMessage('CLAIM_CLIENTS');
-                        return new Promise<void>((res) => blazorStartResolver = res as (value: unknown) => void);
-                    }
-
-                    // No worker to coordinate with - fall back to a plain reload.
-                    window.location.reload();
-                    return new Promise<void>(() => { });
+                    // First install: wait for activation (immediate once install completes - with
+                    // no previous worker and no controlled clients the browser never leaves the
+                    // worker waiting), then ask it to claim this page; once 'CLIENTS_CLAIMED'
+                    // arrives we start Blazor and resolve this promise so callers can finalize
+                    // (e.g. hide the splash) - no reload anywhere on this path.
+                    return new Promise<void>((res) => {
+                        blazorStartResolver = res as (value: unknown) => void;
+                        whenActive().then((worker) => {
+                            if (worker) {
+                                worker.postMessage('CLAIM_CLIENTS');
+                            } else {
+                                // No worker in the pipeline at all (e.g. the Retry button after
+                                // a fatal first-install failure): reload to retry the install.
+                                window.location.reload();
+                            }
+                        });
+                    });
                 };
+
+                // Resolves once the registration has a worker staged and waiting (state
+                // 'installed'), or with null when there is nothing to wait for - no installing
+                // worker, or the install failed and the worker went redundant.
+                function whenStaged(): Promise<ServiceWorker | null> {
+                    if (reg.waiting) return Promise.resolve(reg.waiting);
+
+                    const installing = reg.installing;
+                    if (!installing) return Promise.resolve(null);
+
+                    return new Promise((resolve) => {
+                        installing.addEventListener('statechange', () => {
+                            if (reg.waiting) return resolve(reg.waiting);
+                            if (installing.state === 'redundant') return resolve(null);
+                        });
+                    });
+                }
+
+                // Resolves once the registration's worker holds the active slot ('activating'
+                // is enough - clients.claim() only requires being the active worker), or with
+                // null when there is no worker in the pipeline / it went redundant.
+                function whenActive(): Promise<ServiceWorker | null> {
+                    if (reg.active) return Promise.resolve(reg.active);
+
+                    const pending = reg.waiting || reg.installing;
+                    if (!pending) return Promise.resolve(null);
+
+                    return new Promise((resolve) => {
+                        pending.addEventListener('statechange', () => {
+                            if (reg.active) return resolve(reg.active);
+                            if (pending.state === 'redundant') return resolve(null);
+                        });
+                    });
+                }
 
                 cleanup = () => {
                     // Stop the opt-in update-poll timer so it doesn't keep calling
@@ -198,6 +308,10 @@ if (!BitBswup.initialized) {
                     if (updateTimer) {
                         clearInterval(updateTimer);
                         updateTimer = undefined as any;
+                    }
+                    if (visibilityHandler) {
+                        document.removeEventListener('visibilitychange', visibilityHandler);
+                        visibilityHandler = undefined;
                     }
                     reg.waiting?.postMessage('CLEAN_UP');
                     reg.active?.postMessage('CLEAN_UP');
@@ -226,7 +340,7 @@ if (!BitBswup.initialized) {
                     }
                 }
 
-                reg.addEventListener('updatefound', function (e) {
+                reg.addEventListener('updatefound', function (e: any) {
                     info('update found', e);
                     handle(BswupMessage.updateFound, e);
 
@@ -235,17 +349,26 @@ if (!BitBswup.initialized) {
                         return;
                     }
 
-                    reg.installing.addEventListener('statechange', function (e) {
+                    reg.installing.addEventListener('statechange', function (e: any) {
                         debug('state changed', e, 'eventPhase:', e.eventPhase, 'currentTarget.state:', e.currentTarget.state);
                         handle(BswupMessage.stateChanged, e);
 
                         if (!reg.waiting) return;
 
-                        if (hadActiveWorkerAtStartup) {
-                            info('update finished.'); // not first install
-                        } else {
-                            info('initialization finished.'); // first install
+                        if (!hadActiveWorkerAtStartup) {
+                            // First install: the worker only passes through 'installed' (waiting)
+                            // transiently - with no previous worker and no controlled clients the
+                            // browser activates it immediately. This is NOT "an update is staged
+                            // and ready": emitting updateReady here made autoReload handlers post
+                            // SKIP_WAITING against a first install, turning the seamless
+                            // claim-and-start flow into a needless full page reload whenever this
+                            // race was won. Completion of a first install is signalled by
+                            // downloadFinished instead.
+                            info('initialization finished.');
+                            return;
                         }
+
+                        info('update finished.');
 
                         // Notify listeners that an update is staged and ready. The
                         // registration-time check only fires updateReady for updates already
@@ -256,7 +379,7 @@ if (!BitBswup.initialized) {
                 });
             }
 
-            function handleControllerChange(e) {
+            function handleControllerChange(e: any) {
                 info('controller changed.', e);
 
                 // A new service worker has taken control of this page. This fires in three
@@ -295,16 +418,25 @@ if (!BitBswup.initialized) {
                 window.location.reload();
             }
 
-            function handleMessage(e) {
+            function handleMessage(e: any) {
                 if (e.data === 'START_BLAZOR') {
                     startBlazor(true);
                     return;
                 }
 
                 if (e.data === 'WAITING_SKIPPED') {
-                    // The worker we asked to skip waiting has activated. Reload to pick up the
-                    // new version. reloadOnce() coordinates with the 'controllerchange' that
-                    // also fires once the new worker claims this client, so we reload only once.
+                    // The worker we asked to skip waiting has activated and claimed this page.
+                    // On a first install (reachable via an explicit BitBswup.skipWaiting() call)
+                    // there is no old version to swap out - a reload would only restart the
+                    // splash - so start Blazor in place instead; startBlazorCore is idempotent,
+                    // making this a no-op when the app is already running. For an update, reload
+                    // to pick up the new version. reloadOnce() coordinates with the
+                    // 'controllerchange' that also fires once the new worker claims this client,
+                    // so we reload only once.
+                    if (!hadActiveWorkerAtStartup) {
+                        startBlazor(true);
+                        return;
+                    }
                     reloadOnce();
                     return;
                 }
@@ -388,7 +520,13 @@ if (!BitBswup.initialized) {
 
                 if (type === 'error') {
                     error('install error:', data);
-                    handle(BswupMessage.error, { ...data, reload });
+                    // firstInstall tells handlers (and the built-in progress UI) whether this
+                    // failure happened before the app ever booted - where the splash is the
+                    // whole UI and a failure panel is the right response - or during a
+                    // background update, where the previous worker keeps serving a healthy
+                    // running app that must not be covered by an install-failure panel. Same
+                    // discriminator the downloadFinished payload already carries.
+                    handle(BswupMessage.error, { ...data, reload, firstInstall: !hadActiveWorkerAtStartup });
 
                     // Last-resort boot guarantee. A fatal failure means the install aborted, so
                     // this worker never reaches 'active'. On a *first* install that is fatal to
@@ -442,12 +580,14 @@ if (!BitBswup.initialized) {
 
                 if (options.updateOnVisibility) {
                     info('update-on-visibility enabled.');
-                    document.addEventListener('visibilitychange', () => {
+                    // Kept referenceable so cleanup() can remove it, same as the poll timer.
+                    visibilityHandler = () => {
                         if (document.visibilityState === 'visible') {
                             verbose('tab became visible - checking for update.');
                             checkForUpdate();
                         }
-                    });
+                    };
+                    document.addEventListener('visibilitychange', visibilityHandler);
                 }
             }
 
@@ -521,24 +661,71 @@ if (!BitBswup.initialized) {
                     error('Blazor.start() threw', err);
                     return undefined;
                 }
+
+                // An async rejection must release the single-start latch just like the
+                // synchronous throw above. Without this, a rejected start (a boot-resource
+                // fetch that failed, a bad boot config) left blazorStarted stuck at true, so
+                // every later trigger - the fatal-error force-start, START_BLAZOR,
+                // WAITING_SKIPPED on a first install - got the same dead promise back and the
+                // app could never try again without a full reload. A failed start leaves the
+                // Blazor runtime unbooted, so calling Blazor.start() again is a legitimate
+                // retry (the "start may only be called once" rule applies to a runtime that
+                // actually started); retrying is exactly what recovers a transient network
+                // blip during boot-resource download. Callers still observe the rejection on
+                // the promise returned below - this branch only resets the latch.
+                blazorStartPromise.catch((err) => {
+                    error('Blazor.start() rejected - releasing the start latch so a later trigger can retry.', err);
+                    blazorStarted = false;
+                    blazorStartPromise = undefined;
+                });
+
                 return blazorStartPromise;
             }
 
+            // Whether a <script src> refers to the given Blazor entry-point script. A plain
+            // substring test used to be enough, but .NET 9+ templates reference the script
+            // through @Assets["_framework/blazor.web.js"] / the ImportMap, which emits a
+            // fingerprinted name (_framework/blazor.web.<fingerprint>.js) that no longer
+            // contains the literal candidate - and with autostart="false" a missed match means
+            // Blazor is NEVER started: a dead app behind the splash. Accept an optional
+            // `.fingerprint` segment between the file name and its extension, and require the
+            // extension to end the path (or be followed by a query/fragment, e.g. the
+            // `blazor.web.js?v=10.0.0` form) so lookalikes such as `blazor.website.js` or
+            // `blazor.web.jsx` never match. The mandatory '.' before the fingerprint is also
+            // what keeps the `blazor.web.js` candidate from matching `blazor.webassembly.js`.
+            // Candidates without an extension keep the original substring semantics.
+            function matchesBlazorScript(src: string, candidate: string): boolean {
+                if (!candidate) return false;
+
+                const dotIndex = candidate.lastIndexOf('.');
+                if (dotIndex <= 0) return src.indexOf(candidate) !== -1;
+
+                const base = candidate.slice(0, dotIndex);   // e.g. '_framework/blazor.web'
+                const extension = candidate.slice(dotIndex); // e.g. '.js'
+                const pattern = new RegExp(escapeForRegExp(base) + '(\\.[\\w-]+)?' + escapeForRegExp(extension) + '(?=$|[?#])');
+                return pattern.test(src);
+            }
+
+            function escapeForRegExp(str: string): string {
+                return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
             function startBlazor(forceStart = false): Promise<unknown> | undefined {
-                const scriptTags = [].slice.call(document.scripts);
+                const scriptTags = [].slice.call(document.scripts) as HTMLScriptElement[];
 
                 // `blazorScript` may be a single path (explicitly configured) or a list
                 // of candidates to auto-detect. Normalize to an array and match the first
-                // script tag whose src contains any of the candidates.
+                // script tag whose src matches any of the candidates (fingerprint-tolerant,
+                // see matchesBlazorScript above).
                 const candidates = Array.isArray(options.blazorScript) ? options.blazorScript : [options.blazorScript];
 
-                const blazorWasmScriptTag = scriptTags.find(s => s.src && candidates.some(c => s.src.indexOf(c) !== -1));
+                const blazorWasmScriptTag = scriptTags.find(s => s.src && candidates.some(c => matchesBlazorScript(s.src, c)));
                 if (!blazorWasmScriptTag) {
                     warn(`blazor script (${candidates.join(' or ')}) not found!`);
                     return undefined;
                 }
 
-                const autostart = blazorWasmScriptTag.attributes['autostart'];
+                const autostart = (blazorWasmScriptTag as any).attributes['autostart'];
                 if (!autostart || autostart.value !== 'false') {
                     warn('no "autostart=false" found on the blazor script tag!');
                     return undefined;
@@ -593,6 +780,9 @@ if (!BitBswup.initialized) {
                 const updateOnVisibilityAttribute = attrs['updateOnVisibility'];
                 if (updateOnVisibilityAttribute) options.updateOnVisibility = updateOnVisibilityAttribute.value === 'true';
 
+                const persistStorageAttribute = attrs['persistStorage'];
+                if (persistStorageAttribute) options.persistStorage = persistStorageAttribute.value === 'true';
+
                 return options;
             }
 
@@ -604,7 +794,7 @@ if (!BitBswup.initialized) {
                 // - a load-order race between the two scripts. Re-resolving each time the
                 // handler is still missing lets a late-registered handler take effect.
                 if (!options.handler || typeof options.handler !== 'function') {
-                    const resolved = window[options.handlerName];
+                    const resolved = (window as any)[options.handlerName];
                     if (typeof resolved === 'function') {
                         options.handler = resolved;
                     } else {
@@ -613,7 +803,7 @@ if (!BitBswup.initialized) {
                     }
                 }
 
-                options.handler(...args);
+                options.handler!(...args);
             }
 
             function shouldLog(level: 'error' | 'warn' | 'info' | 'verbose' | 'debug'): boolean {
@@ -739,7 +929,7 @@ if (!BitBswup.initialized) {
 // declared with the `||` idempotent pattern - instead of `const` - so a duplicate inclusion
 // of bit-bswup.js doesn't throw a "BswupMessage has already been declared" redeclaration
 // error before the guard can take effect.
-var BswupMessage = BswupMessage || {
+var BswupMessage: any = BswupMessage || {
     downloadStarted: 'DOWNLOAD_STARTED',
     downloadProgress: 'DOWNLOAD_PROGRESS',
     downloadFinished: 'DOWNLOAD_FINISHED',
@@ -772,5 +962,6 @@ interface BswupOptions {
     blazorScript: string | string[]
     updateInterval?: number
     updateOnVisibility?: boolean
+    persistStorage?: boolean
     handler?(...args: any[]): void
 }

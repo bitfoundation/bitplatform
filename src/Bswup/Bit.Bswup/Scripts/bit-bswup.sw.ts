@@ -18,7 +18,7 @@ interface BitBswupGlobals {
     assetsExclude: any            // RegExp(s) of asset URLs to skip
     externalAssets: any           // additional assets to cache; each entry is either an exact asset (string / { url }) precached on install, or a RegExp pattern ({ url: /re/ } or a bare /re/) that lazily caches server-generated URLs unknown ahead of time (e.g. resource-collection.<hash>.js)
     defaultUrl: any               // document served for navigation requests (SPA fallback)
-    assetsUrl: any                // path to service-worker-assets.js (default '/service-worker-assets.js')
+    assetsUrl: any                // path to service-worker-assets.js (default 'service-worker-assets.js', resolved against the service-worker's own location)
     prohibitedUrls: any           // RegExp(s) that must always be answered with 403
     caseInsensitiveUrl: any       // match asset URLs case-insensitively
     serverHandledUrls: any        // RegExp(s) bypassed straight to the network (server owns them)
@@ -62,7 +62,14 @@ interface Event {
 
 diagGroup('bit-bswup');
 
-const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/service-worker-assets.js';
+// Resolved by importScripts against the worker's own location - the directory containing the
+// app's service-worker.js, which is also where Blazor publishes service-worker-assets.js - so
+// the relative default works for root-mounted apps and apps mounted on a sub-path
+// (https://host/myapp/) alike. Versions before 10.5.0 defaulted to the root-absolute
+// '/service-worker-assets.js', which pointed a sub-path app at the wrong path and failed its
+// install with a 'manifest' error unless assetsUrl was set explicitly - even though the page
+// script goes out of its way (the scope-fallback retry) to keep sub-path apps working.
+const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : 'service-worker-assets.js';
 
 diag('ASSETS_URL:', ASSETS_URL);
 
@@ -116,10 +123,22 @@ const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_VERSION = (typeof self.cacheVersion === 'string' && self.cacheVersion) || VERSION;
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${CACHE_VERSION}`;
 
+// Applies one preset default: fills a setting ONLY when the app left it undefined, so an
+// explicit assignment made before importScripts always wins - including falsy ones. `||=` is
+// the wrong tool for this (it also overwrites legitimate falsy config: an explicit
+// `caseInsensitiveUrl = false` came back true, `noPrerenderQuery = ''` came back
+// 'no-prerender=true', and isPassive - previously a bare assignment - was clobbered outright).
+// `??=` would express the intent directly, but it is ES2021 syntax and this bundle targets
+// ES2019 (see BswupJsTarget in the csproj).
+function presetDefault(key: string, value: any) {
+    if ((self as any)[key] === undefined) (self as any)[key] = value;
+}
+
 // Named presets that expand into a coherent bundle of the individual self.* settings, so an
 // app can pick a caching strategy with a single `mode` value instead of wiring each flag.
-// The comment beside each case names a representative app using that strategy. Every preset
-// uses ||= so any value the app set explicitly still wins over the preset default.
+// The comment beside each case names a representative app using that strategy. Entries whose
+// preset value is falsy (forcePrerender: false, noPrerenderQuery: '') are behaviorally no-ops;
+// they are kept anyway so each case reads as the complete bundle it configures.
 switch (self.mode) {
     // NoPrerender (e.g. adminpanel) and InitialPrerender (e.g. todo) share the same
     // service-worker preset: passive caching, no forced prerender, lax tolerance, and the
@@ -129,28 +148,28 @@ switch (self.mode) {
     // byte-identical copies were a copy-paste drift hazard).
     case 'NoPrerender':
     case 'InitialPrerender':
-        self.isPassive = true;
-        self.defaultUrl ||= "/";
-        self.forcePrerender ||= false;
-        self.errorTolerance ||= 'lax';
-        self.caseInsensitiveUrl ||= true;
-        self.noPrerenderQuery ||= 'no-prerender=true';
+        presetDefault('isPassive', true);
+        presetDefault('defaultUrl', '/');
+        presetDefault('forcePrerender', false);
+        presetDefault('errorTolerance', 'lax');
+        presetDefault('caseInsensitiveUrl', true);
+        presetDefault('noPrerenderQuery', 'no-prerender=true');
         break;
     case 'AlwaysPrerender': // like sales
-        self.isPassive = true;
-        self.defaultUrl ||= "/";
-        self.forcePrerender ||= true;
-        self.errorTolerance ||= 'lax';
-        self.caseInsensitiveUrl ||= true;
-        self.noPrerenderQuery ||= '';
+        presetDefault('isPassive', true);
+        presetDefault('defaultUrl', '/');
+        presetDefault('forcePrerender', true);
+        presetDefault('errorTolerance', 'lax');
+        presetDefault('caseInsensitiveUrl', true);
+        presetDefault('noPrerenderQuery', '');
         break;
     case 'FullOffline': // like todo-offline
-        self.isPassive = false;
-        self.defaultUrl ||= "/";
-        self.forcePrerender ||= false;
-        self.errorTolerance ||= 'lax';
-        self.caseInsensitiveUrl ||= true;
-        self.noPrerenderQuery ||= '';
+        presetDefault('isPassive', false);
+        presetDefault('defaultUrl', '/');
+        presetDefault('forcePrerender', false);
+        presetDefault('errorTolerance', 'lax');
+        presetDefault('caseInsensitiveUrl', true);
+        presetDefault('noPrerenderQuery', '');
         break;
 }
 
@@ -241,7 +260,10 @@ async function handleActivate(e: any) {
     // open and the user accepts an update, the SKIP_WAITING flow deletes old caches *after*
     // claiming clients (so they reload onto the new version first) instead.
     try {
-        const windowClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        // Scope-filtered deliberately: only clients under this registration's scope can be
+        // relying on our caches, so a sibling app's open tabs on the same origin must not
+        // defer the pruning forever.
+        const windowClients = await matchScopeClients();
         if (windowClients.length === 0) {
             diag('activate - no open window clients; pruning old caches.');
             await deleteOldCaches();
@@ -256,6 +278,11 @@ async function handleActivate(e: any) {
 // ============================================================================
 
 const DEFAULT_URL = (typeof self.defaultUrl === 'string') ? self.defaultUrl : 'index.html';
+// Resolved form of DEFAULT_URL, used to pair it with the asset that serves as the SPA default
+// document (see uniqueAssets). Comparing resolved URLs instead of raw strings lets equivalent
+// spellings match - 'index.html' vs '/index.html' on a root-mounted app - instead of silently
+// losing the default document (and with it offline navigation) to a formatting difference.
+const DEFAULT_REQ_URL = (() => { try { return new Request(DEFAULT_URL).url; } catch { return DEFAULT_URL; } })();
 const PROHIBITED_URLS = prepareRegExpArray(self.prohibitedUrls);
 const SERVER_HANDLED_URLS = prepareRegExpArray(self.serverHandledUrls);
 const SERVER_RENDERED_URLS = prepareRegExpArray(self.serverRenderedUrls);
@@ -300,6 +327,18 @@ const UNIQUE_ASSETS = uniqueAssets(ALL_ASSETS);
 
 diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 
+// A missing default asset silently disables offline navigation: every navigate request is
+// answered with the SPA default document, resolved by comparing defaultUrl and each asset's
+// declared url as *resolved* URLs - and when nothing matches, handleFetch just quietly passes
+// navigations through to the network, so the app looks fine online and only fails in the
+// field, offline. Surface the misconfiguration loudly at startup instead. The common cause is
+// a Blazor Web app whose manifest has no 'index.html' entry at all (pair `self.defaultUrl =
+// '/'` with `self.externalAssets = [{ url: '/' }]`). Irrelevant under forcePrerender, where
+// navigations are deliberately left to the server.
+if (MANIFEST_VALID && !self.forcePrerender && !UNIQUE_ASSETS.some(a => a.isDefault)) {
+    console.warn(`BitBswup SW: defaultUrl ('${DEFAULT_URL}') matches no asset - navigations will NOT be served from cache and the app will not work offline. Point self.defaultUrl at an entry that exists in service-worker-assets.js / externalAssets (e.g. self.defaultUrl = '/' together with self.externalAssets = [{ url: '/' }]).`);
+}
+
 diagGroupEnd();
 
 // Runtime request router. For every GET this decides whether to serve the request from the
@@ -309,9 +348,11 @@ diagGroupEnd();
 //      forcePrerender is on (then the server owns the HTML).
 //   3. Resolve the request to an asset by testing each asset's (RegExp) url against it.
 //   4. Serve the asset from cache. On a cache miss the response is fetched from the network and
-//      lazily written to the cache (in passive mode, and always for non-precacheable RegExp
-//      pattern assets like resource-collection.<hash>.js); in active mode a precached asset that
-//      misses simply goes to the network. Hash-less assets carry no version to diff, so they are
+//      lazily written back to the cache in every mode: passive mode and pattern assets (e.g.
+//      resource-collection.<hash>.js) fetch with the versioned request, and in active mode a
+//      precached asset that misses fetches with the page's own request but is still cached, so
+//      an asset that failed during a lax install (or was evicted) becomes available offline
+//      after its first successful fetch. Hash-less assets carry no version to diff, so they are
 //      re-downloaded on every update (see createAssetsCache), not on every request.
 //
 // THIS FUNCTION IS DELIBERATELY SYNCHRONOUS. respondWith() is a commitment: the moment it is
@@ -371,7 +412,9 @@ function handleFetch(e: any) {
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url));
     const shouldServeDefaultDoc = (req.mode === 'navigate') && !isServerRendered && !self.forcePrerender;
 
-    const start = new Date().toISOString();
+    // Only materialized when fetch diagnostics are on: this runs on EVERY request the worker
+    // sees, and allocating a Date + ISO string per fetch is pure waste when nothing logs it.
+    const start = self.enableFetchDiagnostics ? new Date().toISOString() : '';
 
     // Every asset's `url` is a RegExp (uniqueAssets converts concrete string URLs to anchored,
     // query-tolerant patterns and keeps externalAssets RegExp entries as-is), so matching is a
@@ -416,12 +459,24 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
         return cachedResponse;
     }
 
-    // In active (non-passive) mode a precached asset that missed the cache goes straight to the
-    // network with the page's own request; pattern assets are never precached (their concrete
-    // URL isn't known ahead of time), so they must lazily fill the cache even in active mode.
+    // In active (non-passive) mode a precached asset that missed the cache goes to the network
+    // with the page's own request - but the response is still written back to the cache. A miss
+    // here means the asset failed to precache during a lax install or its entry was evicted;
+    // without the write-back it would stay uncached forever (install never re-runs until the
+    // next update), every request would hit the network, and the asset would never become
+    // available offline - contradicting the documented lax semantics, which promise lazy fill
+    // on first fetch in BOTH modes. Pattern assets don't take this path (no reqUrl); they fall
+    // through to the versioned-request lazy path below.
     if (!self.isPassive && asset.reqUrl) {
-        diagFetch('+++ serveAsset ended - NOT using cache.', start, asset);
-        return (await tryFetch(req)) || await lastResort(bitBswupCache, req, asset);
+        const response = await tryFetch(req);
+        if (!response) {
+            return await lastResort(bitBswupCache, req, asset);
+        }
+
+        lazyFill(e, bitBswupCache, cacheUrl, response, asset);
+
+        diagFetch('+++ serveAsset ended - active-mode cache miss, lazily (re)caching asset:', start, asset);
+        return response;
     }
 
     const request = asset.reqUrl ? createNewAssetRequest(asset) : req;
@@ -443,36 +498,91 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
         return await lastResort(bitBswupCache, req, asset);
     }
 
-    if (response.ok && bitBswupCache) {
-        // Stream the response to the page immediately and write to the cache in the background.
-        // response.clone() tees the stream so the page and the cache write consume bytes as they
-        // arrive; e.waitUntil keeps the worker alive until the background write completes.
-        const cachePut = bitBswupCache.put(cacheUrl, response.clone()).catch(err => {
-            diagFetch('+++ serveAsset - lazy-fill put failed:', err, asset);
-        });
-        e.waitUntil(cachePut);
-    }
+    lazyFill(e, bitBswupCache, cacheUrl, response, asset);
 
     diagFetch('+++ serveAsset ended - lazily caching asset:', start, asset, e, req);
 
     return response;
 }
 
-// The network is gone and we already committed to responding. Anything previously cached under
-// the raw request URL beats a hard failure - it is how an offline reload still boots - and when
-// there is nothing at all, Response.error() produces the same network error the page would have
+// Writes a fetched response into the cache in the background while the page consumes it.
+// response.clone() tees the stream so the page and the cache write consume bytes as they
+// arrive; e.waitUntil keeps the worker alive until the background write completes. Cached:
+// ok (2xx) responses, and opaque responses (cross-origin no-cors - status reads 0 and ok is
+// false BY DESIGN, exactly how a script/img tag consumes a cross-origin externalAssets entry;
+// refusing them would keep such assets out of the cache forever and break their offline
+// story). Error statuses are never cached - they must not shadow the network. A failed put
+// (quota, storage pressure) is logged and swallowed: losing the write-back is survivable,
+// breaking the in-flight response is not. Note that browsers pad opaque entries heavily in
+// quota accounting (Chromium reserves megabytes per entry) - the price of caching responses
+// whose real size is deliberately hidden.
+function lazyFill(e: any, cache: any, cacheUrl: string, response: Response, asset: any) {
+    if (!cache) return;
+    if (!response.ok && (response as any).type !== 'opaque') return;
+
+    const cachePut = cache.put(cacheUrl, response.clone()).catch((err: any) => {
+        diagFetch('+++ serveAsset - lazy-fill put failed:', err, asset);
+    });
+    e.waitUntil(cachePut);
+}
+
+// Matches the `<hash>` tail of a `reqUrl.<hash>` cache key: an SRI-style digest (sha256-...,
+// sha384-..., sha512-...) whose base64 alphabet can never contain a '.'. This is what keeps a
+// sibling file whose URL merely extends the asset's (app.js -> app.js.map, app.js.br, or a
+// hashed app.js.map.<hash>) from ever being mistaken for a stale copy of the asset itself.
+const STALE_HASH_KEY_SUFFIX = /^sha\d+-[A-Za-z0-9+\/=]+$/;
+
+// The network is gone and we already committed to responding. Any previously cached copy of
+// this asset beats a hard failure - it is how an offline reload still boots - and when there
+// is nothing at all, Response.error() produces the same network error the page would have
 // seen without a service worker (rather than an unhandled rejection).
 async function lastResort(cache: any, req: Request, asset: any) {
     if (cache) {
+        // Exact raw-URL entries: pattern assets are keyed by the live request URL, and
+        // hashless assets by reqUrl alone.
         const stale = await tryCacheMatch(cache, req.url);
         if (stale) {
             diagFetch('*** serveAsset - network failed, serving a stale cached copy:', req.url, asset);
             return stale;
         }
+
+        // Hashed assets are keyed `reqUrl.<hash>`, so the raw-URL lookup above can never hit
+        // them: when the current-hash key missed (the reason serveAsset ended up here), a copy
+        // from a previous version may still sit under the same URL with an older hash - e.g. a
+        // lax background install whose worker was terminated after migrating the old cache but
+        // before the diff/downloads completed. Scan for any such key. Serving bytes from a
+        // different version is a calculated risk taken knowingly: this path only runs when the
+        // network is unreachable AND the current version is not cached, where the alternative
+        // is a guaranteed hard failure. Non-SRI custom hashes are deliberately not matched
+        // (see STALE_HASH_KEY_SUFFIX) - a wrong-file false positive is worse than no fallback.
+        if (asset && asset.reqUrl) {
+            const prefix = `${asset.reqUrl}.`;
+            const keys = await tryCacheKeys(cache);
+            const staleKey = keys.find((key: any) => key && key.url
+                && key.url.startsWith(prefix)
+                && STALE_HASH_KEY_SUFFIX.test(key.url.slice(prefix.length)));
+            const staleByHash = staleKey ? await tryCacheMatch(cache, staleKey.url) : undefined;
+            if (staleByHash) {
+                diagFetch('*** serveAsset - network failed, serving a previous-hash cached copy:', staleKey.url, asset);
+                return staleByHash;
+            }
+        }
     }
 
     diagFetch('*** serveAsset - network failed and nothing cached:', req.url, asset);
     return Response.error();
+}
+
+// cache.keys() that reports failure as an empty list instead of a rejection - CacheStorage
+// enumeration can throw under the same storage pressure that makes match()/open() fail, and
+// the stale-copy scan above is strictly best-effort.
+async function tryCacheKeys(cache: any) {
+    try {
+        return await cache.keys();
+    } catch (err) {
+        diagFetch('*** tryCacheKeys - enumeration failed:', err);
+        return [];
+    }
 }
 
 // fetch() that reports failure as `undefined` instead of a rejection, so callers can fall back.
@@ -514,6 +624,14 @@ function handleMessage(e: MessageEvent<string>) {
     // e.origin / e.source. The commands below (SKIP_WAITING, CLAIM_CLIENTS, CLEAN_UP,
     // BLAZOR_STARTED) only drive this app's own SW lifecycle and caches.
 
+    // Both command chains below run under e.waitUntil. A message handler's return value means
+    // nothing to the browser - previous versions returned these promise chains bare, leaving
+    // the worker eligible for termination between any two steps once the synchronous handler
+    // finished. For SKIP_WAITING the activate event's own waitUntil usually kept the worker
+    // alive incidentally; CLAIM_CLIENTS had no such cover, and its final CLIENTS_CLAIMED reply
+    // is the ONLY trigger that starts Blazor on a first install - dropping it would leave the
+    // app hanging behind the splash with no backup signal.
+
     if (e.data === 'SKIP_WAITING') {
         // Activate the waiting worker, then take control of every open client so each tab
         // receives a 'controllerchange' and reloads onto the new version (handled in
@@ -522,19 +640,21 @@ function handleMessage(e: MessageEvent<string>) {
         // asset requests are served from the new worker - or from a cache we just deleted -
         // which corrupts boot config / DLL hashes. Old caches are removed only *after* the
         // claim so no controlled client is left pointing at a cache that no longer exists.
-        return self.skipWaiting()
-            .then(() => self.clients.claim())
-            .then(() => deleteOldCaches())
-            .then(() => sendMessage('WAITING_SKIPPED'));
+        return e.waitUntil(
+            self.skipWaiting()
+                .then(() => self.clients.claim())
+                .then(() => deleteOldCaches())
+                .then(() => sendMessage('WAITING_SKIPPED')));
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
         // First-install claim. Take control so this page can start Blazor; sibling tabs
         // that observe the resulting 'controllerchange' will NOT reload because there was
         // no previously-active worker (see hadActiveWorkerAtStartup in bit-bswup.ts).
-        return self.clients.claim()
-            .then(() => deleteOldCaches())
-            .then(() => e.source?.postMessage('CLIENTS_CLAIMED'));
+        return e.waitUntil(
+            self.clients.claim()
+                .then(() => deleteOldCaches())
+                .then(() => e.source?.postMessage('CLIENTS_CLAIMED')));
     }
 
     if (e.data === 'BLAZOR_STARTED') {
@@ -549,6 +669,15 @@ function handleMessage(e: MessageEvent<string>) {
 }
 
 // ============================================================================
+
+// How many generations of a lazily-cached pattern asset survive an update, per pattern. A
+// pattern asset (a RegExp externalAssets entry, e.g. resource-collection.<hash>.js) matches
+// every fingerprint it ever cached, so the update diff cannot distinguish the current entry
+// from dead ones - without a bound the cache would grow by one dead entry per update, forever.
+// Three covers the entry the running version uses, the previous generation (a stale offline
+// shell served by lastResort can still reference it and boot), and one of slack for an
+// in-flight update.
+const MAX_PATTERN_ASSET_GENERATIONS = 3;
 
 // Builds (or updates) the version-suffixed cache for the current VERSION. This is the heart
 // of the install/update flow:
@@ -629,6 +758,10 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // Assets confirmed present at their current cache key - these are not re-downloaded.
     const cachedAssets = new Set<any>();
 
+    // Lazily-cached keys per pattern asset, in enumeration (= insertion = age) order, so the
+    // oldest generations beyond MAX_PATTERN_ASSET_GENERATIONS can be evicted after the loop.
+    const patternKeys = new Map<any, string[]>();
+
     // Collect stale entries to delete and await them as a batch below, rather than firing
     // newCache.delete(...) unawaited. The unawaited form let deletes race the subsequent
     // addCache puts (and the concurrent post-BLAZOR_STARTED top-up run), so a freshly
@@ -642,10 +775,17 @@ async function createAssetsCache(ignoreProgressReport = false) {
         const matched = assetByCacheKey.get(fold(key.url));
         if (!matched) {
             // A key lazily cached for a pattern asset (no concrete reqUrl, e.g.
-            // resource-collection.<hash>.js) has no entry in assetByCacheKey; keep it so it stays
-            // available offline instead of being pruned as stale.
-            if (UNIQUE_ASSETS.some(a => !a.reqUrl && a.url.test(key.url))) {
-                diag('*** keeping lazily-cached pattern asset key:', key.url);
+            // resource-collection.<hash>.js) has no entry in assetByCacheKey; it must survive
+            // the diff so the app still boots offline - but not unboundedly. The pattern
+            // matches every fingerprint it ever cached, so the diff cannot tell the current
+            // entry from dead ones; collect matches per pattern here and evict the oldest
+            // beyond MAX_PATTERN_ASSET_GENERATIONS after the loop.
+            const pattern = UNIQUE_ASSETS.find(a => !a.reqUrl && a.url.test(key.url));
+            if (pattern) {
+                diag('*** keeping lazily-cached pattern asset key (subject to the generation cap):', key.url);
+                const kept = patternKeys.get(pattern) || [];
+                kept.push(key.url);
+                patternKeys.set(pattern, kept);
                 continue;
             }
 
@@ -668,6 +808,16 @@ async function createAssetsCache(ignoreProgressReport = false) {
             cachedAssets.add(matched);
         }
     }
+
+    // Evict the oldest pattern-asset generations beyond the cap. Cache.keys() enumerates in
+    // insertion order and the migration above copies old-bucket entries in that same order
+    // before anything new is written, so the front of each per-pattern list is the oldest.
+    patternKeys.forEach((keptKeys) => {
+        for (let i = 0; i < keptKeys.length - MAX_PATTERN_ASSET_GENERATIONS; i++) {
+            diag('*** evicting old pattern asset generation:', keptKeys[i]);
+            keysToDelete.push(keptKeys[i]);
+        }
+    });
 
     // Always refresh the default document on each update so navigations pick up the latest
     // app shell even when its hash is unchanged. If it was kept above, drop it from the kept
@@ -781,6 +931,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
         }
 
         const hasIntegrity = !!(request as any).integrity;
+        // Whether this asset lives on another origin - only those can hit the "host sends no
+        // CORS headers" failure that the no-cors fallback below exists for.
+        const isCrossOrigin = new URL(asset.reqUrl, self.location.origin).origin !== self.location.origin;
         let lastError: any;
 
         // Attempt the download up to MAX_RETRIES additional times after the first try.
@@ -798,7 +951,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 await delay(wait);
             }
 
-            let response: Response;
+            let response: Response | undefined;
             try {
                 response = await fetch(request);
             } catch (fetchErr) {
@@ -807,36 +960,59 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // to the console, but the SW would otherwise silently swallow this. Surface it.
                 // SRI and transient network failures both reject as TypeError; only treat as
                 // integrity when the message signals a digest/SRI problem, not on TypeError alone.
+                // ('integrity' covers Chrome/Firefox wording, 'digest' Safari's; a previous
+                // revision also matched the string 'EPRPROTO' - a typo matching nothing any
+                // browser emits - which has been dropped.)
                 const isIntegrity =
                     hasIntegrity &&
-                    /integrity|digest|EPRPROTO/i.test(String(fetchErr && (fetchErr as any).message || fetchErr));
+                    /integrity|digest/i.test(String(fetchErr && (fetchErr as any).message || fetchErr));
 
-                // Integrity failures are deterministic: re-fetching identical bytes fails the
-                // same way, so never retry them. Genuine network errors are transient and
-                // worth another attempt while retries remain.
-                if (!isIntegrity && attempt < MAX_RETRIES) {
-                    lastError = fetchErr;
-                    diag('*** addCache - fetch rejected (will retry):', fetchErr, asset.reqUrl);
-                    continue;
+                // A cross-origin host that sends no CORS headers rejects the cors-mode request
+                // with the same TypeError as a genuine network failure. Before classifying,
+                // retry the URL once as no-cors: if the host is actually reachable this yields
+                // an opaque response, which the Cache API stores and no-cors consumers (script
+                // and img tags - exactly how a page consumes cross-origin externalAssets) use
+                // normally. Never attempted when integrity was requested for this asset: an
+                // opaque body cannot be verified (the Request constructor rejects integrity +
+                // no-cors), and silently dropping the check would defeat its purpose. Gated on
+                // hasIntegrity - not isIntegrity - so a CORS-shaped TypeError can never sneak
+                // an integrity-checked asset into the unverified path.
+                if (!hasIntegrity && isCrossOrigin) {
+                    response = await tryFetch(createNewAssetRequest(asset, true));
                 }
 
-                if (isIntegrity) integrityFailureCount++;
-                diag('*** addCache - fetch rejected:', fetchErr, 'integrity?', isIntegrity);
-                sendError({
-                    reason: isIntegrity ? 'integrity' : 'fetch',
-                    message: isIntegrity
-                        ? `Subresource Integrity check failed for ${asset.reqUrl}. The bytes served do not match the SHA hash recorded in service-worker-assets.js / blazor.boot.json. This is the classic Blazor "Failed to find a valid digest" failure and usually means a CDN, reverse proxy, or compression layer is rewriting the response after publish.`
-                        : 'Asset fetch rejected' + (attempt > 0 ? ` after ${attempt + 1} attempts` : '') + ': ' + (fetchErr && (fetchErr as any).message || String(fetchErr)),
-                    url: asset.reqUrl,
-                    hash: asset.hash,
-                    integrity: hasIntegrity,
-                    fatal: isFatalAssetFailure(),
-                });
-                doReport(true);
-                return Promise.reject(fetchErr);
+                if (!response) {
+                    // Integrity failures are deterministic: re-fetching identical bytes fails the
+                    // same way, so never retry them. Genuine network errors are transient and
+                    // worth another attempt while retries remain.
+                    if (!isIntegrity && attempt < MAX_RETRIES) {
+                        lastError = fetchErr;
+                        diag('*** addCache - fetch rejected (will retry):', fetchErr, asset.reqUrl);
+                        continue;
+                    }
+
+                    if (isIntegrity) integrityFailureCount++;
+                    diag('*** addCache - fetch rejected:', fetchErr, 'integrity?', isIntegrity);
+                    sendError({
+                        reason: isIntegrity ? 'integrity' : 'fetch',
+                        message: isIntegrity
+                            ? `Subresource Integrity check failed for ${asset.reqUrl}. The bytes served do not match the SHA hash recorded in service-worker-assets.js / blazor.boot.json. This is the classic Blazor "Failed to find a valid digest" failure and usually means a CDN, reverse proxy, or compression layer is rewriting the response after publish.`
+                            : 'Asset fetch rejected' + (attempt > 0 ? ` after ${attempt + 1} attempts` : '') + ': ' + (fetchErr && (fetchErr as any).message || String(fetchErr)),
+                        url: asset.reqUrl,
+                        hash: asset.hash,
+                        integrity: hasIntegrity,
+                        fatal: isFatalAssetFailure(),
+                    });
+                    doReport(true);
+                    return Promise.reject(fetchErr);
+                }
             }
 
-            if (!response.ok) {
+            // An opaque response (type 'opaque', from the no-cors fallback above) reads status
+            // 0 / ok false BY DESIGN - its real status and bytes are hidden - so the HTTP
+            // status checks below don't apply to it; it goes straight to the cache write.
+            const isOpaque = (response as any).type === 'opaque';
+            if (!isOpaque && !response.ok) {
                 // Retry only transient HTTP statuses (request timeout, rate limit, 5xx).
                 // Permanent ones (404, 403, ...) will not change on retry.
                 if (isRetryableStatus(response.status) && attempt < MAX_RETRIES) {
@@ -940,7 +1116,7 @@ function normalizeNonNegativeInt(value: any, fallback: number) {
 // the hash is an SRI digest (sha*) and integrity checks are enabled, the request carries the
 // `integrity` attribute so the browser rejects tampered/mismatched bytes; enableCacheControl
 // adds no-store/no-cache headers to bypass the HTTP cache and force a fresh fetch.
-function createNewAssetRequest(asset: any) {
+function createNewAssetRequest(asset: any, noCors = false) {
     // Global .replace() rather than .replaceAll(): identical result for these single-character
     // literals, but replaceAll is ES2021 and this bundle targets ES2019. (This call predates
     // the ES2019 target and silently raised the real runtime floor to Chrome 85 / Safari 13.4
@@ -957,6 +1133,19 @@ function createNewAssetRequest(asset: any) {
     const assetUrl = url.toString();
 
     const requestInit: RequestInit = {};
+
+    if (noCors) {
+        // Fallback shape for a cross-origin host that sends no CORS headers (see addCache).
+        // Deliberately minimal: integrity is invalid on a no-cors request (the Request
+        // constructor rejects the combination), and the no-cors header guard silently drops
+        // non-safelisted headers like cache-control - only the `cache` *option* survives.
+        requestInit.mode = 'no-cors';
+        if (self.enableCacheControl) {
+            requestInit.cache = 'no-store';
+        }
+        return new Request(assetUrl, requestInit);
+    }
+
     // SECURITY NOTE: Subresource Integrity is OPT-IN. Even though Blazor ships a SHA hash
     // for every asset, we only attach `integrity` (so the browser rejects tampered/mismatched
     // bytes) when the app sets self.enableIntegrityCheck. It defaults to off because an
@@ -970,7 +1159,16 @@ function createNewAssetRequest(asset: any) {
     }
     if (self.enableCacheControl) {
         requestInit.cache = 'no-store';
-        requestInit.headers = [['cache-control', 'no-cache']];
+        // The cache-control request header is NOT a CORS-safelisted header, so attaching it to
+        // a cross-origin request upgrades the fetch to a preflighted one - an OPTIONS round
+        // trip most third-party asset hosts reject - which turned enableCacheControl into a
+        // switch that broke every cross-origin externalAssets entry. Same-origin requests keep
+        // the header (a revalidation hint for proxies on the way to the origin); cross-origin
+        // ones rely on cache: 'no-store' alone, which is a fetch *option* the CORS protocol
+        // never sees.
+        if (url.origin === self.location.origin) {
+            requestInit.headers = [['cache-control', 'no-cache']];
+        }
     }
 
     return new Request(assetUrl, requestInit);
@@ -1008,17 +1206,26 @@ function uniqueAssets(assets: any) {
     for (let i = 0; i < assets.length; i++) {
         const a = assets[i];
         const isPattern = a.url instanceof RegExp;
-        const dedupeKey = isPattern ? a.url.toString() : a.url;
+        const reqUrl = isPattern ? undefined : new Request(a.url).url;
+
+        // Dedupe on the *resolved* URL rather than the declared string, so 'index.html',
+        // '/index.html' and 'https://host/index.html' - three spellings of one resource -
+        // collapse into a single entry instead of producing duplicate downloads and
+        // ambiguous first-wins matching. The first occurrence wins, and manifest entries
+        // precede externalAssets in ALL_ASSETS, so a hash-carrying manifest entry always
+        // beats a hashless external duplicate. Pattern entries dedupe on their source text.
+        const dedupeKey = isPattern ? a.url.toString() : (reqUrl as string);
         if (unique[dedupeKey]) continue;
         unique[dedupeKey] = 1;
 
-        const reqUrl = isPattern ? undefined : new Request(a.url).url;
         distinct.push({
             ...a,
             url: isPattern ? applyUrlCaseSensitivity(a.url) : urlToRegExp(reqUrl as string),
             srcUrl: isPattern ? String(a.url) : a.url,
             reqUrl,
-            isDefault: !isPattern && a.url === DEFAULT_URL,
+            // Paired by resolved URL too (see DEFAULT_REQ_URL) so an equivalent spelling of
+            // defaultUrl still finds its asset.
+            isDefault: !isPattern && reqUrl === DEFAULT_REQ_URL,
         });
     }
     return distinct;
@@ -1049,12 +1256,29 @@ function urlToRegExp(url: string) {
     return new RegExp('^' + escapeRegExp(`${u.origin}${u.pathname}`) + '(\\?.*)?$', self.caseInsensitiveUrl ? 'i' : '');
 }
 
-// Broadcasts a message to every client (controlled or not), so all open tabs - not just the
-// one that triggered the work - receive install/progress/activate/error updates. Objects are
-// JSON-stringified; plain string commands (e.g. 'WAITING_SKIPPED') are sent as-is.
+// Window clients that belong to this registration's scope, controlled or not. Uncontrolled
+// clients matter: on a first install nothing is controlled yet, and the page still needs the
+// progress stream. The scope filter matters just as much: matchAll({ includeUncontrolled:
+// true }) returns every same-origin window client, including pages of unrelated apps mounted
+// under other scopes on the same host - and only clients under this scope can be controlled
+// by this worker or depend on its caches. When the scope is unavailable (self.registration
+// missing in an exotic runtime) fall back to no filtering, which is the pre-10.5.0 behavior.
+// The cleanup worker (bit-bswup.sw-cleanup.ts) applies the same filter for the same reason.
+async function matchScopeClients() {
+    const scope = self.registration && self.registration.scope;
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    return (clients || []).filter((client: any) => !scope || (typeof client.url === 'string' && client.url.indexOf(scope) === 0));
+}
+
+// Broadcasts a message to every client under this registration's scope (controlled or not),
+// so all open tabs of THIS app - not just the one that triggered the work - receive
+// install/progress/activate/error updates. Broadcasting beyond the scope would make a sibling
+// Bswup app on the same origin react to this app's lifecycle: its handler would run
+// downloadFinished/error logic (splash, reload prompts) against a registration that never
+// staged anything for it. Objects are JSON-stringified; plain string commands (e.g.
+// 'WAITING_SKIPPED') are sent as-is.
 function sendMessage(message: any) {
-    self.clients
-        .matchAll({ includeUncontrolled: true })
+    matchScopeClients()
         .then((clients: any) => (clients || []).forEach((client: any) => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))));
 }
 
@@ -1071,11 +1295,27 @@ function sendMessage(message: any) {
 //              progress UI with a failure panel for what is a recoverable, expected case
 //              (e.g. an optional externalAssets entry that 404s).
 // Callers always pass it explicitly; an omitted value is treated as fatal by the page.
+// Direct console output of non-fatal (lax) failures is capped: a mass outage - the network
+// dropping while 200 assets are still downloading - otherwise floods the console with hundreds
+// of identical errors that bury the one line explaining what happened. Every failure is still
+// reported to the page (handlers may count or display them) and to diag; fatal errors are
+// always logged.
+const MAX_NONFATAL_CONSOLE_ERRORS = 10;
+let nonFatalConsoleErrors = 0;
+
 function sendError(data: { reason: string; message: string; fatal?: boolean;[key: string]: any }) {
     diag('*** error:', data);
     try {
         // Best-effort console output so the failure is visible even before any client connects.
-        console.error('BitBswup SW:', data.message, data);
+        if (data.fatal !== false) {
+            console.error('BitBswup SW:', data.message, data);
+        } else if (nonFatalConsoleErrors < MAX_NONFATAL_CONSOLE_ERRORS) {
+            nonFatalConsoleErrors++;
+            console.error('BitBswup SW:', data.message, data);
+            if (nonFatalConsoleErrors === MAX_NONFATAL_CONSOLE_ERRORS) {
+                console.error('BitBswup SW: further non-fatal asset failures will not be logged to the console; they are still reported to the page handler (enable enableDiagnostics for the full stream).');
+            }
+        }
     } catch { /* ignore */ }
     sendMessage({ type: 'error', data });
 }

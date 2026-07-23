@@ -174,6 +174,30 @@
                         // 'strict' abort - takes over the UI below.
                         if (data && data.fatal === false) return;
 
+                        // A fatal failure during a background *update* must not hijack the UI
+                        // either: the previous worker keeps serving and the running app is
+                        // perfectly healthy - the only thing that failed is staging a new
+                        // version. Covering a mid-session app with a failure panel (and, with
+                        // hideApp, hiding the app container) would read as the app itself
+                        // breaking. Instead, tear down any download UI the progress messages
+                        // revealed (otherwise the splash would sit frozen at its last percent)
+                        // and unwire the reload button so nothing invites activating the failed
+                        // update; the failure stays on the console (above) and in the user
+                        // handler. The strict `=== false` check keeps the old take-over
+                        // behavior when the flag is absent (an older bit-bswup.js still cached
+                        // alongside this script), and the failure panel below remains the
+                        // first-install behavior, where nothing is running yet and the splash
+                        // is the whole UI.
+                        if (data && data.firstInstall === false) {
+                            hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
+                            bswupEl && (bswupEl.style.display = 'none');
+                            if (reloadButton) {
+                                reloadButton.style.display = 'none';
+                                reloadButton.onclick = null;
+                            }
+                            return;
+                        }
+
                         // Reveal the install panel even if no progress event landed first
                         // (manifest validation failures fire before any progress message).
                         hideApp_ && appEl && (appEl.style.display = 'none');
@@ -274,7 +298,10 @@
         const handlerAttr = el.getAttribute('data-bit-bswup-handler');
 
         start(
-            bool('data-bit-bswup-auto-reload', true),
+            // The fallback only applies to hand-written config markup that omits the
+            // attribute (the Razor component always renders it); it must track the
+            // component's AutoReload default - false since 10.5.0, see BswupProgress.razor.
+            bool('data-bit-bswup-auto-reload', false),
             bool('data-bit-bswup-show-logs', false),
             bool('data-bit-bswup-show-assets', false),
             el.getAttribute('data-bit-bswup-app-container') || '#app',
