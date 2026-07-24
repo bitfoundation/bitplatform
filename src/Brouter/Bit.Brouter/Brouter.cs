@@ -726,15 +726,26 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// navigations; Brouter's per-route subtrees swap instead, so the swap must dispose-then-mount.
     /// Routes present in both chains are untouched - their content survives the commit and keeps
     /// its component instances (renavigation semantics). Leaf -> root, mirroring disposal order.
+    /// Returns false when a Refresh's synchronous disposal started a new navigation that
+    /// superseded this one - the caller must abandon the commit immediately.
     /// </summary>
-    private void UnrenderDepartedRoutes(List<Broute> matchedChain)
+    private bool UnrenderDepartedRoutes(List<Broute> matchedChain)
     {
-        for (var i = _committedChain.Length - 1; i >= 0; i--)
+        // Each Refresh disposes the departed subtree synchronously, and a Dispose can run user
+        // code that starts a new navigation - which, if it commits synchronously, reassigns
+        // _committedChain out from under this loop. Snapshot the chain so the indices stay
+        // coherent, and stop at the first supersession so no further Refresh unmounts content
+        // on behalf of a navigation that will never commit (or that the newer one just mounted).
+        var departingChain = _committedChain;
+        var version = _navVersion;
+        for (var i = departingChain.Length - 1; i >= 0; i--)
         {
-            var node = _committedChain[i];
+            var node = departingChain[i];
             if (matchedChain.Contains(node)) continue;
             node.Refresh();
+            if (version != _navVersion) return false;
         }
+        return true;
     }
 
     /// <summary>
@@ -2336,10 +2347,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // must be released before the new subtree registers its own; see
                 // UnrenderDepartedRoutes. The pending-UI render already unmounted everything when
                 // departuresNotified is true, so this only runs on the no-pending-render path.
-                UnrenderDepartedRoutes(matchedChain);
-                // The render disposes departing components synchronously; a Dispose can run user
+                // The renders dispose departing components synchronously; a Dispose can run user
                 // code that starts a new navigation - the same supersession hazard as the
-                // departure callbacks above.
+                // departure callbacks above. UnrenderDepartedRoutes detects that mid-loop and
+                // reports it; the token check covers cancellation without a version bump.
+                if (UnrenderDepartedRoutes(matchedChain) is false) return;
                 if (token.IsCancellationRequested || version != _navVersion) return;
             }
 
