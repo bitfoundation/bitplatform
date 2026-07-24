@@ -424,12 +424,12 @@ describe('reload determinism', () => {
         expect(ctx.window.__blazorStarted).toBe(1);
     });
 
-    it('WAITING_SKIPPED during an update still reloads exactly once', async () => {
+    it('WAITING_SKIPPED during an update reloads a controlled page exactly once', async () => {
         const registration = {
             active: fakeWorker('activated'), waiting: null, installing: null,
             addEventListener() { }, update: async () => { },
         };
-        const ctx = page({}, { swOptions: { registration } });
+        const ctx = page({}, { swOptions: { registration, controller: {} } });
         ctx.load('bit-bswup.js');
         await ctx.settle();
 
@@ -438,6 +438,28 @@ describe('reload determinism', () => {
         await ctx.settle();
 
         expect(ctx.reloads.count).toBe(1);
+    });
+
+    it('WAITING_SKIPPED never reloads an uncontrolled page - it boots it instead', async () => {
+        // Reaches uncontrolled tabs too: a hard-reloaded page during an update, or an SW-free
+        // page during a cleanup-worker teardown. Reloading those only discards in-page state;
+        // they must simply be booted (idempotent when already running). The registration has
+        // BOTH active and installing set so the load-time hard-reload force-start is skipped
+        // and the boot half of this assertion is genuinely pinned on WAITING_SKIPPED.
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: fakeWorker('installing'),
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } }); // controller stays null
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+        expect(ctx.window.__blazorStarted).toBeUndefined(); // nothing booted the page yet
+
+        ctx.message('WAITING_SKIPPED');
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(0);
+        expect(ctx.window.__blazorStarted).toBe(1); // booted by WAITING_SKIPPED, not reloaded
     });
 
     it('cleanup() posts CLEAN_UP to the active worker only, never the waiting one', async () => {
@@ -728,6 +750,624 @@ describe('persistent storage', () => {
         await ctx.settle();
 
         expect(await ctx.window.BitBswup.persistStorage()).toBe(false);
+    });
+});
+
+// The first-install/update discriminator must FLIP once the first install completes and takes
+// control of the page. Without the flip, a long-lived tab whose session began with the first
+// install misclassified every later real update as another first install: updateReady was
+// suppressed, downloadFinished said firstInstall: true (whose auto-reload posted CLAIM_CLIENTS
+// at the OLD worker - wiping the freshly staged cache), and a sibling tab's update claim
+// skipped the mandatory reload, running old app code against new-version caches.
+describe('updates after a completed first install', () => {
+    const progress100 = JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } });
+
+    function firstInstallPage() {
+        const regListeners = {};
+        const registration = {
+            active: null, waiting: null, installing: null,
+            addEventListener: (t, fn) => { (regListeners[t] ||= []).push(fn); },
+            update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        return { ctx, seen, registration, regListeners };
+    }
+
+    async function completeFirstInstall(ctx) {
+        await ctx.settle();
+        ctx.message('CLIENTS_CLAIMED'); // the claim that completes a first install
+        await ctx.settle();
+    }
+
+    it('announces updateReady for an update staged later in the same session', async () => {
+        const { ctx, seen, registration, regListeners } = firstInstallPage();
+        await completeFirstInstall(ctx);
+
+        // A real update is found and staged (e.g. via update polling).
+        const staged = fakeWorker('installing');
+        registration.installing = staged;
+        (regListeners.updatefound || []).forEach(fn => fn({}));
+        registration.installing = null;
+        registration.waiting = staged;
+        staged.state = 'installed';
+        staged.fireStateChange();
+        await ctx.settle();
+
+        // Previously this logged "initialization finished." and told nobody anything.
+        expect(seen.some(([message]) => message === 'UPDATE_READY')).toBe(true);
+    });
+
+    it('labels downloadFinished after the flip as an update, not a first install', async () => {
+        const { ctx, seen } = firstInstallPage();
+        await completeFirstInstall(ctx);
+
+        ctx.message(progress100);
+        await ctx.settle();
+
+        const [, finished] = seen.find(([message]) => message === 'DOWNLOAD_FINISHED');
+        expect(finished.firstInstall).toBe(false);
+    });
+
+    it('reload() after the flip drives SKIP_WAITING at the staged worker, never CLAIM_CLIENTS at the old one', async () => {
+        const { ctx, seen, registration } = firstInstallPage();
+        await completeFirstInstall(ctx);
+
+        const oldActive = fakeWorker('activated');
+        const staged = fakeWorker('installed');
+        registration.active = oldActive;
+        registration.waiting = staged;
+
+        ctx.message(progress100);
+        await ctx.settle();
+        const [, finished] = seen.find(([message]) => message === 'DOWNLOAD_FINISHED');
+        finished.reload();
+        await ctx.settle();
+
+        // CLAIM_CLIENTS at the old active worker would run its deleteOldCaches() and wipe the
+        // staged update's freshly downloaded bucket.
+        expect(oldActive.posted).toEqual([]);
+        expect(staged.posted).toEqual(['SKIP_WAITING']);
+    });
+
+    it('a sibling tab accepting an update reloads this tab instead of restarting Blazor', async () => {
+        const { ctx } = firstInstallPage();
+        await completeFirstInstall(ctx);
+        expect(ctx.window.__blazorStarted).toBe(1);
+
+        // The sibling's worker claimed every client: this tab now runs OLD app code against
+        // NEW caches and must resync via reload - the start-Blazor no-op path leaves it mixed.
+        (ctx.swListeners.controllerchange || []).forEach(fn => fn({}));
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(1);
+        expect(ctx.window.__blazorStarted).toBe(1); // no second start
+    });
+
+    it('progress before the claim still reports firstInstall: true', async () => {
+        const { ctx, seen } = firstInstallPage();
+        await ctx.settle();
+
+        ctx.message(JSON.stringify({ type: 'progress', data: { percent: 40, index: 1, asset: { url: 'a.js' } } }));
+        await ctx.settle();
+
+        const [, data] = seen.find(([message]) => message === 'DOWNLOAD_PROGRESS');
+        expect(data.firstInstall).toBe(true);
+        expect(data.percent).toBe(40);
+    });
+});
+
+// With no handler registered at all, nothing would ever call reload() on downloadFinished -
+// the CLAIM_CLIENTS handshake never ran and a first install sat behind the splash until the
+// stall watchdog fired a minute later.
+describe('no progress handler registered', () => {
+    const progress100 = JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } });
+
+    it('completes a first install by driving reload() itself', async () => {
+        const installing = fakeWorker('installing');
+        const registration = { active: null, waiting: null, installing, addEventListener() { }, update: async () => { } };
+        const ctx = page({}, { swOptions: { registration } }); // deliberately no bitBswupHandler anywhere
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message(progress100);
+        await ctx.settle();
+
+        // The auto-driven reload() waits for activation like any handler-driven one.
+        registration.installing = null;
+        registration.active = installing;
+        installing.state = 'activated';
+        installing.fireStateChange();
+        await ctx.settle();
+
+        expect(installing.posted).toEqual(['CLAIM_CLIENTS']);
+        expect(ctx.reloads.count).toBe(0);
+    });
+
+    it('leaves an update staged instead of force-activating it', async () => {
+        const active = fakeWorker('activated');
+        const staged = fakeWorker('installed');
+        const registration = { active, waiting: staged, installing: null, addEventListener() { }, update: async () => { } };
+        const ctx = page({}, { swOptions: { registration } });
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message(progress100);
+        await ctx.settle();
+
+        // Auto-activating would force a reload the app never consented to; an unhandled
+        // update simply waits, exactly like a handler that ignores updateReady.
+        expect(staged.posted).toEqual([]);
+        expect(ctx.reloads.count).toBe(0);
+    });
+});
+
+// The cleanup worker's exit path: a controlled page detaches via one reload; an uncontrolled
+// page is already running SW-free, and reloading it would re-register the cleanup worker and
+// spin an infinite register/activate/UNREGISTER/reload loop.
+describe('UNREGISTER handling', () => {
+    function unregisterPage({ controlled }) {
+        let unregistered = 0;
+        const registration = {
+            active: null, waiting: null, installing: null,
+            addEventListener() { }, update: async () => { },
+            unregister: async () => { unregistered++; return true; },
+        };
+        const ctx = page({}, { swOptions: { registration, controller: controlled ? {} : null } });
+        ctx.load('bit-bswup.js');
+        return { ctx, count: () => unregistered };
+    }
+
+    it('unregisters and reloads exactly once when the page is controlled', async () => {
+        const { ctx, count } = unregisterPage({ controlled: true });
+        await ctx.settle();
+
+        ctx.message('UNREGISTER');
+        ctx.message('UNREGISTER'); // a duplicate signal must not double-reload
+        await ctx.settle();
+
+        expect(count()).toBe(2); // unregister is idempotent and safe to repeat
+        expect(ctx.reloads.count).toBe(1); // reloadOnce coordinates with controllerchange
+    });
+
+    it('unregisters without reloading when the page is uncontrolled - and boots the app instead', async () => {
+        const { ctx, count } = unregisterPage({ controlled: false });
+        await ctx.settle();
+
+        ctx.message('UNREGISTER');
+        await ctx.settle();
+
+        expect(count()).toBe(1);
+        expect(ctx.reloads.count).toBe(0); // no reload => no re-register loop
+        // While a cleanup worker is deployed, this teardown signal is the earliest moment an
+        // uncontrolled page knows no install is coming - booting here keeps startup instant
+        // for the whole cleanup-deployment window instead of waiting for the delayed nudge.
+        expect(ctx.window.__blazorStarted).toBe(1);
+    });
+});
+
+// The discriminator seed must be live BEFORE the registration resolves: the controllerchange
+// and message listeners attach several tasks earlier, and a sibling tab accepting an update
+// in that window used to be misclassified as a first-install claim on this controlled page -
+// skipping the mandatory resync reload (old app code kept running against new caches).
+describe('discriminator before the registration resolves', () => {
+    it('a controlled page reloads on a controllerchange that lands before register() settles', async () => {
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: null,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration, controller: {} } });
+        ctx.load('bit-bswup.js');
+        // Deliberately NO settle(): the claim arrives while register() is still pending.
+        (ctx.swListeners.controllerchange || []).forEach(fn => fn({}));
+
+        expect(ctx.reloads.count).toBe(1);
+    });
+
+    it('worker messages before the registration resolves are stamped from the controller', async () => {
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: null,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration, controller: {} } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        // Again no settle(): the message races the registration promise.
+        ctx.message(JSON.stringify({ type: 'progress', data: { percent: 10, index: 1, asset: { url: 'a.js' } } }));
+
+        const [, data] = seen.find(([message]) => message === 'DOWNLOAD_PROGRESS');
+        expect(data.firstInstall).toBe(false);
+    });
+});
+
+// A page that loads while an update is already mid-install: updatefound fired before this
+// page existed, so the load-time path must watch the in-flight worker itself - previously
+// nothing did, and updateReady/stateChanged were silently lost in that tab.
+describe('an install already in flight at page load', () => {
+    it('announces updateReady when the in-flight update finishes staging', async () => {
+        const staged = fakeWorker('installing');
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: staged,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        registration.installing = null;
+        registration.waiting = staged;
+        staged.state = 'installed';
+        staged.fireStateChange();
+        await ctx.settle();
+
+        expect(seen.some(([message]) => message === 'UPDATE_READY')).toBe(true);
+        expect(seen.some(([message]) => message === 'STATE_CHANGED')).toBe(true);
+    });
+
+    it('rescues a first install whose in-flight worker dies before any updatefound', async () => {
+        const installing = fakeWorker('installing');
+        const registration = {
+            active: null, waiting: null, installing,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        registration.installing = null;
+        installing.state = 'redundant';
+        installing.fireStateChange();
+        await ctx.settle();
+
+        expect(ctx.window.__blazorStarted).toBe(1);
+    });
+});
+
+describe('updateReady for an update already staged at page load', () => {
+    it('is announced with a working reload callback', async () => {
+        const staged = fakeWorker('installed');
+        const registration = {
+            active: fakeWorker('activated'), waiting: staged, installing: null,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        const found = seen.find(([message]) => message === 'UPDATE_READY');
+        expect(found).toBeTruthy();
+
+        found[1].reload();
+        await ctx.settle();
+        expect(staged.posted).toEqual(['SKIP_WAITING']);
+    });
+});
+
+// BLAZOR_STARTED is the sole trigger of the worker's post-start cache top-up - in passive
+// mode that top-up IS the offline story, so the reply must go back on every path.
+describe('CLIENTS_CLAIMED handshake', () => {
+    it('replies BLAZOR_STARTED to the claiming worker once Blazor has started', async () => {
+        const ctx = page();
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        const sourcePosted = [];
+        ctx.message('CLIENTS_CLAIMED', { postMessage: m => sourcePosted.push(m) });
+        await ctx.settle();
+
+        expect(ctx.window.__blazorStarted).toBe(1);
+        expect(sourcePosted).toEqual(['BLAZOR_STARTED']);
+    });
+
+    it('still replies BLAZOR_STARTED when Blazor.start() rejects', async () => {
+        const ctx = page();
+        ctx.window.Blazor = { start: async () => { throw new Error('boot failed'); } };
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        const sourcePosted = [];
+        ctx.message('CLIENTS_CLAIMED', { postMessage: m => sourcePosted.push(m) });
+        await ctx.settle();
+
+        // The worker's top-up must proceed either way, and the first-install reload()
+        // promise must not hang the splash.
+        expect(sourcePosted).toEqual(['BLAZOR_STARTED']);
+    });
+});
+
+describe('checkForUpdate outcomes', () => {
+    function checkPage(updateImpl) {
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: null,
+            addEventListener() { }, update: updateImpl,
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        return { ctx, seen, registration };
+    }
+
+    const letTimersFire = () => new Promise(r => setTimeout(r, 20));
+
+    it('emits updateNotFound when the check finds nothing new', async () => {
+        const { ctx, seen } = checkPage(async () => { });
+        await ctx.settle();
+
+        await ctx.window.BitBswup.checkForUpdate();
+        await letTimersFire();
+        await ctx.settle();
+
+        expect(seen.some(([message]) => message === 'UPDATE_NOT_FOUND')).toBe(true);
+    });
+
+    it('does not emit updateNotFound when a new worker is already staging', async () => {
+        const { ctx, seen, registration } = checkPage(async () => {
+            registration.installing = fakeWorker('installing');
+        });
+        await ctx.settle();
+
+        await ctx.window.BitBswup.checkForUpdate();
+        await letTimersFire();
+        await ctx.settle();
+
+        expect(seen.some(([message]) => message === 'UPDATE_NOT_FOUND')).toBe(false);
+    });
+
+    it('emits the non-blocking updateCheckFailed - not the install-path error - on a failed check', async () => {
+        const { ctx, seen } = checkPage(async () => { throw new Error('offline'); });
+        await ctx.settle();
+
+        await ctx.window.BitBswup.checkForUpdate();
+        await ctx.settle();
+
+        // The install-path 'error' would make the built-in UI hide a healthy running app.
+        expect(seen.some(([message]) => message === 'UPDATE_CHECK_FAILED')).toBe(true);
+        expect(seen.some(([message]) => message === 'ERROR')).toBe(false);
+    });
+});
+
+describe('update polling', () => {
+    function pollingPage(attrs) {
+        let updates = 0;
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: null,
+            addEventListener() { }, update: async () => { updates++; },
+        };
+        const ctx = page({ scriptAttributes: attrs }, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        return { ctx, seen, count: () => updates };
+    }
+
+    it('registers a timer from updateInterval (seconds) and checks on each tick', async () => {
+        const { ctx, count } = pollingPage({ updateInterval: '300' });
+        await ctx.settle();
+
+        expect(ctx.intervals).toHaveLength(1);
+        expect(ctx.intervals[0].ms).toBe(300 * 1000);
+
+        ctx.tickIntervals();
+        await ctx.settle();
+        expect(count()).toBe(1);
+    });
+
+    it('skips ticks while the tab is hidden', async () => {
+        const { ctx, count } = pollingPage({ updateInterval: '300' });
+        await ctx.settle();
+
+        ctx.window.document.visibilityState = 'hidden';
+        ctx.tickIntervals();
+        await ctx.settle();
+        expect(count()).toBe(0);
+    });
+
+    it('checks when the tab becomes visible with updateOnVisibility', async () => {
+        const { ctx, count } = pollingPage({ updateOnVisibility: 'true' });
+        await ctx.settle();
+
+        ctx.fire('visibilitychange');
+        await ctx.settle();
+        expect(count()).toBe(1);
+    });
+
+    it('cleanup() stops the poll timer and the visibility listener', async () => {
+        const { ctx, seen, count } = pollingPage({ updateInterval: '300', updateOnVisibility: 'true' });
+        await ctx.settle();
+
+        ctx.message(JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } }));
+        await ctx.settle();
+        const [, finished] = seen.find(([message]) => message === 'DOWNLOAD_FINISHED');
+        finished.cleanup();
+
+        ctx.tickIntervals();
+        ctx.fire('visibilitychange');
+        await ctx.settle();
+
+        expect(count()).toBe(0); // previously the timer polled for the life of the page
+    });
+});
+
+describe('options object configuration', () => {
+    it('merges a partial window.bitBswup over the defaults without clobbering them', async () => {
+        const ctx = createPageContext();
+        ctx.addBswupScriptTag(); // no attributes - everything comes from the object + defaults
+        ctx.addBlazorScriptTag();
+        ctx.window.Blazor = { start: async () => { } };
+        ctx.setServiceWorker({});
+        ctx.window.bitBswup = { log: 'error' }; // partial: must not blank scope/handlerName/sw
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        // The default scope survived the merge (a partial object used to blank it) ...
+        expect(ctx.registrations).toEqual(['/']);
+
+        // ... and so did the default handler name: a late-registered bitBswupHandler still
+        // receives messages.
+        const seen = [];
+        ctx.window.bitBswupHandler = (message) => seen.push(message);
+        ctx.message(JSON.stringify({ type: 'activate', data: { version: 'v2' } }));
+        expect(seen).toContain('ACTIVATE');
+    });
+});
+
+// A secondary tab opened during a first install receives the worker's broadcasts before its
+// own register() promise can resolve (register jobs for one scope serialize behind the
+// running install job). downloadFinished used to dispatch with reload === undefined there:
+// the built-in splash teardown threw and the splash froze at 100% over the booted app.
+describe('messages arriving before the registration resolves', () => {
+    it('carry a working reload that completes once the claim has booted the app', async () => {
+        const registration = { active: null, waiting: null, installing: null, addEventListener() { }, update: async () => { } };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        // Deliberately NO settle: the 100% broadcast lands while register() is still pending.
+        ctx.message(JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } }));
+
+        const [, finished] = seen.find(([message]) => message === 'DOWNLOAD_FINISHED');
+        expect(typeof finished.reload).toBe('function');
+        expect(typeof finished.cleanup).toBe('function');
+
+        const reloadPromise = finished.reload();
+        // The initiating tab's claim reaches this tab as a controllerchange and boots it;
+        // in a real browser the claim also sets navigator.serviceWorker.controller.
+        ctx.window.navigator.serviceWorker.controller = {};
+        (ctx.swListeners.controllerchange || []).forEach(fn => fn({}));
+        await ctx.settle();
+
+        let resolved = false;
+        reloadPromise.then(() => { resolved = true; });
+        await ctx.settle();
+
+        expect(ctx.window.__blazorStarted).toBe(1);
+        expect(resolved).toBe(true);          // the splash teardown can run
+        expect(ctx.reloads.count).toBe(0);    // and no pointless reload happened
+    });
+});
+
+// updateReady must fire exactly once per staged worker: statechange listeners outlive the
+// waiting slot, so a superseded staged worker's 'redundant' event fires while a NEWER,
+// already-announced worker occupies the slot.
+describe('updateReady announcement dedupe', () => {
+    function updatePage() {
+        const regListeners = {};
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: null,
+            addEventListener: (t, fn) => { (regListeners[t] ||= []).push(fn); },
+            update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message) => seen.push(message);
+        ctx.load('bit-bswup.js');
+        return { ctx, seen, registration, regListeners };
+    }
+
+    it('a superseded staged worker going redundant does not re-announce the newer one', async () => {
+        const { ctx, seen, registration, regListeners } = updatePage();
+        await ctx.settle();
+
+        // Update B stages and is announced.
+        const b = fakeWorker('installing');
+        registration.installing = b;
+        (regListeners.updatefound || []).forEach(fn => fn({}));
+        registration.installing = null;
+        registration.waiting = b;
+        b.state = 'installed';
+        b.fireStateChange();
+        await ctx.settle();
+
+        // Update C stages, replacing B; then B's redundant statechange fires late.
+        const c = fakeWorker('installing');
+        registration.installing = c;
+        (regListeners.updatefound || []).forEach(fn => fn({}));
+        registration.installing = null;
+        registration.waiting = c;
+        c.state = 'installed';
+        c.fireStateChange();
+        b.state = 'redundant';
+        b.fireStateChange();
+        await ctx.settle();
+
+        expect(seen.filter(message => message === 'UPDATE_READY')).toHaveLength(2); // once for B, once for C
+    });
+
+    it('still announces an un-announced staged update when a newer install dies', async () => {
+        // Staged-at-load B (deferred while C installs) must be announced when C goes
+        // redundant - the one 'redundant' path that legitimately emits updateReady.
+        const b = fakeWorker('installed');
+        const c = fakeWorker('installing');
+        const registration = {
+            active: fakeWorker('activated'), waiting: b, installing: c,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message) => seen.push(message);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+        expect(seen.filter(message => message === 'UPDATE_READY')).toHaveLength(0); // deferred
+
+        registration.installing = null;
+        c.state = 'redundant';
+        c.fireStateChange();
+        await ctx.settle();
+
+        expect(seen.filter(message => message === 'UPDATE_READY')).toHaveLength(1); // B, first time
+    });
+});
+
+// When register() fails for good, the interim reload/cleanup must terminate rather than wait
+// forever on a registration that will never come.
+describe('interim reload after a failed registration', () => {
+    it('falls back to a full reload (the only remaining retry) instead of hanging', async () => {
+        const notFound = Object.assign(new Error('bad HTTP response code (404)'), { name: 'TypeError' });
+        const ctx = page({}, { swOptions: { registerError: notFound } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        // A sibling tab's install broadcasts reach this tab despite its failed register().
+        ctx.message(JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } }));
+        await ctx.settle();
+
+        const [, finished] = seen.find(([message]) => message === 'DOWNLOAD_FINISHED');
+        expect(typeof finished.reload).toBe('function');
+        finished.reload();
+        expect(() => finished.cleanup()).not.toThrow();
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(1);
+    });
+});
+
+// A Retry button wired to the interim reload must stay functional after a fatal
+// first-install failure force-started the app: "running with nothing staged" alone is not
+// proof of a completed claim (the controller check is what separates the two states).
+describe('interim reload after a fatal first-install failure', () => {
+    it('hard-reloads to retry the install instead of resolving into a dead button', async () => {
+        const ctx = page(); // fresh first install, uncontrolled
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        // The fatal error lands before this tab's registration resolves.
+        ctx.message(JSON.stringify({ type: 'error', data: { reason: 'install-aborted', message: 'x', fatal: true } }));
+        await ctx.settle();
+        expect(ctx.window.__blazorStarted).toBe(1); // force-started, uncontrolled
+
+        const [, err] = seen.find(([message]) => message === 'ERROR');
+        err.reload(); // the Retry button
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(1);
     });
 });
 

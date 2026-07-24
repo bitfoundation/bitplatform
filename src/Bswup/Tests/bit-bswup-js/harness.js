@@ -48,6 +48,11 @@ export function readBundle(name) {
 
 class FakeRequest {
     constructor(url, init = {}) {
+        // Real Request rejects integrity on a no-cors request - the exact combination
+        // createNewAssetRequest carefully avoids; regressing that must fail here too.
+        if (init.integrity && init.mode === 'no-cors') {
+            throw new TypeError("Failed to construct 'Request': The integrity attribute is unsupported in no-cors mode.");
+        }
         this.url = new URL(String(url), ORIGIN + '/').toString();
         this.method = init.method || 'GET';
         this.mode = init.mode || 'cors';
@@ -57,19 +62,53 @@ class FakeRequest {
     }
 }
 
-class FakeResponse {
+// Minimal Blob stand-in for Range-slicing tests: carries its bytes openly (`.bytes`) so a
+// test can decode what a sliced 206 body contains. slice() is lazy-ish like the real thing.
+export class FakeBlob {
+    constructor(bytes) {
+        this.bytes = bytes instanceof Uint8Array ? bytes : new TextEncoder().encode(String(bytes));
+        this.size = this.bytes.length;
+    }
+    slice(start = 0, end = this.size) { return new FakeBlob(this.bytes.slice(start, end)); }
+}
+
+/** Decodes a response body produced by the worker (string, BufferSource or FakeBlob). */
+export function decodeBody(response) {
+    const body = response && response.body;
+    if (body instanceof FakeBlob) return new TextDecoder().decode(body.bytes);
+    if (typeof body === 'string') return body;
+    return new TextDecoder().decode(body);
+}
+
+export class FakeResponse {
     constructor(body, init = {}) {
+        // Real Response rejects a statusText that is not a valid HTTP reason-phrase - the
+        // historical prohibited-URL crash came from interpolating a URL into statusText.
+        if (init.statusText !== undefined && /[^\t\x20-\x7E\x80-\xFF]/.test(String(init.statusText))) {
+            throw new TypeError("Failed to construct 'Response': Invalid statusText");
+        }
         this.body = body;
         this.status = init.status === undefined ? 200 : init.status;
         this.statusText = init.statusText || '';
         this.headers = init.headers || {};
         this.ok = this.status >= 200 && this.status < 300;
+        this.bodyUsed = false;
     }
     clone() {
+        // Real Response.clone() throws once the body is consumed - keeping that here is what
+        // lets the harness catch a missing clone() before a cache.put.
+        if (this.bodyUsed) throw new TypeError("Failed to execute 'clone': Response body is already used");
         const copy = new FakeResponse(this.body, { status: this.status, statusText: this.statusText, headers: this.headers });
         copy.cloned = true;
         return copy;
     }
+    _consume() {
+        if (this.bodyUsed) throw new TypeError('Response body is already used');
+        this.bodyUsed = true;
+    }
+    async text() { this._consume(); return String(this.body ?? ''); }
+    async arrayBuffer() { this._consume(); return new TextEncoder().encode(String(this.body ?? '')).buffer; }
+    async blob() { this._consume(); return new FakeBlob(String(this.body ?? '')); }
     // Response.error() is what a worker returns from respondWith to signal "network error"
     // without rejecting. Marked so tests can tell it apart from a real response.
     static error() {
@@ -81,8 +120,31 @@ class FakeResponse {
 
 class FakeCache {
     constructor() { this.entries = new Map(); }
-    async match(url) { return this.entries.get(String(url && url.url ? url.url : url)); }
-    async put(url, response) { this.entries.set(String(url && url.url ? url.url : url), response); }
+    // The real Cache API hands back a COPY on every match - reading or consuming a matched
+    // response never affects the stored entry. Reviving through the stored object's prototype
+    // keeps both FakeResponse instances (prototype methods) and the plain-object fixtures
+    // tests build (own-property clone()/blob()) working.
+    async match(url) {
+        const stored = this.entries.get(String(url && url.url ? url.url : url));
+        if (!stored || typeof stored !== 'object') return stored;
+        const fresh = Object.assign(Object.create(Object.getPrototypeOf(stored)), stored);
+        fresh.bodyUsed = false;
+        return fresh;
+    }
+    async put(url, response) {
+        // Spec fidelity (Cache.put): a 206 Partial Content response and a consumed body are
+        // both rejections in every browser. Enforcing them here means a regression that drops
+        // the worker's own guards (lazyFill's 206 check, the clone-before-put discipline)
+        // fails tests instead of only failing live.
+        if (response && response.status === 206) throw new TypeError("Failed to execute 'put': Partial response (status code 206) is unsupported");
+        if (response && response.bodyUsed === true) throw new TypeError("Failed to execute 'put': Response body is already used");
+        if (response && typeof response === 'object') response.bodyUsed = true;
+        const key = String(url && url.url ? url.url : url);
+        // Re-putting an existing key moves it to the END in real browsers (Batch Cache
+        // Operations: delete-then-append) - ordering the generation-cap logic relies on.
+        this.entries.delete(key);
+        this.entries.set(key, response);
+    }
     async delete(url) { return this.entries.delete(String(url && url.url ? url.url : url)); }
     // The Cache API returns Request objects from keys(); the worker only reads `.url`.
     async keys() { return [...this.entries.keys()].map(url => ({ url })); }
@@ -151,11 +213,22 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
 
     sandbox.location = { origin: ORIGIN, href: ORIGIN + '/' };
     sandbox.importScripts = () => { };       // tests assign self.assetsManifest directly
-    sandbox.addEventListener = (type, fn) => { handlers[type] = fn; };
+    // Real event targets run EVERY listener registered for a type; storing a single function
+    // silently dropped earlier ones, so a refactor that splits a handler in two behaved
+    // differently in tests than live. handlers[type] stays directly callable (a dispatcher),
+    // so existing `sw.handlers.message(e)` call sites keep working.
+    const handlerLists = {};
+    sandbox.addEventListener = (type, fn) => {
+        (handlerLists[type] ||= []).push(fn);
+        handlers[type] = e => handlerLists[type].forEach(f => f(e));
+    };
     sandbox.skipWaiting = async () => { };
     sandbox.clients = {
         claim: async () => { },
-        matchAll: async () => clients.slice(),
+        // Honors the type filter like a browser would: the worker relies on
+        // { type: 'window' } to keep non-window clients (dedicated/shared workers) out of
+        // its lifecycle broadcasts.
+        matchAll: async (opts) => clients.filter(c => !opts || !opts.type || c.type === opts.type),
     };
 
     vm.createContext(sandbox);
@@ -222,25 +295,53 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
             // Real Headers (host realm is fine - only .get() is called) so getRangeHeader and
             // friends behave as in a browser; plain-object headers stay for RequestInit tests.
             if (headers) request.headers = new Headers(headers);
-            let responded, waited;
+            let responded;
+            let dispatchDone = false;
+            const waits = [];
             const e = {
                 request,
-                respondWith: p => { responded = p; },
-                waitUntil: p => { waited = p; },
+                // Real browsers throw InvalidStateError when respondWith is called after the
+                // event finished dispatching. The whole fetch-path design rests on the router
+                // deciding SYNCHRONOUSLY (an async handleFetch means every request on the
+                // origin hard-fails through the worker), so this must be enforceable here.
+                respondWith: p => {
+                    if (dispatchDone) throw new Error("InvalidStateError: respondWith called after the fetch event finished dispatching (handleFetch must decide synchronously)");
+                    responded = p;
+                },
+                // Collect EVERY waitUntil (real events accept any number); awaiting only the
+                // last one let earlier background work escape the assertion window.
+                waitUntil: p => { waits.push(p); },
             };
             handlers.fetch(e);
+            dispatchDone = true;
             const response = responded === undefined ? undefined : await responded;
-            if (waited) await waited.catch(() => { });
+            // Rejections propagate: background work (lazy-fill writes) is required to handle
+            // its own failures - a leaked rejected extended event is a worker bug.
+            for (const w of waits) await w;
+            // A response whose body was consumed before it reached the page is always a bug
+            // (a cache.put without clone()); in a browser the page gets a dead stream. Fail
+            // loudly here so every fetch test guards it by default.
+            if (response && response.bodyUsed === true) {
+                throw new Error(`fetchEvent served a response whose body was already consumed (missing clone() before a cache write?): ${request.url}`);
+            }
             return { handled: responded !== undefined, response };
         },
         /** Drive a lifecycle event and await whatever it passed to waitUntil/respondWith. */
         async fire(type, event = {}) {
             const handler = handlers[type];
             if (!handler) throw new Error(`no '${type}' listener registered`);
-            let awaited;
-            const e = { ...event, waitUntil: p => { awaited = p; }, respondWith: p => { awaited = p; } };
+            let responded;
+            const waits = [];
+            const e = { ...event, waitUntil: p => { waits.push(p); }, respondWith: p => { responded = p; } };
             handler(e);
-            return awaited;
+            // Preserve the old contract: undefined when the handler committed to nothing.
+            if (responded === undefined && waits.length === 0) return undefined;
+            let result = responded === undefined ? undefined : await responded;
+            for (const w of waits) {
+                const value = await w; // rejections propagate, like a failed extended event
+                if (result === undefined) result = value;
+            }
+            return result;
         },
     };
     return api;
@@ -256,6 +357,10 @@ function createElement(tag) {
         _attrs: {},
         children: [],
         textContent: '',
+        // Real nodes report isConnected; the progress script's element cache re-resolves
+        // replaced (disconnected) nodes, so the fake must model the transition (see
+        // addElement, which disconnects the node it replaces).
+        isConnected: true,
         style: {
             _props: {},
             setProperty(k, v) { this._props[k] = v; },
@@ -285,6 +390,7 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
     const scripts = [];
     const reloads = { count: 0 };
     const registrations = [];
+    const intervals = [];
 
     const sandbox = {
         console: { log() { }, info() { }, warn() { }, error() { }, debug() { } },
@@ -301,7 +407,13 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
             if (!clamp && typeof t.unref === 'function') t.unref();
             return t;
         },
-        clearTimeout, setInterval: () => 0, clearInterval() { },
+        clearTimeout,
+        // Intervals are recorded, never scheduled: tests drive ticks explicitly via
+        // api.tickIntervals(). A real setInterval would make the update-polling feature
+        // untestable (and flaky); a () => 0 stub made it structurally untestable instead -
+        // a cleanup() regression leaving the timer running was undetectable.
+        setInterval: (fn, ms) => { intervals.push({ fn, ms, cleared: false }); return intervals.length; },
+        clearInterval: id => { if (intervals[id - 1]) intervals[id - 1].cleared = true; },
         URL, URLSearchParams,
         MutationObserver: class {
             constructor(cb) { this.cb = cb; this.observing = false; observers.push(this); }
@@ -320,11 +432,24 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
         documentElement: createElement('html'),
         visibilityState: 'visible',
         getElementById: id => byId[id] || null,
-        querySelector: sel => (appContainer && sel === appContainer.selector ? appContainer.el : null),
+        // Browsers throw a SyntaxError for a malformed selector ('#', '.', '') - code reading
+        // an app-provided selector must survive that, so the fake throws the same way.
+        querySelector: sel => {
+            if (sel === '' || sel === '#' || sel === '.') {
+                throw Object.assign(new Error(`'${sel}' is not a valid selector`), { name: 'SyntaxError' });
+            }
+            return appContainer && sel === appContainer.selector ? appContainer.el : null;
+        },
         createElement,
         addEventListener: (t, fn) => { (listeners[t] ||= []).push(fn); },
+        removeEventListener: (t, fn) => {
+            const list = listeners[t] || [];
+            const index = list.indexOf(fn);
+            if (index !== -1) list.splice(index, 1);
+        },
     };
     sandbox.addEventListener = (t, fn) => { (listeners[t] ||= []).push(fn); };
+    sandbox.removeEventListener = sandbox.document.removeEventListener;
     sandbox.caches = new FakeCacheStorage();
 
     vm.createContext(sandbox);
@@ -336,11 +461,19 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
         observers,
         reloads,
         registrations,
+        intervals,
+        /** Fire every live interval once, as one timer tick would. */
+        tickIntervals() { intervals.filter(i => !i.cleared).forEach(i => i.fn()); },
         caches: sandbox.caches,
         regex: (source, flags = '') =>
             vm.runInContext(`new RegExp(${JSON.stringify(source)}, ${JSON.stringify(flags)})`, sandbox),
-        /** Add an element after load, as an interactive Blazor render would. */
+        /**
+         * Add an element after load, as an interactive Blazor render would. Replacing an
+         * existing id disconnects the old node, exactly like a re-render swapping the
+         * subtree - which is what the progress script's element cache must survive.
+         */
         addElement(id, attrs = {}) {
+            if (byId[id]) byId[id].isConnected = false;
             byId[id] = createElement('div');
             for (const [k, v] of Object.entries(attrs)) byId[id].setAttribute(k, v);
             observers.filter(o => o.observing).forEach(o => o.cb());
@@ -358,9 +491,16 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
         addBlazorScriptTag({ src = '_framework/blazor.web.js', autostart = 'false' } = {}) {
             scripts.push({ src: `${ORIGIN}/${src}`, attributes: { autostart: { value: autostart } } });
         },
-        /** Install a fake navigator.serviceWorker. `register` resolves to the given registration. */
+        /**
+         * Install a fake navigator.serviceWorker. `register` resolves to the given registration.
+         * The listener store is SHARED across calls: in a browser there is exactly one
+         * navigator.serviceWorker event target, so listeners the bundle registered at load time
+         * must keep firing after a test swaps in a different registration/controller (the old
+         * per-call store silently orphaned them - a test could dispatch into a listener set the
+         * bundle never registered on and assert nothing).
+         */
         setServiceWorker({ registration = null, registerError = null, controller = null } = {}) {
-            const swListeners = {};
+            const swListeners = api.swListeners || {};
             sandbox.navigator = {
                 serviceWorker: {
                     controller,
@@ -377,8 +517,15 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
         },
         fire(type) { (listeners[type] || []).forEach(fn => fn()); },
         /** Deliver a message from the service worker to the page. */
-        message(data) { (api.swListeners?.message || []).forEach(fn => fn({ data, source: { postMessage() { } } })); },
-        load(bundle) { vm.runInContext(readBundle(bundle), sandbox); return api; },
+        message(data, source) { (api.swListeners?.message || []).forEach(fn => fn({ data, source: source || { postMessage() { } } })); },
+        load(bundle) {
+            vm.runInContext(readBundle(bundle), sandbox);
+            // document.currentScript is only set while a classic script executes during parse;
+            // browsers null it afterwards. Keeping it set let code read it from callbacks and
+            // work in tests while returning null live.
+            sandbox.document.currentScript = null;
+            return api;
+        },
         /** Let queued promise jobs settle. */
         settle: () => new Promise(r => setImmediate(() => setImmediate(r))),
     };

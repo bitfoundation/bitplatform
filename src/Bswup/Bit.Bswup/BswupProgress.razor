@@ -73,6 +73,29 @@
                 <button id="bit-bswup-error-retry" type="button">Retry</button>
             </div>
         </div>
-        <button id="bit-bswup-reload">Update ready to install!</button>
     }
 </div>
+@* Rendered for BOTH the default splash and custom ChildContent: with AutoReload defaulting
+   to false, this button is the only way a finished update surfaces - a custom splash that
+   omitted it would silently lose every update notification (the update just stays staged).
+   A custom splash that renders its own control can restyle these by id, or simply keep them.
+
+   Deliberately OUTSIDE #bit-bswup: the update-ready button must be showable while the
+   overlay stays hidden. A background update never reveals the splash over the running
+   app, and an update already staged at page load never produced a progress event to
+   reveal it - in both cases unhiding a button INSIDE a display:none parent rendered
+   nothing. The button positions itself (position: fixed in bit-bswup.progress.css).
+   type="button" keeps a host <form> (e.g. a login page) from treating the click as a
+   submit. The visually-hidden role="status" region is what announces the button's
+   appearance to screen readers - display:none removes the button itself from the
+   accessibility tree, so its display toggle alone is never announced.
+
+   Unlike #bit-bswup (see the comment above), the initial hiding here IS inline: there is no
+   legitimate "visible before an update exists" styling for this button, and the inline style
+   keeps it hidden even when the bundled stylesheet is not referenced or an older cached copy
+   is still being served - bit-bswup.progress.js toggles the same inline property to show it.
+   The status region's hiding is inline for the same stale-stylesheet reason (it must never
+   render as visible page text), while staying in the accessibility tree. *@
+<button id="bit-bswup-reload" type="button" style="display: none;">Update ready to install!</button>
+<span id="bit-bswup-reload-status" role="status" class="bit-bswup-visually-hidden"
+      style="position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap;"></span>

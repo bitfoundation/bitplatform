@@ -6,7 +6,9 @@ self.assetsExclude = [
 ];
 self.defaultUrl = '/';
 self.prohibitedUrls = [];
-self.assetsUrl = '/service-worker-assets.js';
+// self.assetsUrl is deliberately NOT set: since v-10-5-0 it defaults to a relative
+// 'service-worker-assets.js', resolved next to this service-worker file - which keeps
+// sub-path-mounted apps working. Set it explicitly only when the file lives elsewhere.
 
 // more about SRI (Subresource Integrity) here: https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
 // online tool to generate integrity hash: https://www.srihash.org/   or   https://laysent.github.io/sri-hash-generator/

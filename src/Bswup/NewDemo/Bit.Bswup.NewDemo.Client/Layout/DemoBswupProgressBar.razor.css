@@ -80,4 +80,7 @@
     right: 10px;
     display: none;
     position: fixed;
+    /* Above the fixed page header (z-index: 1000 in MainLayout.razor.css) - the button sits
+       outside the splash overlay and does not inherit its stacking. */
+    z-index: 999999;
 }

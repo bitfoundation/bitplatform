@@ -768,9 +768,10 @@ describe('page->worker commands extend the event lifetime', () => {
 // The self-destructing recovery worker (bit-bswup.sw-cleanup.js) is deployed in place of the
 // real worker to back an app out of Bswup - often precisely because origin storage is broken.
 describe('cleanup worker', () => {
-    function bootCleanup() {
+    function bootCleanup({ registration } = {}) {
         const sw = createServiceWorkerContext();
         sw.addClient();
+        if (registration) sw.self.registration = registration;
         return sw.load('bit-bswup.sw-cleanup.js');
     }
 
@@ -796,6 +797,530 @@ describe('cleanup worker', () => {
         await expect(sw.fire('activate')).resolves.not.toThrow();
 
         expect(sw.posted).toContain('UNREGISTER');
+    });
+
+    // The UNREGISTER message is inherently racy (tabs the takeover switched are already
+    // reloading when it is posted, and later visitors never hear it at all), so the worker
+    // must remove its own registration - the canonical self-destroying pattern. Relying on
+    // clients alone left the registration alive indefinitely on the common path.
+    it('unregisters its own registration during teardown', async () => {
+        let unregistered = 0;
+        const sw = bootCleanup({ registration: { scope: `${ORIGIN}/`, unregister: async () => { unregistered++; return true; } } });
+
+        await sw.fire('activate');
+
+        expect(unregistered).toBe(1);
+    });
+
+    it('still messages clients when self-unregister fails', async () => {
+        const sw = bootCleanup({ registration: { scope: `${ORIGIN}/`, unregister: async () => { throw new Error('nope'); } } });
+
+        await expect(sw.fire('activate')).resolves.not.toThrow();
+
+        expect(sw.posted).toContain('UNREGISTER');
+    });
+
+    // claim() would attach UNCONTROLLED pages - including the very tabs that just reloaded to
+    // detach, and every future visitor - re-entangling them with a worker whose whole purpose
+    // is to disappear, and turning each later page load into another claim/reload cycle.
+    // skipWaiting-driven activation already hands over the previously controlled tabs.
+    it('never claims clients', async () => {
+        let claimed = 0;
+        const sw = bootCleanup({ registration: { scope: `${ORIGIN}/`, unregister: async () => true } });
+        sw.self.clients.claim = async () => { claimed++; };
+
+        await sw.fire('activate');
+
+        expect(claimed).toBe(0);
+    });
+});
+
+// The activate-time prune is the "waiting worker activated naturally after every tab closed"
+// path. Getting its conditions wrong deletes a live cache under open tabs - the classic
+// SRI/boot-hash corruption - so each branch is pinned here.
+describe('activate-time cache pruning', () => {
+    async function bootInstalled({ withClient = false, registration } = {}) {
+        const sw = createServiceWorkerContext();
+        if (withClient) sw.addClient();
+        if (registration) sw.self.registration = registration;
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        sw.load();
+        await install(sw);
+        await sw.caches.open(registration ? `bit-bswup:${new URL(registration.scope).pathname} - v0` : 'bit-bswup:/ - v0');
+        return sw;
+    }
+
+    it('prunes own stale buckets when no window clients are open', async () => {
+        const sw = await bootInstalled();
+
+        await sw.fire('activate');
+        await sw.settle();
+
+        const keys = Object.keys(sw.caches.snapshot());
+        expect(keys).toContain('bit-bswup:/ - v1');
+        expect(keys).not.toContain('bit-bswup:/ - v0');
+    });
+
+    it('defers pruning while window clients are open (they may still ride the old cache)', async () => {
+        const sw = await bootInstalled({ withClient: true });
+
+        await sw.fire('activate');
+        await sw.settle();
+
+        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup:/ - v0');
+    });
+
+    it('skips pruning while a newer version is already staging', async () => {
+        const sw = await bootInstalled({ registration: { scope: `${ORIGIN}/`, installing: {} } });
+
+        await sw.fire('activate');
+        await sw.settle();
+
+        // The "stale" bucket could just as well be the newer install's freshly migrated one -
+        // deferral is the only safe answer while an install is in flight.
+        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup:/ - v0');
+    });
+});
+
+// deleteOldCaches() spares only the receiver's own CACHE_NAME, so every prune site - not just
+// CLEAN_UP - must refuse to run while another version is mid-install.
+describe('pruning never races a newer install', () => {
+    function bootWithRegistration(registration) {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        sw.self.registration = registration;
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        return sw.load();
+    }
+
+    it('SKIP_WAITING skips pruning while a newer version is installing, but still signals', async () => {
+        // active is set: this models an UPDATE being accepted while yet another version
+        // installs; without it the receiver would count as a first-install activation and
+        // reply CLIENTS_CLAIMED to its source instead of broadcasting.
+        const sw = bootWithRegistration({ scope: `${ORIGIN}/`, active: {}, installing: {} });
+        await sw.caches.open('bit-bswup:/ - v0'); // could be the newer install's bucket
+
+        let waited;
+        sw.handlers.message({ data: 'SKIP_WAITING', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup:/ - v0');
+        expect(sw.posted).toContain('WAITING_SKIPPED'); // deferring must never cost the signal
+    });
+
+    it('CLAIM_CLIENTS skips pruning while an update is staged, but still replies', async () => {
+        const sw = bootWithRegistration({ scope: `${ORIGIN}/`, waiting: {} });
+        await sw.caches.open('bit-bswup:/ - v2'); // the staged update's live bucket
+
+        const sourcePosted = [];
+        let waited;
+        sw.handlers.message({ data: 'CLAIM_CLIENTS', source: { postMessage: m => sourcePosted.push(m) }, waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup:/ - v2');
+        expect(sourcePosted).toEqual(['CLIENTS_CLAIMED']);
+    });
+});
+
+// A transient blip (CDN hiccup, 5xx, dropped connection) must not fail a strict install or
+// silently drop an asset under lax; deterministic failures must not burn time retrying.
+describe('download retry with backoff', () => {
+    it('retries a transient rejection and succeeds without reporting an error', async () => {
+        let calls = 0;
+        const sw = boot({
+            config: { maxRetries: 2, retryDelay: 1 },
+            assets: [{ url: 'app.js', hash: 'h1' }],
+            fetchHandler: async () => {
+                if (++calls === 1) throw new TypeError('connection reset');
+                return { ok: true, status: 200, clone: () => ({}) };
+            },
+        });
+        await install(sw);
+
+        expect(calls).toBe(2);
+        expect(sw.messagesOfType('error')).toHaveLength(0);
+        expect(Math.max(...sw.messagesOfType('progress').map(m => m.data.percent))).toBe(100);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/app.js.h1`);
+    });
+
+    it('retries transient HTTP statuses (500) until they succeed', async () => {
+        let calls = 0;
+        const sw = boot({
+            config: { maxRetries: 2, retryDelay: 1 },
+            assets: [{ url: 'app.js', hash: 'h1' }],
+            fetchHandler: async () => (++calls < 3
+                ? { ok: false, status: 500, statusText: 'oops', clone: () => ({}) }
+                : { ok: true, status: 200, clone: () => ({}) }),
+        });
+        await install(sw);
+
+        expect(calls).toBe(3);
+        expect(sw.messagesOfType('error')).toHaveLength(0);
+    });
+
+    it('does not retry permanent HTTP statuses (404)', async () => {
+        let calls = 0;
+        const sw = boot({
+            config: { maxRetries: 2, retryDelay: 1 },
+            assets: [{ url: 'app.js', hash: 'h1' }],
+            fetchHandler: async () => { calls++; return { ok: false, status: 404, statusText: 'Not Found', clone: () => ({}) }; },
+        });
+        await install(sw);
+
+        expect(calls).toBe(1); // re-fetching a 404 cannot change the answer
+        const errors = sw.messagesOfType('error');
+        expect(errors).toHaveLength(1);
+        expect(errors[0].data.status).toBe(404);
+    });
+
+    it('does not retry an SRI/integrity failure (identical bytes fail identically)', async () => {
+        let calls = 0;
+        const sw = boot({
+            config: { maxRetries: 2, retryDelay: 1, enableIntegrityCheck: true },
+            assets: [{ url: 'app.js', hash: 'sha256-abc' }],
+            fetchHandler: async () => { calls++; throw new TypeError('Failed to find a valid digest in the integrity attribute'); },
+        });
+        await install(sw);
+
+        expect(calls).toBe(1);
+        const errors = sw.messagesOfType('error');
+        expect(errors.some(e => e.data.reason === 'integrity')).toBe(true);
+    });
+
+    it('falls back to the default retry policy when the config is not a sane number', async () => {
+        let calls = 0;
+        const sw = boot({
+            config: { maxRetries: 'plenty', retryDelay: -100 },
+            assets: [{ url: 'app.js', hash: 'h1' }],
+            fetchHandler: async () => { calls++; throw new TypeError('down'); },
+        });
+        await install(sw);
+
+        expect(calls).toBe(3); // default MAX_RETRIES = 2 extra attempts after the first
+    });
+});
+
+describe('strict abort hygiene', () => {
+    it('discards the partially populated bucket so a later install cannot warm-start from it', async () => {
+        const sw = boot({
+            config: { errorTolerance: 'strict', maxRetries: 0 },
+            assets: [{ url: 'good.js', hash: 'g1' }, { url: 'missing.js', hash: 'm1' }],
+            fetchHandler: async url => {
+                if (url.includes('missing')) throw new Error('network');
+                return { ok: true, status: 200, clone: () => ({}) };
+            },
+        });
+        await expect(sw.fire('install')).rejects.toThrow(/Install aborted/);
+        await sw.settle();
+
+        expect(Object.keys(sw.caches.snapshot())).not.toContain('bit-bswup:/ - v1');
+    });
+});
+
+describe('integrity failure aggregation', () => {
+    it('reports one advisory install-incomplete with the failure count under lax', async () => {
+        const sw = boot({
+            config: { maxRetries: 0, enableIntegrityCheck: true },
+            assets: [{ url: 'a.js', hash: 'sha256-a' }, { url: 'b.js', hash: 'sha256-b' }, { url: 'index.html', hash: 'idx' }],
+            fetchHandler: async url => {
+                if (url.includes('index')) return { ok: true, status: 200, clone: () => ({}) };
+                throw new TypeError('Failed to find a valid digest in the integrity attribute');
+            },
+        });
+        await expect(sw.fire('install')).resolves.not.toThrow();
+        await sw.settle();
+
+        const incomplete = sw.messagesOfType('error').filter(e => e.data.reason === 'install-incomplete');
+        expect(incomplete).toHaveLength(1);
+        expect(incomplete[0].data.count).toBe(2);
+        expect(incomplete[0].data.fatal).toBe(false); // advisory under lax - the app still runs
+    });
+});
+
+// Deleting an entry before its replacement has downloaded turns a failed refresh into "gone":
+// the asset (or the app shell itself) that WAS available offline no longer is. cache.put
+// overwrites in place, so the old copy must survive until the new bytes actually land.
+describe('failed refreshes keep the last good copy', () => {
+    async function updateWithFailingRefresh({ oldEntries, assets, failFor }) {
+        const sw = createServiceWorkerContext({
+            fetchHandler: async url => {
+                if (url.includes(failFor)) throw new TypeError('network down mid-update');
+                return { ok: true, status: 200, clone: () => ({}) };
+            },
+        });
+        sw.addClient();
+        sw.self.assetsManifest = { version: 'v2', assets: sw.array(assets) };
+        sw.load();
+        const oldCache = await sw.caches.open('bit-bswup - v1');
+        for (const [key, body] of Object.entries(oldEntries)) {
+            await oldCache.put(key, { ok: true, status: 200, body, clone: () => ({ body }) });
+        }
+        await install(sw);
+        return sw;
+    }
+
+    it('keeps the cached default document when its forced refresh fails', async () => {
+        const sw = await updateWithFailingRefresh({
+            oldEntries: { [`${ORIGIN}/index.html.idx`]: 'old shell' },
+            assets: [{ url: 'index.html', hash: 'idx' }],
+            failFor: 'index.html',
+        });
+
+        // Offline navigation survives on the previous shell instead of dying entirely.
+        const cache = await sw.caches.open('bit-bswup:/ - v2');
+        const kept = await cache.match(`${ORIGIN}/index.html.idx`);
+        expect(kept && kept.body).toBe('old shell');
+    });
+
+    it('keeps a hashless asset when its refresh fails', async () => {
+        const sw = await updateWithFailingRefresh({
+            oldEntries: { [`${ORIGIN}/data.json`]: 'old data' },
+            assets: [{ url: 'data.json' }, { url: 'index.html', hash: 'idx' }],
+            failFor: 'data.json',
+        });
+
+        const cache = await sw.caches.open('bit-bswup:/ - v2');
+        const kept = await cache.match(`${ORIGIN}/data.json`);
+        expect(kept && kept.body).toBe('old data');
+    });
+
+    it('still replaces the copy once the refresh succeeds', async () => {
+        // The keep-until-replaced behavior must not decay into never-refreshing.
+        const sw = createServiceWorkerContext({
+            fetchHandler: async () => ({ ok: true, status: 200, body: 'new data', clone: () => ({ ok: true, status: 200, body: 'new data' }) }),
+        });
+        sw.addClient();
+        sw.self.assetsManifest = { version: 'v2', assets: sw.array([{ url: 'data.json' }, { url: 'index.html', hash: 'idx' }]) };
+        sw.load();
+        const oldCache = await sw.caches.open('bit-bswup - v1');
+        await oldCache.put(`${ORIGIN}/data.json`, { ok: true, status: 200, body: 'old data', clone: () => ({ body: 'old data' }) });
+        await install(sw);
+
+        const cache = await sw.caches.open('bit-bswup:/ - v2');
+        const refreshed = await cache.match(`${ORIGIN}/data.json`);
+        expect(refreshed && refreshed.body).toBe('new data');
+    });
+});
+
+// One bad entry (an externalAssets typo, a corrupt manifest line) must cost that one asset -
+// not tear down the whole worker at module-evaluation time with no structured error.
+describe('invalid asset URLs', () => {
+    it('skips an unparseable externalAssets url and still installs the rest', async () => {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        sw.self.externalAssets = sw.array(['https://']); // new Request('https://') throws
+
+        expect(() => sw.load()).not.toThrow();
+
+        // Reported at INSTALL time, not module-evaluation time: the global scope re-runs on
+        // every cold start of the worker, and a module-scope report would replay the same
+        // error to the page for the whole lifetime of the version.
+        await sw.settle();
+        expect(sw.messagesOfType('error')).toHaveLength(0);
+
+        await install(sw);
+
+        const requestErrors = sw.messagesOfType('error').filter(e => e.data.reason === 'request');
+        expect(requestErrors).toHaveLength(1);
+        expect(requestErrors[0].data.fatal).toBe(false);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/index.html.idx`);
+    });
+});
+
+describe('service worker scripts are never precached', () => {
+    const swScripts = [
+        '_content/Bit.Bswup/bit-bswup.sw.js',
+        '_content/Bit.Bswup/bit-bswup.sw.min.js',
+        '_content/Bit.Bswup/bit-bswup.sw-cleanup.js',
+        '_content/Bit.Bswup/bit-bswup.sw-cleanup.min.js',
+        'service-worker.js',
+    ];
+
+    it('excludes every shipped worker-script variant by default', async () => {
+        const sw = boot({ assets: [{ url: 'index.html', hash: 'idx' }, ...swScripts.map(url => ({ url, hash: 'h' }))] });
+        await install(sw);
+
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toEqual([`${ORIGIN}/index.html.idx`]);
+    });
+
+    it('ignoreDefaultExclude opts back into caching them', async () => {
+        const sw = boot({
+            config: { ignoreDefaultExclude: true },
+            assets: [{ url: 'service-worker.js', hash: 'h' }, { url: 'index.html', hash: 'idx' }],
+        });
+        await install(sw);
+
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/service-worker.js.h`);
+    });
+});
+
+describe('passive mode', () => {
+    const assets = [{ url: 'index.html', hash: 'idx' }, { url: 'app.js', hash: 'h1' }];
+
+    it('first install downloads nothing and reports bypass { firstTime: true }', async () => {
+        const sw = boot({ config: { isPassive: true }, assets });
+        await install(sw);
+
+        expect(sw.fetchLog).toHaveLength(0);
+        const bypass = sw.messagesOfType('bypass');
+        expect(bypass).toHaveLength(1);
+        expect(bypass[0].data.firstTime).toBe(true);
+    });
+
+    // The offline story must not depend on whether a lazy-fill put happened to land before
+    // BLAZOR_STARTED arrived: the top-up deterministically fills whatever is missing.
+    it('the BLAZOR_STARTED top-up fills the cache even when nothing was lazily cached yet', async () => {
+        const sw = boot({ config: { isPassive: true }, assets });
+        await install(sw);
+        expect(sw.fetchLog).toHaveLength(0);
+
+        let waited;
+        sw.handlers.message({ data: 'BLAZOR_STARTED', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        const keys = sw.caches.snapshot()['bit-bswup:/ - v1'];
+        expect(keys).toContain(`${ORIGIN}/index.html.idx`);
+        expect(keys).toContain(`${ORIGIN}/app.js.h1`);
+        // And silently: the page UI is long gone - no progress stream, no second bypass.
+        expect(sw.messagesOfType('progress')).toHaveLength(0);
+        expect(sw.messagesOfType('bypass')).toHaveLength(1);
+    });
+});
+
+// A first install can be activated through the skipWaiting path too (BitBswup.skipWaiting()
+// catching the transient waiting state). The initiating page must then get the first-install
+// completion signal - CLIENTS_CLAIMED, which starts Blazor in place and triggers the
+// post-start top-up - not the update reload signal, which would kill the boot that the
+// claim's controllerchange just started.
+describe('SKIP_WAITING distinguishes first installs from updates', () => {
+    function bootWith(registration) {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        sw.self.registration = registration;
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        return sw.load();
+    }
+
+    it('replies CLIENTS_CLAIMED to the source on a first-install activation', async () => {
+        const sw = bootWith({ scope: `${ORIGIN}/` }); // no active worker => first install
+
+        const sourcePosted = [];
+        let waited;
+        sw.handlers.message({ data: 'SKIP_WAITING', source: { postMessage: m => sourcePosted.push(m) }, waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        expect(sourcePosted).toEqual(['CLIENTS_CLAIMED']);
+        expect(sw.posted).not.toContain('WAITING_SKIPPED');
+    });
+
+    it('broadcasts WAITING_SKIPPED on a real update activation', async () => {
+        const sw = bootWith({ scope: `${ORIGIN}/`, active: {} }); // previous version active => update
+
+        let waited;
+        sw.handlers.message({ data: 'SKIP_WAITING', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        expect(sw.posted).toContain('WAITING_SKIPPED');
+    });
+
+    it('still prunes when only the receiver itself lingers in the waiting slot mid-transition', async () => {
+        // Some engines briefly leave the activating worker visible in registration.waiting;
+        // that must not veto its own pruning - only a DIFFERENT worker there may.
+        const sw = bootWith({ scope: `${ORIGIN}/`, active: {} });
+        const selfWorker = {};
+        sw.self.serviceWorker = selfWorker;
+        sw.self.registration.waiting = selfWorker;
+        await sw.caches.open('bit-bswup:/ - v0');
+
+        let waited;
+        sw.handlers.message({ data: 'SKIP_WAITING', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        expect(Object.keys(sw.caches.snapshot())).not.toContain('bit-bswup:/ - v0');
+    });
+});
+
+describe('precache rejects partial responses', () => {
+    it('treats a 206 answer to a full precache request as a failure and caches nothing', async () => {
+        // A resuming middlebox answering the versioned request with a fragment: response.ok
+        // is TRUE for 206, and a fragment stored as the asset's full body would be served
+        // broken until the next hash change (applyRangeHeader refuses non-200 responses).
+        const sw = boot({
+            config: { maxRetries: 0 },
+            assets: [{ url: 'clip.mp4', hash: 'h1' }, { url: 'index.html', hash: 'idx' }],
+            fetchHandler: async url => (url.includes('clip.mp4')
+                ? { ok: true, status: 206, statusText: 'Partial Content', clone: () => ({}) }
+                : { ok: true, status: 200, clone: () => ({}) }),
+            configure: c => { c.self.assetsInclude = c.array([c.regex('\\.mp4$')]); },
+        });
+        await install(sw);
+
+        const errors = sw.messagesOfType('error');
+        expect(errors.some(e => e.data.status === 206)).toBe(true);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).not.toContain(`${ORIGIN}/clip.mp4.h1`);
+    });
+});
+
+describe('pattern retention never adopts stale hashed keys', () => {
+    it('deletes a hashed concrete key even when an unanchored pattern matches it', async () => {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        sw.self.externalAssets = sw.array([sw.regex('resource-collection')]); // no anchors
+        sw.load();
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        // A genuine lazily-cached generation, and a stale hashed key of a re-hashed concrete
+        // asset that the unanchored pattern also matches.
+        await cache.put(`${ORIGIN}/_framework/resource-collection.g1.js`, { ok: true, status: 200, clone: () => ({}) });
+        await cache.put(`${ORIGIN}/_framework/resource-collection.g0.js.sha256-dead`, { ok: true, status: 200, clone: () => ({}) });
+
+        await install(sw);
+
+        const keys = sw.caches.snapshot()['bit-bswup:/ - v1'];
+        expect(keys).toContain(`${ORIGIN}/_framework/resource-collection.g1.js`);
+        expect(keys).not.toContain(`${ORIGIN}/_framework/resource-collection.g0.js.sha256-dead`);
+    });
+});
+
+describe('the top-up never re-downloads what the install just fetched', () => {
+    it('skips the hashless/default-document refresh on the BLAZOR_STARTED pass', async () => {
+        const sw = boot({ assets: [{ url: 'index.html', hash: 'idx' }, { url: 'data.json' }] });
+        await install(sw);
+        const installFetches = sw.fetchLog.length; // shell + hashless data.json
+
+        let waited;
+        sw.handlers.message({ data: 'BLAZOR_STARTED', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        // The refresh semantics belong to real updates; seconds after the install they only
+        // doubled every hashless (and shell) download on every single first install.
+        expect(sw.fetchLog.length).toBe(installFetches);
+    });
+});
+
+describe('noPrerenderQuery', () => {
+    it('appends the preset no-prerender query to the default document request', () => {
+        const sw = boot({ config: { mode: 'NoPrerender' } });
+        const request = sw.fn('createNewAssetRequest')({ reqUrl: `${ORIGIN}/`, hash: 'h1', isDefault: true });
+        expect(request.url).toContain('no-prerender=true');
+    });
+});
+
+describe('sendMessage resilience', () => {
+    it('survives a clients.matchAll rejection without an unhandled rejection', async () => {
+        const sw = boot();
+        sw.self.clients.matchAll = async () => { throw new Error('dying worker'); };
+
+        expect(() => sw.fn('sendMessage')({ type: 'activate', data: {} })).not.toThrow();
+        await sw.settle(); // an unhandled rejection here would fail the test run
     });
 });
 

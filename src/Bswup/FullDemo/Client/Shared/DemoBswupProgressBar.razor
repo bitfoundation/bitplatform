@@ -25,5 +25,8 @@
             <circle r="40%" cx="50%" cy="50%" />
         </svg>
     </BswupProgress>
-    <button id="bit-bswup-reload">Update available, Click to Reload</button>
+    @* No hand-written #bit-bswup-reload here: since v-10-5-0 BswupProgress always renders
+       the update-ready button (and its screen-reader status region) itself, outside the
+       overlay - even with custom ChildContent. A second copy would be a duplicate id that
+       shadows the component's working button. Restyle it via ::deep #bit-bswup-reload. *@
 </div>

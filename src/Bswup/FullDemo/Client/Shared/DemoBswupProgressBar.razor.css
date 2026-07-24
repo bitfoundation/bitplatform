@@ -80,4 +80,7 @@
     position: fixed;
     top: 10px;
     right: 10px;
+    /* Above any fixed app chrome - the button sits outside the splash overlay and does not
+       inherit its stacking. */
+    z-index: 999999;
 }

@@ -23,6 +23,7 @@ const fullSplash = {
     'bit-bswup-progress-bar': {},
     'bit-bswup-percent': {},
     'bit-bswup-reload': {},
+    'bit-bswup-reload-status': {},
     'bit-bswup-error': {},
     'bit-bswup-error-message': {},
     'bit-bswup-error-details': {},
@@ -215,5 +216,201 @@ describe('custom handler', () => {
 
         expect(() => ctx.window.bitBswupHandler('ACTIVATE', { version: 'v2' })).not.toThrow();
         expect(seen).toEqual(['ACTIVATE']);
+    });
+
+    // Handler="bitBswupHandler" points the custom-handler hook at the very global this script
+    // registers: the handler would invoke itself until the stack blew, with handleInternal
+    // prepending duplicate asset rows at every depth on the way down.
+    it('refuses a Handler that resolves to bitBswupHandler itself', () => {
+        const ctx = progressPage({
+            elements: {
+                ...fullSplash,
+                'bit-bswup-assets': {},
+                'bit-bswup': { ...SPLASH, 'data-bit-bswup-show-assets': 'true', 'data-bit-bswup-handler': 'bitBswupHandler' },
+            },
+        });
+
+        expect(() => ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 10, index: 1, asset: { url: 'a.js', hash: 'h' } }))
+            .not.toThrow();
+        // Exactly one row: the recursion would have prepended one per stack frame.
+        expect(ctx.elements['bit-bswup-assets'].children).toHaveLength(1);
+    });
+});
+
+// Background updates download behind a healthy running app: the full-viewport overlay (which
+// has no background and, when shown, sits on top of every click target) must stay hidden, and
+// completion must surface through the reload button - which lives OUTSIDE #bit-bswup so it can
+// appear without revealing the splash.
+describe('background updates stay out of the way', () => {
+    it('does not paint the overlay for background-update progress (firstInstall: false)', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' }, firstInstall: false });
+
+        expect(ctx.elements['bit-bswup'].style.display).not.toBe('block');
+    });
+
+    it('still takes the screen over for first-install progress', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' }, firstInstall: true });
+
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+    });
+
+    it('keeps the old take-over behavior when the flag is absent (older bit-bswup.js cached)', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 30, index: 1, asset: { url: 'a.js' } });
+
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+    });
+
+    it('shows the reload button for a finished background update without revealing the overlay', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        let reloaded = 0;
+        ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: false, reload: () => { reloaded++; return Promise.resolve(); } });
+
+        expect(reloaded).toBe(0); // AutoReload defaults false
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
+        expect(ctx.elements['bit-bswup'].style.display).not.toBe('block');
+    });
+});
+
+// The reload button is display:none, which removes it from the accessibility tree entirely -
+// its appearance alone is never announced. The always-present role="status" region carries
+// the announcement.
+describe('update-ready announcement', () => {
+    it('announces through the status live region when the button appears', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.resolve() });
+
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload-status'].textContent).not.toBe('');
+    });
+
+    it('clears the announcement when a failed install hides the button', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.resolve() });
+        ctx.window.bitBswupHandler('ERROR', { reason: 'install-aborted', message: 'failed', fatal: true });
+
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('none');
+        expect(ctx.elements['bit-bswup-reload-status'].textContent).toBe('');
+    });
+});
+
+// A bad AppContainer selector makes document.querySelector throw; that used to happen BEFORE
+// window.bitBswupHandler was assigned, so no handler ever registered, the downloadFinished ->
+// reload() handshake never ran, and a first install hung until the stall watchdog.
+// An interactive Blazor render can replace the whole splash subtree AFTER initialization
+// (hydration mismatch, layout re-render). The handler used to keep driving the detached
+// nodes - bar frozen at its last value, button toggling on an orphan - with the observer
+// already disconnected and no recovery path.
+describe('splash subtree replaced after initialization', () => {
+    it('keeps driving the UI through the replacement elements', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 20, index: 1, asset: { url: 'a.js', hash: 'h' } });
+        expect(ctx.elements['bit-bswup-progress-bar'].style.width).toBe('20%');
+
+        // The interactive render swaps the subtree: same ids, new nodes.
+        ctx.addElement('bit-bswup', SPLASH);
+        ctx.addElement('bit-bswup-progress-bar', {});
+        ctx.addElement('bit-bswup-percent', {});
+
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 80, index: 2, asset: { url: 'b.js', hash: 'h' } });
+
+        expect(ctx.elements['bit-bswup-progress-bar'].style.width).toBe('80%');
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+    });
+
+    it('shows the reload button on a replacement node too', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.addElement('bit-bswup-reload', {});
+        ctx.addElement('bit-bswup-reload-status', {});
+
+        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.resolve() });
+
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload-status'].textContent).not.toBe('');
+    });
+});
+
+// The one test that exercises the SHIPPED wiring as a single chain: bit-bswup.js resolving
+// the progress script's bitBswupHandler, real worker messages driving the splash, the
+// built-in downloadFinished branch calling the REAL reload(), that reload waiting for
+// activation and posting CLAIM_CLIENTS, and the CLIENTS_CLAIMED reply booting Blazor and
+// hiding the splash. Every piece is tested elsewhere in isolation; a regression in the seam
+// between the two bundles would pass all of those and still ship a broken first install.
+describe('end-to-end first install through the built-in handler', () => {
+    function fakeWorker(state) {
+        const listeners = [];
+        return {
+            state,
+            posted: [],
+            postMessage(message) { this.posted.push(message); },
+            addEventListener(type, fn) { if (type === 'statechange') listeners.push(fn); },
+            removeEventListener(type, fn) {
+                const index = listeners.indexOf(fn);
+                if (index !== -1) listeners.splice(index, 1);
+            },
+            fireStateChange() { listeners.slice().forEach(fn => fn({ currentTarget: this })); },
+        };
+    }
+
+    it('progress -> reload() -> CLAIM_CLIENTS -> CLIENTS_CLAIMED -> Blazor started, splash hidden', async () => {
+        const installing = fakeWorker('installing');
+        const registration = { active: null, waiting: null, installing, addEventListener() { }, update: async () => { } };
+        const ctx = createPageContext({ elements: fullSplash });
+        ctx.addBswupScriptTag();
+        ctx.addBlazorScriptTag();
+        let started = 0;
+        ctx.window.Blazor = { start: async () => { started++; } };
+        ctx.setServiceWorker({ registration });
+        ctx.load('bit-bswup.js');
+        ctx.load('bit-bswup.progress.js');
+        await ctx.settle();
+
+        ctx.message(JSON.stringify({ type: 'progress', data: { percent: 50, index: 1, asset: { url: 'a.js', hash: 'h' } } }));
+        expect(ctx.elements['bit-bswup'].style.display).toBe('block');
+        expect(ctx.elements['bit-bswup-progress-bar'].style.width).toBe('50%');
+
+        ctx.message(JSON.stringify({ type: 'progress', data: { percent: 100, index: 2, asset: { url: 'b.js', hash: 'h' } } }));
+        await ctx.settle();
+
+        // The built-in handler called the REAL reload(), which waits for activation - nothing
+        // posted yet, and crucially no hard reload.
+        expect(installing.posted).toEqual([]);
+        expect(ctx.reloads.count).toBe(0);
+
+        registration.installing = null;
+        registration.active = installing;
+        installing.state = 'activated';
+        installing.fireStateChange();
+        await ctx.settle();
+        expect(installing.posted).toEqual(['CLAIM_CLIENTS']);
+
+        const sourcePosted = [];
+        ctx.message('CLIENTS_CLAIMED', { postMessage: m => sourcePosted.push(m) });
+        await ctx.settle();
+
+        expect(started).toBe(1);
+        expect(sourcePosted).toEqual(['BLAZOR_STARTED']);
+        expect(ctx.reloads.count).toBe(0);
+        // The resolved reload() promise is what hides the splash - the end of the chain.
+        expect(ctx.elements['bit-bswup'].style.display).toBe('none');
+    });
+});
+
+describe('invalid app container selector', () => {
+    it('still registers the handler and initializes', () => {
+        const ctx = progressPage({
+            elements: {
+                ...fullSplash,
+                'bit-bswup': { ...SPLASH, 'data-bit-bswup-app-container': '#' }, // '#' throws in querySelector
+            },
+        });
+
+        expect(typeof ctx.window.bitBswupHandler).toBe('function');
+        expect(ctx.elements['bit-bswup'].getAttribute('data-bit-bswup-initialized')).toBe('true');
+        // And the splash still functions without the app-hiding nicety.
+        expect(() => ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 10, index: 1, asset: { url: 'a.js' } }))
+            .not.toThrow();
     });
 });

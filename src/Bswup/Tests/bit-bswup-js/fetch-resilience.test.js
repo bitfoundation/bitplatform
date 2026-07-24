@@ -12,7 +12,7 @@
 //   2. The managed path never rejects - it degrades cache -> network -> stale cache -> error.
 
 import { describe, it, expect } from 'vitest';
-import { createServiceWorkerContext, ORIGIN } from './harness.js';
+import { createServiceWorkerContext, ORIGIN, FakeBlob, FakeResponse, decodeBody } from './harness.js';
 
 function boot({ config = {}, assets = [{ url: 'app.js', hash: 'h1' }], fetchHandler, cacheStorageError, configure } = {}) {
     const sw = createServiceWorkerContext({ fetchHandler, cacheStorageError });
@@ -211,12 +211,11 @@ describe('range requests', () => {
     const managed = { url: 'clip.mp4', hash: 'h1' };
     const includeMp4 = c => { c.self.assetsInclude = c.array([c.regex('\\.mp4$')]); };
     const TEXT = '0123456789';
-    const fullBody = () => ({
-        ok: true, status: 200, body: TEXT, headers: { 'content-type': 'video/mp4' },
-        clone() { return fullBody(); },
-        arrayBuffer: async () => new TextEncoder().encode(TEXT).buffer,
-    });
-    const decode = response => new TextDecoder().decode(response.body);
+    // A REAL FakeResponse, not a hand-rolled object: its one-shot body and clone-after-use
+    // throw are exactly what protects the clone-before-read discipline in applyRangeHeader -
+    // a fixture with a free clone() would keep these tests green with the clone deleted.
+    const fullBody = () => new FakeResponse(TEXT, { status: 200, headers: { 'content-type': 'video/mp4' } });
+    const decode = decodeBody;
 
     async function bootCached() {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN, configure: includeMp4 });
@@ -268,8 +267,16 @@ describe('range requests', () => {
             configure: includeMp4,
         });
 
+        // The Cache API itself also rejects 206 puts, so an empty cache alone cannot prove
+        // the worker's own guard exists - assert the put was never even attempted.
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        let putAttempts = 0;
+        const originalPut = cache.put.bind(cache);
+        cache.put = async (...args) => { putAttempts++; return originalPut(...args); };
+
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-3' } });
         expect(response.status).toBe(206); // the server's partial passes through untouched
+        expect(putAttempts).toBe(0);
         expect(sw.caches.snapshot()['bit-bswup:/ - v1'] || []).toHaveLength(0);
     });
 
@@ -288,6 +295,89 @@ describe('range requests', () => {
         // request) - the plain request keeps it, so no `?v=` may appear.
         expect(seen).toHaveLength(1);
         expect(seen[0].includes('?v=')).toBe(false);
+    });
+});
+
+// Offline navigation is the core feature: every route the user deep-links to must come back
+// as the cached app shell, while URLs the server owns (and URLs that ARE assets) must not.
+describe('offline navigation (SPA default document)', () => {
+    const assets = [
+        { url: 'index.html', hash: 'idx' },
+        { url: 'manifest.json', hash: 'mf' },
+    ];
+
+    async function bootOffline(configure) {
+        const sw = boot({ config: { isPassive: true }, assets, fetchHandler: NETWORK_DOWN, configure });
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        await cache.put(`${ORIGIN}/index.html.idx`, { ok: true, status: 200, body: 'the app shell', clone: () => ({}) });
+        await cache.put(`${ORIGIN}/manifest.json.mf`, { ok: true, status: 200, body: '{"name":"app"}', clone: () => ({}) });
+        return sw;
+    }
+
+    it('serves the cached app shell for a deep-link navigation while offline', async () => {
+        const sw = await bootOffline();
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter/42`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('the app shell');
+    });
+
+    // Opening /manifest.json (or an image) directly in a tab must show that file - serving
+    // the SPA shell under an asset's URL renders markup where the browser expected data.
+    it('serves the asset itself when the navigation targets a managed asset URL', async () => {
+        const sw = await bootOffline();
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/manifest.json`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('{"name":"app"}');
+    });
+
+    it('leaves serverRenderedUrls navigations to the network', async () => {
+        const sw = await bootOffline(c => { c.self.serverRenderedUrls = c.array([c.regex('/account/')]); });
+        const { handled } = await sw.fetchEvent({ url: `${ORIGIN}/account/login`, mode: 'navigate' });
+        expect(handled).toBe(false);
+    });
+
+    it('leaves navigations alone when no asset matches the default document', async () => {
+        const sw = boot({ config: { isPassive: true, defaultUrl: 'missing.html' }, assets, fetchHandler: NETWORK_DOWN });
+        const { handled } = await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
+        expect(handled).toBe(false);
+    });
+
+    // A RegExp externalAssets entry that happens to match a route URL must not hijack the
+    // navigation away from the app shell: pattern assets are keyed by the live request URL,
+    // so the route would be cached as a bogus "pattern generation" and answered with a
+    // network error offline instead of the shell.
+    it('never lets a pattern asset hijack a navigation', async () => {
+        const sw = await bootOffline(c => { c.self.externalAssets = c.array([c.regex('/counter')]); });
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter/42`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('the app shell');
+    });
+
+    // Cache-poisoning regression: an active-mode navigation whose shell entry is missing must
+    // fetch the SHELL's own URL - never the route URL - because whatever comes back is written
+    // under the shell's cache key. A server answering /counter with route-specific HTML would
+    // otherwise become the app shell for every future navigation.
+    it('a shell cache miss on a navigation fetches the shell URL, not the route URL', async () => {
+        const seen = [];
+        const sw = boot({
+            config: { isPassive: false },
+            assets,
+            fetchHandler: async url => {
+                seen.push(url);
+                if (url.includes('index.html')) return { ok: true, status: 200, body: 'the real shell', clone: () => ({ ok: true, status: 200, body: 'the real shell' }) };
+                return { ok: true, status: 200, body: 'route-specific html', clone: () => ({ ok: true, status: 200, body: 'route-specific html' }) };
+            },
+        });
+
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter/42`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('the real shell');
+        expect(seen.some(u => u.includes('/counter'))).toBe(false); // the route URL is never fetched
+
+        // And what landed under the shell's key is the shell, not the route's HTML.
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cached = await cache.match(`${ORIGIN}/index.html.idx`);
+        expect(cached && cached.body).toBe('the real shell');
     });
 });
 

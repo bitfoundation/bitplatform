@@ -23,12 +23,14 @@
 <body>
     <Routes @rendermode="@renderMode" />
     <script src="_framework/blazor.web.js?v=10.0.0" autostart="false"></script>
+    @* blazorScript is omitted on purpose: both default entry scripts are auto-detected
+       (fingerprints and query strings included) - the attribute is only needed for
+       non-default script paths. *@
     <script src="_content/Bit.Bswup/bit-bswup.js"
             scope="/"
             log="info"
             sw="service-worker.js"
-            handler="bitBswupHandler"
-            blazorScript="_framework/blazor.web.js"></script>
+            handler="bitBswupHandler"></script>
 
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
     <DemoBswupProgressBar />

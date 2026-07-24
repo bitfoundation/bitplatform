@@ -11,32 +11,36 @@ interface Window extends BitBswupGlobals { }
 
 // Self-destructing "uninstall" service worker. Deploy this in place of the real
 // bit-bswup.sw.js when an app needs to fully back out of Bswup (e.g. switching a site away
-// from offline support, or recovering clients stuck on a broken worker/cache). It takes over
-// all clients, wipes every Bswup/Blazor cache once in control, and tells each one to
-// unregister and reload - leaving the app running purely from the network with no SW.
+// from offline support, or recovering clients stuck on a broken worker/cache). On activation
+// it wipes every Bswup/Blazor cache this app owns, unregisters its own registration, and
+// signals in-scope tabs to detach - leaving the app running purely from the network with no
+// SW. Tabs the takeover controlled reload once (their controllerchange); everything after
+// that stays quiet even while the app HTML keeps re-registering this script.
 
 // On install, only skipWaiting() so this cleanup worker activates without waiting for existing
 // clients to close. All teardown work (cache purge + client notification) is deferred to the
 // 'activate' handler below, once this worker is actually in control.
 self.addEventListener('install', (e: any) => e.waitUntil(self.skipWaiting()));
 
-// Take over all clients and run teardown only once this worker has *activated* - not during
-// install. Doing the cache purge at activate time (after clients.claim()) guarantees the
-// cleanup worker is fully in control before its caches disappear, so no controlled tab is left
-// using a worker whose caches were already purged.
+// Run teardown only once this worker has *activated* - not during install. skipWaiting-driven
+// activation is also what hands this fetch-less worker control of every tab the previous
+// (real) worker controlled: per the lifecycle, the new active worker takes over controlled
+// clients immediately, firing their 'controllerchange' (which is the page's reload-and-detach
+// signal). clients.claim() is deliberately NOT called: claiming would additionally attach
+// UNCONTROLLED pages - pages that are already running SW-free, including the very tabs that
+// just reloaded to detach - re-entangling them with a worker whose whole purpose is to
+// disappear, and turning every future page load into another claim/reload cycle.
 self.addEventListener('activate', (e: any) => e.waitUntil(teardownClients()));
 
-// Activate-time teardown: claim every client, purge the caches this library (and Blazor)
-// created, then message each (controlled or not) to unregister itself. The delayed
-// 'WAITING_SKIPPED' nudge is a fallback reload signal for clients that don't act on
-// 'UNREGISTER' fast enough, so no tab is left running against the now-deleted caches. Await the
-// whole chain so the activate event (which waits on this via waitUntil) doesn't resolve before
-// the teardown signalling has actually been dispatched.
+// Activate-time teardown: purge the caches this library (and Blazor) created, unregister this
+// registration (the client-independent step - see below), then message each in-scope window
+// client to detach itself. The delayed 'WAITING_SKIPPED' nudge is a fallback reload signal
+// for clients that don't act on 'UNREGISTER' fast enough, so no tab is left running against
+// the now-deleted caches. Every step is individually best-effort: this worker is deployed
+// into broken-storage / wedged-client situations, and any one step failing must not stop the
+// rest. Await the whole chain so the activate event (which waits on this via waitUntil)
+// doesn't resolve before the teardown signalling has actually been dispatched.
 async function teardownClients() {
-    // Claim first so controlled tabs are served by this fetch-less worker (straight from the
-    // network) before their caches vanish, then purge the Bswup/Blazor caches.
-    await self.clients.claim();
-
     // Best-effort: CacheStorage can reject under storage pressure / broken origin storage -
     // the very situations this recovery worker is deployed into. The purge must never abort
     // the teardown, or no client would ever be told to UNREGISTER and every tab would stay
@@ -62,13 +66,37 @@ async function teardownClients() {
     } catch (err) {
         console.warn('BitBswup SW cleanup: cache purge failed (continuing with unregister):', err);
     }
+
+    // Unregister HERE, in the worker, not only via the clients. The 'UNREGISTER' message
+    // below is inherently racy: tabs the takeover just switched are already reloading on
+    // their 'controllerchange' when it is posted (a navigating client silently drops
+    // messages), and tabs that load later never hear it at all - teardown runs once, at
+    // activate. Relying on clients alone left the registration alive indefinitely. Calling
+    // registration.unregister() from the activate handler is the canonical self-destroying
+    // service-worker pattern and needs no client cooperation: the registration is marked for
+    // removal now and fully clears once the last client detaches. Pages that re-register
+    // later (the app HTML still ships the Bswup script) just repeat this cycle silently -
+    // register, activate, purge (no-op), unregister - without ever being claimed or reloaded.
+    try {
+        await self.registration.unregister();
+    } catch (err) {
+        console.warn('BitBswup SW cleanup: self-unregister failed (continuing with client notification):', err);
+    }
+
     // Only target window clients that belong to this registration's scope. matchAll with
     // includeUncontrolled returns every same-origin client (including those under other
     // scopes / mounted sub-apps and non-window clients like workers); broadcasting
     // 'UNREGISTER' to all of them would tell unrelated apps to tear themselves down. Filter
     // to in-scope window clients so the reloadSignals loop only reloads this registration.
     const scope = self.registration && self.registration.scope;
-    const allClients = await self.clients.matchAll({ includeUncontrolled: true });
+    // Same best-effort rule as every other step: a matchAll rejection must not abort the
+    // teardown (the purge and unregister above already ran; only the notification is lost).
+    let allClients: any = [];
+    try {
+        allClients = await self.clients.matchAll({ includeUncontrolled: true });
+    } catch (err) {
+        console.warn('BitBswup SW cleanup: client enumeration failed (teardown already completed):', err);
+    }
     const clients = (allClients || []).filter((client: any) =>
         client.type === 'window' && (!scope || (typeof client.url === 'string' && client.url.indexOf(scope) === 0)));
     const reloadSignals: Promise<void>[] = [];

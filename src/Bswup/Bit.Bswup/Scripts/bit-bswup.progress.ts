@@ -25,6 +25,25 @@
     //   hideApp               - hide the app element during download
     //   autoHide              - hide the splash automatically when the download finishes
     //   handler               - optional name of a user handler invoked after the built-in one
+    // Resolves a splash element at USE time, with a cache that re-resolves when the cached
+    // node has been replaced. Capturing the elements once at start() froze the UI whenever an
+    // interactive Blazor render swapped the splash subtree after initialization: the handler
+    // kept driving the detached nodes (bar stuck at its last value, the reload button toggled
+    // on an orphan) with no observer left to recover. isConnected is undefined on exotic node
+    // fakes; only an explicit false (a real node that left the document) triggers
+    // re-resolution, and the stale node is kept as a last resort when no replacement exists.
+    const elementCache: { [id: string]: any } = {};
+    function el(id: string) {
+        const cached = elementCache[id];
+        if (cached && cached.isConnected !== false) return cached;
+        const fresh = document.getElementById(id);
+        if (fresh) {
+            elementCache[id] = fresh;
+            return fresh;
+        }
+        return cached || null;
+    }
+
     function start(autoReload: boolean,
         showLogs: boolean,
         showAssets: boolean,
@@ -33,20 +52,47 @@
         autoHide: boolean,
         handler?: string) {
 
-        const appEl = document.querySelector(appContainerSelector) as HTMLElement;
-        const bswupEl = document.getElementById('bit-bswup');
-        const progressEl = document.getElementById('bit-bswup-progress-bar');
-        const percentEl = document.getElementById('bit-bswup-percent');
-        const assetsEl = document.getElementById('bit-bswup-assets');
-        const reloadButton = document.getElementById('bit-bswup-reload');
-        const errorEl = document.getElementById('bit-bswup-error');
-        const errorMessageEl = document.getElementById('bit-bswup-error-message');
-        const errorDetailsEl = document.getElementById('bit-bswup-error-details');
-        const errorRetryButton = document.getElementById('bit-bswup-error-retry');
+        // Install the global handler FIRST. Everything below touches the DOM, and a bad
+        // AppContainer selector makes document.querySelector throw - previously that threw
+        // BEFORE window.bitBswupHandler was assigned, so no handler ever registered, the
+        // downloadFinished -> reload() handshake never ran, and a first install sat behind
+        // the splash until the stall watchdog fired a minute later. The handler closes over
+        // bindings initialized below, which is safe: messages arrive as async events and can
+        // never run mid-start().
+        (window as any).bitBswupHandler = bitBswupHandler;
+
+        // Tolerate an invalid selector instead of aborting initialization: losing the
+        // hide-the-app nicety costs a cosmetic overlap; losing the handler costs the boot.
+        let appEl: HTMLElement | null = null;
+        try {
+            appEl = document.querySelector(appContainerSelector) as HTMLElement;
+        } catch (err) {
+            console.error('BitBswupProgress: invalid appContainer selector - continuing without app hiding:', appContainerSelector, err);
+        }
 
         const appElOriginalDisplay = appEl && appEl.style.display;
 
-        (window as any).bitBswupHandler = bitBswupHandler;
+        // Sets the reload button visible/wired and announces it. The button is hidden with
+        // display:none, which removes it from the accessibility tree entirely - its
+        // appearance is never announced on its own - so the always-present visually-hidden
+        // role="status" region carries the announcement for screen readers.
+        function showReloadButton(reload: any, display: string) {
+            const reloadButton = el('bit-bswup-reload');
+            const reloadStatusEl = el('bit-bswup-reload-status');
+            reloadButton && (reloadButton.style.display = display);
+            reloadButton && (reloadButton.onclick = reload);
+            reloadStatusEl && (reloadStatusEl.textContent = 'A new version is ready to install.');
+        }
+        function hideReloadButton() {
+            const reloadButton = el('bit-bswup-reload');
+            const reloadStatusEl = el('bit-bswup-reload-status');
+            if (reloadButton) {
+                reloadButton.style.display = 'none';
+                reloadButton.onclick = null;
+            }
+            reloadStatusEl && (reloadStatusEl.textContent = '');
+        }
+
         // Resolve the optional user handler lazily rather than capturing window[handler] once
         // here at start(): if the host registers its handler after this script runs (a racey
         // script order), an early capture would bind `undefined` forever and the custom handler
@@ -56,6 +102,16 @@
         function resolveHandler() {
             if (typeof handlerFn === 'function') return handlerFn;
             const candidate = handler ? window[handler] : undefined;
+            // Handler="bitBswupHandler" - the very global this script registers - would make
+            // the handler invoke itself until the stack blows, and handleInternal runs FIRST
+            // at every depth, so ShowAssets would prepend thousands of duplicate rows per
+            // message on the way down. Refuse self-references and cache a no-op so the
+            // warning fires once, not per message.
+            if (candidate === bitBswupHandler) {
+                console.warn('BitBswupProgress: the custom handler resolves to the built-in bitBswupHandler itself - ignoring it (point Handler at a different function).');
+                handlerFn = () => { };
+                return handlerFn;
+            }
             if (typeof candidate === 'function') handlerFn = candidate as (message: any, data: any) => void;
             return handlerFn;
         }
@@ -79,6 +135,17 @@
                 const showAssets_ = _config.showAssets ?? showAssets;
                 const autoReload_ = _config.autoReload ?? autoReload;
 
+                // Resolved per message, not captured at start() - see el(): an interactive
+                // render may have replaced the splash subtree since the previous message.
+                const bswupEl = el('bit-bswup');
+                const progressEl = el('bit-bswup-progress-bar');
+                const percentEl = el('bit-bswup-percent');
+                const assetsEl = el('bit-bswup-assets');
+                const errorEl = el('bit-bswup-error');
+                const errorMessageEl = el('bit-bswup-error-message');
+                const errorDetailsEl = el('bit-bswup-error-details');
+                const errorRetryButton = el('bit-bswup-error-retry');
+
                 switch (message) {
                     case BswupMessage.updateFound: return showLogs_ ? console.log('an update found.') : undefined;
 
@@ -94,6 +161,20 @@
                         return showLogs_ ? console.log('downloading assets started:', data?.version) : undefined;
 
                     case BswupMessage.downloadProgress: {
+                        // Background updates (firstInstall === false) download behind a
+                        // healthy running app. Painting the full-viewport splash over it
+                        // blocked every click for the entire download - and the overlay root
+                        // has no background, so it rendered as stray text on top of the live
+                        // UI. The built-in overlay is therefore first-install-only; progress
+                        // still reaches the user handler for apps that render their own
+                        // indicator, and completion surfaces through the reload button. The
+                        // strict === false check keeps the old take-over behavior when the
+                        // flag is absent (an older bit-bswup.js still cached alongside this
+                        // script).
+                        if (data && data.firstInstall === false) {
+                            return showLogs_ ? console.log('asset downloaded (background update):', data) : undefined;
+                        }
+
                         hideApp_ && appEl && (appEl.style.display = 'none');
                         bswupEl && (bswupEl.style.display = 'block');
 
@@ -137,12 +218,13 @@
                                 // this the splash could stay hidden with no way forward, so restore
                                 // the splash and offer a manual retry wired to data.reload.
                                 bswupEl && (bswupEl.style.display = 'block');
-                                reloadButton && (reloadButton.style.display = 'block');
-                                reloadButton && (reloadButton.onclick = data.reload);
+                                showReloadButton(data.reload, 'block');
                             });
                         } else {
-                            reloadButton && (reloadButton.style.display = 'block');
-                            reloadButton && (reloadButton.onclick = data.reload);
+                            // The button lives OUTSIDE #bit-bswup (see BswupProgress.razor)
+                            // precisely so this works without revealing the whole overlay
+                            // over a running app.
+                            showReloadButton(data.reload, 'block');
                         }
                         return showLogs_ ? console.log('downloading assets finished.') : undefined;
 
@@ -151,12 +233,14 @@
                             // Wrap in Promise.resolve so a non-promise return is handled too, and
                             // fall back to a manual reload button if the auto-reload rejects.
                             Promise.resolve(data.reload()).catch(() => {
-                                reloadButton && (reloadButton.style.display = 'inline');
-                                reloadButton && (reloadButton.onclick = data.reload);
+                                showReloadButton(data.reload, 'inline');
                             });
                         } else {
-                            reloadButton && (reloadButton.style.display = 'inline');
-                            reloadButton && (reloadButton.onclick = data.reload);
+                            // Shown without touching #bit-bswup: when an update is already
+                            // staged at page load no progress event ever revealed the overlay,
+                            // and unhiding a button inside a display:none parent rendered
+                            // nothing - the user was never told an update was ready.
+                            showReloadButton(data.reload, 'inline');
                         }
                         return showLogs_ ? console.log('new update is ready.') : undefined;
 
@@ -191,10 +275,7 @@
                         if (data && data.firstInstall === false) {
                             hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
                             bswupEl && (bswupEl.style.display = 'none');
-                            if (reloadButton) {
-                                reloadButton.style.display = 'none';
-                                reloadButton.onclick = null;
-                            }
+                            hideReloadButton();
                             return;
                         }
 
@@ -207,10 +288,7 @@
                         // the reload button visible would invite the user to activate an update
                         // that has already failed, promoting a broken worker / caches. Hide and
                         // unwire it so the only actionable control is the (conditional) Retry.
-                        if (reloadButton) {
-                            reloadButton.style.display = 'none';
-                            reloadButton.onclick = null;
-                        }
+                        hideReloadButton();
 
                         // The error supersedes any in-flight progress. Hide the bar and the
                         // percentage so a stale partial value (e.g. "47%") isn't left sitting
@@ -264,7 +342,8 @@
         // is only set after a successful start - a start() that threw can be retried - and so
         // manual BitBswupProgress.start(...) callers are tracked too, keeping the
         // DOMContentLoaded/MutationObserver paths from re-initializing.
-        bswupEl && bswupEl.setAttribute('data-bit-bswup-initialized', 'true');
+        const initializedEl = el('bit-bswup');
+        initializedEl && initializedEl.setAttribute('data-bit-bswup-initialized', 'true');
     };
 
     function config(newConfig: IBswupProgressConfigs) {

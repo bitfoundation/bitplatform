@@ -151,8 +151,9 @@ const CACHE_NAME = `${SCOPED_CACHE_PREFIX}${CACHE_VERSION}`;
 // the wrong tool for this (it also overwrites legitimate falsy config: an explicit
 // `caseInsensitiveUrl = false` came back true, `noPrerenderQuery = ''` came back
 // 'no-prerender=true', and isPassive - previously a bare assignment - was clobbered outright).
-// `??=` would express the intent directly, but it is ES2021 syntax and this bundle targets
-// ES2019 (see BswupJsTarget in the csproj).
+// `??=` is close but not identical: it also overwrites an explicit `null`, and tsc downlevels
+// it to the ES2019 this bundle targets anyway - the explicit undefined check is kept because
+// it states the exact contract ("only fill what the app never set"), not for syntax reasons.
 function presetDefault(key: string, value: any) {
     if ((self as any)[key] === undefined) (self as any)[key] = value;
 }
@@ -265,6 +266,10 @@ async function handleInstall(e: any) {
 
     sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
 
+    // Asset entries whose URL failed to parse during module evaluation (see
+    // INVALID_ASSET_ERRORS): surfaced here so they are reported exactly once per install.
+    INVALID_ASSET_ERRORS.forEach(err => sendError(err));
+
     if (self.errorTolerance === 'strict') {
         // Strict: any required asset that fails to fetch / store must reject the install
         // promise so the SW lifecycle treats it as a failed install. Without this, a
@@ -352,7 +357,7 @@ async function handleActivate(e: any) {
         const windowClients = await matchScopeClients();
         if (windowClients.length === 0) {
             diag('activate - no open window clients; pruning old caches.');
-            await deleteOldCaches();
+            await safeDeleteOldCaches('activate');
         } else {
             diag('activate - open window clients present; deferring cache cleanup:', windowClients.length);
         }
@@ -394,13 +399,30 @@ diag('USER_ASSETS_EXCLUDE:', USER_ASSETS_EXCLUDE);
 diag('EXTERNAL_ASSETS:', EXTERNAL_ASSETS);
 
 const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.wasm/, /\.pdb/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
-const DEFAULT_ASSETS_EXCLUDE = [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/];
+// Service-worker scripts must not be precached: the browser fetches them through its own
+// update pipeline (updateViaCache: 'none'), never through this worker's fetch handler, so a
+// cached copy is dead weight at best. All shipped variants are excluded - the minified
+// bundles and the cleanup worker included - not just the exact files the old list named.
+const DEFAULT_ASSETS_EXCLUDE = [
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/,
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/,
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw-cleanup\.js$/,
+    /^_content\/Bit\.Bswup\/bit-bswup\.sw-cleanup\.min\.js$/,
+    /^service-worker\.js$/,
+];
 
 const ASSETS_INCLUDE = (self.ignoreDefaultInclude ? [] : DEFAULT_ASSETS_INCLUDE).concat(USER_ASSETS_INCLUDE);
 const ASSETS_EXCLUDE = (self.ignoreDefaultExclude ? [] : DEFAULT_ASSETS_EXCLUDE).concat(USER_ASSETS_EXCLUDE);
 
 diag('ASSETS_INCLUDE:', ASSETS_INCLUDE);
 diag('ASSETS_EXCLUDE:', ASSETS_EXCLUDE);
+
+// Invalid asset entries found while normalizing the asset list. Collected here and reported
+// from handleInstall - NOT at module scope: the global scope re-evaluates on every cold start
+// of the worker (browsers terminate idle workers between events), so a module-scope sendError
+// would replay the same 'request' error to the page for the whole lifetime of the version,
+// hours after the install, every time the worker wakes.
+const INVALID_ASSET_ERRORS: any[] = [];
 
 const ALL_ASSETS = (MANIFEST_VALID && Array.isArray(self.assetsManifest.assets) ? self.assetsManifest.assets : [])
     .filter((asset: any) => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
@@ -439,18 +461,23 @@ function foldUrlKey(s: string) {
     return self.caseInsensitiveUrl ? s.toLowerCase() : s;
 }
 
-// Resolves a request URL to a managed asset: O(1) exact origin+pathname lookup for concrete
-// assets, then a regex scan over the few pattern assets. new URL() can throw on exotic URLs
-// (about:, data: - the browser can dispatch fetch events for them); those are never assets.
-function findAssetForUrl(url: string) {
-    let key: string;
+// O(1) exact origin+pathname lookup over the concrete assets. new URL() can throw on exotic
+// URLs (about:, data: - the browser can dispatch fetch events for them); those are never
+// assets. Used on its own for navigations (see handleFetch), which must never consult the
+// pattern assets.
+function findConcreteAssetForUrl(url: string) {
     try {
         const u = new URL(url);
-        key = foldUrlKey(`${u.origin}${u.pathname}`);
+        return CONCRETE_ASSETS.get(foldUrlKey(`${u.origin}${u.pathname}`));
     } catch {
         return undefined;
     }
-    return CONCRETE_ASSETS.get(key) || PATTERN_ASSETS.find(a => a.url.test(url));
+}
+
+// Resolves a request URL to a managed asset: the concrete lookup first, then a regex scan
+// over the few pattern assets.
+function findAssetForUrl(url: string) {
+    return findConcreteAssetForUrl(url) || PATTERN_ASSETS.find(a => a.url.test(url));
 }
 
 // A missing default asset silently disables offline navigation: every navigate request is
@@ -543,10 +570,17 @@ function handleFetch(e: any) {
     const start = self.enableFetchDiagnostics ? new Date().toISOString() : '';
 
     // Concrete assets resolve via the precomputed origin+pathname Map, pattern assets via
-    // their RegExp (see findAssetForUrl). Navigations instead resolve to the SPA default
-    // document.
+    // their RegExp (see findAssetForUrl). Navigations resolve to the SPA default document -
+    // but only when the navigated URL is not itself a CONCRETE managed asset: opening
+    // /manifest.json or an image directly in a tab must show that file, not the app shell
+    // rendered under the wrong URL. Route URLs (/counter, /admin/...) match no asset and
+    // still fall through to the default document, so deep links keep working offline.
+    // Pattern assets are deliberately NOT consulted for navigations: a broad RegExp
+    // externalAssets entry that happens to match a route URL would otherwise hijack that
+    // route away from the shell - caching its HTML under the route URL as a bogus "pattern
+    // generation" and answering it with a network error offline instead of the app shell.
     const asset = shouldServeDefaultDoc
-        ? DEFAULT_ASSET
+        ? (findConcreteAssetForUrl(req.url) || DEFAULT_ASSET)
         : findAssetForUrl(req.url);
 
     if (!asset) {
@@ -573,6 +607,16 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
     // URL, so it is keyed and fetched by the actual request.
     const cacheUrl = asset.reqUrl ? createCacheUrl(asset) : req.url;
 
+    // Whether the page's own request actually targets this asset's URL. False exactly when the
+    // asset was chosen as the NAVIGATION fallback: req.url is a route (/counter) and the asset
+    // is the SPA default document. In that case the page's request must NEVER be used to fetch
+    // bytes that get written under the asset's cache key - the server's answer for /counter is
+    // route-specific (often prerendered) HTML, and caching it as the app shell would poison
+    // every future navigation with it. Those paths fetch the asset's own versioned URL instead.
+    const reqMatchesAsset = asset.reqUrl
+        ? !!(asset.url && typeof asset.url.test === 'function' && asset.url.test(req.url))
+        : true; // pattern assets are keyed by the live request URL - the request IS the asset
+
     // CacheStorage is not guaranteed available: it throws under storage pressure, in some
     // private-browsing modes, and when the origin's quota is exhausted. Losing the cache is
     // survivable (we fall through to the network); letting it reject is not.
@@ -594,8 +638,10 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
     // next update), every request would hit the network, and the asset would never become
     // available offline - contradicting the documented lax semantics, which promise lazy fill
     // on first fetch in BOTH modes. Pattern assets don't take this path (no reqUrl); they fall
-    // through to the versioned-request lazy path below.
-    if (!self.isPassive && asset.reqUrl) {
+    // through to the versioned-request lazy path below - as does a navigation-fallback request
+    // (see reqMatchesAsset), whose route URL must not supply the bytes cached under the
+    // default document's key.
+    if (!self.isPassive && asset.reqUrl && reqMatchesAsset) {
         const response = await tryFetch(req);
         if (!response) {
             return await lastResort(bitBswupCache, req, asset);
@@ -612,8 +658,10 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
     // *network* response here would mean buffering the whole stream before the first byte
     // reaches the page. So a ranged request goes out as the page sent it: the server answers
     // 206 itself, and lazyFill refuses partial responses so the cache only ever holds full
-    // bodies (filled by whatever non-ranged request comes first).
-    const request = (asset.reqUrl && !getRangeHeader(req)) ? createNewAssetRequest(asset) : req;
+    // bodies (filled by whatever non-ranged request comes first). Except when the request
+    // does not target the asset's own URL (a ranged navigation fallback, a degenerate case):
+    // there the versioned request is the only one that fetches the right bytes.
+    const request = (asset.reqUrl && (!getRangeHeader(req) || !reqMatchesAsset)) ? createNewAssetRequest(asset) : req;
     let response = await tryFetch(request);
 
     // The versioned request carries a `?v=` buster and, with enableCacheControl, no-store
@@ -624,7 +672,9 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
     // Not when the request carried an integrity hash, though: SRI failures surface as a
     // rejected fetch, and retrying without integrity would serve exactly the unverified bytes
     // the check exists to reject. A tampered asset must fail, not silently downgrade.
-    if (!response && asset.reqUrl && request !== req && !(request as any).integrity) {
+    // And not when the page's request doesn't target the asset's URL (navigation fallback):
+    // fetching the route URL would cache route-specific HTML under the shell's key.
+    if (!response && asset.reqUrl && request !== req && reqMatchesAsset && !(request as any).integrity) {
         diagFetch('*** serveAsset - versioned request failed, retrying with the plain request:', start, asset);
         response = await tryFetch(req);
     }
@@ -753,16 +803,20 @@ async function applyRangeHeader(req: Request, response: Response) {
         if (response.status !== 200) return response;
 
         // Clone before reading: on any fallback path the original response must still carry
-        // an unconsumed body for the page.
-        const buffer = await response.clone().arrayBuffer();
-        const size = buffer.byteLength;
+        // an unconsumed body for the page. Read as a Blob, not an ArrayBuffer: browsers keep
+        // cached-response blobs disk-backed, and blob.slice() is a lazy view - so serving a
+        // range never materializes the whole file in memory. Media elements issue MANY small
+        // Range requests while seeking; buffering a full-length video per request was pure
+        // memory waste for bytes the page never asked for.
+        const blob = await response.clone().blob();
+        const size = blob.size;
         const range = parseRangeHeader(rangeHeader, size);
         if (!range) return response;
 
         const headers = new Headers((response as any).headers);
         headers.set('content-range', `bytes ${range.start}-${range.end}/${size}`);
         headers.set('content-length', String(range.end - range.start + 1));
-        return new Response(buffer.slice(range.start, range.end + 1), { status: 206, statusText: 'Partial Content', headers });
+        return new Response(blob.slice(range.start, range.end + 1), { status: 206, statusText: 'Partial Content', headers });
     } catch (err) {
         diagFetch('*** applyRangeHeader failed - returning the full response:', err);
         return response;
@@ -858,20 +912,34 @@ function handleMessage(e: MessageEvent<string>) {
         // asset requests are served from the new worker - or from a cache we just deleted -
         // which corrupts boot config / DLL hashes. Old caches are removed only *after* the
         // claim so no controlled client is left pointing at a cache that no longer exists.
+        //
+        // Captured BEFORE skipWaiting flips the lifecycle slots: no active worker right now
+        // means the receiver is a FIRST install being activated through the skipWaiting path
+        // (e.g. BitBswup.skipWaiting() catching the transient waiting state). The initiating
+        // page must then receive the first-install completion signal - CLIENTS_CLAIMED, which
+        // starts Blazor in place and triggers the post-start cache top-up - instead of the
+        // update reload signal: by the time a WAITING_SKIPPED landed, the claim's
+        // controllerchange had already marked the page as controlled-by-an-active-worker, so
+        // the reload it triggers would kill the very boot that controllerchange just started.
+        // Sibling tabs need nothing extra - their controllerchange handles the first-install
+        // start. Defaults to update semantics when the registration is unavailable.
+        const isFirstInstallActivation = !!(self.registration && !self.registration.active);
         return e.waitUntil(
             self.skipWaiting()
                 .then(() => self.clients.claim())
-                .then(() => deleteOldCaches().catch(err => diag('*** SKIP_WAITING - old-cache cleanup failed (continuing):', err)))
-                .then(() => sendMessage('WAITING_SKIPPED')));
+                .then(() => safeDeleteOldCaches('SKIP_WAITING'))
+                .then(() => isFirstInstallActivation
+                    ? e.source?.postMessage('CLIENTS_CLAIMED')
+                    : sendMessage('WAITING_SKIPPED')));
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
         // First-install claim. Take control so this page can start Blazor; sibling tabs
         // that observe the resulting 'controllerchange' will NOT reload because there was
-        // no previously-active worker (see hadActiveWorkerAtStartup in bit-bswup.ts).
+        // no previously-active worker (see hasActiveWorker in bit-bswup.ts).
         return e.waitUntil(
             self.clients.claim()
-                .then(() => deleteOldCaches().catch(err => diag('*** CLAIM_CLIENTS - old-cache cleanup failed (continuing):', err)))
+                .then(() => safeDeleteOldCaches('CLAIM_CLIENTS'))
                 .then(() => e.source?.postMessage('CLIENTS_CLAIMED')));
     }
 
@@ -903,7 +971,9 @@ function handleMessage(e: MessageEvent<string>) {
             diag('CLEAN_UP skipped - an update is staged or staging; pruning now would delete a live cache.');
             return;
         }
-        e.waitUntil(deleteOldCaches().catch((err: any) => diag('*** CLEAN_UP - cache pruning failed:', err)));
+        // safeDeleteOldCaches re-checks the staged/staging condition at prune time; the early
+        // return above just keeps the historical "skipped" diagnostic explicit for CLEAN_UP.
+        e.waitUntil(safeDeleteOldCaches('CLEAN_UP'));
     }
 }
 
@@ -967,10 +1037,15 @@ async function createAssetsCache(ignoreProgressReport = false) {
     let newCacheKeys = await newCache.keys();
     const firstTime = newCacheKeys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
-    if (passiveFirstTime) {
-        if (!ignoreProgressReport) {
-            sendMessage({ type: 'bypass', data: { firstTime: true } });
-        }
+    // Passive first install: skip the download and let the page boot immediately (assets
+    // lazy-fill as the app fetches them) - but only for the INSTALL run. The
+    // post-BLAZOR_STARTED top-up (ignoreProgressReport) must proceed regardless: it is what
+    // completes the offline cache in the background once the app is running. Gating it on
+    // the cache being non-empty made that completion a race against the first lazy-fill
+    // put - almost always won, but "the offline story depends on a put landing first" is
+    // not a semantic; now the top-up deterministically fills whatever is still missing.
+    if (passiveFirstTime && !ignoreProgressReport) {
+        sendMessage({ type: 'bypass', data: { firstTime: true } });
         return;
     }
 
@@ -994,7 +1069,16 @@ async function createAssetsCache(ignoreProgressReport = false) {
         // Pattern assets (no concrete reqUrl) can't be precached or diffed; they are matched and
         // cached lazily by handleFetch, so skip them here.
         if (!asset.reqUrl) continue;
-        assetByCacheKey.set(foldUrlKey(new Request(createCacheUrl(asset)).url), asset);
+        // A pathological custom hash can make new Request() throw on the composed cache URL;
+        // fall back to the raw string key (self-consistent for the diff) rather than letting
+        // one bad entry reject the whole createAssetsCache pass as an install-infra failure.
+        let diffKey: string;
+        try {
+            diffKey = new Request(createCacheUrl(asset)).url;
+        } catch {
+            diffKey = createCacheUrl(asset);
+        }
+        assetByCacheKey.set(foldUrlKey(diffKey), asset);
     }
 
     // Assets confirmed present at their current cache key - these are not re-downloaded.
@@ -1022,7 +1106,16 @@ async function createAssetsCache(ignoreProgressReport = false) {
             // matches every fingerprint it ever cached, so the diff cannot tell the current
             // entry from dead ones; collect matches per pattern here and evict the oldest
             // beyond MAX_PATTERN_ASSET_GENERATIONS after the loop.
-            const pattern = PATTERN_ASSETS.find(a => a.url.test(key.url));
+            //
+            // A hashed CONCRETE key (`...url.<sha...>`) can never be a lazily-cached pattern
+            // entry - pattern assets are keyed by their live request URL, which carries no
+            // hash suffix. Without this guard an unanchored pattern (e.g.
+            // /resource-collection/) also matched the stale hashed keys of removed/re-hashed
+            // concrete assets, retaining them as bogus "generations" that leak storage and
+            // evict genuine generations from the cap slots.
+            const lastDot = key.url.lastIndexOf('.');
+            const isHashedConcreteKey = lastDot !== -1 && STALE_HASH_KEY_SUFFIX.test(key.url.slice(lastDot + 1));
+            const pattern = isHashedConcreteKey ? undefined : PATTERN_ASSETS.find(a => a.url.test(key.url));
             if (pattern) {
                 diag('*** keeping lazily-cached pattern asset key (subject to the generation cap):', key.url);
                 const kept = patternKeys.get(pattern) || [];
@@ -1042,10 +1135,18 @@ async function createAssetsCache(ignoreProgressReport = false) {
         // Exact key match: the asset is cached at its current version. Hashed keys are
         // content-addressed, so an unchanged hash means the bytes are current - keep them.
         // Hashless keys carry no version, so re-download them each update unless the app
-        // opts out via disableHashlessAssetsUpdate.
-        if (!matched.hash && !self.disableHashlessAssetsUpdate) {
-            diag('*** refreshing hashless cache key:', key.url);
-            keysToDelete.push(key.url);
+        // opts out via disableHashlessAssetsUpdate. The existing entry is deliberately NOT
+        // deleted here: cache.put() overwrites the same key atomically on success, while
+        // deleting first meant a failed re-download under lax left NO cached copy at all -
+        // an asset (or the app shell) that had been available offline went dark until some
+        // later fetch happened to succeed. Keeping the old entry until the new bytes land
+        // degrades to "one version stale" instead of "gone".
+        // The refresh is skipped for the post-BLAZOR_STARTED top-up (ignoreProgressReport):
+        // that run happens seconds after the install already fetched these exact bytes, and
+        // re-refusing to mark them cached made every install download all hashless assets
+        // (and the default document, below) twice.
+        if (!matched.hash && !self.disableHashlessAssetsUpdate && !ignoreProgressReport) {
+            diag('*** refreshing hashless cache key (old copy kept until the new download lands):', key.url);
         } else {
             cachedAssets.add(matched);
         }
@@ -1062,11 +1163,13 @@ async function createAssetsCache(ignoreProgressReport = false) {
     });
 
     // Always refresh the default document on each update so navigations pick up the latest
-    // app shell even when its hash is unchanged. If it was kept above, drop it from the kept
-    // set and delete its current entry so it is re-fetched below.
-    if (DEFAULT_ASSET && cachedAssets.has(DEFAULT_ASSET)) {
+    // app shell even when its hash is unchanged. Dropping it from the kept set is enough to
+    // re-fetch it below; the current entry is NOT deleted first (cache.put overwrites in
+    // place), so a failed refresh under lax keeps serving the previous shell offline instead
+    // of losing offline navigation entirely. Skipped for the top-up run for the same reason
+    // as the hashless refresh above - the install fetched the shell seconds ago.
+    if (!ignoreProgressReport && DEFAULT_ASSET && cachedAssets.has(DEFAULT_ASSET)) {
         cachedAssets.delete(DEFAULT_ASSET);
-        keysToDelete.push(new Request(createCacheUrl(DEFAULT_ASSET)).url); // get the latest version of the default doc in each update if exists!!
     }
 
     await Promise.all(keysToDelete.map(url => newCache.delete(url)));
@@ -1257,7 +1360,13 @@ async function createAssetsCache(ignoreProgressReport = false) {
             // 0 / ok false BY DESIGN - its real status and bytes are hidden - so the HTTP
             // status checks below don't apply to it; it goes straight to the cache write.
             const isOpaque = (response as any).type === 'opaque';
-            if (!isOpaque && !response.ok) {
+            // 206 Partial Content reads response.ok === true, but a partial body must never be
+            // stored as the asset's full bytes (a resuming middlebox answering the versioned
+            // request with a fragment would pin that fragment under the asset's key until the
+            // next hash change - and applyRangeHeader refuses to slice non-200 responses, so
+            // even ranged requests would serve it broken). Treat it like a failed status; the
+            // Cache API itself rejects 206 puts, so this also fails cleanly instead of loudly.
+            if (!isOpaque && (!response.ok || response.status === 206)) {
                 // Retry only transient HTTP statuses (request timeout, rate limit, 5xx).
                 // Permanent ones (404, 403, ...) will not change on retry.
                 if (isRetryableStatus(response.status) && attempt < MAX_RETRIES) {
@@ -1419,15 +1528,55 @@ function createNewAssetRequest(asset: any, noCors = false) {
     return new Request(assetUrl, requestInit);
 }
 
-// Removes every Bswup cache THIS APP owns except the current CACHE_NAME. Called after a new
-// worker claims clients (SKIP_WAITING / CLAIM_CLIENTS) and on the CLEAN_UP command, so stale
-// version-suffixed caches from previous installs are reclaimed once they're no longer needed.
-// "Owns" is defined by isOwnStaleCacheKey: this scope's previous versions plus legacy
-// scope-less buckets; another scope's buckets are never touched.
-async function deleteOldCaches() {
-    const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(isOwnStaleCacheKey).map(key => caches.delete(key));
-    return Promise.all(promises);
+// The one gate every cache-pruning call site goes through. deleteOldCaches() spares only the
+// receiver's own CACHE_NAME, so running it while ANOTHER version is mid-install would delete
+// the bucket that install just created/migrated - wasting its download at best, activating it
+// over an empty cache at worst. That hazard is not unique to CLEAN_UP: the SKIP_WAITING /
+// CLAIM_CLIENTS chains and the activate-time prune can all race a concurrent update check
+// that started staging a newer version. Skipping is always the safe direction - a deferred
+// prune just leaves stale buckets until the next safe point (activation with no clients,
+// CLEAN_UP, or the next update's migration reclaiming them), whereas a wrong delete destroys
+// a live cache. Failures are logged and swallowed for the same reason as before: pruning is
+// best-effort tidiness and must never break the signal that follows it in a command chain.
+// Whether another (newer) version of this app's worker is currently staged or staging.
+function updateStagedOrStaging() {
+    try {
+        const reg = self.registration;
+        // (self as any).serviceWorker is this worker's own ServiceWorker object (newer
+        // engines). It excludes the receiver itself when an engine briefly leaves it in the
+        // waiting slot mid skip-waiting transition; where unsupported, a lingering self in
+        // `waiting` merely defers the prune - deferring is safe, deleting wrongly is not.
+        const selfWorker = (self as any).serviceWorker;
+        return !!(reg && (reg.installing || (reg.waiting && reg.waiting !== selfWorker)));
+    } catch {
+        // Reading registration state must never break the caller's chain.
+        return false;
+    }
+}
+
+function safeDeleteOldCaches(label: string) {
+    if (updateStagedOrStaging()) {
+        diag(`${label} - a newer install is staged or staging; skipping old-cache pruning (it runs at the next safe point).`);
+        return Promise.resolve();
+    }
+    // Removes every Bswup cache THIS APP owns except the current CACHE_NAME, so stale
+    // version-suffixed caches from previous installs are reclaimed once they're no longer
+    // needed. "Owns" is defined by isOwnStaleCacheKey: this scope's previous versions plus
+    // legacy scope-less buckets; another scope's buckets are never touched.
+    return (async () => {
+        const cacheKeys = await caches.keys();
+        // Re-checked after the async enumeration: an update poll can start staging a newer
+        // version in that window, and its freshly created bucket would look "stale" to
+        // isOwnStaleCacheKey. The remaining race (staging begins mid-delete) cannot be closed
+        // from here, but this narrows it from "any time during enumeration" to microseconds -
+        // and a lost bucket only costs a re-download, never correctness (the install's own
+        // puts land in a resurrected empty bucket and the diff re-fetches what is missing).
+        if (updateStagedOrStaging()) {
+            diag(`${label} - a newer install started staging mid-prune; skipping.`);
+            return;
+        }
+        await Promise.all(cacheKeys.filter(isOwnStaleCacheKey).map(key => caches.delete(key)));
+    })().catch((err: any) => diag(`*** ${label} - old-cache pruning failed (continuing):`, err));
 }
 
 // Whether a cache bucket is a stale one this registration owns - the shared definition for
@@ -1469,7 +1618,30 @@ function uniqueAssets(assets: any) {
     for (let i = 0; i < assets.length; i++) {
         const a = assets[i];
         const isPattern = a.url instanceof RegExp;
-        const reqUrl = isPattern ? undefined : new Request(a.url).url;
+
+        // new Request() rejects URLs it cannot represent ('https://', credentials in the URL,
+        // bad percent-encoding, ...). uniqueAssets runs at module-evaluation time, so an
+        // unguarded throw here killed the whole worker before any install/error handling could
+        // run - no structured error, nothing controlling the page, only the page's stall
+        // watchdog to rescue a first install a minute later. One bad entry (a typo in
+        // externalAssets, a corrupt manifest line) must cost that one asset, not the app.
+        let reqUrl: string | undefined;
+        if (!isPattern) {
+            try {
+                reqUrl = new Request(a.url).url;
+            } catch (err) {
+                // Deferred to handleInstall via INVALID_ASSET_ERRORS (see its declaration):
+                // reported once per install instead of on every worker cold start.
+                diag('*** uniqueAssets - skipping asset with an invalid url:', a.url, err);
+                INVALID_ASSET_ERRORS.push({
+                    reason: 'request',
+                    message: 'Skipping asset with an invalid url: ' + String(a.url) + ' (' + (err && (err as any).message || String(err)) + ')',
+                    url: String(a.url),
+                    fatal: false, // the asset is dropped; the install itself continues
+                });
+                continue;
+            }
+        }
 
         // Dedupe on the *resolved* URL rather than the declared string, so 'index.html',
         // '/index.html' and 'https://host/index.html' - three spellings of one resource -
@@ -1551,7 +1723,10 @@ async function matchScopeClients() {
 // 'WAITING_SKIPPED') are sent as-is.
 function sendMessage(message: any) {
     matchScopeClients()
-        .then((clients: any) => (clients || []).forEach((client: any) => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))));
+        .then((clients: any) => (clients || []).forEach((client: any) => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))))
+        // clients.matchAll can reject in a dying worker / broken runtime; messaging is
+        // best-effort by design, so log instead of surfacing an unhandled rejection.
+        .catch((err: any) => diag('*** sendMessage - client enumeration failed:', err));
 }
 
 // Reports a structured install/runtime failure: logs it for diagnostics, also writes to the

@@ -90,6 +90,16 @@ if (!BitBswup.initialized) {
         function runBswup() {
             const options = extract();
 
+            // Declared FIRST, before any code path that can start Blazor. startBlazor() runs
+            // just below - and on a controlled page (the normal steady state) it reaches
+            // startBlazorCore(), whose disarmStallWatchdog() reads this state. With the
+            // declarations further down, that read landed in the let temporal dead zone and
+            // crashed runBswup with a ReferenceError on every controlled load where the
+            // Blazor script had already evaluated. The watchdog functions themselves are
+            // function declarations (hoisted); only this mutable state is order-sensitive.
+            let stallTimer: ReturnType<typeof setTimeout> | undefined;
+            let stallArmed = false;
+
             info('starting...');
 
             if (!('serviceWorker' in navigator)) {
@@ -113,8 +123,46 @@ if (!BitBswup.initialized) {
                     granted ? info('persistent storage granted.') : warn('persistent storage was not granted - cached assets remain evictable.'));
             }
 
-            let reload: () => Promise<void>;
-            let cleanup: () => void;
+            // Resolved at the end of prepareRegistration, once the registration-aware
+            // reload/cleanup implementations below have replaced the interim ones - and ALSO
+            // resolved (with registrationFailed set) when register() fails for good, so the
+            // interim implementations never hang forever: a secondary tab whose own
+            // register() rejected still receives the sibling install's broadcasts, and its
+            // splash teardown must not wait on a registration that will never come.
+            let registrationFailed = false;
+            let resolveRegistrationReady: () => void;
+            const registrationReady = new Promise<void>(res => { resolveRegistrationReady = res; });
+
+            // Interim implementations for the window before the registration resolves.
+            // A secondary tab opened during a first install receives the worker's broadcasts
+            // immediately, but its own register() promise cannot resolve until the running
+            // install job finishes (register jobs for one scope are serialized behind it) -
+            // so downloadFinished can dispatch here BEFORE prepareRegistration has assigned
+            // the real reload/cleanup. Handing handlers an undefined reload made the built-in
+            // splash teardown throw (data.reload is not a function): the splash froze at 100%
+            // over an app that the claim's controllerchange had meanwhile booted. The interim
+            // reload waits for the registration; when the app is by then already running with
+            // nothing staged (exactly that secondary-tab case - the claim completed the first
+            // install), it resolves so callers can finalize (hide the splash); otherwise it
+            // defers to the real implementation, which `reload`/`cleanup` point at by then.
+            let reload: () => Promise<void> = () => registrationReady.then(() => {
+                if (registrationFailed) {
+                    // No registration will exist in this page's lifetime, so the real reload
+                    // can never be installed; a full reload restarts the whole registration
+                    // flow and is the only meaningful "try again" left.
+                    window.location.reload();
+                    return;
+                }
+                // The controller check separates the two "running app, nothing staged"
+                // states: a page CLAIMED by a completed first install (controller set -
+                // finalize, nothing to activate) versus a page force-started after a fatal
+                // first-install failure (controller null - a Retry wired to this reload must
+                // fall through to the real implementation, whose no-worker fallback reloads
+                // to retry the install, not silently resolve into a dead button).
+                if (blazorStarted && navigator.serviceWorker.controller && registration && !registration.waiting && !registration.installing) return;
+                return reload();
+            });
+            let cleanup: () => void = () => { registrationReady.then(() => { if (!registrationFailed) cleanup(); }); };
             let blazorStartResolver: (value: unknown) => void;
 
             // Captured once the registration resolves so the polling helpers (timer /
@@ -130,13 +178,31 @@ if (!BitBswup.initialized) {
             // funnel through reloadOnce() so the page navigates exactly one time.
             let refreshing = false;
 
-            // Snapshot of "was an active worker already present when registration resolved".
-            // This is the stable signal for first-install vs update. Reading
-            // navigator.serviceWorker.controller at message time is NOT reliable: controller
-            // is null whenever the current navigation wasn't served by the SW - most notably
-            // on a hard reload (Ctrl+Shift+R) - even when an active worker exists. Using that
-            // as the discriminator makes Bswup mistake every hard reload for a first install.
-            let hadActiveWorkerAtStartup = false;
+            // Whether an ACTIVE worker is known to exist for this app - the first-install vs
+            // update discriminator used everywhere below. It starts as a snapshot taken when
+            // the registration resolves ("was a worker already active when this page
+            // started?") and - crucially - flips to true the moment the first install
+            // completes and takes control of this page (CLIENTS_CLAIMED / controllerchange /
+            // WAITING_SKIPPED). Without the flip, a long-lived tab whose session BEGAN with
+            // the first install kept classifying every LATER real update as another first
+            // install: updateReady was never emitted, downloadFinished carried
+            // firstInstall: true - whose auto-reload posted CLAIM_CLIENTS at the OLD active
+            // worker, wiping the freshly staged update's cache - and a sibling tab's update
+            // claim took the start-Blazor no-op path instead of the mandatory reload,
+            // leaving old app code running against new-version caches.
+            // Reading navigator.serviceWorker.controller at message time instead is NOT
+            // reliable: controller is null whenever the current navigation wasn't served by
+            // the SW - most notably on a hard reload (Ctrl+Shift+R) - even when an active
+            // worker exists; that mistake made every hard reload look like a first install.
+            //
+            // Seeded from the controller RIGHT AWAY (not just when the registration resolves):
+            // the controllerchange/message listeners go live several tasks before register()
+            // settles, and a sibling tab accepting an update in that window would otherwise be
+            // misclassified as a first-install claim on this (controlled!) page - skipping the
+            // mandatory resync reload. A one-time positive controller is proof enough of an
+            // active worker; the registration snapshot below only ever upgrades this to true
+            // (hard reload: controller null, reg.active set), never back to false.
+            let hasActiveWorker = !!navigator.serviceWorker.controller;
 
             // ============================================================
 
@@ -157,10 +223,8 @@ if (!BitBswup.initialized) {
             // Armed only when the page starts uncontrolled and disarmed when the resolved
             // registration reveals a previously-active worker: updates never need it - the
             // app is already running when an update stalls. Configure via the stallTimeout
-            // script attribute (seconds); 0 disables.
-            let stallTimer: ReturnType<typeof setTimeout> | undefined;
-            let stallArmed = false;
-
+            // script attribute (seconds); 0 disables. (State lives at the top of runBswup -
+            // see the TDZ note there.)
             function armStallWatchdog() {
                 stallArmed = true;
                 bumpStallWatchdog();
@@ -204,6 +268,8 @@ if (!BitBswup.initialized) {
                 // update (an active worker already existed).
                 if (!navigator.serviceWorker.controller) armStallWatchdog();
             } catch (e) {
+                registrationFailed = true;
+                resolveRegistrationReady();
                 startBlazor(true);
                 error('serviceWorker registration failed', e);
             }
@@ -242,6 +308,8 @@ if (!BitBswup.initialized) {
                         // word "scope" ("Failed to register a ServiceWorker for scope (...): A
                         // bad HTTP response code (404) ..."), which would defeat the check.
                         if (!options.scope || !err || err.name !== 'SecurityError') {
+                            registrationFailed = true;
+                            resolveRegistrationReady();
                             startBlazor(true);
                             return error('serviceWorker register promise failed', err);
                         }
@@ -252,6 +320,8 @@ if (!BitBswup.initialized) {
                             .register(options.sw, { updateViaCache: 'none' })
                             .then(prepareRegistration)
                             .catch((retryErr) => {
+                                registrationFailed = true;
+                                resolveRegistrationReady();
                                 startBlazor(true);
                                 error('serviceWorker register promise failed', retryErr);
                             });
@@ -259,16 +329,19 @@ if (!BitBswup.initialized) {
             }
 
             function prepareRegistration(reg: ServiceWorkerRegistration) {
-                // Capture the install/update discriminator exactly once, at the moment the
-                // registration resolves. reg.active being set here means a previous version
-                // was already installed => this is an update; otherwise it's a first install.
-                hadActiveWorkerAtStartup = !!reg.active;
+                // Upgrade the install/update discriminator when the registration resolves.
+                // reg.active being set here means a previous version was already installed =>
+                // this is an update; otherwise it's a first install (until that first install
+                // completes and flips the flag - see hasActiveWorker above). Never downgraded:
+                // a controller seen at startup, or a first-install claim that already
+                // completed, both outrank a registration snapshot.
+                hasActiveWorker = hasActiveWorker || !!reg.active;
 
                 // The stall watchdog is a first-install boot guarantee. With a previously
                 // active worker the app either starts normally (the controlled path, or the
                 // uncontrolled hard-reload force-start below) or is already running when a
                 // background update stalls - so it must not fire.
-                if (hadActiveWorkerAtStartup) disarmStallWatchdog();
+                if (hasActiveWorker) disarmStallWatchdog();
 
                 // Keep the resolved registration around so checkForUpdate() (page API) and the
                 // optional polling helpers can drive reg.update() without re-resolving it.
@@ -301,7 +374,7 @@ if (!BitBswup.initialized) {
                     // is deliberately kept *pending*: the page is about to navigate away, so
                     // resolving early would let callers run teardown (e.g. hiding the splash)
                     // against a page that's already reloading.
-                    if (hadActiveWorkerAtStartup) {
+                    if (hasActiveWorker) {
                         whenStaged().then((waiting) => {
                             if (waiting) {
                                 waiting.postMessage('SKIP_WAITING');
@@ -409,6 +482,10 @@ if (!BitBswup.initialized) {
                     reg.active?.postMessage('CLEAN_UP');
                 };
 
+                // The registration-aware reload/cleanup are in place: release any calls the
+                // interim implementations queued while register() was still pending.
+                resolveRegistrationReady();
+
                 // The page can be loaded without a controlling service worker even though
                 // a registration already exists - most notably on a hard reload (Ctrl+F5 /
                 // Shift+Reload), which bypasses the SW for the navigation request. In that
@@ -422,12 +499,26 @@ if (!BitBswup.initialized) {
                     startBlazor(true);
                 }
 
+                if (reg.installing) {
+                    // An install was already mid-flight when this page loaded: its
+                    // 'updatefound' fired before our listener below existed, so without
+                    // watching it here nothing in this tab would ever observe the worker
+                    // reaching 'installed' - updateReady, stateChanged, and the redundant
+                    // first-install rescue were all silently lost for pages opened during a
+                    // download.
+                    info('registration already installing at load:', reg.installing);
+                    watchInstallingWorker(reg.installing);
+                }
+
                 if (reg.waiting) {
                     info('registration waiting:', reg.waiting);
                     if (reg.installing) {
                         info('registration installing:', reg.installing);
                     } else {
                         info('registration is ready:', reg.waiting);
+                        // Same one-announcement-per-staged-worker marker as the statechange
+                        // path (see watchInstallingWorker).
+                        (reg.waiting as any)._bitBswupUpdateReadyAnnounced = true;
                         handle(BswupMessage.updateReady, { reload });
                     }
                 }
@@ -442,7 +533,25 @@ if (!BitBswup.initialized) {
                         return;
                     }
 
-                    reg.installing.addEventListener('statechange', function (e: any) {
+                    watchInstallingWorker(reg.installing);
+                });
+
+                // Follows one installing worker through its state changes: reports
+                // stateChanged, rescues a silently-dying first install (redundant), and
+                // announces updateReady once a real update reaches the waiting slot. Used for
+                // workers discovered via 'updatefound' AND for one already installing when
+                // the registration resolves.
+                function watchInstallingWorker(installingWorker: ServiceWorker) {
+                    // Both attachment paths can see the SAME worker: for an install triggered
+                    // by this page's own register() call, the spec queues the tasks as
+                    // installing-attribute-set -> register-promise-resolved -> updatefound, so
+                    // the at-load check AND the updatefound listener each run for that one
+                    // worker. Duplicate statechange listeners delivered every stateChanged
+                    // twice and - worse - announced updateReady twice, making an autoReload
+                    // handler post SKIP_WAITING twice. Watch each worker exactly once.
+                    if ((installingWorker as any)._bitBswupWatched) return;
+                    (installingWorker as any)._bitBswupWatched = true;
+                    installingWorker.addEventListener('statechange', function (e: any) {
                         debug('state changed', e, 'eventPhase:', e.eventPhase, 'currentTarget.state:', e.currentTarget.state);
                         handle(BswupMessage.stateChanged, e);
                         bumpStallWatchdog();
@@ -455,7 +564,7 @@ if (!BitBswup.initialized) {
                         // error to trigger the force-start. Boot from the network now; this
                         // is idempotent when an error message already force-started Blazor,
                         // and the install itself is retried on the next load.
-                        if (e.currentTarget.state === 'redundant' && !hadActiveWorkerAtStartup && !navigator.serviceWorker.controller) {
+                        if (e.currentTarget.state === 'redundant' && !hasActiveWorker && !navigator.serviceWorker.controller) {
                             disarmStallWatchdog();
                             warn('first-install service worker went redundant - starting Blazor without a service worker.');
                             startBlazor(true);
@@ -464,7 +573,7 @@ if (!BitBswup.initialized) {
 
                         if (!reg.waiting) return;
 
-                        if (!hadActiveWorkerAtStartup) {
+                        if (!hasActiveWorker) {
                             // First install: the worker only passes through 'installed' (waiting)
                             // transiently - with no previous worker and no controlled clients the
                             // browser activates it immediately. This is NOT "an update is staged
@@ -479,13 +588,22 @@ if (!BitBswup.initialized) {
 
                         info('update finished.');
 
-                        // Notify listeners that an update is staged and ready. The
-                        // registration-time check only fires updateReady for updates already
-                        // waiting on load; updates discovered in the same session surface here
-                        // instead, so emit it for them too.
+                        // Notify listeners that an update is staged and ready - exactly once
+                        // per staged worker. Statechange listeners outlive the waiting slot:
+                        // when a staged worker B is superseded by a newer install C, B's
+                        // 'redundant' statechange fires while reg.waiting already points at C,
+                        // and without the marker B's listener would re-announce C right after
+                        // C's own 'installed' transition announced it (double prompts; two
+                        // SKIP_WAITINGs under autoReload). The marker lives on the STAGED
+                        // worker, so the one case that must still announce on a 'redundant'
+                        // event keeps working: a worker dying while an un-announced older
+                        // update sits in the waiting slot (staged-at-load with an install in
+                        // flight) announces that older update here for the first time.
+                        if ((reg.waiting as any)._bitBswupUpdateReadyAnnounced) return;
+                        (reg.waiting as any)._bitBswupUpdateReadyAnnounced = true;
                         handle(BswupMessage.updateReady, { reload });
                     });
-                });
+                }
             }
 
             function handleControllerChange(e: any) {
@@ -506,9 +624,9 @@ if (!BitBswup.initialized) {
                 //      must reload to re-sync. See "Stuff I wish I'd known about service
                 //      workers" on the controllerchange reload pattern.
                 //
-                // We distinguish case 2 from case 3 with hadActiveWorkerAtStartup: a controller
-                // change only signals a real *update* when a worker was already active when this
-                // page started. First install never had one, so we skip the reload there - and
+                // We distinguish case 2 from case 3 with hasActiveWorker: a controller
+                // change only signals a real *update* when an active worker was already known.
+                // First install never had one, so we skip the reload there - and
                 // instead make sure the app boots. Being claimed on a first install means the
                 // install completed and this page is expected to start Blazor, but the
                 // CLIENTS_CLAIMED reply only goes to the ONE tab that posted CLAIM_CLIENTS: a
@@ -518,8 +636,12 @@ if (!BitBswup.initialized) {
                 // until the stall watchdog fired. startBlazorCore is idempotent, so in the
                 // initiating tab (where CLIENTS_CLAIMED also lands) this is a no-op or a
                 // harmless head start.
-                if (!hadActiveWorkerAtStartup) {
+                if (!hasActiveWorker) {
                     info('controller changed on first install - starting Blazor instead of reloading.');
+                    // The first install now controls this page: from here on this session is a
+                    // controlled one, and any LATER install cycle is a real update that must
+                    // announce updateReady and reload - not repeat the first-install flow.
+                    hasActiveWorker = true;
                     startBlazor(true);
                     return;
                 }
@@ -560,11 +682,23 @@ if (!BitBswup.initialized) {
                     // to pick up the new version. reloadOnce() coordinates with the
                     // 'controllerchange' that also fires once the new worker claims this client,
                     // so we reload only once.
-                    if (!hadActiveWorkerAtStartup) {
+                    if (!hasActiveWorker) {
+                        // Same transition as the controllerchange path: the first install has
+                        // activated and claimed this page, so later cycles are real updates.
+                        hasActiveWorker = true;
                         startBlazor(true);
                         return;
                     }
-                    reloadOnce();
+                    // Reload only when actually controlled. The broadcast also reaches
+                    // uncontrolled tabs - a hard-reloaded page during an update, or an
+                    // SW-free page during a cleanup-worker teardown - which already run
+                    // network-fresh code; reloading them only discards their in-page state.
+                    // Make sure they are booted instead (idempotent when already running).
+                    if (navigator.serviceWorker.controller) {
+                        reloadOnce();
+                    } else {
+                        startBlazor(true);
+                    }
                     return;
                 }
 
@@ -573,6 +707,9 @@ if (!BitBswup.initialized) {
                     // (script-tag/autostart checks, single-start, missing-global protection)
                     // instead of calling Blazor.start() directly. Capture e.source up front
                     // because it can be nulled out by the time the start promise settles.
+                    // The claim also completes the first install for this page - flip the
+                    // discriminator so later install cycles are treated as real updates.
+                    hasActiveWorker = true;
                     const source = e.source;
                     const startPromise = startBlazor(true);
 
@@ -605,8 +742,29 @@ if (!BitBswup.initialized) {
                     // sharing this origin (other scopes / mounted sub-apps), and tearing those
                     // down would break them. getRegistration() (no arg) resolves the
                     // registration whose scope controls this page - this app's own worker.
+                    //
+                    // Reload ONLY when this page is currently controlled: the reload is what
+                    // detaches a controlled page from the worker being removed. An
+                    // uncontrolled page is already running SW-free, and reloading it while
+                    // the served HTML still registers the cleanup worker would re-register,
+                    // re-activate, re-message UNREGISTER - an infinite reload loop. Routed
+                    // through reloadOnce so it coordinates with the controllerchange reload
+                    // that the cleanup worker's takeover also triggers.
                     navigator.serviceWorker.getRegistration().then(reg => {
-                        Promise.resolve(reg?.unregister()).then(() => window.location.reload());
+                        Promise.resolve(reg?.unregister()).then(() => {
+                            if (navigator.serviceWorker.controller) {
+                                reloadOnce();
+                            } else {
+                                // An uncontrolled page has nothing to detach from - and while
+                                // a cleanup worker is deployed, this teardown signal is also
+                                // the earliest moment the page knows no install is coming.
+                                // Boot right away instead of waiting for the delayed
+                                // WAITING_SKIPPED nudge (or, worst case, the stall watchdog):
+                                // this keeps app startup instant for the whole
+                                // cleanup-deployment window.
+                                startBlazor(true);
+                            }
+                        });
                     });
                     return;
                 }
@@ -633,14 +791,19 @@ if (!BitBswup.initialized) {
                 const { type, data } = message;
 
                 if (type === 'install') {
-                    handle(BswupMessage.downloadStarted, data);
+                    // firstInstall rides along on every UI-facing message (not just
+                    // downloadFinished/error) so the built-in progress UI can tell a
+                    // first-install splash - the whole UI, worth taking the screen over - from
+                    // a background update, where painting a full-viewport overlay on top of a
+                    // healthy running app blocks it for no reason.
+                    handle(BswupMessage.downloadStarted, { ...data, firstInstall: !hasActiveWorker });
                 }
 
                 if (type === 'progress') {
-                    handle(BswupMessage.downloadProgress, data);
+                    handle(BswupMessage.downloadProgress, { ...data, firstInstall: !hasActiveWorker });
 
                     if (data.percent >= 100) {
-                        const firstInstall = !hadActiveWorkerAtStartup;
+                        const firstInstall = !hasActiveWorker;
                         handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
                     }
                 }
@@ -653,7 +816,7 @@ if (!BitBswup.initialized) {
                     // background update, where the previous worker keeps serving a healthy
                     // running app that must not be covered by an install-failure panel. Same
                     // discriminator the downloadFinished payload already carries.
-                    handle(BswupMessage.error, { ...data, reload, firstInstall: !hadActiveWorkerAtStartup });
+                    handle(BswupMessage.error, { ...data, reload, firstInstall: !hasActiveWorker });
 
                     // Last-resort boot guarantee. A fatal failure means the install aborted, so
                     // this worker never reaches 'active'. On a *first* install that is fatal to
@@ -665,14 +828,14 @@ if (!BitBswup.initialized) {
                     // worker, and the next load can retry the install. startBlazorCore is
                     // idempotent, so this is a no-op when the app is already running (the update
                     // case, where the previous worker keeps serving normally).
-                    if (data && data.fatal !== false && !hadActiveWorkerAtStartup && !navigator.serviceWorker.controller) {
+                    if (data && data.fatal !== false && !hasActiveWorker && !navigator.serviceWorker.controller) {
                         warn('install failed before the app could start - starting Blazor without a service worker.');
                         startBlazor(true);
                     }
                 }
 
                 if (type === 'bypass') {
-                    const firstInstall = data?.firstTime || !hadActiveWorkerAtStartup;
+                    const firstInstall = data?.firstTime || !hasActiveWorker;
                     handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
                 }
 
@@ -933,12 +1096,38 @@ if (!BitBswup.initialized) {
                     if (typeof resolved === 'function') {
                         options.handler = resolved;
                     } else {
+                        // Boot guarantee for the no-handler case. The first-install handshake
+                        // is normally driven by a handler calling data.reload() on
+                        // downloadFinished; with no handler registered at all (progress script
+                        // absent, custom handler never assigned) nothing would ever post
+                        // CLAIM_CLIENTS and the app would sit behind the splash until the
+                        // stall watchdog fired a minute later. Drive the completion here
+                        // instead. Deliberately first-install only: auto-activating an UPDATE
+                        // would force a reload the app never consented to - an unhandled
+                        // update simply stays staged, exactly as if a handler ignored
+                        // updateReady, and activates on the next full restart.
+                        const message = args[0];
+                        const data = args[1];
+                        if (message === BswupMessage.downloadFinished && data && data.firstInstall && typeof data.reload === 'function') {
+                            warn('no progress handler found - completing the first install automatically.');
+                            data.reload();
+                            return;
+                        }
                         warn('progress handler not found or is not a function!');
                         return;
                     }
                 }
 
-                options.handler!(...args);
+                try {
+                    options.handler!(...args);
+                } catch (err) {
+                    // An app handler that throws must not break the update pipeline. The 100%
+                    // downloadProgress and downloadFinished dispatch in one synchronous block,
+                    // so an uncaught exception between them would swallow the very message
+                    // whose reload() completes a first install - hanging the app behind the
+                    // splash until the stall watchdog for a bug in page code.
+                    error('the progress handler threw', err);
+                }
             }
 
             function shouldLog(level: 'error' | 'warn' | 'info' | 'verbose' | 'debug'): boolean {

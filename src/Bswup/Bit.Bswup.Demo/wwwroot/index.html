@@ -106,6 +106,9 @@
                 case BswupMessage.activate: return console.log('new version activated:', data.version);
 
                 case BswupMessage.downloadStarted:
+                    // A background update downloads behind the running app - only a first
+                    // install owns the screen (firstInstall rides on every message).
+                    if (data?.firstInstall === false) return console.log('downloading update assets started:', data?.version);
                     appEl.style.display = 'none';
                     bswupEl.style.display = 'block';
                     return console.log('downloading assets started:', data?.version);
@@ -141,16 +144,34 @@
                     reloadButton.style.display = 'block';
                     reloadButton.onclick = data.reload;
                     return console.log('new update ready.');
+
+                case BswupMessage.error:
+                    // This demo deliberately ships a 404ing external asset (see the dev
+                    // service-worker.js), so non-fatal errors are expected here: under the
+                    // default lax tolerance the install continues and the asset lazy-fills.
+                    console.error('installation error:', data);
+                    if (data.fatal === false) return;
+                    // A fatal failure during a background update leaves the running app
+                    // untouched - the previous worker keeps serving it.
+                    if (data.firstInstall === false) return;
+                    // Fatal first-install failure: bit-bswup.js force-starts Blazor from the
+                    // network; reveal the app instead of leaving it booted behind the splash.
+                    descriptionLabel.textContent = 'Install failed; starting without offline support...';
+                    appEl.style.display = 'block';
+                    bswupEl.style.display = 'none';
+                    return;
             }
         }
     </script>
     <script src="_framework/blazor.webassembly.js" autostart=false></script>
+    <!-- blazorScript is omitted on purpose: both default entry scripts
+         (blazor.web.js / blazor.webassembly.js) are auto-detected, fingerprints and
+         query strings included - the attribute is only needed for non-default paths. -->
     <script src="_content/Bit.Bswup/bit-bswup.js"
             scope="/"
             log="none"
             sw="service-worker.js"
-            handler="bitBswupHandler"
-            blazorScript="_framework/blazor.webassembly.js"></script>
+            handler="bitBswupHandler"></script>
 </body>
 
 </html>
