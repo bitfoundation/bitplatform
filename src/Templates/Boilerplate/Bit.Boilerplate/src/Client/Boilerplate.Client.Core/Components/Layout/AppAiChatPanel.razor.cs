@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Threading.Channels;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Shared.Features.Identity.Dtos;

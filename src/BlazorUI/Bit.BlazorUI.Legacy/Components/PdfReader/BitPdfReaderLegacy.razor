@@ -1,0 +1,21 @@
+@namespace Bit.BlazorUI.Legacy
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (RenderAllPages)
+    {
+        for (int i = 0; i < _numberOfPages; i++)
+        {
+            <canvas @key="@($"{Config.Id}-{i+1}")" id="@($"{Config.Id}-{i+1}")" style="@CanvasStyle" class="@CanvasClass" />
+        }
+    }
+    else
+    {
+        <canvas id="@Config.Id" style="@CanvasStyle" class="@CanvasClass" />
+    }
+</div>

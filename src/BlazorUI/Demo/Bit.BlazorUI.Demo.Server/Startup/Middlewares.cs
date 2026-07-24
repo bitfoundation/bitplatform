@@ -16,9 +16,25 @@ public class Middlewares
     {
         app.UseForwardedHeaders();
 
+        // Cross-origin isolation, required for the multi-threaded WebAssembly runtime
+        // (WasmEnableThreads in Bit.BlazorUI.Demo.Client.Web) to use SharedArrayBuffer.
+        // Without these headers on the top-level document, crossOriginIsolated stays
+        // false and the runtime silently falls back to a single thread. COEP
+        // 'credentialless' is used instead of 'require-corp' so cross-origin
+        // subresources (fonts, images) keep loading without their own CORP/CORS headers;
+        // it enables isolation on Chromium and Firefox (Safari needs 'require-corp').
+        app.Use(async (context, next) =>
+        {
+            context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+            context.Response.Headers["Cross-Origin-Embedder-Policy"] = "credentialless";
+            await next.Invoke(context);
+        });
+
         if (env.IsDevelopment())
         {
+#if INCLUDE_WASM
             app.UseWebAssemblyDebugging();
+#endif
         }
         else
         {
@@ -93,7 +109,9 @@ public class Middlewares
         // Handle the rest of requests with blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
+#if INCLUDE_WASM
             .AddInteractiveWebAssemblyRenderMode()
+#endif
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Bit.BlazorUI.Demo") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
     }
 
@@ -173,8 +191,19 @@ public class Middlewares
         var urls = Assembly.Load("Bit.BlazorUI.Demo.Client.Core")
             .ExportedTypes
             .Where(t => typeof(IComponent).IsAssignableFrom(t))
-            .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
-            .Select(r => r.Template)
+            // Use only the first (canonical) route of each page and skip the noindex not-found page,
+            // so the sitemap advertises canonical URLs only and avoids duplicate alias entries.
+            .Select(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>()
+                          .Select(r => r.Template)
+                          .FirstOrDefault())
+            .Where(template => string.IsNullOrWhiteSpace(template) is false
+                            && string.Equals(template, "/not-found", StringComparison.OrdinalIgnoreCase) is false)
+            // Normalize to lowercase so the advertised URLs match the canonical URLs emitted by PageOutlet.
+            .Select(template => template!.Trim().ToLowerInvariant())
+            .Distinct()
+            // Home first, then alphabetical for a stable, readable sitemap.
+            .OrderBy(template => template == "/" ? 0 : 1)
+            .ThenBy(template => template, StringComparer.Ordinal)
             .ToList();
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
@@ -184,14 +213,37 @@ public class Middlewares
             if (siteMap is null)
             {
                 var baseUrl = context.Request.GetBaseUrl();
+                var lastmod = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
 
-                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+                var entries = urls.Select(u =>
+                {
+                    var (changefreq, priority) = GetSiteMapHints(u);
+                    var loc = new Uri(baseUrl, u).AbsoluteUri;
+                    return $"<url><loc>{loc}</loc><lastmod>{lastmod}</lastmod><changefreq>{changefreq}</changefreq><priority>{priority}</priority></url>";
+                });
+
+                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, entries)}</urlset>";
             }
 
             context.Response.Headers.ContentType = "application/xml";
 
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
         });
+    }
+
+    /// <summary>
+    /// Returns crawler hints (changefreq, priority) for a given canonical route so search engines can
+    /// prioritize the landing/docs pages over the many individual component pages.
+    /// </summary>
+    private static (string changefreq, string priority) GetSiteMapHints(string route)
+    {
+        return route switch
+        {
+            "/" => ("weekly", "1.0"),
+            "/overview" or "/getting-started" or "/theming" or "/iconography" => ("weekly", "0.9"),
+            "/terms" => ("yearly", "0.3"),
+            _ => ("monthly", "0.7")
+        };
     }
 
     private static string? siteMap;

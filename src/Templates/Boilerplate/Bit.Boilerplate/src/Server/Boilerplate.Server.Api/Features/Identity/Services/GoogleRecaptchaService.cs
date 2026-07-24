@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Api.Features.Identity.Services;
+namespace Boilerplate.Server.Api.Features.Identity.Services;
 
 public partial class GoogleRecaptchaService
 {

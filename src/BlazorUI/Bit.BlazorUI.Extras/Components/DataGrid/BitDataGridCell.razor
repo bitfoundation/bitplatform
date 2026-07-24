@@ -1,0 +1,73 @@
+@typeparam TItem
+@namespace Bit.BlazorUI
+
+@* A single data cell. Each cell owns one stable element with an unconditional @@ref so
+   keyboard navigation can move DOM focus via Blazor's FocusAsync without conditional
+   reference-capture frames (which break render-tree diffing). *@
+<div @ref="_el" class="@CssClass" role="gridcell" style="@Style" tabindex="@TabIndex"
+     aria-colindex="@Grid.AriaColIndex(ColIndex)"
+     @onclick="HandleClick"
+     @ondblclick="HandleDoubleClick"
+     @oncontextmenu="HandleContextMenu"
+     @oncontextmenu:preventDefault="Grid.OnCellContextMenu.HasDelegate"
+     @onfocusin="HandleFocusIn"
+     @onkeydown="HandleKeyDown">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
+    [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
+    [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
+    [Parameter] public int ColIndex { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private ElementReference _el;
+
+    private int? TabIndex => Grid.CellNavigation ? Grid.CellTabIndex(Item, ColIndex) : (int?)null;
+    private bool Editing => Grid.IsEditing(Item);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Grid.CellNavigation && Grid.ShouldFocusCell(Item, ColIndex))
+        {
+            Grid.ClearFocusPending();
+            try { await _el.FocusAsync(); } catch { /* element may have been removed */ }
+        }
+    }
+
+    private Task HandleClick(MouseEventArgs e) => Grid.HandleCellClickAsync(Column, Item, e);
+    private Task HandleDoubleClick(MouseEventArgs e) => Grid.HandleCellDoubleClickAsync(Column, Item, e);
+    private Task HandleContextMenu(MouseEventArgs e) => Grid.HandleCellContextMenuAsync(Column, Item, e);
+
+    private void HandleFocusIn()
+    {
+        if (Grid.CellNavigation) Grid.SetFocusedCell(Item, ColIndex);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (!Grid.CellNavigation) return;
+
+        // While inline-editing, the cell only handles the edit lifecycle keys; everything
+        // else (typing, caret movement) belongs to the editor input.
+        if (Editing)
+        {
+            if (e.Key == "Escape")
+            {
+                await Grid.CancelEditAsync();
+                Grid.RefocusFocusedCell();
+            }
+            else if (e.Key == "Enter")
+            {
+                await Grid.CommitEditAsync();
+                Grid.RefocusFocusedCell();
+            }
+            return;
+        }
+
+        await Grid.HandleCellKeyDownAsync(Item, ColIndex, e);
+    }
+}

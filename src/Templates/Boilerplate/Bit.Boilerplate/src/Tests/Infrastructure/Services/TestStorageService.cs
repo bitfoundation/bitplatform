@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
+using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Infrastructure.Services;
 

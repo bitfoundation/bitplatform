@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -80,6 +80,24 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     }
 
     /// <summary>
+    /// Whether a modal container is currently mounted for this service, i.e. whether a <c>Show</c> call right now
+    /// would actually render its modal.
+    /// </summary>
+    /// <remarks>
+    /// This reflects LIVE state, not registration: the service being registered in DI does not imply a container
+    /// exists. A container attaches during its own initialization (after its first render) via <see cref="InitContainer"/>
+    /// and detaches on dispose via <see cref="RemoveContainer"/>, so this can be <c>false</c> very early in a render
+    /// cycle before any container has initialized, and it can flip back to <c>false</c> across a container remount.
+    /// It is therefore reliable at the moment of a user-triggered <c>Show</c> (the layout has long since rendered),
+    /// but should not be treated as a permanent guarantee.
+    /// <br/>
+    /// The main use is a caller that can show through more than one modal service (for example a wrapper that prefers
+    /// one service but can fall back to another) and wants to pick a service whose container is actually mounted,
+    /// because a non-persistent modal shown while this is <c>false</c> is silently not rendered (see the type remarks).
+    /// </remarks>
+    public bool IsContainerAvailable => _container is not null;
+
+    /// <summary>
     /// Closes an already opened modal using its reference.
     /// </summary>
     public async Task Close(TReference modalRef)
@@ -147,7 +165,7 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     public Task<TReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         bool persistent = false) where T : IComponent
     {
-        return Show<T>(null, null, persistent);
+        return Show<T>((Dictionary<string, object>?)null, null, persistent);
     }
 
     /// <summary>
@@ -174,7 +192,7 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     public Task<TReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         TParameters modalParameters) where T : IComponent
     {
-        return Show<T>(null, modalParameters, false);
+        return Show<T>((Dictionary<string, object>?)null, modalParameters, false);
     }
 
     /// <summary>
@@ -183,21 +201,42 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     public Task<TReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         TParameters? modalParameters, bool persistent = false) where T : IComponent
     {
-        return Show<T>(null, modalParameters, persistent);
+        return Show<T>((Dictionary<string, object>?)null, modalParameters, persistent);
     }
 
     /// <summary>
     /// Shows a new modal with a custom component as its content with custom parameters for the custom component and the modal.
     /// </summary>
-    public async Task<TReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+    public Task<TReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         Dictionary<string, object>? parameters,
         TParameters? modalParameters,
         bool persistent = false) where T : IComponent
     {
+        return Show<T>(_ => parameters, modalParameters, persistent);
+    }
+
+    /// <summary>
+    /// Shows a new modal, building the content component's parameters from a factory that receives the modal reference.
+    /// Use this overload when a parameter needs the reference itself (e.g. an <c>OnClose</c> callback that closes this
+    /// very modal): the reference is handed to the factory before the content is rendered, so the callback can never
+    /// observe an unassigned reference the way it can when the reference is only captured after Show returns.
+    /// </summary>
+    public async Task<TReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        Func<TReference, Dictionary<string, object>?> parametersFactory,
+        TParameters? modalParameters = null,
+        bool persistent = false) where T : IComponent
+    {
+        ArgumentNullException.ThrowIfNull(parametersFactory);
+
         var componentType = typeof(T);
 
         var modalReference = CreateReference(persistent);
         modalReference.SetParameters(modalParameters);
+
+        // Build the content parameters with the reference already in hand so a parameter such as an OnClose
+        // callback can capture modalReference.Close directly, closing the window a caller would otherwise face
+        // when wiring the close callback only after Show returns.
+        var parameters = parametersFactory(modalReference);
 
         var content = new RenderFragment(builder =>
         {

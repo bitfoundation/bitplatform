@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication;
 
@@ -9,8 +9,12 @@ public partial class IdentityController
     [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IAuthenticationSchemeProvider authenticationSchemeProvider = default!;
 
+    /// <summary>
+    /// Deliberately not cached: the returned URL embeds the caller's origin, which GetWebAppUrl resolves from the X-Origin
+    /// header. That header is part of neither the output cache's vary rules nor a CDN's cache key, so a cached response would
+    /// hand one origin's sign-in URL to a caller coming from another, sending the resulting sign-in link to the wrong origin.
+    /// </summary>
     [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
@@ -36,7 +40,7 @@ public partial class IdentityController
 
         try
         {
-            info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException();
+            info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException().WithData("Reason", "External login info is missing.");
             var email = info.Principal.GetEmail();
             var phoneNumber = phoneService.NormalizePhoneNumber(info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value);
 
@@ -86,13 +90,13 @@ public partial class IdentityController
                 await userManager.AddLoginAsync(user, info);
             }
 
-            if (string.IsNullOrEmpty(email) is false && email == user.Email && await userManager.IsEmailConfirmedAsync(user) is false)
+            if (string.IsNullOrEmpty(email) is false && string.Equals(email, user.Email, StringComparison.OrdinalIgnoreCase) && await userManager.IsEmailConfirmedAsync(user) is false)
             {
                 await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 
-            if (string.IsNullOrEmpty(phoneNumber) is false && phoneNumber == user.PhoneNumber && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
+            if (string.IsNullOrEmpty(phoneNumber) is false && string.Equals(phoneNumber, user.PhoneNumber, StringComparison.OrdinalIgnoreCase) && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
             {
                 await userPhoneNumberStore.SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);

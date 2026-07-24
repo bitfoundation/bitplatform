@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -18,12 +18,13 @@
         <PackageReference Include="Bit.BlazorUI.Icons" />
         <PackageReference Include="Bit.BlazorUI.Assets" />
         <!--/+:msbuild-conditional:noEmit -->
+        <Using Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
+        <PackageReference Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
-        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.BlazorUI.Extras" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />

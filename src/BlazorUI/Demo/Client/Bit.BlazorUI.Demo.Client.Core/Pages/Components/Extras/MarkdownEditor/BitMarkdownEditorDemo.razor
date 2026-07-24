@@ -2,13 +2,14 @@
 
 <PageOutlet Url="components/markdowneditor"
             Title="MarkdownEditor"
-            Description="markdowneditor component of the bit BlazorUI components" />
+            Description="BitMarkdownEditor is a native Blazor markdown editor with a customizable toolbar, keyboard shortcuts, smart list handling, undo/redo history and a live GitHub-flavored preview." />
 
 <DemoPage Name="MarkdownEditor"
-          Description="BitMarkdownEditor is a simple markdown editor like the GitHub editor."
+          Description="BitMarkdownEditor is a native Blazor markdown editor with a customizable toolbar, keyboard shortcuts, smart list handling, undo/redo history and a live GitHub-flavored preview powered by the BitMarkdownViewer."
           SecondaryNames="@(["MdEditor"])"
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
+          SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="MarkdownEditor/BitMarkdownEditor.razor"
           GitHubDemoUrl="Extras/MarkdownEditor/BitMarkdownEditorDemo.razor">
@@ -27,115 +28,177 @@
     </NotesTemplate>
     <IntroductionTemplate>
         <BitText>
-            Just like the simple MD editor used in GitHub, our MarkdownEditor has simple but useful features that you can start discovering them here.
-            <br/>
-            Start typing below in the editor and see the result in real-time:
+            The BitMarkdownEditor is a full-featured, dependency-free markdown editor.
+            All markdown transformations run in C#, the preview is rendered natively by the BitMarkdownViewer,
+            and a small JS-interop script handles the textarea selection control, key interception
+            and the undo/redo history (with typing coalescing).
+            <br />
+            Start typing below and see the result in real-time, or explore the toolbar, the keyboard shortcuts (check the ? button)
+            and the smart list continuation (start a line with <BitTag Text="- " Color="BitColor.SecondaryBackground" /> or
+            <BitTag Text="1. " Color="BitColor.SecondaryBackground" /> and hit Enter):
         </BitText>
-        <br/>
-        <div style="display:flex;gap:1rem;height:300px">
-            <BitMarkdownEditor @bind-Value="@introValue" />
-            <BitMarkdownViewer Markdown="@introValue" Style="overflow:auto" />
-        </div>
+        <br />
+        <BitMarkdownEditor @bind-Value="@introValue" />
     </IntroductionTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
-                The simplest usage of a BitMarkdownEditor is without any specific configuration.
-                You can start typing and discover it's basic features.
+                The simplest usage of the BitMarkdownEditor without any specific configuration renders
+                the full toolbar, a split edit/preview view and the status bar.
             </div>
             <br />
-            <div style="height:300px">
-                <BitMarkdownEditor />
-            </div>
+            <BitMarkdownEditor />
         </DemoExample>
 
-        <DemoExample Title="GetValue" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                Using GetValue public api of the BitMarkdownEditor you can have access to the current value of it 
-                without creating any dotnet object that is the most optimized way to have the content of the editor.
+                You can use the two-way bound parameter named Value (like any normal input component)
+                to have access to the editor content or to set its value from the outside.
             </div>
             <br />
-            <div style="display:flex;gap:1rem;height:300px">
-                <BitMarkdownEditor @ref="editorRef" />
-                <BitButton OnClick="GetValue">=></BitButton>
-                <pre style="padding:1rem;width:100%">
-                    @value
-                </pre>
-            </div>
+            <BitMarkdownEditor @bind-Value="bindingValue" Mode="BitMarkdownEditorMode.Edit" />
+            <br />
+            <BitTextField Multiline Rows="4" Label="Bound value (editable)" @bind-Value="@bindingValue" Immediate />
         </DemoExample>
 
         <DemoExample Title="OnChange" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div>By utilizing the OnChange and DefaultValue parameters you can have another way to access the content of the editor.</div><br />
-            <div style="display:flex;gap:1rem;height:300px">
-                <BitMarkdownEditor DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
-                <pre style="padding:1rem;width:100%">
-                    @onChangeValue
-                </pre>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                You can use the two-way bound parameter named Value (like any normal input component) 
-                to have access to the editor content or set its value.
+                By utilizing the OnChange event and the DefaultValue parameter you can have
+                another way to initialize and access the content of the editor.
             </div>
             <br />
-            <div style="display:flex;gap:1rem;height:300px">
-                <BitMarkdownEditor @bind-Value="bindingValue" />
-                <textarea @bind-value="@bindingValue" @bind-value:event="oninput" style="width:100%;background:transparent"/>
-            </div>
+            <BitMarkdownEditor DefaultValue="# This is the default value"
+                               Mode="BitMarkdownEditorMode.Edit"
+                               OnChange="v => onChangeValue = v" />
+            <br />
+            <div>Current value:</div>
+            <pre class="code-box">@onChangeValue</pre>
         </DemoExample>
 
-        <DemoExample Title="Undo/Redo" RazorCode="@example5RazorCode" Id="example5">
+        <DemoExample Title="Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                The BitMarkdownEditor has built-in undo/redo support that tracks all your changes automatically.
-                Use <strong>Ctrl+Z</strong> to undo the last change and <strong>Ctrl+Y</strong> (or <strong>Ctrl+Shift+Z</strong>) to redo it.
+                The Mode parameter (two-way bindable) controls which panes are visible:
+                Edit only, Split (side-by-side) or Preview only. The eye button of the toolbar cycles through these modes too.
             </div>
             <br />
-            <div style="height:300px">
-                <BitMarkdownEditor DefaultValue="# Undo/Redo Demo" />
-            </div>
+            <BitChoiceGroup Horizontal @bind-Value="@mode" TItem="BitChoiceGroupOption<BitMarkdownEditorMode>" TValue="BitMarkdownEditorMode">
+                <BitChoiceGroupOption Text="Edit" Value="BitMarkdownEditorMode.Edit" />
+                <BitChoiceGroupOption Text="Split" Value="BitMarkdownEditorMode.Split" />
+                <BitChoiceGroupOption Text="Preview" Value="BitMarkdownEditorMode.Preview" />
+            </BitChoiceGroup>
+            <br />
+            <BitMarkdownEditor @bind-Mode="mode" DefaultValue="@modeDefaultValue" />
         </DemoExample>
 
-        <DemoExample Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Toolbar" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                In this example you can see all advanced features of the BitMarkdownEditor in shaping an editor very similar 
-                to the github one.
+                The toolbar is fully data-driven. Supply your own list of toolbar items to reorder, remove or add buttons,
+                including fully custom items with their own callback, or hide the toolbar altogether.
             </div>
             <br />
-            <div style="display:flex;gap:1rem;margin-bottom:1rem">
-                <BitToggleButton Color="BitColor.Tertiary" Variant="BitVariant.Outline" OnText="Write" OffText="Preview" @bind-IsChecked="showPreview" />
-            
-                <div style="flex-grow:1"></div>
+            <div>Custom toolbar (with a custom "clear" button at the end):</div>
+            <br />
+            <BitMarkdownEditor @bind-Value="customToolbarValue" Toolbar="customToolbar" />
+            <br /><br />
+            <div>Without the toolbar and the status bar:</div>
+            <br />
+            <BitMarkdownEditor ShowToolbar="false" ShowStatusBar="false" />
+        </DemoExample>
 
-                <div style="display:@(showPreview ? "none" : "flex");gap:0.5rem;align-items:center">
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Heading" 
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Heading)">H</BitButton>
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Bold"
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Bold)">B</BitButton>
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Italic"
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Italic)">I</BitButton>
-                    |
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Link"
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Link)">L</BitButton>
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Picture"
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Picture)">P</BitButton>
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Quote"
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Quote)">Q</BitButton>
-                    |
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code"
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.Code)">C</BitButton>
-                    <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Code block"
-                               OnClick="async () => await advancedRef.Run(BitMarkdownEditorCommand.CodeBlock)">CB</BitButton>
-                </div>
+        <DemoExample Title="Commands" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Using the public API of the BitMarkdownEditor (Run, Undo, Redo, GetValue, Focus) you can drive
+                the editor from the outside, for example to build a completely custom toolbar.
             </div>
+            <br />
+            <div class="commands-bar">
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Heading1)">H1</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Bold)"><b>B</b></BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Italic)"><i>I</i></BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Strikethrough)"><s>S</s></BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Link)">Link</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Image)">Image</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.UnorderedList)">List</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.TaskList)">Tasks</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Table)">Table</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.CodeBlock)">Code</BitButton>
+                <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanUndo ?? false" OnClick="Undo">Undo</BitButton>
+                <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanRedo ?? false" OnClick="Redo">Redo</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="GetValue">GetValue</BitButton>
+            </div>
+            <br />
+            <BitMarkdownEditor @ref="commandsRef" ShowToolbar="false" OnChange="_ => InvokeAsync(StateHasChanged)" />
+            <br />
+            <div>GetValue result:</div>
+            <pre class="code-box">@getValueResult</pre>
+        </DemoExample>
 
-            <div style="height:300px">
-                <BitMarkdownEditor @ref="advancedRef" @bind-Value="advancedValue" 
-                                   Style="@($"display:{(showPreview ? "none" : "block")}")" />
-                <BitMarkdownViewer Markdown="@advancedValue" 
-                                   Style="@($"display:{(showPreview ? "block" : "none")}")" />
+        <DemoExample Title="Preview" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                The preview pane is rendered natively in C# by the BitMarkdownViewer using the GitHub flavored pipeline by default.
+                You can customize it with the PreviewPipeline parameter or replace it entirely using the PreviewTemplate.
             </div>
+            <br />
+            <div>Basic pipeline (no tables, task-lists, strikethrough, or autolinks):</div>
+            <br />
+            <BitMarkdownEditor DefaultValue="@previewDefaultValue" PreviewPipeline="BitMarkdownPipelines.Basic" />
+            <br /><br />
+            <div>Custom PreviewTemplate (renders the raw markdown source):</div>
+            <br />
+            <BitMarkdownEditor DefaultValue="@previewDefaultValue">
+                <PreviewTemplate>
+                    <pre style="margin:0;white-space:pre-wrap">@context</pre>
+                </PreviewTemplate>
+            </BitMarkdownEditor>
+        </DemoExample>
+
+        <DemoExample Title="FullScreen & Height" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The Height parameter accepts any CSS length and the FullScreen parameter (two-way bindable,
+                also available as a toolbar button) expands the editor to fill the entire screen.
+            </div>
+            <br />
+            <BitToggleButton @bind-IsChecked="fullScreen" OnText="Exit full-screen" OffText="Go full-screen" />
+            <br /><br />
+            <BitMarkdownEditor @bind-FullScreen="fullScreen" Height="10rem" />
+        </DemoExample>
+
+        <DemoExample Title="Advanced" RazorCode="@example9RazorCode" Id="example9">
+            <div>
+                Fine-tune the editing experience: a custom Placeholder, disabled SpellCheck, a custom preview render DebounceTime,
+                a custom IndentUnit (used by Tab / Shift+Tab and the Indent/Outdent commands) or the ReadOnly mode.
+            </div>
+            <br />
+            <BitMarkdownEditor Placeholder="Write your story here..."
+                               SpellCheck="false"
+                               DebounceTime="500"
+                               IndentUnit="@("    ")" />
+            <br /><br />
+            <div>ReadOnly:</div>
+            <br />
+            <BitMarkdownEditor ReadOnly DefaultValue="@readOnlyDefaultValue" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                Use Style and Class parameters to customize the root element, or the Styles and Classes parameters
+                to customize every part of the editor.
+            </div>
+            <br />
+            <div>Component's Style & Class:</div>
+            <br />
+            <BitMarkdownEditor Style="border-color:brown;border-radius:1rem;overflow:hidden" Class="custom-class" />
+            <br /><br />
+            <div>Styles & Classes:</div>
+            <br />
+            <BitMarkdownEditor Classes="@(new() { Toolbar = "custom-toolbar", TextArea = "custom-textarea" })"
+                               Styles="@(new() { StatusBar = "color:tomato;font-weight:bold" })" />
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+            <div>Use BitMarkdownEditor in right-to-left (RTL).</div>
+            <br />
+            <BitMarkdownEditor Dir="BitDir.Rtl" DefaultValue="@rtlDefaultValue" />
         </DemoExample>
     </Examples>
 </DemoPage>

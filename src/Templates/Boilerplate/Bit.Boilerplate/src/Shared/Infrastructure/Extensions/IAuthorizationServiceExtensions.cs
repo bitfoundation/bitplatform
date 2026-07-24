@@ -1,10 +1,13 @@
-﻿namespace Microsoft.AspNetCore.Authorization;
+namespace Microsoft.AspNetCore.Authorization;
 
 public static class IAuthorizationServiceExtensions
 {
-    public static async Task<bool> IsAuthorized(this IAuthorizationService authorizationService, ClaimsPrincipal user, string policyName)
+    extension(IAuthorizationService authorizationService)
     {
-        var result = await authorizationService.AuthorizeAsync(user, policyName);
-        return result.Succeeded;
+        public async Task<bool> IsAuthorized(ClaimsPrincipal user, string policyName)
+        {
+            var result = await authorizationService.AuthorizeAsync(user, policyName);
+            return result.Succeeded;
+        }
     }
 }

@@ -1,0 +1,96 @@
+@namespace Bit.BlazorUI
+@implements IDisposable
+@inject IJSRuntime JS
+
+@{
+    var monthEvents = BitFullCalendarHelpers.GetEventsForMonth(State.Events.ToList(), State.SelectedDate, State.Culture);
+    if (!string.IsNullOrWhiteSpace(_search))
+    {
+        var q = _search.ToLowerInvariant();
+        monthEvents = monthEvents.Where(e =>
+            (e.Title ?? "").Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            (e.Description ?? "").Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    List<(string? DateKey, string GroupTitle, List<BitFullCalendarEvent> Items)> agendaGroups;
+    if (monthEvents.Count == 0)
+    {
+        agendaGroups = [];
+    }
+    else if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
+    {
+        agendaGroups = monthEvents
+            .GroupBy(e => e.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))
+            .OrderBy(g => g.Key)
+            .Select(g =>
+            {
+                var title = DateTime.TryParse(g.Key, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt)
+                    ? $"{dt.ToString("dddd", State.Culture)}, {BitFullCalendarHelpers.FormatCultureDate(dt, State.Culture)}"
+                    : g.Key;
+                return (DateKey: (string?)g.Key, GroupTitle: title, Items: g.ToList());
+            })
+            .ToList();
+    }
+    else
+    {
+        agendaGroups = monthEvents
+            .GroupBy(e => e.Color)
+            .OrderBy(g => ColorScheme.GetSortOrder(g.Key))
+            .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(g => (DateKey: (string?)null, GroupTitle: ColorScheme.GetLabel(g.Key), Items: g.ToList()))
+            .ToList();
+    }
+}
+
+<div id="@_scrollContainerId" class="bit-bfc-agenda">
+    <div class="bit-bfc-agenda-search">
+        <input type="text" placeholder="@Texts.SearchEventsPlaceholder" aria-label="@Texts.SearchEventsPlaceholder" @bind="_search" @bind:event="oninput" />
+    </div>
+
+    @if (agendaGroups.Count == 0)
+    {
+        <div class="bit-bfc-agenda-empty">@Texts.NoEventsFound</div>
+    }
+    else
+    {
+        @foreach (var (dateKey, groupTitle, items) in agendaGroups)
+        {
+            <div class="bit-bfc-agenda-group" data-agenda-date="@dateKey">
+                <div class="bit-bfc-agenda-group-title">@groupTitle</div>
+                @foreach (var ev in items)
+                {
+                    <button type="button" class="bit-bfc-agenda-item" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
+                            @onclick="() => ShowDetails(ev)">
+                        <span class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
+                            @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
+                        </span>
+                        <span class="bit-bfc-agenda-info" style="display:block;">
+                            <span class="bit-bfc-agenda-title" style="display:block;">@ev.Title</span>
+                            <span class="bit-bfc-agenda-desc" style="display:block;">@ev.Description</span>
+                        </span>
+                        <span class="bit-bfc-agenda-time">
+                            @if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
+                            {
+                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
+                                <span> - </span>
+                                @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat, State.Culture)
+                            }
+                            else
+                            {
+                                @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
+                                <span> · </span>
+                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
+                            }
+                        </span>
+                    </button>
+                }
+            </div>
+        }
+    }
+</div>
+
+@if (_showDetails && _selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="() => _showDetails = false" />
+}
+

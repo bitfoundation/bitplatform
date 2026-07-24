@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Infrastructure.Services.Contracts;
+namespace Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 public interface IPushNotificationService
 {

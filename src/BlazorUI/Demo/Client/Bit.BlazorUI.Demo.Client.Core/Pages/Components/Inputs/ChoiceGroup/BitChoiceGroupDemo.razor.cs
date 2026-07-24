@@ -2,7 +2,7 @@
 
 public partial class BitChoiceGroupDemo
 {
-    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+    [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -37,13 +37,6 @@ public partial class BitChoiceGroupDemo
             Description = "The general color of the ChoiceGroup.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
-        },
-        new()
-        {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Default selected Value for ChoiceGroup."
         },
         new()
         {

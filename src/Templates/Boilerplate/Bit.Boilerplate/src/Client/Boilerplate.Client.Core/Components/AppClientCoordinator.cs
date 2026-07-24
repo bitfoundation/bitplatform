@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
@@ -53,61 +53,64 @@ public partial class AppClientCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
+            await Task.Run(async () =>
             {
-                var uriValue = uri?.ToString()!;
-                var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
-                var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
-                NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
-            }));
-            //#if (signalR == true)
-            unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
-            {
-                if (payload is null) return;
-
-                var appProblemDetails = payload is JsonElement jsonDocument
-                    ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
-                    : (AppProblemDetails)payload;
-
-                ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
-            }));
-            //#endif
-
-            if (AppPlatform.IsBlazorHybrid is false)
-            {
-                try
+                unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
                 {
-                    BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
-                    var userAgentData = await userAgent.Extract();
-                    TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
-                }
-                finally
+                    var uriValue = uri?.ToString()!;
+                    var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
+                    var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
+                    NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
+                }));
+                //#if (signalR == true)
+                unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
                 {
-                    BitButil.UseNormalInvoke();
-                }
-            }
-            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
+                    if (payload is null) return;
 
-            //#if (appInsights == true)
-            _ = appInsights.AddTelemetryInitializer(new()
-            {
-                Data = new()
+                    var appProblemDetails = payload is JsonElement jsonDocument
+                        ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
+                        : (AppProblemDetails)payload;
+
+                    ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+                }));
+                //#endif
+
+                if (AppPlatform.IsBlazorHybrid is false)
                 {
-                    ["ai.application.ver"] = TelemetryContext.AppVersion,
-                    ["ai.session.id"] = TelemetryContext.AppSessionId,
-                    ["ai.device.locale"] = TelemetryContext.Culture
+                    try
+                    {
+                        BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
+                        var userAgentData = await userAgent.Extract();
+                        TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                    }
+                    finally
+                    {
+                        BitButil.UseNormalInvoke();
+                    }
                 }
+                TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+                TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+                TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
+
+                //#if (appInsights == true)
+                _ = appInsights.AddTelemetryInitializer(new()
+                {
+                    Data = new()
+                    {
+                        ["ai.application.ver"] = TelemetryContext.AppVersion,
+                        ["ai.session.id"] = TelemetryContext.AppSessionId,
+                        ["ai.device.locale"] = TelemetryContext.Culture
+                    }
+                });
+                //#endif
+
+                NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+                AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
+                //#if (signalR == true)
+                SubscribeToSignalRSharedAppMessages();
+                //#endif
+                await PropagateAuthState(firstRun: true, AuthenticationStateTask);
             });
-            //#endif
-
-            NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-            AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
-            //#if (signalR == true)
-            SubscribeToSignalRSharedAppMessages();
-            //#endif
-            await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
     }
 
@@ -266,17 +269,20 @@ public partial class AppClientCoordinator : AppComponentBase
         hubConnection.Remove(SharedAppMessages.CHANGE_THEME);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.CHANGE_THEME, async (string requestedTheme) =>
         {
+            bool themeChanged = false;
+
             await InvokeAsync(async () =>
             {
                 var currentTheme = (await themeService.GetCurrentTheme()).ToString();
 
-                if (string.Equals(currentTheme, requestedTheme) is false)
+                if (string.Equals(currentTheme, requestedTheme, StringComparison.InvariantCultureIgnoreCase) is false)
                 {
                     await themeService.ToggleTheme();
+                    themeChanged = true;
                 }
             });
 
-            return true;
+            return themeChanged;
         }));
 
         hubConnection.Remove(SharedAppMessages.CLEAR_APP_FILES);

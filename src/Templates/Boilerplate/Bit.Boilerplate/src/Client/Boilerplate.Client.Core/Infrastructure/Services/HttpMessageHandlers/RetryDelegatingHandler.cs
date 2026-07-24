@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
+namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 public partial class RetryDelegatingHandler(HttpMessageHandler handler)
     : DelegatingHandler(handler)

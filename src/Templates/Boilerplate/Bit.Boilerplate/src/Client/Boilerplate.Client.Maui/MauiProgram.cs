@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
 //#if (notification == true)
@@ -34,6 +34,7 @@ public static partial class MauiProgram
         ITelemetryContext.Current = new MauiTelemetryContext();
 
         var builder = MauiApp.CreateBuilder();
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
         //+:cnd:noEmit
         builder
@@ -42,11 +43,10 @@ public static partial class MauiProgram
             //#if (sentry == true)
             .UseSentry(options =>
             {
-                var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui").Build();
-                configuration.GetRequiredSection("Logging:Sentry").Bind(options);
+                builder.Configuration.DynamicBind("Logging:Sentry", options);
             })
             //#endif
-            .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
+            ;
 
         //#if (notification == true)
         if (AppPlatform.IsWindows is false)
@@ -209,7 +209,7 @@ public static partial class MauiProgram
     {
         if (IPlatformApplication.Current?.Services is IServiceProvider services && error is Exception exp)
         {
-            services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            services.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
             }, displayKind: AppEnvironment.IsDevelopment() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);

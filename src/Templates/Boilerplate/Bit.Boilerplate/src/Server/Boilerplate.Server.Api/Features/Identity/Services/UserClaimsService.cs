@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Server.Api.Features.Identity.Services;
+//+:cnd:noEmit
+namespace Boilerplate.Server.Api.Features.Identity.Services;
 
 public partial class UserClaimsService
 {
@@ -6,6 +7,11 @@ public partial class UserClaimsService
 
     [AutoInject]
     private AppDbContext dbContext = default!;
+
+    //#if (multitenant == true)
+    [AutoInject]
+    private IHttpContextAccessor httpContextAccessor = default!;
+    //#endif
 
     /// <summary>
     /// Returns all claim values of a specific type for a user, including those inherited from roles.
@@ -49,9 +55,28 @@ public partial class UserClaimsService
         if (_cachedClaims.TryGetValue(userId, out var cachedClaims))
             return cachedClaims;
 
+        //#if (multitenant == true)
+        Guid tenantId = httpContextAccessor.HttpContext!.Items.ContainsKey(AppClaimTypes.TENANT_ID) ?
+            (Guid)httpContextAccessor.HttpContext!.Items[AppClaimTypes.TENANT_ID]! : Guid.Empty;
+
+        var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId)
+            .Where(uc => uc.TenantId == null || uc.TenantId == tenantId)
+            .Select(uc => new { ClaimType = uc.ClaimType!, ClaimValue = uc.ClaimValue! });
+
+        var userRolesQuery = dbContext.Roles.Where(role => role.Users.Any(ur => ur.UserId == userId))
+            .Where(role => role.TenantId == null || role.TenantId == tenantId);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (multitenant != true)
         var userClaimsQuery = dbContext.UserClaims.Where(uc => uc.UserId == userId).Select(uc => new { ClaimType = uc.ClaimType!, ClaimValue = uc.ClaimValue! });
 
         var userRolesQuery = dbContext.Roles.Where(role => role.Users.Any(ur => ur.UserId == userId));
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
 
         var userRoleClaimsQuery = userRolesQuery.SelectMany(r => r.Claims.Select(rc => new { ClaimType = rc.ClaimType!, ClaimValue = rc.ClaimValue! }));
 

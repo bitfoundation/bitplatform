@@ -2,73 +2,23 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<CascadingValue Value="this" IsFixed="true">
-    <div style="display: none;" hidden>@(Options ?? ChildContent)</div>
-</CascadingValue>
-
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @for (int i = 0; i < _items.Count; i++)
+    @if (Options is not null || ChildContent is not null)
     {
-        var item = _items[i];
-
-        var icon = GetIcon(item);
-        var hideDot = GetHideDot(item);
-        var iconName = GetIconName(item);
-        var dotTemplate = GetDotTemplate(item);
-        var primaryContent = GetPrimaryContent(item);
-        var isEnabled = IsEnabled && GetIsEnabled(item);
-        var secondaryContent = GetSecondaryContent(item);
-
-        icon = BitIconInfo.From(icon, iconName);
-
-        <div @onclick="() => HandleOnItemClick(item)"
-             tabindex="@(isEnabled ? 0 : -1)"
-             disabled="@(isEnabled is false)"
-             aria-disabled="@(isEnabled is false)"
-             style="@GetStyle(item) @Styles?.Item"
-             class="bit-tln-itm@(GetItemClasses(item)) @Classes?.Item">
-            <div style="@Styles?.PrimaryContent" class="bit-tln-pcn @Classes?.PrimaryContent">
-                @if (primaryContent is not null)
-                {
-                    @primaryContent(item)
-                }
-                else
-                {
-                    <span style="@Styles?.PrimaryText" class="bit-tln-ttx @Classes?.PrimaryText">@GetPrimaryText(item)</span>
-                }
-            </div>
-            <div style="@Styles?.Divider" class="bit-tln-dvd @Classes?.Divider">
-                @if (hideDot is false)
-                {
-                    @if (dotTemplate is not null)
-                    {
-                        @dotTemplate(item)
-                    }
-                    else
-                    {
-                        <div style="@Styles?.Dot" class="bit-tln-dot @Classes?.Dot">
-                            @if (icon is not null)
-                            {
-                                <i style="@Styles?.Icon" class="bit-tln-ico @icon.GetCssClasses() @Classes?.Icon" />
-                            }
-                        </div>
-                    }
-                }
-            </div>
-            <div style="@Styles?.SecondaryContent" class="bit-tln-scn @Classes?.SecondaryContent">
-                @if (secondaryContent is not null)
-                {
-                    @secondaryContent(item)
-                }
-                else
-                {
-                    <span style="@Styles?.SecondaryText" class="bit-tln-ttx @Classes?.SecondaryText">@GetSecondaryText(item)</span>
-                }
-            </div>
-        </div>
+        <CascadingValue Value="this" IsFixed="true">
+            @(Options ?? ChildContent)
+        </CascadingValue>
+    }
+    else
+    {
+        @for (int i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            <_BitTimelineItem Timeline="this" Item="item" @key="@GetItemKey(item, i.ToString())" />
+        }
     }
 </div>

@@ -66,6 +66,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/QuickGrid/BitQuickGridDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/QuickGrid/BitQuickGridDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.scss",
         "minify": { "enabled": false },
@@ -114,12 +120,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.css",
-        "inputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.css",
         "inputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.scss",
         "minify": { "enabled": false },
@@ -128,6 +128,12 @@
     {
         "outputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.css",
         "inputFile": "Pages/Components/Extras/RichTextEditor/BitRichTextEditorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/Virtualize/BitVirtualizeDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/Virtualize/BitVirtualizeDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -540,8 +546,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/IconographyPage.razor.css",
-        "inputFile": "Pages/IconographyPage.razor.scss",
+        "outputFile": "Pages/Iconography/IconographyPage.razor.css",
+        "inputFile": "Pages/Iconography/IconographyPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

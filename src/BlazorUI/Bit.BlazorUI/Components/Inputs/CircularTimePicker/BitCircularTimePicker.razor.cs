@@ -335,6 +335,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _calloutId = $"{_circularTimePickerId}-callout";
         _overlayId = $"{_circularTimePickerId}-overlay";
 
+        SetDefaultValue();
+
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
 

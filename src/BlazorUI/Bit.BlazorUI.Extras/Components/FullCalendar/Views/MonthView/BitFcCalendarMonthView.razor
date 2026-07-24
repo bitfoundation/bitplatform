@@ -1,0 +1,24 @@
+@namespace Bit.BlazorUI
+
+@{
+    var cells = BitFullCalendarHelpers.GetCalendarCells(State.SelectedDate, State.Culture);
+    var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
+    var eventPositions = BitFullCalendarHelpers.CalculateMonthEventPositions(MultiDayEvents, SingleDayEvents, State.SelectedDate, State.Culture);
+    var weekDayHeaders = BitFullCalendarHelpers.GetWeekDayHeaders(State.Culture);
+}
+
+<div class="bit-bfc-month">
+    <div class="bit-bfc-month-header">
+        @foreach (var day in weekDayHeaders)
+        {
+            <div class="bit-bfc-month-header-cell">@day</div>
+        }
+    </div>
+
+    <div class="bit-bfc-month-grid">
+        @foreach (var cell in cells)
+        {
+            <BitFcDayCell @key="cell.Date" Cell="cell" Events="allEvents" EventPositions="eventPositions" EventTemplate="EventTemplate" />
+        }
+    </div>
+</div>

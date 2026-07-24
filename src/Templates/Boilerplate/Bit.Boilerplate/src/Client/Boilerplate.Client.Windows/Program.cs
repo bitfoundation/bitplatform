@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Velopack;
 
 using System.Diagnostics.CodeAnalysis;
@@ -83,7 +83,7 @@ public partial class Program
             }
             catch (Exception exp)
             {
-                Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+                Services.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp);
             }
         });
 
@@ -135,7 +135,7 @@ public partial class Program
     {
         if (Services is not null && error is Exception exp)
         {
-            Services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            Services.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
             }, displayKind: AppEnvironment.IsDevelopment() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);

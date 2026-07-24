@@ -11,6 +11,13 @@
     align-items: center;
 }
 
+.clickable-box {
+    cursor: pointer;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    border: 1px dashed var(--bit-clr-brd-sec);
+}
+
 ::deep {
     .custom-class {
         border-radius: 1rem;

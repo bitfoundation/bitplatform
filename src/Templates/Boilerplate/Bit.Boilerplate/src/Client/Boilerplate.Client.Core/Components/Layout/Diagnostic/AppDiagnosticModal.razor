@@ -136,8 +136,8 @@
                           Items="filteredLogs.Indexed().ToArray()">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
-                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToString("HH:mm:ss")}]")</BitText>
+                    <BitStack @key="logIndex.item.CreatedOn.ToLocalTime()" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToLocalTime().ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
                                    Color="BitColor.Info"

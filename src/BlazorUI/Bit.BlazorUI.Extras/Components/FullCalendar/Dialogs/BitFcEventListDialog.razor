@@ -1,0 +1,35 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-overlay" @onclick="OnClose">
+    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1" @ref="_dialogRef" @onclick:stopPropagation="true">
+        <div class="bit-bfc-dialog-header">
+            <h3 id="@_dialogTitleId">@string.Format(State.Culture, Texts.EventListTitleFormat, Date.ToString("dddd, MMM d, yyyy", State.Culture))</h3>
+            <p>@string.Format(State.Culture, Texts.EventListCountFormat, Events.Count)</p>
+        </div>
+        <div class="bit-bfc-dialog-body" style="max-height:400px;overflow-y:auto;">
+            @foreach (var ev in Events)
+            {
+                <button type="button" class="bit-bfc-agenda-item" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;" @onclick="() => SelectEvent(ev)">
+                    <span class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
+                        @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
+                    </span>
+                    <span class="bit-bfc-agenda-info" style="display:block;">
+                        <span class="bit-bfc-agenda-title" style="display:block;">@ev.Title</span>
+                        <span class="bit-bfc-agenda-desc" style="display:block;">@ev.Description</span>
+                    </span>
+                    <span class="bit-bfc-agenda-time">
+                        @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
+                    </span>
+                </button>
+            }
+        </div>
+        <div class="bit-bfc-dialog-footer">
+            <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>
+        </div>
+    </div>
+</div>
+
+@if (_showDetails && _selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="() => _showDetails = false" />
+}

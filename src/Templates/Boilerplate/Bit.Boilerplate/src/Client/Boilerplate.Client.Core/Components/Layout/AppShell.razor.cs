@@ -1,5 +1,8 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.AspNetCore.Components.Routing;
+//#if (multitenant == true)
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -8,6 +11,13 @@ public partial class AppShell
     [Parameter] public bool? IsIdentityPage { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public List<BitNavItem> NavPanelItems { get; set; } = [];
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// The tenant the user is currently signed into, or null when none is selected. Shown next to the app version.
+    /// </summary>
+    [CascadingParameter] public TenantDto? CurrentTenant { get; set; }
+    //#endif
 
 
     [AutoInject] private IAppUpdateService appUpdateService = default!;

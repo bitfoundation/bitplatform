@@ -1,6 +1,11 @@
+@*+:cnd:noEmit*@
 @attribute [Route(PageUrls.SystemPrompts)]
 @attribute [Route("{culture?}" + PageUrls.SystemPrompts)]
-@attribute [Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@*#if (multitenant == true)*@
+@attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+@*#endif*@
+@attribute [Authorize(Policy = AppFeatures.Management.SystemPrompts_Write)]
 @inherits AppPageBase
 
 
@@ -18,19 +23,14 @@
             @foreach (var systemPrompt in systemPrompts)
             {
                 <BitPivotItem HeaderText="@systemPrompt.PromptKind.ToString()">
+
                     <BitSticky Top="5rem" Style="margin-bottom:8px">
                         <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(() => SaveChanges(systemPrompt))" AutoLoading>
                             @Localizer[nameof(AppStrings.Save)]
                         </BitButton>
                     </BitSticky>
 
-                    <BitStack VerticalAlign="BitAlignment.Stretch" Horizontal>
-                        <AuthorizeView Policy="@AppFeatures.Management.ManageAiPrompt">
-                            <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Class="md-editor" />
-                        </AuthorizeView>
-                        <BitMarkdownViewer NoPrerender Markdown="@systemPrompt.Markdown" Class="md-viewer"
-                                           JsMiddlewareIdentifier="App.sanitizeHtml" />
-                    </BitStack>
+                    <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Mode="BitMarkdownEditorMode.Split" />
                 </BitPivotItem>
             }
 

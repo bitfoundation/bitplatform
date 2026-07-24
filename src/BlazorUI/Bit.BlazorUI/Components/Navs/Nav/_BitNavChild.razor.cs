@@ -16,9 +16,15 @@ public partial class _BitNavChild<TItem> where TItem : class
 
     [Parameter] public int Depth { get; set; }
 
+    [Parameter] public RenderFragment? ChildrenFragment { get; set; }
 
 
-    private async Task HandleOnClick(bool renderLink)
+
+    // Method group (not a closure) so the EventCallback stays delegate-equal across renders and the DOM
+    // click handler id survives re-renders; a per-render lambda gets disposed/recreated on each render,
+    // making clicks that race a re-render (e.g. the swipe-trap pointerup re-render in BitNavPanel)
+    // dispatch a stale handler id and silently fail on WebAssembly.
+    private async Task HandleOnClick()
     {
         if (Nav is null) return;
         if (Nav.GetIsEnabled(Item) is false) return;
@@ -34,7 +40,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         if (Nav.SelectedItem != Item || Nav.Reselectable)
         {
-            if (renderLink)
+            if (Nav.GetUrl(Item).HasValue() || Nav.GetForceAnchor(Item))
             {
                 await Task.Yield(); // wait for the link to navigate first
             }

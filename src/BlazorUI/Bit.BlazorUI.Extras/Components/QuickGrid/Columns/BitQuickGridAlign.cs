@@ -1,0 +1,22 @@
+namespace Bit.BlazorUI;
+
+/// <summary>
+/// Describes alignment for a <see cref="BitQuickGrid{TGridItem}"/> column.
+/// </summary>
+public enum BitQuickGridAlign
+{
+    /// <summary>
+    /// Justifies the content against the start of the container.
+    /// </summary>
+    Left,
+
+    /// <summary>
+    /// Justifies the content at the center of the container.
+    /// </summary>
+    Center,
+
+    /// <summary>
+    /// Justifies the content at the end of the container.
+    /// </summary>
+    Right,
+}

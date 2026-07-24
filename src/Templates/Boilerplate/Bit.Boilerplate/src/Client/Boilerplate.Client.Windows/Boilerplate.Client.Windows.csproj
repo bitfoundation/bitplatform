@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -40,12 +40,13 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
         <PackageReference Include="Microsoft.Web.WebView2" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
         <PackageReference Include="Velopack" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" />
         <!--/-:msbuild-conditional:noEmit -->
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">

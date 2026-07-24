@@ -2,13 +2,14 @@
 
 <PageOutlet Url="components/markdownviewer"
             Title="MarkdownViewer"
-            Description="markdownviewer component of the bit BlazorUI components" />
+            Description="BitMarkdownViewer is a native, SEO friendly Blazor component that renders Markdown to HTML entirely in C#, with no JavaScript interop or third-party packages." />
 
 <DemoPage Name="MarkdownViewer"
           Description="BitMarkdownViewer is a native, SEO friendly Blazor component that renders Markdown to HTML entirely in C#, with no JavaScript interop and no third-party packages."
           SecondaryNames="@(["MdViewer", "MD"])"
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           GitHubExtrasUrl="MarkdownViewer/BitMarkdownViewer.cs"
           GitHubDemoUrl="Extras/MarkdownViewer/BitMarkdownViewerDemo.razor">
     <NotesTemplate>
@@ -22,7 +23,7 @@
         </DemoExample>
 
         <DemoExample Title="GitHub flavored" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <BitMarkdownViewer Markdown="@gitHubMarkdown" Pipeline="BitMarkdownViewerPipelines.GitHub" />
+            <BitMarkdownViewer Markdown="@gitHubMarkdown" Pipeline="BitMarkdownPipelines.GitHub" />
         </DemoExample>
 
         <DemoExample Title="Advanced" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
@@ -51,7 +52,11 @@
                 <div class="mdv-split">
                     <textarea class="mdv-editor" spellcheck="false" aria-label="Markdown editor" @bind="playgroundMarkdown" @bind:event="oninput"></textarea>
                     <div class="mdv-preview">
-                        <BitMarkdownViewer Markdown="@playgroundMarkdown" Pipeline="@playgroundPipeline" />
+                        <BitMarkdownViewer Markdown="@playgroundMarkdown"
+                                           Pipeline="@playgroundPipeline"
+                                           ImageRendering="BitMarkdownViewerImageRendering.SameOrigin"
+                                           StripBidiControlCharacters="true"
+                                           MaxLength="100000" />
                     </div>
                 </div>
             </div>

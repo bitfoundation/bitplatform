@@ -2,7 +2,7 @@
 
 <PageOutlet Url="components/messagebox"
             Title="MessageBox"
-            Description="messagebox component of the bit BlazorUI components" />
+            Description="BitMessageBox is a pre-implemented box for showing messages with title and body." />
 
 <DemoPage Name="MessageBox"
           Description="BitMessageBox is a pre-implemented box for showing messages with title and body."
@@ -25,28 +25,55 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>The basic usage of the BitMessageBox, rendered inline inside a BitCard.</div>
+            <br />
             <BitCard Style="padding:0">
                 <BitMessageBox Title="It's a title" Body="It's a body." />
             </BitCard>
         </DemoExample>
 
         <DemoExample Title="BitModal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>Show the BitMessageBox inside a BitModal component and close it using the OnClose event.</div>
+            <br />
             <BitButton OnClick="() => isModalOpen = true">Show</BitButton>
             <BitModal @bind-IsOpen="isModalOpen">
                 <BitMessageBox OnClose="() => isModalOpen = false" Title="This is the Title" Body="This is the Body!" />
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="BitModalService" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="BitProModal" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>Show the BitMessageBox inside a BitProModal component and close it using the OnClose event.</div>
+            <br />
+            <BitButton OnClick="() => isProModalOpen = true">Show</BitButton>
+            <BitProModal @bind-IsOpen="isProModalOpen">
+                <BitMessageBox OnClose="() => isProModalOpen = false" Title="This is the Title" Body="This is the Body!" />
+            </BitProModal>
+        </DemoExample>
+
+        <DemoExample Title="BitModalService" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>Show the BitMessageBox as the content of a modal shown by the BitModalService.</div>
+            <br />
             <BitButton OnClick="ShowMessageBox">Show MessageBox</BitButton>
         </DemoExample>
 
-        <DemoExample Title="BitMessageBoxService" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="BitProModalService" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>Show the BitMessageBox as the content of a pro modal shown by the BitProModalService.</div>
+            <br />
+            <BitButton OnClick="ShowProMessageBox">Show MessageBox</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="BitMessageBoxService" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Show the BitMessageBox with a simple call to the Show method of the BitMessageBoxService.
+                This service uses the BitProModalService or the BitModalService (whichever is available) to show the message box,
+                preferring the BitProModalService when both are available.
+            </div>
+            <br />
             <BitButton OnClick="ShowMessageBoxService">Show MessageBox</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
-            <div>Customize the appearance of BitActionButton using styles and CSS classes.</div>
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div>Customize the appearance of BitMessageBox using styles and CSS classes.</div>
             <br />
             <div>
                 <BitCard Style="padding:0">
@@ -63,7 +90,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
             <div>Use BitMessageBox in right-to-left (RTL).</div>
             <br /><br />
             <div dir="rtl">

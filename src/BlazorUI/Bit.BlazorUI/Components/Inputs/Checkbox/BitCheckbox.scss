@@ -6,7 +6,7 @@
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
     --bit-chb-box-clr-brd: #{$clr-brd-pri};
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-sec)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt-sec);
 
     @media (hover: hover) {
         &:hover {
@@ -50,6 +50,48 @@
     }
 }
 
+// visually hidden but focusable, so the native checkbox keeps its keyboard and screen reader behavior
+.bit-chb-inp {
+    margin: 0;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    border: none;
+    overflow: hidden;
+    position: absolute;
+    pointer-events: none;
+    clip-path: inset(50%);
+
+    &:focus-visible ~ .bit-chb-lbl .bit-chb-box {
+        outline-offset: spacing(0.25);
+        outline: spacing(0.25) solid var(--bit-chb-clr);
+    }
+}
+
+.bit-chb-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.bit-chb-rdl {
+    cursor: default;
+}
+
+.bit-chb-req {
+    .bit-chb-txt::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
 .bit-chb-box {
     display: flex;
     cursor: inherit;
@@ -85,7 +127,6 @@
     color: var(--bit-chb-ico-clr);
     opacity: var(--bit-chb-ico-opa);
     font-size: var(--bit-chb-ico-fontsize);
-    background-color: var(--bit-chb-ico-clr-bg);
 }
 
 .bit-chb-txt {
@@ -108,43 +149,50 @@
 }
 
 
-.bit-chb-ckd {
-    --bit-chb-box-clr-bg: #{var(--bit-chb-clr)};
-    --bit-chb-box-clr-brd: #{var(--bit-chb-clr)};
+// a custom unchecked icon is always visible, unlike the default hover-preview of the check icon
+.bit-chb-uci {
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt)};
+}
+
+.bit-chb-ckd {
+    --bit-chb-box-clr-bg: var(--bit-chb-clr);
+    --bit-chb-box-clr-brd: var(--bit-chb-clr);
+    --bit-chb-ico-opa: 1;
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
 
     @media (hover: hover) {
         &:hover {
-            --bit-chb-box-clr-bg: #{var(--bit-chb-clr-hover)};
-            --bit-chb-box-clr-brd: #{var(--bit-chb-clr-hover)};
+            --bit-chb-box-clr-bg: var(--bit-chb-clr-hover);
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
             --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-hover)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
         }
     }
 }
 
 .bit-chb-ind {
     --bit-chb-box-clr-bg: transparent;
-    --bit-chb-box-clr-brd: #{var(--bit-chb-clr)};
+    --bit-chb-box-clr-brd: var(--bit-chb-clr);
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt)};
-    --bit-chb-ico-clr-bg: #{var(--bit-chb-clr)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
+    --bit-chb-ico-clr-bg: var(--bit-chb-clr);
 
     @media (hover: hover) {
         &:hover {
             --bit-chb-box-clr-bg: transparent;
-            --bit-chb-box-clr-brd: #{var(--bit-chb-clr-hover)};
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
             --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-hover)};
-            --bit-chb-ico-clr-bg: #{var(--bit-chb-clr-hover)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
+            --bit-chb-ico-clr-bg: var(--bit-chb-clr-hover);
         }
     }
 
-    .bit-chb-ico {
+    // the default indeterminate visual: a filled square in the middle of the box
+    .bit-chb-idi {
         width: var(--bit-ch-ind-size);
         height: var(--bit-ch-ind-size);
         border-radius: $shp-border-radius;
+        background-color: var(--bit-chb-ico-clr-bg);
 
         &::before {
             content: '';
@@ -152,9 +200,46 @@
     }
 }
 
+// a custom indeterminate icon sits on the transparent box, so it takes the box color rather than the on-color text
+.bit-chb-cii.bit-chb-ind {
+    --bit-chb-ico-clr: var(--bit-chb-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-chb-ico-clr: var(--bit-chb-clr-hover);
+        }
+    }
+
+    &.bit-dis {
+        --bit-chb-ico-clr: #{$clr-fg-dis};
+    }
+}
+
 .bit-chb-rvs {
     --bit-chb-lbl-justify-content: flex-end;
     --bit-chb-lbl-flex-direction: row-reverse;
+}
+
+// label position classes come after the reversed one, so an explicit LabelPosition wins over Reversed
+
+.bit-chb-ltp {
+    --bit-chb-lbl-justify-content: flex-start;
+    --bit-chb-lbl-flex-direction: column-reverse;
+}
+
+.bit-chb-lbt {
+    --bit-chb-lbl-justify-content: flex-start;
+    --bit-chb-lbl-flex-direction: column;
+}
+
+.bit-chb-lst {
+    --bit-chb-lbl-justify-content: flex-end;
+    --bit-chb-lbl-flex-direction: row-reverse;
+}
+
+.bit-chb-lnd {
+    --bit-chb-lbl-justify-content: flex-start;
+    --bit-chb-lbl-flex-direction: row;
 }
 
 .bit-chb-pri {
@@ -312,4 +397,41 @@
     --bit-ch-ind-size: #{spacing(1.625)};
     --bit-chb-lbl-fontsize: #{spacing(2)};
     --bit-chb-ico-fontsize: #{spacing(1.875)};
+}
+
+
+
+// the states are conveyed by background and border color changes, which forced-colors modes discard,
+// so they get re-established with system colors here.
+@media (forced-colors: active) {
+    .bit-chb-box {
+        border-color: ButtonText;
+    }
+
+    .bit-chb-ckd .bit-chb-box {
+        forced-color-adjust: none;
+        border-color: Highlight;
+        background-color: Highlight;
+
+        .bit-chb-ico {
+            color: HighlightText;
+        }
+    }
+
+    .bit-chb-ind .bit-chb-box {
+        border-color: Highlight;
+
+        .bit-chb-idi {
+            forced-color-adjust: none;
+            background-color: Highlight;
+        }
+    }
+
+    .bit-chb.bit-dis {
+        color: GrayText;
+
+        .bit-chb-box {
+            border-color: GrayText;
+        }
+    }
 }

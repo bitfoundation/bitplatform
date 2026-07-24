@@ -178,6 +178,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         OnValueChanged += HandleOnValueChanged;
 
+        SetDefaultValue();
+
         UpdatePlaceholder();
 
         await base.OnInitializedAsync();

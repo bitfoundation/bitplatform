@@ -1,0 +1,120 @@
+@namespace Bit.BlazorUI
+@inject IJSRuntime JS
+
+@{
+    var dayEvents = SingleDayEvents.Where(e =>
+        e.StartDate.Date == State.SelectedDate.Date).ToList();
+    var groupedEvents = BitFullCalendarHelpers.GroupEvents(dayEvents);
+    // Include in-progress multi-day events too, not just single-day ones, so the sidebar shows
+    // every event currently happening (e.g. a multi-day conference active right now).
+    var currentEvents = SingleDayEvents.Concat(MultiDayEvents).Where(e =>
+        DateTime.Now >= e.StartDate && DateTime.Now <= e.EndDate).ToList();
+}
+
+<div class="bit-bfc-day-layout">
+    <div class="bit-bfc-day-main">
+        <div class="bit-bfc-day-header">
+            <div class="bit-bfc-day-header-time-gutter" aria-hidden="true"></div>
+            <div class="bit-bfc-day-header-titles">
+                <span style="color:var(--bit-bfc-text-secondary);font-size:14px;">
+                    @State.SelectedDate.ToString("ddd", State.Culture)
+                </span>
+                <span class="bit-bfc-day-header-date @(State.SelectedDate.Date == DateTime.Today ? "today" : "")">
+                    @BitFullCalendarHelpers.GetCulturalDayOfMonth(State.SelectedDate, State.Culture)
+                </span>
+            </div>
+        </div>
+
+        <BitFcDayViewMultiDayEventsRow MultiDayEvents="MultiDayEvents" Date="State.SelectedDate" EventTemplate="EventTemplate" />
+
+        <div id="@_scrollContainerId" class="bit-bfc-timegrid-wrapper">
+            <BitFcTimeColumn />
+            <div class="bit-bfc-timegrid">
+                @for (int h = 0; h < 24; h++)
+                {
+                    var hour = h;
+                        <div class="bit-bfc-hour-row">
+                            @if (h > 0)
+                            {
+                                <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>
+                            }
+                            <div class="bit-bfc-hour-slot bit-bfc-droppable @GetHourDropClass(hour, 0)"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="@HourSlotAriaLabel(hour, 0)"
+                                 @ondragenter="() => OnDragEnterHour(hour, 0)"
+                                 @ondragover:preventDefault="true"
+                                 @ondrop="() => OnDropHour(hour, 0)"
+                                 @onclick="() => OnHourClickAsync(hour, 0)"
+                                 @onkeydown="e => OnHourKeyDownAsync(e, hour, 0)"></div>
+                            <div class="bit-bfc-hour-row-half bit-bfc-droppable @GetHourDropClass(hour, 30)"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="@HourSlotAriaLabel(hour, 30)"
+                                 @ondragenter="() => OnDragEnterHour(hour, 30)"
+                                 @ondragover:preventDefault="true"
+                                 @ondrop="() => OnDropHour(hour, 30)"
+                                 @onclick="() => OnHourClickAsync(hour, 30)"
+                                 @onkeydown="e => OnHourKeyDownAsync(e, hour, 30)"></div>
+                            <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                @Texts.AddEventHoverHint
+                            </div>
+                        </div>
+                }
+
+                <BitFcRenderGroupedEvents GroupedEvents="groupedEvents" Day="State.SelectedDate" OnEventSelected="SelectEvent" EventTemplate="EventTemplate" />
+                <BitFcCalendarTimeline />
+            </div>
+        </div>
+    </div>
+
+    @if (State.ShowDayViewCalendar)
+    {
+    <div class="bit-bfc-day-sidebar">
+        <BitFcMiniCalendar />
+
+        <div class="bit-bfc-happening-now">
+            <div class="bit-bfc-happening-now-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                @Texts.HappeningNowTitle
+            </div>
+            @if (currentEvents.Count == 0)
+            {
+                <div class="bit-bfc-happening-now-empty">@Texts.NoAppointmentsNow</div>
+            }
+            else
+            {
+                @foreach (var ev in currentEvents)
+                {
+                    <button type="button" class="bit-bfc-happening-event" @onclick="() => SelectEvent(ev)">
+                        <span class="bit-bfc-happening-event-title" style="display:block;">@ev.Title</span>
+                        @if (ev.Attendees.Count > 0)
+                        {
+                            <span class="bit-bfc-happening-event-meta" style="display:flex;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                @string.Join(", ", ev.Attendees.Select(a => a.FullName))
+                            </span>
+                        }
+                        <span class="bit-bfc-happening-event-meta" style="display:flex;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat, State.Culture)
+                        </span>
+                    </button>
+                }
+            }
+        </div>
+    </div>
+    }
+</div>
+
+@if (_showAddDialog)
+{
+    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" StartMinute="_addStartMinute" OnClose="() => _showAddDialog = false" />
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+

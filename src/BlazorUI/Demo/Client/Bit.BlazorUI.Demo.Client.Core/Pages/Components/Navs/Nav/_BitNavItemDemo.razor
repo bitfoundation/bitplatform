@@ -2,7 +2,7 @@
     <BitNav Items="basicNavItems" />
 </DemoExample>
 
-<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <BitNav Items="basicNavItems" FitWidth />
 </DemoExample>
 
@@ -31,7 +31,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
     <BitNav Items="iconOnlyNavItems" Mode="BitNavMode.Manual" IconOnly="iconOnly" />
@@ -76,7 +76,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
     <BitNav Items="noCollapseNavItems" AllExpanded NoCollapse />
 </DemoExample>
 

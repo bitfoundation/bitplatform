@@ -1,0 +1,11 @@
+﻿[
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.legacy.css",
+        "inputFile": "Styles/bit.blazorui.legacy.scss",
+        "options": {
+            "relativeUrls": false,
+            "sourceMap": false
+        },
+        "minify": { "enabled": false }
+    }
+]

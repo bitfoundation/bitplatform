@@ -2,7 +2,7 @@
 
 public partial class BitDropdownDemo
 {
-    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+    [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -136,13 +136,6 @@ public partial class BitDropdownDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The icon name of the add button in the responsive ComboBox mode from the Fluent UI icon set.",
-        },
-        new()
-        {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The default value that will be initially used to set selected item if the Value parameter is not set.",
         },
         new()
         {

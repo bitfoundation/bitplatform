@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infrastructure.Dtos;
+namespace Boilerplate.Shared.Infrastructure.Dtos;
 
 public partial class PagedResponse<T>
 {

@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Web;
 

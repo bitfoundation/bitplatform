@@ -1,0 +1,14 @@
+﻿@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/typed" Loader="@Load" Meta="@("admin-area")">
+        <Content>
+            <TypedValueReader />
+        </Content>
+    </Broute>
+</Brouter>
+
+@code {
+    private ValueTask<object?> Load(BrouterNavigationContext ctx) =>
+        ValueTask.FromResult<object?>(new LoadedUser("saleh", 42));
+}

@@ -91,14 +91,49 @@
                 "uma_authorization"
             ],
             "notBefore": 0,
-            "groups": [ "/s-admin" ]
+            "groups": [ "/g-admin" ]
+        },
+        {
+            "id": "store-admin-user-id",
+            "username": "store-admin",
+            "enabled": true,
+            "totp": false,
+            "emailVerified": true,
+            "firstName": "Store",
+            "lastName": "Admin",
+            "email": "store-admin@bitplatform.dev",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "123456"
+                }
+            ],
+            "disableableCredentialTypes": [],
+            "requiredActions": [],
+            "realmRoles": [
+                "offline_access",
+                "uma_authorization"
+            ],
+            "notBefore": 0,
+            "groups": [ "/t-admin" ]
         }
     ],
     "groups": [
         {
-            "id": "s-admin-group-id",
-            "name": "s-admin",
-            "path": "/s-admin",
+            "id": "g-admin-group-id",
+            "name": "g-admin",
+            "path": "/g-admin",
+            "attributes": {
+                "mx-p-s": [ "-1" ]
+            },
+            "realmRoles": [],
+            "clientRoles": {},
+            "subGroups": []
+        },
+        {
+            "id": "t-admin-group-id",
+            "name": "t-admin",
+            "path": "/t-admin",
             "attributes": {
                 "mx-p-s": [ "-1" ]
             },

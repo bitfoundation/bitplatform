@@ -1,0 +1,195 @@
+@typeparam TItem
+@namespace Bit.BlazorUI
+
+<div class="@RowClass" role="row" style="@RowStyle" @onclick="OnRowClick"
+     aria-rowindex="@Grid.AriaRowIndex(Item)"
+     data-ri="@(Grid.RowReorderEnabled ? Grid.RowDataIndex(Item) : null)"
+     aria-selected="@(Grid.SelectionEnabled ? (Selected ? "true" : "false") : null)"
+     @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
+     @ondrop="() => Grid.DropRowAsync(Item)">
+
+    @{ var specialColIndex = 0; }
+    @if (Grid.RowReorderEnabled)
+    {
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            <button type="button" class="bit-dtg-drag-handle"
+                    draggable="@(!Editing ? "true" : null)"
+                    disabled="@Editing"
+                    @ondragstart="() => Grid.StartRowDrag(Item)"
+                    title="@(Editing ? null : Grid.Strings.ReorderRowTitle)"
+                    aria-label="@(Editing ? null : Grid.Strings.ReorderRowLabel)"
+                    @onkeydown="HandleReorderKeyDown">⠿</button>
+        </div>
+    }
+
+    @if (Grid.HasDetailColumn)
+    {
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            <button type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetail(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
+                @(Grid.IsDetailExpanded(Item) ? "▾" : "▸")
+            </button>
+        </div>
+    }
+
+    @if (Grid.HasSelectColumn)
+    {
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            <input type="checkbox" checked="@Selected" disabled="@(!Grid.CanSelectRow(Item))"
+                   aria-label="@SelectRowLabel"
+                   @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
+        </div>
+    }
+
+    @{ var skip = 0; }
+    @foreach (var slot in Grid.ColumnSlots)
+    {
+        @* A spacer stands in for a run of horizontally scrolled-out columns (column virtualization);
+           spans never coexist with spacers (ColSpan disables column virtualization). *@
+        if (slot.Column is null)
+        {
+            <div class="bit-dtg-cell" role="gridcell" aria-hidden="true"></div>
+            continue;
+        }
+        if (skip > 0) { skip--; continue; }
+        var column = slot.Column;
+        var colIndex = slot.ColIndex;
+        var span = Grid.ResolveColSpan(column, Item);
+        if (span > 1) skip = span - 1;
+        var cellStyle = Grid.FrozenStyle(column) + (span > 1 ? $"grid-column:span {span};" : "");
+
+        <BitDataGridCell TItem="TItem" Grid="Grid" Item="Item" Column="column" ColIndex="colIndex"
+                            CssClass="@CellClass(column)" Style="@cellStyle">
+            @CellContent(column, colIndex)
+        </BitDataGridCell>
+    }
+
+    @if (Grid.HasCommandColumn)
+    {
+        <div class="bit-dtg-cell bit-dtg-cell-command" role="gridcell" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true">
+            @if (Editing)
+            {
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@Grid.HasEditErrors" @onclick="Grid.CommitEditAsync">@Grid.Strings.SaveText</button>
+                <button type="button" class="bit-dtg-btn" @onclick="Grid.CancelEditAsync">@Grid.Strings.CancelText</button>
+            }
+            else
+            {
+                <button type="button" class="bit-dtg-btn" @onclick="() => Grid.BeginEdit(Item)">@Grid.Strings.EditText</button>
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-danger" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+            }
+        </div>
+    }
+</div>
+
+@if (Grid.HasDetailColumn && Grid.IsDetailExpanded(Item) && Grid.DetailTemplate is not null)
+{
+    <div class="bit-dtg-detail-row" role="row">
+        <div class="bit-dtg-detail-content" role="gridcell">
+            @Grid.DetailTemplate(Item)
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
+    [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
+
+    private bool Selected => Grid.IsRowSelected(Item);
+    private bool Editing => Grid.IsEditing(Item);
+
+    // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
+    // being selected. Uses the first visible column's value as row-specific context when available.
+    private string SelectRowLabel
+    {
+        get
+        {
+            var cols = Grid.VisibleColumns;
+            var context = cols.Count > 0 ? cols[0].GetFormattedValue(Item) : null;
+            return string.IsNullOrWhiteSpace(context) ? Grid.Strings.SelectRowLabel : string.Format(Grid.Strings.SelectRowFormat, context);
+        }
+    }
+
+    private RenderFragment CellContent(BitDataGridColumn<TItem> column, int colIndex) => @<text>
+        @if (Grid.IsTreeMode && colIndex == 0)
+        {
+            <span class="bit-dtg-tree-indent" style="width:@(Grid.TreeLevel(Item) * 18)px;"></span>
+            @if (Grid.TreeHasChildren(Item))
+            {
+                <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle"
+                        @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
+                        @onkeydown:stopPropagation="true"
+                        disabled="@Grid.IsTreeNodeLoading(Item)"
+                        aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@Grid.IsTreeExpanded(Item)"
+                        aria-busy="@(Grid.IsTreeNodeLoading(Item) ? "true" : null)">
+                    @(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeExpanded(Item) ? "▾" : "▸")
+                </button>
+            }
+            else
+            {
+                <span class="bit-dtg-tree-leaf"></span>
+            }
+        }
+        @if (Editing && Grid.ColumnEditable(column))
+        {
+            @if (column.EditTemplate is not null)
+            {
+                @column.EditTemplate(Item)
+            }
+            else
+            {
+                <BitDataGridCellEditor TItem="TItem" Grid="Grid" Column="column" Item="Item" />
+            }
+        }
+        else if (column.Template is not null)
+        {
+            @column.Template(Item)
+        }
+        else
+        {
+            @column.GetFormattedValue(Item)
+        }
+    </text>;
+
+    private string RowClass
+    {
+        get
+        {
+            var c = "bit-dtg-row";
+            if (Selected) c += " bit-dtg-selected";
+            if (Editing) c += " bit-dtg-editing";
+            return c;
+        }
+    }
+
+    private string RowStyle =>
+        $"grid-template-columns:var(--bit-dtg-template);min-height:{Grid.ResolveRowHeight(Item).ToString(System.Globalization.CultureInfo.InvariantCulture)}px;";
+
+    private string CellClass(BitDataGridColumn<TItem> column)
+    {
+        var c = "bit-dtg-cell " + BitDataGrid<TItem>.AlignClass(column.Align);
+        if (BitDataGrid<TItem>.IsSticky(column)) c += " bit-dtg-sticky";
+        if (!string.IsNullOrEmpty(column.CellClass)) c += " " + column.CellClass;
+        return c;
+    }
+
+    private Task OnRowClick() => Grid.HandleRowClickAsync(Item);
+
+    // Lets keyboard users reorder rows without drag-and-drop: ArrowUp/ArrowDown move the focused row
+    // one position toward the start/end, reusing the same reorder pipeline as the pointer drag path.
+    // The browser's default for the arrow keys (scrolling the page/grid) is cancelled by a capture-phase
+    // keydown guard installed in BitDataGrid.ts, which decides per-key *before* the event reaches this
+    // .NET callback. We can't do that with @onkeydown:preventDefault because Blazor evaluates it at
+    // render time, which can't know the upcoming key and lags a keystroke behind (so the first arrow
+    // press still scrolled and a stale "true" could swallow the next Tab).
+    private async Task HandleReorderKeyDown(KeyboardEventArgs e)
+    {
+        if (!Grid.RowReorderEnabled) return;
+        // Mirror the draggable guard above: keyboard reordering must be inert while the row is being
+        // edited, otherwise ArrowUp/ArrowDown would move the row out from under an in-progress edit.
+        if (Editing) return;
+        if (e.Key == "ArrowUp") await Grid.MoveRowAsync(Item, -1);
+        else if (e.Key == "ArrowDown") await Grid.MoveRowAsync(Item, 1);
+    }
+}

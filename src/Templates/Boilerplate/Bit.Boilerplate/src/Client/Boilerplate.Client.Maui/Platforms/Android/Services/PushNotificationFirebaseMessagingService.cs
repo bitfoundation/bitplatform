@@ -1,4 +1,4 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content;
 using Firebase.Messaging;
 using Plugin.LocalNotification;
@@ -21,7 +21,7 @@ public partial class PushNotificationFirebaseMessagingService : FirebaseMessagin
         }
         catch (Exception exp)
         {
-            IPlatformApplication.Current!.Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            IPlatformApplication.Current!.Services.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp);
         }
     }
 
@@ -53,7 +53,7 @@ public partial class PushNotificationFirebaseMessagingService : FirebaseMessagin
         }
         catch (Exception exp)
         {
-            IPlatformApplication.Current!.Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            IPlatformApplication.Current!.Services.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp);
         }
     }
 }

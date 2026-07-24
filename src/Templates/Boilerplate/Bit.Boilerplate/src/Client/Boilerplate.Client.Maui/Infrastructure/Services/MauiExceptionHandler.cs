@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Maui.Infrastructure.Services;
+namespace Boilerplate.Client.Maui.Infrastructure.Services;
 
 /// <summary>
 /// Instead of Client.Core, install Firebase Crashlytics and similar packages in Client.Maui, so the web version of the app won't download unnecessary packages.

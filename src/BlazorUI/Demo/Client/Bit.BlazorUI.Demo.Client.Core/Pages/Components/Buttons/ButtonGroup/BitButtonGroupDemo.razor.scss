@@ -5,6 +5,23 @@
         flex-flow: column;
     }
 
+    // Constrains the group so the overflow examples actually have something to overflow,
+    // and stays resizable so the behavior can be tried out.
+    .overflow-container {
+        padding: 0.5rem;
+        max-width: 30rem;
+        overflow: hidden;
+        resize: horizontal;
+        border: 1px dashed var(--bit-clr-brd-sec);
+    }
+
+    .custom-template {
+        gap: 0.25rem;
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+
     .custom-class {
         margin-inline: 1rem;
         border-radius: 1rem;

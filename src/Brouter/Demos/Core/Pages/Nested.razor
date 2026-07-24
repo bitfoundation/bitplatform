@@ -1,0 +1,25 @@
+﻿<div class="bb-intro">
+    <h1>Nested route <code>/nested</code></h1>
+    <p class="bb-subtitle">A parent route renders this layout, and child routes render into the outlet below.</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title">Parent state</h3>
+    <p class="bb-card-desc">Click to bump the counter, then follow the link to push the value into a child route.</p>
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <button class="btn btn-outline" @onclick="() => count++">Count: @count</button>
+        <BrouterLink Href="@($"/nested/n1/{count}")">@($"Go to /nested/n1/{count}")</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title">
+        <span class="bb-dot bb-dot-success"></span>
+        Outlet
+    </h3>
+    <BrouterOutlet />
+</div>
+
+@code {
+    private int count;
+}

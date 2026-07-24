@@ -11,7 +11,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private List<TItem> _items = [];
     private string _name = default!;
     private string _labelId = default!;
+    private bool _optionsOrderDirty;
+    private string _optionsContainerId = default!;
     private IEnumerable<TItem>? _oldItems;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -19,6 +25,16 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? AriaLabelledBy { get; set; }
+
+    /// <summary>
+    /// Keeps the assigned Index of each option in sync with the markup order of the options, even when
+    /// an option is added, removed, or reordered conditionally after the first render (an option that
+    /// appears later registers itself at the end of the list regardless of its markup position). This is
+    /// achieved by reading the DOM order of the options after each render, so it adds a JS interop call
+    /// per render and is opt-in. It only affects the options API (ChildContent/Options); the items API
+    /// already follows the order of the Items collection.
+    /// </summary>
+    [Parameter] public bool AutoReorderOptions { get; set; }
 
     /// <summary>
     /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
@@ -35,11 +51,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
-
-    /// <summary>
-    /// Default selected item for ChoiceGroup.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
@@ -126,6 +137,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     internal void RegisterOption(BitChoiceGroupOption<TValue> option)
     {
         _items.Add((option as TItem)!);
+        _optionsOrderDirty = true;
 
         SetIndexItems();
 
@@ -136,9 +148,55 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     internal void UnregisterOption(BitChoiceGroupOption<TValue> option)
     {
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
+        _optionsOrderDirty = true;
+
+        SetIndexItems();
 
         StateHasChanged();
+    }
+
+    // Reorders the registered options based on the DOM order of their rendered markers, since an option
+    // that gets conditionally rendered (or reordered) after the first render registers itself at the end
+    // of the items list, no matter where in the markup it is located. Opt-in via AutoReorderOptions.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        List<TItem> ordered = new(_items.Count);
+
+        foreach (var optionId in orderedOptionIds)
+        {
+            var item = _items.FirstOrDefault(i => (i as BitChoiceGroupOption<TValue>)?._OptionId == optionId);
+            if (item is null || ordered.Contains(item)) continue;
+
+            ordered.Add(item);
+        }
+
+        if (ordered.Count == 0) return;
+
+        ordered.AddRange(_items.Except(ordered));
+
+        if (ordered.SequenceEqual(_items)) return;
+
+        _items = ordered;
+
+        SetIndexItems();
+
+        StateHasChanged();
+    }
+
+    // Emits the marker attribute the DOM read-back uses to recover the markup order of the options.
+    // Only rendered when AutoReorderOptions is enabled (to avoid the extra attribute otherwise) and only
+    // for options (the items API keeps the Items collection order and needs no marker).
+    internal Dictionary<string, object>? GetItemMarkerAttributes(TItem item)
+    {
+        if (AutoReorderOptions is false) return null;
+        if (item is not BitChoiceGroupOption<TValue> option) return null;
+
+        return new() { [BitChoiceGroupOption<TValue>._OPTION_ID_ATTRIBUTE] = option._OptionId };
     }
 
 
@@ -147,17 +205,53 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         _name = $"BitChoiceGroup-{UniqueId}-input-name";
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
+        _optionsContainerId = $"BitChoiceGroup-{UniqueId}-options-container";
 
         InitDefaultValue();
 
         await base.OnInitializedAsync();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (AutoReorderOptions is false) return;
+        if (ChildContent is null && Options is null) return;
+        if (_optionsOrderDirty is false) return;
+
+        _optionsOrderDirty = false;
+
+        try
+        {
+            var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_optionsContainerId, BitChoiceGroupOption<TValue>._OPTION_ID_ATTRIBUTE);
+            if (IsDisposed) return;
+            if (orderedOptionIds is not null)
+            {
+                ReorderOptions(orderedOptionIds);
+            }
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to reorder
+        catch (JSException) { } // a JS-side failure while reading the marker order is not fatal, keep the current order
+    }
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        if (ChildContent is not null || Items is null || Items.Any() is false) return;
+        // Opt-in: a pure reorder of existing options registers/unregisters nothing, so flag the DOM
+        // read-back to run after this render to detect it. The read-back only mutates when the order
+        // actually changed, so a stable order just costs one DOM read.
+        if (AutoReorderOptions && (ChildContent is not null || Options is not null))
+        {
+            _optionsOrderDirty = true;
+        }
+
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // choice group's own parameters (Value, Styles, NoCircle, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
+        if (ChildContent is not null || Options is not null || Items is null || Items.Any() is false) return;
 
         if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
 
@@ -270,7 +364,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         await OnClick.InvokeAsync(item);
     }
 
-    internal async Task HandleChange(TItem item)
+    internal void HandleChange(TItem item)
     {
         if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
 
@@ -278,7 +372,20 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         CurrentValue = GetValue(item);
 
+        RefreshOptions();
+
         StateHasChanged();
+    }
+
+    private void RefreshOptions()
+    {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
+        foreach (var item in _items)
+        {
+            (item as BitChoiceGroupOption<TValue>)?.InternalStateHasChanged();
+        }
     }
 
     internal bool GetIsCheckedItem(TItem item)

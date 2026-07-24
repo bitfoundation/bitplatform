@@ -1,0 +1,30 @@
+﻿@* Host for DeferredDataTests: the loader returns immediately with a deferred (unawaited) task
+   inside its result; the page renders BrouterAwait over it. Tests gate the task via SlowGate. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/post" Loader="LoadPost">
+        <Content>
+            <div data-testid="post">critical content</div>
+            <BrouterAwait Task="DeferredComments">
+                <Pending><div data-testid="comments-pending">loading comments...</div></Pending>
+                <Resolved Context="comments"><div data-testid="comments">@comments</div></Resolved>
+                <Error Context="ex"><div data-testid="comments-error">@ex.Message</div></Error>
+            </BrouterAwait>
+        </Content>
+    </Broute>
+</Brouter>
+
+@code {
+    public TaskCompletionSource<string> SlowGate { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public Task<string>? DeferredComments { get; private set; }
+
+    private ValueTask<object?> LoadPost(BrouterNavigationContext ctx)
+    {
+        // Critical part resolves immediately; the slow part is intentionally NOT awaited.
+        DeferredComments = SlowGate.Task;
+        return ValueTask.FromResult<object?>("post");
+    }
+}

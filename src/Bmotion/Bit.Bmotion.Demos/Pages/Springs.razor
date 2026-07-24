@@ -5,8 +5,8 @@
 <div class="demo-section">
     <h2>Spring Physics</h2>
     <p>
-        Set <strong>Transition.Type = BmotionTransitionType.Spring</strong> for physically-based motion.
-        Tune <em>Stiffness</em> (snap speed) and <em>Damping</em> (oscillation).
+        Use <strong>Bm.Spring(...)</strong> for physically-based motion.
+        Tune <em>stiffness</em> (snap speed) and <em>damping</em> (oscillation).
     </p>
 
     <div class="demo-row">
@@ -14,10 +14,10 @@
         {
             <div class="demo-card" style="flex-direction:column; gap:.75rem;">
                 <span style="font-size:.78rem; color:#888">@cfg.Label</span>
-                <Bmotion Tag="div"
-                        Class="box box-sm"
-                        Animate="@(_on ? new BmotionAnimationProps { X = 80 } : new BmotionAnimationProps { X = 0 })"
-                        Transition="@cfg.Config" />
+                <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))"
+                        Transition="@cfg.Config">
+                    <div class="box box-sm" />
+                </Bmotion>
             </div>
         }
     </div>
@@ -34,12 +34,12 @@
     <p>Underdamped springs produce delightful overshoots on mount.</p>
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Initial="@(new BmotionAnimationProps { Scale = 0, Rotate = -180 })"
-                    Animate="@(new BmotionAnimationProps { Scale = 1, Rotate = 0 })"
-                    Transition="@BmotionTransitionConfig.Spring(stiffness:260, damping:12)"
-                    @key="@_mountKey" />
+            <Bmotion Initial="Bm.To(scale: 0, rotate: -180)"
+                    Animate="Bm.To(scale: 1, rotate: 0)"
+                    Transition="Bm.Spring(stiffness: 260, damping: 12)"
+                    @key="@_mountKey">
+                <div class="box" />
+            </Bmotion>
         </div>
     </div>
     <button class="btn-bm" style="margin-top:1rem" @onclick="Remount">Re-mount</button>
@@ -50,40 +50,25 @@
 <div class="demo-section">
     <h2>Repeating Springs</h2>
     <p>
-        Springs now honour <strong>Repeat</strong>, <strong>RepeatType</strong> and <strong>RepeatDelay</strong>.
+        Springs now honour <strong>repeat</strong> via <strong>BmRepeat</strong>.
         <em>Mirror</em> ping-pongs back to the start, <em>Loop</em> replays from the origin.
     </p>
 
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column; gap:.75rem;">
             <span style="font-size:.78rem; color:#888">Mirror &middot; infinite</span>
-            <Bmotion Tag="div"
-                    Class="box box-sm"
-                    Animate="@(_repeat ? new BmotionAnimationProps { X = 90 } : new BmotionAnimationProps { X = 0 })"
-                    Transition="@(new BmotionTransitionConfig
-                    {
-                        Type = BmotionTransitionType.Spring,
-                        Stiffness = 200,
-                        Damping = 12,
-                        RepeatInfinite = true,
-                        RepeatType = BmotionRepeatType.Mirror,
-                    })" />
+            <Bmotion Animate="@(_repeat ? Bm.To(x: 90) : Bm.To(x: 0))"
+                    Transition="Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())">
+                <div class="box box-sm" />
+            </Bmotion>
         </div>
 
         <div class="demo-card" style="flex-direction:column; gap:.75rem;">
             <span style="font-size:.78rem; color:#888">Loop &middot; 3&times; with delay</span>
-            <Bmotion Tag="div"
-                    Class="box box-sm"
-                    Animate="@(_repeat ? new BmotionAnimationProps { Y = 60 } : new BmotionAnimationProps { Y = 0 })"
-                    Transition="@(new BmotionTransitionConfig
-                    {
-                        Type = BmotionTransitionType.Spring,
-                        Stiffness = 300,
-                        Damping = 18,
-                        Repeat = 3,
-                        RepeatType = BmotionRepeatType.Loop,
-                        RepeatDelay = 0.3,
-                    })" />
+            <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
+                    Transition="Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))">
+                <div class="box box-sm" />
+            </Bmotion>
         </div>
     </div>
 
@@ -99,14 +84,14 @@
     private bool _repeat;
     private int  _mountKey;
 
-    private record SpringDemo(string Label, BmotionTransitionConfig Config);
+    private record SpringDemo(string Label, BmTransition Config);
 
     private readonly SpringDemo[] _springs =
     [
-        new("Stiff 400 / Damp 40",  BmotionTransitionConfig.Spring(400, 40)),
-        new("Stiff 100 / Damp 10",  BmotionTransitionConfig.Spring(100, 10)),
-        new("Stiff 50 / Damp 5",    BmotionTransitionConfig.Spring(50,  5)),
-        new("Stiff 300 / Damp 70",  BmotionTransitionConfig.Spring(300, 70)),
+        new("Stiff 400 / Damp 40",  Bm.Spring(400, 40)),
+        new("Stiff 100 / Damp 10",  Bm.Spring(100, 10)),
+        new("Stiff 50 / Damp 5",    Bm.Spring(50,  5)),
+        new("Stiff 300 / Damp 70",  Bm.Spring(300, 70)),
     ];
 
     void Remount() => _mountKey++;
@@ -145,10 +130,10 @@
                 {
                     <div class="demo-card" style="flex-direction:column; gap:.75rem;">
                         <span style="font-size:.78rem; color:#888">@cfg.Label</span>
-                        <Bmotion Tag="div"
-                                Class="box box-sm"
-                                Animate="@(_on ? new BmotionAnimationProps { X = 80 } : new BmotionAnimationProps { X = 0 })"
-                                Transition="@cfg.Config" />
+                        <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))"
+                                Transition="@cfg.Config">
+                            <div class="box box-sm" />
+                        </Bmotion>
                     </div>
                 }
             </div>
@@ -161,14 +146,14 @@
         @code {
             private bool _on;
 
-            private record SpringDemo(string Label, BmotionTransitionConfig Config);
+            private record SpringDemo(string Label, BmTransition Config);
 
             private readonly SpringDemo[] _springs =
             [
-                new("Stiff 400 / Damp 40",  BmotionTransitionConfig.Spring(400, 40)),
-                new("Stiff 100 / Damp 10",  BmotionTransitionConfig.Spring(100, 10)),
-                new("Stiff 50 / Damp 5",    BmotionTransitionConfig.Spring(50,  5)),
-                new("Stiff 300 / Damp 70",  BmotionTransitionConfig.Spring(300, 70)),
+                new("Stiff 400 / Damp 40",  Bm.Spring(400, 40)),
+                new("Stiff 100 / Damp 10",  Bm.Spring(100, 10)),
+                new("Stiff 50 / Damp 5",    Bm.Spring(50,  5)),
+                new("Stiff 300 / Damp 70",  Bm.Spring(300, 70)),
             ];
         }
         """;
@@ -202,12 +187,12 @@
             <p>Underdamped springs produce delightful overshoots on mount.</p>
             <div class="demo-row">
                 <div class="demo-card">
-                    <Bmotion Tag="div"
-                            Class="box"
-                            Initial="@(new BmotionAnimationProps { Scale = 0, Rotate = -180 })"
-                            Animate="@(new BmotionAnimationProps { Scale = 1, Rotate = 0 })"
-                            Transition="@BmotionTransitionConfig.Spring(stiffness:260, damping:12)"
-                            @key="@_mountKey" />
+                    <Bmotion Initial="Bm.To(scale: 0, rotate: -180)"
+                            Animate="Bm.To(scale: 1, rotate: 0)"
+                            Transition="Bm.Spring(stiffness: 260, damping: 12)"
+                            @key="@_mountKey">
+                        <div class="box" />
+                    </Bmotion>
                 </div>
             </div>
             <button class="btn-bm" style="margin-top:1rem" @onclick="Remount">Re-mount</button>
@@ -249,33 +234,18 @@
             <div class="demo-row">
                 <div class="demo-card" style="flex-direction:column; gap:.75rem;">
                     <span style="font-size:.78rem; color:#888">Mirror &middot; infinite</span>
-                    <Bmotion Tag="div"
-                            Class="box box-sm"
-                            Animate="@(_repeat ? new BmotionAnimationProps { X = 90 } : new BmotionAnimationProps { X = 0 })"
-                            Transition="@(new BmotionTransitionConfig
-                            {
-                                Type = BmotionTransitionType.Spring,
-                                Stiffness = 200,
-                                Damping = 12,
-                                RepeatInfinite = true,
-                                RepeatType = BmotionRepeatType.Mirror,
-                            })" />
+                    <Bmotion Animate="@(_repeat ? Bm.To(x: 90) : Bm.To(x: 0))"
+                            Transition="Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())">
+                        <div class="box box-sm" />
+                    </Bmotion>
                 </div>
 
                 <div class="demo-card" style="flex-direction:column; gap:.75rem;">
                     <span style="font-size:.78rem; color:#888">Loop &middot; 3&times; with delay</span>
-                    <Bmotion Tag="div"
-                            Class="box box-sm"
-                            Animate="@(_repeat ? new BmotionAnimationProps { Y = 60 } : new BmotionAnimationProps { Y = 0 })"
-                            Transition="@(new BmotionTransitionConfig
-                            {
-                                Type = BmotionTransitionType.Spring,
-                                Stiffness = 300,
-                                Damping = 18,
-                                Repeat = 3,
-                                RepeatType = BmotionRepeatType.Loop,
-                                RepeatDelay = 0.3,
-                            })" />
+                    <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
+                            Transition="Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))">
+                        <div class="box box-sm" />
+                    </Bmotion>
                 </div>
             </div>
 

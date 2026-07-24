@@ -1,0 +1,102 @@
+@inject IBrouter brouter
+
+@* Client-side docs search over DocsCatalog - no index build, no service: the catalog's
+   titles/descriptions/keywords are the corpus. Items navigate on mousedown so the click wins
+   the race against the input's blur closing the dropdown. The input is a WAI-ARIA combobox:
+   ArrowUp/ArrowDown move the highlighted option, Enter activates it, Escape closes. *@
+
+<div class="bb-search">
+    <svg class="bb-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input type="search"
+           placeholder="Search docs…"
+           aria-label="Search documentation"
+           role="combobox"
+           aria-autocomplete="list"
+           aria-expanded="@(_results is null ? "false" : "true")"
+           aria-controls="bb-search-listbox"
+           aria-activedescendant="@(_results is { Length: > 0 } ? $"bb-search-option-{_activeIndex}" : null)"
+           value="@_query"
+           @oninput="OnInput"
+           @onkeydown="OnKeyDown"
+           @onblur="OnBlur" />
+
+    @if (_results is { Length: > 0 })
+    {
+        <ul id="bb-search-listbox" class="bb-search-results" role="listbox">
+            @for (var i = 0; i < _results.Length; i++)
+            {
+                var index = i;
+                var entry = _results[i];
+                <li role="option"
+                    id="@($"bb-search-option-{index}")"
+                    aria-selected="@(index == _activeIndex ? "true" : "false")"
+                    class="@(index == _activeIndex ? "bb-active" : null)"
+                    @key="entry.Slug"
+                    @onmousedown="@(() => Go(entry))" @onmousedown:preventDefault>
+                    <span class="bb-search-result-title">@entry.Title</span>
+                    <span class="bb-search-result-section">@DocsCatalog.SectionOf(entry)</span>
+                </li>
+            }
+        </ul>
+    }
+    else if (_results is { Length: 0 })
+    {
+        <ul id="bb-search-listbox" class="bb-search-results" role="listbox">
+            <li class="bb-search-empty" role="presentation">No results for “@_query”</li>
+        </ul>
+    }
+</div>
+
+@code {
+    private string _query = "";
+    private DocsPageInfo[]? _results;
+    private int _activeIndex;
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _query = e.Value?.ToString() ?? "";
+        _results = _query.Trim().Length < 2 ? null : Find(_query.Trim());
+        _activeIndex = 0;
+    }
+
+    private static DocsPageInfo[] Find(string query)
+    {
+        var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return DocsCatalog.AllPages
+            .Where(p => terms.All(t =>
+                p.Title.Contains(t, StringComparison.OrdinalIgnoreCase)
+                || p.Description.Contains(t, StringComparison.OrdinalIgnoreCase)
+                || p.Keywords.Contains(t, StringComparison.OrdinalIgnoreCase)))
+            .Take(8)
+            .ToArray();
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (_results is { Length: > 0 })
+        {
+            if (e.Key == "ArrowDown") _activeIndex = Math.Min(_activeIndex + 1, _results.Length - 1);
+            else if (e.Key == "ArrowUp") _activeIndex = Math.Max(_activeIndex - 1, 0);
+            else if (e.Key == "Enter") Go(_results[Math.Clamp(_activeIndex, 0, _results.Length - 1)]);
+        }
+
+        if (e.Key == "Escape") Reset();
+    }
+
+    private void OnBlur() => _results = null;
+
+    private void Go(DocsPageInfo page)
+    {
+        Reset();
+        brouter.Navigate(page.Url);
+    }
+
+    private void Reset()
+    {
+        _query = "";
+        _results = null;
+        _activeIndex = 0;
+    }
+}

@@ -1,0 +1,21 @@
+@using Bit.BlazorUI
+
+<BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
+    <BitNavOption Text="First" IsExpanded="true">
+        <BitNavOption Text="Child1" />
+        @if (ShowMiddle)
+        {
+            <BitNavOption Text="ChildMiddle" />
+        }
+        <BitNavOption Text="Child2" />
+    </BitNavOption>
+    @if (ShowMiddle)
+    {
+        <BitNavOption Text="Middle" />
+    }
+    <BitNavOption Text="Last" />
+</BitNav>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; }
+}

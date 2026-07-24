@@ -17,6 +17,16 @@ public partial class _BitMenuButtonOptionDemo
     private BitMenuButtonOption optionB = default!;
     private BitMenuButtonOption optionC = default!;
 
+    private bool optionIsLoading;
+    private bool optionAutoIsLoading;
+
+    private async Task HandleOnLoadingClick()
+    {
+        optionAutoIsLoading = true;
+        await Task.Delay(2000);
+        optionAutoIsLoading = false;
+    }
+
 
 
     private readonly string example1RazorCode = @"
@@ -147,109 +157,6 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>";
 
     private readonly string example6RazorCode = @"
-<style>
-    .custom-class {
-        margin-inline: 1rem;
-        border-radius: 1rem;
-        border-color: tomato;
-        border-width: 0.25rem;
-    }
-
-    .custom-class > button {
-        color: tomato;
-        border-color: tomato;
-        background: transparent;
-    }
-
-    .custom-class > button:hover {
-        background-color: #ff63473b;
-    }
-
-
-    .custom-item {
-        color: peachpuff;
-        background-color: tomato;
-    }
-
-
-    .custom-button {
-        color: deepskyblue;
-        background: transparent;
-    }
-
-    .custom-opened .custom-button {
-        color: cornflowerblue;
-    }
-
-    .custom-callout {
-        border-radius: 1rem;
-        border-color: lightgray;
-        backdrop-filter: blur(20px);
-        background-color: transparent;
-        box-shadow: darkgray 0 0 0.5rem;
-    }
-
-    .custom-item-button {
-        border-bottom: 1px solid gray;
-    }
-
-    .custom-item-button:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .custom-callout li:last-child .custom-item-button {
-        border-bottom: none;
-    }
-</style>
-
-
-<BitMenuButton Text=""Styled Button"" TItem=""BitMenuButtonOption"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Classed Button"" TItem=""BitMenuButtonOption"" Class=""custom-class"" Variant=""BitVariant.Outline"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-
-<BitMenuButton Text=""Non-Sticky"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
-    <BitMenuButtonOption Text=""Option A (Default)"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color: brown"" />
-    <BitMenuButtonOption Text=""Option B (Styled)"" Key=""B"" IconName=""@BitIconName.Emoji"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" />
-    <BitMenuButtonOption Text=""Option C (Classed)"" Key=""C"" IconName=""@BitIconName.Emoji2"" Class=""custom-item"" />
-</BitMenuButton>
-<BitMenuButton Text=""Sticky"" Sticky TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
-    <BitMenuButtonOption Text=""Option A (Default)"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color: brown"" />
-    <BitMenuButtonOption Text=""Option B (Styled)"" Key=""B"" IconName=""@BitIconName.Emoji"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" />
-    <BitMenuButtonOption Text=""Option C (Classed)"" Key=""C"" IconName=""@BitIconName.Emoji2"" Class=""custom-item"" />
-</BitMenuButton>
-
-
-<BitMenuButton Text=""Classes"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
-               Classes=""@(new() { OperatorButton = ""custom-button"",
-                                  Opened = ""custom-opened"",
-                                  Callout = ""custom-callout"",
-                                  ItemButton = ""custom-item-button"" })"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Styles"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Brush""
-               Styles=""@(new() { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
-                                 Opened = ""--button-background: orangered;"",
-                                 OperatorButton = ""background: var(--button-background);"",
-                                 ItemButton = ""background: lightcoral;"",
-                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>";
-
-    private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Background=""BitColorKind.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -274,7 +181,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Toggle"" TItem=""BitMenuButtonOption"" Split Toggle>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -304,7 +211,7 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>
 <div>OnToggleChange: @optionToggledValue</div>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitMenuButton Text=""With icon"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
@@ -330,7 +237,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -379,7 +286,7 @@ public partial class _BitMenuButtonOptionDemo
     </BitMenuButtonOption>
 </BitMenuButton>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitMenuButton Text=""Options""
                OnChange=""(BitMenuButtonOption item) => exampleChangedOption = item?.Key""
                OnClick=""(BitMenuButtonOption item) => exampleClickedOption = item?.Key"">
@@ -415,11 +322,12 @@ public partial class _BitMenuButtonOptionDemo
 
 <div>Changed option: @exampleChangedOption</div>
 <div>Clicked option: @exampleClickedOption</div>";
-    private readonly string example11CsharpCode = @"
+
+    private readonly string example10CsharpCode = @"
 private string? exampleChangedOption;
 private string? exampleClickedOption;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMenuButton Text=""Coming soon..."" TItem=""BitMenuButtonOption"" IsEnabled=""false"" />
 
 
@@ -456,78 +364,112 @@ private string? exampleClickedOption;";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" @ref=""optionC"" />
 </BitMenuButton>
 <BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
-    private readonly string example12CsharpCode = @"
+
+    private readonly string example11CsharpCode = @"
 private BitMenuButtonOption twoWaySelectedOption = default!;
 private bool oneWayIsOpen;
 private bool twoWayIsOpen;";
 
+    private readonly string example12RazorCode = @"
+<BitMenuButton Text=""File"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.OpenFile"">
+    <BitMenuButtonOption Text=""New"" Key=""new"" IconName=""@BitIconName.Add"" />
+    <BitMenuButtonOption Text=""Open"" Key=""open"" IconName=""@BitIconName.OpenFile"" />
+    <BitMenuButtonOption IsSeparator />
+    <BitMenuButtonOption Text=""Save"" Key=""save"" IconName=""@BitIconName.Save"" />
+    <BitMenuButtonOption Text=""Save as"" Key=""save-as"" IconName=""@BitIconName.SaveAs"" />
+    <BitMenuButtonOption IsSeparator />
+    <BitMenuButtonOption Text=""Delete"" Key=""delete"" IconName=""@BitIconName.Delete"" />
+</BitMenuButton>
+
+<BitMenuButton Split Sticky TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""New"" Key=""new"" IconName=""@BitIconName.Add"" />
+    <BitMenuButtonOption Text=""Open"" Key=""open"" IconName=""@BitIconName.OpenFile"" />
+    <BitMenuButtonOption IsSeparator />
+    <BitMenuButtonOption Text=""Save"" Key=""save"" IconName=""@BitIconName.Save"" />
+    <BitMenuButtonOption Text=""Save as"" Key=""save-as"" IconName=""@BitIconName.SaveAs"" />
+    <BitMenuButtonOption IsSeparator />
+    <BitMenuButtonOption Text=""Delete"" Key=""delete"" IconName=""@BitIconName.Delete"" />
+</BitMenuButton>";
+
     private readonly string example13RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitMenuButton Text=""Actions"" 
-               TItem=""BitMenuButtonOption""
-               Icon=""@(""fa-solid fa-house"")"">
-    <BitMenuButtonOption Text=""Add"" Icon=""@(""fa-solid fa-plus"")"" />
-    <BitMenuButtonOption Text=""Edit"" Icon=""@(""fa-solid fa-pen"")"" />
-    <BitMenuButtonOption Text=""Delete"" Icon=""@(""fa-solid fa-trash"")"" />
-</BitMenuButton>
-
-<BitMenuButton Split 
-               Text=""Actions"" 
-               TItem=""BitMenuButtonOption""
-               Icon=""@(""fa-brands fa-github"")"">
-    <BitMenuButtonOption Text=""Add"" Icon=""@(""fa-solid fa-plus"")"" />
-    <BitMenuButtonOption Text=""Edit"" Icon=""@(""fa-solid fa-pen"")"" />
-    <BitMenuButtonOption Text=""Delete"" Icon=""@(""fa-solid fa-trash"")"" />
-</BitMenuButton>
-
-
-
-<BitMenuButton Text=""Actions"" 
-               Color=""BitColor.Secondary""
-               TItem=""BitMenuButtonOption"" 
-               Variant=""BitVariant.Outline""
-               Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"">
-    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
-    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" />
-    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
-</BitMenuButton>
-
-<BitMenuButton Split 
-               Text=""Actions"" 
-               Color=""BitColor.Secondary""
-               TItem=""BitMenuButtonOption"" 
-               Variant=""BitVariant.Outline""
-               Icon=""@BitIconInfo.Css(""fa-brands fa-github"")"">
-    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
-    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" />
-    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
-</BitMenuButton>
-
-
-
-<BitMenuButton Text=""Actions"" 
-               Variant=""BitVariant.Text""
-               Color=""BitColor.Tertiary""
-               TItem=""BitMenuButtonOption"" 
-               Icon=""@BitIconInfo.Fa(""solid house"")"">
-    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
-    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Fa(""solid pen"")"" />
-    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
-</BitMenuButton>
-
-<BitMenuButton Split 
-               Text=""Actions""
-               Color=""BitColor.Tertiary""
-               Variant=""BitVariant.Text""
-               TItem=""BitMenuButtonOption"" 
-               Icon=""@BitIconInfo.Fa(""brands github"")"">
-    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
-    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Fa(""solid pen"")"" />
-    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
+<BitMenuButton Text=""Links"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Globe"">
+    <BitMenuButtonOption Text=""bit platform"" Key=""bit"" IconName=""@BitIconName.Globe"" Href=""https://bitplatform.dev"" Target=""_blank"" Title=""The bit platform website"" />
+    <BitMenuButtonOption Text=""GitHub repo"" Key=""github"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" Title=""The bit platform GitHub repository"" />
+    <BitMenuButtonOption IsSeparator />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" Title=""A regular option"" />
 </BitMenuButton>";
 
     private readonly string example14RazorCode = @"
+<BitMenuButton Text=""Full width"" TItem=""BitMenuButtonOption"" FullWidth>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Full width split"" TItem=""BitMenuButtonOption"" FullWidth Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>";
+
+    private readonly string example15RazorCode = @"
+<BitMenuButton Split Text=""Save"" IconName=""@BitIconName.Save"" IsLoading=""optionAutoIsLoading"" OnClick=""(BitMenuButtonOption option) => HandleOnLoadingClick()"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Loading"" IsLoading=""optionIsLoading"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+<BitCheckbox Label=""IsLoading"" @bind-Value=""optionIsLoading"" />";
+
+    private readonly string example15CsharpCode = @"
+private bool optionIsLoading;
+private bool optionAutoIsLoading;
+
+private async Task HandleOnLoadingClick()
+{
+    optionAutoIsLoading = true;
+    await Task.Delay(2000);
+    optionAutoIsLoading = false;
+}";
+
+    private readonly string example16RazorCode = @"
+<BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton Split Text=""Split"" Title=""The main button tooltip"" ChevronDownAriaLabel=""Open the menu"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>";
+
+    private readonly string example17RazorCode = @"
+<BitMenuButton Text=""TopAndBottom"" DropDirection=""BitDropDirection.TopAndBottom"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+    <BitMenuButtonOption Text=""Option D"" Key=""D"" />
+    <BitMenuButtonOption Text=""Option E"" Key=""E"" />
+    <BitMenuButtonOption Text=""Option F"" Key=""F"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""All"" DropDirection=""BitDropDirection.All"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+    <BitMenuButtonOption Text=""Option D"" Key=""D"" />
+    <BitMenuButtonOption Text=""Option E"" Key=""E"" />
+    <BitMenuButtonOption Text=""Option F"" Key=""F"" />
+</BitMenuButton>";
+
+    private readonly string example18RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -1124,7 +1066,74 @@ private bool twoWayIsOpen;";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example19RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitMenuButton Text=""Actions"" 
+               TItem=""BitMenuButtonOption""
+               Icon=""@(""fa-solid fa-house"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+<BitMenuButton Split 
+               Text=""Actions"" 
+               TItem=""BitMenuButtonOption""
+               Icon=""@(""fa-brands fa-github"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+
+
+<BitMenuButton Text=""Actions"" 
+               Color=""BitColor.Secondary""
+               TItem=""BitMenuButtonOption"" 
+               Variant=""BitVariant.Outline""
+               Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+<BitMenuButton Split 
+               Text=""Actions"" 
+               Color=""BitColor.Secondary""
+               TItem=""BitMenuButtonOption"" 
+               Variant=""BitVariant.Outline""
+               Icon=""@BitIconInfo.Css(""fa-brands fa-github"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+
+
+<BitMenuButton Text=""Actions"" 
+               Variant=""BitVariant.Text""
+               Color=""BitColor.Tertiary""
+               TItem=""BitMenuButtonOption"" 
+               Icon=""@BitIconInfo.Fa(""solid house"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Fa(""solid pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
+</BitMenuButton>
+
+<BitMenuButton Split
+               Text=""Actions""
+               Color=""BitColor.Tertiary""
+               Variant=""BitVariant.Text""
+               TItem=""BitMenuButtonOption""
+               Icon=""@BitIconInfo.Fa(""brands github"")""
+               ChevronDownIcon=""@BitIconInfo.Fa(""solid angles-down"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Fa(""solid pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
+</BitMenuButton>";
+
+    private readonly string example20RazorCode = @"
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -1173,7 +1182,110 @@ private bool twoWayIsOpen;";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example21RazorCode = @"
+<style>
+    .custom-class {
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
+    }
+
+    .custom-class > button {
+        color: tomato;
+        border-color: tomato;
+        background: transparent;
+    }
+
+    .custom-class > button:hover {
+        background-color: #ff63473b;
+    }
+
+
+    .custom-item {
+        color: peachpuff;
+        background-color: tomato;
+    }
+
+
+    .custom-button {
+        color: deepskyblue;
+        background: transparent;
+    }
+
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-callout li:last-child .custom-item-button {
+        border-bottom: none;
+    }
+</style>
+
+
+<BitMenuButton Text=""Styled Button"" TItem=""BitMenuButtonOption"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Classed Button"" TItem=""BitMenuButtonOption"" Class=""custom-class"" Variant=""BitVariant.Outline"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""Non-Sticky"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
+    <BitMenuButtonOption Text=""Option A (Default)"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color: brown"" />
+    <BitMenuButtonOption Text=""Option B (Styled)"" Key=""B"" IconName=""@BitIconName.Emoji"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" />
+    <BitMenuButtonOption Text=""Option C (Classed)"" Key=""C"" IconName=""@BitIconName.Emoji2"" Class=""custom-item"" />
+</BitMenuButton>
+<BitMenuButton Text=""Sticky"" Sticky TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
+    <BitMenuButtonOption Text=""Option A (Default)"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color: brown"" />
+    <BitMenuButtonOption Text=""Option B (Styled)"" Key=""B"" IconName=""@BitIconName.Emoji"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" />
+    <BitMenuButtonOption Text=""Option C (Classed)"" Key=""C"" IconName=""@BitIconName.Emoji2"" Class=""custom-item"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""Classes"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
+               Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
+                                  Callout = ""custom-callout"",
+                                  ItemButton = ""custom-item-button"" })"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Styles"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Brush""
+               Styles=""@(new() { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
+                                 Opened = ""--button-background: orangered;"",
+                                 OperatorButton = ""background: var(--button-background);"",
+                                 ItemButton = ""background: lightcoral;"",
+                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>";
+
+    private readonly string example22RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />

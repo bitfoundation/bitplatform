@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using UIKit;
 using Foundation;
 //#if (notification == true)
@@ -52,14 +52,14 @@ public partial class AppDelegate : MauiUIApplicationDelegate
         }
         catch (Exception exp)
         {
-            IPlatformApplication.Current!.Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            IPlatformApplication.Current!.Services.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp);
         }
     }
 
     [Export("application:didFailToRegisterForRemoteNotificationsWithError:")]
     public void FailedToRegisterForRemoteNotifications(UIApplication application, NSError error)
     {
-        IPlatformApplication.Current!.Services.GetRequiredService<IExceptionHandler>().Handle(new InvalidOperationException(error.Description.ToString()));
+        IPlatformApplication.Current!.Services.GetRequiredService<ClientExceptionHandlerBase>().Handle(new InvalidOperationException(error.Description.ToString()));
     }
     //#endif
 }

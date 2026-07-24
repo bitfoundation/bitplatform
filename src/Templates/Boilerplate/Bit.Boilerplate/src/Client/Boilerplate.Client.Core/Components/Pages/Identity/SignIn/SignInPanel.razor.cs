@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -90,6 +90,8 @@ public partial class SignInPanel
         args.PreventNavigation();
 
         webAuthnAssertion = null;
+
+        isNewUser = false;
 
         isOtpSent = false;
         model.Otp = null;

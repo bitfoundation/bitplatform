@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+//-:cnd:noEmit
 
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;

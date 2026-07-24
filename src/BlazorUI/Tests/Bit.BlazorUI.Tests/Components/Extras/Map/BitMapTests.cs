@@ -136,7 +136,7 @@ public class BitMapTests : BunitTestContext
 
         // Update provider with new options (same JsObjectName)
         var updatedProvider = new BitLeafletMapProvider { Zoom = 15 };
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Provider, updatedProvider);
         });
@@ -164,7 +164,7 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.Provider, new BitLeafletMapProvider { Zoom = 10 });
         });
 
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add<BitLeafletMapProvider?>(p => p.Provider, null);
         });
@@ -253,7 +253,7 @@ public class BitMapTests : BunitTestContext
             "Provider A should be initialized on first render");
 
         // Swap to a derived provider with a different JsObjectName
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Provider, new TestMapProviderB());
         });
@@ -296,7 +296,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == A_ADD_MARKER));
 
         // Swap to provider B - the marker should be re-applied via B's JS object.
-        component.SetParametersAndRender(parameters =>
+        component.Render(parameters =>
         {
             parameters.Add(p => p.Provider, new TestMapProviderB());
         });

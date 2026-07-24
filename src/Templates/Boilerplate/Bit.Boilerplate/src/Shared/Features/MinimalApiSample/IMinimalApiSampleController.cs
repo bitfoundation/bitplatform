@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.MinimalApiSample;
+namespace Boilerplate.Shared.Features.MinimalApiSample;
 
 public interface IMinimalApiSampleController : IAppController
 {

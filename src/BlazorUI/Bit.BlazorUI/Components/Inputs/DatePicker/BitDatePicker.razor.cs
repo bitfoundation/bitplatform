@@ -722,6 +722,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _overlayId = $"{_datePickerId}-overlay";
         _inputId = $"{_datePickerId}-input";
 
+        SetDefaultValue();
+
         OnValueChanged += HandleOnValueChanged;
 
         OnSetParameters();

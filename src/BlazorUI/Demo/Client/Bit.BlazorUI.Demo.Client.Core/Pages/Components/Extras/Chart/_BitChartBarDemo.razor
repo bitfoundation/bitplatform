@@ -1,18 +1,51 @@
-﻿<DemoExample Title="Bar Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example1">
-    <div class="example-desc">
-        A bar chart provides a way of showing data values represented as vertical bars.
-        It is sometimes used to show trend data, and the comparison of multiple data sets side by side.
-    </div>
-    <div class="chart-wrapper">
-        <div class="chart-container">
-            <BitChart Config="_config" @ref="_chart" />
-        </div>
-    </div>
-    <div class="buttons-container">
-        <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizeBarData">Randomize Data</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddBarDataset">Add Dataset</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveBarDataset">Remove Dataset</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddBarData">Add Data</BitButton>
-        <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveBarData">Remove Data</BitButton>
-    </div>
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Grouped" RazorCode="@groupedRazorCode" CsharpCode="@groupedCsharpCode" Id="bar-grouped">
+    <div class="example-desc">three datasets side by side</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_bottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Stacked" RazorCode="@stackedRazorCode" CsharpCode="@stackedCsharpCode" Id="bar-stacked">
+    <div class="example-desc">scales.y.stacked = true</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="@_stacked" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Horizontal" RazorCode="@horizontalRazorCode" CsharpCode="@horizontalCsharpCode" Id="bar-horizontal">
+    <div class="example-desc">indexAxis = y</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@PerColor()" Options="@_horizontal" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Rounded + per-bar colors" RazorCode="@roundedRazorCode" CsharpCode="@roundedCsharpCode" Id="bar-rounded" PreventRenderForMcpClient>
+    <div class="example-desc">borderRadius, palette per index</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@PerColorRounded()" Options="@_rounded" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Floating bars" RazorCode="@floatingRazorCode" CsharpCode="@floatingCsharpCode" Id="bar-floating">
+    <div class="example-desc">each bar spans a [low, high] range</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Floating()" Options="_noLegend" /></div></div>
+</DemoExample>
+
+<DemoExample Title="100% stacked" RazorCode="@stacked100RazorCode" CsharpCode="@stacked100CsharpCode" Id="bar-stacked-100">
+    <div class="example-desc">scales.y.stacked100 normalizes each category</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="@_stacked100" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Pattern fills" RazorCode="@patternedRazorCode" CsharpCode="@patternedCsharpCode" Id="bar-patterned">
+    <div class="example-desc">hatch &amp; dot patterns (print-friendly)</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@Patterned()" Options="_bottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Top-rounded corners" RazorCode="@topRoundedRazorCode" CsharpCode="@topRoundedCsharpCode" Id="bar-top-rounded" PreventRenderForMcpClient>
+    <div class="example-desc">per-corner borderRadius</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@TopRounded()" Options="_noLegend" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Auto-rotated labels" RazorCode="@rotatedRazorCode" CsharpCode="@rotatedCsharpCode" Id="bar-rotated" PreventRenderForMcpClient>
+    <div class="example-desc">long category labels tilt to fit</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Countries()" Options="_noLegend" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Stacked groups" RazorCode="@stackedGroupsRazorCode" CsharpCode="@stackedGroupsCsharpCode" Id="bar-stacked-groups">
+    <div class="example-desc">two independent stacks side by side (Stack id)</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="@StackedGroups()" Options="@_stackedGroups" /></div></div>
 </DemoExample>

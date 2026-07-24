@@ -1,0 +1,90 @@
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+.bit-vir {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+
+    // Disable the browser's own scroll anchoring; the component manages anchoring itself.
+    overflow-anchor: none;
+
+    &.bit-vir-hor {
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        .bit-vir-spc {
+            height: 100%;
+        }
+
+        .bit-vir-blk {
+            width: auto;
+            height: 100%;
+        }
+
+        .bit-vir-itm {
+            width: auto;
+            height: 100%;
+        }
+
+        .bit-vir-stk {
+            height: 100%;
+            width: max-content;
+        }
+    }
+}
+
+.bit-vir-spc {
+    width: 100%;
+    position: relative;
+}
+
+// The rendered window is translated to the (scaled) offset of its first item; items are positioned
+// relative to this block. Isolating the transform here keeps the GPU layer on the moving element.
+.bit-vir-blk {
+    top: 0;
+    left: 0;
+    width: 100%;
+    position: absolute;
+    will-change: transform;
+}
+
+.bit-vir-itm {
+    top: 0;
+    left: 0;
+    width: 100%;
+    position: absolute;
+    box-sizing: border-box;
+    overflow-anchor: none;
+}
+
+// In fixed-size mode each slot is a fixed height/width; clip rather than overlap the next item
+// when the content happens to exceed the configured ItemSize.
+.bit-vir-fix {
+    overflow: hidden;
+}
+
+// The pinned header is a normal-flow sticky element so the browser keeps it glued to the
+// leading edge of the viewport with no interop latency while scrolling. Its static position
+// is the start of the spacer (the block is out of flow), so top/left 0 pins it
+// for the whole scroll range. The push-out effect is applied via a transform from js.
+.bit-vir-stk {
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2;
+    position: sticky;
+    box-sizing: border-box;
+    overflow-anchor: none;
+    pointer-events: auto;
+}
+
+.bit-vir-ldg,
+.bit-vir-emp {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

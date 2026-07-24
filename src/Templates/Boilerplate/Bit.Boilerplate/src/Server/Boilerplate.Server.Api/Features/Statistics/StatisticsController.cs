@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Statistics;
+using Boilerplate.Shared.Features.Statistics;
 
 namespace Boilerplate.Server.Api.Features.Statistics;
 

@@ -2,13 +2,13 @@
     <BitTimeline Items="basicCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Horizontal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<DemoExample Title="Horizontal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
     <br />
     <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Disabled" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<DemoExample Title="Disabled" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
     <br /><br /><br />
     <div>Disabled component</div><br />
@@ -18,7 +18,7 @@
     <BitTimeline Horizontal Items="disabledCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Variant" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Variant" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>The Timeline has three variants: Fill (default), Outline, and Text.</div>
     <br /><br /><br />
     <div>Fill</div><br />
@@ -31,7 +31,7 @@
     <BitTimeline Horizontal Variant="BitVariant.Text" Items="disabledCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Icon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<DemoExample Title="Icon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>Each item in the Timeline can have an icon.</div>
     <br /><br /><br />
     <div>Fill</div><br />
@@ -44,7 +44,7 @@
     <BitTimeline Horizontal Items="iconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
 </DemoExample>
 
-<DemoExample Title="Reversed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="Reversed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>Each item in the Timeline can be reversed and be on the opposite side.</div>
     <br /><br /><br />
     <div>Vertical</div><br />
@@ -59,7 +59,7 @@
     <BitTimeline Horizontal Items="reversedCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>Here are some examples of customizing the Timeline content.</div>
     <br /><br /><br />
     <div>Vertical</div><br />
@@ -69,7 +69,7 @@
     <BitTimeline Horizontal Items="templateItems" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Color" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br /><br />
     <div>Primary</div><br />
@@ -129,7 +129,7 @@
     <BitTimeline Horizontal Color="BitColor.Error" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
     <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
     <br /><br /><br />
     <div>Small</div><br />
@@ -154,7 +154,7 @@
     <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="External Icons" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>External icon libraries like FontAwesome and Bootstrap Icons can be used with the Icon parameter.</div>
 
     <br />
@@ -183,7 +183,7 @@
     <BitTimeline Horizontal Items="bootstrapIconCustoms3" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br /><br />
     <div>Component's Style & Class:</div><br />
@@ -209,7 +209,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
     <div>Use the BitTimeline component in right-to-left (RTL).</div>
     <br /><br /><br />
     <div>Vertical</div><br />

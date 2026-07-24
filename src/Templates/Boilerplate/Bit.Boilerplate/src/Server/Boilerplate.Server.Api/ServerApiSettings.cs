@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif
@@ -128,7 +128,7 @@ public partial class AppIdentityOptions : IdentityOptions
     public TimeSpan TwoFactorTokenLifetime { get; set; }
 
     /// <summary>
-    /// <see cref="SignInManagerExtensions.OtpSignIn(SignInManager{Models.Identity.User}, Models.Identity.User, string)"/>
+    /// <see cref="SignInManagerExtensions.OtpSignIn"/>
     /// </summary>
     public TimeSpan OtpTokenLifetime { get; set; }
 

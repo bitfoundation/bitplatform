@@ -2,9 +2,10 @@
 @inherits BitInputBase<DateTimeOffset?>
 
 @{
-    var todayYear = _culture.Calendar.GetYear(DateTime.Now);
-    var todayMonth = _culture.Calendar.GetMonth(DateTime.Now);
-    var todayDay = _culture.Calendar.GetDayOfMonth(DateTime.Now);
+    var today = GetToday();
+    var todayYear = _culture.Calendar.GetYear(today);
+    var todayMonth = _culture.Calendar.GetMonth(today);
+    var focusableDay = GetFocusableDay();
 
     var prevMonthNavIconCss = BitIconInfo.From(PrevMonthNavIcon, PrevMonthNavIconName ?? "Up")?.GetCssClasses();
     var nextMonthNavIconCss = BitIconInfo.From(NextMonthNavIcon, NextMonthNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
@@ -127,77 +128,94 @@
                         }
                     </div>
                 </div>
-                <div style="@Styles?.DaysHeaderRow" class="bit-cal-dgh @Classes?.DaysHeaderRow">
-                    @if (ShowWeekNumbers)
-                    {
-                        <div style="@Styles?.WeekNumbersHeader" class="bit-cal-wlb @Classes?.WeekNumbersHeader"></div>
-                    }
+                <div role="grid" aria-label="@_monthTitle" style="@Styles?.DaysGrid" class="bit-cal-grd @Classes?.DaysGrid">
+                    <div role="row" style="@Styles?.DaysHeaderRow" class="bit-cal-dgh @Classes?.DaysHeaderRow">
+                        @if (ShowWeekNumbers)
+                        {
+                            <div role="columnheader" style="@Styles?.WeekNumbersHeader" class="bit-cal-wlb @Classes?.WeekNumbersHeader"></div>
+                        }
 
-                    @for (var index = 0; index < 7; index++)
+                        @for (var index = 0; index < 7; index++)
+                        {
+                            var dayOfWeek = GetDayOfWeek(index);
+                            var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(dayOfWeek);
+                            <div role="columnheader"
+                                 title="@dayOfWeekName"
+                                 aria-label="@_culture.DateTimeFormat.GetDayName(dayOfWeek)"
+                                 style="@Styles?.DayNameHeader"
+                                 class="bit-cal-wlb @Classes?.DayNameHeader">
+                                @dayOfWeekName[0]
+                            </div>
+                        }
+                    </div>
+
+                    @for (var week = 0; week < 6; week++)
                     {
-                        var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
-                        <div title="@dayOfWeekName"
-                             style="@Styles?.WeekNumbersHeader"
-                             class="bit-cal-wlb @Classes?.WeekNumbersHeader">
-                            @dayOfWeekName[0]
+                        //to ignore the last empty week of the month || to ignore the first whole week of the month
+                        if (_daysOfCurrentMonth[week, 0].HasValue is false) continue;
+
+                        <div role="row" style="@Styles?.DaysRow" class="bit-cal-dgr @Classes?.DaysRow">
+                            @if (ShowWeekNumbers)
+                            {
+                                var weekNumber = GetWeekNumber(week);
+                                var title = string.Format(WeekNumberTitle, weekNumber);
+                                <div role="rowheader"
+                                     title="@title"
+                                     aria-label="@title"
+                                     style="@Styles?.WeekNumber"
+                                     class="bit-cal-wnm @Classes?.WeekNumber">
+                                    @weekNumber
+                                </div>
+                            }
+                            @for (var day = 0; day < 7; day++)
+                            {
+                                var date = _daysOfCurrentMonth[week, day]!.Value;
+
+                                if (ShowOutsideDays is false && IsInCurrentMonth(date) is false)
+                                {
+                                    <div role="gridcell" style="@Styles?.DayButton" class="bit-cal-dbe @Classes?.DayButton"></div>
+                                    continue;
+                                }
+
+                                var disabled = IsEnabled is false || IsDayDisabled(date);
+                                var isSelected = IsSelectedDate(date);
+                                var isToday = IsInCurrentMonth(date) && date == today.Date;
+                                var (style, klass) = GetDayButtonCss(date);
+                                var dayEvents = GetDayEvents(date);
+                                <button @onclick="() => HandleDayClick(date, dayEvents)"
+                                        @onkeydown="e => HandleDayKeyDown(e, date)"
+                                        type="button"
+                                        role="gridcell"
+                                        id="@GetDayButtonId(date)"
+                                        disabled="@disabled"
+                                        aria-readonly="true"
+                                        aria-disabled="@disabled"
+                                        aria-label="@date.ToString(_culture.DateTimeFormat.LongDatePattern, _culture)"
+                                        aria-current="@(isToday ? "date" : null)"
+                                        title="@(dayEvents.Count > 0 ? GetEventTooltip(dayEvents) : null)"
+                                        style="@style @Styles?.DayButton"
+                                        class="bit-cal-dbt@(klass) @Classes?.DayButton"
+                                        tabindex="@(date == focusableDay ? 0 : -1)"
+                                        aria-selected="@(isSelected ? "true" : "false")">
+                                    @if (DayCellTemplate is not null)
+                                    {
+                                        @DayCellTemplate(GetDateTimeOfDayCell(date))
+                                    }
+                                    else
+                                    {
+                                        @GetDayOfCurrentMonth(date)
+                                    }
+                                    @if (dayEvents.Count > 0)
+                                    {
+                                        <span style="@Styles?.EventIndicator"
+                                              class="bit-cal-evi @Classes?.EventIndicator">
+                                        </span>
+                                    }
+                                </button>
+                            }
                         </div>
                     }
                 </div>
-
-                @for (var week = 0; week < 6; week++)
-                {
-                    //to ignore the last empty week of the month || to ignore the first whole week of the month
-                    if (_daysOfCurrentMonth[week, 0].HasValue is false) continue;
-
-                    <div style="@Styles?.DaysRow" class="bit-cal-dgr @Classes?.DaysRow">
-                        @if (ShowWeekNumbers)
-                        {
-                            var weekNumber = GetWeekNumber(week);
-                            var title = string.Format(WeekNumberTitle, weekNumber);
-                            <div scope="row"
-                                 title="@title"
-                                 aria-label="@title"
-                                 style="@Styles?.WeekNumber"
-                                 class="bit-cal-wnm @Classes?.WeekNumber">
-                                @weekNumber
-                            </div>
-                        }
-                        @for (var day = 0; day < 7; day++)
-                        {
-                            var date = _daysOfCurrentMonth[week, day]!.Value;
-                            var disabled = IsEnabled is false || IsWeekDayOutOfMinAndMaxDate(date);
-                            var isSelected = IsSelectedDate(date);
-                            var (style, klass) = GetDayButtonCss(date);
-                            var dayEvents = GetDayEvents(date);
-                            <button @onclick="() => HandleDayClick(date, dayEvents)"
-                                    type="button"
-                                    role="gridcell"
-                                    disabled="@disabled"
-                                    aria-readonly="true"
-                                    aria-disabled="@disabled"
-                                    title="@(dayEvents.Count > 0 ? GetEventTooltip(dayEvents) : null)"
-                                    style="@style @Styles?.DayButton"
-                                    class="bit-cal-dbt@(klass) @Classes?.DayButton"
-                                    tabindex="@(isSelected ? 0 : -1)"
-                                    aria-selected="@(isSelected ? "true" : "false")">
-                                @if (DayCellTemplate is not null)
-                                {
-                                    @DayCellTemplate(GetDateTimeOfDayCell(date))
-                                }
-                                else
-                                {
-                                    @GetDayOfCurrentMonth(date)
-                                }
-                                @if (dayEvents.Count > 0)
-                                {
-                                    <span style="@Styles?.EventIndicator"
-                                          class="bit-cal-evi @Classes?.EventIndicator">
-                                    </span>
-                                }
-                            </button>
-                        }
-                    </div>
-                }
             </div>
         }
 
@@ -292,6 +310,7 @@
                             }
                         </div>
                     </div>
+                    <div role="grid" aria-label="@_currentYear" class="bit-cal-grd">
                     @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                     {
                         <div style="@Styles?.MonthsRow" class="bit-cal-pkr @Classes?.MonthsRow" role="row">
@@ -325,6 +344,7 @@
                             }
                         </div>
                     }
+                    </div>
                 }
                 else
                 {
@@ -390,6 +410,7 @@
                             </button>
                         </div>
                     </div>
+                    <div role="grid" aria-label="@_yearPickerStartYear - @_yearPickerEndYear" class="bit-cal-grd">
                     @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                     {
                         <div style="@Styles?.YearsRow" class="bit-cal-pkr @Classes?.YearsRow" role="row">
@@ -420,7 +441,7 @@
                             }
                         </div>
                     }
-
+                    </div>
                 }
             </div>
         }

@@ -1,58 +1,81 @@
-﻿@page "/components/chart"
+@page "/components/chart"
 
 <PageOutlet Url="components/chart"
             Title="Chart"
-            Description="Chart component of the bit BlazorUI components" />
+            Description="Native Blazor charting component rendered entirely with SVG (no JavaScript charting engine, no canvas), supporting line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts." />
 
-<div>
-    @if (isLoadingAssemblies)
-    {
-        <LoadingComponent />
-    }
-    else
-    {
-        <DemoPage Name="Chart"
-                  Description="Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter."
-                  Parameters="componentParameters"
-                  SubClasses="componentSubClasses"
-                  GitHubExtrasUrl="Chart/BitChart.razor"
-                  GitHubDemoUrl="Extras/Chart/BitChartDemo.razor">
-            <NotesTemplate>
-                <BitText>
-                    To use this component, you need to install the
-                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
-                        <BitTag Reversed
-                                Text="Bit.BlazorUI.Extras"
-                                Color="BitColor.SecondaryBackground"
-                                IconName="@BitIconName.NavigateExternalInline" />
-                    </BitLink>
-                    nuget package, as described in the Optional steps of the
-                    <BitLink Href="/getting-started">Getting started</BitLink> page.
-                </BitText>
-            </NotesTemplate>
-            <Examples>
-                <_BitChartBarDemo />
-
-                <_BitChartHorizontalBarDemo />
-
-                <_BitChartStackedBarDemo />
-
+<DemoPage Name="Chart"
+          Description="A native Blazor charting component rendered entirely with SVG. The API closely mirrors Chart.js: configure it with a BitChartType plus BitChartData and BitChartOptions (or a single BitChartConfig). It supports line, bar, area, pie, doughnut, polar area, radar, scatter, bubble and mixed charts, with scales, legends, tooltips, annotations, animations, scriptable options and zoom/pan."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubExtrasUrl="Chart/BitChart.razor"
+          GitHubDemoUrl="Extras/Chart/BitChartDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
+            <BitPivotItem HeaderText="Line" Key="line">
                 <_BitChartLineDemo />
-
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Bar" Key="bar">
+                <_BitChartBarDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Area" Key="area">
+                <_BitChartAreaDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Pie & Doughnut" Key="pie">
                 <_BitChartPieDemo />
-
-                <_BitChartDoughnutDemo />
-
-                <_BitChartPolarAreaDemo />
-
-                <_BitChartTimeDemo />
-
-                <_BitChartScatterDemo />
-
-                <_BitChartBubbleDemo />
-
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Polar area" Key="polar">
+                <_BitChartPolarDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Radar" Key="radar">
                 <_BitChartRadarDemo />
-            </Examples>
-        </DemoPage>
-    }
-</div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Scatter & Bubble" Key="scatter">
+                <_BitChartScatterDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Mixed" Key="mixed">
+                <_BitChartMixedDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Multi-axis" Key="multiaxis">
+                <_BitChartMultiAxisDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Scales" Key="scales">
+                <_BitChartScalesDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Time" Key="time">
+                <_BitChartTimeDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Legend" Key="legend">
+                <_BitChartLegendDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Tooltips" Key="tooltips">
+                <_BitChartTooltipsDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Annotations" Key="annotations">
+                <_BitChartAnnotationsDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Animations" Key="animations">
+                <_BitChartAnimationsDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Scriptable" Key="scriptable">
+                <_BitChartScriptableDemo />
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Zoom & Pan" Key="zoom">
+                <_BitChartZoomDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </Examples>
+</DemoPage>

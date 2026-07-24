@@ -1,2 +1,5 @@
+# Normalize line endings on commit; keep encoding as UTF-8 without BOM (enforced by CI).
+* text=auto
+
 # Ensure shell scripts remain executable on Linux by enforcing LF line endings
 *.sh text eol=lf

@@ -774,6 +774,15 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Sobald Sie den QR-Code gescannt oder den obigen Schlüssel eingegeben haben, stellt Ihre Zwei-Faktor-Authentifizierungs-App Ihnen einen eindeutigen Code zur Verfügung. Geben Sie den Code in das Bestätigungsfeld unten ein.</value>
   </data>
+  <data name="SignOutOfAllDevicesWarningMessage" xml:space="preserve">
+    <value>Aus Sicherheitsgründen werden Sie innerhalb weniger Minuten auf allen Ihren Geräten, einschließlich diesem, abgemeldet. Bitte melden Sie sich erneut an.</value>
+  </data>
+  <data name="ChangePasswordButtonText" xml:space="preserve">
+    <value>Passwort ändern</value>
+  </data>
+  <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
+    <value>Ihr Passwort wurde erfolgreich geändert.</value>
+  </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Zwei-Faktor-Authentifizierung wurde aktiviert.</value>
   </data>
@@ -982,18 +991,18 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Alt-Text</value>
   </data>
   <!--#endif -->
+    <data name="Page" xml:space="preserve">
+    <value>Seite</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>von</value>
+  </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Admin-Panel</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
     <value>{0} Elemente</value>
-  </data>
-  <data name="Page" xml:space="preserve">
-    <value>Seite</value>
-  </data>
-  <data name="Of" xml:space="preserve">
-    <value>von</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Produktanzahl der letzten 30 Tage</value>
@@ -1364,4 +1373,102 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Das bereitgestellte Bild enthält kein Auto.</value>
   </data>
+    <!--#if (multitenant == true) -->
+    <data name="Tenant" xml:space="preserve">
+    <value>Mandant</value>
+  </data>
+    <data name="ManageAllTenants" xml:space="preserve">
+    <value>Alle Mandanten verwalten</value>
+  </data>
+    <data name="ManageAllTenantsPageTitle" xml:space="preserve">
+    <value>Alle Mandanten verwalten</value>
+  </data>
+    <data name="ManageMyTenants" xml:space="preserve">
+    <value>Meine Mandanten verwalten</value>
+  </data>
+    <data name="ManageMyTenantsPageTitle" xml:space="preserve">
+    <value>Meine Mandanten verwalten</value>
+  </data>
+    <data name="CreateNewTenant" xml:space="preserve">
+    <value>Neuen Mandanten erstellen</value>
+  </data>
+    <data name="AddTenant" xml:space="preserve">
+    <value>Mandant hinzufügen</value>
+  </data>
+    <data name="EditTenant" xml:space="preserve">
+    <value>Mandant bearbeiten</value>
+  </data>
+    <data name="LeaveTenant" xml:space="preserve">
+    <value>Mandant verlassen</value>
+  </data>
+    <data name="LeaveTenantConfirmMessage" xml:space="preserve">
+    <value>Sind Sie sicher, dass Sie den Mandanten {0} verlassen möchten?</value>
+  </data>
+    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
+    <value>Sie haben den Mandanten erfolgreich verlassen.</value>
+  </data>
+    <data name="SwitchTenant" xml:space="preserve">
+    <value>Mandant wechseln</value>
+  </data>
+    <data name="InviteUserToTenant" xml:space="preserve">
+    <value>Benutzer zu {0} einladen</value>
+  </data>
+    <data name="Invite" xml:space="preserve">
+    <value>Einladen</value>
+  </data>
+    <data name="UserInvitedSuccessfullyMessage" xml:space="preserve">
+    <value>Der Benutzer wurde erfolgreich eingeladen.</value>
+  </data>
+    <data name="UserIsAlreadyInTenantErrorMessage" xml:space="preserve">
+    <value>Dieser Benutzer ist bereits Mitglied des Mandanten.</value>
+  </data>
+    <data name="DuplicateTenantName" xml:space="preserve">
+    <value>Der Mandantenname '{0}' ist bereits vergeben.</value>
+  </data>
+    <data name="TenantCouldNotBeFound" xml:space="preserve">
+    <value>Mandant konnte nicht gefunden werden.</value>
+  </data>
+    <data name="TenantNameRegexPatternError" xml:space="preserve">
+    <value>{0} muss ein gültiger Subdomain-Name sein, der aus Kleinbuchstaben, Ziffern und Bindestrichen besteht (z. B. my-tenant).</value>
+  </data>
+    <data name="EnterTenantName" xml:space="preserve">
+    <value>Mandantennamen eingeben</value>
+  </data>
+    <data name="EnterTenantTitle" xml:space="preserve">
+    <value>Mandantentitel eingeben</value>
+  </data>
+    <data name="Domain" xml:space="preserve">
+    <value>Domain</value>
+  </data>
+    <data name="EnterTenantDomain" xml:space="preserve">
+    <value>Benutzerdefinierte Domain des Mandanten eingeben (z. B. myapp.com)</value>
+  </data>
+    <data name="TenantDomainRegexPatternError" xml:space="preserve">
+    <value>{0} muss ein gültiger Domainname ohne Schema oder Pfad sein (z. B. myapp.com).</value>
+  </data>
+    <data name="DuplicateTenantDomain" xml:space="preserve">
+    <value>Die Domain '{0}' ist bereits vergeben.</value>
+  </data>
+    <data name="SelectTenantMessage" xml:space="preserve">
+    <value>Sie haben noch keinen Mandanten ausgewählt. Wechseln Sie zu einem Ihrer Mandanten oder erstellen Sie einen neuen, um loszulegen.</value>
+  </data>
+    <data name="TenantInvitationShortText" xml:space="preserve">
+    <value>{0} hat Sie eingeladen, {1} beizutreten. Öffnen Sie {2} und melden Sie sich an, um in diesem Mandanten zu sein.</value>
+  </data>
+    <data name="Switch" xml:space="preserve">
+    <value>Wechseln</value>
+  </data>
+    <data name="AcceptInvitation" xml:space="preserve">
+    <value>Annehmen</value>
+  </data>
+    <data name="PendingInvitation" xml:space="preserve">
+    <value>Ausstehende Einladung</value>
+  </data>
+    <data name="CurrentTenant" xml:space="preserve">
+    <value>Aktueller Mandant</value>
+  </data>
+    <data name="Inactive" xml:space="preserve">
+    <value>Inaktiv</value>
+  </data>
+    <!--#endif-->
 </root>

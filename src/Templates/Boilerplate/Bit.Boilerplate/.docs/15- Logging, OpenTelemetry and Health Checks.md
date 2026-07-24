@@ -219,59 +219,37 @@ public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [Fr
 
 ---
 
-## 5. Integration with Sentry and Azure Application Insights
+## 5. Supported telemetry platforms:
 
-The project is **pre-configured** for easy integration with popular logging providers.
+### 🖥️ Server Applications
 
-### Sentry Integration
+* **Server.Api**
 
-**Sentry** is a production error tracking service. Configuration in `appsettings.json`:
+    Server.Api uses **OpenTelemetry** for distributed tracing and metrics.
+    
+    Support for Open Telemetry means that all telemetry platforms (Including but not limited to Sentry, Azure Application Insights, Datadog, New Relic etc.) can be used to collect and visualize logs, traces and metrics.
 
-```json
-"Sentry": {
-  "Dsn": "", // Add your Sentry DSN here
-  "SendDefaultPii": true,
-  "EnableScopeSync": true,
-  "LogLevel": {
-    "Default": "Warning"
-  }
-}
-```
+    **Sampling** is enabled to reduce costs: unknown/unhandled exceptions and slow activities are always captured (100%), while known/transient exceptions, warnings, and info logs are sampled at **5%**. See [`AppOpenTelemetryProcessor.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppOpenTelemetryProcessor.cs) and [`AppLoggingSampler.cs`](../src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppLoggingSampler.cs).
 
-### Azure Application Insights Integration
+* **Server.Web**
 
-**Application Insights** provides comprehensive telemetry and monitoring. Configuration:
+    Server.Web uses **OpenTelemetry** for distributed tracing and metrics.
 
-```json
-"ApplicationInsights": {
-  "ConnectionString": null // Add your connection string here
-}
-```
+### 📱 Client Applications
 
-### How It Works
+* **Client.Windows**
 
-1- The OpenTelemetry configuration automatically exports to Application Insights if a connection string is provided.
+    Client.Windows uses **OpenTelemetry** for distributed tracing and metrics, and uses Azure Application Insights JavaScript SDK for Blazor Hybrid WebView JavaScript errors, navigation tracking etc.
 
-From [`src/Server/Boilerplate.Server.Shared/Extensions/Infrastructure/WebApplicationBuilderExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs):
-2- The Azure Application Insights JavaScript SDK added by `BlazorApplicationInsights` nuget in Client.Core project would collect JavaScript errors and more from
-Browser and Blazor Hybrid's WebView
+* **Client.Maui**
 
-### OpenTelemetry Configuration
+    Client.Maui uses **OpenTelemetry** for distributed tracing and metrics, and uses Azure Application Insights JavaScript SDK for Blazor Hybrid WebView JavaScript errors, navigation tracking etc.
 
-The project tracks:
+* **Client.Web (Blazor WebAssembly)**
 
-**Metrics:**
-- ASP.NET Core instrumentation (HTTP request metrics)
-- HTTP client instrumentation
-- Runtime instrumentation (GC, thread pool, etc.)
-- Custom metrics via `Meter.Current`
+    Client.Web doesn't use Open Telemetry due to size constraints, but uses any Microsoft.Extensions.Logging implementations such as `Sentry.Extensions.Logging`
 
-**Tracing:**
-- ASP.NET Core requests (excluding static files and health checks)
-- HTTP client calls
-- Entity Framework Core queries (excluding Hangfire queries)
-- Hangfire background jobs
-- Custom activities via `ActivitySource.Current`
+    `BlazorApplicationInsights` nuget package implements Microsoft.Extensions.Logging. It also tracks Browser JavaScript errors, navigations etc.
 
 ---
 

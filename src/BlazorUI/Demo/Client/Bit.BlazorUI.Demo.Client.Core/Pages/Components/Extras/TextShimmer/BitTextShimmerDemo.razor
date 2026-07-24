@@ -1,0 +1,108 @@
+@page "/components/textshimmer"
+
+<PageOutlet Url="components/textshimmer"
+            Title="TextShimmer"
+            Description="BitTextShimmer is an animated text shimmer in which a bright gradient band sweeps across the text, ideal for AI thinking/loading states or progressive reveals." />
+
+<DemoPage Name="TextShimmer"
+          SecondaryNames="@(["Skeleton", "Loading", "AI"])"
+          Description="BitTextShimmer is an animated text shimmer in which a bright gradient band sweeps across the text, ideal for AI thinking/loading states or progressive reveals. The effect is implemented in pure CSS (no JavaScript interop), so it works in every Blazor render mode, including static server-side rendering."
+          Parameters="componentParameters"
+          GitHubExtrasUrl="TextShimmer/BitTextShimmer.cs"
+          GitHubDemoUrl="Extras/TextShimmer/BitTextShimmerDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            By default, BitTextShimmer honors the reduced motion preference of the OS/browser (prefers-reduced-motion)
+            and shows a static, dim text instead of animating. If you don't see the shimmer sweep, either disable the
+            reduce motion setting or use the ForceAnimation parameter.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <div class="toggle-bar">
+            <BitToggle @bind-Value="forceAnimation" Text="ForceAnimation (apply to all samples)" />
+        </div>
+
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <BitTextShimmer ForceAnimation="forceAnimation" Text="Thinking about your question..." />
+            
+            <br/><br/><br/>
+            
+            <div>
+                BitTextShimmer honors the reduced motion preference of the OS/browser (prefers-reduced-motion) by default
+                and renders a static, dim text instead of animating. The ForceAnimation parameter keeps the shimmer animating
+                regardless of that preference:
+            </div>
+            
+            <br />
+            
+            <BitTextShimmer ForceAnimation Text="This shimmer keeps animating even in reduced motion mode" />
+        </DemoExample>
+
+        <DemoExample Title="Element" RazorCode="@example2RazorCode" Id="example2">
+            <div>Customize the root html element of the BitTextShimmer using the Element parameter:</div>
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" Element="h1" Text="A shimmering heading" />
+            <br />
+            <div>An <BitTextShimmer ForceAnimation="forceAnimation" Element="span" Text="inline text shimmer" /> in the middle of a sentence.</div>
+        </DemoExample>
+
+        <DemoExample Title="Duration & Spread" RazorCode="@example3RazorCode" Id="example3">
+            <div>Customize the animation speed and the width of the bright band of the BitTextShimmer:</div>
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" Duration="4000" Text="Slow and calm shimmer (4 seconds)" />
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" Duration="750" Text="Fast and urgent shimmer (750 milliseconds)" />
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" Spread="5" Text="A wide shimmer band" />
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" Spread="0.5" Text="A narrow shimmer band" />
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example4RazorCode" Id="example4">
+            <div>Customize the resting and highlight colors of the BitTextShimmer:</div>
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" BaseColor="#3f3f46" GradientColor="#22d3ee" Text="An ocean colored shimmer" />
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" BaseColor="#92400e" GradientColor="#fbbf24" Text="A golden colored shimmer" />
+        </DemoExample>
+
+        <DemoExample Title="Content" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                Shimmer any content using ChildContent. Since the length of the content cannot be measured,
+                supply the ContentLength parameter to scale the shimmer band width:
+            </div>
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" ContentLength="30">
+                Thinking <strong>really</strong> hard about it...
+            </BitTextShimmer>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+            <div>Use Style and Class to customize the BitTextShimmer:</div>
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" Style="font-size:2rem;font-weight:bold" Text="A styled text shimmer" />
+            <br />
+            <BitTextShimmer ForceAnimation="forceAnimation" Class="custom-class" Text="A classy text shimmer" />
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+            <div>Use BitTextShimmer in right-to-left (RTL):</div>
+            <br />
+            <div dir="rtl">
+                <BitTextShimmer ForceAnimation="forceAnimation" Dir="BitDir.Rtl" Text="در حال فکر کردن به سوال شما..." />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

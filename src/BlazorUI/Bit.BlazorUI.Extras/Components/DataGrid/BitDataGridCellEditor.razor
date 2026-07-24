@@ -1,0 +1,251 @@
+@typeparam TItem
+@namespace Bit.BlazorUI
+
+@switch (Column.EffectiveDataType)
+{
+    case BitDataGridColumnDataType.Boolean when IsNullableValue:
+        @* A nullable bool has three states (true/false/null); a plain checkbox only has two and would
+           silently collapse null into false. Use a select whose empty option round-trips back to null
+           (via SetNullable), while still parsing "true"/"false" through the accessor like Set does. *@
+        <select class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
+                aria-label="@EditorLabel"
+                aria-invalid="@(Error is null ? null : "true")"
+                aria-describedby="@ErrorId"
+                @onchange="e => SetNullable(e.Value)">
+            <option value="">@string.Empty</option>
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+        break;
+
+    case BitDataGridColumnDataType.Boolean:
+        <input type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
+               checked="@(GetBool())"
+               aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
+               @onchange="e => Set(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.Number:
+        <input type="number" class="bit-dtg-editor" step="any"
+               value="@(GetNumberString())"
+               aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
+               @oninput="e => SetNullable(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.Date:
+        @* Native date/datetime inputs blank out any value they can't parse, so the raw string that
+           GetDate/GetDateTime echo back for a conversion-rejected edit would never be shown. Fall
+           back to a text input while the buffer holds raw text so the user's entry stays visible
+           alongside the error; a successful parse flips the control back to its native type. *@
+        <input type="@(Value is string ? "text" : "date")" class="bit-dtg-editor"
+               value="@(GetDate())"
+               aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
+               @onchange="e => SetNullable(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.DateTime:
+        <input type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
+               value="@(GetDateTime())"
+               aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
+               @onchange="e => SetDateTime(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.DateTimeOffset:
+        <input type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
+               value="@(GetDateTime())"
+               aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
+               @onchange="e => SetDateTimeOffset(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
+        <select class="bit-dtg-editor" value="@(GetString())"
+                aria-label="@EditorLabel"
+                aria-invalid="@(Error is null ? null : "true")"
+                aria-describedby="@ErrorId"
+                @onchange="e => Set(string.IsNullOrEmpty(e.Value as string) ? null : e.Value)">
+            @if (IsNullableEnum || Value is null)
+            {
+                <option value="">@string.Empty</option>
+            }
+            @foreach (var name in Enum.GetNames(Column.Accessor.UnderlyingType))
+            {
+                <option value="@name">@name</option>
+            }
+        </select>
+        break;
+
+    default:
+        <input type="text" class="bit-dtg-editor"
+               value="@(GetString())"
+               aria-label="@EditorLabel"
+               aria-invalid="@(Error is null ? null : "true")"
+               aria-describedby="@ErrorId"
+               @oninput="e => Set(e.Value)" />
+        break;
+}
+
+@if (Error is not null)
+{
+    <span id="@_errorId" class="bit-dtg-editor-error" role="alert">@Error</span>
+}
+
+@code {
+    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
+    [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
+    [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
+
+    // The pending buffered edit when one exists, else the row's current value. Editors must render
+    // the buffer, not the item: the item stays untouched until the edit is committed.
+    private object? Value => Grid.GetEditValue(Column, Item);
+    private string? Error => Grid.GetEditError(Column);
+    private string GetString() => Value?.ToString() ?? string.Empty;
+
+    // Each built-in editor renders a bare control with no visible <label>, so screen readers would
+    // announce it without any field context. Expose the column's title as the accessible name so the
+    // focused editor announces which column is being edited.
+    private string EditorLabel => Column.DisplayTitle;
+
+    // The error span is a sibling with no structural tie to the input, so aria-invalid alone tells
+    // assistive tech *that* the value is wrong but not *why*. Give the span a per-instance id and
+    // reference it from every editor (only while an error exists) so the message is also exposed as
+    // the field's accessible description, not just a one-shot alert announcement.
+    private readonly string _errorId = $"bit-dtg-editor-error-{Guid.NewGuid():N}";
+    private string? ErrorId => Error is null ? null : _errorId;
+
+    // HTML <input type="number"> always expects a period as the decimal separator regardless of the
+    // browser locale, so format numeric values with the invariant culture to avoid emitting a comma
+    // (which the input would reject) in comma-decimal cultures.
+    private string GetNumberString()
+        => Value is IFormattable f
+            ? f.ToString(null, System.Globalization.CultureInfo.InvariantCulture)
+            : (Value?.ToString() ?? string.Empty);
+
+    private bool GetBool() => Value is bool b && b;
+
+    // Renders the current bool? as the tri-state select's value: "true"/"false" for a concrete value,
+    // empty string for null so the empty option is selected and a cleared cell stays null.
+    private string GetBoolString() => Value is bool b ? (b ? "true" : "false") : string.Empty;
+
+    private string GetDate()
+    {
+        // <input type="date"> requires a strict ISO 8601 yyyy-MM-dd value; format with the invariant
+        // culture so non-Gregorian thread cultures don't emit an invalid (e.g. localized) date string.
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        return Value switch
+        {
+            DateTime dt => dt.ToString("yyyy-MM-dd", inv),
+            DateOnly d => d.ToString("yyyy-MM-dd", inv),
+            DateTimeOffset dto => dto.ToString("yyyy-MM-dd", inv),
+            // A conversion-rejected edit is buffered as its raw input string; echo it back so the
+            // user's entry isn't wiped while the error is displayed.
+            string s => s,
+            _ => string.Empty
+        };
+    }
+
+    private string GetDateTime()
+    {
+        // <input type="datetime-local"> requires a strict ISO 8601 yyyy-MM-ddTHH:mm value; format with
+        // the invariant culture and preserve the time (and the offset's local time) component.
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        return Value switch
+        {
+            DateTime dt => dt.ToString("yyyy-MM-ddTHH:mm", inv),
+            DateTimeOffset dto => dto.ToString("yyyy-MM-ddTHH:mm", inv),
+            // Echo back a conversion-rejected raw input (see GetDate).
+            string s => s,
+            _ => string.Empty
+        };
+    }
+
+    // True when the bound member is a nullable enum (e.g. MyEnum?), so the editor can offer an empty
+    // option that maps back to null rather than forcing a concrete enum member.
+    private bool IsNullableEnum
+        => Column.Accessor is not null
+        && Nullable.GetUnderlyingType(Column.Accessor.PropertyType) is not null
+        && Column.Accessor.UnderlyingType.IsEnum;
+
+    // <input type="datetime-local"> has no time-zone/Kind information, so a naive parse back through
+    // the property accessor yields DateTimeKind.Unspecified and would drop the original Utc/Local
+    // semantics (changing the represented instant on round-trip). Re-stamp the parsed value with the
+    // current value's Kind so edited DateTimes preserve Utc/Local consistently - mirroring how
+    // SetDateTimeOffset reconstructs the offset.
+    private void SetDateTime(object? raw)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        if (raw is string s && !string.IsNullOrEmpty(s)
+            && DateTime.TryParse(s, inv, System.Globalization.DateTimeStyles.None, out var local))
+        {
+            var kind = Value is DateTime current ? current.Kind : DateTimeKind.Unspecified;
+            // datetime-local only carries minute precision, so a round-trip would zero out the original
+            // seconds/ticks even when the user only edited the date or minute. Carry the original
+            // sub-minute component forward so editing the higher-order parts preserves it.
+            if (Value is DateTime original)
+            {
+                local = local.AddTicks(original.Ticks % TimeSpan.TicksPerMinute);
+            }
+            Grid.SetEditValue(Column, DateTime.SpecifyKind(local, kind));
+        }
+        else
+        {
+            SetNullable(raw);
+        }
+    }
+
+    private void Set(object? raw) => Grid.SetEditValue(Column, raw);
+
+    // True when the bound member is a nullable value type (e.g. int?, DateTime?). A cleared editor
+    // (empty string) should then map back to null rather than being rejected by the accessor's type
+    // conversion, which would otherwise leave the previous value in place.
+    private bool IsNullableValue
+        => Column.Accessor is not null
+        && Nullable.GetUnderlyingType(Column.Accessor.PropertyType) is not null;
+
+    // Normalizes a cleared number/date input: an empty string maps to null when the bound property is
+    // nullable so the cell actually clears, otherwise the raw value flows through the normal Set path.
+    private void SetNullable(object? raw)
+    {
+        if (raw is string s && string.IsNullOrEmpty(s) && IsNullableValue)
+        {
+            Grid.SetEditValue(Column, null);
+            return;
+        }
+        Set(raw);
+    }
+
+    // <input type="datetime-local"> has no UTC offset, so a naive parse back through the property
+    // accessor would discard the original offset. Combine the edited local date/time with the offset
+    // of the current value when one exists; otherwise use the local time zone's offset *for that
+    // timestamp* (not DateTimeOffset.Now.Offset, which can differ across DST boundaries) so the stored
+    // offset matches the entered date.
+    private void SetDateTimeOffset(object? raw)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        if (raw is string s && !string.IsNullOrEmpty(s)
+            && DateTime.TryParse(s, inv, System.Globalization.DateTimeStyles.None, out var local))
+        {
+            var offset = Value is DateTimeOffset current ? current.Offset : TimeZoneInfo.Local.GetUtcOffset(local);
+            // datetime-local only carries minute precision; carry the original sub-minute component
+            // forward so editing the date/minute doesn't reset the existing seconds/ticks to zero.
+            if (Value is DateTimeOffset original)
+            {
+                local = local.AddTicks(original.DateTime.Ticks % TimeSpan.TicksPerMinute);
+            }
+            Grid.SetEditValue(Column, new DateTimeOffset(local, offset));
+        }
+        else
+        {
+            SetNullable(raw);
+        }
+    }
+}

@@ -1,0 +1,13 @@
+@namespace Bit.BlazorUI.Legacy.Demo.Chart
+<DemoExample Title="Horizontal Bar Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example2">
+    <div class="example-desc">
+        A horizontal bar chart is a variation on a vertical bar chart. It is sometimes used to show trend data,
+        and the comparison of multiple data sets side by side. To achieve this you will have to set the horizontal
+        param in the BitChartLegacyBarConfig constructor to 'true'. The default for this property is 'false' and thus will show vertical bars.
+    </div>
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <Bit.BlazorUI.Legacy.BitChartLegacy Config="_config" @ref="_chart" />
+        </div>
+    </div>
+</DemoExample>

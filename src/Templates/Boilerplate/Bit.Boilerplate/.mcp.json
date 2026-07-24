@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "MicrosoftLearn": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "DeepWiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
+    },
+    "bitBlazorUI": {
+      "type": "http",
+      "url": "https://blazorui.bitplatform.dev/mcp"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}

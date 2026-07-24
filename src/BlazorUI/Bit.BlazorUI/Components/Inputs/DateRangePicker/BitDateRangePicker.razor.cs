@@ -814,6 +814,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _overlayId = $"{_dateRangePickerId}-overlay";
         _inputId = $"{_dateRangePickerId}-input";
 
+        SetDefaultValue();
+
         OnValueChanged += HandleOnValueChanged;
 
         OnSetParameters();

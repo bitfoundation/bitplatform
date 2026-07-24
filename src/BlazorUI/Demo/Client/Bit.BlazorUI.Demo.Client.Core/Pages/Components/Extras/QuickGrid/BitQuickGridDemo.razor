@@ -1,0 +1,204 @@
+@page "/components/quickgrid"
+@page "/components/quick-grid"
+@inherits AppComponentBase
+@using Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo
+
+<PageOutlet Url="components/quickgrid"
+            Title="QuickGrid"
+            Description="BitQuickGrid displays an information-rich collection of items and lets users sort and filter the content when information density is critical." />
+
+<DemoPage Name="QuickGrid"
+          Description="BitQuickGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content. Use a data-grid when information density is critical."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubExtrasUrl="QuickGrid/BitQuickGrid.razor"
+          GitHubDemoUrl="Extras/QuickGrid/BitQuickGridDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            NuGet package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <BitQuickGrid Items="@FilteredItems1" Pagination="@pagination1" ResizableColumns>
+                <BitQuickGridPropertyColumn Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitQuickGridSortDirection.Ascending">
+                    <ColumnOptions>
+                        <BitSearchBox @bind-Value="typicalSampleNameFilter1"
+                                      AriaLabel="Search by name"
+                                      FixedIcon
+                                      Immediate DebounceTime="300"
+                                      Placeholder="Search..."
+                                      InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
+                    </ColumnOptions>
+                </BitQuickGridPropertyColumn>
+                <BitQuickGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                <BitQuickGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                <BitQuickGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                <BitQuickGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
+            </BitQuickGrid>
+            <BitQuickGridPaginator Value="@pagination1" />
+        </DemoExample>
+
+        <DemoExample Title="Customized" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div class="custom-grid">
+                <div class="container">
+                    <BitQuickGrid Items="@FilteredItems2" Pagination="@pagination2" ResizableColumns>
+                        <BitQuickGridPropertyColumn Property="@(c => c.Name)" IsDefaultSort="BitQuickGridSortDirection.Ascending" Sortable="true" Class="wide">
+                            <ColumnOptions>
+                                <BitSearchBox @bind-Value="typicalSampleNameFilter2"
+                                              AriaLabel="Search by name"
+                                              FixedIcon
+                                              Immediate DebounceTime="300"
+                                              Placeholder="Search on Name"
+                                              InputHtmlAttributes="@(new Dictionary<string, object> { { "autofocus", true } })" />
+                            </ColumnOptions>
+                        </BitQuickGridPropertyColumn>
+                        <BitQuickGridTemplateColumn Title="Flag" Align="BitQuickGridAlign.Center">
+                            <img class="flag" src="_content/Bit.BlazorUI.Extras/flags/@(context.Code)-flat-16.webp" loading="lazy" alt="@(context.Code)" />
+                        </BitQuickGridTemplateColumn>
+                        <BitQuickGridPropertyColumn Property="@(c => c.Medals.Gold)" Sortable="true" />
+                        <BitQuickGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
+                        <BitQuickGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
+                        <BitQuickGridTemplateColumn Title="Action" Align="BitQuickGridAlign.Center">
+                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit" Title="Edit" AriaLabel="Edit" />
+                            <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Delete" Title="Delete" AriaLabel="Delete" />
+                        </BitQuickGridTemplateColumn>
+                    </BitQuickGrid>
+                </div>
+                <BitQuickGridPaginator Value="@pagination2" SummaryFormat="@(v => $"Total: {v.TotalItemCount}")">
+                    <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
+                </BitQuickGridPaginator>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Virtualize" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div class="grid">
+                <BitQuickGrid @ref="dataGrid" ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize ItemSize="32">
+                    <BitQuickGridPropertyColumn Property="@(c => c.EventId)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.State)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.City)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.RecallingFirm)" Title="Company" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.Status)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.ReportDate)" Title="Report Date" Sortable="true" />
+                </BitQuickGrid>
+            </div>
+            <div class="search-panel">
+                <BitSearchBox @bind-Value="VirtualSampleNameFilter"
+                              AriaLabel="Search by name"
+                              Immediate DebounceTime="300"
+                              Placeholder="Search..." />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="OData" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div class="grid">
+                <BitQuickGrid @ref="productsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="@(p => p.Id)" TGridItem="ProductDto" Virtualize ItemSize="32">
+                    <BitQuickGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitQuickGridSortDirection.Ascending" />
+                    <BitQuickGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                    <BitQuickGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
+                </BitQuickGrid>
+            </div>
+            <div class="search-panel">
+                <BitSearchBox @bind-Value="ODataSampleNameFilter"
+                              AriaLabel="Search by name"
+                              Immediate DebounceTime="300"
+                              Placeholder="Search on Name" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="LoadingTemplate" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div class="grid">
+                <BitQuickGrid @ref="loadingProductsDataGrid" ItemsProvider="@productsItemsProvider" ItemKey="@(p => p.Id)" TGridItem="ProductDto" Pagination="pagination3">
+                    <Columns>
+                        <BitQuickGridPropertyColumn Property="@(p => p.Id)" Sortable="true" IsDefaultSort="BitQuickGridSortDirection.Ascending" />
+                        <BitQuickGridPropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                        <BitQuickGridPropertyColumn Property="@(p => p.Price)" Sortable="true" />
+                    </Columns>
+                    <LoadingTemplate>
+                        <BitStack Alignment="BitAlignment.Center" Style="height:185px">
+                            <b>Loading items...</b>
+                            <BitOrbitingDotsLoading Size="BitSize.Large" />
+                        </BitStack>
+                    </LoadingTemplate>
+                </BitQuickGrid>
+            </div>
+            <BitQuickGridPaginator Value="@pagination3" SummaryFormat="@(v => $"Total: {v.TotalItemCount?.ToString("N0")}")">
+                <TextTemplate Context="state">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
+            </BitQuickGridPaginator>
+        </DemoExample>
+
+        <DemoExample Title="Responsive" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                The BitQuickGrid does not have the Responsive feature built-in, 
+                but you can achieve some level of responsiveness like what we did in this sample:
+            </div>
+            
+            <br />
+            
+            <div class="responsive-grid">
+                <BitQuickGrid Items="@allCountries" Pagination="@pagination6">
+                    <BitQuickGridPropertyColumn Property="@(c => c.Name)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.Medals.Gold)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.Medals.Silver)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.Medals.Bronze)" />
+                    <BitQuickGridPropertyColumn Property="@(c => c.Medals.Total)" />
+                </BitQuickGrid>
+                <BitQuickGridPaginator Value="@pagination6" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RowTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>See the RowTemplate parameter in action:</div>
+            
+            <br />
+
+            <div class="row-template-grid">
+                <BitQuickGrid Items="@allCountries" Pagination="@pagination7">
+                    <Columns>
+                        <BitQuickGridTemplateColumn Class="row-template-expand-col">
+                            <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                                       IconName="@(expandedRowTemplateCodes.Contains(context.Code) ? BitIconName.ChevronDown : BitIconName.ChevronRight)"
+                                       AriaLabel="@(expandedRowTemplateCodes.Contains(context.Code) ? "Collapse row details" : "Expand row details")"
+                                       Title="@(expandedRowTemplateCodes.Contains(context.Code) ? "Collapse row details" : "Expand row details")"
+                                       OnClick="@(() => ToggleRowRendererExpand(context.Code))" />
+                        </BitQuickGridTemplateColumn>
+                        <BitQuickGridPropertyColumn Property="@(c => c.Name)" />
+                        <BitQuickGridPropertyColumn Property="@(c => c.Medals.Gold)" />
+                        <BitQuickGridPropertyColumn Property="@(c => c.Medals.Silver)" />
+                        <BitQuickGridPropertyColumn Property="@(c => c.Medals.Bronze)" />
+                        <BitQuickGridPropertyColumn Property="@(c => c.Medals.Total)" />
+                    </Columns>
+                    <RowTemplate Context="args">
+                        @args.OriginalRow
+                        @if (expandedRowTemplateCodes.Contains(args.RowItem.Code))
+                        {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="row-template-detail">
+                                        <strong>Additional data:</strong> 
+                                        Code: [@args.RowItem.Code] - 
+                                        Gold: [@args.RowItem.Medals.Gold], 
+                                        Silver: [@args.RowItem.Medals.Silver], 
+                                        Bronze: [@args.RowItem.Medals.Bronze] 
+                                        (Total: @args.RowItem.Medals.Total)
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </RowTemplate>
+                </BitQuickGrid>
+                <BitQuickGridPaginator Value="@pagination7" />
+            </div>
+        </DemoExample>
+
+    </Examples>
+</DemoPage>

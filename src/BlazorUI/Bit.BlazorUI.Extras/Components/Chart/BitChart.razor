@@ -1,3 +1,351 @@
 @namespace Bit.BlazorUI
 
-<canvas id="@Config?.CanvasId" width="@Width" height="@Height"></canvas>
+<div class="bc-root @Class" style="@RootStyle">
+    @((MarkupString)AnimationStyles)
+    @if (RespectReducedMotion)
+    {
+        @((MarkupString)ReducedMotionStyles)
+    }
+
+    @if (_scene.Title is { Position: not BitChartPosition.Bottom } title)
+    {
+        @RenderTitle(title, "bc-title")
+    }
+    @if (_scene.Subtitle is { Position: not BitChartPosition.Bottom } sub)
+    {
+        @RenderTitle(sub, "bc-subtitle")
+    }
+
+    @if (_scene.Legend is { Position: BitChartPosition.Top })
+    {
+        @RenderLegend(_scene.Legend)
+    }
+
+    <div class="bc-mid">
+        @if (_scene.Legend is { Position: BitChartPosition.Left })
+        {
+            @RenderLegend(_scene.Legend)
+        }
+
+        <div class="bc-plot" @ref="_plotEl">
+            <svg class="bc-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="img" aria-label="@ChartAriaLabel" style="@AnimStyle" tabindex="0" @onkeydown="OnKeyDown">
+                <defs>
+                    @if (_scene.PlotArea is { } pa)
+                    {
+                        <clipPath id="@ClipId">
+                            <rect x="@BitChartSvg.N(pa.Left)" y="@BitChartSvg.N(pa.Top)" width="@BitChartSvg.N(pa.Width)" height="@BitChartSvg.N(pa.Height)" />
+                        </clipPath>
+                    }
+                    @foreach (var def in _scene.Defs)
+                    {
+                        @if (def.Gradient is BitChartRadialGradient rg)
+                        {
+                            <radialGradient id="@def.Id" cx="@BitChartSvg.N(rg.CenterX)" cy="@BitChartSvg.N(rg.CenterY)" r="@BitChartSvg.N(rg.Radius)">
+                                @foreach (var s in rg.Stops)
+                                {
+                                    <stop offset="@(BitChartSvg.N(s.Offset * 100))%" stop-color="@s.Color" />
+                                }
+                            </radialGradient>
+                        }
+                        else if (def.Gradient is BitChartLinearGradient lg)
+                        {
+                            <linearGradient id="@def.Id" x1="0" y1="0"
+                                            x2="@(lg.Vertical ? "0" : "1")"
+                                            y2="@(lg.Vertical ? "1" : "0")">
+                                @foreach (var s in lg.Stops)
+                                {
+                                    <stop offset="@(BitChartSvg.N(s.Offset * 100))%" stop-color="@s.Color" />
+                                }
+                            </linearGradient>
+                        }
+                    }
+                    @foreach (var pat in _scene.Patterns)
+                    {
+                        @RenderPattern(pat)
+                    }
+                </defs>
+                <g class="bc-bg" @key="_animKey">
+                    @foreach (var n in _scene.Background)
+                    {
+                        <BitChartSvgPrimitive Node="n" />
+                    }
+                </g>
+                <g class="@SeriesGroupClass" @key="(_animKey, 2)" clip-path="@ClipRef">
+                    @foreach (var n in _scene.Series)
+                    {
+                        <BitChartSvgPrimitive Node="n" />
+                    }
+                </g>
+                <g class="@DataGroupClass" style="@DataGroupStyle" @key="(_animKey, 1)" clip-path="@ClipRef">
+                    @for (int ei = 0; ei < _scene.Elements.Count; ei++)
+                    {
+                        var el = _scene.Elements[ei];
+                        <g class="@ElementClass(el)"
+                           @onmouseenter="() => OnEnter(el)" @onmouseleave="OnLeave"
+                           @onclick="() => OnClickElement(el)" style="@ElementStyle(ei)">
+                            <BitChartSvgPrimitive Node="el.Shape" />
+                            @if (el.BorderShape is { } bs)
+                            {
+                                <BitChartSvgPrimitive Node="bs" />
+                            }
+                        </g>
+                    }
+                </g>
+                <g class="bc-hover">
+                    @foreach (var n in _hoverNodes)
+                    {
+                        <BitChartSvgPrimitive Node="n" />
+                    }
+                    @if (_dragBox is { } db)
+                    {
+                        <rect x="@BitChartSvg.N(db.X)" y="@BitChartSvg.N(db.Y)" width="@BitChartSvg.N(db.W)" height="@BitChartSvg.N(db.H)"
+                              fill="@_config.Options.Zoom.DragBoxColor" stroke="rgba(54,162,235,0.8)" stroke-width="1" />
+                    }
+                </g>
+                <g class="bc-fg">
+                    @foreach (var n in _scene.Foreground)
+                    {
+                        <BitChartSvgPrimitive Node="n" />
+                    }
+                </g>
+            </svg>
+
+            @if (_activeTooltip is { } tt && _config.Options.Plugins.Tooltip.Enabled)
+            {
+                var t = _config.Options.Plugins.Tooltip;
+                @if (TooltipTemplate is not null && _tooltipContext is { } ctx)
+                {
+                    <div class="bc-tooltip bc-tooltip-custom" style="left:@(BitChartSvg.N(Pct(tt.AnchorX, _vw)))%;top:@(BitChartSvg.N(Pct(tt.AnchorY, _vh)))%">
+                        @TooltipTemplate(ctx)
+                    </div>
+                }
+                else
+                {
+                    <div class="bc-tooltip" style="left:@(BitChartSvg.N(Pct(tt.AnchorX, _vw)))%;top:@(BitChartSvg.N(Pct(tt.AnchorY, _vh)))%;background:@t.BackgroundColor;border-radius:@(BitChartSvg.N(t.CornerRadius))px;padding:@(BitChartSvg.N(t.Padding))px @(BitChartSvg.N(t.Padding * 1.5))px;@(t.BorderWidth > 0 ? $"border:{BitChartSvg.N(t.BorderWidth)}px solid {t.BorderColor};" : "")">
+                        @if (!string.IsNullOrEmpty(tt.Title))
+                        {
+                            <div class="bc-tt-title" style="color:@t.TitleColor;font-weight:@t.TitleFont.Weight;font-size:@(BitChartSvg.N(t.TitleFont.Size))px;text-align:@TextAlign(t.TitleAlign)">@tt.Title</div>
+                        }
+                        @foreach (var line in tt.BeforeBody)
+                        {
+                            <div class="bc-tt-item" style="color:@t.BodyColor;font-size:@(BitChartSvg.N(t.BodyFont.Size))px">@line</div>
+                        }
+                        @foreach (var item in tt.Items)
+                        {
+                            <div class="bc-tt-item" style="color:@t.BodyColor;font-size:@(BitChartSvg.N(t.BodyFont.Size))px;text-align:@TextAlign(t.BodyAlign)">
+                                @if (t.DisplayColors)
+                                {
+                                    @if (t.UsePointStyle && item.PointStyle is { } ps && BitChartPointShapes.Build(ps, 7, 7, 5, item.Color, item.Color, 1) is { } marker)
+                                    {
+                                        <svg class="bc-tt-swatch-svg" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                                            <BitChartSvgPrimitive Node="marker" />
+                                        </svg>
+                                    }
+                                    else
+                                    {
+                                        <span class="bc-tt-swatch" style="background:@item.Color"></span>
+                                    }
+                                }
+                                <span>@item.Text</span>
+                            </div>
+                        }
+                        @foreach (var line in tt.AfterBody)
+                        {
+                            <div class="bc-tt-item" style="color:@t.BodyColor;font-size:@(BitChartSvg.N(t.BodyFont.Size))px">@line</div>
+                        }
+                        @if (tt.Footer.Count > 0)
+                        {
+                            <div class="bc-tt-footer" style="color:@t.FooterColor;font-weight:@t.FooterFont.Weight;font-size:@(BitChartSvg.N(t.FooterFont.Size))px">
+                                @foreach (var line in tt.Footer)
+                                {
+                                    <div>@line</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        @if (_scene.Legend is { Position: BitChartPosition.Right })
+        {
+            @RenderLegend(_scene.Legend)
+        }
+    </div>
+
+    @if (_scene.Legend is { Position: BitChartPosition.Bottom })
+    {
+        @RenderLegend(_scene.Legend)
+    }
+
+    @if (_scene.Subtitle is { Position: BitChartPosition.Bottom } subBottom)
+    {
+        @RenderTitle(subBottom, "bc-subtitle")
+    }
+    @if (_scene.Title is { Position: BitChartPosition.Bottom } titleBottom)
+    {
+        @RenderTitle(titleBottom, "bc-title")
+    }
+
+    @if (GenerateTable)
+    {
+        @RenderDataTable()
+    }
+
+    <div class="bc-sr-only" aria-live="polite" role="status">@_liveMessage</div>
+</div>
+
+@code {
+    private RenderFragment RenderTitle(BitChartTitleModel title, string cls) => __builder =>
+    {
+        var lines = title.Text.Split('\n');
+        <div class="@cls" style="color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight;justify-content:@AlignToFlex(title.Align)">
+            <div style="text-align:@(title.Align == BitChartAlign.Start ? "left" : title.Align == BitChartAlign.End ? "right" : "center")">
+                @for (int i = 0; i < lines.Length; i++)
+                {
+                    @lines[i]
+                    @if (i < lines.Length - 1)
+                    {
+                        <br />
+                    }
+                }
+            </div>
+        </div>
+    };
+
+    private RenderFragment RenderPattern(BitChartPatternDef def) => __builder =>
+    {
+        var p = def.Pattern;
+        double s = p.Size;
+        <pattern id="@def.Id" patternUnits="userSpaceOnUse" width="@BitChartSvg.N(s)" height="@BitChartSvg.N(s)">
+            @if (!string.IsNullOrEmpty(p.Background))
+            {
+                <rect x="0" y="0" width="@BitChartSvg.N(s)" height="@BitChartSvg.N(s)" fill="@p.Background" />
+            }
+            @switch (p.Style)
+            {
+                case BitChartPatternStyle.DiagonalUp:
+                    <path d="M 0 @BitChartSvg.N(s) L @BitChartSvg.N(s) 0" stroke="@p.Color" stroke-width="@BitChartSvg.N(p.LineWidth)" />
+                    break;
+                case BitChartPatternStyle.DiagonalDown:
+                    <path d="M 0 0 L @BitChartSvg.N(s) @BitChartSvg.N(s)" stroke="@p.Color" stroke-width="@BitChartSvg.N(p.LineWidth)" />
+                    break;
+                case BitChartPatternStyle.Horizontal:
+                    <line x1="0" y1="@BitChartSvg.N(s / 2)" x2="@BitChartSvg.N(s)" y2="@BitChartSvg.N(s / 2)" stroke="@p.Color" stroke-width="@BitChartSvg.N(p.LineWidth)" />
+                    break;
+                case BitChartPatternStyle.Vertical:
+                    <line x1="@BitChartSvg.N(s / 2)" y1="0" x2="@BitChartSvg.N(s / 2)" y2="@BitChartSvg.N(s)" stroke="@p.Color" stroke-width="@BitChartSvg.N(p.LineWidth)" />
+                    break;
+                case BitChartPatternStyle.Grid:
+                    <path d="M 0 @BitChartSvg.N(s / 2) L @BitChartSvg.N(s) @BitChartSvg.N(s / 2) M @BitChartSvg.N(s / 2) 0 L @BitChartSvg.N(s / 2) @BitChartSvg.N(s)" stroke="@p.Color" stroke-width="@BitChartSvg.N(p.LineWidth)" />
+                    break;
+                case BitChartPatternStyle.Cross:
+                    <path d="M 0 0 L @BitChartSvg.N(s) @BitChartSvg.N(s) M 0 @BitChartSvg.N(s) L @BitChartSvg.N(s) 0" stroke="@p.Color" stroke-width="@BitChartSvg.N(p.LineWidth)" />
+                    break;
+                case BitChartPatternStyle.Dots:
+                    <circle cx="@BitChartSvg.N(s / 2)" cy="@BitChartSvg.N(s / 2)" r="@BitChartSvg.N(p.LineWidth)" fill="@p.Color" />
+                    break;
+            }
+        </pattern>
+    };
+
+    private RenderFragment RenderLegend(BitChartLegendModel legend) => __builder =>
+    {
+        bool vertical = legend.Position is BitChartPosition.Left or BitChartPosition.Right;
+        <div class="bc-legend @(vertical ? "bc-legend-v" : "bc-legend-h")"
+             style="justify-content:@AlignToFlex(legend.Align)">
+            @if (!string.IsNullOrEmpty(legend.Title))
+            {
+                <div class="bc-legend-title">@legend.Title</div>
+            }
+            @foreach (var item in legend.Items)
+            {
+                <div class="bc-legend-item @(item.Hidden ? "bc-hidden" : "")"
+                     style="cursor:@(legend.OnClickToggle ? "pointer" : "default");color:@legend.Labels.Color;font-size:@(BitChartSvg.N(legend.Labels.Font.Size))px;font-family:@legend.Labels.Font.Family"
+                     @onclick="() => ToggleLegend(item)">
+                    @if (item.UsePointStyle)
+                    {
+                        var marker = BitChartPointShapes.Build(item.PointStyle, 8, 8, 6, item.Color, item.StrokeColor ?? item.Color, 1);
+                        <svg class="bc-legend-marker" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                            @if (marker is not null)
+                            {
+                                <BitChartSvgPrimitive Node="marker" />
+                            }
+                        </svg>
+                    }
+                    else
+                    {
+                        <span class="bc-legend-box" style="background:@item.Color;border-color:@(item.StrokeColor ?? item.Color);width:@(BitChartSvg.N(legend.Labels.BoxWidth))px;height:@(BitChartSvg.N(legend.Labels.BoxHeight))px"></span>
+                    }
+                    <span class="bc-legend-text">@item.Text</span>
+                </div>
+            }
+        </div>
+    };
+
+    private RenderFragment RenderDataTable() => __builder =>
+    {
+        var data = _config.Data;
+        <div class="bc-sr-only">
+        <table>
+            <caption>@ChartAriaLabel</caption>
+            @if (HasPointData)
+            {
+                <thead>
+                    <tr><th scope="col">Series</th><th scope="col">X</th><th scope="col">Y</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var ds in data.Datasets)
+                    {
+                        @if (ds.Points is { } pts)
+                        {
+                            @foreach (var p in pts)
+                            {
+                                <tr>
+                                    <th scope="row">@(ds.Label ?? "Series")</th>
+                                    <td>@p.X.ToString(System.Globalization.CultureInfo.InvariantCulture)</td>
+                                    <td>@p.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            }
+            else
+            {
+                <thead>
+                    <tr>
+                        <th scope="col">Series</th>
+                        @foreach (var label in data.Labels)
+                        {
+                            <th scope="col">@label</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ds in data.Datasets)
+                    {
+                        <tr>
+                            <th scope="row">@(ds.Label ?? "Series")</th>
+                            @if (ds.RangeData is { } ranges)
+                            {
+                                @foreach (var r in ranges)
+                                {
+                                    <td>@(r is { } rr ? $"{rr.Low}–{rr.High}" : "")</td>
+                                }
+                            }
+                            else
+                            {
+                                @foreach (var v in ds.Data)
+                                {
+                                    <td>@(v?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")</td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+        </div>
+    };
+}

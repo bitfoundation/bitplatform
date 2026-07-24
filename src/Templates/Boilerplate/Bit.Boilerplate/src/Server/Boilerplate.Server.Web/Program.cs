@@ -1,9 +1,9 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (api == "Integrated")
 using Boilerplate.Server.Api.Infrastructure.Data;
 //#endif
 using Boilerplate.Server.Web.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
+using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Server.Web;
 
@@ -24,7 +24,7 @@ public static partial class Program
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
         //#if (sentry == true)
-        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.GetRequiredSection("Logging:Sentry").Bind(options));
+        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.DynamicBind("Logging:Sentry", options));
         //#endif
 
         builder.AddServerWebProjectServices();
@@ -59,7 +59,7 @@ public static partial class Program
         if (error is Exception exp)
         {
             using var scope = app.Services.CreateScope();
-            scope.ServiceProvider.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            scope.ServiceProvider.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
             }, displayKind: AppEnvironment.IsDevelopment() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);

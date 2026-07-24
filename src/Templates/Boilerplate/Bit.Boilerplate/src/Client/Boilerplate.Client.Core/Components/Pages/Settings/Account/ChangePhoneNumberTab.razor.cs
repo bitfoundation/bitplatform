@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings.Account;
@@ -12,6 +12,8 @@ public partial class ChangePhoneNumberTab
 
     [Parameter, SupplyParameterFromQuery(Name = "phoneToken")]
     public string? PhoneNumberTokenQueryString { get; set; }
+
+    [CascadingParameter] public UserDto? CurrentUser { get; set; }
 
 
     [AutoInject] private IUserController userController = default!;
@@ -83,7 +85,18 @@ public partial class ChangePhoneNumberTab
         {
             await userController.ChangePhoneNumber(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}", forceLoad: true);
+            // Changing the phone number regenerates the security stamp on the server, which signs the user out of every
+            // device (including this one) on the next token refresh. Refresh the cached user so the UI reflects the new
+            // number, then warn about the imminent sign-out. A soft navigation (instead of a forced reload) is used here
+            // so the warning snackbar survives to be seen by the user.
+            SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
+
+            CurrentUser!.PhoneNumber = changeModel.PhoneNumber;
+            PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
+
+            showConfirmation = false;
+            isPhoneNumberUnavailable = true;
+            sendModel.PhoneNumber = changeModel.PhoneNumber = changeModel.Token = null;
         }
         catch (KnownException e)
         {

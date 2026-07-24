@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components;
+namespace Boilerplate.Client.Core.Components;
 
 public partial class AppErrorBoundary
 {
@@ -9,7 +9,7 @@ public partial class AppErrorBoundary
 
 
     [AutoInject] private PubSubService pubSubService = default!;
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 

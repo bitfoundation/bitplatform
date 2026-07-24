@@ -17,10 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Watch Remove="*.scss" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 

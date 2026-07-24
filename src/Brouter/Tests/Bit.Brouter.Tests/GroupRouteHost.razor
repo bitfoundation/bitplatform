@@ -1,0 +1,64 @@
+﻿@* Host for GroupRouteTests: two sibling pathless groups (would be an ambiguity error if groups
+   registered as matchable), one carrying a guard + loader + layout for its children. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Group Path="" Guard="AdminGuard" Loader="GroupLoader">
+        <Content>
+            <div data-testid="admin-shell"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/admin-a">
+                <Content><div data-testid="admin-a">admin a</div></Content>
+            </Broute>
+            <Broute Path="/admin-b">
+                <Content><div data-testid="admin-b">admin b</div></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    <Broute Group Path="">
+        <ChildContent>
+            <Broute Path="/public">
+                <Content><div data-testid="public">public</div></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    @* A group WITHOUT its own outlets under an outlet-hosting parent: the group must be invisible
+       to layout resolution too, so /shell/inside renders inside the parent's outlet. *@
+    <Broute Path="/shell">
+        <Content>
+            <div data-testid="shell-outlet"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Group Path="">
+                <ChildContent>
+                    <Broute Path="/inside">
+                        <Content><div data-testid="inside-shell">inside</div></Content>
+                    </Broute>
+                </ChildContent>
+            </Broute>
+        </ChildContent>
+    </Broute>
+</Brouter>
+
+@code {
+    public bool BlockAdmin { get; set; }
+    public int GuardRuns { get; private set; }
+    public int LoaderRuns { get; private set; }
+
+    private ValueTask AdminGuard(BrouterNavigationContext ctx)
+    {
+        GuardRuns++;
+        if (BlockAdmin) ctx.Redirect("/public");
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask<object?> GroupLoader(BrouterNavigationContext ctx)
+    {
+        LoaderRuns++;
+        return ValueTask.FromResult<object?>("group data");
+    }
+}

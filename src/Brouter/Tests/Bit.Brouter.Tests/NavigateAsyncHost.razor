@@ -1,0 +1,53 @@
+﻿@* Host for NavigateAsyncTests: one route per BrouterNavigationOutcome shape - plain success,
+   guard-cancelled, guard-redirected, RedirectTo route, failing loader, and (implicitly) any
+   unmatched URL for NotFound. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/a">
+        <Content><div data-testid="a">a</div></Content>
+    </Broute>
+    <Broute Path="/b">
+        <Content><div data-testid="b">b</div></Content>
+    </Broute>
+    <Broute Path="/blocked" Guard="BlockGuard">
+        <Content><div data-testid="blocked">blocked</div></Content>
+    </Broute>
+    <Broute Path="/redirect" Guard="RedirectGuard">
+        <Content><div data-testid="redirect">redirect</div></Content>
+    </Broute>
+    <Broute Path="/route-redirect" RedirectTo="/b" />
+    <Broute Path="/fail" Loader="FailLoader">
+        <Content><div data-testid="fail">fail</div></Content>
+    </Broute>
+    <Broute Path="/slow" Loader="SlowLoader">
+        <Content><div data-testid="slow">slow</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    // Held by SlowLoader until a test releases it, so a navigation can be kept in-flight.
+    public TaskCompletionSource SlowGate { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private async ValueTask<object?> SlowLoader(BrouterNavigationContext ctx)
+    {
+        await SlowGate.Task;
+        return "slow data";
+    }
+
+    private ValueTask BlockGuard(BrouterNavigationContext ctx)
+    {
+        ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask RedirectGuard(BrouterNavigationContext ctx)
+    {
+        ctx.Redirect("/b");
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask<object?> FailLoader(BrouterNavigationContext ctx)
+        => throw new InvalidOperationException("loader exploded");
+}

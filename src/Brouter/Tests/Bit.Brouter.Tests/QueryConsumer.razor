@@ -1,4 +1,5 @@
-@* Renders each bound query parameter so tests can inspect the result of [BrouterQuery]. *@
+﻿@* Renders each bound query parameter so tests can inspect Brouter's query binding through both
+   attributes: the default [SupplyParameterFromQuery] and the opt-in [BrouterQuery]. *@
 
 <div>
     <div data-testid="name">@(Name ?? "(null)")</div>
@@ -11,11 +12,19 @@
 </div>
 
 @code {
-    [Parameter, BrouterQuery] public string? Name { get; set; }
-    [Parameter, BrouterQuery] public int Count { get; set; }
-    [Parameter, BrouterQuery] public int? NullableCount { get; set; }
-    [Parameter, BrouterQuery] public Guid? Id { get; set; }
+    // [SupplyParameterFromQuery] property types must stay within the set the framework's own query
+    // supplier can parse (string, numerics, bool, Guid, DateTime + nullables and arrays): the
+    // supplier evaluates every such property when it's registered (real hosts and bUnit alike)
+    // and throws for anything else before Brouter's directly-supplied value wins.
+    [Parameter, SupplyParameterFromQuery] public string? Name { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int Count { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int? NullableCount { get; set; }
+    [Parameter, SupplyParameterFromQuery] public Guid? Id { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "q")] public string? Aliased { get; set; }
+    [Parameter, SupplyParameterFromQuery] public string[]? Tags { get; set; }
+
+    // [BrouterQuery] escapes those restrictions: the framework supplier only reacts to its own
+    // attribute, so this enum property is invisible to it and Brouter converts the value itself.
+    // Rendering this component with the framework supplier registered IS the regression test.
     [Parameter, BrouterQuery] public DayOfWeek? Day { get; set; }
-    [Parameter, BrouterQuery(Name = "q")] public string? Aliased { get; set; }
-    [Parameter, BrouterQuery] public string[]? Tags { get; set; }
 }

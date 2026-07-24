@@ -1,0 +1,65 @@
+@namespace Bit.BlazorUI
+
+@{
+    var positionClass = Position switch
+    {
+        "first" => "position-first",
+        "middle" => "position-middle",
+        "last" => "position-last",
+        _ => ""
+    };
+
+    var isDotVariant = State.BadgeVariant == BitFullCalendarBadgeVariant.Dot;
+    var colorClass = isDotVariant ? "dot-variant" : "bit-bfc-color";
+    var colorStyleVar = ColorScheme.GetColorStyle(Event.Color);
+    var showTitle = Position is "first" or "none";
+    var showTime = Position is "last" or "none";
+    // Include both the start and end dates (not just the times) so multi-day and overnight events
+    // are announced unambiguously to assistive technology. BitFcDayCell.GetBadgePosition() treats a
+    // 00:00 end as ending the previous day (exclusive midnight) via GetInclusiveEndDate, so the
+    // "last" badge for such events renders on that previous day. Mirror the same inclusive-end
+    // adjustment here so the announced/rendered end day and time match where the badge actually
+    // appears instead of pointing at the next day's midnight.
+    var endIsExclusiveMidnight = Event.EndDate > Event.StartDate && Event.EndDate.TimeOfDay == TimeSpan.Zero;
+    var displayEnd = endIsExclusiveMidnight ? Event.EndDate.AddTicks(-1) : Event.EndDate;
+    var startLabel = $"{Event.StartDate.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)}";
+    var endLabel = $"{displayEnd.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)}";
+    var badgeAriaLabel = $"{Event.Title}, {startLabel} - {endLabel}";
+}
+
+<div class="bit-bfc-event-badge @colorClass @positionClass"
+     style="@($"{colorStyleVar}{MarginStyle}")"
+     role="button"
+     tabindex="0"
+     aria-label="@badgeAriaLabel"
+     draggable="true"
+     @ondragstart="OnDragStart"
+     @ondragend="OnDragEnd"
+     @onclick="() => OnSelected.InvokeAsync(Event)"
+     @onkeydown="OnKeyDown"
+     @onclick:stopPropagation="true"
+     @onkeydown:stopPropagation="true">
+
+    @if (EventTemplate != null)
+    {
+        @EventTemplate(Event)
+    }
+    else
+    {
+        <div class="bit-bfc-event-badge-content">
+            @if (isDotVariant && Position is not "middle" and not "last")
+            {
+                <BitFcEventBullet Color="Event.Color" />
+            }
+            @if (showTitle)
+            {
+                <span class="bit-bfc-event-badge-title">@Event.Title</span>
+            }
+        </div>
+
+        @if (showTime)
+        {
+            <span class="bit-bfc-event-badge-time">@BitFullCalendarHelpers.FormatTime(Position == "last" ? displayEnd : Event.StartDate, State.Use24HourFormat, State.Culture)</span>
+        }
+    }
+</div>

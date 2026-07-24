@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Boilerplate.Server.Api.Infrastructure.RequestPipeline;

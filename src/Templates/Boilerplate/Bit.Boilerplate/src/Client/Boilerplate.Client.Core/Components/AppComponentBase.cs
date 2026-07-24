@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -16,8 +16,10 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 
     [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
+    [AutoInject] protected TimeProvider TimeProvider = default!;
+
     /// <summary>
-    /// <inheritdoc cref="Services.PubSubService"/>
+    /// <inheritdoc cref="Infrastructure.Services.PubSubService"/>
     /// </summary>
     [AutoInject] protected PubSubService PubSubService = default!;
 
@@ -29,7 +31,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
 
-    [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
+    [AutoInject] protected ClientExceptionHandlerBase ExceptionHandler = default!;
 
     [AutoInject] protected AuthManager AuthManager = default!;
 
@@ -54,7 +56,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         get
         {
             if (cts == null)
-                throw new OperationCanceledException(); // Component already disposed.
+                throw new OperationCanceledException("Component already disposed.");
             cts.Token.ThrowIfCancellationRequested();
             return cts.Token;
         }

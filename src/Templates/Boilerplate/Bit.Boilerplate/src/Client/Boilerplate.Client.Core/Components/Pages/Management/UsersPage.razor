@@ -3,7 +3,10 @@
 @attribute [Route(PageUrls.Users)]
 @attribute [Route("{culture?}" + PageUrls.Users)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppFeatures.Management.ManageUsers)]
+@*#if (multitenant == true)*@
+@attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+@*#endif*@
+@attribute [Authorize(Policy = AppFeatures.Management.Users_Manage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Users)]"
@@ -175,7 +178,7 @@
                                                     @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
                                                     {
                                                         <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
-                                                        <AuthorizeView Policy="@AppFeatures.System.ManageLogs">
+                                                        <AuthorizeView Policy="@AppFeatures.System.Logs_View">
                                                             <BitButton IconOnly AutoLoading
                                                                        OnClick="WrapHandled(() => ReadUserSessionLogs(session.Id))"
                                                                        Title="Read user session logs"

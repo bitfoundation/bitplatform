@@ -14,12 +14,12 @@
             <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:@(_justifyContent);">
                 @foreach (var item in _items)
                 {
-                    <Bmotion Tag="div"
-                            @key="@item.Label"
-                            Style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")"
+                    <Bmotion @key="@item.Label"
                             Layout="true"
-                            Transition="@BmotionTransitionConfig.Spring(stiffness:500, damping:35)">
-                        @item.Label
+                            Transition="Bm.Spring(stiffness: 500, damping: 35)">
+                        <div style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")">
+                            @item.Label
+                        </div>
                     </Bmotion>
                 }
             </div>
@@ -33,6 +33,122 @@
 
     <CodeSnippet Code="@_layoutCode" />
 </div>
+
+<div class="demo-section">
+    <h2>Shared-Element Transitions (LayoutId)</h2>
+    <p>
+        Give elements the same <strong>LayoutId</strong> and when one unmounts and another mounts,
+        the new one animates (FLIP) from where the old one was - the classic tab-underline idiom.
+        Set <c>Layout="BmLayout.Position"</c> to animate position only and avoid scale distortion.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="align-items:flex-start;">
+            <div style="display:flex;gap:1.5rem;">
+                @foreach (var tab in _tabs)
+                {
+                    var t = tab;
+                    <div style="position:relative;padding-bottom:6px;cursor:pointer;font-weight:600;color:@(t == _activeTab ? "#fff" : "#888")"
+                         role="tab" tabindex="0" aria-selected="@(t == _activeTab)"
+                         @onclick="@(() => _activeTab = t)"
+                         @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeTab = t; })">
+                        @t
+                        @if (t == _activeTab)
+                        {
+                            <Bmotion LayoutId="tab-underline"
+                                    Layout="BmLayout.Position"
+                                    Transition="Bm.Tween(0.3, BmEase.InOut)">
+                                <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:2px;background:linear-gradient(90deg,#6c47ff,#ff4785);" />
+                            </Bmotion>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_layoutIdCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Size correction - no distortion</h2>
+    <p>
+        With <strong>Layout="true"</strong>, a resizing box scales for a smooth 60fps FLIP, but its
+        text and child elements are <strong>counter-scaled</strong> and the <strong>border-radius is
+        corrected</strong> each frame - so nothing stretches and the corners stay round (Motion's
+        headline layout feature). Toggle the size and watch the label and inner dot stay crisp.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="min-height:220px;">
+            <Bmotion Layout="true" Transition="Bm.Spring(stiffness: 350, damping: 30)">
+                <div class="@(_big ? "resize-card big" : "resize-card")">
+                    <span class="resize-label">Layout</span>
+                    <div class="resize-dot" />
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _big = !_big)">
+        @(_big ? "Shrink" : "Grow")
+    </button>
+
+    <CodeSnippet Code="@_sizeCode" />
+</div>
+
+<style>
+    .resize-card {
+        width: 120px; height: 120px; border-radius: 20px;
+        background: linear-gradient(135deg, #6c47ff, #ff4785);
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem;
+    }
+    .resize-card.big { width: 260px; height: 180px; }
+    .resize-label { font-weight: 800; font-size: 1.3rem; color: #fff; }
+    .resize-dot { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.85); }
+</style>
+
+@code {
+    private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
+    private string _activeTab = "Home";
+    private bool _big;
+
+    private const string _sizeCode = """
+        @* Layout="true" scales for a smooth FLIP; children counter-scale + border-radius is
+           corrected automatically so text/corners don't distort. *@
+        <Bmotion Layout="true" Transition="Bm.Spring(stiffness: 350, damping: 30)">
+            <div class="@(_big ? "resize-card big" : "resize-card")">
+                <span class="resize-label">Layout</span>
+                <div class="resize-dot" />
+            </div>
+        </Bmotion>
+        """;
+
+    private const string _layoutIdCode = """
+        @foreach (var tab in _tabs)
+        {
+            var t = tab;
+            <div style="position:relative;cursor:pointer" @onclick="@(() => _activeTab = t)">
+                @t
+                @if (t == _activeTab)
+                {
+                    @* Mounts under the newly selected tab and FLIPs from the old tab's position;
+                       Layout="BmLayout.Position" animates position only (no scale distortion) *@
+                    <Bmotion LayoutId="tab-underline"
+                             Layout="BmLayout.Position"
+                             Transition="Bm.Tween(0.3, BmEase.InOut)">
+                        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#6c47ff;" />
+                    </Bmotion>
+                }
+            </div>
+        }
+
+        @* Reuse the same id in independent groups by namespacing it: *@
+        <BmotionLayoutGroup Name="sidebar">
+            ... <Bmotion LayoutId="tab-underline"><div /></Bmotion> ...
+        </BmotionLayoutGroup>
+        """;
+}
 
 @code {
     private string _justifyContent = "flex-start";
@@ -82,12 +198,12 @@
                     <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:@(_justifyContent);">
                         @foreach (var item in _items)
                         {
-                            <Bmotion Tag="div"
-                                    @key="@item.Label"
-                                    Style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")"
+                            <Bmotion @key="@item.Label"
                                     Layout="true"
-                                    Transition="@BmotionTransitionConfig.Spring(stiffness:500, damping:35)">
-                                @item.Label
+                                    Transition="Bm.Spring(stiffness: 500, damping: 35)">
+                                <div style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")">
+                                    @item.Label
+                                </div>
                             </Bmotion>
                         }
                     </div>

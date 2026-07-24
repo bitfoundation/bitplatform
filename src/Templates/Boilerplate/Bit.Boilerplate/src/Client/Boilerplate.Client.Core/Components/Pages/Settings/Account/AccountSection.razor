@@ -1,19 +1,10 @@
 @inherits AppComponentBase
 
 <section>
-    <BitPivot Alignment="BitAlignment.Center">
-        <BitPivotItem Key="@nameof(AppStrings.Email)" HeaderText="@Localizer[nameof(AppStrings.Email)]">
-            <ChangeEmailTab Email="@CurrentUser?.Email" />
+    <BitPivot Alignment="BitAlignment.Center" OverflowBehavior="BitPivotOverflowBehavior.Menu">
+        <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
+            <PasswordlessTab User="CurrentUser" />
         </BitPivotItem>
-        <BitPivotItem Key="@nameof(AppStrings.Phone)" HeaderText="@Localizer[nameof(AppStrings.Phone)]">
-            <ChangePhoneNumberTab PhoneNumber="@CurrentUser?.PhoneNumber" />
-        </BitPivotItem>
-        @if (showPasswordless)
-        {
-            <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@Localizer[nameof(AppStrings.Passwordless)]">
-                <PasswordlessTab User="CurrentUser" />
-            </BitPivotItem>
-        }
         <BitPivotItem Key="@nameof(AppStrings.Delete)">
             <Header>
                 <BitText Color="BitColor.Error">@Localizer[nameof(AppStrings.Delete)]</BitText>
@@ -21,6 +12,15 @@
             <Body>
                 <DeleteAccountTab />
             </Body>
+        </BitPivotItem>
+        <BitPivotItem Key="@nameof(AppStrings.Email)" HeaderText="@Localizer[nameof(AppStrings.Email)]">
+            <ChangeEmailTab Email="@CurrentUser?.Email" />
+        </BitPivotItem>
+        <BitPivotItem Key="@nameof(AppStrings.Phone)" HeaderText="@Localizer[nameof(AppStrings.Phone)]">
+            <ChangePhoneNumberTab PhoneNumber="@CurrentUser?.PhoneNumber" />
+        </BitPivotItem>
+        <BitPivotItem Key="@nameof(AppStrings.Password)" HeaderText="@Localizer[nameof(AppStrings.Password)]">
+            <ChangePasswordTab />
         </BitPivotItem>
     </BitPivot>
 </section>

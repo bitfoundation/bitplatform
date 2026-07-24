@@ -1,0 +1,80 @@
+@using System.Globalization
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-dtp" tabindex="-1" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
+    <button type="button" class="bit-bfc-dtp-trigger" @onclick="ToggleOpen" aria-expanded="@(_isOpen ? "true" : "false")" aria-label="@GetTriggerAriaLabel()">
+        <span>@GetDisplayText()</span>
+        <span class="bit-bfc-dtp-trigger-icon">&#9662;</span>
+    </button>
+
+    @if (_isOpen)
+    {
+        <div class="bit-bfc-dtp-panel">
+            <div class="bit-bfc-dtp-header">
+                <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowPreviousMonth" aria-label="@PreviousMonthAriaLabel">
+                    &#8249;
+                </button>
+                <div class="bit-bfc-dtp-month-label">@GetMonthYearLabel(_visibleMonthAnchor)</div>
+                <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowNextMonth" aria-label="@NextMonthAriaLabel">
+                    &#8250;
+                </button>
+            </div>
+
+            <div class="bit-bfc-dtp-weekdays">
+                @foreach (var weekday in _weekdayHeaders)
+                {
+                    <span>@weekday</span>
+                }
+            </div>
+
+            <div class="bit-bfc-dtp-days">
+                @foreach (var day in BuildCalendarDays())
+                {
+                    var dayClass = GetDayCellClass(day);
+                    <button type="button" class="@dayClass" aria-label="@GetDayAriaLabel(day)" @onclick="() => SelectDate(day.Date)">
+                        @day.Label
+                    </button>
+                }
+            </div>
+
+            <div class="bit-bfc-dtp-time">
+                @if (Use24HourFormat)
+                {
+                    <select @bind="_hour" @bind:after="OnTimeChanged" aria-label="@HourAriaLabel">
+                        @for (var i = 0; i < 24; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                    <span>:</span>
+                    <select @bind="_minute" @bind:after="OnTimeChanged" aria-label="@MinuteAriaLabel">
+                        @for (var i = 0; i < 60; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <select value="@Hour12" @onchange="OnHour12Changed" aria-label="@HourAriaLabel">
+                        @for (var i = 1; i <= 12; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                    <span>:</span>
+                    <select @bind="_minute" @bind:after="OnTimeChanged" aria-label="@MinuteAriaLabel">
+                        @for (var i = 0; i < 60; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                    <select value="@(IsPm ? "PM" : "AM")" @onchange="OnMeridiemChanged" aria-label="@MeridiemAriaLabel">
+                        <option value="AM">@Culture.DateTimeFormat.AMDesignator</option>
+                        <option value="PM">@Culture.DateTimeFormat.PMDesignator</option>
+                    </select>
+                }
+            </div>
+        </div>
+    }
+</div>

@@ -1,4 +1,4 @@
-﻿using PhoneNumbers;
+using PhoneNumbers;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 

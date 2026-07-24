@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- Holds the web-only (browser) bits shared by the two web hosts: the Blazor WebAssembly client
+         (Bit.BlazorUI.Demo.Client.Web) and the server (Blazor Server circuits and the Bswup boot UI in
+         App.razor). Keeping these out of Bit.BlazorUI.Demo.Client.Core keeps Core host-neutral, so the
+         MAUI and Windows clients don't pick up Bswup or other web-specific assets. -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bit.Bswup" Version="10.5.0-pre-08" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0-pre-08">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0-pre-08">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
+    </ItemGroup>
+
+</Project>

@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+//+:cnd:noEmit
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Boilerplate.Server.Api.Infrastructure.Services;
@@ -13,6 +14,7 @@ public partial class AppJwtSecureDataFormat
 {
     private readonly string tokenType;
     private readonly RsaSecurityKey privateKey;
+    private readonly TimeProvider timeProvider;
     private readonly ServerApiSettings appSettings;
     private readonly ILogger<AppJwtSecureDataFormat> logger;
     private readonly TokenValidationParameters validationParameters;
@@ -21,11 +23,13 @@ public partial class AppJwtSecureDataFormat
         IHostEnvironment env,
         IConfiguration configuration,
         ILogger<AppJwtSecureDataFormat> logger,
+        TimeProvider timeProvider,
         string tokenType)
     {
         this.logger = logger;
         this.tokenType = tokenType;
         this.appSettings = appSettings;
+        this.timeProvider = timeProvider;
 
         privateKey = AppCertificateService.GetPrivateSecurityKey(configuration);
 
@@ -70,13 +74,22 @@ public partial class AppJwtSecureDataFormat
 
             var identity = new ClaimsIdentity(principal.Identity, principal.Claims, IdentityConstants.BearerScheme, ClaimTypes.NameIdentifier, ClaimTypes.Role);
 
-            if (principal.IsInRole(AppRoles.SuperAdmin))
+            if (principal.IsInRole(AppRoles.GlobalAdmin))
             {
-                foreach (var feat in AppFeatures.GetSuperAdminFeatures())
+                foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
                 {
                     identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
                 }
             }
+            //#if (multitenant == true)
+            else if (principal.IsInRole(AppRoles.TenantAdmin))
+            {
+                foreach (var feat in AppFeatures.GetTenantAdminFeatures())
+                {
+                    identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
+                }
+            }
+            //#endif
 
             var result = new ClaimsPrincipal(identity);
 
@@ -108,7 +121,7 @@ public partial class AppJwtSecureDataFormat
             {
                 Issuer = appSettings.Identity.Issuer,
                 Audience = appSettings.Identity.Audience,
-                IssuedAt = DateTime.UtcNow,
+                IssuedAt = timeProvider.GetUtcNow().UtcDateTime,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256Signature),
                 Subject = new ClaimsIdentity(data.Principal.Claims),

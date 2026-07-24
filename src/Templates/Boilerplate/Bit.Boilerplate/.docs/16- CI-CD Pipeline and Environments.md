@@ -417,7 +417,7 @@ dotnet publish -c Release \
 1. **Setup Apple Development Environment**
    ```yaml
    - Setup .NET SDK
-   - Setup Xcode 26.0 (latest)
+   - Setup Xcode 26.6 (latest)
    - Setup Node.js 24
    - Translate resources (bit-resx-translate)
    - Update appsettings.json with ServerAddress

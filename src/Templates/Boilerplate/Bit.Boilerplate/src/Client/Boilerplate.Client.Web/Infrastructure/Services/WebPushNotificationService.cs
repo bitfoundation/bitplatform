@@ -1,4 +1,4 @@
-﻿using Bit.Butil;
+using Bit.Butil;
 
 namespace Boilerplate.Client.Web.Infrastructure.Services;
 

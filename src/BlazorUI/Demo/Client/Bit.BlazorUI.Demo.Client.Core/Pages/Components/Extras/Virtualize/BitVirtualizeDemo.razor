@@ -1,0 +1,152 @@
+@page "/components/virtualize"
+
+<PageOutlet Url="components/virtualize"
+            Title="Virtualize"
+            Description="BitVirtualize is a high-performance virtualization (windowing) component that renders only the items currently visible in its scroll viewport." />
+
+<div>
+    <DemoPage Name="Virtualize"
+              SecondaryNames="@(["VirtualScroll, Windowing"])"
+              Description="BitVirtualize is a high-performance virtualization (windowing) component that renders only the items currently visible in its scroll viewport (plus a configurable overscan buffer). It supports fixed and dynamically measured item sizes, vertical and horizontal orientation, in-memory or lazy-loaded data, placeholders, sticky group headers, and a bottom-anchored (chat) mode."
+              Parameters="componentParameters"
+              PublicMembers="componentPublicMembers"
+              SubClasses="componentSubClasses"
+              SubEnums="componentSubEnums"
+              GitHubExtrasUrl="Virtualize/BitVirtualize.razor"
+              GitHubDemoUrl="Extras/Virtualize/BitVirtualizeDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                To use this component, you need to install the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                    <BitTag Reversed
+                            Text="Bit.BlazorUI.Extras"
+                            Color="BitColor.SecondaryBackground"
+                            IconName="@BitIconName.NavigateExternalInline" />
+                </BitLink>
+                nuget package, as described in the Optional steps of the
+                <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+        </NotesTemplate>
+        <Examples>
+            <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+                <div>One million fixed-size rows. Only the rows in view exist in the DOM, so you can scroll anywhere instantly.</div>
+                <br />
+                <div class="toolbar">
+                    <BitNumberField @bind-Value="basicTargetIndex" Min="0" Max="999999" Style="max-width:9rem" />
+                    <BitButton OnClick="ScrollToBasicIndex">Scroll to index</BitButton>
+                    <BitTag Text="@($"{basicVisibleStart:N0} - {basicVisibleEnd:N0} visible")" Color="BitColor.SecondaryBackground" />
+                </div>
+                <br />
+                <BitVirtualize @ref="basicRef" Items="basicItems" ItemSize="56"
+                               TItem="int" Context="item"
+                               OnVisibleRangeChanged="OnBasicRangeChanged"
+                               Class="list">
+                    <div class="basic-item">
+                        <b>#@item.ToString("N0")</b>
+                        <span>Item number @item of one million</span>
+                    </div>
+                </BitVirtualize>
+            </DemoExample>
+
+            <DemoExample Title="ItemsProvider" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+                <div>Rows are fetched on demand in windows through the <b>ItemsProvider</b> function. A simulated latency shows the <b>PlaceholderTemplate</b> while each window loads.</div>
+                <br />
+                <BitVirtualize TItem="Product" ItemsProvider="LoadProducts" ItemSize="60" Class="list">
+                    <ItemTemplate Context="product">
+                        <div class="provider-item">
+                            <b>@product.Name</b>
+                            <span>record #@product.Id.ToString("N0") · loaded at @product.LoadedAt</span>
+                        </div>
+                    </ItemTemplate>
+                    <PlaceholderTemplate Context="context">
+                        <div class="provider-item">
+                            <BitShimmer Height="@($"{context.Size / 2}px")" Width="@($"{100 - (context.Index % 3) * 15}%")" />
+                        </div>
+                    </PlaceholderTemplate>
+                </BitVirtualize>
+            </DemoExample>
+
+            <DemoExample Title="Dynamic size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+                <div>Each post wraps to a different height. In <b>Dynamic</b> mode the component measures every rendered item and anchors the scroll position so content never jumps as sizes settle.</div>
+                <br />
+                <BitVirtualize Items="posts" Dynamic EstimatedItemSize="96"
+                               TItem="Post" Context="post"
+                               Class="list">
+                    <div class="post">
+                        <div class="post-header">@post.Author · @post.Time</div>
+                        <div>@post.Body</div>
+                    </div>
+                </BitVirtualize>
+            </DemoExample>
+
+            <DemoExample Title="Horizontal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+                <div>The same engine oriented along the x-axis, rendering a hundred thousand fixed-width tiles.</div>
+                <br />
+                <BitVirtualize Items="horizontalItems" ItemSize="120" Horizontal
+                               TItem="int" Context="item"
+                               Class="horizontal-list">
+                    <div class="tile">
+                        <b>@item.ToString("N0")</b>
+                    </div>
+                </BitVirtualize>
+            </DemoExample>
+
+            <DemoExample Title="Infinite scrolling" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+                <div>This feed has no known total. The <b>OnEndReached</b> callback fires when the last rows come within <b>ReachedThreshold</b> items of the viewport, appending the next batch.</div>
+                <br />
+                <BitVirtualize @ref="feedRef" Items="feedItems" ItemSize="56"
+                               TItem="string" Context="item"
+                               OnEndReached="LoadMoreFeedItems" ReachedThreshold="6"
+                               Class="list">
+                    <div class="basic-item">@item</div>
+                </BitVirtualize>
+                <br />
+                <div>@(feedLoading ? "Loading more..." : $"{feedItems.Count:N0} items loaded · scroll down to load more")</div>
+            </DemoExample>
+
+            <DemoExample Title="Sticky headers" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+                <div>Contacts are grouped A-Z. The header of the current group stays pinned to the top of the viewport (<b>IsStickyItem</b>) and is gently pushed out by the next group as it arrives.</div>
+                <br />
+                <BitVirtualize Items="contacts" Dynamic EstimatedItemSize="56"
+                               TItem="Contact"
+                               IsStickyItem="c => c.IsHeader"
+                               Class="list">
+                    <ItemTemplate Context="contact">
+                        @if (contact.IsHeader)
+                        {
+                            <div class="group-header">@contact.Name</div>
+                        }
+                        else
+                        {
+                            <div class="contact">
+                                <b>@contact.Name</b>
+                                <span>@contact.Email</span>
+                            </div>
+                        }
+                    </ItemTemplate>
+                    <StickyTemplate Context="contact">
+                        <div class="group-header pinned">@contact.Name</div>
+                    </StickyTemplate>
+                </BitVirtualize>
+            </DemoExample>
+
+            <DemoExample Title="Reversed (chat)" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+                <div>With <b>Reversed</b> the list starts at the newest message and stays pinned to the bottom as you send more. Scroll up and <b>OnStartReached</b> lazily prepends older history while the viewport stays exactly where it was.</div>
+                <br />
+                <BitVirtualize @ref="chatRef" Items="messages" Dynamic EstimatedItemSize="48"
+                               TItem="Message" Context="message"
+                               Reversed ItemKey="m => m.Id"
+                               OnStartReached="LoadChatHistory" ReachedThreshold="3"
+                               Class="chat-list">
+                    <div class="message @(message.Mine ? "mine" : null)">
+                        <div class="bubble">@message.Text</div>
+                    </div>
+                </BitVirtualize>
+                <div class="composer">
+                    <BitTextField @bind-Value="draftMessage" Immediate Placeholder="Write a message..." Style="flex-grow:1" />
+                    <BitButton OnClick="SendChatMessage" IsEnabled="@(string.IsNullOrWhiteSpace(draftMessage) is false)">Send</BitButton>
+                </div>
+            </DemoExample>
+        </Examples>
+    </DemoPage>
+</div>

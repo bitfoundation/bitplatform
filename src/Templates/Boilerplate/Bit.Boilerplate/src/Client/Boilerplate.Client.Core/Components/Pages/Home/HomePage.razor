@@ -19,6 +19,24 @@
             @Localizer[nameof(AppStrings.HomeMessage)]
         </BitText>
 
+        @*#if (multitenant == true && module != "Sales")*@
+        <AuthorizeView Policy="@AuthPolicies.TENANT_SELECTED">
+            <NotAuthorized>
+                <BitCard FullWidth Style="padding:2rem">
+                    <BitStack HorizontalAlign="BitAlignment.Center">
+                        <BitIcon IconName="@BitIconName.Org" Color="BitColor.Primary" />
+                        <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
+                            @Localizer[nameof(AppStrings.SelectTenantMessage)]
+                        </BitText>
+                        <BitButton Href="@PageUrls.ManageMyTenants">
+                            @Localizer[nameof(AppStrings.ManageMyTenants)]
+                        </BitButton>
+                    </BitStack>
+                </BitCard>
+            </NotAuthorized>
+        </AuthorizeView>
+        @*#endif*@
+
         @*#if (module == "Sales")*@
         <BitSearchBox ReadOnly
                       Underlined

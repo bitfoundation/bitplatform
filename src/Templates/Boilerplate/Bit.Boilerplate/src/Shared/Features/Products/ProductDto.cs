@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Shared.Features.Products;

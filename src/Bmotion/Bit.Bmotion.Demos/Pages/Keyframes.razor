@@ -5,47 +5,25 @@
 <div class="demo-section">
     <h2>Keyframes</h2>
     <p>
-        Pass an array of values in the <c>Keyframes</c> dictionary of <c>BmotionAnimationProps</c>
-        to define a multi-step animation. Use <c>Transition.Times</c> for custom offsets (0–1).
+        Every animatable property accepts a keyframe sequence via a plain collection
+        expression: <c>Bm.To(scale: [1, 1.3, 0.8, 1])</c>. Use <c>times</c> on the
+        transition for custom offsets (0–1), and <c>Bm.Current</c> as a wildcard for
+        "the element's current value".
     </p>
 
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Animate="@(new BmotionAnimationProps
-                    {
-                        Keyframes = new() {
-                            ["scale"]  = new double[] { 1, 1.3, 0.8, 1.1, 1 },
-                            ["rotate"] = new double[] { 0, 15, -10, 5, 0 }
-                        }
-                    })"
-                    Transition="@(new BmotionTransitionConfig
-                    {
-                        Duration   = 1.2,
-                        Ease       = BmotionEasing.EaseInOut,
-                        Repeat     = int.MaxValue,
-                        RepeatType = BmotionRepeatType.Mirror
-                    })" />
+            <Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
+                    Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                <div class="box" />
+            </Bmotion>
         </div>
 
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Style="height:30px;border-radius:4px;"
-                    Animate="@(new BmotionAnimationProps
-                    {
-                        Keyframes = new() {
-                            ["x"] = new double[] { 0, 100, 60, 120, 0 }
-                        }
-                    })"
-                    Transition="@(new BmotionTransitionConfig
-                    {
-                        Duration   = 2,
-                        Times      = new[] { 0.0, 0.2, 0.5, 0.8, 1.0 },
-                        Ease       = BmotionEasing.EaseInOut,
-                        Repeat     = int.MaxValue
-                    })" />
+            <Bmotion Animate="Bm.To(x: [0, 100, 60, 120, 0])"
+                    Transition="Bm.Tween(2, BmEase.InOut, repeat: BmRepeat.Forever, times: [0, 0.2, 0.5, 0.8, 1])">
+                <div class="box" style="height:30px;border-radius:4px;" />
+            </Bmotion>
         </div>
     </div>
 
@@ -57,25 +35,35 @@
     <p>Smoothly cycle through a palette of colors.</p>
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Style="width:120px;height:120px;border-radius:50%;background-image:none;"
-                    Animate="@(new BmotionAnimationProps
-                    {
-                        Keyframes = new() {
-                            ["backgroundColor"] = new string[] { "#6c47ff", "#ff4785", "#00c3ff", "#6c47ff" }
-                        }
-                    })"
-                    Transition="@(new BmotionTransitionConfig
-                    {
-                        Duration  = 3,
-                        Repeat    = int.MaxValue,
-                        Ease      = BmotionEasing.Linear
-                    })" />
+            <Bmotion Animate='Bm.To(backgroundColor: ["#6c47ff", "#ff4785", "#00c3ff", "#6c47ff"])'
+                    Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
+                <div class="box" style="width:120px;height:120px;border-radius:50%;background-image:none;" />
+            </Bmotion>
         </div>
     </div>
 
     <CodeSnippet Code="@_colorKeyframesCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Per-segment easing</h2>
+    <p>
+        <c>eases</c> gives each keyframe segment its own curve (one entry per segment; the last
+        repeats when the array is shorter): here the ball launches with an accelerating
+        <c>CircIn</c>, then lands twice with decelerating <c>CircOut</c> / <c>BackOut</c>.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="height:220px;align-items:flex-end;padding-bottom:2.5rem;">
+            <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
+                    Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
+                                         eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
+                <div class="box" style="width:56px;height:56px;border-radius:50%;" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_easesCode" />
 </div>
 
 @code {
@@ -103,41 +91,17 @@
 
             <div class="demo-row">
                 <div class="demo-card">
-                    <Bmotion Tag="div"
-                            Class="box"
-                            Animate="@(new BmotionAnimationProps
-                            {
-                                Keyframes = new() {
-                                    ["scale"]  = new double[] { 1, 1.3, 0.8, 1.1, 1 },
-                                    ["rotate"] = new double[] { 0, 15, -10, 5, 0 }
-                                }
-                            })"
-                            Transition="@(new BmotionTransitionConfig
-                            {
-                                Duration   = 1.2,
-                                Ease       = BmotionEasing.EaseInOut,
-                                Repeat     = int.MaxValue,
-                                RepeatType = BmotionRepeatType.Mirror
-                            })" />
+                    <Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
+                            Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                        <div class="box" />
+                    </Bmotion>
                 </div>
 
                 <div class="demo-card">
-                    <Bmotion Tag="div"
-                            Class="box"
-                            Style="height:30px;border-radius:4px;"
-                            Animate="@(new BmotionAnimationProps
-                            {
-                                Keyframes = new() {
-                                    ["x"] = new double[] { 0, 100, 60, 120, 0 }
-                                }
-                            })"
-                            Transition="@(new BmotionTransitionConfig
-                            {
-                                Duration   = 2,
-                                Times      = new[] { 0.0, 0.2, 0.5, 0.8, 1.0 },
-                                Ease       = BmotionEasing.EaseInOut,
-                                Repeat     = int.MaxValue
-                            })" />
+                    <Bmotion Animate="Bm.To(x: [0, 100, 60, 120, 0])"
+                            Transition="Bm.Tween(2, BmEase.InOut, repeat: BmRepeat.Forever, times: [0, 0.2, 0.5, 0.8, 1])">
+                        <div class="box" style="height:30px;border-radius:4px;" />
+                    </Bmotion>
                 </div>
             </div>
         </div>
@@ -168,24 +132,36 @@
             <p>Smoothly cycle through a palette of colors.</p>
             <div class="demo-row">
                 <div class="demo-card">
-                    <Bmotion Tag="div"
-                            Class="box"
-                            Style="width:120px;height:120px;border-radius:50%;background-image:none;"
-                            Animate="@(new BmotionAnimationProps
-                            {
-                                Keyframes = new() {
-                                    ["backgroundColor"] = new string[] { "#6c47ff", "#ff4785", "#00c3ff", "#6c47ff" }
-                                }
-                            })"
-                            Transition="@(new BmotionTransitionConfig
-                            {
-                                Duration  = 3,
-                                Repeat    = int.MaxValue,
-                                Ease      = BmotionEasing.Linear
-                            })" />
+                    <Bmotion Animate='Bm.To(backgroundColor: ["#6c47ff", "#ff4785", "#00c3ff", "#6c47ff"])'
+                            Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
+                        <div class="box" style="width:120px;height:120px;border-radius:50%;background-image:none;" />
+                    </Bmotion>
                 </div>
             </div>
         </div>
         """;
-}
 
+    private const string _easesCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem 2rem 2.5rem; height: 220px;
+                display: flex; align-items: flex-end; justify-content: center;
+            }
+            .ball { width: 56px; height: 56px; border-radius: 50%;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        <div class="demo-card">
+            @* One ease per segment: launch, fall, small bounce, settle. *@
+            <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
+                    Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
+                                         eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
+                <div class="ball" />
+            </Bmotion>
+        </div>
+        """;
+}

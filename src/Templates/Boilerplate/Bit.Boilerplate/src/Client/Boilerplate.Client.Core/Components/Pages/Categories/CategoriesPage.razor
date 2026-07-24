@@ -1,9 +1,13 @@
+@*+:cnd:noEmit*@
 @using Boilerplate.Shared.Features.Categories
 
 @attribute [Route(PageUrls.Categories)]
 @attribute [Route("{culture?}" + PageUrls.Categories)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
+@*#if (multitenant == true)*@
+@attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+@*#endif*@
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Categories)]"
@@ -25,69 +29,50 @@
         <BitStack Gap="0" FillContent>
             <div class="grid-container">
                 <BitDataGrid @ref="dataGrid"
+                             TItem="CategoryDto"
                              Class="categories-grid"
-                             TGridItem="CategoryDto"
-                             Pagination="pagination"
-                             ItemsProvider="categoriesProvider">
-                    <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]"
-                                               Align="BitDataGridAlign.Left"
-                                               Property="c => c!.Name"
-                                               Class="name-col"
-                                               Sortable="true"
-                                               IsDefaultSort="BitDataGridSortDirection.Ascending">
-                        <ColumnOptions>
-                            <BitStack Horizontal>
-                                <BitSearchBox @bind-Value="CategoryNameFilter"
-                                              AutoFocus DisableAnimation
-                                              Immediate DebounceTime="500"
-                                              Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]" />
-                                @if (isLoading)
-                                {
-                                    <BitEllipsisLoading CustomSize="32" />
-                                }
-                            </BitStack>
-                        </ColumnOptions>
-                    </BitDataGridPropertyColumn>
+                             OnRead="LoadCategories"
+                             Loading="isLoading"
+                             Pageable Filterable Resizable Reorderable
+                             ShowToolbar ShowColumnChooser ShowCsvExport ShowExcelExport
+                             PageSize="10"
+                             Strings="DataGridStrings">
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Name)]"
+                                       Property="c => c.Name" />
 
-                    <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Products)]"
-                                               Property="p => p!.ProductsCount"
-                                               Align="BitDataGridAlign.Left"
-                                               Class="count-col"
-                                               Sortable="true" />
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Products)]"
+                                       Property="c => c.ProductsCount"
+                                       Width="140px"
+                                       Filterable="false" />
 
-                    <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Color)]"
-                                               Align="BitDataGridAlign.Left"
-                                               Context="category"
-                                               Class="color-col">
-                        <span class="color-box" style="background-color:@(category!.Color)"></span>
-                    </BitDataGridTemplateColumn>
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Color)]"
+                                       Width="90px"
+                                       Sortable="false"
+                                       Filterable="false">
+                        <Template Context="category">
+                            <span class="color-box" style="background-color:@(category.Color)"></span>
+                        </Template>
+                    </BitDataGridColumn>
 
-                    <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Action)]"
-                                               Align="BitDataGridAlign.Center"
-                                               Class="actions-col"
-                                               Context="category">
-                        <BitButton Variant="BitVariant.Text"
-                                   IconName="@BitIconName.Edit"
-                                   Title="@Localizer[(nameof(AppStrings.Edit))]"
-                                   OnClick="WrapHandled(() => EditCategory(category!))" />
-                        <BitButton Color="BitColor.Error"
-                                   Variant="BitVariant.Text"
-                                   IconName="@BitIconName.Delete"
-                                   Title="@Localizer[(nameof(AppStrings.Delete))]"
-                                   OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingCategory = category; })" />
-                    </BitDataGridTemplateColumn>
+                    <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Action)]"
+                                       Align="BitDataGridColumnAlign.Center"
+                                       Width="110px"
+                                       Sortable="false"
+                                       Filterable="false">
+                        <Template Context="category">
+                            <BitButton Variant="BitVariant.Text"
+                                       IconName="@BitIconName.Edit"
+                                       Title="@Localizer[(nameof(AppStrings.Edit))]"
+                                       OnClick="WrapHandled(() => EditCategory(category))" />
+                            <BitButton Color="BitColor.Error"
+                                       Variant="BitVariant.Text"
+                                       IconName="@BitIconName.Delete"
+                                       Title="@Localizer[(nameof(AppStrings.Delete))]"
+                                       OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingCategory = category; })" />
+                        </Template>
+                    </BitDataGridColumn>
                 </BitDataGrid>
             </div>
-            <BitDataGridPaginator Value="pagination"
-                                  SummaryFormat="v => string.Format(Localizer[nameof(AppStrings.PaginatorSummary)], v.TotalItemCount)"
-                                  GoToFirstButtonTitle="Go to first page"
-                                  GoToPrevButtonTitle="Go to previous page"
-                                  GoToNextButtonTitle="Go to next page"
-                                  GoToLastButtonTitle="Go to last page">
-                <TextTemplate Context="value">
-                    <span>@Localizer[nameof(AppStrings.Page)] <b>@(value.CurrentPageIndex + 1)</b> @Localizer[nameof(AppStrings.Of)] <b>@(value.LastPageIndex + 1)</b></span>
-                </TextTemplate>
-            </BitDataGridPaginator>
         </BitStack>
     </BitStack>
 </section>

@@ -8,22 +8,22 @@
     </p>
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Tag="div"
-                    Class="box"
-                    Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                    WhileHover="@(new BmotionAnimationProps { Scale = 1.15, Y = -6, BoxShadow = "0 20px 40px rgba(108,71,255,.5)" })"
-                    WhileTap="@(new BmotionAnimationProps { Scale = 0.92 })"
-                    Transition="@BmotionTransitionConfig.Spring(stiffness:400, damping:25)" />
+            <Bmotion Animate="Bm.To(scale: 1)"
+                    WhileHover='Bm.To(scale: 1.15, y: -6, boxShadow: "0 20px 40px rgba(108,71,255,.5)")'
+                    WhileTap="Bm.To(scale: 0.92)"
+                    Transition="Bm.Spring(stiffness: 400, damping: 25)">
+                <div class="box" />
+            </Bmotion>
         </div>
 
         <div class="demo-card">
-            <Bmotion Tag="button"
-                    Class="btn-bm"
-                    Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                    WhileHover="@(new BmotionAnimationProps { Scale = 1.07, BackgroundColor = "#8a66ff" })"
-                    WhileTap="@(new BmotionAnimationProps { Scale = 0.95 })"
-                    Transition="@(new BmotionTransitionConfig { Duration = 0.15 })">
-                Animated Button
+            <Bmotion Animate="Bm.To(scale: 1)"
+                    WhileHover='Bm.To(scale: 1.07, backgroundColor: "#8a66ff")'
+                    WhileTap="Bm.To(scale: 0.95)"
+                    Transition="Bm.Tween(0.15)">
+                <button class="btn-bm">
+                    Animated Button
+                </button>
             </Bmotion>
         </div>
     </div>
@@ -36,12 +36,13 @@
     <p><strong>WhileFocus</strong> plays while an element or its descendants are focused.</p>
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Tag="input"
-                    Style="background:#1e1e2e;border:2px solid #333;color:#eee;border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
-                    Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                    WhileFocus="@(new BmotionAnimationProps { Scale = 1.03, BorderColor = "#6c47ff" })"
-                    Transition="@(new BmotionTransitionConfig { Duration = 0.2 })"
-                    AdditionalAttributes="@(new Dictionary<string,object>{ ["placeholder"] = "Click to focus…", ["type"] = "text" })" />
+            <Bmotion Animate="Bm.To(scale: 1)"
+                    WhileFocus='Bm.To(scale: 1.03, borderColor: "#6c47ff")'
+                    Transition="Bm.Tween(0.2)">
+                <input style="background:#1e1e2e;border:2px solid #333;color:#eee;border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
+                       placeholder="Click to focus…"
+                       type="text" />
+            </Bmotion>
         </div>
     </div>
 
@@ -53,15 +54,15 @@
     <p>Listen to gesture callbacks: <c>OnHoverStart</c>, <c>OnTap</c>, <c>OnTapCancel</c>, etc.</p>
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column;gap:1rem;">
-            <Bmotion Tag="div"
-                    Class="box"
-                    WhileHover="@(new BmotionAnimationProps { Scale = 1.1 })"
-                    WhileTap="@(new BmotionAnimationProps { Scale = 0.9 })"
+            <Bmotion WhileHover="Bm.To(scale: 1.1)"
+                    WhileTap="Bm.To(scale: 0.9)"
                     OnHoverStart="@(() => AddEvent("HoverStart"))"
                     OnHoverEnd="@(() => AddEvent("HoverEnd"))"
                     OnTapStart="@(() => AddEvent("TapStart"))"
                     OnTap="@(() => AddEvent("Tap"))"
-                    OnTapCancel="@(() => AddEvent("TapCancel"))" />
+                    OnTapCancel="@(() => AddEvent("TapCancel"))">
+                <div class="box" />
+            </Bmotion>
             <div style="font-size:.8rem;color:#888;max-height:120px;overflow:auto;">
                 @foreach (var e in _events.TakeLast(8).Reverse())
                 {
@@ -113,22 +114,22 @@
             <h2>Hover &amp; Tap</h2>
             <div class="demo-row">
                 <div class="demo-card">
-                    <Bmotion Tag="div"
-                            Class="box"
-                            Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                            WhileHover="@(new BmotionAnimationProps { Scale = 1.15, Y = -6, BoxShadow = "0 20px 40px rgba(108,71,255,.5)" })"
-                            WhileTap="@(new BmotionAnimationProps { Scale = 0.92 })"
-                            Transition="@BmotionTransitionConfig.Spring(stiffness:400, damping:25)" />
+                    <Bmotion Animate="Bm.To(scale: 1)"
+                            WhileHover='Bm.To(scale: 1.15, y: -6, boxShadow: "0 20px 40px rgba(108,71,255,.5)")'
+                            WhileTap="Bm.To(scale: 0.92)"
+                            Transition="Bm.Spring(stiffness: 400, damping: 25)">
+                        <div class="box" />
+                    </Bmotion>
                 </div>
 
                 <div class="demo-card">
-                    <Bmotion Tag="button"
-                            Class="btn-bm"
-                            Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                            WhileHover="@(new BmotionAnimationProps { Scale = 1.07, BackgroundColor = "#8a66ff" })"
-                            WhileTap="@(new BmotionAnimationProps { Scale = 0.95 })"
-                            Transition="@(new BmotionTransitionConfig { Duration = 0.15 })">
-                        Animated Button
+                    <Bmotion Animate="Bm.To(scale: 1)"
+                            WhileHover='Bm.To(scale: 1.07, backgroundColor: "#8a66ff")'
+                            WhileTap="Bm.To(scale: 0.95)"
+                            Transition="Bm.Tween(0.15)">
+                        <button class="btn-bm">
+                            Animated Button
+                        </button>
                     </Bmotion>
                 </div>
             </div>
@@ -155,12 +156,13 @@
             <p><strong>WhileFocus</strong> plays while an element or its descendants are focused.</p>
             <div class="demo-row">
                 <div class="demo-card">
-                    <Bmotion Tag="input"
-                            Style="background:#1e1e2e;border:2px solid #333;color:#eee;border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
-                            Animate="@(new BmotionAnimationProps { Scale = 1 })"
-                            WhileFocus="@(new BmotionAnimationProps { Scale = 1.03, BorderColor = "#6c47ff" })"
-                            Transition="@(new BmotionTransitionConfig { Duration = 0.2 })"
-                            AdditionalAttributes="@(new Dictionary<string,object>{ ["placeholder"] = "Click to focus…", ["type"] = "text" })" />
+                    <Bmotion Animate="Bm.To(scale: 1)"
+                            WhileFocus='Bm.To(scale: 1.03, borderColor: "#6c47ff")'
+                            Transition="Bm.Tween(0.2)">
+                        <input style="background:#1e1e2e;border:2px solid #333;color:#eee;border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
+                               placeholder="Click to focus…"
+                               type="text" />
+                    </Bmotion>
                 </div>
             </div>
         </div>
@@ -191,15 +193,15 @@
             <p>Listen to gesture callbacks: <c>OnHoverStart</c>, <c>OnTap</c>, <c>OnTapCancel</c>, etc.</p>
             <div class="demo-row">
                 <div class="demo-card" style="flex-direction:column;gap:1rem;">
-                    <Bmotion Tag="div"
-                            Class="box"
-                            WhileHover="@(new BmotionAnimationProps { Scale = 1.1 })"
-                            WhileTap="@(new BmotionAnimationProps { Scale = 0.9 })"
+                    <Bmotion WhileHover="Bm.To(scale: 1.1)"
+                            WhileTap="Bm.To(scale: 0.9)"
                             OnHoverStart="@(() => AddEvent("HoverStart"))"
                             OnHoverEnd="@(() => AddEvent("HoverEnd"))"
                             OnTapStart="@(() => AddEvent("TapStart"))"
                             OnTap="@(() => AddEvent("Tap"))"
-                            OnTapCancel="@(() => AddEvent("TapCancel"))" />
+                            OnTapCancel="@(() => AddEvent("TapCancel"))">
+                        <div class="box" />
+                    </Bmotion>
                     <div style="font-size:.8rem;color:#888;max-height:120px;overflow:auto;">
                         @foreach (var e in _events.TakeLast(8).Reverse())
                         {

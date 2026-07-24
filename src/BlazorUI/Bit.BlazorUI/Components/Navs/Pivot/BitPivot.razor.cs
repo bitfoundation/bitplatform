@@ -5,8 +5,25 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitPivot : BitComponentBase
 {
+    private bool _jsSetup;
+    private bool _jsSetupRunning;
+    private bool _setupRtl;
+    private bool _setupVertical;
+    private bool _isMenuOpen;
+    private bool _slideAtEnd;
+    private bool _slideAtStart = true;
+    private bool _slideHasOverflow;
+    private ElementReference _moreRef;
+    private ElementReference _headerRef;
     private BitPivotItem? _selectedItem;
+    private int[] _overflowItemIndexes = [];
     private List<BitPivotItem> _allItems = [];
+    private BitPivotOverflowBehavior? _setupBehavior;
+    private DotNetObjectReference<BitPivot>? _dotnetObj;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -54,9 +71,20 @@ public partial class BitPivot : BitComponentBase
     [Parameter] public bool MountAll { get; set; }
 
     /// <summary>
-    /// Callback for when a pivot header item is clicked.
+    /// The aria-label of the next button in the Slide overflow behavior (default: Next).
     /// </summary>
-    [Parameter] public EventCallback<BitPivotItem> OnItemClick { get; set; }
+    [Parameter] public string? NextAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of the next button in the Slide overflow behavior using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="NextIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? NextIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon of the next button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronRight).
+    /// </summary>
+    [Parameter] public string? NextIconName { get; set; }
 
     /// <summary>
     /// Callback for when the selected pivot item changes.
@@ -65,16 +93,53 @@ public partial class BitPivot : BitComponentBase
     public EventCallback<BitPivotItem> OnChange { get; set; }
 
     /// <summary>
+    /// Callback for when a pivot header item is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<BitPivotItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// The aria-label of the overflow menu button in the Menu overflow behavior (default: More).
+    /// </summary>
+    [Parameter] public string? OverflowAriaLabel { get; set; }
+
+    /// <summary>
     /// Overflow behavior when there is not enough room to display all of the links/tabs.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPivotOverflowBehavior? OverflowBehavior { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon of the overflow menu button in the Menu overflow behavior using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="OverflowIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? OverflowIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon of the overflow menu button in the Menu overflow behavior from the built-in Fluent UI icons (default: More).
+    /// </summary>
+    [Parameter] public string? OverflowIconName { get; set; }
+
+    /// <summary>
     /// Position of the pivot header.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPivotPosition? Position { get; set; }
+
+    /// <summary>
+    /// The aria-label of the previous button in the Slide overflow behavior (default: Previous).
+    /// </summary>
+    [Parameter] public string? PreviousAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of the previous button in the Slide overflow behavior using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="PreviousIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? PreviousIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon of the previous button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronLeft).
+    /// </summary>
+    [Parameter] public string? PreviousIconName { get; set; }
 
     /// <summary>
     /// Key of the selected pivot item.
@@ -97,6 +162,8 @@ public partial class BitPivot : BitComponentBase
 
 
     protected override string RootElementClass => "bit-pvt";
+
+    private bool _isVertical => Position is BitPivotPosition.Start or BitPivotPosition.End;
 
     protected override void RegisterCssClasses()
     {
@@ -143,6 +210,7 @@ public partial class BitPivot : BitComponentBase
         {
             BitPivotOverflowBehavior.Menu => "bit-pvt-mnu",
             BitPivotOverflowBehavior.Scroll => "bit-pvt-scr",
+            BitPivotOverflowBehavior.Slide => "bit-pvt-sld",
             BitPivotOverflowBehavior.None => "bit-pvt-non",
             _ => "bit-pvt-non"
         });
@@ -183,6 +251,110 @@ public partial class BitPivot : BitComponentBase
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsDisposed)
+        {
+            await base.OnAfterRenderAsync(firstRender);
+            return;
+        }
+
+        var behavior = OverflowBehavior ?? BitPivotOverflowBehavior.None;
+        var needsJs = behavior is BitPivotOverflowBehavior.Menu or BitPivotOverflowBehavior.Slide;
+        var rtl = Dir is BitDir.Rtl;
+        var vertical = Position is BitPivotPosition.Start or BitPivotPosition.End;
+
+        if (_jsSetupRunning is false && (_setupBehavior != behavior || (_jsSetup && (_setupRtl != rtl || _setupVertical != vertical))))
+        {
+            // OnAfterRenderAsync gets called again while the interop calls below are still in flight,
+            // so the setup state is captured and the branch is locked before the first await, otherwise
+            // the next pass re-enters here and disposes the object reference that the JS instance of the
+            // in-flight setup is still holding on to (which then fails its invocations).
+            _jsSetupRunning = true;
+            _setupBehavior = behavior;
+            _setupRtl = rtl;
+            _setupVertical = vertical;
+
+            try
+            {
+                if (_dotnetObj is not null)
+                {
+                    _jsSetup = false;
+                    await _js.BitPivotDispose(_Id);
+                    _dotnetObj.Dispose();
+                    _dotnetObj = null;
+                }
+
+                _isMenuOpen = false;
+                _slideAtEnd = false;
+                _slideAtStart = true;
+                _slideHasOverflow = false;
+                _overflowItemIndexes = [];
+
+                if (needsJs && IsDisposed is false)
+                {
+                    _dotnetObj = DotNetObjectReference.Create(this);
+
+                    await _js.BitPivotSetup(
+                        _Id,
+                        _headerRef,
+                        behavior is BitPivotOverflowBehavior.Menu ? _moreRef : null,
+                        behavior is BitPivotOverflowBehavior.Menu,
+                        behavior is BitPivotOverflowBehavior.Slide,
+                        rtl,
+                        vertical,
+                        _dotnetObj);
+
+                    _jsSetup = true;
+                }
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+            finally
+            {
+                _jsSetupRunning = false;
+            }
+        }
+        else if (_jsSetup)
+        {
+            try
+            {
+                await _js.BitPivotRefresh(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+
+
+    [JSInvokable("OnSetOverflowItems")]
+    public void OnSetOverflowItems(int[] indexes)
+    {
+        if (IsDisposed) return;
+
+        _overflowItemIndexes = indexes ?? [];
+
+        if (_overflowItemIndexes.Length == 0)
+        {
+            _isMenuOpen = false;
+        }
+
+        StateHasChanged();
+    }
+
+    [JSInvokable("OnSetSlideState")]
+    public void OnSetSlideState(bool hasOverflow, bool atStart, bool atEnd)
+    {
+        if (IsDisposed) return;
+
+        _slideHasOverflow = hasOverflow;
+        _slideAtStart = atStart;
+        _slideAtEnd = atEnd;
+
+        StateHasChanged();
     }
 
 
@@ -283,5 +455,57 @@ public partial class BitPivot : BitComponentBase
     private void OnSetSelectedKey()
     {
         SelectItemByKey(SelectedKey);
+    }
+
+    private void ToggleMenu()
+    {
+        _isMenuOpen = !_isMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        _isMenuOpen = false;
+    }
+
+    private async Task SelectFromMenu(BitPivotItem item)
+    {
+        CloseMenu();
+
+        if (IsEnabled is false || item.IsEnabled is false) return;
+
+        SelectItem(item);
+
+        await OnItemClick.InvokeAsync(item);
+
+        if (_jsSetup)
+        {
+            await _js.BitPivotRefresh(_Id);
+        }
+    }
+
+    private async Task Slide(bool forward)
+    {
+        if (IsEnabled is false || _jsSetup is false) return;
+
+        await _js.BitPivotSlide(_Id, forward);
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            try
+            {
+                await _js.BitPivotDispose(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            _dotnetObj.Dispose();
+            _dotnetObj = null;
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

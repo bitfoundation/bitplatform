@@ -1,0 +1,25 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "allowJs": true,
+        "target": "ES2019",
+        // Bmotion's bundle is loaded by the C# interop via dynamic `import()` and its functions are
+        // called as named module exports, so - unlike Butil's `outFile` global concatenation - the
+        // output MUST stay an ES module. `module: ESNext` + `rootDir`/`outDir` emits the single
+        // Scripts/bit-bmotion.ts straight to wwwroot/bit-bmotion.js preserving its `export`s.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        // Incremental type-safety hardening. Full "strict"/"noImplicitAny" would require typing
+        // every interop script and is deferred; these flags catch real bugs (fallthrough, missing
+        // returns, unreachable code) without forcing a rewrite of the loosely-typed glue.
+        "noImplicitThis": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "alwaysStrict": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

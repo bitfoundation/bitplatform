@@ -1,0 +1,13 @@
+﻿@*
+    Catch-all host page. The Blazor router maps EVERY url to this single page; from here on
+    Bit.Brouter's <AppRouter /> takes over and matches the real route. Brouter matches during
+    OnInitializedAsync so the matched page's HTML is in the initial prerendered response.
+*@
+@page "/"
+@page "/{*path}"
+
+<AppRouter />
+
+@code {
+    [Parameter] public string? Path { get; set; }
+}

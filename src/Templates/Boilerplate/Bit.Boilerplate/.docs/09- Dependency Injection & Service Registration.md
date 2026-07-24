@@ -25,7 +25,7 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    ```csharp
    services.AddScoped<HtmlRenderer>();
    services.AddScoped<CultureInfoManager>();
-   services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+   services.TryAddSingleton(TimeProvider.System);
    services.AddSingleton<SharedSettings>();
    services.AddLocalization();
    ```

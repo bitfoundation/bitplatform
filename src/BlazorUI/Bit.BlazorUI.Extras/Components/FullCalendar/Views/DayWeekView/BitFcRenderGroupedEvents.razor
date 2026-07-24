@@ -1,0 +1,85 @@
+@namespace Bit.BlazorUI
+
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var isStack = State.EventLayout == BitFullCalendarEventLayout.Stack;
+}
+
+@foreach (var (group, groupIndex) in GroupedEvents.Select((g, i) => (g, i)))
+{
+    @foreach (var ev in group)
+    {
+        var style = BitFullCalendarHelpers.GetEventBlockStyle(ev, Day, groupIndex, GroupedEvents.Count);
+
+        // Determine how many columns this event really needs. Counting every lane that touches ev
+        // overcounts: lanes whose events are staggered (each overlaps ev but never coexist with one
+        // another inside ev's own time range) would each take a column and shrink ev unnecessarily.
+        // Instead compute the peak number of events (including ev) that are simultaneously active at
+        // any instant within ev's [Start, End] range, clamping every overlapping event to that range
+        // so concurrency is measured strictly where ev lives.
+        var boundaries = new List<(DateTime Time, int Delta)>();
+        for (var i = 0; i < GroupedEvents.Count; i++)
+        {
+            foreach (var other in GroupedEvents[i])
+            {
+                if (!(ev.StartDate < other.EndDate && ev.EndDate > other.StartDate))
+                    continue;
+                var s = other.StartDate < ev.StartDate ? ev.StartDate : other.StartDate;
+                var e = other.EndDate > ev.EndDate ? ev.EndDate : other.EndDate;
+                if (e <= s)
+                    continue;
+                boundaries.Add((s, 1));
+                boundaries.Add((e, -1));
+            }
+        }
+        // Sweep the clamped boundaries. Process an end (-1) before a start (+1) at the same instant
+        // so events that merely touch (one ends as the next begins) are not counted as concurrent.
+        var running = 0;
+        var depth = 1;
+        foreach (var b in boundaries.OrderBy(b => b.Time).ThenBy(b => b.Delta))
+        {
+            running += b.Delta;
+            if (running > depth) depth = running;
+        }
+
+        // Place ev within those columns. Lanes to the left of ev's lane that overlap it set its
+        // column, clamped into the available column count so a staggered left-neighbour can never
+        // push left/width past the available width.
+        var leftConflicts = 0;
+        for (var i = 0; i < groupIndex; i++)
+        {
+            if (GroupedEvents[i].Any(other => ev.StartDate < other.EndDate && ev.EndDate > other.StartDate))
+                leftConflicts++;
+        }
+        var rank = Math.Min(leftConflicts, depth - 1);
+
+        double left;
+        double width;
+        int zIndex;
+
+        if (isStack)
+        {
+            // Stacked layout: split the column into equal-width lanes placed side by side with no
+            // overlap, so conflicting events sit close together and stay fully readable.
+            var laneWidth = 100.0 / depth;
+            left = rank * laneWidth;
+            width = laneWidth;
+            zIndex = 2;
+        }
+        else
+        {
+            // Overlap layout: offset each successive overlapping card by a percentage of the column
+            // width and let the card extend to the right edge so users can still see most of every
+            // card. The step is capped so even with many conflicts the narrowest card stays ~50% wide.
+            var step = depth > 1 ? Math.Min(20.0, 50.0 / (depth - 1)) : 0.0;
+            left = rank * step;
+            width = 100.0 - left;
+            zIndex = 2 + rank;
+        }
+
+        <div @key="ev" class="bit-bfc-event-stack-item @(isStack ? "bit-bfc-event-stack-item-side-by-side" : "")"
+             style="position:absolute;top:@(style.TopPx.ToString("F2", inv))px;width:@(width.ToString("F2", inv))%;left:@(left.ToString("F2", inv))%;z-index:@zIndex;pointer-events:none;">
+            <BitFcEventBlock Event="ev" OnSelected="OnEventSelected" EventTemplate="EventTemplate" />
+        </div>
+    }
+}

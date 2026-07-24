@@ -1,0 +1,138 @@
+.bit-qkg {
+    width: 100%;
+    --bit-qkg-col-gap: 1rem;
+
+    th {
+        position: relative;
+    }
+
+    > thead > tr > th {
+        font-weight: normal;
+    }
+
+    &.loading > tbody {
+        opacity: 0.25;
+        transition: opacity linear 100ms 25ms;
+    }
+
+    > tbody > tr > td {
+        padding: 0.1rem calc(0.4rem + var(--bit-qkg-col-gap)) 0.1rem 0.4rem;
+    }
+}
+
+
+.bit-qkg-hct {
+    display: flex;
+    position: relative;
+    align-items: center;
+    padding-inline-end: var(--bit-qkg-col-gap);
+}
+
+.bit-qkg-cop {
+    z-index: 1;
+    padding: 1rem;
+    border: 1px solid;
+    position: absolute;
+    inset-inline-start: 0;
+    border-color: var(--bit-clr-brd-pri);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.bit-qkg-cob {
+    width: 1.5rem;
+    background: unset;
+
+    &::before {
+        content: "\E712";
+        font-style: normal;
+        font-weight: normal;
+        display: inline-block;
+        font-family: 'Fabric MDL2 bit BlazorUI Extras';
+    }
+}
+
+.bit-qkg-drg {
+    width: 1rem;
+    cursor: ew-resize;
+    position: absolute;
+    inset-block-end: 0;
+    inset-block-start: 0;
+    inset-inline-end: calc(var(--bit-qkg-col-gap)/2 - 0.5rem);
+
+    &::after {
+        content: ' ';
+        position: absolute;
+        inset-block-end: 5px;
+        inset-block-start: 5px;
+        inset-inline-start: 0.5rem;
+        border-color: var(--bit-clr-brd-pri);
+        border-inline-start: 1px solid var(--bit-clr-brd-pri);
+    }
+}
+
+.bit-qkg-srt {
+    width: 1rem;
+    height: 1rem;
+    opacity: 0.5;
+    align-self: center;
+    text-align: center;
+}
+
+.bit-qkg-csa .bit-qkg-srt::before,
+.bit-qkg-csd .bit-qkg-srt::before {
+    content: "\E96F";
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    transform: rotate(90deg);
+    font-family: 'Fabric MDL2 bit BlazorUI Extras';
+}
+
+.bit-qkg-csd .bit-qkg-srt {
+    transform: scaleY(-1) translateY(-2px);
+}
+
+.bit-qkg-ctl {
+    gap: 0.4rem;
+    flex-grow: 1;
+    display: flex;
+    min-width: 0px;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0.1rem 0.4rem;
+}
+
+button.bit-qkg-ctl {
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    position: relative;
+}
+
+.bit-qkg-ctt {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-qkg-cjc {
+    text-align: center;
+
+    .bit-qkg-ctl {
+        justify-content: center;
+    }
+}
+
+.bit-qkg-cje {
+    text-align: end;
+
+    .bit-qkg-ctl {
+        flex-direction: row-reverse;
+    }
+}
+
+.bit-qkg-plh::after {
+    opacity: 0.75;
+    content: '\2026';
+}

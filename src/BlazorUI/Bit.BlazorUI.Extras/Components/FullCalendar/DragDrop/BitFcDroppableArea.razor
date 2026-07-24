@@ -1,0 +1,10 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-droppable @(_isOver ? "drag-over" : "") @Class"
+     @ondragover="OnDragOver"
+     @ondragover:preventDefault="true"
+     @ondragleave="OnDragLeave"
+     @ondrop="OnDrop"
+     @ondrop:preventDefault="true">
+    @ChildContent
+</div>

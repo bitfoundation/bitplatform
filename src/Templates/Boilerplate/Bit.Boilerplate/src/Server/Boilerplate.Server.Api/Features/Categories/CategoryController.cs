@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -9,8 +9,11 @@ namespace Boilerplate.Server.Api.Features.Categories;
 
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
+    //#if (multitenant == true)
+    Authorize(Policy = AuthPolicies.TENANT_SELECTED),
+    //#endif
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
-    Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
+    Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
     //#if (signalR == true)
@@ -93,9 +96,14 @@ public partial class CategoryController : AppControllerBase, ICategoryController
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Categories.Remove(new() { Id = id, Version = version });
-
-        await DbContext.SaveChangesAsync(cancellationToken);
+        if (await DbContext.Categories
+            .Where(c => c.Id == id && c.Version == version)
+            .ExecuteDeleteAsync(cancellationToken) == 0)
+        {
+            // This could be also because of Conflict, when another user has updated the entity in the meantime,
+            // but it doesn't worth to check for that
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
+        }
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

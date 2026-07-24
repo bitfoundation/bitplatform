@@ -1,0 +1,21 @@
+﻿@page "/discovered/{id:int}"
+
+<div class="bb-intro">
+    <h1>Discovered page <code>/discovered/{id:int}</code></h1>
+    <p class="bb-subtitle">
+        This route was found by scanning the assembly (<code>AppAssembly</code>) - it is
+        <strong>not</strong> declared in <code>AppRouter.razor</code>. Parameters bind by name,
+        just like a plain Blazor <code>@@page</code>.
+    </p>
+</div>
+
+<dl class="bb-params">
+    <dt>id (route)</dt><dd>@Id</dd>
+    <dt>?q (query)</dt><dd>@(Q ?? "-")</dd>
+</dl>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    [Parameter, SupplyParameterFromQuery] public string? Q { get; set; }
+}

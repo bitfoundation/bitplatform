@@ -1,0 +1,103 @@
+@page "/easing"
+
+<h1>Easing</h1>
+
+<div class="demo-section">
+    <h2>Named easing presets</h2>
+    <p>
+        <strong>Bm.Tween(ease: BmEase.…)</strong> now covers the full easings.net family:
+        Sine, Quad, Quart, Quint, Expo, plus overshoot/oscillating
+        <em>Elastic</em> and <em>Bounce</em>. Elastic and bounce sample to <code>linear()</code>
+        for the compositor where supported, and run on the C# engine otherwise.
+    </p>
+
+    <div class="demo-row" style="flex-direction:column; align-items:stretch; gap:.5rem;">
+        @foreach (var e in _eases)
+        {
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <span style="width:120px; font-size:.8rem; color:#888">@e</span>
+                <div style="flex:1; position:relative; height:32px;">
+                    <Bmotion Animate="@(_on ? Bm.To(x: 240) : Bm.To(x: 0))"
+                             Transition="Bm.Tween(0.9, e)">
+                        <div class="box box-sm" style="width:28px;height:28px;" />
+                    </Bmotion>
+                </div>
+            </div>
+        }
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
+        @(_on ? "Reset" : "Animate")
+    </button>
+
+    <CodeSnippet Code="@_easeCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Stepped easing - <code>steps()</code></h2>
+    <p>
+        <strong>Bm.Tween(steps: n, stepJump: …)</strong> maps to CSS <code>steps()</code> - a
+        staircase progression, great for sprite-style motion. Jump term controls where the jumps fall.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var s in _steps)
+        {
+            <div class="demo-card" style="flex-direction:column; gap:.75rem;">
+                <span style="font-size:.78rem; color:#888">steps(6, @s)</span>
+                <Bmotion Animate="@(_on2 ? Bm.To(x: 180) : Bm.To(x: 0))"
+                         Transition="Bm.Tween(1.2, steps: 6, stepJump: s)">
+                    <div class="box box-sm" />
+                </Bmotion>
+            </div>
+        }
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on2 = !_on2)">
+        @(_on2 ? "Reset" : "Step")
+    </button>
+
+    <CodeSnippet Code="@_stepsCode" />
+</div>
+
+@code {
+    private bool _on;
+    private bool _on2;
+
+    private readonly BmEase[] _eases =
+    [
+        BmEase.SineInOut, BmEase.QuadInOut, BmEase.QuartInOut, BmEase.QuintInOut,
+        BmEase.ExpoOut, BmEase.BackOut, BmEase.ElasticOut, BmEase.BounceOut,
+    ];
+
+    private readonly BmStepJump[] _steps =
+    [
+        BmStepJump.End, BmStepJump.Start, BmStepJump.None, BmStepJump.Both,
+    ];
+
+    private const string _easeCode = """
+        @foreach (var e in _eases)
+        {
+            <Bmotion Animate="@(_on ? Bm.To(x: 240) : Bm.To(x: 0))"
+                     Transition="Bm.Tween(0.9, e)">
+                <div class="box box-sm" />
+            </Bmotion>
+        }
+
+        @code {
+            private bool _on;
+            private readonly BmEase[] _eases =
+            [
+                BmEase.SineInOut, BmEase.QuadInOut, BmEase.QuartInOut, BmEase.QuintInOut,
+                BmEase.ExpoOut, BmEase.BackOut, BmEase.ElasticOut, BmEase.BounceOut,
+            ];
+        }
+        """;
+
+    private const string _stepsCode = """
+        <Bmotion Animate="@(_on ? Bm.To(x: 180) : Bm.To(x: 0))"
+                 Transition="Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.End)">
+            <div class="box box-sm" />
+        </Bmotion>
+        """;
+}

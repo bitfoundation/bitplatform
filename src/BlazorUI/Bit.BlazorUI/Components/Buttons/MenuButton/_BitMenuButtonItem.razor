@@ -1,0 +1,74 @@
+@namespace Bit.BlazorUI
+@typeparam TItem where TItem : class
+
+@if (MenuButton.Sticky is false || Item != MenuButton.SelectedItem)
+{
+    @if (MenuButton.GetIsSeparator(Item))
+    {
+        <li role="separator"
+            aria-orientation="horizontal"
+            style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemSeparator"
+            class="bit-mnb-isp @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemSeparator"></li>
+    }
+    else
+    {
+        var template = MenuButton.GetTemplate(Item);
+        var isEnabled = MenuButton.IsEnabled && MenuButton.GetIsEnabled(Item);
+        var href = MenuButton.GetHref(Item);
+        var target = MenuButton.GetTarget(Item);
+
+        RenderFragment content =
+            @<text>
+                @if (template is not null)
+                {
+                    @template(Item)
+                }
+                else if (MenuButton.ItemTemplate is not null)
+                {
+                    @MenuButton.ItemTemplate(Item)
+                }
+                else
+                {
+                    var itemIcon = MenuButton.GetIcon(Item);
+                    @if (itemIcon is not null)
+                    {
+                        <i style="@MenuButton.Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @MenuButton.Classes?.ItemIcon" />
+                    }
+                    <span style="@MenuButton.Styles?.ItemText" class="bit-mnb-btx @MenuButton.Classes?.ItemText">
+                        @MenuButton.GetText(Item)
+                    </span>
+                }
+            </text>;
+
+        <li role="presentation" style="@MenuButton.Styles?.ItemWrapper" class="@MenuButton.Classes?.ItemWrapper">
+            @if (isEnabled && href.HasValue())
+            {
+                <a @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
+                   role="menuitem"
+                   href="@href"
+                   tabindex="0"
+                   target="@target"
+                   rel="@(target is "_blank" ? "noopener noreferrer" : null)"
+                   title="@MenuButton.GetTitle(Item)"
+                   style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
+                   class="bit-mnb-itm @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                    @content
+                </a>
+            }
+            else
+            {
+                <button @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
+                        role="menuitem"
+                        type="@MenuButton._buttonType.GetValue()"
+                        title="@MenuButton.GetTitle(Item)"
+                        tabindex="@(isEnabled ? 0 : -1)"
+                        disabled="@(isEnabled is false)"
+                        aria-disabled="@(isEnabled is false)"
+                        style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
+                        class="bit-mnb-itm @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                    @content
+                </button>
+            }
+        </li>
+    }
+}

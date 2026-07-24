@@ -1,0 +1,101 @@
+.bb-docs {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 2.25rem;
+    align-items: start;
+}
+
+.bb-docs-menu-toggle {
+    display: none;
+}
+
+.bb-docs-sidebar {
+    position: sticky;
+    top: 4.6rem;
+    max-height: calc(100vh - 5.6rem);
+    overflow-y: auto;
+    padding-right: .5rem;
+    scrollbar-width: thin;
+    /* Keep the persistent sidebar out of the page view transition (same trick as the header). */
+    view-transition-name: bb-docs-sidebar;
+}
+
+.bb-docs-section {
+    margin-bottom: 1.25rem;
+}
+
+.bb-docs-section h4 {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--bb-text-soft);
+    margin: 0 0 .35rem;
+}
+
+.bb-docs-section ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* The sidebar anchors are rendered by <BrouterLink> - reach them via ::deep. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-section ::deep a {
+    display: block;
+    padding: .32rem .6rem;
+    border-left: 2px solid transparent;
+    border-radius: 0 var(--bb-radius-sm) var(--bb-radius-sm) 0;
+    font-size: .875rem;
+    color: var(--bb-text-muted);
+    text-decoration: none;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-section ::deep a:hover {
+    color: var(--bb-primary-hover);
+    background: var(--bb-primary-soft);
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-section ::deep a.active {
+    color: var(--bb-primary-hover);
+    border-left-color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+    font-weight: 600;
+}
+
+.bb-docs-content {
+    min-width: 0;
+    max-width: 780px;
+}
+
+@media (max-width: 900px) {
+    .bb-docs {
+        display: block;
+    }
+
+    .bb-docs-menu-toggle {
+        display: inline-flex;
+        margin-bottom: 1rem;
+    }
+
+    .bb-docs-sidebar {
+        display: none;
+        position: static;
+        max-height: none;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--bb-surface);
+        border: 1px solid var(--bb-border);
+        border-radius: var(--bb-radius);
+    }
+
+    .bb-docs-sidebar.bb-open {
+        display: block;
+    }
+}

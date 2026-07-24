@@ -67,16 +67,30 @@ namespace BitBlazorUI {
                 setCalloutWidth, fixedCalloutWidth, maxWindowWidth
             };
 
-            return Callouts.position(component, callout, responsiveMode, dropDirection, isRtl,
+            const result = Callouts.position(component, callout, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
                 setCalloutWidth, fixedCalloutWidth, maxWindowWidth);
+
+            return result;
         }
 
         // Positions an already-open (and reparented) callout relative to its component.
-        // Uses the visual viewport for both axes so the layout stays correct while the iOS
-        // keyboard is shown or the page is pinch-zoomed. getBoundingClientRect() values are
-        // layout-viewport relative, so the visible* values translate the visible region into
-        // the same coordinate space; fixed-position offsets (bottom) use the layout viewport.
+        //
+        // The hard part is the on-screen keyboard. getBoundingClientRect() and position:fixed do
+        // NOT share the same coordinate origin once the visible viewport is offset, and the
+        // relationship differs per engine: iOS reports getBoundingClientRect() in visual-viewport
+        // space while fixed is laid out in layout-viewport space (they differ by offsetTop), but
+        // Android Chrome keeps both in the same space (no difference). Rather than special-case
+        // engines, we MEASURE the relationship at runtime with a hidden fixed probe stretched to
+        // the layout viewport: its getBoundingClientRect() gives the layout viewport's edges in
+        // getBoundingClientRect space (`probe.top/left/bottom`). We then compute every target in
+        // getBoundingClientRect space and convert to style values:
+        //   - style.top  = targetTopInRectSpace - probe.top
+        //   - style.bottom = probe.bottom - targetBottomInRectSpace
+        // The visible (visual viewport) band in that same space is [visibleTop, visibleBottom].
+        // `top` anchors the "below" placement; `bottom` anchors the "above"/beside placements so
+        // the browser keeps the callout glued to the component and grows it upward natively when
+        // the content (e.g. an autocomplete list) changes - no reposition required.
         private static position(
             component: HTMLElement,
             callout: HTMLElement,
@@ -93,13 +107,21 @@ namespace BitBlazorUI {
         ) {
             const windowWidth = window.innerWidth;
 
+            // Visible (visual) viewport size and how far it is offset within the layout viewport
+            // (non-zero mainly when the on-screen keyboard is shown).
             const viewport = Utils.getViewport();
+            const visualWidth = viewport.width;
             const visualHeight = viewport.height;
-            const layoutHeight = viewport.layoutHeight;
-            const visibleTop = viewport.offsetTop;
-            const visibleBottom = viewport.offsetTop + viewport.height;
-            const visibleLeft = viewport.offsetLeft;
-            const visibleRight = viewport.offsetLeft + viewport.width;
+            const offsetTop = viewport.offsetTop;
+            const offsetLeft = viewport.offsetLeft;
+
+            // Measure the layout viewport's edges in getBoundingClientRect space (see method doc).
+            const fixedRect = Callouts.measureFixedViewport();
+            // Visible band, expressed in getBoundingClientRect space.
+            const visibleTop = fixedRect.top + offsetTop;
+            const visibleLeft = fixedRect.left + offsetLeft;
+            const visibleBottom = visibleTop + visualHeight;
+            const visibleRight = visibleLeft + visualWidth;
 
             const scrollContainer = (scrollContainerId
                 ? document.getElementById(scrollContainerId)
@@ -135,6 +157,7 @@ namespace BitBlazorUI {
             const calloutHeight = callout.offsetHeight;
             const { x: calloutLeft } = callout.getBoundingClientRect();
 
+            // Distances from the component to each edge of the visible band (getBoundingClientRect space).
             const distanceToBottom = visibleBottom - (componentY + componentHeight);
             const distanceToTop = componentY - visibleTop;
             const distanceToRight = visibleRight - (componentX + componentWidth);
@@ -173,6 +196,8 @@ namespace BitBlazorUI {
                 return true;
             }
 
+            // Horizontal placement is computed in getBoundingClientRect space then converted to a
+            // style.left value via the measured offset.
             let left = componentX + (isRtl ? (componentWidth - calloutWidth) : 0);
             const right = left + calloutWidth;
             const correctedLeft = visibleRight - calloutWidth - 3;
@@ -182,35 +207,58 @@ namespace BitBlazorUI {
                 left = (right > visibleRight) ? correctedLeft : left;
             }
             left = (left < visibleLeft) ? visibleLeft : left;
-            callout.style.left = left + 'px';
+            callout.style.left = (left - fixedRect.left) + 'px';
 
             if (dropDirection == BitDropDirection.TopAndBottom) {
                 if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
-                    callout.style.top = componentY + componentHeight + 1 + 'px';
+                    callout.style.top = (componentY + componentHeight + 1 - fixedRect.top) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
-                    callout.style.bottom = (layoutHeight - componentY + 1) + 'px';
+                    callout.style.bottom = (fixedRect.bottom - (componentY - 1)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             } else {
                 if (distanceToBottom >= calloutHeight) {
-                    callout.style.top = componentY + componentHeight + 1 + 'px';
+                    callout.style.top = (componentY + componentHeight + 1 - fixedRect.top) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if (distanceToTop >= calloutHeight) {
-                    callout.style.bottom = (layoutHeight - componentY + 1) + 'px';
+                    callout.style.bottom = (fixedRect.bottom - (componentY - 1)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if ((isRtl ? distanceToLeft : distanceToRight) >= calloutWidth) {
-                    callout.style.bottom = (layoutHeight - visibleBottom + 2) + 'px';
-                    callout.style.left = (isRtl ? (componentX - calloutWidth - 1) : (componentX + componentWidth + 1)) + 'px';
+                    callout.style.left = ((isRtl ? (componentX - calloutWidth - 1) : (componentX + componentWidth + 1)) - fixedRect.left) + 'px';
+                    callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
-                    callout.style.bottom = (layoutHeight - visibleBottom + 2) + 'px';
-                    callout.style.left = (isRtl ? (componentX + componentWidth + 1) : (componentX - calloutWidth - 1)) + 'px';
+                    // Neither horizontal side has enough space; fall back to the opposite side but
+                    // re-clamp so the callout never lands at a negative/off-viewport left offset.
+                    let sideLeft = isRtl ? (componentX + componentWidth + 1) : (componentX - calloutWidth - 1);
+                    if (sideLeft + calloutWidth > visibleRight) sideLeft = visibleRight - calloutWidth - 3;
+                    if (sideLeft < visibleLeft) sideLeft = visibleLeft;
+                    callout.style.left = (sideLeft - fixedRect.left) + 'px';
+                    callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             }
 
             return (calloutWidth + calloutLeft) > document.body.offsetWidth;
+        }
+
+        // Measures the layout viewport's edges in getBoundingClientRect() space by stretching a
+        // hidden position:fixed probe across it. Lets positioning convert between getBoundingClientRect
+        // coordinates and style.top/left/bottom values regardless of how the engine relates fixed
+        // positioning to getBoundingClientRect when the visible viewport is offset (iOS keyboard).
+        private static measureFixedViewport(): { top: number, left: number, bottom: number } {
+            try {
+                const probe = document.createElement('div');
+                probe.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;margin:0;border:0;padding:0;visibility:hidden;pointer-events:none;';
+                document.body.appendChild(probe);
+                const rect = probe.getBoundingClientRect();
+                document.body.removeChild(probe);
+                return { top: rect.top, left: rect.left, bottom: rect.bottom };
+            } catch (e) {
+                console.error('BitBlazorUI.Callouts.measureFixedViewport:', e);
+                return { top: 0, left: 0, bottom: window.innerHeight };
+            }
         }
 
         // Re-runs positioning for the currently open callout. Used when the visual viewport
@@ -233,6 +281,17 @@ namespace BitBlazorUI {
         public static reset() {
             Callouts.current = Callouts.DEFAULT_CALLOUT;
             Callouts._currentParams = null;
+        }
+
+        // True when the node lives inside the open callout's anchor component (e.g. the SearchBox
+        // input that owns the suggestion callout). Used so that a scroll/resize while that input is
+        // focused - typically caused by the on-screen keyboard moving the page - re-anchors the
+        // callout to the component's new position instead of dismissing it.
+        public static componentContains(node: Node | null): boolean {
+            if (node == null) return false;
+            const componentId = Callouts._currentParams?.componentId;
+            if (!componentId) return false;
+            return document.getElementById(componentId)?.contains(node) ?? false;
         }
 
         private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string) {

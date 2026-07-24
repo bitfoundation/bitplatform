@@ -1,0 +1,21 @@
+﻿@* Exercises the unified by-name parameter binding on a hand-declared route:
+   plain [Parameter] properties bind route values by name, [BrouterParameter(Name = ...)]
+   remaps a route parameter to a differently-named property, and [Parameter] properties
+   whose names aren't in the template are left untouched. *@
+
+<div>
+    <div data-testid="bind-id">@Id</div>
+    <div data-testid="bind-display">@(DisplayName ?? "(null)")</div>
+    <div data-testid="bind-other">@(Other ?? "(null)")</div>
+</div>
+
+@code {
+    // Conventional Blazor binding: route parameter {id:int} -> property by name.
+    [Parameter] public int Id { get; set; }
+
+    // Remap: the {name} route parameter binds here even though the property is named differently.
+    [Parameter, BrouterParameter(Name = "name")] public string? DisplayName { get; set; }
+
+    // Not a route parameter in the template: the router must leave this untouched.
+    [Parameter] public string? Other { get; set; }
+}

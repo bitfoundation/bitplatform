@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Features.Statistics;
+namespace Boilerplate.Shared.Features.Statistics;
 
 [Route("api/v1/[controller]/[action]/")]
 public interface IStatisticsController : IAppController

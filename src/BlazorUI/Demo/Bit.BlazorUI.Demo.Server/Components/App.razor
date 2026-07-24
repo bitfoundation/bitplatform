@@ -1,20 +1,40 @@
 @using Bit.BlazorUI.Demo.Client.Core.Shared
-@using Bit.BlazorUI.Demo.Client.Web.Components
+@using Bit.BlazorUI.Demo.Client.Web.Shared.Components
 
 @{
+#if INCLUDE_WASM
+    var includeWasm = true;
+#else
+    var includeWasm = false;
+#endif
+#if DEBUG
+    // While debugging, boot from the framework-served blazor.web.js instead of the ES2019-transpiled
+    // bit.blazor.web.es2019.js variant, which is only needed to support legacy (non-ES2019+) browsers.
+    var blazorWebScript = "_framework/blazor.web.js";
+#else
+    var blazorWebScript = "_framework/bit.blazor.web.es2019.js";
+#endif
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
-    var renderMode = noPrerender ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.Current;
+    // Without the WASM client in the build, WebAssembly render modes can't boot, so fall back to Blazor Server
+    // even where AppRenderMode.Current would pick WebAssembly (e.g. Release with IncludeWasm=false).
+    var renderMode = noPrerender
+        ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
+        : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
 }
 
 <!DOCTYPE html>
-<html bit-theme="dark">
+<html lang="en" bit-theme="dark">
 
 <head>
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color">
+    <meta name="theme-color" content="#0d1117" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- No static <title> here: the per-page title is emitted through <HeadOutlet> (PageOutlet's <PageTitle>),
+         with Routes.razor providing the "bit BlazorUI" fallback. A hardcoded <title> would produce a duplicate
+         <title> element in the prerendered HTML. -->
 
     <Script>
         // disable auto-zoom of iOS Safari when focusing an input
@@ -22,17 +42,65 @@
         (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
     </Script>
 
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@graph": [
+            {
+                "@@type": "Organization",
+                "@@id": "https://blazorui.bitplatform.dev/#organization",
+                "name": "bit platform",
+                "url": "https://bitplatform.dev",
+                "logo": "https://blazorui.bitplatform.dev/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png",
+                "sameAs": [
+                    "https://github.com/bitfoundation/bitplatform"
+                ]
+            },
+            {
+                "@@type": "WebSite",
+                "@@id": "https://blazorui.bitplatform.dev/#website",
+                "url": "https://blazorui.bitplatform.dev/",
+                "name": "bit BlazorUI",
+                "description": "Native, easy-to-customize, open-source Blazor UI components that work seamlessly across WebAssembly, Server, Hybrid (MAUI) and pre-rendering.",
+                "publisher": { "@@id": "https://blazorui.bitplatform.dev/#organization" },
+                "inLanguage": "en-US"
+            },
+            {
+                "@@type": "SoftwareApplication",
+                "name": "bit BlazorUI",
+                "applicationCategory": "DeveloperApplication",
+                "operatingSystem": "Cross-platform",
+                "url": "https://blazorui.bitplatform.dev/",
+                "downloadUrl": "https://www.nuget.org/packages/Bit.BlazorUI/",
+                "softwareRequirements": ".NET 8.0+",
+                "description": "An open-source set of 80+ native Blazor UI components for WebAssembly, Server, Hybrid (MAUI) and pre-rendering.",
+                "author": { "@@id": "https://blazorui.bitplatform.dev/#organization" },
+                "offers": {
+                    "@@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                }
+            }
+        ]
+    }
+    </script>
+
     <HeadOutlet @rendermode=renderMode />
 
-    <Link rel="manifest" Href="manifest.json" />
-    <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
-    <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
+    @if (includeWasm)
+    {
+        @* These files live in the Client.Web project's wwwroot, so they only exist when the WASM client is part of the build. *@
+        <Link rel="manifest" Href="manifest.json" />
+        <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
+    }
+    <Link rel="icon" Href="_content/Bit.BlazorUI.Demo.Client.Core/favicon.ico" type="image/x-icon" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main bit-blazor-web">
 
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.css" />
@@ -47,13 +115,23 @@
 
     @if (HttpContext.Request.IsLightHouseRequest() is false)
     {
-        <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-        <AppBswupProgressBar />
+        @if (includeWasm)
+        {
+            <Script Src="@blazorWebScript" autostart="false"></Script>
+            <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="@blazorWebScript"></Script>
+            <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+            <AppBswupProgressBar />
+        }
+        else
+        {
+            @* No WASM client in this build (Debug renders in Blazor Server mode), so boot blazor directly without Bswup/service-worker.
+               Uses the framework-served blazor.web.js (always available) rather than the ES2019 variant, which only ships in the WASM build. *@
+            <Script Src="_framework/blazor.web.js"></Script>
+        }
         <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script Src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
     }
 </body>

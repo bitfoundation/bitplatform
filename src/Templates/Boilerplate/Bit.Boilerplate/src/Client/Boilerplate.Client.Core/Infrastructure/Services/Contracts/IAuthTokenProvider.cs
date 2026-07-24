@@ -1,4 +1,5 @@
-﻿using System.Text;
+//+:cnd:noEmit
+using System.Text;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
@@ -35,7 +36,7 @@ public interface IAuthTokenProvider
         if (validateExpiry && long.TryParse(parsedClaims["exp"].ToString(), out var expSeconds))
         {
             var expirationDate = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
-            if (expirationDate <= DateTimeOffset.UtcNow)
+            if (expirationDate <= TimeProvider.GetUtcNow())
                 return null;
         }
 
@@ -55,11 +56,18 @@ public interface IAuthTokenProvider
             }
         }
 
-        if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.SuperAdmin))
+        if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.GlobalAdmin))
         {
-            foreach (var feat in AppFeatures.GetSuperAdminFeatures())
+            foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
                 claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
         }
+        //#if (multitenant == true)
+        else if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.TenantAdmin))
+        {
+            foreach (var feat in AppFeatures.GetTenantAdminFeatures())
+                claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
+        }
+        //#endif
 
         return claims;
     }

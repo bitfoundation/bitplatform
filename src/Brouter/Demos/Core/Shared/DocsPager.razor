@@ -1,0 +1,59 @@
+@inject IBrouter brouter
+@implements IDisposable
+
+@* Previous/next navigation in the catalog's reading order - turns the docs into a course you
+   can page through. Lives in DocsShell below the outlet, so it re-computes per navigation. *@
+
+@if (_current is not null && (_previous is not null || _next is not null))
+{
+    <nav class="bb-pager" aria-label="Documentation pager">
+        @if (_previous is not null)
+        {
+            <BrouterLink Href="@_previous.Url" class="bb-pager-link bb-pager-prev">
+                <span class="bb-pager-label">← Previous</span>
+                <span class="bb-pager-title">@_previous.Title</span>
+            </BrouterLink>
+        }
+        else
+        {
+            <span></span>
+        }
+        @if (_next is not null)
+        {
+            <BrouterLink Href="@_next.Url" class="bb-pager-link bb-pager-next">
+                <span class="bb-pager-label">Next →</span>
+                <span class="bb-pager-title">@_next.Title</span>
+            </BrouterLink>
+        }
+    </nav>
+}
+
+@code {
+    private DocsPageInfo? _current;
+    private DocsPageInfo? _previous;
+    private DocsPageInfo? _next;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigated;
+
+    protected override void OnInitialized()
+    {
+        Recompute();
+        _onNavigated = ctx =>
+        {
+            Recompute();
+            _ = InvokeAsync(StateHasChanged);
+            return ValueTask.CompletedTask;
+        };
+        brouter.OnNavigated += _onNavigated;
+    }
+
+    private void Recompute()
+    {
+        _current = DocsCatalog.FindByPath(brouter.Location.Path);
+        (_previous, _next) = _current is null ? (null, null) : DocsCatalog.NeighborsOf(_current);
+    }
+
+    public void Dispose()
+    {
+        if (_onNavigated is not null) brouter.OnNavigated -= _onNavigated;
+    }
+}

@@ -23,9 +23,12 @@ public static class IServiceCollectionExtensions
             };
         });
 
-        services.AddRazorComponents()
-            .AddInteractiveServerComponents()
-            .AddInteractiveWebAssemblyComponents();
+        var razorComponentsBuilder = services.AddRazorComponents()
+            .AddInteractiveServerComponents();
+
+#if INCLUDE_WASM
+        razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+#endif
 
         services.AddClientWebServices();
     }

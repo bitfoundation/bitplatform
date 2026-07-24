@@ -2,7 +2,7 @@
 
 <PageOutlet Url="components/cascadingvalueprovider"
             Title="CascadingValueProvider"
-            Description="cascading value provider component of the bit BlazorUI components" />
+            Description="BitCascadingValueProvider makes it easy to push multiple cascading values to child components without nesting several CascadingValue components manually." />
 
 <DemoPage Name="CascadingValueProvider"
           Description="BitCascadingValueProvider makes it easy to push multiple cascading values to child components without nesting several CascadingValue components manually."
@@ -10,7 +10,7 @@
           SubClasses="componentSubClasses"
           GitHubUrl="../Utils/Params/BitCascadingValueProvider.cs"
           GitHubDemoUrl="Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Checkout the basic usage of the BitCascadingValueProvider in action here.</div>
 
         <br /><br />
@@ -23,7 +23,7 @@
                         new(new CascadingDemoUser("Saleh Xafan", "CTO"), "NamedUser"),
                         new(new CascadingDemoUser("Yaser Moradi", "CEO"))
                     ])">
-            <CascadingValueConsumer />
+            <CascadingValueDemoConsumer />
         </BitCascadingValueProvider>
     </DemoExample>
 
@@ -43,7 +43,7 @@
         <br /><br />
 
         <BitCascadingValueProvider Values="values">
-            <CascadingValueConsumer Title="Changing cascading values:" />
+            <CascadingValueDemoConsumer Title="Changing cascading values:" />
         </BitCascadingValueProvider>
     </DemoExample>
 
@@ -61,7 +61,7 @@
                             { nullableNamedUser, "UserInfo" },
                             { nullableTypedUser }
                         })">
-            <CascadingValueConsumer Title="ValueList cascading values:" />
+            <CascadingValueDemoConsumer Title="ValueList cascading values:" />
         </BitCascadingValueProvider>
     </DemoExample>
 </DemoPage>

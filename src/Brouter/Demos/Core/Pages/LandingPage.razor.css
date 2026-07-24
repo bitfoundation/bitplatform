@@ -1,0 +1,211 @@
+.bb-landing {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    padding-top: 1.5rem;
+}
+
+/* ---------- Hero ---------- */
+
+.bb-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: center;
+}
+
+.bb-hero-eyebrow {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+    padding: .3rem .65rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+}
+
+.bb-hero-copy h1 {
+    font-size: 2.6rem;
+    line-height: 1.12;
+    margin-bottom: .85rem;
+}
+
+.bb-hero-accent {
+    background: linear-gradient(90deg, var(--bb-primary), var(--bb-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.bb-hero-sub {
+    color: var(--bb-text-muted);
+    font-size: 1.05rem;
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+    max-width: 34rem;
+}
+
+.bb-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+}
+
+.bb-hero-code {
+    min-width: 0;
+}
+
+/* ---------- Proof strip ---------- */
+
+.bb-proof {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1px;
+    background: var(--bb-border);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    overflow: hidden;
+}
+
+.bb-proof > div {
+    background: var(--bb-surface);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.bb-proof strong {
+    color: var(--bb-text);
+    font-size: .95rem;
+}
+
+.bb-proof span {
+    color: var(--bb-text-muted);
+    font-size: .82rem;
+}
+
+/* ---------- Sections ---------- */
+
+.bb-section h2 {
+    font-size: 1.6rem;
+    margin-bottom: .35rem;
+}
+
+.bb-section-sub {
+    color: var(--bb-text-muted);
+    max-width: 44rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ---------- Walkthrough ---------- */
+
+.bb-walkthrough {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 1.25rem;
+}
+
+.bb-walkthrough-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 2rem;
+    align-items: center;
+}
+
+.bb-walkthrough-row:nth-child(even) .bb-walkthrough-copy {
+    order: 2;
+}
+
+.bb-walkthrough-copy h3 {
+    font-size: 1.2rem;
+    margin-bottom: .4rem;
+}
+
+.bb-walkthrough-copy p {
+    color: var(--bb-text-muted);
+}
+
+/* ---------- Comparison ---------- */
+
+.bb-compare td:first-child {
+    font-family: inherit;
+    white-space: normal;
+    font-weight: 500;
+}
+
+/* ---------- FAQ ---------- */
+
+.bb-faq {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    max-width: 52rem;
+}
+
+.bb-faq details {
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: .85rem 1.1rem;
+}
+
+.bb-faq summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--bb-text);
+    list-style-position: outside;
+}
+
+.bb-faq details[open] summary {
+    margin-bottom: .5rem;
+}
+
+.bb-faq p {
+    color: var(--bb-text-muted);
+    margin: 0;
+}
+
+/* ---------- Final CTA ---------- */
+
+.bb-final-cta {
+    text-align: center;
+    padding: 2.5rem 1rem 1rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.bb-final-cta h2 {
+    margin-bottom: 1rem;
+}
+
+/* Center the install line and buttons in the final CTA. */
+.bb-final-cta .bb-hero-install {
+    display: inline-block;
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.bb-final-cta .bb-hero-actions {
+    justify-content: center;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+    .bb-hero,
+    .bb-walkthrough-row {
+        grid-template-columns: 1fr;
+    }
+
+    .bb-walkthrough-row:nth-child(even) .bb-walkthrough-copy {
+        order: 0;
+    }
+
+    .bb-hero-copy h1 {
+        font-size: 2.1rem;
+    }
+}

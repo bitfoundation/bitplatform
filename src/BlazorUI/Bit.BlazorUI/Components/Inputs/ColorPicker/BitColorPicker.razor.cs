@@ -132,7 +132,7 @@ public partial class BitColorPicker : BitComponentBase
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, nameof(HandlePointerUp), nameof(HandlePointerMove));
+        _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, _saturationPickerRef, nameof(HandlePointerUp), nameof(HandlePointerMove));
 
         // When setup fails it returns no id, meaning the JS side never registered the abort controller and
         // therefore can't own and dispose this .NET reference later. Release it here so the GCHandle doesn't

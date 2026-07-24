@@ -32,7 +32,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build Boilerplate.slnx'
+      script: 'dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true'
 
   - task: Bash@3
     displayName: 'Install Playwright'

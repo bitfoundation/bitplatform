@@ -7,14 +7,17 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class IIosServiceCollectionExtensions
 {
-    public static IServiceCollection AddClientMauiProjectIosServices(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        // Services registered in this class can be injected in iOS.
+        public IServiceCollection AddClientMauiProjectIosServices(IConfiguration configuration)
+        {
+            // Services registered in this class can be injected in iOS.
 
-        //#if (notification == true)
-        services.AddSingleton<IPushNotificationService, iOSPushNotificationService>();
-        //#endif
+            //#if (notification == true)
+            services.AddSingleton<IPushNotificationService, iOSPushNotificationService>();
+            //#endif
 
-        return services;
+            return services;
+        }
     }
 }

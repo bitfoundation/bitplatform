@@ -8,14 +8,354 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    @if (ToolbarTemplate is not null)
+    @if (ShowToolbar)
     {
-        <div @ref="_toolbarRef" style="@Styles?.Toolbar" class="bit-rte-tlb @Classes?.Toolbar">
-            @ToolbarTemplate
+        <div @ref="_toolbarRef" role="toolbar" aria-label="@Label("toolbar", "Formatting")"
+             style="@Styles?.Toolbar" class="bit-rte-tlb @Classes?.Toolbar">
+            @foreach (var id in OrderedToolbarIds())
+            {
+                @RenderGroup(id)
+            }
+        </div>
+
+        @if (_showLinkInput && ControlsDisabled is false)
+        {
+            <div class="bit-rte-bar">
+                <input type="url" class="bit-rte-inp" aria-label="@Label("link-url", "Link URL")"
+                       placeholder="@Label("link-url-placeholder", "https://example.com")"
+                       @bind="_linkUrl" @bind:event="oninput"
+                       @onkeydown="OnLinkKeyDown" />
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ApplyLinkAsync">@Label("apply", "Apply")</button>
+                @if (_state.InLink)
+                {
+                    <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="RemoveLinkAsync">@Label("remove", "Remove")</button>
+                }
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ToggleLinkInput">@Label("cancel", "Cancel")</button>
+            </div>
+        }
+
+        @if (_showImageInput && ControlsDisabled is false)
+        {
+            <div class="bit-rte-bar">
+                <input type="url" class="bit-rte-inp" aria-label="@Label("image-url", "Image URL")"
+                       placeholder="@Label("image-url-placeholder", "https://example.com/image.png")"
+                       @bind="_imageUrl" @bind:event="oninput" />
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ApplyImageUrlAsync">@Label("insert", "Insert")</button>
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ToggleImageInput">@Label("cancel", "Cancel")</button>
+            </div>
+        }
+
+        @if (_showMediaInput && ControlsDisabled is false)
+        {
+            <div class="bit-rte-bar">
+                <input type="url" class="bit-rte-inp" aria-label="@Label("media-url", "Media URL")"
+                       placeholder="@Label("media-url-placeholder", "https://youtube.com/watch?v=...")"
+                       @bind="_mediaUrl" @bind:event="oninput" />
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ApplyMediaAsync">@Label("embed", "Embed")</button>
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ToggleMediaInput">@Label("cancel", "Cancel")</button>
+            </div>
+        }
+
+        @if (_showFind && ControlsDisabled is false)
+        {
+            <div class="bit-rte-bar" id="@($"{UniqueId}-find-panel")">
+                <input type="text" class="bit-rte-inp" aria-label="@Label("find", "Find")" placeholder="@Label("find", "Find")"
+                       @bind="_findTerm" @bind:event="oninput" @bind:after="RunFindAsync" />
+                <input type="text" class="bit-rte-inp" aria-label="@Label("replace-with", "Replace with")" placeholder="@Label("replace-with", "Replace with")"
+                       @bind="_replaceTerm" @bind:event="oninput" />
+                <label class="bit-rte-find-opt"><input type="checkbox" aria-label="@Label("match-case", "Match case")" @bind="_findCaseSensitive" @bind:after="RunFindAsync" /> Aa</label>
+                <span class="bit-rte-find-count">@_findCount</span>
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ReplaceCurrentAsync">@Label("replace", "Replace")</button>
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ReplaceAllAsync">@Label("all", "All")</button>
+                <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" @onclick="ToggleFind">@Label("close", "Close")</button>
+            </div>
+        }
+
+        @if (_showEmoji && ControlsDisabled is false)
+        {
+            <div class="bit-rte-emoji-panel" id="@($"{UniqueId}-emoji-panel")">
+                <input type="text" class="bit-rte-inp" aria-label="@Label("search-emoji", "Search emoji")"
+                       placeholder="@Label("search", "Search")"
+                       @bind="_emojiSearch" @bind:event="oninput" />
+                <div class="bit-rte-emoji-grid">
+                    @{ var filteredEmoji = FilteredEmoji().ToArray(); }
+                    @foreach (var emo in filteredEmoji)
+                    {
+                        <button type="button" class="bit-rte-emoji" title="@emo.Name" aria-label="@emo.Name"
+                                @onmousedown:preventDefault="true" @onclick="() => InsertEmojiAsync(emo.Char)">@emo.Char</button>
+                    }
+                    @if (filteredEmoji.Any() is false)
+                    {
+                        <span class="bit-rte-emoji-empty">@Label("no-matches", "No matches")</span>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    @if (_inlineError is not null)
+    {
+        <div class="bit-rte-err" role="alert">@_inlineError</div>
+    }
+
+    @if (_showSlash && ControlsDisabled is false)
+    {
+        <div class="bit-rte-slash">
+            <input type="text" class="bit-rte-inp" aria-label="@Label("filter-commands", "Filter commands")"
+                   placeholder="@Label("filter-commands", "Filter commands…")"
+                   @ref="_slashInputRef"
+                   role="combobox"
+                   aria-expanded="true"
+                   aria-autocomplete="list"
+                   aria-controls="@($"{UniqueId}-slash-list")"
+                   aria-activedescendant="@(FilteredSlash().Any() ? $"{UniqueId}-slash-item-{_slashIndex}" : null)"
+                   value="@_slashFilter" @oninput="OnSlashFilterInput"
+                   @onkeydown="OnSlashKeyDownAsync" />
+            <div class="bit-rte-slash-list" role="listbox" id="@($"{UniqueId}-slash-list")" aria-label="@Label("filter-commands", "Filter commands")">
+                @{ var _slashItemIndex = 0; }
+                @foreach (var c in FilteredSlash())
+                {
+                    var _itemIndex = _slashItemIndex++;
+                    <button type="button" id="@($"{UniqueId}-slash-item-{_itemIndex}")"
+                            role="option"
+                            aria-selected="@((_itemIndex == _slashIndex).ToString().ToLowerInvariant())"
+                            class="bit-rte-slash-item@(_itemIndex == _slashIndex ? " bit-rte-slash-item-sel" : null)"
+                            @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
+                }
+            </div>
+            @if (FilteredSlash().Any() is false)
+            {
+                <div class="bit-rte-emoji-empty">@Label("no-command", "No matching command")</div>
+            }
         </div>
     }
 
-    <div @ref="_editorRef" style="@Styles?.Editor" class="bit-rte-edt @Classes?.Editor">
-        @EditorTemplate
-    </div>
+    <div class="bit-rte-edt @Classes?.Editor"
+         @ref="_editorRef"
+         role="textbox"
+         aria-multiline="true"
+         aria-label="@Label("editor", "Rich text editor")"
+         aria-readonly="@(ReadOnly ? "true" : null)"
+         contenteditable="@((ReadOnly is false && _inSourceView is false).ToString().ToLowerInvariant())"
+         data-placeholder="@Placeholder"
+         hidden="@_inSourceView"
+         style="min-height:@Height;@Styles?.Editor"></div>
+
+    @if (_inSourceView)
+    {
+        <textarea class="bit-rte-src @Classes?.Source" style="min-height:@Height;@Styles?.Source"
+                  @ref="_sourceRef"
+                  aria-label="@Label("source-view", "HTML source")"
+                  spellcheck="false"
+                  readonly="@ReadOnly"
+                  value="@_sourceText" @oninput="OnSourceTextChanged"></textarea>
+    }
+
+    @if (ShowCount)
+    {
+        <div class="bit-rte-cnt @Classes?.Count" style="@Styles?.Count">
+            @_facts.WordCount @Label("words", "words") · @_facts.CharacterCount@(MaxLength is int max ? $"/{max}" : "") @Label("chars", "chars")
+            @if (MaxLength is int m && _facts.CharacterCount >= m)
+            {
+                <span class="bit-rte-cnt-over">@Label("limit-reached", "limit reached")</span>
+            }
+        </div>
+    }
 </div>
+
+@code {
+    private RenderFragment RenderGroup(string id) => builder =>
+    {
+        switch (id)
+        {
+            case "history": builder.AddContent(0, HistoryGroup); break;
+            case "blockformat": builder.AddContent(0, BlockFormatGroup); break;
+            case "font": builder.AddContent(0, FontGroup); break;
+            case "inline": builder.AddContent(0, InlineGroup); break;
+            case "color": builder.AddContent(0, ColorGroup); break;
+            case "script": builder.AddContent(0, ScriptGroup); break;
+            case "lists": builder.AddContent(0, ListsGroup); break;
+            case "indent": builder.AddContent(0, IndentGroup); break;
+            case "blocks": builder.AddContent(0, BlocksGroup); break;
+            case "link": builder.AddContent(0, LinkGroup); break;
+            case "media": builder.AddContent(0, MediaGroup); break;
+            case "image": builder.AddContent(0, ImageGroup); break;
+            case "table": builder.AddContent(0, TableGroup); break;
+            case "rule": builder.AddContent(0, RuleGroup); break;
+            case "alignment": builder.AddContent(0, AlignmentGroup); break;
+            case "direction": builder.AddContent(0, DirectionGroup); break;
+            case "emoji": builder.AddContent(0, EmojiGroup); break;
+            case "find": builder.AddContent(0, FindGroup); break;
+            case "source": builder.AddContent(0, SourceGroup); break;
+            case "fullscreen": builder.AddContent(0, FullScreenGroup); break;
+            case "clear": builder.AddContent(0, ClearGroup); break;
+            default: RenderCustomItem(builder, id); break;
+        }
+    };
+
+    private RenderFragment HistoryGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("undo", "Undo (Ctrl+Z)")" aria-label="@Label("undo-label", "Undo")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="UndoAsync">↶</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("redo", "Redo (Ctrl+Y)")" aria-label="@Label("redo-label", "Redo")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="RedoAsync">↷</button>
+    </div>;
+
+    private RenderFragment BlockFormatGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <select class="bit-rte-sel" title="@Label("paragraph-format", "Paragraph format")" aria-label="@Label("paragraph-format", "Paragraph format")" disabled="@ControlsDisabled"
+                value="@_state.Block" @onchange="OnBlockFormatChanged">
+            <option value="p">@Label("block-normal", "Normal")</option>
+            <option value="h1">@Label("heading-1", "Heading 1")</option>
+            <option value="h2">@Label("heading-2", "Heading 2")</option>
+            <option value="h3">@Label("heading-3", "Heading 3")</option>
+        </select>
+    </div>;
+
+    private RenderFragment FontGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <select class="bit-rte-sel" title="@Label("font-family", "Font family")" aria-label="@Label("font-family", "Font family")" disabled="@ControlsDisabled"
+                value="@(_state.FontName ?? "")" @onchange="@(e => ApplyFontAsync("name", e))">
+            <option value="">@Label("font", "Font")</option>
+            @foreach (var f in EffectiveFontFamilies)
+            {
+                <option value="@f">@f</option>
+            }
+        </select>
+        <select class="bit-rte-sel" title="@Label("font-size", "Font size")" aria-label="@Label("font-size", "Font size")" disabled="@ControlsDisabled"
+                value="@(_state.FontSize ?? "")" @onchange="@(e => ApplyFontAsync("size", e))">
+            <option value="">@Label("size", "Size")</option>
+            @foreach (var s in EffectiveFontSizes)
+            {
+                <option value="@s">@s</option>
+            }
+        </select>
+    </div>;
+
+    private RenderFragment InlineGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Bold ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("bold", "Bold (Ctrl+B)")" aria-label="@Label("bold-label", "Bold")" aria-pressed="@_state.Bold" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("bold")'><b>B</b></button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Italic ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("italic", "Italic (Ctrl+I)")" aria-label="@Label("italic-label", "Italic")" aria-pressed="@_state.Italic" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("italic")'><i>I</i></button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Underline ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("underline", "Underline (Ctrl+U)")" aria-label="@Label("underline-label", "Underline")" aria-pressed="@_state.Underline" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("underline")'><u>U</u></button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.StrikeThrough ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("strikethrough", "Strikethrough")" aria-label="@Label("strikethrough", "Strikethrough")" aria-pressed="@_state.StrikeThrough" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("strikeThrough")'><s>S</s></button>
+    </div>;
+
+    private RenderFragment ColorGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <label class="bit-rte-color" title="@Label("text-color", "Text color")">
+            <span>A</span>
+            <input type="color" aria-label="@Label("text-color", "Text color")" disabled="@ControlsDisabled"
+                   @onchange="@(e => ApplyColorAsync("fore", e))" />
+        </label>
+        <label class="bit-rte-color bit-rte-color-bg" title="@Label("highlight-color", "Highlight color")">
+            <span>🖍</span>
+            <input type="color" aria-label="@Label("highlight-color", "Highlight color")" disabled="@ControlsDisabled"
+                   @onchange="@(e => ApplyColorAsync("back", e))" />
+        </label>
+    </div>;
+
+    private RenderFragment ScriptGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Subscript ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("subscript", "Subscript")" aria-label="@Label("subscript", "Subscript")" aria-pressed="@_state.Subscript" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="SubscriptAsync">X₂</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Superscript ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("superscript", "Superscript")" aria-label="@Label("superscript", "Superscript")" aria-pressed="@_state.Superscript" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="SuperscriptAsync">X²</button>
+    </div>;
+
+    private RenderFragment ListsGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.UnorderedList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("bullet-list", "Bullet list")" aria-label="@Label("bullet-list", "Bullet list")" aria-pressed="@_state.UnorderedList" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("insertUnorderedList")'>•≣</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.OrderedList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("numbered-list", "Numbered list")" aria-label="@Label("numbered-list", "Numbered list")" aria-pressed="@_state.OrderedList" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("insertOrderedList")'>1≣</button>
+    </div>;
+
+    private RenderFragment IndentGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("decrease-indent", "Decrease indent")" aria-label="@Label("decrease-indent", "Decrease indent")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="OutdentAsync">⇤</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("increase-indent", "Increase indent")" aria-label="@Label("increase-indent", "Increase indent")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="IndentAsync">⇥</button>
+    </div>;
+
+    private RenderFragment BlocksGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Block == "blockquote" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("quote", "Quote")" aria-label="@Label("block-quote", "Block quote")" aria-pressed="@(_state.Block == "blockquote")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => FormatBlockToggleAsync("blockquote")'>❝</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Block == "pre" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("code-block", "Code block")" aria-label="@Label("code-block", "Code block")" aria-pressed="@(_state.Block == "pre")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => FormatBlockToggleAsync("pre")'>&lt;/&gt;</button>
+    </div>;
+
+    private RenderFragment LinkGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.InLink ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("link", "Insert/edit link")" aria-label="@Label("link-label", "Insert or edit link")" aria-pressed="@_state.InLink" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="ToggleLinkInput">🔗</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("remove-link", "Remove link")" aria-label="@Label("remove-link", "Remove link")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="RemoveLinkAsync">⛓</button>
+    </div>;
+
+    private RenderFragment MediaGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("embed-media", "Embed media")" aria-label="@Label("embed-media", "Embed media")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="ToggleMediaInput">▶</button>
+    </div>;
+
+    private RenderFragment ImageGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("insert-image", "Insert image")" aria-label="@Label("insert-image", "Insert image")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="ToggleImageInput">🖼</button>
+    </div>;
+
+    private RenderFragment TableGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("insert-table", "Insert 2×2 table")" aria-label="@Label("insert-table-label", "Insert table")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="() => InsertTableAsync(2, 2)">▦</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("add-row", "Add row")" aria-label="@Label("add-row", "Add row")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("addRow")'>+R</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("add-column", "Add column")" aria-label="@Label("add-column", "Add column")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("addCol")'>+C</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("delete-row", "Delete row")" aria-label="@Label("delete-row", "Delete row")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("delRow")'>−R</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("delete-column", "Delete column")" aria-label="@Label("delete-column", "Delete column")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("delCol")'>−C</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("merge-cells", "Merge cells")" aria-label="@Label("merge-cells", "Merge cells")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("merge")'>⊟</button>
+    </div>;
+
+    private RenderFragment RuleGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("horizontal-rule", "Horizontal rule")" aria-label="@Label("horizontal-rule", "Horizontal rule")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="InsertRuleAsync">―</button>
+    </div>;
+
+    private RenderFragment AlignmentGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyLeft ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("align-left", "Align left")" aria-label="@Label("align-left", "Align left")" aria-pressed="@_state.JustifyLeft" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("justifyLeft")'>⯇</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyCenter ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("align-center", "Align center")" aria-label="@Label("align-center", "Align center")" aria-pressed="@_state.JustifyCenter" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("justifyCenter")'>≡</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyRight ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("align-right", "Align right")" aria-label="@Label("align-right", "Align right")" aria-pressed="@_state.JustifyRight" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ExecAsync("justifyRight")'>⯈</button>
+    </div>;
+
+    private RenderFragment DirectionGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Direction == "ltr" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("ltr", "Left-to-right")" aria-label="@Label("ltr-label", "Left to right")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => SetDirectionAsync("ltr")'>⇄</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Direction == "rtl" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("rtl", "Right-to-left")" aria-label="@Label("rtl-label", "Right to left")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => SetDirectionAsync("rtl")'>⇆</button>
+    </div>;
+
+    private RenderFragment EmojiGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showEmoji ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("emoji", "Emoji")" aria-label="@Label("emoji-label", "Insert emoji")" aria-expanded="@(_showEmoji ? "true" : "false")" aria-controls="@($"{UniqueId}-emoji-panel")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="ToggleEmoji">☺</button>
+    </div>;
+
+    private RenderFragment FindGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("find-replace", "Find & replace")" aria-label="@Label("find-replace-label", "Find and replace")" aria-expanded="@(_showFind ? "true" : "false")" aria-controls="@($"{UniqueId}-find-panel")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="ToggleFind">🔍</button>
+    </div>;
+
+    private RenderFragment SourceGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("source", "HTML source")" aria-label="@Label("source-label", "HTML source view")" aria-pressed="@_inSourceView" disabled="@(ReadOnly && _inSourceView is false)"
+                @onmousedown:preventDefault="true" @onclick="ToggleSourceViewAsync">&lt;/&gt;</button>
+    </div>;
+
+    private RenderFragment FullScreenGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_fullScreen ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("full-screen", "Full screen")" aria-label="@Label("full-screen-label", "Toggle full screen")" aria-pressed="@_fullScreen"
+                @onmousedown:preventDefault="true" @onclick="ToggleFullScreen">⛶</button>
+    </div>;
+
+    private RenderFragment ClearGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Label("clear-formatting", "Clear formatting")" aria-label="@Label("clear-formatting", "Clear formatting")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick="ClearFormattingAsync">⌫</button>
+    </div>;
+}

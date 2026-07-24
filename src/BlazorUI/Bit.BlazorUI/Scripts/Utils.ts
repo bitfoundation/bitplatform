@@ -83,6 +83,18 @@
             }
         }
 
+        public static getChildrenAttributes(containerId: string, attribute: string): string[] {
+            const container = document.getElementById(containerId);
+            if (!container) return [];
+
+            try {
+                return Array.from(container.querySelectorAll(`[${attribute}]`)).map(e => e.getAttribute(attribute) || '');
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.getChildrenAttributes:", e);
+                return [];
+            }
+        }
+
         public static getBoundingClientRect(element: HTMLElement): DOMRect | null {
             // Returns null (not {}) on any failure. The C# signature is BoundingClientRect?, and an empty
             // object would deserialize into a non-null rect with all-zero dimensions, defeating the caller's

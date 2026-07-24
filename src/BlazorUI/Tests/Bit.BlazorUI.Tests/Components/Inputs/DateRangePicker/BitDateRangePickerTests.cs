@@ -1150,4 +1150,25 @@ public class BitDateRangePickerTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
     }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldRespectDefaultValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var defaultValue = new BitDateRangePickerValue
+        {
+            StartDate = new DateTimeOffset(2020, 1, 15, 0, 0, 0, DateTimeOffset.Now.Offset),
+            EndDate = new DateTimeOffset(2020, 1, 20, 0, 0, 0, DateTimeOffset.Now.Offset)
+        };
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        Assert.AreEqual(defaultValue, component.Instance.Value);
+        Assert.AreEqual(defaultValue.StartDate, component.Instance.Value!.StartDate);
+        Assert.AreEqual(defaultValue.EndDate, component.Instance.Value!.EndDate);
+    }
 }

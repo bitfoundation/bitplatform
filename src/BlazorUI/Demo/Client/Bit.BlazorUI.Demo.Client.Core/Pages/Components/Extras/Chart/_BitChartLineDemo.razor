@@ -1,10 +1,36 @@
-﻿<DemoExample Title="Linear Line Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example4">
-    <div class="example-desc">
-        A line chart is a way of plotting data points on a line. Often, it is used to show trend data, or the comparison of two data sets.
-    </div>
-    <div class="chart-wrapper">
-        <div class="chart-container">
-            <BitChart Config="_config" @ref="_chart" />
-        </div>
-    </div>
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Smooth line with area fill" RazorCode="@filledRazorCode" CsharpCode="@filledCsharpCode" Id="line-filled">
+    <div class="example-desc">A line chart plots data points on a line, often to show a trend. Here it is smoothed (tension 0.4) and filled to the origin.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Filled()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Straight lines" RazorCode="@straightRazorCode" CsharpCode="@straightCsharpCode" Id="line-straight" PreventRenderForMcpClient>
+    <div class="example-desc">Two series without smoothing (tension 0).</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Stepped line" RazorCode="@steppedRazorCode" CsharpCode="@steppedCsharpCode" Id="line-stepped" PreventRenderForMcpClient>
+    <div class="example-desc">A stepped line interpolates between points as steps (<code>Stepped = BitChartSteppedLine.Before</code>).</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Stepped()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Dashed border with custom points" RazorCode="@dashedRazorCode" CsharpCode="@dashedCsharpCode" Id="line-dashed">
+    <div class="example-desc">A dashed border (<code>BorderDash</code>), star point markers and gap handling (<code>SpanGaps</code>) for a <code>null</code> value.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Dashed()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Logarithmic Y axis" RazorCode="@logRazorCode" CsharpCode="@logCsharpCode" Id="line-log">
+    <div class="example-desc">A logarithmic value axis handles data that spans several orders of magnitude.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Log()" Options="_logOptions" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Per-segment styling" RazorCode="@segmentedRazorCode" CsharpCode="@segmentedCsharpCode" Id="line-segmented">
+    <div class="example-desc">Each line segment is styled from its own context: up = green, down = red, projection dashed.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Segmented()" Options="_legendBottom" /></div></div>
+</DemoExample>
+
+<DemoExample Title="Monotone smoothing" RazorCode="@monotoneRazorCode" CsharpCode="@monotoneCsharpCode" Id="line-monotone" PreventRenderForMcpClient>
+    <div class="example-desc">Monotone cubic interpolation smooths the line without overshooting the data points.</div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Monotone()" Options="_legendBottom" /></div></div>
 </DemoExample>

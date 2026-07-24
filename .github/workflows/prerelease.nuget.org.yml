@@ -15,16 +15,16 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
           persist-credentials: false
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
 
@@ -33,7 +33,7 @@ jobs:
         rm src/AssemblyOriginatorKeyFile.snk
 
     - name: Extract strong sign certificate from env
-      uses: timheuer/base64-to-file@v2
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
       with:
           fileDir: './src/'
           fileName: 'AssemblyOriginatorKeyFile.snk'
@@ -92,6 +92,13 @@ jobs:
     - name: dotnet pack BlazorUI.Extras
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
 
+    - name: Generate CSS/JS files BlazorUI.Legacy
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
+    - name: dotnet build BlazorUI.Legacy
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Legacy
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output . --configuration Release
+
     - name: Generate CSS/JS files BlazorUI.Assets
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build BlazorUI.Assets
@@ -123,6 +130,11 @@ jobs:
     - name: dotnet pack Brouter
       run: dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output . --configuration Release
 
+    - name: dotnet build Brouter.Generators
+      run: dotnet build src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Brouter.Generators
+      run: dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output . --configuration Release
+
     - name: dotnet build Besql
       run: dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Besql
@@ -153,7 +165,7 @@ jobs:
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: nupkg-files
         path: ./*.nupkg

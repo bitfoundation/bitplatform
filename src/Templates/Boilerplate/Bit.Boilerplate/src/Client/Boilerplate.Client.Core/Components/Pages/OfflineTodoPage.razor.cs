@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Features.Todo;
+using Boilerplate.Shared.Features.Todo;
 using Boilerplate.Client.Core.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

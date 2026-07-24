@@ -1,4 +1,4 @@
-﻿using BlazorApplicationInsights;
+using BlazorApplicationInsights;
 using BlazorApplicationInsights.Models;
 using BlazorApplicationInsights.Interfaces;
 

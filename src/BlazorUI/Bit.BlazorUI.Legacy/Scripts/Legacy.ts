@@ -1,0 +1,109 @@
+namespace BitBlazorUI.Legacy {
+    export class Utils {
+        private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
+        public static async initScripts(scripts: string[], isModule: boolean) {
+            const key = scripts.join('|');
+            if (Utils._initScriptsPromises[key] !== undefined) {
+                return Utils._initScriptsPromises[key];
+            }
+
+            const allScripts = Array.from(document.scripts).map(s => s.src);
+            const notAddedScripts = scripts.filter(s => !allScripts.find(as => as.includes(s)));
+
+            if (notAddedScripts.length == 0) return Promise.resolve();
+
+            const promise = new Promise(async (res: any, rej: any) => {
+                try {
+                    await Promise.all(notAddedScripts.map(addScript));
+                    res();
+                } catch (e: any) {
+                    rej(e);
+                }
+            });
+
+            Utils._initScriptsPromises[key] = promise;
+            return promise;
+
+            async function addScript(url: string) {
+                return new Promise((res, rej) => {
+                    const script = document.createElement('script');
+                    script.src = url;
+                    if (isModule) {
+                        script.type = 'module';
+                    }
+                    script.onload = res;
+                    script.onerror = rej;
+                    document.body.appendChild(script);
+                })
+            }
+        }
+
+        private static _initStylesheetsPromises: { [key: string]: Promise<unknown> } = {};
+        public static async initStylesheets(stylesheets: string[]) {
+            const key = stylesheets.join('|');
+            if (Utils._initStylesheetsPromises[key] !== undefined) {
+                return Utils._initStylesheetsPromises[key];
+            }
+
+            const allStylesheets = Array.from(document.links).filter(l => l.rel === 'stylesheet').map(s => s.href);
+            const notAddedStylesheets = stylesheets.filter(s => !allStylesheets.find(as => as.includes(s)));
+
+            if (notAddedStylesheets.length == 0) return Promise.resolve();
+
+            const promise = new Promise(async (res: any, rej: any) => {
+                try {
+                    await Promise.all(notAddedStylesheets.map(addStylesheet));
+                    res();
+                } catch (e: any) {
+                    rej(e);
+                }
+            });
+
+            Utils._initStylesheetsPromises[key] = promise;
+            return promise;
+
+            async function addStylesheet(url: string) {
+                return new Promise((res, rej) => {
+                    const link = document.createElement('link');
+                    link.href = url;
+                    link.rel = 'stylesheet';
+                    link.onload = res;
+                    link.onerror = rej;
+                    document.head.appendChild(link);
+                })
+            }
+        }
+
+        public static invokeJs<T>(identifier: string, ...args: unknown[]): Promise<T> {
+            identifier ??= '';
+            identifier = identifier.trim();
+
+            if (!identifier || identifier.length === 0) {
+                throw new Error("Identifier must not be empty.");
+            }
+
+            const parts = identifier.split(".");
+
+            let target = globalThis as unknown;
+
+            const startIndex = parts[0] === "window" ? 1 : 0;
+
+            for (let i = startIndex; i < parts.length - 1; i++) {
+                const part = parts[i];
+                if (target == null || typeof target !== "object") {
+                    throw new Error(`Cannot read property '${part}' of ${target}`);
+                }
+                target = (target as Record<string, unknown>)[part];
+            }
+
+            const fnName = parts[parts.length - 1];
+            const fn = (target as Record<string, unknown>)[fnName];
+
+            if (typeof fn !== "function") {
+                throw new Error(`'${identifier}' is not a function.`);
+            }
+
+            return Promise.resolve(fn.apply(target, args) as T);
+        }
+    }
+}

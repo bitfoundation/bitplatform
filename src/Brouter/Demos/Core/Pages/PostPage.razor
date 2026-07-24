@@ -1,0 +1,14 @@
+﻿<div class="bb-intro">
+    <h1>Post</h1>
+    <p class="bb-subtitle">A catch-all route that captures everything after <code>/posts/</code>.</p>
+</div>
+
+<dl class="bb-params">
+    <dt>slug</dt>
+    <dd>@(Slug ?? "(none)")</dd>
+</dl>
+
+@code {
+    // The catch-all parameter "{**slug}" binds by name, like any other route parameter.
+    [Parameter] public string? Slug { get; set; }
+}

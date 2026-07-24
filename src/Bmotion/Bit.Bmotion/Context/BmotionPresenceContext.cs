@@ -3,12 +3,18 @@ namespace Bit.Bmotion;
 /// <summary>
 /// Cascaded by <see cref="BmotionAnimatePresence"/> to signal exit state to child Bmotion components.
 /// </summary>
-public class BmotionPresenceContext
+internal class BmotionPresenceContext
 {
     private readonly List<Bmotion> _children = new();
 
     /// <summary>True while the children are playing their exit animation.</summary>
     public bool IsExiting { get; internal set; }
+
+    /// <summary>
+    /// When true, exiting children pop out of the layout flow (position: absolute at their
+    /// current spot) before playing their exit, so siblings reflow immediately.
+    /// </summary>
+    public bool PopLayout { get; internal set; }
 
     internal void Register(Bmotion child)
     {
@@ -41,7 +47,7 @@ public class BmotionPresenceContext
 
     /// <summary>
     /// Clears exit-completion bookkeeping for a fresh enter cycle. Registered children are left
-    /// intact — they remove themselves via <see cref="Unregister"/> when disposed, so clearing the
+    /// intact - they remove themselves via <see cref="Unregister"/> when disposed, so clearing the
     /// list here would desynchronise the count for any children that are reused across a toggle.
     /// </summary>
     internal void Reset() { _completedChildren.Clear(); }

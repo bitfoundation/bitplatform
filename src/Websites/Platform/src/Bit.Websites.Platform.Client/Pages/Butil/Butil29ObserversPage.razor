@@ -1,0 +1,284 @@
+@page "/butil/observers"
+@inherits AppComponentBase
+@inject Bit.Butil.Performance performance
+@inject Bit.Butil.StorageManager storageManager
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.BroadcastChannel broadcastChannel
+@inject Bit.Butil.IndexedDb indexedDb
+
+<PageOutlet Url="butil/observers"
+            Title="Observers - Butil"
+            Description="Observers and async browser APIs of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Observers</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the observers and async browser APIs of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            These reactive and async browser APIs are spread across a few classes and element extension methods.
+            Inject the ones you need (the element observers take the injected <b>IJSRuntime</b>) and use them like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Performance performance
+@@inject Bit.Butil.StorageManager storageManager
+@@inject Bit.Butil.NetworkInformation networkInformation
+@@inject Bit.Butil.BroadcastChannel broadcastChannel
+@@inject Bit.Butil.IndexedDb indexedDb
+@@inject IJSRuntime js
+
+@@code {
+    var sub = await element.ObserveIntersection(js, entries => { /* ... */ });
+    await using var db = await indexedDb.Open("my-db", 1, [new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }]);
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Element observers</BitText>
+        <div class="section-card-txt">
+            The <b>ObserveIntersection</b>, <b>ObserveResize</b> and <b>ObserveMutations</b> extension methods wire the
+            matching browser observers onto an <b>ElementReference</b>. Each returns a <b>ButilSubscription</b> you
+            dispose to stop observing. The samples below all watch this shared target element:
+            <br /><br />
+            <div @ref="target" style="width:120px;height:48px;border:2px solid var(--bit-clr-pri);border-radius:6px;display:flex;align-items:center;justify-content:center">
+                target
+            </div>
+            <br />
+
+            <b>ObserveIntersection</b>: <br />
+            Fires when the target enters or leaves the viewport, reporting the intersection ratio and visibility
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@intersectionExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="StartIntersection">Observe</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StopIntersection">Stop</BitButton>
+                        <br /><br />
+                        <div>@intersectionResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ObserveResize</b>: <br />
+            Reports size changes when the target is resized, surfacing the new content-rect dimensions
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@resizeExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="StartResize">Observe</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GrowTarget">Grow target</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StopResize">Stop</BitButton>
+                        <br /><br />
+                        <div>@resizeResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ObserveMutations</b>: <br />
+            Logs DOM changes on the target element, such as attribute mutations
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@mutationExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="StartMutation">Observe</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="MutateTarget">Mutate attribute</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="StopMutation">Stop</BitButton>
+                        <br /><br />
+                        <div>@mutationResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Performance</BitText>
+        <div class="section-card-txt">
+            The <b>Performance</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance" target="_blank" rel="noopener noreferrer">Performance</a>
+            timing and marker API.
+            <br /><br />
+
+            <b>Mark / Measure / GetEntries</b>: <br />
+            Adds named marks to the timeline, measures the elapsed time between them, and reads back the recorded entries
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@perfMeasureExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="PerfMarkMeasure">Mark + Measure</BitButton>
+                        <br /><br />
+                        <div>@perfMeasureResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SubscribeObserver</b>: <br />
+            Subscribes a <b>PerformanceObserver</b> to one or more entry types and reports each batch as it arrives
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@perfObserverExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="PerfObserver">SubscribeObserver</BitButton>
+                        <br /><br />
+                        <div>@perfObserverResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>StorageManager & NetworkInformation</BitText>
+        <div class="section-card-txt">
+            The <b>StorageManager</b> class wraps
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager" target="_blank" rel="noopener noreferrer">navigator.storage</a>
+            and the <b>NetworkInformation</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation" target="_blank" rel="noopener noreferrer">Network Information API</a>.
+            <br /><br />
+
+            <b>Estimate</b>: <br />
+            Reports an estimate of the storage quota and current usage for the origin
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@storageExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="StorageEstimate">Estimate</BitButton>
+                        <br /><br />
+                        <div>@storageResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetStatus</b>: <br />
+            Returns the online flag, effective connection type, downlink and round-trip-time estimates
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@networkExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="NetworkStatus">GetStatus</BitButton>
+                        <br /><br />
+                        <div>@networkResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>BroadcastChannel</BitText>
+        <div class="section-card-txt">
+            The <b>BroadcastChannel</b> class wraps the
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel" target="_blank" rel="noopener noreferrer">BroadcastChannel</a>
+            API for cross-tab pub/sub on the same origin.
+            <br /><br />
+
+            <b>Subscribe / Post</b>: <br />
+            Subscribes to a named channel and posts messages to every other listener on that channel in the same origin
+            (the sender does not receive its own message). Open a second tab to see messages arrive
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel/postMessage" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@broadcastExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="BroadcastSubscribe">Subscribe</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="BroadcastPost">Post</BitButton>
+                        <br /><br />
+                        <div>@broadcastResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>IndexedDB</BitText>
+        <div class="section-card-txt">
+            The <b>IndexedDb</b> class is a lightweight wrapper over
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noopener noreferrer">IndexedDB</a>.
+            <br /><br />
+
+            <b>Open / Put / Get</b>: <br />
+            Opens (and upgrades if needed) a database, stores a record and reads it back by key
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put" target="_blank" rel="noopener noreferrer">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>@indexedDbExampleCode</CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="IndexedDbRoundTrip">Round-trip</BitButton>
+                        <br /><br />
+                        <div>@indexedDbResult</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Speech" PrevUrl="/butil/speech" />

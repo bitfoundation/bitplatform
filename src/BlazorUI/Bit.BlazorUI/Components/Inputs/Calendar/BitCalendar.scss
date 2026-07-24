@@ -77,6 +77,11 @@
     border-collapse: collapse;
 }
 
+.bit-cal-grd {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
 .bit-cal-dgh,
 .bit-cal-dgr {
     width: 100%;
@@ -137,6 +142,21 @@
         pointer-events: none;
         background-color: transparent;
     }
+
+    &:focus-visible {
+        z-index: 1;
+        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+}
+
+.bit-cal-dbe {
+    width: spacing(3.5);
+    height: spacing(3.5);
+}
+
+.bit-cal-dhl {
+    font-weight: 600;
+    background-color: $clr-bg-ter;
 }
 
 .bit-cal-dbs {
@@ -158,17 +178,17 @@
 .bit-cal-dtd {
     font-weight: 600;
     border-radius: 50%;
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-cal-clr-txt);
+    background-color: var(--bit-cal-clr);
 
     @media(hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-cal-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-cal-clr-active);
     }
 }
 
@@ -393,13 +413,13 @@
 }
 
 .bit-cal-pcm {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-cal-clr-txt);
+    background-color: var(--bit-cal-clr);
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-sec-hover;
-            background-color: $clr-pri-hover;
+            color: var(--bit-cal-clr-txt);
+            background-color: var(--bit-cal-clr-hover);
         }
     }
 }
@@ -484,8 +504,8 @@
 }
 
 .bit-cal-bns {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-cal-clr-txt);
+    background-color: var(--bit-cal-clr);
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -493,12 +513,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-cal-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-cal-clr-active);
     }
 }
 
@@ -519,7 +539,7 @@
     width: spacing(0.5);
     height: spacing(0.5);
     bottom: spacing(0.125);
-    background-color: $clr-pri;
+    background-color: var(--bit-cal-clr);
     transform: translateX(-50%);
     transition: transform 0.15s ease;
 }
@@ -601,4 +621,124 @@
     font-size: spacing(1.5);
     color: $clr-fg-pri;
     white-space: pre-wrap;
+}
+
+
+.bit-cal-pri {
+    --bit-cal-clr: #{$clr-pri};
+    --bit-cal-clr-txt: #{$clr-pri-text};
+    --bit-cal-clr-hover: #{$clr-pri-hover};
+    --bit-cal-clr-active: #{$clr-pri-active};
+}
+
+.bit-cal-sec {
+    --bit-cal-clr: #{$clr-sec};
+    --bit-cal-clr-txt: #{$clr-sec-text};
+    --bit-cal-clr-hover: #{$clr-sec-hover};
+    --bit-cal-clr-active: #{$clr-sec-active};
+}
+
+.bit-cal-ter {
+    --bit-cal-clr: #{$clr-ter};
+    --bit-cal-clr-txt: #{$clr-ter-text};
+    --bit-cal-clr-hover: #{$clr-ter-hover};
+    --bit-cal-clr-active: #{$clr-ter-active};
+}
+
+.bit-cal-inf {
+    --bit-cal-clr: #{$clr-inf};
+    --bit-cal-clr-txt: #{$clr-inf-text};
+    --bit-cal-clr-hover: #{$clr-inf-hover};
+    --bit-cal-clr-active: #{$clr-inf-active};
+}
+
+.bit-cal-suc {
+    --bit-cal-clr: #{$clr-suc};
+    --bit-cal-clr-txt: #{$clr-suc-text};
+    --bit-cal-clr-hover: #{$clr-suc-hover};
+    --bit-cal-clr-active: #{$clr-suc-active};
+}
+
+.bit-cal-wrn {
+    --bit-cal-clr: #{$clr-wrn};
+    --bit-cal-clr-txt: #{$clr-wrn-text};
+    --bit-cal-clr-hover: #{$clr-wrn-hover};
+    --bit-cal-clr-active: #{$clr-wrn-active};
+}
+
+.bit-cal-swr {
+    --bit-cal-clr: #{$clr-swr};
+    --bit-cal-clr-txt: #{$clr-swr-text};
+    --bit-cal-clr-hover: #{$clr-swr-hover};
+    --bit-cal-clr-active: #{$clr-swr-active};
+}
+
+.bit-cal-err {
+    --bit-cal-clr: #{$clr-err};
+    --bit-cal-clr-txt: #{$clr-err-text};
+    --bit-cal-clr-hover: #{$clr-err-hover};
+    --bit-cal-clr-active: #{$clr-err-active};
+}
+
+.bit-cal-pbg {
+    --bit-cal-clr: #{$clr-bg-pri};
+    --bit-cal-clr-txt: #{$clr-fg-pri};
+    --bit-cal-clr-hover: #{$clr-bg-pri-hover};
+    --bit-cal-clr-active: #{$clr-bg-pri-active};
+}
+
+.bit-cal-sbg {
+    --bit-cal-clr: #{$clr-bg-sec};
+    --bit-cal-clr-txt: #{$clr-fg-pri};
+    --bit-cal-clr-hover: #{$clr-bg-sec-hover};
+    --bit-cal-clr-active: #{$clr-bg-sec-active};
+}
+
+.bit-cal-tbg {
+    --bit-cal-clr: #{$clr-bg-ter};
+    --bit-cal-clr-txt: #{$clr-fg-pri};
+    --bit-cal-clr-hover: #{$clr-bg-ter-hover};
+    --bit-cal-clr-active: #{$clr-bg-ter-active};
+}
+
+.bit-cal-pfg {
+    --bit-cal-clr: #{$clr-fg-pri};
+    --bit-cal-clr-txt: #{$clr-bg-pri};
+    --bit-cal-clr-hover: #{$clr-fg-pri-hover};
+    --bit-cal-clr-active: #{$clr-fg-pri-active};
+}
+
+.bit-cal-sfg {
+    --bit-cal-clr: #{$clr-fg-sec};
+    --bit-cal-clr-txt: #{$clr-bg-pri};
+    --bit-cal-clr-hover: #{$clr-fg-sec-hover};
+    --bit-cal-clr-active: #{$clr-fg-sec-active};
+}
+
+.bit-cal-tfg {
+    --bit-cal-clr: #{$clr-fg-ter};
+    --bit-cal-clr-txt: #{$clr-bg-pri};
+    --bit-cal-clr-hover: #{$clr-fg-ter-hover};
+    --bit-cal-clr-active: #{$clr-fg-ter-active};
+}
+
+.bit-cal-pbr {
+    --bit-cal-clr: #{$clr-brd-pri};
+    --bit-cal-clr-txt: #{$clr-fg-pri};
+    --bit-cal-clr-hover: #{$clr-brd-pri-hover};
+    --bit-cal-clr-active: #{$clr-brd-pri-active};
+}
+
+.bit-cal-sbr {
+    --bit-cal-clr: #{$clr-brd-sec};
+    --bit-cal-clr-txt: #{$clr-fg-pri};
+    --bit-cal-clr-hover: #{$clr-brd-sec-hover};
+    --bit-cal-clr-active: #{$clr-brd-sec-active};
+}
+
+.bit-cal-tbr {
+    --bit-cal-clr: #{$clr-brd-ter};
+    --bit-cal-clr-txt: #{$clr-fg-pri};
+    --bit-cal-clr-hover: #{$clr-brd-ter-hover};
+    --bit-cal-clr-active: #{$clr-brd-ter-active};
 }

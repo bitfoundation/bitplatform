@@ -1,0 +1,69 @@
+﻿@* Per-parameter keep-alive demo. The /notes/{id:int} route is declared with
+   KeepAlive KeepAliveMax="2": each visited id keeps its OWN live instance (draft, clicks and all),
+   up to the budget - beyond it the least-recently-used hidden note is evicted (disposed).
+   Also demos IBrouter.ClearKeepAlive(), which drops every retained page on demand. *@
+
+@inject IBrouter brouter
+
+<div class="bb-intro">
+    <h1>Note @Id <span class="bb-badge">per-parameter keep-alive</span></h1>
+    <p class="bb-subtitle">
+        <code>/notes/{id:int}</code> with <code>KeepAlive KeepAliveMax="2"</code>: every note id you visit
+        keeps its own live instance, LRU-evicted over the budget of 2.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> This note's state (instance #@_instanceStamp)</h3>
+    <p>Clicks <em>this note's instance</em> has seen: <strong>@_clicks</strong></p>
+    <button class="btn btn-primary" @onclick="@(() => _clicks++)">Click me</button>
+    <div style="margin-top: .75rem;">
+        <textarea rows="3" style="width: 100%;" @bind="_draft" placeholder="Draft for note @Id - lives in THIS note's instance…"></textarea>
+    </div>
+    <p class="bb-card-desc">
+        Type a draft, switch to another note, come back: the draft resumes exactly where you left it -
+        unlike the singleton <code>/sticky</code> keep-alive, notes 1 and 2 do <strong>not</strong> share
+        an instance. The "instance #" stamp reveals recreation: it changes only when this note's
+        instance was evicted and rebuilt.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Switch notes (budget: 2)</h3>
+    <ul class="bb-link-list">
+        <li><BrouterLink Href="/notes/1">Note 1</BrouterLink></li>
+        <li><BrouterLink Href="/notes/2">Note 2</BrouterLink></li>
+        <li><BrouterLink Href="/notes/3">Note 3</BrouterLink></li>
+    </ul>
+    <p class="bb-card-desc">
+        Edit notes 1 and 2, then visit note 3: the budget is 2, so the least-recently-used note is
+        evicted - return to it and its draft is gone (fresh instance #), while the other survivor
+        still resumes. The cache key is the route's template parameter values; query-string
+        variations share one instance.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Evict on demand</h3>
+    <button class="btn btn-primary" @onclick="@(() => brouter.ClearKeepAlive())">
+        brouter.ClearKeepAlive()
+    </button>
+    <p class="bb-card-desc">
+        Disposes every retained (hidden) keep-alive page across the app - the other notes here
+        <em>and</em> the <code>/sticky</code> page - keeping only this visible one. Use it on sign-out
+        or to reclaim memory. Routes that don't declare their own budget fall back to
+        <code>BrouterOptions.DefaultKeepAliveMax</code> (default 1: the singleton, re-binding behavior).
+    </p>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private int _clicks;
+    private string _draft = string.Empty;
+
+    // Monotonic stamp handed out per created instance, so eviction (recreate => new stamp) is
+    // visible in the UI without attaching a debugger.
+    private static int _nextStamp;
+    private readonly int _instanceStamp = System.Threading.Interlocked.Increment(ref _nextStamp);
+}

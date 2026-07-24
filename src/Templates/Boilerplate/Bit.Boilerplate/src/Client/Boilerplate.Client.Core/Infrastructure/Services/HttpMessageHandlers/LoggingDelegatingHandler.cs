@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.Web;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
@@ -22,7 +22,7 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            var response = await base.SendAsync(request, cancellationToken);
+            var response = await Task.Run(() => base.SendAsync(request, cancellationToken), cancellationToken);
             if (AppPlatform.IsBrowser is false)
             {
                 logScopeData["HttpVersion"] = response.Version;

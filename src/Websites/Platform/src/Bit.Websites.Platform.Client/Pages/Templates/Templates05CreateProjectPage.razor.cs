@@ -16,6 +16,8 @@ public partial class Templates05CreateProjectPage
     private Parameter<bool> googleAds = new() { Value = false, Default = false };
     private Parameter<bool> redis = new() { Value = false, Default = false };
     private Parameter<bool> aspire = new() { Value = true, Default = true };
+    private Parameter<bool> multiTenant = new() { Value = true, Default = true };
+    private Parameter<bool> brouter = new() { Value = true, Default = true };
 
     private Parameter<string> captcha = new()
     {
@@ -174,6 +176,16 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetApiCommand());
         }
 
+        if (multiTenant.IsModified)
+        {
+            finalCommand.Append(GetMultiTenantCommand());
+        }
+
+        if (brouter.IsModified)
+        {
+            finalCommand.Append(GetBrouterCommand());
+        }
+
         return finalCommand.ToString();
     }
 
@@ -260,6 +272,16 @@ public partial class Templates05CreateProjectPage
     private string GetAspireCommand()
     {
         return $"--aspire{(aspire.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetMultiTenantCommand()
+    {
+        return $"--multitenant{(multiTenant.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetBrouterCommand()
+    {
+        return $"--brouter{(brouter.Value ? string.Empty : " false")} ";
     }
 
     private class Parameter<T>

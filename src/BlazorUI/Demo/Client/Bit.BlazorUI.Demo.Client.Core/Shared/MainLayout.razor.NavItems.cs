@@ -71,7 +71,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = ["/components/basic-list"] },
-                new() { Text = "Carousel", Url = "/components/carousel", Description = "Slideshow" },
+                new() { Text = "Carousel", Url = "/components/carousel", Description = "SlideShow" },
                 new() { Text = "Swiper", Url = "/components/swiper", Description = "TouchSlider" },
                 new() { Text = "Timeline", Url = "/components/timeline" },
             ]
@@ -159,20 +159,37 @@ public partial class MainLayout
                 new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
+                new() { Text = "QuickGrid", Url = "/components/quickgrid", AdditionalUrls = ["/components/quick-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag" },
+                new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler" },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling" },
                 new() { Text = "Map", Url = "/components/map" },
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
-                new() { Text = "PdfReader", Url = "/components/pdfreader" },
+                new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "ProModal", Url = "/components/promodal" },
                 new() { Text = "ProModalService", Url = "/components/promodalservice" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
+                new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "Skeleton, Loading, AI" },
+                new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
+            ]
+        },
+        new()
+        {
+            Text = "Legacy",
+            ChildItems =
+            [
+                new() { Text = "ChartLegacy", Url = "/components/legacy/chart" },
+                new() { Text = "DataGridLegacy", Url = "/components/legacy/datagrid" },
+                new() { Text = "MarkdownEditorLegacy", Url = "/components/legacy/markdowneditor" },
+                new() { Text = "MarkdownViewerLegacy", Url = "/components/legacy/markdownviewer" },
+                new() { Text = "PdfReaderLegacy", Url = "/components/legacy/pdfreader" },
+                new() { Text = "RichTextEditorLegacy", Url = "/components/legacy/richtexteditor" },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

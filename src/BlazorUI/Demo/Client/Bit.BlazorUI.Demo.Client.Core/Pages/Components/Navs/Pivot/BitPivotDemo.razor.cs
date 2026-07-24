@@ -70,11 +70,19 @@ public partial class BitPivotDemo
         },
         new()
         {
-            Name = "OnItemClick",
-            Type = "EventCallback<BitPivotItem>",
-            Description = "Callback for when the a pivot item is clicked.",
+            Name = "NextIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the next button in the Slide overflow behavior using custom CSS classes for external icon libraries. Takes precedence over NextIconName when both are set.",
             LinkType = LinkType.Link,
-            Href = "#pivot-item",
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon of the next button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronRight for horizontal pivots and ChevronDown for vertical pivots).",
         },
         new()
         {
@@ -86,12 +94,43 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "OnItemClick",
+            Type = "EventCallback<BitPivotItem>",
+            Description = "Callback for when the a pivot item is clicked.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-item",
+        },
+        new()
+        {
+            Name = "OverflowAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label of the overflow menu button in the Menu overflow behavior.",
+        },
+        new()
+        {
             Name = "OverflowBehavior",
-            Type = "BitOverflowBehavior",
-            DefaultValue = "BitOverflowBehavior.None",
+            Type = "BitPivotOverflowBehavior?",
+            DefaultValue = "null",
             Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
             LinkType = LinkType.Link,
             Href = "#overflowBehavior-enum",
+        },
+        new()
+        {
+            Name = "OverflowIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the overflow menu button in the Menu overflow behavior using custom CSS classes for external icon libraries. Takes precedence over OverflowIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "OverflowIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon of the overflow menu button in the Menu overflow behavior from the built-in Fluent UI icons (default: More).",
         },
         new()
         {
@@ -101,6 +140,22 @@ public partial class BitPivotDemo
             Description = "Position of the pivot header.",
             LinkType = LinkType.Link,
             Href = "#pivotPosition-enum",
+        },
+        new()
+        {
+            Name = "PreviousIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the previous button in the Slide overflow behavior using custom CSS classes for external icon libraries. Takes precedence over PreviousIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PreviousIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon of the previous button in the Slide overflow behavior from the built-in Fluent UI icons (default: ChevronLeft for horizontal pivots and ChevronUp for vertical pivots).",
         },
         new()
         {
@@ -232,6 +287,41 @@ public partial class BitPivotDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the header of the BitPivot."
+               },
+               new()
+               {
+                   Name = "HeaderContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the header container (wrapper) of the BitPivot."
+               },
+               new()
+               {
+                   Name = "SlideButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the slide (next/previous) buttons of the BitPivot in the Slide overflow behavior."
+               },
+               new()
+               {
+                   Name = "OverflowButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow menu button of the BitPivot in the Menu overflow behavior."
+               },
+               new()
+               {
+                   Name = "OverflowCallout",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow menu (callout) of the BitPivot in the Menu overflow behavior."
+               },
+               new()
+               {
+                   Name = "OverflowItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow menu item of the BitPivot in the Menu overflow behavior."
                },
                new()
                {
@@ -424,7 +514,7 @@ public partial class BitPivotDemo
         new()
         {
             Id = "overflowBehavior-enum",
-            Name = "BitOverflowBehavior",
+            Name = "BitPivotOverflowBehavior",
             Description = "",
             Items =
             [
@@ -445,6 +535,12 @@ public partial class BitPivotDemo
                     Name= "Scroll",
                     Description="Display a scroll bar below of the tabs for moving between them.",
                     Value="2",
+                },
+                new()
+                {
+                    Name= "Slide",
+                    Description="Display next and previous buttons to slide through the tabs that don't fit.",
+                    Value="3",
                 },
             ]
         },
@@ -1107,9 +1203,82 @@ private BitPivotItem selectedPivotItem;";
 </BitPivot>";
 
     private readonly string example11RazorCode = @"
+<div style=""max-width:450px"">
+    <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Menu"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div style=""max-width:450px"">
+    <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Slide"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div style=""max-width:450px"">
+    <BitPivot OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div>
+    <BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Menu"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div>
+    <BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Slide"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>
+
+<div>
+    <BitPivot Position=""@BitPivotPosition.Start"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"" Style=""height:200px"">
+        <BitPivotItem HeaderText=""File"">Content of the File tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Shared with me"">Content of the Shared with me tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Recent"">Content of the Recent tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Favorites"">Content of the Favorites tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Documents"">Content of the Documents tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Pictures"">Content of the Pictures tab.</BitPivotItem>
+        <BitPivotItem HeaderText=""Downloads"">Content of the Downloads tab.</BitPivotItem>
+    </BitPivot>
+</div>";
+
+    private readonly string example12RazorCode = @"
 <BitPivot Color=""BitColor.Secondary"">
-    <BitPivotItem HeaderText=""Primary"">
-        <h1>Pivot #1: Primary</h1>
+    <BitPivotItem HeaderText=""First"">
+        <h1>Pivot #1: First</h1>
         <div>
             Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
@@ -1117,8 +1286,8 @@ private BitPivotItem selectedPivotItem;";
             for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Secondary"">
-        <h1>Pivot #2: Secondary</h1>
+    <BitPivotItem HeaderText=""Second"">
+        <h1>Pivot #2: Second</h1>
         <div>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
@@ -1129,8 +1298,8 @@ private BitPivotItem selectedPivotItem;";
             are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Info"">
-        <h1>Pivot #3: Info</h1>
+    <BitPivotItem HeaderText=""Third"">
+        <h1>Pivot #3: Third</h1>
         <div>
             In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
             to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
@@ -1141,9 +1310,10 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>
 
+
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Success"">
-    <BitPivotItem HeaderText=""Primary bg"">
-        <h1>Pivot #1: Primary background</h1>
+    <BitPivotItem HeaderText=""First"">
+        <h1>Pivot #1: First background</h1>
         <div>
             Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
@@ -1151,8 +1321,8 @@ private BitPivotItem selectedPivotItem;";
             for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Secondary bg"">
-        <h1>Pivot #2: Secondary background</h1>
+    <BitPivotItem HeaderText=""Second"">
+        <h1>Pivot #2: Second background</h1>
         <div>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
@@ -1163,8 +1333,8 @@ private BitPivotItem selectedPivotItem;";
             are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Tertiary fg"">
-        <h1>Pivot #3: Tertiary foreground</h1>
+    <BitPivotItem HeaderText=""Third"">
+        <h1>Pivot #3: Third background</h1>
         <div>
             In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits
             to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
@@ -1175,7 +1345,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitPivot>
@@ -1233,7 +1403,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -1393,7 +1563,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.Info"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
@@ -1461,3 +1631,4 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 }
+

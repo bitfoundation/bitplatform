@@ -1,28 +1,139 @@
 @inherits AppComponentBase
 
+@using System.Text.Json;
+
 @if (RenderForMcpClient)
 {
-    @((MarkupString)($"**{Name}** {string.Join(',', SecondaryNames ?? [])} {Description}{Notes} {Environment.NewLine}"))
+    @($"\n# {Name}\n")
+
+    @if (SecondaryNames?.Length > 0)
+    {
+        @($"**Also known as:** {string.Join(", ", SecondaryNames!)}\n")
+    }
+
+    @if (Description.HasValue())
+    {
+        @($"## Description\n{Description}\n")
+    }
+
+    @if (Notes.HasValue())
+    {
+        @($"## Notes\n{Notes}\n")
+    }
+
+    @if (Introduction.HasValue())
+    {
+        @($"## Introduction\n{Introduction}\n")
+    }
+
+    var publicMembers = PublicMembers;
+    if (_inputComponents.Contains(Name))
+    {
+        publicMembers.AddRange(_inputBasePublicMembers);
+    }
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        publicMembers.AddRange(_componentBasePublicMembers);
+    }
+
+    var parameters = Parameters;
+    if (_textInputComponents.Contains(Name))
+    {
+        parameters.AddRange(_textInputBaseParameters);
+    }
+    if (_inputComponents.Contains(Name))
+    {
+        parameters.AddRange(_inputBaseParameters);
+    }
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        parameters.AddRange(_componentBaseParameters);
+    }
+
+    var enums = SubEnums;
+    if (_notInheritedComponents.Contains(Name) is false)
+    {
+        enums.AddRange(_componentBaseSubEnums);
+    }
+
+    @if (parameters.Any())
+    {
+        @("## Parameters\n")
+        @("| Name | Type | Default Value | Description |\n")
+        @("| :--- | :--- | :------------ | :---------- |\n")
+        @foreach (var param in parameters)
+        {
+            @($"| {param.Name} | `{param.Type}` | {param.DefaultValue} | {param.Description} |\n")
+        }
+    }
+
+    @if (publicMembers.Any())
+    {
+        @("## Public Members\n")
+        @("| Name | Type | Default Value | Description |\n")
+        @("| :--- | :--- | :------------ | :---------- |\n")
+        @foreach (var member in publicMembers)
+        {
+            @($"| {member.Name} | `{member.Type}` | {member.DefaultValue} | {member.Description} |\n")
+        }
+    }
+
+    @if (enums.Any())
+    {
+        @("## Enums\n")
+        @foreach (var subEnum in enums)
+        {
+            @($"### {subEnum.Name} Enum\n")
+            @("| Name | Value | Description |\n")
+            @("| :--- | :--- | :---------- |\n")
+            @foreach (var item in subEnum.Items)
+            {
+                @($"| {item.Name} | {item.Value} | {item.Description} |\n")
+            }
+            @("\n")
+        }
+    }
+
+    @if (SubClasses.Any())
+    {
+        @("## Sub Classes\n")
+        @foreach (var subClass in SubClasses)
+        {
+            @($"### {subClass.Title} Properties\n")
+            @($"{subClass.Description}\n")
+            @("| Name | Type | Default Value | Description |\n")
+            @("| :--- | :--- | :------------ | :---------- |\n")
+            @foreach (var subParam in subClass.Parameters)
+            {
+                @($"| {subParam.Name} | `{subParam.Type}` | {subParam.DefaultValue} | {subParam.Description} |\n")
+            }
+            @("\n")
+        }
+    }
+
+    @("## Examples\n")
     @(ChildContent ?? Examples)
 }
 else
 {
     <div class="demo-page">
         <div class="page-container example">
-            <BitText Typography="BitTypography.H3" Class="title">
+            <BitText Element="h1" Typography="BitTypography.H3">
                 @Name
-
-                @if (SecondaryNames?.Length > 0)
-                {
-                    <br />
-                    <BitStack Horizontal>
-                        @foreach (var name in SecondaryNames)
-                        {
-                            <BitText Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
-                        }
-                    </BitStack>
-                }
             </BitText>
+
+            @if (SecondaryNames?.Length > 0)
+            {
+                <br />
+                <BitStack Horizontal AutoHeight>
+                    @foreach (var name in SecondaryNames)
+                    {
+                        <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
+                    }
+                </BitStack>
+            }
+            
+            <br /><br /><br />
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {
@@ -33,7 +144,7 @@ else
                     }
                     else
                     {
-                        <BitText>@Description</BitText>
+                        <BitText Element="p">@Description</BitText>
                     }
                 </section>
             }
@@ -41,7 +152,7 @@ else
             @if (Notes.HasValue() || NotesTemplate is not null)
             {
                 <section id="notes-section" class="page-section">
-                    <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
                     @if (NotesTemplate is not null)
                     {
                         @NotesTemplate
@@ -56,7 +167,7 @@ else
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
                 <section id="introduction-section" class="page-section">
-                    <BitText Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
                     @if (IntroductionVideoUrl.HasValue())
                     {
                         <div class="video-container">
@@ -81,12 +192,12 @@ else
             }
 
             <section id="usage-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
                 @(ChildContent ?? Examples)
             </section>
 
             <section id="api-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">API</BitText>
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
@@ -125,8 +236,8 @@ else
             </section>
 
             <section id="feedback-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
-                <BitText>
+                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+                <BitText Element="p">
                     You can give us your feedback through our
                     <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
                     by filing a new
@@ -138,7 +249,7 @@ else
                 @if (GitHubDemoUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
                                  Target="_blank">review</BitLink>
@@ -152,7 +263,7 @@ else
                 @if (GitHubUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
                                  Target="_blank">review</BitLink>
@@ -166,12 +277,26 @@ else
                 @if (GitHubExtrasUrl.HasValue())
                 {
                     <br />
-                    <BitText>
+                    <BitText Element="p">
                         Or you can
                         <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
                                  Target="_blank">review</BitLink>
                         /
                         <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                                 Target="_blank">edit</BitLink>
+                        this component on GitHub.
+                    </BitText>
+                }
+
+                @if (GitHubLegacyUrl.HasValue())
+                {
+                    <br />
+                    <BitText Element="p">
+                        Or you can
+                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
+                                 Target="_blank">review</BitLink>
+                        /
+                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
                                  Target="_blank">edit</BitLink>
                         this component on GitHub.
                     </BitText>

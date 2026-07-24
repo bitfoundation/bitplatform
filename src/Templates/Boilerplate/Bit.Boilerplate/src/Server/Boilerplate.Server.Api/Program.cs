@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -12,7 +12,7 @@ public static partial class Program
         builder.Configuration.AddSharedConfigurations();
 
         //#if (sentry == true)
-        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.GetRequiredSection("Logging:Sentry").Bind(options));
+        builder.WebHost.UseSentry(configureOptions: options => builder.Configuration.DynamicBind("Logging:Sentry", options));
         //#endif
 
         builder.Services.AddSharedProjectServices(builder.Configuration);

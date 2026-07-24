@@ -45,7 +45,7 @@ public class BitTooltipTests : BunitTestContext
 
         var tooltip = component.Find(".bit-ttp-ctn");
 
-        Assert.IsTrue(tooltip.ToMarkup().Contains("TemplateContent"));
+        Assert.IsTrue(tooltip.OuterHtml.Contains("TemplateContent"));
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class BitTooltipTests : BunitTestContext
         var anchor = component.Find(".anchor-btn");
 
         Assert.IsNotNull(anchor);
-        Assert.IsTrue(anchor.ToMarkup().Contains("Anchor"));
+        Assert.IsTrue(anchor.OuterHtml.Contains("Anchor"));
     }
 
     [TestMethod]

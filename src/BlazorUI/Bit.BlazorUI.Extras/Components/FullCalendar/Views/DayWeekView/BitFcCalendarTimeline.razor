@@ -1,0 +1,9 @@
+@namespace Bit.BlazorUI
+@implements IDisposable
+
+<div class="bit-bfc-timeline" style="top:@(_positionPx.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))px;">
+    <span class="bit-bfc-timeline-label">@BitFullCalendarHelpers.FormatTime(DateTime.Now, State.Use24HourFormat, State.Culture)</span>
+    <span class="bit-bfc-timeline-dot"></span>
+    <span class="bit-bfc-timeline-line"></span>
+</div>
+

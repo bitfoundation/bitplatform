@@ -1,0 +1,107 @@
+@page "/components/pdfviewer"
+@page "/components/pdfreader"
+
+<PageOutlet Url="components/pdfviewer"
+            Title="PdfViewer"
+            Description="BitPdfViewer is a native pure-C# pdf viewer component for Blazor with no js library dependency." />
+
+<DemoPage Name="PdfViewer"
+          SecondaryNames="@(["PdfReader, Pdf"])"
+          Description="BitPdfViewer is a native pure-C# pdf viewer component for Blazor. It parses pdf files and renders pages as plain HTML/CSS DOM with no browser pdf plugin and no js library dependency, offering page navigation, zoom, rotation, search, thumbnails, bookmarks, download, print and fullscreen out of the box."
+          Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubExtrasUrl="PdfViewer/BitPdfViewer.razor"
+          GitHubDemoUrl="Extras/PdfViewer/BitPdfViewerDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>The document can be provided from a URL (fetched via the registered HttpClient) or from in-memory bytes.</div>
+            <br />
+            <div>You can also select a pdf file from your computer to view it here:</div>
+            <InputFile OnChange="OnBasicFileChange" accept=".pdf,application/pdf" />
+            <br /><br />
+            <BitPdfViewer Source="basicSource" />
+        </DemoExample>
+
+        <DemoExample Title="Toolbar & Height" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>The toolbar can be hidden and the height of the viewer customized.</div>
+            <br />
+            <BitButton IsEnabled="plainSource is null" OnClick="() => plainSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="plainSource" ShowToolbar="false" Height="600px" />
+        </DemoExample>
+
+        <DemoExample Title="Canvas render mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                In <BitTag Text="Canvas" Color="BitColor.Info" /> mode, the page content is painted onto a per-page canvas by replaying
+                a display list produced by the C# engine (far fewer DOM nodes on graphics-heavy documents), while selection,
+                search and links still work through the DOM text layer.
+            </div>
+            <br />
+            <BitButton IsEnabled="canvasSource is null" OnClick="() => canvasSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <div>You can also select a pdf file from your computer to view it here:</div>
+            <InputFile OnChange="OnCanvasFileChange" accept=".pdf,application/pdf" />
+            <br /><br />
+            <BitPdfViewer Source="canvasSource" RenderMode="BitPdfRenderMode.Canvas" />
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>The viewer reports document loading, page changes, warnings and errors.</div>
+            <br />
+            <BitButton IsEnabled="eventsSource is null" OnClick="() => eventsSource = CreateSampleSource()">Load document</BitButton>
+            <br /><br />
+            <BitPdfViewer Source="eventsSource"
+                          OnDocumentLoaded='() => eventsLog.Add("Document loaded")'
+                          OnPageChanged='p => eventsLog.Add($"Page changed: {p}")'
+                          OnError='e => eventsLog.Add($"Error: {e}")' />
+            <br />
+            <div>Events:</div>
+            <div style="max-height:8rem;overflow:auto">
+                @foreach (var log in Enumerable.Reverse(eventsLog).Take(5))
+                {
+                    <div>@log</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Public API" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>The viewer can be driven from outside using its public members (e.g. with a hidden toolbar).</div>
+            <br />
+            <BitButton IsEnabled="publicApiSource is null" OnClick="() => publicApiSource = CreateArticleSource()">Load document</BitButton>
+            <br /><br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+                <BitButton OnClick="() => pdfViewerRef.GoToPage(1)">First</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.PrevPage()">Prev</BitButton>
+                <BitTag Variant="BitVariant.Outline" Text="@($"{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}")" Color="BitColor.Info" />
+                <BitButton OnClick="() => pdfViewerRef.NextPage()">Next</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.GoToPage(pdfViewerRef.PageCount)">Last</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.ZoomOut()">Zoom -</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.ZoomIn()">Zoom +</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.RotateClockwise()">Rotate</BitButton>
+                <BitButton OnClick="() => pdfViewerRef.Print()">Print</BitButton>
+            </div>
+            <br />
+            @* RenderMode="BitPdfRenderMode.Canvas" *@
+            <BitPdfViewer @ref="pdfViewerRef"  BackgroundRendering
+                          Source="publicApiSource"
+                          ShowToolbar="false"
+                          OnDocumentLoaded="StateHasChanged"
+                          OnPageChanged="_ => StateHasChanged()" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

@@ -1033,4 +1033,19 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsNotNull(icon,
             $"Expected class '{expectedClass}' on HideTimePickerIcon but no matching icon element was found.");
     }
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectDefaultValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var defaultValue = new DateTimeOffset(2020, 1, 15, 0, 0, 0, DateTimeOffset.Now.Offset);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+        });
+
+        Assert.AreEqual(defaultValue, component.Instance.Value);
+    }
 }

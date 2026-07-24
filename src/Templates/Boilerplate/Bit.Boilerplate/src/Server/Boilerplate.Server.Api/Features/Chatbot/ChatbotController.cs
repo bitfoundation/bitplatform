@@ -1,11 +1,14 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Boilerplate.Shared.Features.Chatbot;
 
 namespace Boilerplate.Server.Api.Features.Chatbot;
 
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
-    Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
+    //#if (multitenant == true)
+    Authorize(Policy = AuthPolicies.TENANT_SELECTED),
+    //#endif
+    Authorize(Policy = AppFeatures.Management.SystemPrompts_Write)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {
     [AutoInject] private IFusionCache cache = default!;
@@ -29,7 +32,11 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
         await DbContext.SaveChangesAsync(cancellationToken);
 
         // Invalidate cache for the updated system prompt
+        //#if (multitenant == true)
+        await cache.RemoveAsync($"SystemPrompt_{TenantProvider.GetCurrentTenantId()}_{dto.PromptKind}");
+        //#else
         await cache.RemoveAsync($"SystemPrompt_{dto.PromptKind}");
+        //#endif
 
         return entityToUpdate.Map();
     }

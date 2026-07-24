@@ -9,7 +9,7 @@ public partial class BitActionButtonDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the disabled action button focusable by not forcing a negative tabindex when IsEnabled is false.",
+            Description = "Keeps the disabled action button focusable and discoverable by assistive technologies, conveying the disabled state using aria-disabled instead of the native disabled attribute.",
         },
         new()
         {
@@ -24,6 +24,13 @@ public partial class BitActionButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the button.",
+        },
+        new()
+        {
+            Name = "AutoLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.",
         },
         new()
         {
@@ -65,6 +72,13 @@ public partial class BitActionButtonDemo
             Description = "The general color of the button that applies to the icon and text of the action button.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "Download",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The value of the download attribute of the link rendered by the button when the Href parameter is provided. Instructs the browser to download the linked resource instead of navigating to it, using the provided value (if any) as the suggested file name.",
         },
         new()
         {
@@ -126,7 +140,21 @@ public partial class BitActionButtonDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the action button is in loading mode or not.",
+            Description = "Determines whether the action button is in loading mode or not (two-way bindable).",
+        },
+        new()
+        {
+            Name = "LoadingDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The delay in milliseconds before the loading indicator appears after entering the loading state, useful to avoid a spinner flash for fast operations. The click-guard of the loading state applies immediately regardless of this delay.",
+        },
+        new()
+        {
+            Name = "LoadingLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text to show next to the spinner while the action button is in the loading state, replacing the button body. It is also announced by screen readers through a status live region when the loading state starts.",
         },
         new()
         {
@@ -140,6 +168,13 @@ public partial class BitActionButtonDemo
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Gets or sets the callback that is invoked when the component is clicked.",
+        },
+        new()
+        {
+            Name = "Reclickable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables re-clicking the action button while it is in the loading state. By default, clicks are ignored while the button is loading to protect against double submissions.",
         },
         new()
         {
@@ -161,6 +196,13 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "StopPropagation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, stops the propagation of the click event to the parent elements. Useful when the action button is placed inside clickable containers like rows or cards.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitActionButtonClassStyles?",
             DefaultValue = "null",
@@ -173,7 +215,7 @@ public partial class BitActionButtonDemo
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the target frame or window for the navigation action when the action button renders as an anchor (by providing the Href parameter).",
+            Description = "Gets or sets the name of the target frame or window for the navigation action when the action button renders as an anchor (by providing the Href parameter). When set to _blank and no opener-related Rel is provided, noopener is added to the rel attribute automatically.",
         },
         new()
         {
@@ -220,6 +262,13 @@ public partial class BitActionButtonDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom class or style applied to the content container of the BitActionButton."
+                },
+                new()
+                {
+                    Name = "LoadingLabel",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom class or style applied to the loading label element of the BitActionButton."
                 },
                 new()
                 {
@@ -542,6 +591,31 @@ public partial class BitActionButtonDemo
 
     private bool isLoading;
     private bool templateIsLoading;
+
+    private int clickCounter;
+    private int guardedClickCount;
+    private int reclickableClickCount;
+    private int rowClickCount;
+    private int innerClickCount;
+
+    private async Task HandleAutoLoadingClick()
+    {
+        await Task.Delay(2000);
+    }
+
+    private async Task HandleGuardedClick()
+    {
+        guardedClickCount++;
+
+        await Task.Delay(2000);
+    }
+
+    private async Task HandleReclickableClick()
+    {
+        reclickableClickCount++;
+
+        await Task.Delay(2000);
+    }
     private bool formIsValidSubmit;
     private ButtonValidationModel buttonValidationModel = new();
 

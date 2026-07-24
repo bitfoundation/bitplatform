@@ -1,5 +1,7 @@
-﻿using Boilerplate.Shared.Features.Identity;
+//+:cnd:noEmit
+using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
@@ -13,11 +15,10 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
-    [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private ClientExceptionHandlerBase exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
-    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress = default!;
 
     public void OnInit()
     {
@@ -77,7 +78,11 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     private SemaphoreSlim semaphore = new(1, 1);
     private TaskCompletionSource<string?>? accessTokenTsc = null;
 
-    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreServerConnectionException = false)
+    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreServerConnectionException = false
+        //#if (multitenant == true)
+        , Guid? requestedTenantId = null // The id of the tenant the user is trying to switch into.
+                                         //#endif
+        )
     {
         if (accessTokenTsc is null)
         {
@@ -102,7 +107,10 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     var refreshTokenResponse = await identityController.Refresh(new()
                     {
                         RefreshToken = refreshToken,
-                        ElevatedAccessToken = elevatedAccessToken
+                        ElevatedAccessToken = elevatedAccessToken,
+                        //#if (multitenant == true)
+                        RequestedTenantId = requestedTenantId,
+                        //#endif
                     }, default);
                     await StoreTokens(refreshTokenResponse);
                     accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
@@ -136,7 +144,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     /// <summary>
     /// Handles the process of determining the user's authentication state based on the availability of access and refresh tokens.
-    /// 
+    ///
     /// - If no access / refresh token exists, an anonymous user object is returned to Blazor.
     /// - If an access token exists, a ClaimsPrincipal is created from it regardless of its expiration status. This ensures:
     ///   - Users can access anonymous-allowed pages without unnecessary delays caused by token refresh attempts **during app startup**.
@@ -186,6 +194,24 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         return string.IsNullOrEmpty(accessToken) is false;
     }
 
+    //#if (multitenant == true)
+    /// <summary>
+    /// Switches the user into the given tenant by refreshing the access token (See RefreshTokenRequestDto.TenantId).
+    /// Passing the id of a tenant that the user doesn't have access to (or is not active) ends up kicking the user out.
+    /// </summary>
+    public async Task<bool> SwitchTenant(Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (accessTokenTsc != null)
+        {
+            await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
+        }
+
+        var accessToken = await RefreshToken(requestedBy: "SwitchTenant", requestedTenantId: tenantId);
+
+        return string.IsNullOrEmpty(accessToken) is false;
+    }
+    //#endif
+
     public async Task<string?> GetFreshAccessToken(string requestedBy, bool ignoreServerConnectionException = false)
     {
         var accessToken = await tokenProvider.GetAccessToken();
@@ -193,7 +219,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         if (string.IsNullOrEmpty(accessToken))
             return null;
 
-        var isValid = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated();
+        var isValid = await Task.Run(() => IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated());
 
         if (isValid) return accessToken;
 

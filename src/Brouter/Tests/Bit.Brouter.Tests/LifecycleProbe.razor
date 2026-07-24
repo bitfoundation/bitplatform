@@ -1,0 +1,20 @@
+﻿@* Reports every route-lifecycle callback into an externally-owned log, so transitions on content
+   that gets DISPOSED (transient routes) can still be asserted after the component is gone. *@
+
+@using Bit.Brouter
+@inherits BrouterRouteBase
+
+<div data-testid="probe">probe</div>
+
+@code {
+    [Parameter] public List<string>? Log { get; set; }
+
+    protected override void OnActivated(BrouterRouteActivation activation)
+        => Log?.Add($"activated:first={activation.IsFirstActivation}");
+
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+        => Log?.Add($"deactivated:{deactivation.Reason}");
+
+    protected override void OnRenavigated(BrouterRouteRenavigation renavigation)
+        => Log?.Add($"renavigated:{renavigation.PreviousLocation.Path}->{renavigation.Location.Path}");
+}

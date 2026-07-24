@@ -1,0 +1,14 @@
+﻿@* Host for post-navigation DOM effect tests (fragment scroll, scroll-to-top, focus). Two literal
+   routes; the docs page renders an #install anchor so fragment navigation has a real target. *@
+
+<Brouter>
+    <Broute Path="/home">
+        <Content><h1 data-testid="home">home</h1></Content>
+    </Broute>
+    <Broute Path="/docs">
+        <Content>
+            <h1 data-testid="docs">docs</h1>
+            <section id="install" data-testid="install">install</section>
+        </Content>
+    </Broute>
+</Brouter>

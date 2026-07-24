@@ -10,6 +10,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 {
     internal TItem? _currentItem;
     internal List<TItem> _items = [];
+    private bool _selectionDirty;
     private IEnumerable<TItem>? _oldItems;
     internal Dictionary<TItem, bool> _itemExpandStates = [];
 
@@ -25,6 +26,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     public void CollapseAll(TItem? item = null)
     {
         (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, false));
+
+        RefreshOptions();
+        StateHasChanged();
     }
 
     /// <summary>
@@ -35,6 +39,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         if (SingleExpand) return;
 
         (item is null ? _items : [item]).ToList().ForEach(it => ToggleItemAndChildren(it, true));
+
+        RefreshOptions();
+        StateHasChanged();
     }
 
     /// <summary>
@@ -60,14 +67,15 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 SetItemExpanded(Item, isExpanded);
             }
 
-            StateHasChanged();
-
             _currentItem = Item;
         }
         else
         {
             SetItemExpanded(Item, isExpanded);
         }
+
+        RefreshOptions();
+        StateHasChanged();
 
         await OnItemToggle.InvokeAsync(Item);
     }
@@ -85,6 +93,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOption(BitNavOption option)
     {
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
 
         StateHasChanged();
@@ -187,6 +197,29 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         await base.OnInitializedAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        // Options render their items themselves and Blazor skips re-rendering them when only the
+        // nav's own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
+        RefreshOptions();
+
+        base.OnParametersSet();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // In Automatic mode each option requests a URL match as it registers. Running the match per
+        // option is O(n^2) (each pass flattens the whole tree and matches every item), so the options
+        // only flag it and the match runs once here, after the registration batch has rendered.
+        if (_selectionDirty)
+        {
+            _selectionDirty = false;
+            SetSelectedItemByCurrentUrl();
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
 
 
     internal void SetItemExpanded(TItem item, bool value)
@@ -230,12 +263,21 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         await OnSelectItem.InvokeAsync(item);
 
+        RefreshOptions();
         StateHasChanged();
     }
 
     internal string GetItemKey(TItem item, string defaultKey)
     {
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
+    }
+
+    // Flags that the Automatic-mode selection needs to be recomputed. Called by options as they register
+    // instead of matching immediately, so a batch of registrations collapses into a single match pass
+    // in OnAfterRender rather than one O(n) pass per option.
+    internal void MarkSelectionDirty()
+    {
+        _selectionDirty = true;
     }
 
     internal void SetSelectedItemByCurrentUrl()
@@ -315,6 +357,21 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         if (SelectedItem is null) return;
 
         ToggleItemAndParents(_items, SelectedItem, true);
+
+        // The selection affects the previously and newly selected items, which render themselves in
+        // the options mode, so push a re-render to all of them after the expansion state is updated.
+        RefreshOptions();
+    }
+
+    private void RefreshOptions()
+    {
+        // In the Items API there are no registered options, so there is nothing to refresh.
+        if ((Options ?? ChildContent) is null) return;
+
+        foreach (var item in _items)
+        {
+            (item as BitNavOption)?.InternalRecursiveStateHasChanged();
+        }
     }
 
     private void OnSetMode()
