@@ -7,8 +7,8 @@ const SPLASH = { 'data-bit-bswup-config': 'true' };
  * Loads bit-bswup.js (which defines the shared BswupMessage constants) and then
  * bit-bswup.progress.js, the way a host page references both.
  */
-function progressPage({ elements = {}, readyState = 'complete' } = {}) {
-    const ctx = createPageContext({ elements, readyState });
+function progressPage({ elements = {}, readyState = 'complete', clampLongTimers = false } = {}) {
+    const ctx = createPageContext({ elements, readyState, clampLongTimers });
     ctx.addBswupScriptTag();
     ctx.addBlazorScriptTag();
     ctx.window.Blazor = { start: async () => { } };
@@ -76,9 +76,10 @@ describe('MutationObserver lifetime', () => {
     });
 
     it('gives up after the timeout when the element never appears', async () => {
-        const ctx = progressPage();
+        // clampLongTimers lets the 60s OBSERVE_TIMEOUT fire at the harness's ~5ms clamp.
+        const ctx = progressPage({ clampLongTimers: true });
         expect(observing(ctx)).toBe(true); // still waiting
-        await new Promise(r => setTimeout(r, 20)); // harness clamps timers to ~5ms
+        await new Promise(r => setTimeout(r, 20));
         expect(observing(ctx)).toBe(false);
     });
 });
@@ -159,7 +160,7 @@ describe('error handling', () => {
 });
 
 describe('update ready', () => {
-    // CHANGED in 10.5.0: an unprompted reload discards the user's in-page state, so updates
+    // CHANGED in v-10-5-0: an unprompted reload discards the user's in-page state, so updates
     // now default to the prompt-then-reload pattern; auto-reload is opt-in.
     it('defaults to the manual reload button, not an automatic reload', () => {
         const ctx = progressPage({ elements: fullSplash }); // no auto-reload attribute anywhere

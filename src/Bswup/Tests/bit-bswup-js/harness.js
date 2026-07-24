@@ -135,6 +135,7 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
         setTimeout: (fn, ms) => setTimeout(fn, Math.min(ms || 0, 5)), // keep retry backoff fast
         clearTimeout,
         URL, URLSearchParams,
+        Headers, // used by the worker's Range slicing (applyRangeHeader)
         Request: FakeRequest,
         Response: FakeResponse,
         caches,
@@ -184,17 +185,18 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
             return api;
         },
         /**
-         * Let background work finish. Under the default 'lax' tolerance handleInstall does NOT
-         * await createAssetsCache - install completes immediately and the cache fills in the
-         * background - so progress/error messages land after the install promise resolves.
-         * Also drains the (clamped) retry backoff timers.
+         * Let background work finish. The install promise now covers the whole cache build in
+         * both tolerance modes (lax awaits it under waitUntil since v-10-5-0), but message
+         * delivery still goes through clients.matchAll() and lands a microtask later, and the
+         * lazy-fill/waitUntil work in fetch events remains genuinely backgrounded. Also drains
+         * the (clamped) retry backoff timers.
          */
         async settle() {
             for (let i = 0; i < 8; i++) await new Promise(r => setTimeout(r, 1));
         },
         /** Run the real bundle. Everything above must already be configured. */
-        load() {
-            vm.runInContext(readBundle('bit-bswup.sw.js'), sandbox);
+        load(bundle = 'bit-bswup.sw.js') {
+            vm.runInContext(readBundle(bundle), sandbox);
             return api;
         },
         /** Read a top-level function declared by the bundle (they become globals in a script). */
@@ -215,8 +217,11 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
          * all - when it does not, the browser performs its own default request and the worker
          * is entirely out of the failure path, which is the point of the sync router.
          */
-        async fetchEvent({ url, method = 'GET', mode = 'cors' } = {}) {
+        async fetchEvent({ url, method = 'GET', mode = 'cors', headers } = {}) {
             const request = new FakeRequest(url, { method, mode });
+            // Real Headers (host realm is fine - only .get() is called) so getRangeHeader and
+            // friends behave as in a browser; plain-object headers stay for RequestInit tests.
+            if (headers) request.headers = new Headers(headers);
             let responded, waited;
             const e = {
                 request,
@@ -268,7 +273,7 @@ function createElement(tag) {
  * Builds a browser-like global for the page bundles. `elements` maps element id -> attributes,
  * so a test can stand up just the parts of the splash markup it cares about.
  */
-export function createPageContext({ elements = {}, appContainer = null, readyState = 'complete' } = {}) {
+export function createPageContext({ elements = {}, appContainer = null, readyState = 'complete', clampLongTimers = false } = {}) {
     const byId = {};
     for (const [id, attrs] of Object.entries(elements)) {
         byId[id] = createElement('div');
@@ -283,7 +288,19 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
 
     const sandbox = {
         console: { log() { }, info() { }, warn() { }, error() { }, debug() { } },
-        setTimeout: (fn, ms) => setTimeout(fn, Math.min(ms || 0, 5)),
+        // Short delays are clamped so retries/yields stay fast. Long delays (>= 1s) keep their
+        // real duration and are unref'd: the page script arms a stall watchdog with a 60s
+        // default, which must neither fire mid-test (it force-starts Blazor and would break
+        // every negative assertion) nor hold the node process open after the run. Watchdog
+        // tests see it fire by configuring a sub-second stallTimeout; tests that instead need
+        // a long-delay timer to fire (e.g. the progress script's MutationObserver timeout,
+        // where no watchdog is in play) opt back into clamping via clampLongTimers.
+        setTimeout: (fn, ms) => {
+            const clamp = clampLongTimers || !(ms >= 1000);
+            const t = setTimeout(fn, clamp ? Math.min(ms || 0, 5) : ms);
+            if (!clamp && typeof t.unref === 'function') t.unref();
+            return t;
+        },
         clearTimeout, setInterval: () => 0, clearInterval() { },
         URL, URLSearchParams,
         MutationObserver: class {

@@ -138,10 +138,71 @@ if (!BitBswup.initialized) {
             // as the discriminator makes Bswup mistake every hard reload for a first install.
             let hadActiveWorkerAtStartup = false;
 
+            // ============================================================
+
+            // First-install stall watchdog. Every failure mode that *reports* something is
+            // already handled elsewhere: a fatal error message force-starts Blazor,
+            // CLIENTS_CLAIMED starts it, a worker that goes redundant is caught in the
+            // statechange handler below. This timer is the last line of defense for failures
+            // that report NOTHING: the browser terminating the worker mid-install (its
+            // waitUntil extension is capped, Chromium at ~5 minutes), a register() that never
+            // settles, a message channel that silently dies. On a first install the page
+            // deliberately waits behind the splash for the install to finish before starting
+            // Blazor - so if the install dies silently, nothing would EVER start the app.
+            // When no sign of life (a worker message, updatefound, a statechange) arrives for
+            // stallTimeout seconds, boot Blazor from the network: the page is uncontrolled at
+            // that point, so it behaves exactly as if no service worker existed, and an
+            // install that is in fact still running just continues in the background
+            // (startBlazorCore is idempotent, so a late CLIENTS_CLAIMED is a no-op).
+            // Armed only when the page starts uncontrolled and disarmed when the resolved
+            // registration reveals a previously-active worker: updates never need it - the
+            // app is already running when an update stalls. Configure via the stallTimeout
+            // script attribute (seconds); 0 disables.
+            let stallTimer: ReturnType<typeof setTimeout> | undefined;
+            let stallArmed = false;
+
+            function armStallWatchdog() {
+                stallArmed = true;
+                bumpStallWatchdog();
+            }
+
+            // Push the deadline out. Called on every sign of life from the registration or
+            // the worker, so the watchdog only fires after true end-to-end silence - a slow
+            // but healthy download keeps resetting it with each progress message.
+            function bumpStallWatchdog() {
+                if (!stallArmed) return;
+                const seconds = Number(options.stallTimeout);
+                if (!(seconds > 0)) return;
+                if (stallTimer !== undefined) clearTimeout(stallTimer);
+                stallTimer = setTimeout(() => {
+                    disarmStallWatchdog();
+                    // Only blazorStarted gates the rescue: a page that was claimed but whose
+                    // CLIENTS_CLAIMED reply was lost is controlled yet unbooted - exactly the
+                    // kind of silent death this watchdog exists for.
+                    if (blazorStarted) return;
+                    warn(`no service worker activity for ${seconds}s during a first install - starting Blazor without waiting for it.`);
+                    startBlazor(true);
+                }, seconds * 1000);
+            }
+
+            function disarmStallWatchdog() {
+                stallArmed = false;
+                if (stallTimer !== undefined) {
+                    clearTimeout(stallTimer);
+                    stallTimer = undefined;
+                }
+            }
+
+            // ============================================================
+
             try {
                 registerServiceWorker();
                 navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
                 navigator.serviceWorker.addEventListener('message', handleMessage);
+                // Armed before registration resolves so even a register() that never settles
+                // is covered; prepareRegistration disarms it when this turns out to be an
+                // update (an active worker already existed).
+                if (!navigator.serviceWorker.controller) armStallWatchdog();
             } catch (e) {
                 startBlazor(true);
                 error('serviceWorker registration failed', e);
@@ -202,6 +263,12 @@ if (!BitBswup.initialized) {
                 // registration resolves. reg.active being set here means a previous version
                 // was already installed => this is an update; otherwise it's a first install.
                 hadActiveWorkerAtStartup = !!reg.active;
+
+                // The stall watchdog is a first-install boot guarantee. With a previously
+                // active worker the app either starts normally (the controlled path, or the
+                // uncontrolled hard-reload force-start below) or is already running when a
+                // background update stalls - so it must not fire.
+                if (hadActiveWorkerAtStartup) disarmStallWatchdog();
 
                 // Keep the resolved registration around so checkForUpdate() (page API) and the
                 // optional polling helpers can drive reg.update() without re-resolving it.
@@ -277,10 +344,20 @@ if (!BitBswup.initialized) {
                     if (!installing) return Promise.resolve(null);
 
                     return new Promise((resolve) => {
-                        installing.addEventListener('statechange', () => {
-                            if (reg.waiting) return resolve(reg.waiting);
-                            if (installing.state === 'redundant') return resolve(null);
-                        });
+                        // Named + removed on settle: reload() can be invoked more than once
+                        // (retry buttons), and a leaked listener would fire on every later
+                        // state change of this worker for the life of the page.
+                        const onStateChange = () => {
+                            if (reg.waiting) {
+                                installing.removeEventListener('statechange', onStateChange);
+                                return resolve(reg.waiting);
+                            }
+                            if (installing.state === 'redundant') {
+                                installing.removeEventListener('statechange', onStateChange);
+                                return resolve(null);
+                            }
+                        };
+                        installing.addEventListener('statechange', onStateChange);
                     });
                 }
 
@@ -294,10 +371,18 @@ if (!BitBswup.initialized) {
                     if (!pending) return Promise.resolve(null);
 
                     return new Promise((resolve) => {
-                        pending.addEventListener('statechange', () => {
-                            if (reg.active) return resolve(reg.active);
-                            if (pending.state === 'redundant') return resolve(null);
-                        });
+                        // Removed on settle for the same reason as whenStaged's listener.
+                        const onStateChange = () => {
+                            if (reg.active) {
+                                pending.removeEventListener('statechange', onStateChange);
+                                return resolve(reg.active);
+                            }
+                            if (pending.state === 'redundant') {
+                                pending.removeEventListener('statechange', onStateChange);
+                                return resolve(null);
+                            }
+                        };
+                        pending.addEventListener('statechange', onStateChange);
                     });
                 }
 
@@ -313,7 +398,14 @@ if (!BitBswup.initialized) {
                         document.removeEventListener('visibilitychange', visibilityHandler);
                         visibilityHandler = undefined;
                     }
-                    reg.waiting?.postMessage('CLEAN_UP');
+                    // CLEAN_UP goes to the ACTIVE worker only. Previous versions also posted
+                    // it to reg.waiting, whose deleteOldCaches() spares only its own (new)
+                    // cache - deleting the active worker's live cache out from under this
+                    // still-running page (old app code + new-version bytes = corrupted boot
+                    // config / DLL hashes). The worker now refuses that case on its own, but
+                    // the page should not ask for it in the first place. Safe to call at any
+                    // time: with an update staged the active worker declines and the pruning
+                    // happens on activation instead.
                     reg.active?.postMessage('CLEAN_UP');
                 };
 
@@ -343,6 +435,7 @@ if (!BitBswup.initialized) {
                 reg.addEventListener('updatefound', function (e: any) {
                     info('update found', e);
                     handle(BswupMessage.updateFound, e);
+                    bumpStallWatchdog();
 
                     if (!reg.installing) {
                         warn('no registration.installing found!');
@@ -352,6 +445,22 @@ if (!BitBswup.initialized) {
                     reg.installing.addEventListener('statechange', function (e: any) {
                         debug('state changed', e, 'eventPhase:', e.eventPhase, 'currentTarget.state:', e.currentTarget.state);
                         handle(BswupMessage.stateChanged, e);
+                        bumpStallWatchdog();
+
+                        // A first-install worker that dies without reporting anything - the
+                        // browser terminated it mid-install (waitUntil cap), or the install
+                        // rejected without a fatal error message getting through - goes
+                        // 'redundant' as its only observable signal. Nothing else will ever
+                        // start the app in that case: no CLAIM_CLIENTS handshake, no fatal
+                        // error to trigger the force-start. Boot from the network now; this
+                        // is idempotent when an error message already force-started Blazor,
+                        // and the install itself is retried on the next load.
+                        if (e.currentTarget.state === 'redundant' && !hadActiveWorkerAtStartup && !navigator.serviceWorker.controller) {
+                            disarmStallWatchdog();
+                            warn('first-install service worker went redundant - starting Blazor without a service worker.');
+                            startBlazor(true);
+                            return;
+                        }
 
                         if (!reg.waiting) return;
 
@@ -399,9 +508,19 @@ if (!BitBswup.initialized) {
                 //
                 // We distinguish case 2 from case 3 with hadActiveWorkerAtStartup: a controller
                 // change only signals a real *update* when a worker was already active when this
-                // page started. First install never had one, so we skip the reload there.
+                // page started. First install never had one, so we skip the reload there - and
+                // instead make sure the app boots. Being claimed on a first install means the
+                // install completed and this page is expected to start Blazor, but the
+                // CLIENTS_CLAIMED reply only goes to the ONE tab that posted CLAIM_CLIENTS: a
+                // sibling tab opened in the window between the 100% broadcast and the claim
+                // receives only this controllerchange - no progress stream to finish, no
+                // CLIENTS_CLAIMED - so without starting here it would sit behind the splash
+                // until the stall watchdog fired. startBlazorCore is idempotent, so in the
+                // initiating tab (where CLIENTS_CLAIMED also lands) this is a no-op or a
+                // harmless head start.
                 if (!hadActiveWorkerAtStartup) {
-                    info('controller changed on first install - not reloading.');
+                    info('controller changed on first install - starting Blazor instead of reloading.');
+                    startBlazor(true);
                     return;
                 }
 
@@ -419,7 +538,15 @@ if (!BitBswup.initialized) {
             }
 
             function handleMessage(e: any) {
+                // Any message from the worker is proof the install pipeline is alive; only
+                // true end-to-end silence should let the stall watchdog fire.
+                bumpStallWatchdog();
+
                 if (e.data === 'START_BLAZOR') {
+                    // No shipped worker sends this command anymore. It is kept deliberately:
+                    // it is a public escape hatch (anything holding a client handle can nudge
+                    // the app to boot through the guarded start path), and the test suite
+                    // drives startBlazor(true) through it. Not dead code - do not remove.
                     startBlazor(true);
                     return;
                 }
@@ -652,6 +779,8 @@ if (!BitBswup.initialized) {
                 }
 
                 blazorStarted = true;
+                // Blazor is starting: the watchdog's job (guarantee the app boots) is done.
+                disarmStallWatchdog();
                 try {
                     // Normalize to a real Promise so callers can always .then() the result even
                     // if a future Blazor returns something non-thenable.
@@ -745,6 +874,9 @@ if (!BitBswup.initialized) {
                     sw: 'service-worker.js',
                     handlerName: 'bitBswupHandler',
                     blazorScript: defaultBlazorScripts,
+                    // Seconds of first-install silence before the stall watchdog boots Blazor
+                    // from the network (see armStallWatchdog). 0 disables.
+                    stallTimeout: 60,
                 }
 
                 // bitBswupScript may be null (see the currentScript fallback above) when the
@@ -782,6 +914,9 @@ if (!BitBswup.initialized) {
 
                 const persistStorageAttribute = attrs['persistStorage'];
                 if (persistStorageAttribute) options.persistStorage = persistStorageAttribute.value === 'true';
+
+                const stallTimeoutAttribute = attrs['stallTimeout'];
+                if (stallTimeoutAttribute) options.stallTimeout = Number(stallTimeoutAttribute.value);
 
                 return options;
             }
@@ -855,11 +990,6 @@ if (!BitBswup.initialized) {
         await reg?.update();
     }
 
-    // Cache buckets forceRefresh clears when the caller doesn't say otherwise: Bswup's own
-    // version-suffixed caches and Blazor's framework cache. This is deliberately the same set
-    // previous versions cleared.
-    const DEFAULT_REFRESH_CACHE_PREFIXES = ['bit-bswup', 'blazor-resources'];
-
     // `forceRefresh` is the last-resort "reset" when a client is wedged: clear the caches,
     // unregister this app's service worker, reload.
     //
@@ -871,7 +1001,8 @@ if (!BitBswup.initialized) {
     // widening the blast radius on upgrade could destroy data an app deliberately persisted
     // (and, for offline-first apps, data with no other copy). Deleting more than the caller
     // asked for is not recoverable, so the destructive option is opt-in:
-    //   - omitted:  the Bswup + Blazor caches (default, and the historical behavior)
+    //   - omitted:  this app's own Bswup caches (scope-qualified) + legacy scope-less Bswup
+    //               buckets + the Blazor caches; a sibling app's scoped buckets are spared
     //   - string:   prefix match against the cache name (e.g. 'bit-bswup')
     //   - RegExp:   tested against the cache name
     //   - function: predicate receiving the cache name, return true to delete
@@ -880,6 +1011,28 @@ if (!BitBswup.initialized) {
         if (!('serviceWorker' in navigator)) {
             return console.warn('no serviceWorker in navigator');
         }
+
+        // Resolved up front (it is also what gets unregistered below): the default cache
+        // filter derives this app's own cache namespace from the registration's scope, the
+        // same way the service worker names its buckets (see SCOPE_PATH in bit-bswup.sw.ts).
+        const reg = await navigator.serviceWorker.getRegistration();
+
+        // Default set: Blazor's framework caches, Bswup's legacy scope-less buckets
+        // (`bit-bswup - <version>`, pre-scoping releases), and THIS app's scoped buckets
+        // (`bit-bswup:<scope-path> - <version>`). A sibling Bswup app's scoped buckets on the
+        // same origin are left intact - resetting app A must not wipe app B's offline story.
+        // When the scope is unknown (no registration to read), fall back to every bit-bswup
+        // bucket: this is a last-resort reset, and on a wedged client "reset too much" beats
+        // "reset nothing".
+        const defaultFilter = (key: string) => {
+            if (key.startsWith('blazor-resources')) return true;
+            if (key.startsWith('bit-bswup - ')) return true;
+            try {
+                return key.startsWith(`bit-bswup:${new URL((reg as any).scope).pathname} - `);
+            } catch {
+                return key.startsWith('bit-bswup');
+            }
+        };
 
         const shouldDelete =
             typeof cacheFilter === 'function' ? cacheFilter :
@@ -890,7 +1043,7 @@ if (!BitBswup.initialized) {
                     return cacheFilter.test(key);
                 } :
                     typeof cacheFilter === 'string' ? (key: string) => key.startsWith(cacheFilter) :
-                        (key: string) => DEFAULT_REFRESH_CACHE_PREFIXES.some(prefix => key.startsWith(prefix));
+                        defaultFilter;
 
         const cacheKeys = await caches.keys();
         const cachePromises = cacheKeys.filter(shouldDelete).map(key => caches.delete(key));
@@ -901,7 +1054,6 @@ if (!BitBswup.initialized) {
         // scopes / mounted sub-apps), and tearing those down would break them. getRegistration()
         // (no arg) resolves the registration whose scope controls this page - i.e. this app's
         // own worker - so the reset stays scoped to Bswup.
-        const reg = await navigator.serviceWorker.getRegistration();
         await reg?.unregister();
 
         window.location.reload();
@@ -963,5 +1115,6 @@ interface BswupOptions {
     updateInterval?: number
     updateOnVisibility?: boolean
     persistStorage?: boolean
+    stallTimeout?: number
     handler?(...args: any[]): void
 }

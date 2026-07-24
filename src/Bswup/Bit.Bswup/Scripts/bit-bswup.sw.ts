@@ -12,7 +12,8 @@
 interface BitBswupGlobals {
     clients: any
     skipWaiting: any
-    
+    registration: any             // also declared (identically) in bit-bswup.sw-cleanup.ts; the ambient interfaces merge
+
     assetsManifest: any           // injected by service-worker-assets.js (version + asset list)
     assetsInclude: any            // extra RegExp(s) of asset URLs to precache
     assetsExclude: any            // RegExp(s) of asset URLs to skip
@@ -65,7 +66,7 @@ diagGroup('bit-bswup');
 // Resolved by importScripts against the worker's own location - the directory containing the
 // app's service-worker.js, which is also where Blazor publishes service-worker-assets.js - so
 // the relative default works for root-mounted apps and apps mounted on a sub-path
-// (https://host/myapp/) alike. Versions before 10.5.0 defaulted to the root-absolute
+// (https://host/myapp/) alike. Versions before v-10-5-0 defaulted to the root-absolute
 // '/service-worker-assets.js', which pointed a sub-path app at the wrong path and failed its
 // install with a 'manifest' error unless assetsUrl was set explicitly - even though the page
 // script goes out of its way (the scope-fallback retry) to keep sub-path apps working.
@@ -121,7 +122,29 @@ const CACHE_NAME_PREFIX = 'bit-bswup';
 // the per-asset `?v=` cache-buster and SRI hashes still derive from VERSION, so integrity
 // is unchanged. Falls back to the manifest version when unset or not a non-empty string.
 const CACHE_VERSION = (typeof self.cacheVersion === 'string' && self.cacheVersion) || VERSION;
-const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${CACHE_VERSION}`;
+
+// Cache names are qualified with this registration's scope path so that sibling Bswup apps
+// mounted under different scopes on the SAME origin get disjoint cache namespaces.
+// CacheStorage is origin-global, and the pre v-10-5-0 name (`bit-bswup - <version>`) carried
+// no scope: every app's deleteOldCaches() saw a sibling's bucket as "a stale version of
+// mine" and deleted it, so two Bswup apps on one origin perpetually evicted each other's
+// offline caches on every update. The scope path is the natural qualifier - it is exactly
+// the boundary matchScopeClients() already scopes messaging and claiming to, it is stable
+// across versions, and two registrations can never share one. Falls back to '/' when
+// self.registration is unavailable (exotic runtimes), which reproduces a root-scoped name.
+const SCOPE_PATH = (() => {
+    try { return new URL(self.registration.scope).pathname; } catch { return '/'; }
+})();
+
+// Current format: `bit-bswup:<scope-path> - <version>`. The ':' can never appear in the
+// legacy scope-less format (`bit-bswup - <version>`), which keeps the two distinguishable:
+// legacy buckets are warm-started from and then reclaimed (see createAssetsCache /
+// isOwnStaleCacheKey), never mistaken for another scope's live bucket. Both prefixes end in
+// ' - ' so a scope path that extends another ('/app/' vs '/app2/') can never prefix-match
+// the wrong bucket.
+const LEGACY_CACHE_PREFIX = `${CACHE_NAME_PREFIX} - `;
+const SCOPED_CACHE_PREFIX = `${CACHE_NAME_PREFIX}:${SCOPE_PATH} - `;
+const CACHE_NAME = `${SCOPED_CACHE_PREFIX}${CACHE_VERSION}`;
 
 // Applies one preset default: fills a setting ONLY when the app left it undefined, so an
 // explicit assignment made before importScripts always wins - including falsy ones. `||=` is
@@ -214,6 +237,21 @@ self.addEventListener('message', handleMessage);
 async function handleInstall(e: any) {
     diag('installing version:', VERSION);
 
+    // Diagnostics-only storage telemetry: quota pressure is the root cause behind most
+    // 'cache' / 'install-infra' failures, and seeing usage vs quota next to the failure makes
+    // those reports actionable. Strictly best-effort and never awaited - the API is missing
+    // in some private modes, and a telemetry call must not delay or fail an install.
+    if (self.enableDiagnostics) {
+        try {
+            const storage = (self as any).navigator && (self as any).navigator.storage;
+            if (storage && typeof storage.estimate === 'function') {
+                storage.estimate().then(
+                    (estimate: any) => diag('storage estimate - usage:', estimate && estimate.usage, 'quota:', estimate && estimate.quota),
+                    () => { /* best effort */ });
+            }
+        } catch { /* best effort */ }
+    }
+
     if (!MANIFEST_VALID) {
         // The manifest is missing/malformed - sendError already notified the page. Reject the
         // install so the SW lifecycle aborts: a worker that never built a valid cache must not
@@ -231,19 +269,67 @@ async function handleInstall(e: any) {
         // Strict: any required asset that fails to fetch / store must reject the install
         // promise so the SW lifecycle treats it as a failed install. Without this, a
         // partially-populated cache becomes the new active cache on the next reload.
-        await createAssetsCache();
+        try {
+            await createAssetsCache();
+        } catch (err) {
+            // Per-asset failures and the strict abort report themselves before rejecting
+            // (reason 'fetch'/'integrity'/'cache'/'install-aborted'). Anything else landing
+            // here is an infrastructure failure - caches.open()/keys() rejecting under
+            // storage pressure, a corrupted origin store, an exotic private mode - that
+            // previously propagated with NO structured error at all: the install just failed
+            // silently and, on a first install, the page sat behind the splash forever with
+            // nothing telling it to boot. Report it as terminal (the page force-starts
+            // Blazor on a fatal first-install error) before letting the install reject.
+            reportUnreportedInstallFailure(err);
+            throw err;
+        }
     } else {
-        // Lax: lifecycle proceeds immediately; missing assets are filled lazily by
-        // handleFetch. This preserves best-effort behavior for callers that explicitly
-        // opt in via errorTolerance: 'lax'. We intentionally don't await the cache build so
-        // install completes right away, but we still attach a catch: createAssetsCache won't
-        // reject for asset failures under lax, yet infrastructure calls (caches.open, etc.)
-        // can still throw, and an unhandled rejection here would surface as a console error
-        // and a (cosmetic) failed-install signal. Swallow it - lazy-fill will recover.
-        createAssetsCache().catch(err => {
-            diag('*** lax install - background createAssetsCache failed (assets will lazy-fill):', err);
+        // Lax: asset failures never fail the install - createAssetsCache resolves even when
+        // assets were skipped (they lazy-fill in handleFetch) - but the download itself must
+        // still run under the install event's lifetime (handleInstall IS the waitUntil
+        // promise, so awaiting here extends it). Versions before v-10-5-0 fired the cache build
+        // unawaited so the install settled immediately, which had two nasty consequences:
+        //   - Nothing kept the worker alive. Browsers terminate an event-idle service worker
+        //     after ~30s (fetches/timers the worker itself starts do not extend its
+        //     lifetime), so any download longer than that could be killed mid-install:
+        //     progress stopped, and on a first install the page - which waits for 100%
+        //     before starting Blazor - froze behind the splash forever.
+        //   - The worker reached 'installed' (waiting) the moment the download *started*, so
+        //     the page announced updateReady - and an autoReload handler activated the new
+        //     worker - while the new cache was still half-empty, deleting the previous
+        //     complete cache right after the claim.
+        // Awaiting fixes both: the worker stays alive for the whole download, and 'waiting'
+        // again means "fully staged". Browsers cap the extension (Chromium ~5 minutes); a
+        // download outlasting the cap now fails the install cleanly - retried on the next
+        // load, with the page-side stall watchdog and the redundant-worker handler in
+        // bit-bswup.ts still booting the app - instead of leaving a silent zombie cache.
+        //
+        // The catch keeps lax semantics: asset failures are already handled inside
+        // createAssetsCache, so anything landing here is an infrastructure failure
+        // (caches.open/keys rejecting). That used to be swallowed with a diag - no progress,
+        // no bypass, no error message - which also left a first install hanging behind the
+        // splash. Report it as terminal so the page can react, then resolve: with no cache
+        // at all the worker still works as a network pass-through (serveAsset guards every
+        // cache call), so failing the install would only take away that recovery path.
+        await createAssetsCache().catch(err => {
+            diag('*** lax install - createAssetsCache failed:', err);
+            reportUnreportedInstallFailure(err);
         });
     }
+}
+
+// Reports an install failure that has not already been surfaced as a structured error.
+// Per-asset failures and the strict abort report themselves and flag the propagated error
+// with bswupReported; everything else is an infrastructure failure the page would otherwise
+// never hear about - and on a first install the fatal error is what makes the page
+// force-start Blazor instead of waiting behind the splash for messages that will never come.
+function reportUnreportedInstallFailure(err: any) {
+    if (err && err.bswupReported) return;
+    sendError({
+        reason: 'install-infra',
+        message: 'Install failed before assets could be cached: ' + (err && err.message || String(err)),
+        fatal: true,
+    });
 }
 
 async function handleActivate(e: any) {
@@ -327,6 +413,46 @@ const UNIQUE_ASSETS = uniqueAssets(ALL_ASSETS);
 
 diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 
+// Precomputed router lookups. handleFetch runs for EVERY GET on the origin, and a Blazor app
+// ships hundreds of assets - scanning UNIQUE_ASSETS with a regex .test() per entry made the
+// hot path O(assets) per request. Concrete assets (the overwhelming majority) resolve by
+// exact origin+pathname equality - precisely the semantics their urlToRegExp matcher encodes
+// (anchored origin+pathname, any query tolerated) - so they live in a Map for O(1) lookup;
+// only pattern assets (RegExp externalAssets entries, usually a handful) still need a linear
+// regex scan. Keys fold case per caseInsensitiveUrl, mirroring the `i` flag the regexes get.
+// First occurrence wins on a key collision, preserving the old first-match-wins scan order;
+// the one deliberate divergence is that a concrete asset now always beats a pattern asset
+// for the same URL (exact beats wildcard), where the scan let an earlier-listed pattern win.
+const CONCRETE_ASSETS = new Map<string, any>();
+for (const asset of UNIQUE_ASSETS) {
+    if (!asset.reqUrl) continue;
+    const u = new URL(asset.reqUrl);
+    const key = foldUrlKey(`${u.origin}${u.pathname}`);
+    if (!CONCRETE_ASSETS.has(key)) CONCRETE_ASSETS.set(key, asset);
+}
+const PATTERN_ASSETS = UNIQUE_ASSETS.filter(a => !a.reqUrl);
+const DEFAULT_ASSET = UNIQUE_ASSETS.find(a => a.isDefault);
+
+// Case folding for asset-lookup keys; also what pairs defaultUrl with its asset. Hoisted
+// (function declaration) because uniqueAssets() runs at module scope above.
+function foldUrlKey(s: string) {
+    return self.caseInsensitiveUrl ? s.toLowerCase() : s;
+}
+
+// Resolves a request URL to a managed asset: O(1) exact origin+pathname lookup for concrete
+// assets, then a regex scan over the few pattern assets. new URL() can throw on exotic URLs
+// (about:, data: - the browser can dispatch fetch events for them); those are never assets.
+function findAssetForUrl(url: string) {
+    let key: string;
+    try {
+        const u = new URL(url);
+        key = foldUrlKey(`${u.origin}${u.pathname}`);
+    } catch {
+        return undefined;
+    }
+    return CONCRETE_ASSETS.get(key) || PATTERN_ASSETS.find(a => a.url.test(url));
+}
+
 // A missing default asset silently disables offline navigation: every navigate request is
 // answered with the SPA default document, resolved by comparing defaultUrl and each asset's
 // declared url as *resolved* URLs - and when nothing matches, handleFetch just quietly passes
@@ -335,7 +461,7 @@ diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 // a Blazor Web app whose manifest has no 'index.html' entry at all (pair `self.defaultUrl =
 // '/'` with `self.externalAssets = [{ url: '/' }]`). Irrelevant under forcePrerender, where
 // navigations are deliberately left to the server.
-if (MANIFEST_VALID && !self.forcePrerender && !UNIQUE_ASSETS.some(a => a.isDefault)) {
+if (MANIFEST_VALID && !self.forcePrerender && !DEFAULT_ASSET) {
     console.warn(`BitBswup SW: defaultUrl ('${DEFAULT_URL}') matches no asset - navigations will NOT be served from cache and the app will not work offline. Point self.defaultUrl at an entry that exists in service-worker-assets.js / externalAssets (e.g. self.defaultUrl = '/' together with self.externalAssets = [{ url: '/' }]).`);
 }
 
@@ -377,7 +503,7 @@ function handleFetch(e: any) {
         diagFetch('+++ handleFetch ended - prohibited:', e, req);
 
         // 403 Forbidden: the request was understood and is being refused. Versions before
-        // 10.5.0 answered 405 Method Not Allowed, which is wrong on both counts - it says the
+        // v-10-5-0 answered 405 Method Not Allowed, which is wrong on both counts - it says the
         // *method* is unsupported for this resource (the URL is blocked here regardless of
         // method) and RFC 9110 requires a 405 to carry an Allow header listing the permitted
         // methods, which there is no meaningful value for. Code that detects a Bswup-blocked
@@ -416,13 +542,12 @@ function handleFetch(e: any) {
     // sees, and allocating a Date + ISO string per fetch is pure waste when nothing logs it.
     const start = self.enableFetchDiagnostics ? new Date().toISOString() : '';
 
-    // Every asset's `url` is a RegExp (uniqueAssets converts concrete string URLs to anchored,
-    // query-tolerant patterns and keeps externalAssets RegExp entries as-is), so matching is a
-    // single uniform test against the actual request URL. Navigations instead resolve to the SPA
-    // default document.
+    // Concrete assets resolve via the precomputed origin+pathname Map, pattern assets via
+    // their RegExp (see findAssetForUrl). Navigations instead resolve to the SPA default
+    // document.
     const asset = shouldServeDefaultDoc
-        ? UNIQUE_ASSETS.find(a => a.isDefault)
-        : UNIQUE_ASSETS.find(a => a.url.test(req.url));
+        ? DEFAULT_ASSET
+        : findAssetForUrl(req.url);
 
     if (!asset) {
         diagFetch('+++ handleFetch ended - ignored - asset not found:', start, req.url, e, req);
@@ -456,7 +581,10 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
 
     if (cachedResponse) {
         diagFetch('+++ serveAsset ended - using cache.', start, asset);
-        return cachedResponse;
+        // Ranged requests get a real 206 sliced from the cached full body (see
+        // applyRangeHeader) - Safari in particular refuses to play cached media served as a
+        // 200 in response to a Range request.
+        return await applyRangeHeader(req, cachedResponse);
     }
 
     // In active (non-passive) mode a precached asset that missed the cache goes to the network
@@ -479,17 +607,24 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
         return response;
     }
 
-    const request = asset.reqUrl ? createNewAssetRequest(asset) : req;
+    // The versioned request drops the page's own headers - including Range. Answering a
+    // ranged request with a full 200 body breaks media playback (Safari), and slicing a
+    // *network* response here would mean buffering the whole stream before the first byte
+    // reaches the page. So a ranged request goes out as the page sent it: the server answers
+    // 206 itself, and lazyFill refuses partial responses so the cache only ever holds full
+    // bodies (filled by whatever non-ranged request comes first).
+    const request = (asset.reqUrl && !getRangeHeader(req)) ? createNewAssetRequest(asset) : req;
     let response = await tryFetch(request);
 
     // The versioned request carries a `?v=` buster and, with enableCacheControl, no-store
     // headers - either of which a fussy proxy or an offline-ish network can reject while the
-    // page's own plain request still succeeds. Retry with it before giving up.
+    // page's own plain request still succeeds. Retry with it before giving up. (When the
+    // ranged path above already used the plain request, there is nothing different to retry.)
     //
     // Not when the request carried an integrity hash, though: SRI failures surface as a
     // rejected fetch, and retrying without integrity would serve exactly the unverified bytes
     // the check exists to reject. A tampered asset must fail, not silently downgrade.
-    if (!response && asset.reqUrl && !(request as any).integrity) {
+    if (!response && asset.reqUrl && request !== req && !(request as any).integrity) {
         diagFetch('*** serveAsset - versioned request failed, retrying with the plain request:', start, asset);
         response = await tryFetch(req);
     }
@@ -518,6 +653,12 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
 // whose real size is deliberately hidden.
 function lazyFill(e: any, cache: any, cacheUrl: string, response: Response, asset: any) {
     if (!cache) return;
+    // A 206 Partial Content body (the server honoring a Range header the page sent) must
+    // never be written under the asset's cache key: response.ok is true for 206, so without
+    // this check one ranged media request could pin a partial body into the cache and every
+    // later request - including full ones - would be served that fragment as if it were the
+    // whole file, forever. Full bodies land in the cache via non-ranged requests instead.
+    if ((response as any).status === 206) return;
     if (!response.ok && (response as any).type !== 'opaque') return;
 
     const cachePut = cache.put(cacheUrl, response.clone()).catch((err: any) => {
@@ -543,7 +684,7 @@ async function lastResort(cache: any, req: Request, asset: any) {
         const stale = await tryCacheMatch(cache, req.url);
         if (stale) {
             diagFetch('*** serveAsset - network failed, serving a stale cached copy:', req.url, asset);
-            return stale;
+            return await applyRangeHeader(req, stale);
         }
 
         // Hashed assets are keyed `reqUrl.<hash>`, so the raw-URL lookup above can never hit
@@ -564,7 +705,7 @@ async function lastResort(cache: any, req: Request, asset: any) {
             const staleByHash = staleKey ? await tryCacheMatch(cache, staleKey.url) : undefined;
             if (staleByHash) {
                 diagFetch('*** serveAsset - network failed, serving a previous-hash cached copy:', staleKey.url, asset);
-                return staleByHash;
+                return await applyRangeHeader(req, staleByHash);
             }
         }
     }
@@ -583,6 +724,73 @@ async function tryCacheKeys(cache: any) {
         diagFetch('*** tryCacheKeys - enumeration failed:', err);
         return [];
     }
+}
+
+// The request's Range header value, or '' when absent/unreadable. Guarded because exotic
+// Request-alikes (and old test doubles) may lack a Headers object entirely.
+function getRangeHeader(req: Request) {
+    try {
+        return (req.headers && typeof (req.headers as any).get === 'function' && req.headers.get('range')) || '';
+    } catch {
+        return '';
+    }
+}
+
+// Serves the requested byte range out of a fully cached 200 response as a real 206 Partial
+// Content. Media elements fetch audio/video with Range headers, and answering those with a
+// cached 200 full body breaks playback - Safari outright refuses to play it. Only cached
+// responses are sliced (their body is already materialized locally); network responses are
+// never sliced here because that would buffer the entire stream before the page saw a byte -
+// ranged network fetches instead go out with the page's own request so the server answers
+// 206 itself (see serveAsset). Anything that can't be sliced safely - no Range header, a
+// non-200 status (opaque bodies are unreadable, 206 is already partial), a malformed or
+// multi-range spec, an unsatisfiable range, a read failure - falls back to returning the
+// response unchanged, which is exactly the pre-10.5.0 behavior.
+async function applyRangeHeader(req: Request, response: Response) {
+    try {
+        const rangeHeader = getRangeHeader(req);
+        if (!rangeHeader) return response;
+        if (response.status !== 200) return response;
+
+        // Clone before reading: on any fallback path the original response must still carry
+        // an unconsumed body for the page.
+        const buffer = await response.clone().arrayBuffer();
+        const size = buffer.byteLength;
+        const range = parseRangeHeader(rangeHeader, size);
+        if (!range) return response;
+
+        const headers = new Headers((response as any).headers);
+        headers.set('content-range', `bytes ${range.start}-${range.end}/${size}`);
+        headers.set('content-length', String(range.end - range.start + 1));
+        return new Response(buffer.slice(range.start, range.end + 1), { status: 206, statusText: 'Partial Content', headers });
+    } catch (err) {
+        diagFetch('*** applyRangeHeader failed - returning the full response:', err);
+        return response;
+    }
+}
+
+// Parses a single-range `bytes=` header against a known body size. Returns null for anything
+// this code does not handle - multi-range specs, other units, malformed or unsatisfiable
+// ranges - signalling the caller to fall back to the full response rather than guess.
+function parseRangeHeader(value: string, size: number): { start: number, end: number } | null {
+    const match = /^bytes=(\d*)-(\d*)$/.exec(String(value).trim());
+    if (!match || (!match[1] && !match[2])) return null;
+
+    let start: number;
+    let end: number;
+    if (!match[1]) {
+        // Suffix form (`bytes=-500`): the final N bytes.
+        const suffix = Number(match[2]);
+        if (!suffix) return null; // 'bytes=-0' is unsatisfiable per RFC 9110
+        start = Math.max(0, size - suffix);
+        end = size - 1;
+    } else {
+        start = Number(match[1]);
+        end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
+    }
+
+    if (size === 0 || start >= size || start > end) return null;
+    return { start, end };
 }
 
 // fetch() that reports failure as `undefined` instead of a rejection, so callers can fall back.
@@ -632,6 +840,16 @@ function handleMessage(e: MessageEvent<string>) {
     // is the ONLY trigger that starts Blazor on a first install - dropping it would leave the
     // app hanging behind the splash with no backup signal.
 
+    // In both command chains below, deleteOldCaches() is best-effort tidiness and must never
+    // block the signal that follows it. It enumerates and deletes via CacheStorage, which can
+    // reject under the same storage pressure serveAsset/handleInstall are hardened against -
+    // and an uncaught rejection would end the .then chain right before its most important
+    // step: CLIENTS_CLAIMED is the ONLY trigger that starts Blazor on a first install (a
+    // dropped one used to hang the app behind the splash until the page's stall watchdog
+    // fired), and WAITING_SKIPPED is the initiating tab's reload signal (recoverable via
+    // 'controllerchange', but a dropped message is still a dropped message). Stale caches
+    // that survive here are reclaimed by the next activate/CLEAN_UP pass.
+
     if (e.data === 'SKIP_WAITING') {
         // Activate the waiting worker, then take control of every open client so each tab
         // receives a 'controllerchange' and reloads onto the new version (handled in
@@ -643,7 +861,7 @@ function handleMessage(e: MessageEvent<string>) {
         return e.waitUntil(
             self.skipWaiting()
                 .then(() => self.clients.claim())
-                .then(() => deleteOldCaches())
+                .then(() => deleteOldCaches().catch(err => diag('*** SKIP_WAITING - old-cache cleanup failed (continuing):', err)))
                 .then(() => sendMessage('WAITING_SKIPPED')));
     }
 
@@ -653,18 +871,39 @@ function handleMessage(e: MessageEvent<string>) {
         // no previously-active worker (see hadActiveWorkerAtStartup in bit-bswup.ts).
         return e.waitUntil(
             self.clients.claim()
-                .then(() => deleteOldCaches())
+                .then(() => deleteOldCaches().catch(err => diag('*** CLAIM_CLIENTS - old-cache cleanup failed (continuing):', err)))
                 .then(() => e.source?.postMessage('CLIENTS_CLAIMED')));
     }
 
     if (e.data === 'BLAZOR_STARTED') {
-        // Keep the worker alive until the post-start top-up pass settles; createAssetsCache(true)
-        // is designed to never reject, so no extra error handling is needed here.
-        e.waitUntil(createAssetsCache(true));
+        // Keep the worker alive until the post-start top-up pass settles. Asset failures are
+        // handled inside createAssetsCache, but infrastructure failures (caches.open/keys
+        // rejecting) can still reject it; the app is already running at this point, so log
+        // and move on rather than raising a terminal error for a background top-up - and
+        // rather than letting the rejection surface as a failed extended event.
+        e.waitUntil(createAssetsCache(true).catch(err => {
+            diag('*** BLAZOR_STARTED - background top-up failed:', err);
+        }));
     }
 
     if (e.data === 'CLEAN_UP') {
-        e.waitUntil(deleteOldCaches()); // remove the old caches
+        // App-triggered pruning of this app's stale cache buckets (the page exposes it as the
+        // `cleanup` callback on downloadFinished). Guarded, because "stale" is relative to the
+        // NEWEST worker, not to the receiver: deleteOldCaches() spares only the receiver's own
+        // CACHE_NAME, so with an update staged or staging it would destroy a LIVE cache.
+        // Received by the old active worker, it would wipe the update's freshly downloaded
+        // cache and waste the entire download; received by a waiting worker (pre-10.5.0 pages
+        // posted it there too), it would delete the ACTIVE worker's cache out from under every
+        // running page, making old app code fetch new-version bytes - the classic SRI /
+        // boot-hash corruption. A waiting worker always sees itself in registration.waiting,
+        // so this one check covers both hazards. When skipped, nothing is lost: the
+        // SKIP_WAITING / activate flows prune at the moment it is actually safe. The catch
+        // matches the other command chains - pruning is best-effort tidiness.
+        if (self.registration && (self.registration.waiting || self.registration.installing)) {
+            diag('CLEAN_UP skipped - an update is staged or staging; pruning now would delete a live cache.');
+            return;
+        }
+        e.waitUntil(deleteOldCaches().catch((err: any) => diag('*** CLEAN_UP - cache pruning failed:', err)));
     }
 }
 
@@ -698,12 +937,16 @@ async function createAssetsCache(ignoreProgressReport = false) {
     if (!ignoreProgressReport) {
         // Migrate previously-cached assets into the new cache so unchanged files (matched by
         // their hash-suffixed key) survive an update without being re-downloaded; the diff
-        // loop below then prunes anything stale. Copy from every *other* bit-bswup bucket -
-        // not just the first one found - and explicitly exclude CACHE_NAME so we never copy
-        // the new cache onto itself (cacheKeys already contains it, since we opened it above).
-        // Skip any key already present so an entry migrated from one bucket isn't overwritten
-        // by a copy in another.
-        const oldCacheKeys = cacheKeys.filter(key => key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME);
+        // loop below then prunes anything stale. The sources are exactly the buckets this app
+        // owns (isOwnStaleCacheKey): this scope's previous versions plus legacy scope-less
+        // buckets - never a sibling scope's bucket, whose entries belong to a different app.
+        // (A legacy bucket on a multi-app origin may still hold a sibling's entries; that is
+        // harmless - keys are full URLs, so foreign entries simply fail the diff below and
+        // are pruned.) CACHE_NAME itself is excluded so we never copy the new cache onto
+        // itself (cacheKeys already contains it, since we opened it above). Skip any key
+        // already present so an entry migrated from one bucket isn't overwritten by a copy
+        // in another.
+        const oldCacheKeys = cacheKeys.filter(isOwnStaleCacheKey);
         for (const oldCacheKey of oldCacheKeys) {
             diag('copying old cache:', oldCacheKey);
             const oldCache = await caches.open(oldCacheKey);
@@ -746,13 +989,12 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // even when disableHashlessAssetsUpdate was set. Its endsWith fallback could also conflate
     // distinct assets that merely share a URL suffix ('app.css' vs 'myapp.css'). Exact-key
     // matching avoids both.
-    const fold = (s: string) => self.caseInsensitiveUrl ? s.toLowerCase() : s;
     const assetByCacheKey = new Map<string, any>();
     for (const asset of UNIQUE_ASSETS) {
         // Pattern assets (no concrete reqUrl) can't be precached or diffed; they are matched and
         // cached lazily by handleFetch, so skip them here.
         if (!asset.reqUrl) continue;
-        assetByCacheKey.set(fold(new Request(createCacheUrl(asset)).url), asset);
+        assetByCacheKey.set(foldUrlKey(new Request(createCacheUrl(asset)).url), asset);
     }
 
     // Assets confirmed present at their current cache key - these are not re-downloaded.
@@ -772,7 +1014,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
         const key = newCacheKeys[i];
         if (!key || !key.url) continue;
 
-        const matched = assetByCacheKey.get(fold(key.url));
+        const matched = assetByCacheKey.get(foldUrlKey(key.url));
         if (!matched) {
             // A key lazily cached for a pattern asset (no concrete reqUrl, e.g.
             // resource-collection.<hash>.js) has no entry in assetByCacheKey; it must survive
@@ -780,7 +1022,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
             // matches every fingerprint it ever cached, so the diff cannot tell the current
             // entry from dead ones; collect matches per pattern here and evict the oldest
             // beyond MAX_PATTERN_ASSET_GENERATIONS after the loop.
-            const pattern = UNIQUE_ASSETS.find(a => !a.reqUrl && a.url.test(key.url));
+            const pattern = PATTERN_ASSETS.find(a => a.url.test(key.url));
             if (pattern) {
                 diag('*** keeping lazily-cached pattern asset key (subject to the generation cap):', key.url);
                 const kept = patternKeys.get(pattern) || [];
@@ -822,10 +1064,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // Always refresh the default document on each update so navigations pick up the latest
     // app shell even when its hash is unchanged. If it was kept above, drop it from the kept
     // set and delete its current entry so it is re-fetched below.
-    const defaultAsset = UNIQUE_ASSETS.find(a => a.isDefault);
-    if (defaultAsset && cachedAssets.has(defaultAsset)) {
-        cachedAssets.delete(defaultAsset);
-        keysToDelete.push(new Request(createCacheUrl(defaultAsset)).url); // get the latest version of the default doc in each update if exists!!
+    if (DEFAULT_ASSET && cachedAssets.has(DEFAULT_ASSET)) {
+        cachedAssets.delete(DEFAULT_ASSET);
+        keysToDelete.push(new Request(createCacheUrl(DEFAULT_ASSET)).url); // get the latest version of the default doc in each update if exists!!
     }
 
     await Promise.all(keysToDelete.map(url => newCache.delete(url)));
@@ -910,7 +1151,11 @@ async function createAssetsCache(ignoreProgressReport = false) {
         // worker there is no CLAIM_CLIENTS handshake, so nothing else would ever start the app.
         sendError({ reason: 'install-aborted', message: abortMessage, count: rejectedCount, total, fatal: true });
 
-        throw new Error(abortMessage);
+        const abortError = new Error(abortMessage) as any;
+        // Consumed by handleInstall: this failure is already reported (the 'install-aborted'
+        // sendError above), so it must not be double-reported as 'install-infra' on the way out.
+        abortError.bswupReported = true;
+        throw abortError;
     }
 
     async function addCache(report: boolean, asset: any) {
@@ -1174,13 +1419,31 @@ function createNewAssetRequest(asset: any, noCors = false) {
     return new Request(assetUrl, requestInit);
 }
 
-// Removes every Bswup cache except the current CACHE_NAME. Called after a new worker claims
-// clients (SKIP_WAITING / CLAIM_CLIENTS) and on the CLEAN_UP command, so stale
+// Removes every Bswup cache THIS APP owns except the current CACHE_NAME. Called after a new
+// worker claims clients (SKIP_WAITING / CLAIM_CLIENTS) and on the CLEAN_UP command, so stale
 // version-suffixed caches from previous installs are reclaimed once they're no longer needed.
+// "Owns" is defined by isOwnStaleCacheKey: this scope's previous versions plus legacy
+// scope-less buckets; another scope's buckets are never touched.
 async function deleteOldCaches() {
     const cacheKeys = await caches.keys();
-    const promises = cacheKeys.filter(key => (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
+    const promises = cacheKeys.filter(isOwnStaleCacheKey).map(key => caches.delete(key));
     return Promise.all(promises);
+}
+
+// Whether a cache bucket is a stale one this registration owns - the shared definition for
+// both cleanup (deleteOldCaches) and update migration (createAssetsCache warm-start):
+//   - buckets under SCOPED_CACHE_PREFIX are this scope's previous versions;
+//   - legacy scope-less buckets (`bit-bswup - <version>`, pre-scoping releases) cannot be
+//     attributed to a scope, so they are claimed for migration and then reclaimed by whichever
+//     upgraded app touches them first. On a multi-app origin an un-upgraded sibling can lose
+//     its legacy bucket once during the transition - the pre-scoping behavior did exactly that
+//     on EVERY update, and the sibling self-heals by refilling; keeping legacy buckets forever
+//     would instead leak them for every single-app origin, the overwhelmingly common case.
+// A sibling scope's `bit-bswup:<other>/ - <version>` buckets match neither prefix - which is
+// the point of scope-qualified names.
+function isOwnStaleCacheKey(key: string) {
+    if (key === CACHE_NAME) return false;
+    return key.startsWith(SCOPED_CACHE_PREFIX) || key.startsWith(LEGACY_CACHE_PREFIX);
 }
 
 // De-duplicates the asset list by URL (the first occurrence wins) and normalizes each entry so
@@ -1224,8 +1487,11 @@ function uniqueAssets(assets: any) {
             srcUrl: isPattern ? String(a.url) : a.url,
             reqUrl,
             // Paired by resolved URL too (see DEFAULT_REQ_URL) so an equivalent spelling of
-            // defaultUrl still finds its asset.
-            isDefault: !isPattern && reqUrl === DEFAULT_REQ_URL,
+            // defaultUrl still finds its asset - and folded per caseInsensitiveUrl, so
+            // defaultUrl = '/Index.html' still pairs with a manifest 'index.html' when the
+            // app opted into case-insensitive matching (asset routing already folds; the
+            // default-document pairing used to be the one comparison that didn't).
+            isDefault: !isPattern && foldUrlKey(reqUrl as string) === foldUrlKey(DEFAULT_REQ_URL),
         });
     }
     return distinct;
@@ -1262,11 +1528,17 @@ function urlToRegExp(url: string) {
 // true }) returns every same-origin window client, including pages of unrelated apps mounted
 // under other scopes on the same host - and only clients under this scope can be controlled
 // by this worker or depend on its caches. When the scope is unavailable (self.registration
-// missing in an exotic runtime) fall back to no filtering, which is the pre-10.5.0 behavior.
+// missing in an exotic runtime) fall back to no filtering, which is the pre v-10-5-0 behavior.
 // The cleanup worker (bit-bswup.sw-cleanup.ts) applies the same filter for the same reason.
 async function matchScopeClients() {
     const scope = self.registration && self.registration.scope;
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    // Raw string prefix matching is deliberate: it is exactly the Service Worker spec's scope
+    // match algorithm (longest prefix over the serialized URLs, with no path-segment
+    // awareness), so this filter selects precisely the clients this registration can control.
+    // "Fixing" it to require a path-boundary would make the filter NARROWER than the
+    // worker's real authority - e.g. a scope registered as '/app' (no trailing slash) does
+    // control '/application' in every browser, so those clients must receive our messages.
     return (clients || []).filter((client: any) => !scope || (typeof client.url === 'string' && client.url.indexOf(scope) === 0));
 }
 

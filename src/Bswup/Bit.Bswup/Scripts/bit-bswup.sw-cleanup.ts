@@ -37,9 +37,31 @@ async function teardownClients() {
     // network) before their caches vanish, then purge the Bswup/Blazor caches.
     await self.clients.claim();
 
-    const cacheKeys = await caches.keys();
-    const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
-    await Promise.all(cachePromises);
+    // Best-effort: CacheStorage can reject under storage pressure / broken origin storage -
+    // the very situations this recovery worker is deployed into. The purge must never abort
+    // the teardown, or no client would ever be told to UNREGISTER and every tab would stay
+    // stranded on this worker forever; an unpurged cache is reclaimed by the browser once
+    // the registration is gone.
+    try {
+        // Scope-aware purge, mirroring the main worker's cache identity (bit-bswup.sw.ts):
+        // this app's own scoped buckets (`bit-bswup:<scope-path> - <version>`), legacy
+        // scope-less buckets from pre-scoping releases (`bit-bswup - <version>`), and Blazor's
+        // resource caches. A sibling Bswup app's scoped buckets are deliberately left alone -
+        // this worker backs ONE app out of Bswup, the same boundary the client filter below
+        // draws. blazor-resources stays prefix-wide: its suffix is the document base path,
+        // which need not equal the SW scope, and in a recovery scenario missing a possibly
+        // corrupt cache is worse than making a sibling re-fill one.
+        const scopePath = (() => {
+            try { return new URL(self.registration.scope).pathname; } catch { return '/'; }
+        })();
+        const cacheKeys = await caches.keys();
+        const cachePromises = cacheKeys
+            .filter(key => key.startsWith(`bit-bswup:${scopePath} - `) || key.startsWith('bit-bswup - ') || key.startsWith('blazor-resources'))
+            .map(key => caches.delete(key));
+        await Promise.all(cachePromises);
+    } catch (err) {
+        console.warn('BitBswup SW cleanup: cache purge failed (continuing with unregister):', err);
+    }
     // Only target window clients that belong to this registration's scope. matchAll with
     // includeUncontrolled returns every same-origin client (including those under other
     // scopes / mounted sub-apps and non-window clients like workers); broadcasting

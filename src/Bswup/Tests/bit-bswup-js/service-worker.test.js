@@ -108,6 +108,104 @@ describe('errorTolerance', () => {
     });
 });
 
+// The lax install used to fire the cache build unawaited: the install settled while the
+// download was still running, so the browser could terminate the event-idle worker mid-
+// download (freezing a first install behind the splash), and 'waiting' - and with it
+// updateReady - was announced while the new cache was still half-empty. The build now runs
+// under the install event's waitUntil in both tolerance modes, and infrastructure failures
+// (CacheStorage itself unusable) surface as a terminal error instead of dying silently.
+describe('install lifetime and infrastructure failures', () => {
+    function bootWithBrokenCaches({ config = {} } = {}) {
+        const sw = createServiceWorkerContext({ cacheStorageError: new Error('quota exceeded') });
+        sw.addClient();
+        sw.configure(config);
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        return sw.load();
+    }
+
+    it('lax holds the install event open until the cache build has settled', async () => {
+        const sw = boot({ assets: [{ url: 'index.html', hash: 'idx' }, { url: 'app.js', hash: 'h1' }] });
+        await sw.fire('install');
+        // Deliberately no settle(): resolution of the install promise itself must imply a
+        // populated cache - that is what keeps the worker alive for the whole download and
+        // what makes the later 'waiting' state mean "fully staged".
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/app.js.h1`);
+    });
+
+    it('lax resolves the install but reports a fatal install-infra error when CacheStorage is unusable', async () => {
+        const sw = bootWithBrokenCaches();
+
+        await expect(sw.fire('install')).resolves.not.toThrow();
+        await sw.settle();
+
+        // Previously this was swallowed with a diagnostic log: no progress, no bypass, no
+        // error - a first install hung behind the splash with nothing telling the page to boot.
+        const errors = sw.messagesOfType('error');
+        expect(errors.some(e => e.data.reason === 'install-infra' && e.data.fatal === true)).toBe(true);
+    });
+
+    it('strict reports the same fatal install-infra error before rejecting', async () => {
+        const sw = bootWithBrokenCaches({ config: { errorTolerance: 'strict' } });
+
+        await expect(sw.fire('install')).rejects.toThrow(/quota/);
+        await sw.settle();
+
+        const errors = sw.messagesOfType('error');
+        expect(errors.some(e => e.data.reason === 'install-infra' && e.data.fatal === true)).toBe(true);
+    });
+
+    it('a strict abort is not double-reported as install-infra', async () => {
+        const sw = boot({
+            config: { errorTolerance: 'strict', maxRetries: 0 },
+            assets: [{ url: 'missing.js', hash: 'h2' }],
+            fetchHandler: async () => { throw new Error('network'); },
+        });
+        await expect(sw.fire('install')).rejects.toThrow(/Install aborted/);
+        await sw.settle();
+
+        expect(sw.messagesOfType('error').some(e => e.data.reason === 'install-infra')).toBe(false);
+    });
+
+    it('a BLAZOR_STARTED top-up infrastructure failure never rejects the message event', async () => {
+        const sw = bootWithBrokenCaches();
+
+        let waited;
+        sw.handlers.message({ data: 'BLAZOR_STARTED', waitUntil: p => { waited = p; } });
+        expect(waited).toBeTruthy();
+        await expect(waited).resolves.not.toThrow();
+    });
+
+    // Regression for the premature-updateReady bug: under lax the worker used to reach
+    // 'installed' (waiting) the moment the download *started*, so the page announced "update
+    // ready" - and an autoReload handler activated a half-empty cache, deleting the previous
+    // complete one right after the claim - while the download was still running. The install
+    // promise is what the browser's state machine waits on before 'waiting' can exist, so it
+    // must stay pending until every download has settled.
+    it('lax keeps the install pending while downloads are still in flight', async () => {
+        let releaseFetch;
+        const gate = new Promise(r => { releaseFetch = r; });
+        const sw = boot({
+            assets: [{ url: 'index.html', hash: 'idx' }, { url: 'app.js', hash: 'h1' }],
+            fetchHandler: async () => { await gate; return { ok: true, status: 200, clone: () => ({}) }; },
+        });
+
+        let settled = false;
+        const installPromise = sw.fire('install');
+        installPromise.then(() => { settled = true; });
+
+        await sw.settle();
+        expect(settled).toBe(false); // downloads in flight => the worker cannot reach 'waiting' yet
+
+        releaseFetch();
+        await installPromise;
+        await sw.settle();
+
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/app.js.h1`);
+        const percents = sw.messagesOfType('progress').map(m => m.data.percent);
+        expect(Math.max(...percents)).toBe(100);
+    });
+});
+
 // A mode is a bundle of *defaults*: it must only fill settings the app left unset. The old
 // implementation hard-assigned isPassive and used ||= for the rest, so explicit falsy config
 // (isPassive: false, caseInsensitiveUrl: false) was silently overwritten by the preset.
@@ -178,7 +276,7 @@ describe('update migration and diff', () => {
             assets: [{ url: 'app.js', hash: 'h1' }, { url: 'index.html', hash: 'idx2' }],
         });
 
-        expect(sw.caches.snapshot()['bit-bswup - v2']).toContain(`${ORIGIN}/app.js.h1`);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v2']).toContain(`${ORIGIN}/app.js.h1`);
         expect(sw.fetchLog.some(u => u.includes('app.js'))).toBe(false);
     });
 
@@ -188,7 +286,7 @@ describe('update migration and diff', () => {
             assets: [{ url: 'app.js', hash: 'h2' }, { url: 'index.html', hash: 'idx' }],
         });
 
-        const keys = sw.caches.snapshot()['bit-bswup - v2'];
+        const keys = sw.caches.snapshot()['bit-bswup:/ - v2'];
         expect(keys).toContain(`${ORIGIN}/app.js.h2`);
         expect(keys).not.toContain(`${ORIGIN}/app.js.h1`);
     });
@@ -199,7 +297,7 @@ describe('update migration and diff', () => {
             assets: [{ url: 'index.html', hash: 'idx' }],
         });
 
-        expect(sw.caches.snapshot()['bit-bswup - v2']).not.toContain(`${ORIGIN}/gone.js.h1`);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v2']).not.toContain(`${ORIGIN}/gone.js.h1`);
     });
 
     it('re-downloads hashless assets on update by default', async () => {
@@ -219,7 +317,7 @@ describe('update migration and diff', () => {
         });
 
         expect(sw.fetchLog.some(u => u.includes('data.json'))).toBe(false);
-        expect(sw.caches.snapshot()['bit-bswup - v2']).toContain(`${ORIGIN}/data.json`);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v2']).toContain(`${ORIGIN}/data.json`);
     });
 
     it('always refreshes the default document, even with an unchanged hash', async () => {
@@ -252,7 +350,7 @@ describe('asset dedupe by resolved URL', () => {
         await install(sw);
 
         // One entry, keyed by the manifest entry's hash - the hashless external duplicate is gone.
-        expect(sw.caches.snapshot()['bit-bswup - v1']).toEqual([`${ORIGIN}/index.html.sha256-idx`]);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toEqual([`${ORIGIN}/index.html.sha256-idx`]);
     });
 });
 
@@ -328,6 +426,63 @@ describe('broadcast scope', () => {
     });
 });
 
+// Multi-tab coverage: several tabs of the same app share one worker. The progress stream and
+// the update-reload signal must reach every tab (uncontrolled ones included - nothing is
+// controlled during a first install), while the first-install CLAIM_CLIENTS handshake must
+// reply to each requesting tab individually (each tab starts its own Blazor instance).
+describe('multi-tab flows', () => {
+    function bootWithTabs() {
+        const sw = createServiceWorkerContext();
+        const tabA = [];
+        const tabB = [];
+        sw.clients.push({ type: 'window', url: `${ORIGIN}/`, postMessage: m => tabA.push(m) });
+        sw.clients.push({ type: 'window', url: `${ORIGIN}/counter`, postMessage: m => tabB.push(m) });
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        sw.load();
+        return { sw, tabA, tabB };
+    }
+    const parse = tab => tab.map(m => { try { return JSON.parse(m); } catch { return m; } });
+
+    it('broadcasts install and progress to every open tab, not just the initiator', async () => {
+        const { sw, tabA, tabB } = bootWithTabs();
+        await install(sw);
+
+        for (const tab of [tabA, tabB]) {
+            const messages = parse(tab);
+            expect(messages.some(m => m && m.type === 'install')).toBe(true);
+            expect(messages.some(m => m && m.type === 'progress' && m.data.percent === 100)).toBe(true);
+        }
+    });
+
+    it('replies CLIENTS_CLAIMED to each requesting tab individually', async () => {
+        // Every tab that reaches 100% posts its own CLAIM_CLIENTS; the reply must go to that
+        // tab's own source (broadcasting it would be fine; dropping one would strand a tab).
+        const { sw } = bootWithTabs();
+        const sourceA = [];
+        const sourceB = [];
+        let waitedA, waitedB;
+        sw.handlers.message({ data: 'CLAIM_CLIENTS', source: { postMessage: m => sourceA.push(m) }, waitUntil: p => { waitedA = p; } });
+        sw.handlers.message({ data: 'CLAIM_CLIENTS', source: { postMessage: m => sourceB.push(m) }, waitUntil: p => { waitedB = p; } });
+        await waitedA;
+        await waitedB;
+        await sw.settle();
+
+        expect(sourceA).toEqual(['CLIENTS_CLAIMED']);
+        expect(sourceB).toEqual(['CLIENTS_CLAIMED']);
+    });
+
+    it('broadcasts WAITING_SKIPPED to every tab when an update is accepted in one of them', async () => {
+        const { sw, tabA, tabB } = bootWithTabs();
+        let waited;
+        sw.handlers.message({ data: 'SKIP_WAITING', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        expect(tabA).toContain('WAITING_SKIPPED');
+        expect(tabB).toContain('WAITING_SKIPPED');
+    });
+});
+
 // A defaultUrl that matches no asset silently disables offline navigation - navigations just
 // pass through to the network, so the app looks fine online and only fails offline.
 describe('defaultUrl misconfiguration warning', () => {
@@ -359,6 +514,22 @@ describe('defaultUrl misconfiguration warning', () => {
 
     it('stays silent under forcePrerender (the server owns navigations)', () => {
         expect(warnsFrom({ config: { forcePrerender: true }, assets: [{ url: 'app.js', hash: 'h1' }] })).toHaveLength(0);
+    });
+
+    // Asset routing folds case under caseInsensitiveUrl; the default-document pairing used to
+    // be the one comparison that didn't, silently losing offline navigation to a case typo.
+    it('pairs a differently-cased defaultUrl with its asset under caseInsensitiveUrl', () => {
+        expect(warnsFrom({
+            config: { caseInsensitiveUrl: true, defaultUrl: '/Index.html' },
+            assets: [{ url: 'index.html', hash: 'h1' }],
+        })).toHaveLength(0);
+    });
+
+    it('still treats case as significant when caseInsensitiveUrl is off', () => {
+        expect(warnsFrom({
+            config: { defaultUrl: '/Index.html' },
+            assets: [{ url: 'index.html', hash: 'h1' }],
+        })).toHaveLength(1);
     });
 });
 
@@ -398,7 +569,7 @@ describe('pattern-asset generation cap', () => {
         sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'sha256-idx' }]) };
         sw.self.externalAssets = sw.array([sw.regex('resource-collection\\..*\\.js')]);
         sw.load();
-        const cache = await sw.caches.open('bit-bswup - v1');
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
         for (const h of hashes) await cache.put(rcKey(h), { ok: true, status: 200, body: h, clone: () => ({}) });
         return sw;
     }
@@ -407,7 +578,7 @@ describe('pattern-asset generation cap', () => {
         const sw = await bootWithCachedGenerations(['g1', 'g2', 'g3', 'g4', 'g5']);
         await install(sw);
 
-        const keys = sw.caches.snapshot()['bit-bswup - v1'];
+        const keys = sw.caches.snapshot()['bit-bswup:/ - v1'];
         expect(keys).not.toContain(rcKey('g1'));
         expect(keys).not.toContain(rcKey('g2'));
         expect(keys).toContain(rcKey('g3'));
@@ -419,7 +590,7 @@ describe('pattern-asset generation cap', () => {
         const sw = await bootWithCachedGenerations(['g1', 'g2']);
         await install(sw);
 
-        const keys = sw.caches.snapshot()['bit-bswup - v1'];
+        const keys = sw.caches.snapshot()['bit-bswup:/ - v1'];
         expect(keys).toContain(rcKey('g1'));
         expect(keys).toContain(rcKey('g2'));
     });
@@ -445,7 +616,7 @@ describe('cross-origin externalAssets without CORS headers', () => {
         await install(sw);
 
         expect(sw.messagesOfType('error')).toHaveLength(0);
-        expect(sw.caches.snapshot()['bit-bswup - v1']).toContain(CDN);
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(CDN);
     });
 
     it('never downgrades to no-cors when integrity was requested for the asset', async () => {
@@ -515,6 +686,116 @@ describe('page->worker commands extend the event lifetime', () => {
         expect(claimed).toBe(1);
         expect(Object.keys(sw.caches.snapshot())).not.toContain('bit-bswup - v0');
         expect(sourcePosted).toEqual(['CLIENTS_CLAIMED']);
+    });
+
+    // deleteOldCaches() sits in the middle of both command chains and can reject under the
+    // same storage pressure the install path is hardened against. It is best-effort tidiness;
+    // a rejection must never swallow the signal that follows it - CLIENTS_CLAIMED is the ONLY
+    // trigger that starts Blazor on a first install.
+    it('CLAIM_CLIENTS still replies CLIENTS_CLAIMED when cache cleanup fails', async () => {
+        const sw = boot();
+        sw.caches.keys = async () => { throw new Error('storage pressure'); };
+
+        const sourcePosted = [];
+        let waited;
+        sw.handlers.message({
+            data: 'CLAIM_CLIENTS',
+            source: { postMessage: m => sourcePosted.push(m) },
+            waitUntil: p => { waited = p; },
+        });
+
+        await expect(waited).resolves.not.toThrow();
+        await sw.settle();
+
+        expect(sourcePosted).toEqual(['CLIENTS_CLAIMED']);
+    });
+
+    it('SKIP_WAITING still broadcasts WAITING_SKIPPED when cache cleanup fails', async () => {
+        const sw = boot();
+        sw.caches.keys = async () => { throw new Error('storage pressure'); };
+
+        let waited;
+        sw.handlers.message({ data: 'SKIP_WAITING', waitUntil: p => { waited = p; } });
+
+        await expect(waited).resolves.not.toThrow();
+        await sw.settle();
+
+        expect(sw.posted).toContain('WAITING_SKIPPED');
+    });
+
+    it('CLEAN_UP prunes this app\'s stale buckets when no update is staged or staging', async () => {
+        const sw = boot();
+        await sw.caches.open('bit-bswup:/ - v0'); // own previous version
+        await sw.caches.open('bit-bswup - v0');   // legacy scope-less bucket
+        await install(sw);                        // populates the current 'bit-bswup:/ - v1'
+
+        let waited;
+        sw.handlers.message({ data: 'CLEAN_UP', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        const keys = Object.keys(sw.caches.snapshot());
+        expect(keys).toContain('bit-bswup:/ - v1');
+        expect(keys).not.toContain('bit-bswup:/ - v0');
+        expect(keys).not.toContain('bit-bswup - v0');
+    });
+
+    // "Stale" is relative to the NEWEST worker, not the receiver: deleteOldCaches() spares
+    // only the receiver's own CACHE_NAME, so with an update staged it would delete a LIVE
+    // cache - the update's freshly downloaded bucket (received by the old active worker), or
+    // the active worker's bucket out from under every running page (received by a waiting
+    // worker, which always sees itself in registration.waiting - one guard covers both).
+    it('CLEAN_UP is refused while an update is staged', async () => {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        sw.self.registration = { scope: `${ORIGIN}/`, waiting: {} };
+        sw.self.assetsManifest = { version: 'v1', assets: sw.array([{ url: 'index.html', hash: 'idx' }]) };
+        sw.load();
+        await sw.caches.open('bit-bswup:/ - v2'); // the staged update's live cache
+        await sw.caches.open('bit-bswup:/ - v0'); // genuinely stale - deferred to activation
+
+        let waited;
+        sw.handlers.message({ data: 'CLEAN_UP', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        const keys = Object.keys(sw.caches.snapshot());
+        expect(keys).toContain('bit-bswup:/ - v2');
+        expect(keys).toContain('bit-bswup:/ - v0');
+    });
+});
+
+// The self-destructing recovery worker (bit-bswup.sw-cleanup.js) is deployed in place of the
+// real worker to back an app out of Bswup - often precisely because origin storage is broken.
+describe('cleanup worker', () => {
+    function bootCleanup() {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        return sw.load('bit-bswup.sw-cleanup.js');
+    }
+
+    it('purges the Bswup/Blazor caches, then tells clients to unregister and nudges a reload', async () => {
+        const sw = bootCleanup();
+        await sw.caches.open('bit-bswup - v1');
+        await sw.caches.open('blazor-resources-/');
+        await sw.caches.open('my-app-data');
+
+        await sw.fire('activate');
+
+        expect(Object.keys(sw.caches.snapshot())).toEqual(['my-app-data']);
+        expect(sw.posted).toContain('UNREGISTER');
+        expect(sw.posted).toContain('WAITING_SKIPPED'); // the delayed fallback reload signal
+    });
+
+    it('still tells clients to unregister when the cache purge fails', async () => {
+        const sw = bootCleanup();
+        sw.caches.keys = async () => { throw new Error('storage broken'); };
+
+        // A purge rejection used to abort teardownClients() before any client was messaged,
+        // stranding every tab on the broken worker forever - the opposite of this worker's job.
+        await expect(sw.fire('activate')).resolves.not.toThrow();
+
+        expect(sw.posted).toContain('UNREGISTER');
     });
 });
 
@@ -601,12 +882,91 @@ describe('cache naming', () => {
     it('tracks the manifest version by default', async () => {
         const sw = boot({ version: 'abc123' });
         await install(sw);
-        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup - abc123');
+        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup:/ - abc123');
     });
 
     it('honors an explicit cacheVersion override', async () => {
         const sw = boot({ version: 'abc123', config: { cacheVersion: '2026.05.31' } });
         await install(sw);
-        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup - 2026.05.31');
+        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup:/ - 2026.05.31');
+    });
+});
+
+// CacheStorage is origin-global while service worker registrations are per-scope. The
+// pre-scoping name (`bit-bswup - <version>`) made every app's deleteOldCaches() treat a
+// sibling app's bucket as a stale version of its own: two Bswup apps on one origin
+// perpetually evicted each other's offline caches on every update.
+describe('cache identity is scoped per registration', () => {
+    function bootScoped({ scope = `${ORIGIN}/app/`, version = 'v2', assets } = {}) {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        sw.self.registration = { scope };
+        sw.self.assetsManifest = {
+            version,
+            assets: sw.array(assets || [{ url: 'index.html', hash: 'idx' }, { url: 'app.js', hash: 'h1' }]),
+        };
+        return sw.load();
+    }
+
+    it('includes the registration scope path in the cache name', async () => {
+        const sw = bootScoped({ scope: `${ORIGIN}/app/`, version: 'v1' });
+        await install(sw);
+        expect(Object.keys(sw.caches.snapshot())).toContain('bit-bswup:/app/ - v1');
+    });
+
+    it('cleanup reclaims own previous and legacy buckets but never a sibling scope', async () => {
+        const sw = bootScoped();
+        await sw.caches.open('bit-bswup:/app/ - v1');   // this app's previous version
+        await sw.caches.open('bit-bswup - v1');          // legacy scope-less (pre v-10-5-0)
+        await sw.caches.open('bit-bswup:/other/ - v1');  // a sibling app's live bucket
+
+        let waited;
+        sw.handlers.message({ data: 'SKIP_WAITING', waitUntil: p => { waited = p; } });
+        await waited;
+        await sw.settle();
+
+        const keys = Object.keys(sw.caches.snapshot());
+        expect(keys).toContain('bit-bswup:/other/ - v1'); // the sibling survives
+        expect(keys).not.toContain('bit-bswup:/app/ - v1');
+        expect(keys).not.toContain('bit-bswup - v1');
+    });
+
+    it('migrates from its own previous bucket without re-downloading', async () => {
+        const sw = bootScoped();
+        const own = await sw.caches.open('bit-bswup:/app/ - v1');
+        await own.put(`${ORIGIN}/app.js.h1`, { ok: true, status: 200, body: 'bytes', clone: () => ({}) });
+
+        await install(sw);
+
+        expect(sw.caches.snapshot()['bit-bswup:/app/ - v2']).toContain(`${ORIGIN}/app.js.h1`);
+        expect(sw.fetchLog.some(u => u.includes('app.js'))).toBe(false);
+    });
+
+    it('never uses a sibling scope bucket as a migration source', async () => {
+        const sw = bootScoped();
+        // The sibling happens to hold a byte-identical entry; warm-starting from it would
+        // "work" here, but it belongs to a different app - it must not be treated as ours.
+        const sibling = await sw.caches.open('bit-bswup:/other/ - v9');
+        await sibling.put(`${ORIGIN}/app.js.h1`, { ok: true, status: 200, body: 'bytes', clone: () => ({}) });
+
+        await install(sw);
+
+        expect(sw.fetchLog.some(u => u.includes('app.js'))).toBe(true); // downloaded, not copied
+    });
+
+    it('the cleanup worker purges own + legacy + blazor buckets but leaves sibling scopes', async () => {
+        const sw = createServiceWorkerContext();
+        sw.addClient();
+        sw.self.registration = { scope: `${ORIGIN}/app/` };
+        sw.load('bit-bswup.sw-cleanup.js');
+        await sw.caches.open('bit-bswup:/app/ - v1');
+        await sw.caches.open('bit-bswup - v0');
+        await sw.caches.open('bit-bswup:/other/ - v1');
+        await sw.caches.open('blazor-resources-/app/');
+        await sw.caches.open('my-app-data');
+
+        await sw.fire('activate');
+
+        expect(Object.keys(sw.caches.snapshot()).sort()).toEqual(['bit-bswup:/other/ - v1', 'my-app-data']);
     });
 });
