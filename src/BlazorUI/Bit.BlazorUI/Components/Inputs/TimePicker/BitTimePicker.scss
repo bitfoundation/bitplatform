@@ -200,7 +200,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -403,7 +403,7 @@
         animation-name: unset;
         transform: translateY(-100%);
         box-shadow: $box-shadow-callout;
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
 
         .bit-tpc-tdv {
             font-size: spacing(7);

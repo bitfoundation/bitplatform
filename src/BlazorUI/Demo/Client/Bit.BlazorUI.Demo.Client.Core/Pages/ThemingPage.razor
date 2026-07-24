@@ -164,13 +164,13 @@
                 <br />
                 <b>Spacing</b> &mdash; <BitTag>--bit-spa-scaling-factor</BitTag>
                 <br />
-                <b>Z-index</b> &mdash; <BitTag>--bit-zin-{snackbar,modal,callout,overlay,base}</BitTag>
+                <b>Z-index</b> &mdash; <BitTag>--bit-zin-{snackbar,callout,overlay,modal,base}</BitTag> (stacking order, highest first &mdash; <BitTag>overlay</BitTag> is the click-away layer of callouts and intentionally sits above <BitTag>modal</BitTag>)
                 <br />
                 <b>Typography</b> &mdash; <BitTag>--bit-tpg-*</BitTag> (font family/weight/line-height plus per-variant <BitTag>h1..h6</BitTag>, <BitTag>body1/2</BitTag>, <BitTag>subtitle1/2</BitTag>, <BitTag>caption1/2</BitTag>, <BitTag>button</BitTag>, <BitTag>overline</BitTag>, <BitTag>inherit</BitTag>)
                 <br />
                 <b>Motion</b> &mdash; <BitTag>--bit-mot-duration</BitTag>, <BitTag>--bit-mot-duration-short</BitTag>, <BitTag>--bit-mot-duration-long</BitTag>, <BitTag>--bit-mot-easing</BitTag>
                 <br />
-                <b>Layout</b> &mdash; <BitTag>--bit-layout-dir</BitTag>, <BitTag>--bit-layout-density-scale</BitTag>, breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
+                <b>Layout</b> &mdash; <BitTag>--bit-layout-density-scale</BitTag>, breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
                 <br />
                 <b>Semantic aliases</b> &mdash; <BitTag>--bit-sem-*</BitTag> (intent-named pointers to the primitives)
             </BitText>
@@ -499,15 +499,12 @@ await BitThemeManager.ApplyBitThemeAsync(new BitTheme
             <br />
 
             <CodeBox Language="csharp">@@inject BitThemeNotifications ThemeNotifications
-@@inject BitThemeManager ThemeManager
 @@implements IDisposable
 
-protected override async Task OnInitializedAsync()
+protected override void OnInitialized()
 {
-    // Make sure the JS&harr;.NET notifier is registered, even if we never call
-    // any other manager method first.
-    await ThemeManager.EnsureThemeNotificationsRegisteredAsync();
-
+    // Subscribing is enough - it registers the JS&harr;.NET notifier automatically,
+    // no BitThemeManager call is needed first.
     ThemeNotifications.ThemeChanged += OnThemeChanged;
 }
 
@@ -702,7 +699,7 @@ BitTheme restored = BitThemeSerialization.Deserialize(json);</CodeBox>
             <br />
 
             <BitText>
-                <BitTag>BitTheme.Layout</BitTag> drives the layout-level tokens. Set <BitTag>Direction</BitTag> for right-to-left UIs, <BitTag>DensityScale</BitTag> for compact spacing, and <BitTag>Breakpoints</BitTag> to align with your app media queries.
+                <BitTag>BitTheme.Layout</BitTag> drives the layout-level tokens. Set <BitTag>DensityScale</BitTag> for compact spacing and <BitTag>Breakpoints</BitTag> to align with your app media queries.
             </BitText>
 
             <br />
@@ -711,7 +708,6 @@ BitTheme restored = BitThemeSerialization.Deserialize(json);</CodeBox>
 {
     Layout =
     {
-        Direction    = "rtl",   // &rarr; --bit-layout-dir
         DensityScale = "0.95",  // &rarr; --bit-layout-density-scale
         Breakpoints =
         {
@@ -730,7 +726,7 @@ BitTheme restored = BitThemeSerialization.Deserialize(json);</CodeBox>
             <br />
 
             <BitText>
-                For full RTL support, also set <BitTag>dir="rtl"</BitTag> on <BitTag>&lt;html&gt;</BitTag> (or your root element) so HTML-level features like text selection and cursor direction follow.
+                RTL is not a theme token: set <BitTag>dir="rtl"</BitTag> on <BitTag>&lt;html&gt;</BitTag> (or your root element) and use the components' <BitTag>Dir</BitTag> parameter, so HTML-level features like text selection and cursor direction follow.
             </BitText>
 
             <br />
@@ -741,7 +737,7 @@ BitTheme restored = BitThemeSerialization.Deserialize(json);</CodeBox>
 
             <br />
 
-            <CodeBox Language="csharp">// Compact overlay = Layout.DensityScale "0.9" + Spacing.ScalingFactor "0.95"
+            <CodeBox Language="csharp">// Compact overlay = Layout.DensityScale "0.9" (unitless multiplier over the spacing unit)
 var compact = BitThemeDensityPresets.CreateCompactOverlay();
 
 // Merge on top of your tenant theme
@@ -982,7 +978,6 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
 
     protected override async Task OnInitializedAsync()
     {
-        await ThemeManager.EnsureThemeNotificationsRegisteredAsync();
         ThemeNotifications.ThemeChanged += OnThemeChanged;
 
         var current = await ThemeManager.GetCurrentThemeAsync();
@@ -1021,6 +1016,56 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
         return theme;
     }
 }</CodeBox>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Element="h2" Typography="BitTypography.H4">Migrating from the previous theming API</BitText>
+
+            <br />
+
+            <BitText>
+                The theme system was rebuilt in this release. Most token names and the overall <BitTag>BitTheme</BitTag> &rarr; CSS-variable flow are unchanged, but a few members moved or changed shape. This is the complete list of source-breaking changes:
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>1. <BitTag>IsSystemInDarkMode()</BitTag> is now <BitTag>IsSystemInDarkModeAsync()</BitTag>.</b> A pure rename to follow the async naming convention &mdash; update call sites.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>2. Manager methods return <BitTag>ValueTask&lt;string?&gt;</BitTag> instead of <BitTag>ValueTask&lt;string&gt;</BitTag>.</b>
+                <BitTag>GetCurrentThemeAsync</BitTag>, <BitTag>SetThemeAsync</BitTag>, <BitTag>ToggleDarkLightAsync</BitTag>, and <BitTag>GetCurrentPersistedThemeAsync</BitTag> return <BitTag>null</BitTag> when JS interop is unavailable (prerendering or a disconnected circuit) &mdash; the previous signatures already produced <BitTag>null</BitTag> at runtime in those states but claimed non-null, so the annotation now tells the truth. With nullable reference types enabled you may get new warnings at call sites; treat <BitTag>null</BitTag> as "not resolvable yet".
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>3. <BitTag>BitThemeManager</BitTag> is now <BitTag>IAsyncDisposable</BitTag>.</b> DI-resolved instances are disposed by the container automatically; if you construct one manually, dispose it. Calling any method after disposal throws <BitTag>ObjectDisposedException</BitTag>.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>4. Typography variants were restructured.</b>
+                Per-variant <BitTag>FontFamily</BitTag> was removed &mdash; the font family is global (<BitTag>Typography.FontFamily</BitTag>), with <BitTag>Typography.Inherit.FontFamily</BitTag> as the per-element escape hatch. <BitTag>TextTransform</BitTag> and <BitTag>Display</BitTag> now exist only on the <BitTag>Button</BitTag> and <BitTag>Overline</BitTag> variants, which are typed <BitTag>BitThemeLabelTypographyVariants</BitTag> &mdash; so <BitTag>Typography.Button = new BitThemeTypographyVariants()</BitTag> no longer compiles; assign a <BitTag>BitThemeLabelTypographyVariants</BitTag> or set properties on the existing instance instead.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>5. Theme names are normalized.</b> <BitTag>SetThemeAsync("Dark")</BitTag> now writes the canonical lowercase <BitTag>dark</BitTag> onto the <BitTag>bit-theme</BitTag> attribute (matching the packaged <BitTag>:root[bit-theme=&hellip;]</BitTag> selectors and <BitTag>BitThemeName</BitTag>). Compare returned theme names case-insensitively or against the canonical lowercase form.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Everything else is additive: <BitTag>BitThemeName</BitTag> (typed theme names), <BitTag>BitThemeNotifications</BitTag> (theme-change events; subscribing alone wires them up), <BitTag>BitThemeSsr</BitTag> and the <BitTag>bit-theme-preference</BitTag> cookie (flash-free first paint), <BitTag>BitThemeColorDerivation</BitTag>/<BitTag>BitThemeColorContrast</BitTag> (palette generation and WCAG checks), the density/accent presets, and <BitTag>BitExternalThemeLoader</BitTag> &mdash; each covered in its own section above.
+            </BitText>
         </BitCard>
 
         <br />

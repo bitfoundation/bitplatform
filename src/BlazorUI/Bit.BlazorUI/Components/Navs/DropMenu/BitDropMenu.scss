@@ -83,7 +83,7 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -146,7 +146,7 @@
         max-height: unset;
         animation-name: unset;
         box-shadow: $box-shadow-callout;
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
 
         &.bit-drm-sta {
             inset-block: 0;

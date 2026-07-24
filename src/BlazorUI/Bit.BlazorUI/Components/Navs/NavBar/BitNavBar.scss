@@ -43,6 +43,10 @@
             color: var(--bit-nbr-clr);
         }
     }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-nbr-clr-fcs, #{$clr-pri-focus}));
+    }
 }
 
 .bit-nbr-ico {
@@ -68,88 +72,24 @@
     pointer-events: none;
 }
 
+// forced-colors: selection is conveyed by text color alone, which High Contrast flattens to
+// CanvasText; use the system Highlight color so the selected item stays distinguishable.
+@media (forced-colors: active) {
+    .bit-nbr-sel {
+        color: Highlight;
+    }
 
-.bit-nbr-pri {
-    --bit-nbr-clr: #{$clr-pri};
-    --bit-nbr-clr-dis: #{$clr-pri-dis-text};
+    .bit-nbr-dis {
+        color: GrayText;
+    }
 }
 
-.bit-nbr-sec {
-    --bit-nbr-clr: #{$clr-sec};
-    --bit-nbr-clr-dis: #{$clr-sec-dis-text};
-}
 
-.bit-nbr-ter {
-    --bit-nbr-clr: #{$clr-ter};
-    --bit-nbr-clr-dis: #{$clr-ter-dis-text};
-}
-
-.bit-nbr-inf {
-    --bit-nbr-clr: #{$clr-inf};
-    --bit-nbr-clr-dis: #{$clr-inf-dis-text};
-}
-
-.bit-nbr-suc {
-    --bit-nbr-clr: #{$clr-suc};
-    --bit-nbr-clr-dis: #{$clr-suc-dis-text};
-}
-
-.bit-nbr-wrn {
-    --bit-nbr-clr: #{$clr-wrn};
-    --bit-nbr-clr-dis: #{$clr-wrn-dis-text};
-}
-
-.bit-nbr-swr {
-    --bit-nbr-clr: #{$clr-swr};
-    --bit-nbr-clr-dis: #{$clr-swr-dis-text};
-}
-
-.bit-nbr-err {
-    --bit-nbr-clr: #{$clr-err};
-    --bit-nbr-clr-dis: #{$clr-err-dis-text};
-}
-
-.bit-nbr-pbg {
-    --bit-nbr-clr: #{$clr-bg-pri};
-    --bit-nbr-clr-dis: #{$clr-bg-pri-dis-text};
-}
-
-.bit-nbr-sbg {
-    --bit-nbr-clr: #{$clr-bg-sec};
-    --bit-nbr-clr-dis: #{$clr-bg-sec-dis-text};
-}
-
-.bit-nbr-tbg {
-    --bit-nbr-clr: #{$clr-bg-ter};
-    --bit-nbr-clr-dis: #{$clr-bg-ter-dis-text};
-}
-
-.bit-nbr-pfg {
-    --bit-nbr-clr: #{$clr-fg-pri};
-    --bit-nbr-clr-dis: #{$clr-fg-pri-dis-text};
-}
-
-.bit-nbr-sfg {
-    --bit-nbr-clr: #{$clr-fg-sec};
-    --bit-nbr-clr-dis: #{$clr-fg-sec-dis-text};
-}
-
-.bit-nbr-tfg {
-    --bit-nbr-clr: #{$clr-fg-ter};
-    --bit-nbr-clr-dis: #{$clr-fg-ter-dis-text};
-}
-
-.bit-nbr-pbr {
-    --bit-nbr-clr: #{$clr-brd-pri};
-    --bit-nbr-clr-dis: #{$clr-brd-pri-dis-text};
-}
-
-.bit-nbr-sbr {
-    --bit-nbr-clr: #{$clr-brd-sec};
-    --bit-nbr-clr-dis: #{$clr-brd-sec-dis-text};
-}
-
-.bit-nbr-tbr {
-    --bit-nbr-clr: #{$clr-brd-ter};
-    --bit-nbr-clr-dis: #{$clr-brd-ter-dis-text};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-nbr-#{$role} {
+        --bit-nbr-clr: #{role($tokens, main)};
+        --bit-nbr-clr-dis: #{role($tokens, dis-text)};
+        --bit-nbr-clr-fcs: #{role($tokens, focus)};
+    }
 }

@@ -160,9 +160,10 @@ public class BitThemeManager : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// Every other public method on <see cref="BitThemeManager"/> already calls the same
-    /// registration step internally, so this is only useful when an app wants to subscribe to
-    /// <see cref="BitThemeNotifications"/> at startup without yet calling any other manager
-    /// method. Safe to call multiple times - registration is idempotent and serialized by an
+    /// registration step internally, and subscribing to <see cref="BitThemeNotifications.ThemeChanged"/>
+    /// on a DI-resolved instance triggers it automatically as well - so this method is only needed
+    /// for explicit control (e.g. registering eagerly at startup before any subscription exists).
+    /// Safe to call multiple times - registration is idempotent and serialized by an
     /// internal semaphore.
     /// </remarks>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>

@@ -19,33 +19,18 @@ $BgHover: $clr-pri-light;
         }
     }
     /* webkit focus styles */
+    // The focus-ring mixin handles the themed two-layer shadow plus the forced-colors
+    // Highlight outline fallback; the thumb pseudo-elements take it directly.
     input:focus-visible::-webkit-slider-thumb,
     input:focus::-webkit-slider-thumb {
         border-color: $clr-pri-focus;
-
-        // Reference the global focus-ring shadow token so forced-colors and theme-level
-        // overrides (see forced-colors.fluent.scss) propagate to the slider thumb.
-        box-shadow: var(--bit-shd-focus-ring,
-            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri-focus},
-            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus});
-
-        // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave
-        // the focused thumb with no visible indicator. Restore a real outline (matching focus-ring).
-        @media (forced-colors: active) {
-            outline: #{$shp-focus-ring-width} solid Highlight;
-        }
+        @include focus-ring;
     }
 
     input:focus-visible::-moz-range-thumb,
     input:focus::-moz-range-thumb {
         border-color: $clr-pri-focus;
-        box-shadow: var(--bit-shd-focus-ring,
-            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri-focus},
-            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus});
-
-        @media (forced-colors: active) {
-            outline: #{$shp-focus-ring-width} solid Highlight;
-        }
+        @include focus-ring;
     }
 
     /* webkit thumb */

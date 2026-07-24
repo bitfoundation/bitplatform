@@ -74,123 +74,14 @@
     }
 }
 
-.bit-tag-pri {
-    --bit-tag-clr: #{$clr-pri};
-    --bit-tag-clr-txt: #{$clr-pri-text};
-    --bit-tag-clr-dis: #{$clr-pri-dis};
-    --bit-tag-clr-dis-text: #{$clr-pri-dis-text};
-}
-
-.bit-tag-sec {
-    --bit-tag-clr: #{$clr-sec};
-    --bit-tag-clr-txt: #{$clr-sec-text};
-    --bit-tag-clr-dis: #{$clr-sec-dis};
-    --bit-tag-clr-dis-text: #{$clr-sec-dis-text};
-}
-
-.bit-tag-ter {
-    --bit-tag-clr: #{$clr-ter};
-    --bit-tag-clr-txt: #{$clr-ter-text};
-    --bit-tag-clr-dis: #{$clr-ter-dis};
-    --bit-tag-clr-dis-text: #{$clr-ter-dis-text};
-}
-
-.bit-tag-inf {
-    --bit-tag-clr: #{$clr-inf};
-    --bit-tag-clr-txt: #{$clr-inf-text};
-    --bit-tag-clr-dis: #{$clr-inf-dis};
-    --bit-tag-clr-dis-text: #{$clr-inf-dis-text};
-}
-
-.bit-tag-suc {
-    --bit-tag-clr: #{$clr-suc};
-    --bit-tag-clr-txt: #{$clr-suc-text};
-    --bit-tag-clr-dis: #{$clr-suc-dis};
-    --bit-tag-clr-dis-text: #{$clr-suc-dis-text};
-}
-
-.bit-tag-wrn {
-    --bit-tag-clr: #{$clr-wrn};
-    --bit-tag-clr-txt: #{$clr-wrn-text};
-    --bit-tag-clr-dis: #{$clr-wrn-dis};
-    --bit-tag-clr-dis-text: #{$clr-wrn-dis-text};
-}
-
-.bit-tag-swr {
-    --bit-tag-clr: #{$clr-swr};
-    --bit-tag-clr-txt: #{$clr-swr-text};
-    --bit-tag-clr-dis: #{$clr-swr-dis};
-    --bit-tag-clr-dis-text: #{$clr-swr-dis-text};
-}
-
-.bit-tag-err {
-    --bit-tag-clr: #{$clr-err};
-    --bit-tag-clr-txt: #{$clr-err-text};
-    --bit-tag-clr-dis: #{$clr-err-dis};
-    --bit-tag-clr-dis-text: #{$clr-err-dis-text};
-}
-
-.bit-tag-pbg {
-    --bit-tag-clr: #{$clr-bg-pri};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-    --bit-tag-clr-dis: #{$clr-bg-pri-dis};
-    --bit-tag-clr-dis-text: #{$clr-bg-pri-dis-text};
-}
-
-.bit-tag-sbg {
-    --bit-tag-clr: #{$clr-bg-sec};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-    --bit-tag-clr-dis: #{$clr-bg-sec-dis};
-    --bit-tag-clr-dis-text: #{$clr-bg-sec-dis-text};
-}
-
-.bit-tag-tbg {
-    --bit-tag-clr: #{$clr-bg-ter};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-    --bit-tag-clr-dis: #{$clr-bg-ter-dis};
-    --bit-tag-clr-dis-text: #{$clr-bg-ter-dis-text};
-}
-
-.bit-tag-pfg {
-    --bit-tag-clr: #{$clr-fg-pri};
-    --bit-tag-clr-txt: #{$clr-bg-pri};
-    --bit-tag-clr-dis: #{$clr-fg-pri-dis};
-    --bit-tag-clr-dis-text: #{$clr-fg-pri-dis-text};
-}
-
-.bit-tag-sfg {
-    --bit-tag-clr: #{$clr-fg-sec};
-    --bit-tag-clr-txt: #{$clr-bg-pri};
-    --bit-tag-clr-dis: #{$clr-fg-sec-dis};
-    --bit-tag-clr-dis-text: #{$clr-fg-sec-dis-text};
-}
-
-.bit-tag-tfg {
-    --bit-tag-clr: #{$clr-fg-ter};
-    --bit-tag-clr-txt: #{$clr-bg-pri};
-    --bit-tag-clr-dis: #{$clr-fg-ter-dis};
-    --bit-tag-clr-dis-text: #{$clr-fg-ter-dis-text};
-}
-
-.bit-tag-pbr {
-    --bit-tag-clr: #{$clr-brd-pri};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-    --bit-tag-clr-dis: #{$clr-brd-pri-dis};
-    --bit-tag-clr-dis-text: #{$clr-brd-pri-dis-text};
-}
-
-.bit-tag-sbr {
-    --bit-tag-clr: #{$clr-brd-sec};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-    --bit-tag-clr-dis: #{$clr-brd-sec-dis};
-    --bit-tag-clr-dis-text: #{$clr-brd-sec-dis-text};
-}
-
-.bit-tag-tbr {
-    --bit-tag-clr: #{$clr-brd-ter};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-    --bit-tag-clr-dis: #{$clr-brd-ter-dis};
-    --bit-tag-clr-dis-text: #{$clr-brd-ter-dis-text};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tag-#{$role} {
+        --bit-tag-clr: #{role($tokens, main)};
+        --bit-tag-clr-txt: #{role($tokens, on)};
+        --bit-tag-clr-dis: #{role($tokens, dis)};
+        --bit-tag-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 

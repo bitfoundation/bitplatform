@@ -118,11 +118,13 @@
     }
 
     // The focus ring is drawn inside the button because the group clips its overflow,
-    // which would otherwise cut an outset ring off at the edges of the group.
+    // which would otherwise cut an outset ring off at the edges of the group. An inset
+    // outline is used instead of the focus-ring mixin's box-shadow for the same reason,
+    // but the width follows the global focus-ring token so theme overrides still apply.
     &:focus-visible {
         z-index: 1;
-        outline-offset: calc(-1 * #{spacing(0.25)});
-        outline: spacing(0.25) solid var(--bit-btg-itm-clr-fcs);
+        outline: #{$shp-focus-ring-width} solid var(--bit-btg-itm-clr-fcs);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 
     &[disabled],
@@ -246,6 +248,10 @@
     border-color: transparent;
     border-top-color: var(--bit-btg-itm-clr-txt);
     animation: bit-btg-spinner-animation 1.3s linear infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 4s;
+    }
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
@@ -365,116 +371,21 @@
     }
 }
 
-.bit-btg-pri {
-    --bit-btg-clr: #{$clr-pri};
-    --bit-btg-clr-txt: #{$clr-pri-text};
-    --bit-btg-clr-brd: #{$clr-pri-dark};
-    --bit-btg-clr-hover: #{$clr-pri-hover};
-    --bit-btg-clr-active: #{$clr-pri-active};
-    --bit-btg-clr-focus: #{$clr-pri-focus};
-    --bit-btg-clr-dark: #{$clr-pri-dark};
-    --bit-btg-clr-dark-hover: #{$clr-pri-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-pri-dark-active};
-    --bit-btg-clr-dis: #{$clr-pri-dis};
-    --bit-btg-clr-dis-text: #{$clr-pri-dis-text};
-}
-
-.bit-btg-sec {
-    --bit-btg-clr: #{$clr-sec};
-    --bit-btg-clr-txt: #{$clr-sec-text};
-    --bit-btg-clr-brd: #{$clr-sec-dark};
-    --bit-btg-clr-hover: #{$clr-sec-hover};
-    --bit-btg-clr-active: #{$clr-sec-active};
-    --bit-btg-clr-focus: #{$clr-sec-focus};
-    --bit-btg-clr-dark: #{$clr-sec-dark};
-    --bit-btg-clr-dark-hover: #{$clr-sec-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-sec-dark-active};
-    --bit-btg-clr-dis: #{$clr-sec-dis};
-    --bit-btg-clr-dis-text: #{$clr-sec-dis-text};
-}
-
-.bit-btg-ter {
-    --bit-btg-clr: #{$clr-ter};
-    --bit-btg-clr-txt: #{$clr-ter-text};
-    --bit-btg-clr-brd: #{$clr-ter-dark};
-    --bit-btg-clr-hover: #{$clr-ter-hover};
-    --bit-btg-clr-active: #{$clr-ter-active};
-    --bit-btg-clr-focus: #{$clr-ter-focus};
-    --bit-btg-clr-dark: #{$clr-ter-dark};
-    --bit-btg-clr-dark-hover: #{$clr-ter-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-ter-dark-active};
-    --bit-btg-clr-dis: #{$clr-ter-dis};
-    --bit-btg-clr-dis-text: #{$clr-ter-dis-text};
-}
-
-.bit-btg-inf {
-    --bit-btg-clr: #{$clr-inf};
-    --bit-btg-clr-txt: #{$clr-inf-text};
-    --bit-btg-clr-brd: #{$clr-inf-dark};
-    --bit-btg-clr-hover: #{$clr-inf-hover};
-    --bit-btg-clr-active: #{$clr-inf-active};
-    --bit-btg-clr-focus: #{$clr-inf-focus};
-    --bit-btg-clr-dark: #{$clr-inf-dark};
-    --bit-btg-clr-dark-hover: #{$clr-inf-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-inf-dark-active};
-    --bit-btg-clr-dis: #{$clr-inf-dis};
-    --bit-btg-clr-dis-text: #{$clr-inf-dis-text};
-}
-
-.bit-btg-suc {
-    --bit-btg-clr: #{$clr-suc};
-    --bit-btg-clr-txt: #{$clr-suc-text};
-    --bit-btg-clr-brd: #{$clr-suc-dark};
-    --bit-btg-clr-hover: #{$clr-suc-hover};
-    --bit-btg-clr-active: #{$clr-suc-active};
-    --bit-btg-clr-focus: #{$clr-suc-focus};
-    --bit-btg-clr-dark: #{$clr-suc-dark};
-    --bit-btg-clr-dark-hover: #{$clr-suc-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-suc-dark-active};
-    --bit-btg-clr-dis: #{$clr-suc-dis};
-    --bit-btg-clr-dis-text: #{$clr-suc-dis-text};
-}
-
-.bit-btg-wrn {
-    --bit-btg-clr: #{$clr-wrn};
-    --bit-btg-clr-txt: #{$clr-wrn-text};
-    --bit-btg-clr-brd: #{$clr-wrn-dark};
-    --bit-btg-clr-hover: #{$clr-wrn-hover};
-    --bit-btg-clr-active: #{$clr-wrn-active};
-    --bit-btg-clr-focus: #{$clr-wrn-focus};
-    --bit-btg-clr-dark: #{$clr-wrn-dark};
-    --bit-btg-clr-dark-hover: #{$clr-wrn-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-wrn-dark-active};
-    --bit-btg-clr-dis: #{$clr-wrn-dis};
-    --bit-btg-clr-dis-text: #{$clr-wrn-dis-text};
-}
-
-.bit-btg-swr {
-    --bit-btg-clr: #{$clr-swr};
-    --bit-btg-clr-txt: #{$clr-swr-text};
-    --bit-btg-clr-brd: #{$clr-swr-dark};
-    --bit-btg-clr-hover: #{$clr-swr-hover};
-    --bit-btg-clr-active: #{$clr-swr-active};
-    --bit-btg-clr-focus: #{$clr-swr-focus};
-    --bit-btg-clr-dark: #{$clr-swr-dark};
-    --bit-btg-clr-dark-hover: #{$clr-swr-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-swr-dark-active};
-    --bit-btg-clr-dis: #{$clr-swr-dis};
-    --bit-btg-clr-dis-text: #{$clr-swr-dis-text};
-}
-
-.bit-btg-err {
-    --bit-btg-clr: #{$clr-err};
-    --bit-btg-clr-txt: #{$clr-err-text};
-    --bit-btg-clr-brd: #{$clr-err-dark};
-    --bit-btg-clr-hover: #{$clr-err-hover};
-    --bit-btg-clr-active: #{$clr-err-active};
-    --bit-btg-clr-focus: #{$clr-err-focus};
-    --bit-btg-clr-dark: #{$clr-err-dark};
-    --bit-btg-clr-dark-hover: #{$clr-err-dark-hover};
-    --bit-btg-clr-dark-active: #{$clr-err-dark-active};
-    --bit-btg-clr-dis: #{$clr-err-dis};
-    --bit-btg-clr-dis-text: #{$clr-err-dis-text};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-btg-#{$role} {
+        --bit-btg-clr: #{role($tokens, main)};
+        --bit-btg-clr-txt: #{role($tokens, on)};
+        --bit-btg-clr-brd: #{role($tokens, dark)};
+        --bit-btg-clr-hover: #{role($tokens, hover)};
+        --bit-btg-clr-active: #{role($tokens, active)};
+        --bit-btg-clr-focus: #{role($tokens, focus)};
+        --bit-btg-clr-dark: #{role($tokens, dark)};
+        --bit-btg-clr-dark-hover: #{role($tokens, dark-hover)};
+        --bit-btg-clr-dark-active: #{role($tokens, dark-active)};
+        --bit-btg-clr-dis: #{role($tokens, dis)};
+        --bit-btg-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 

@@ -1,5 +1,6 @@
 ﻿@use 'sass:math';
 @import "theme-variables.scss";
+@import "color-role-maps.scss";
 
 $html-font-size: 16px;
 
@@ -15,8 +16,15 @@ $html-font-size: 16px;
     @return #{calc(stripUnit($pxValue) / stripUnit($html-font-size))}rem;
 }
 
+/*
+ * spacing($value)
+ * --------------------------------------------------
+ * --bit-spa-scaling-factor is the base spacing unit (a CSS length, 0.5rem by default) and
+ * --bit-layout-density-scale is a unitless multiplier for density presets (compact = < 1).
+ * The density var carries a fallback of 1 so themes that never set it keep the base rhythm.
+ */
 @function spacing($spacingValue) {
-    @return calc($spacing-scaling-factor * $spacingValue);
+    @return calc($spacing-scaling-factor * var(--bit-layout-density-scale, 1) * $spacingValue);
 }
 
 /*

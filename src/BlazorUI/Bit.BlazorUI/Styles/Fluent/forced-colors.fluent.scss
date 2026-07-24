@@ -43,12 +43,20 @@
     }
 }
 
-// Stronger contrast preference (non-forced): deepen borders and primary text slightly.
-// Use a concrete value rather than self-referencing var(--bit-shp-brd-width, …) - a custom
+// Stronger contrast preference (non-forced). This block is theme-agnostic (it applies to both
+// light and dark palettes), so it must not hardcode colors: it thickens borders and promotes the
+// subtlest border/text tier to the next-stronger tier via theme-relative aliases instead.
+// Use a concrete width value rather than self-referencing var(--bit-shp-brd-width, …) - a custom
 // property cannot reference its own current value (the cycle resolves to the fallback per
 // the CSS spec, which makes the intent unclear and brittle across engines).
 @media (prefers-contrast: more) {
     :root {
-        --bit-shp-brd-width: 1px;
+        //2px instead of the default 1px (0.0625rem)
+        --bit-shp-brd-width: 0.125rem;
+
+        //tertiary (subtle) separators and text step up to the secondary tier,
+        //which lifts the weakest contrast pairs without touching the theme's palette
+        --bit-clr-brd-ter: var(--bit-clr-brd-sec);
+        --bit-clr-fg-ter: var(--bit-clr-fg-sec);
     }
 }

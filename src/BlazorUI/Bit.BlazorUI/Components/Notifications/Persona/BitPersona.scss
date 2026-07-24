@@ -77,7 +77,7 @@
     align-items: center;
     justify-content: center;
     font-size: spacing(1.75);
-    transition: all 0.1s linear;
+    transition: all $mot-duration-short linear;
     color: var(--bit-prs-coin-clr-txt);
     background-color: var(--bit-prs-coin-clr-bg);
 }

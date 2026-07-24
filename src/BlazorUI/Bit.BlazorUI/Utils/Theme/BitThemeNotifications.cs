@@ -4,7 +4,8 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Raised when the global <c>bit-theme</c> document attribute changes (including OS-driven updates when following system theme).
-/// Subscribe in scoped components; requires <see cref="BitThemeManager"/> interop at least once per circuit so the client script can notify .NET.
+/// Subscribing to <see cref="ThemeChanged"/> on a DI-resolved instance automatically registers the JS notifier,
+/// so no explicit <see cref="BitThemeManager"/> call is needed first.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -24,7 +25,10 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public sealed class BitThemeNotifications
 {
+    private readonly object _gate = new();
     private readonly ILogger<BitThemeNotifications>? _logger;
+
+    private EventHandler<BitThemeChangedEventArgs>? _themeChanged;
 
     public BitThemeNotifications()
     {
@@ -35,12 +39,64 @@ public sealed class BitThemeNotifications
         _logger = loggerFactory?.CreateLogger<BitThemeNotifications>();
     }
 
+    /// <summary>
+    /// Set by the DI factory in <see cref="IBitBlazorUIServiceCollectionExtensions"/> so that attaching a
+    /// <see cref="ThemeChanged"/> handler kicks off <see cref="BitThemeManager"/>'s JS notifier registration -
+    /// subscribing alone is enough to start receiving events, without a prior manager call.
+    /// A lazy callback (rather than an injected <see cref="BitThemeManager"/>) because a constructor
+    /// dependency would be circular: manager -> receiver -> notifications.
+    /// </summary>
+    internal Func<ValueTask>? RegistrationTrigger { get; set; }
+
     /// <summary>Fires after <c>BitBlazorUI.Theme.set</c>, <c>toggleDarkLight</c>, or <c>prefers-color-scheme</c> updates while following system theme.</summary>
-    public event EventHandler<BitThemeChangedEventArgs>? ThemeChanged;
+    public event EventHandler<BitThemeChangedEventArgs>? ThemeChanged
+    {
+        add
+        {
+            lock (_gate)
+            {
+                _themeChanged += value;
+            }
+
+            // Triggered on every subscribe, not just the first: registration legitimately no-ops
+            // during prerendering / on a disconnected circuit, so a later subscriber may be the
+            // first one attaching in a state where it can succeed. Once registered, the trigger
+            // short-circuits on the manager's fast-path flag.
+            TriggerJsNotifierRegistration();
+        }
+        remove
+        {
+            lock (_gate)
+            {
+                _themeChanged -= value;
+            }
+        }
+    }
+
+    // Deliberately async void: this is a fire-and-forget kick from an event accessor (which cannot
+    // await), and every failure path is caught below so nothing can escape to the SynchronizationContext.
+    private async void TriggerJsNotifierRegistration()
+    {
+        var trigger = RegistrationTrigger;
+        if (trigger is null) return;
+
+        try
+        {
+            await trigger().ConfigureAwait(false);
+        }
+        catch (ObjectDisposedException)
+        {
+            // The service scope or the manager is tearing down; there is nothing left to register.
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Automatic theme notifier registration on ThemeChanged subscribe failed.");
+        }
+    }
 
     internal void Raise(string? newTheme, string? oldTheme)
     {
-        var handler = ThemeChanged;
+        var handler = _themeChanged;
         if (handler is null) return;
 
         var args = new BitThemeChangedEventArgs(newTheme, oldTheme);

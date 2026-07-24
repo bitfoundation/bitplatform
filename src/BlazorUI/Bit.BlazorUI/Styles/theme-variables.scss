@@ -208,6 +208,17 @@ $clr-brd-dis: var(--bit-clr-brd-dis);
 $clr-req: var(--bit-clr-req);
 
 //disabled - per-role disabled colors
+//
+//Convention - two intentional disabled conventions coexist:
+//  * Role-filled components (Button, Badge, Tag, Icon, Link, Checkbox, ChoiceGroup, Pivot headers,
+//    NavBar, Pagination, Timeline, ...) express disabled through their per-role component vars fed
+//    by these $clr-<role>-dis/-dis-text tokens, ideally with the generic token as the var() fallback
+//    for unclassed instances (see BitPagination/BitTimeline).
+//  * Neutral-surface components (text inputs, pickers, surfaces, layout chrome, and neutral
+//    sub-regions of role-colored components such as BitPivot's overflow menu) use the generic
+//    $clr-fg-dis / $clr-bg-dis / $clr-brd-dis directly - a disabled form field looks neutral gray
+//    regardless of any accent role, matching platform conventions.
+//Do not mix the two within the same visual region of a component.
 $clr-pri-dis: var(--bit-clr-pri-dis);
 $clr-pri-dis-text: var(--bit-clr-pri-dis-text);
 $clr-sec-dis: var(--bit-clr-sec-dis);
@@ -328,6 +339,15 @@ $shp-focus-ring-offset: var(--bit-shp-focus-ring-offset);
 
 //shadows-focus
 $box-shadow-focus-ring: var(--bit-shd-focus-ring);
+
+/*---- Motion ----*/
+//Durations for transitions and one-shot (entry/exit) animations; all three collapse to 0.01ms
+//under prefers-reduced-motion. Infinite/looping animations (spinners, loaders) must keep literal
+//durations with their own reduced-motion handling - a near-zero looping duration renders as flicker.
+$mot-duration: var(--bit-mot-duration);
+$mot-duration-short: var(--bit-mot-duration-short);
+$mot-duration-long: var(--bit-mot-duration-long);
+$mot-easing: var(--bit-mot-easing);
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);

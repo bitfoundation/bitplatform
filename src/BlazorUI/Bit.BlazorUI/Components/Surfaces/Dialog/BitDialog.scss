@@ -42,7 +42,7 @@
     position: absolute;
     pointer-events: auto;
     background-color: transparent;
-    transition: opacity 300ms ease 0s;
+    transition: opacity $mot-duration-long ease 0s;
 }
 
 .bit-dlg-ovl {

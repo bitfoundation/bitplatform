@@ -316,60 +316,14 @@
 }
 
 
-.bit-bdg-pri {
-    --bit-bdg-clr: #{$clr-pri};
-    --bit-bdg-clr-txt: #{$clr-pri-text};
-    --bit-bdg-clr-dis: #{$clr-pri-dis};
-    --bit-bdg-clr-dis-text: #{$clr-pri-dis-text};
-}
-
-.bit-bdg-sec {
-    --bit-bdg-clr: #{$clr-sec};
-    --bit-bdg-clr-txt: #{$clr-sec-text};
-    --bit-bdg-clr-dis: #{$clr-sec-dis};
-    --bit-bdg-clr-dis-text: #{$clr-sec-dis-text};
-}
-
-.bit-bdg-ter {
-    --bit-bdg-clr: #{$clr-ter};
-    --bit-bdg-clr-txt: #{$clr-ter-text};
-    --bit-bdg-clr-dis: #{$clr-ter-dis};
-    --bit-bdg-clr-dis-text: #{$clr-ter-dis-text};
-}
-
-.bit-bdg-inf {
-    --bit-bdg-clr: #{$clr-inf};
-    --bit-bdg-clr-txt: #{$clr-inf-text};
-    --bit-bdg-clr-dis: #{$clr-inf-dis};
-    --bit-bdg-clr-dis-text: #{$clr-inf-dis-text};
-}
-
-.bit-bdg-suc {
-    --bit-bdg-clr: #{$clr-suc};
-    --bit-bdg-clr-txt: #{$clr-suc-text};
-    --bit-bdg-clr-dis: #{$clr-suc-dis};
-    --bit-bdg-clr-dis-text: #{$clr-suc-dis-text};
-}
-
-.bit-bdg-wrn {
-    --bit-bdg-clr: #{$clr-wrn};
-    --bit-bdg-clr-txt: #{$clr-wrn-text};
-    --bit-bdg-clr-dis: #{$clr-wrn-dis};
-    --bit-bdg-clr-dis-text: #{$clr-wrn-dis-text};
-}
-
-.bit-bdg-swr {
-    --bit-bdg-clr: #{$clr-swr};
-    --bit-bdg-clr-txt: #{$clr-swr-text};
-    --bit-bdg-clr-dis: #{$clr-swr-dis};
-    --bit-bdg-clr-dis-text: #{$clr-swr-dis-text};
-}
-
-.bit-bdg-err {
-    --bit-bdg-clr: #{$clr-err};
-    --bit-bdg-clr-txt: #{$clr-err-text};
-    --bit-bdg-clr-dis: #{$clr-err-dis};
-    --bit-bdg-clr-dis-text: #{$clr-err-dis-text};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-bdg-#{$role} {
+        --bit-bdg-clr: #{role($tokens, main)};
+        --bit-bdg-clr-txt: #{role($tokens, on)};
+        --bit-bdg-clr-dis: #{role($tokens, dis)};
+        --bit-bdg-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 

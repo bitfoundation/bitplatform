@@ -49,60 +49,14 @@
 }
 
 
-.bit-ico-pri {
-    --bit-ico-clr: #{$clr-pri};
-    --bit-ico-clr-txt: #{$clr-pri-text};
-    --bit-ico-clr-dis: #{$clr-pri-dis};
-    --bit-ico-clr-dis-text: #{$clr-pri-dis-text};
-}
-
-.bit-ico-sec {
-    --bit-ico-clr: #{$clr-sec};
-    --bit-ico-clr-txt: #{$clr-sec-text};
-    --bit-ico-clr-dis: #{$clr-sec-dis};
-    --bit-ico-clr-dis-text: #{$clr-sec-dis-text};
-}
-
-.bit-ico-ter {
-    --bit-ico-clr: #{$clr-ter};
-    --bit-ico-clr-txt: #{$clr-ter-text};
-    --bit-ico-clr-dis: #{$clr-ter-dis};
-    --bit-ico-clr-dis-text: #{$clr-ter-dis-text};
-}
-
-.bit-ico-inf {
-    --bit-ico-clr: #{$clr-inf};
-    --bit-ico-clr-txt: #{$clr-inf-text};
-    --bit-ico-clr-dis: #{$clr-inf-dis};
-    --bit-ico-clr-dis-text: #{$clr-inf-dis-text};
-}
-
-.bit-ico-suc {
-    --bit-ico-clr: #{$clr-suc};
-    --bit-ico-clr-txt: #{$clr-suc-text};
-    --bit-ico-clr-dis: #{$clr-suc-dis};
-    --bit-ico-clr-dis-text: #{$clr-suc-dis-text};
-}
-
-.bit-ico-wrn {
-    --bit-ico-clr: #{$clr-wrn};
-    --bit-ico-clr-txt: #{$clr-wrn-text};
-    --bit-ico-clr-dis: #{$clr-wrn-dis};
-    --bit-ico-clr-dis-text: #{$clr-wrn-dis-text};
-}
-
-.bit-ico-swr {
-    --bit-ico-clr: #{$clr-swr};
-    --bit-ico-clr-txt: #{$clr-swr-text};
-    --bit-ico-clr-dis: #{$clr-swr-dis};
-    --bit-ico-clr-dis-text: #{$clr-swr-dis-text};
-}
-
-.bit-ico-err {
-    --bit-ico-clr: #{$clr-err};
-    --bit-ico-clr-txt: #{$clr-err-text};
-    --bit-ico-clr-dis: #{$clr-err-dis};
-    --bit-ico-clr-dis-text: #{$clr-err-dis-text};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-ico-#{$role} {
+        --bit-ico-clr: #{role($tokens, main)};
+        --bit-ico-clr-txt: #{role($tokens, on)};
+        --bit-ico-clr-dis: #{role($tokens, dis)};
+        --bit-ico-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 .bit-ico-pbg {

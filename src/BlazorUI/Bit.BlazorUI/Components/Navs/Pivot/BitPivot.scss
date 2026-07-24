@@ -282,7 +282,7 @@
         inset-inline-end: spacing(1);
         background-color: transparent;
         inset-inline-start: spacing(1);
-        transition: inset-inline-start 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, inset-inline-end 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
+        transition: inset-inline-start $mot-duration-long $mot-easing 0s, inset-inline-end $mot-duration-long $mot-easing 0s;
     }
 
     span {
@@ -299,7 +299,7 @@
             width: spacing(0.25);
             inset-inline-start: 0;
             height: calc(100% - spacing(2));
-            transition: top 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, height 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
+            transition: top $mot-duration-long $mot-easing 0s, height $mot-duration-long $mot-easing 0s;
         }
 
         @media(hover:hover) {
@@ -313,158 +313,16 @@
     }
 }
 
-.bit-pvt-pri {
-    --bit-pvt-clr: #{$clr-pri};
-    --bit-pvt-clr-hover: #{$clr-pri-hover};
-    --bit-pvt-clr-focus: #{$clr-pri-focus};
-    --bit-pvt-clr-text: #{$clr-pri-text};
-    --bit-pvt-clr-dis: #{$clr-pri-dis};
-    --bit-pvt-clr-dis-text: #{$clr-pri-dis-text};
-}
-
-.bit-pvt-sec {
-    --bit-pvt-clr: #{$clr-sec};
-    --bit-pvt-clr-hover: #{$clr-sec-hover};
-    --bit-pvt-clr-focus: #{$clr-sec-focus};
-    --bit-pvt-clr-text: #{$clr-sec-text};
-    --bit-pvt-clr-dis: #{$clr-sec-dis};
-    --bit-pvt-clr-dis-text: #{$clr-sec-dis-text};
-}
-
-.bit-pvt-ter {
-    --bit-pvt-clr: #{$clr-ter};
-    --bit-pvt-clr-hover: #{$clr-ter-hover};
-    --bit-pvt-clr-focus: #{$clr-ter-focus};
-    --bit-pvt-clr-text: #{$clr-ter-text};
-    --bit-pvt-clr-dis: #{$clr-ter-dis};
-    --bit-pvt-clr-dis-text: #{$clr-ter-dis-text};
-}
-
-.bit-pvt-inf {
-    --bit-pvt-clr: #{$clr-inf};
-    --bit-pvt-clr-hover: #{$clr-inf-hover};
-    --bit-pvt-clr-focus: #{$clr-inf-focus};
-    --bit-pvt-clr-text: #{$clr-inf-text};
-    --bit-pvt-clr-dis: #{$clr-inf-dis};
-    --bit-pvt-clr-dis-text: #{$clr-inf-dis-text};
-}
-
-.bit-pvt-suc {
-    --bit-pvt-clr: #{$clr-suc};
-    --bit-pvt-clr-hover: #{$clr-suc-hover};
-    --bit-pvt-clr-focus: #{$clr-suc-focus};
-    --bit-pvt-clr-text: #{$clr-suc-text};
-    --bit-pvt-clr-dis: #{$clr-suc-dis};
-    --bit-pvt-clr-dis-text: #{$clr-suc-dis-text};
-}
-
-.bit-pvt-wrn {
-    --bit-pvt-clr: #{$clr-wrn};
-    --bit-pvt-clr-hover: #{$clr-wrn-hover};
-    --bit-pvt-clr-focus: #{$clr-wrn-focus};
-    --bit-pvt-clr-text: #{$clr-wrn-text};
-    --bit-pvt-clr-dis: #{$clr-wrn-dis};
-    --bit-pvt-clr-dis-text: #{$clr-wrn-dis-text};
-}
-
-.bit-pvt-swr {
-    --bit-pvt-clr: #{$clr-swr};
-    --bit-pvt-clr-hover: #{$clr-swr-hover};
-    --bit-pvt-clr-focus: #{$clr-swr-focus};
-    --bit-pvt-clr-text: #{$clr-swr-text};
-    --bit-pvt-clr-dis: #{$clr-swr-dis};
-    --bit-pvt-clr-dis-text: #{$clr-swr-dis-text};
-}
-
-.bit-pvt-err {
-    --bit-pvt-clr: #{$clr-err};
-    --bit-pvt-clr-hover: #{$clr-err-hover};
-    --bit-pvt-clr-focus: #{$clr-err-focus};
-    --bit-pvt-clr-text: #{$clr-err-text};
-    --bit-pvt-clr-dis: #{$clr-err-dis};
-    --bit-pvt-clr-dis-text: #{$clr-err-dis-text};
-}
-
-
-.bit-pvt-pbg {
-    --bit-pvt-clr: #{$clr-bg-pri};
-    --bit-pvt-clr-hover: #{$clr-bg-pri-hover};
-    --bit-pvt-clr-focus: #{$clr-bg-pri-focus};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-    --bit-pvt-clr-dis: #{$clr-bg-pri-dis};
-    --bit-pvt-clr-dis-text: #{$clr-bg-pri-dis-text};
-}
-
-.bit-pvt-sbg {
-    --bit-pvt-clr: #{$clr-bg-sec};
-    --bit-pvt-clr-hover: #{$clr-bg-sec-hover};
-    --bit-pvt-clr-focus: #{$clr-bg-sec-focus};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-    --bit-pvt-clr-dis: #{$clr-bg-sec-dis};
-    --bit-pvt-clr-dis-text: #{$clr-bg-sec-dis-text};
-}
-
-.bit-pvt-tbg {
-    --bit-pvt-clr: #{$clr-bg-ter};
-    --bit-pvt-clr-hover: #{$clr-bg-ter-hover};
-    --bit-pvt-clr-focus: #{$clr-bg-ter-focus};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-    --bit-pvt-clr-dis: #{$clr-bg-ter-dis};
-    --bit-pvt-clr-dis-text: #{$clr-bg-ter-dis-text};
-}
-
-.bit-pvt-pfg {
-    --bit-pvt-clr: #{$clr-fg-pri};
-    --bit-pvt-clr-hover: #{$clr-fg-pri-hover};
-    --bit-pvt-clr-focus: #{$clr-fg-pri-focus};
-    --bit-pvt-clr-text: #{$clr-bg-pri};
-    --bit-pvt-clr-dis: #{$clr-fg-pri-dis};
-    --bit-pvt-clr-dis-text: #{$clr-fg-pri-dis-text};
-}
-
-.bit-pvt-sfg {
-    --bit-pvt-clr: #{$clr-fg-sec};
-    --bit-pvt-clr-hover: #{$clr-fg-sec-hover};
-    --bit-pvt-clr-focus: #{$clr-fg-sec-focus};
-    --bit-pvt-clr-text: #{$clr-bg-pri};
-    --bit-pvt-clr-dis: #{$clr-fg-sec-dis};
-    --bit-pvt-clr-dis-text: #{$clr-fg-sec-dis-text};
-}
-
-.bit-pvt-tfg {
-    --bit-pvt-clr: #{$clr-fg-ter};
-    --bit-pvt-clr-hover: #{$clr-fg-ter-hover};
-    --bit-pvt-clr-focus: #{$clr-fg-ter-focus};
-    --bit-pvt-clr-text: #{$clr-bg-pri};
-    --bit-pvt-clr-dis: #{$clr-fg-ter-dis};
-    --bit-pvt-clr-dis-text: #{$clr-fg-ter-dis-text};
-}
-
-.bit-pvt-pbr {
-    --bit-pvt-clr: #{$clr-brd-pri};
-    --bit-pvt-clr-hover: #{$clr-brd-pri-hover};
-    --bit-pvt-clr-focus: #{$clr-brd-pri-focus};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-    --bit-pvt-clr-dis: #{$clr-brd-pri-dis};
-    --bit-pvt-clr-dis-text: #{$clr-brd-pri-dis-text};
-}
-
-.bit-pvt-sbr {
-    --bit-pvt-clr: #{$clr-brd-sec};
-    --bit-pvt-clr-hover: #{$clr-brd-sec-hover};
-    --bit-pvt-clr-focus: #{$clr-brd-sec-focus};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-    --bit-pvt-clr-dis: #{$clr-brd-sec-dis};
-    --bit-pvt-clr-dis-text: #{$clr-brd-sec-dis-text};
-}
-
-.bit-pvt-tbr {
-    --bit-pvt-clr: #{$clr-brd-ter};
-    --bit-pvt-clr-hover: #{$clr-brd-ter-hover};
-    --bit-pvt-clr-focus: #{$clr-brd-ter-focus};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-    --bit-pvt-clr-dis: #{$clr-brd-ter-dis};
-    --bit-pvt-clr-dis-text: #{$clr-brd-ter-dis-text};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-pvt-#{$role} {
+        --bit-pvt-clr: #{role($tokens, main)};
+        --bit-pvt-clr-hover: #{role($tokens, hover)};
+        --bit-pvt-clr-focus: #{role($tokens, focus)};
+        --bit-pvt-clr-text: #{role($tokens, on)};
+        --bit-pvt-clr-dis: #{role($tokens, dis)};
+        --bit-pvt-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 // #region Slide overflow behavior
@@ -549,6 +407,20 @@
     box-shadow: $box-shadow-callout;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     background-color: $clr-bg-pri;
+}
+
+// forced-colors: the selected-tab indicator is a background-painted ::before, which High Contrast
+// strips entirely; repaint it with the system Highlight color (GrayText when disabled) so the
+// selected tab stays distinguishable.
+@media (forced-colors: active) {
+    .bit-pvti-sel::before {
+        background-color: Highlight;
+    }
+
+    .bit-dis .bit-pvti-sel::before,
+    .bit-pvti-sel.bit-dis::before {
+        background-color: GrayText;
+    }
 }
 
 .bit-pvt-mni {

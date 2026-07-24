@@ -4,9 +4,19 @@
 :root[bit-theme="fluent-light"],
 :root[bit-theme="dark"],
 :root[bit-theme="fluent-dark"] {
-    //spacing
+    //spacing - base unit (length) times density (unitless); spacing() multiplies both.
     --bit-spa-scaling-factor: 0.5rem;
-    //zindex
+    --bit-layout-density-scale: 1;
+    //zindex - the layering contract, top to bottom:
+    //  snackbar (1400) - notifications, above everything.
+    //  callout  (1300) - floating popup surfaces (dropdown/date-picker callouts, panel content).
+    //  overlay  (1200) - the page-level click-away catcher paired with a callout. Deliberately ABOVE
+    //                    modal: a popup opened from inside a modal renders its catcher at page level
+    //                    and must cover the modal for click-away to work there.
+    //  modal    (1100) - the root of modal surfaces (BitModal/BitDialog). A modal's own backdrop does
+    //                    NOT use the overlay token; the fixed+z-indexed root forms a stacking context
+    //                    and the backdrop stacks inside it at z-index 0.
+    //  base     (1000) - sticky chrome (header/footer/layout) above normal flow content.
     --bit-zin-snackbar: 1400;
     --bit-zin-callout: 1300;
     --bit-zin-overlay: 1200;

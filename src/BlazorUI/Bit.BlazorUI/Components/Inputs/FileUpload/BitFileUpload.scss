@@ -173,7 +173,7 @@
 
 .bit-upl-pbr {
     height: spacing(0.25);
-    transition: width 0.15s linear 0s;
+    transition: width $mot-duration linear 0s;
     background-color: $clr-pri;
 }
 

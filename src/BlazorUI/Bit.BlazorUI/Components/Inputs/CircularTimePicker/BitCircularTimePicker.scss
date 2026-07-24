@@ -193,7 +193,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -301,7 +301,7 @@
 }
 
 .bit-ctp-ani {
-    transition: transform 150ms cubic-bezier(0.4,0,0.2,1) 0ms,height 150ms cubic-bezier(0.4,0,0.2,1) 0ms;
+    transition: transform $mot-duration $mot-easing 0ms, height $mot-duration $mot-easing 0ms;
 }
 
 .bit-ctp-pth {
@@ -334,7 +334,7 @@
     align-items: center;
     display: inline-flex;
     justify-content: center;
-    transition-duration: 120ms;
+    transition-duration: $mot-duration-short;
     transition-property: color;
     bottom: calc(100% - spacing(4));
     color: $clr-fg-pri;
@@ -416,7 +416,7 @@
         animation-name: unset;
         transform: translateY(-100%);
         box-shadow: $box-shadow-callout;
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
 
         .bit-ctp-clk {
             margin: spacing(2) auto;

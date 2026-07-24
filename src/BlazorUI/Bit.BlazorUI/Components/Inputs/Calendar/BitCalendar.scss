@@ -102,7 +102,7 @@
     font-size: spacing(1.5);
     line-height: spacing(3.5);
     animation-fill-mode: both;
-    animation-duration: 0.267s;
+    animation-duration: $mot-duration-long;
     animation-name: bit-fade-in;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
@@ -240,7 +240,7 @@
     font-size: spacing(1.75);
     line-height: spacing(3.5);
     animation-fill-mode: both;
-    animation-duration: 0.267s;
+    animation-duration: $mot-duration-long;
     animation-name: bit-fade-show;
     background-color: transparent;
     border-radius: $shp-border-radius;
@@ -540,7 +540,7 @@
     bottom: spacing(0.125);
     background-color: var(--bit-cal-clr);
     transform: translateX(-50%);
-    transition: transform 0.15s ease;
+    transition: transform $mot-duration ease;
 }
 
 .bit-cal-eov {

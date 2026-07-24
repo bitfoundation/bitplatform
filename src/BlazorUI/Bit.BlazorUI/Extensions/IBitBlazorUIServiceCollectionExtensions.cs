@@ -20,7 +20,13 @@ public static class IBitBlazorUIServiceCollectionExtensions
     public static IServiceCollection AddBitBlazorUIServices(this IServiceCollection services, bool trySingleton = false)
     {
         services.TryAddScoped<BitThemeNotifications>(sp =>
-            new BitThemeNotifications(sp.GetService<ILoggerFactory>()));
+            new BitThemeNotifications(sp.GetService<ILoggerFactory>())
+            {
+                // Lets a bare ThemeChanged subscription wire up the JS notifier on its own; resolved
+                // lazily per call so construction stays cycle-free (manager -> receiver -> notifications)
+                // and disposal of the scope surfaces as ObjectDisposedException, which the trigger handles.
+                RegistrationTrigger = () => sp.GetRequiredService<BitThemeManager>().EnsureThemeNotificationsRegisteredAsync(),
+            });
 
         // BitThemeJsNotifierReceiver is internal (consumers should listen on
         // BitThemeNotifications.ThemeChanged), but DI still resolves it for us.

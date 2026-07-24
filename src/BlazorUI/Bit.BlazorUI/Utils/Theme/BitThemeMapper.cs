@@ -422,7 +422,6 @@ internal static class BitThemeMapper
         addCssVar("--bit-mot-duration-long", bitTheme.Motion.DurationLong);
         addCssVar("--bit-mot-easing", bitTheme.Motion.EasingStandard);
 
-        addCssVar("--bit-layout-dir", bitTheme.Layout.Direction);
         addCssVar("--bit-layout-density-scale", bitTheme.Layout.DensityScale);
 
         addCssVar("--bit-bp-xs", bitTheme.Layout.Breakpoints.Xs);
@@ -504,7 +503,7 @@ internal static class BitThemeMapper
     /// read from the normalized graph here - the merge writes into a separate fresh result - so no
     /// shared object is mutated and no per-leaf copy is needed. Direct string leaves on the container
     /// types (e.g. <see cref="BitThemeColors.Required"/>, <see cref="BitThemeTypography.FontFamily"/>,
-    /// <see cref="BitThemeLayout.Direction"/>) are carried across explicitly.
+    /// <see cref="BitThemeLayout.DensityScale"/>) are carried across explicitly.
     /// </remarks>
     private static BitTheme NormalizeToNew(BitTheme? src)
     {
@@ -579,7 +578,6 @@ internal static class BitThemeMapper
 
         return new BitThemeLayout
         {
-            Direction = src.Direction,
             DensityScale = src.DensityScale,
             Breakpoints = src.Breakpoints ?? new(),
         };
@@ -1004,7 +1002,6 @@ internal static class BitThemeMapper
         result.Motion.DurationLong = bitTheme.Motion.DurationLong ?? other.Motion.DurationLong;
         result.Motion.EasingStandard = bitTheme.Motion.EasingStandard ?? other.Motion.EasingStandard;
 
-        result.Layout.Direction = bitTheme.Layout.Direction ?? other.Layout.Direction;
         result.Layout.DensityScale = bitTheme.Layout.DensityScale ?? other.Layout.DensityScale;
         result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;
         result.Layout.Breakpoints.Sm = bitTheme.Layout.Breakpoints.Sm ?? other.Layout.Breakpoints.Sm;

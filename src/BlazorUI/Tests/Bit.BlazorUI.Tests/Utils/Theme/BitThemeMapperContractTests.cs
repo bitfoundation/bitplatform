@@ -35,6 +35,29 @@ public sealed class BitThemeMapperContractTests
     }
 
     [TestMethod]
+    public void MapperEmittedTokensAreConsumedByShippedStyles()
+    {
+        var stylesDir = Path.Combine(AppContext.BaseDirectory, "theme-styles");
+        Assert.IsTrue(Directory.Exists(stylesDir), $"Missing {stylesDir}; ensure the library Styles folder is copied to output.");
+
+        var scss = string.Join("\n", Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories).Select(File.ReadAllText));
+
+        var theme = new BitTheme();
+        FillAllStringProperties(theme, []);
+
+        var mapped = BitThemeUtilities.ToCssVariables(theme);
+
+        // A token that the mapper emits but no shipped stylesheet declares or consumes is dead:
+        // setting it from BitTheme silently changes nothing. The boundary lookahead keeps a token
+        // from being satisfied by a longer sibling (e.g. -duration by -duration-short).
+        var dead = mapped.Keys
+            .Where(key => !Regex.IsMatch(scss, Regex.Escape(key) + "(?![a-z0-9-])"))
+            .ToArray();
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), dead, $"Mapper emits dead tokens: {string.Join(", ", dead)}");
+    }
+
+    [TestMethod]
     public void BitThemeSerializationRoundtripPreservesPrimaryColor()
     {
         var original = new BitTheme();

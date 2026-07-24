@@ -105,7 +105,7 @@
         transform: translateY(-50%);
         width: var(--bit-chg-circle-size);
         border: $shp-border-width $shp-border-style $clr-brd-pri;
-        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        transition: border-color $mot-duration $mot-easing;
     }
 
     &::after {
@@ -121,7 +121,7 @@
         background-color: $clr-fg-sec-hover;
         transition-property: background-color;
         width: calc(var(--bit-chg-circle-size) / 2);
-        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        transition: border-width $mot-duration $mot-easing;
     }
 
     @media (hover: hover) {
@@ -158,7 +158,7 @@
     box-sizing: content-box;
     justify-content: center;
     min-height: spacing(2.5);
-    transition: all 0.2s ease;
+    transition: all $mot-duration ease;
     border-radius: $shp-border-radius;
     padding-block-start: spacing(2.75);
     border: $shp-border-width $shp-border-style transparent;
@@ -217,7 +217,7 @@
 
 .bit-chg-iic {
     padding: 0 spacing(3.75);
-    transition: opacity 0.2s ease;
+    transition: opacity $mot-duration ease;
 
     .bit-chg-iiw {
         border-style: none;
@@ -557,5 +557,31 @@
 
     &.bit-chg-lg {
         --bit-chg-item-gap: #{spacing(3)};
+    }
+}
+
+// forced-colors: the checked radio dot is a background-painted ::after, which High Contrast
+// strips; repaint dot and ring with the system Highlight color so the checked option stays
+// visible. Placed last so it wins the same-specificity cascade over the normal checked rules.
+@media (forced-colors: active) {
+    .bit-chg-ich .bit-chg-rad {
+        &::before {
+            border-color: Highlight;
+        }
+
+        &::after {
+            background-color: Highlight;
+        }
+    }
+
+    // Declared after the checked rules so a checked + disabled radio renders GrayText.
+    .bit-chg-ids .bit-chg-rad {
+        &::before {
+            border-color: GrayText;
+        }
+
+        &::after {
+            background-color: GrayText;
+        }
     }
 }

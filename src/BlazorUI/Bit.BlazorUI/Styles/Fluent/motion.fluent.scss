@@ -3,13 +3,14 @@
     --bit-mot-duration-short: 100ms;
     --bit-mot-duration-long: 300ms;
     --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
-    --bit-layout-density-scale: 1;
 }
 
+// 0.01ms instead of 0ms: a zero-duration transition/animation never fires its
+// transitionend/animationend event, which would hang any JS awaiting it.
 @media (prefers-reduced-motion: reduce) {
     :root {
-        --bit-mot-duration: 0ms;
-        --bit-mot-duration-short: 0ms;
-        --bit-mot-duration-long: 0ms;
+        --bit-mot-duration: 0.01ms;
+        --bit-mot-duration-short: 0.01ms;
+        --bit-mot-duration-long: 0.01ms;
     }
 }
