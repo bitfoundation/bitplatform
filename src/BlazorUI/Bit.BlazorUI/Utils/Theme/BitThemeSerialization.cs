@@ -130,6 +130,7 @@ public static class BitThemeSerialization
         color.Background ??= new BitThemeBackgroundColorVariants();
         color.Border ??= new BitThemeGeneralColorVariants();
         color.Neutral ??= new BitThemeNeutralColorVariants();
+        color.Semantic ??= new BitThemeSemanticColors();
 
         // Typography branch.
         var typography = theme.Typography;

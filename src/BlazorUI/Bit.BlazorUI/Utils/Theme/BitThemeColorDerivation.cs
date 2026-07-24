@@ -1,12 +1,49 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Optional helpers to populate semantic color steps from a single main color (HSV-based).
+/// Optional helpers to populate semantic color steps from a single main color (OKLCH-based).
 /// Caller-provided non-null values on the variants object are never overwritten.
 /// </summary>
 public static class BitThemeColorDerivation
 {
-    /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields by deriving HSV-shifted hex values from <paramref name="mainHex"/>.</summary>
+    // Interactive/dark steps: relative OKLab lightness scale at constant hue and chroma
+    // (out-of-gamut chroma is reduced by BitThemeOklch). Factors are calibrated against the
+    // packaged Fluent light palette (e.g. primary #1A86D8 → hover #197FCD is L × 0.96).
+    private const double MainHoverDarken = 0.04;
+    private const double MainActiveDarken = 0.075;
+    private const double DarkDarken = 0.12;
+    private const double DarkHoverDarken = 0.15;
+    private const double DarkActiveDarken = 0.18;
+
+    // Light/disabled tints: OKLab mix with white (L moves toward 1, chroma scales down by the
+    // same factor), again matching the packaged palette, where light/light-hover/light-active are
+    // ~58% / ~47.5% / ~37.5% white mixes of main. Note the hover/active steps of the light family
+    // step BACK toward main (a tinted background darkens on hover), so Light is the lightest step.
+    private const double LightWhiteMix = 0.58;
+    private const double LightHoverWhiteMix = 0.475;
+    private const double LightActiveWhiteMix = 0.375;
+    private const double DisabledWhiteMix = 0.58;
+    private const double DisabledTextWhiteMix = 0.45;
+
+    // Dark-scheme steps, calibrated the same way against the packaged Fluent dark palette (whose
+    // primary AND secondary families agree on these fractions to within rounding). Interactive
+    // states are black mixes (a fill on a dark surface dims on interaction), the dark family keeps
+    // chroma while lowering lightness, the light family still mixes toward white but far less (the
+    // dark main is already bright), and disabled colors are deep black mixes with extra
+    // desaturation so they read as muted against a dark background.
+    private const double DarkSchemeMainHoverBlackMix = 0.075;
+    private const double DarkSchemeMainActiveBlackMix = 0.15;
+    private const double DarkSchemeDarkDarken = 0.14;
+    private const double DarkSchemeDarkHoverDarken = 0.17;
+    private const double DarkSchemeDarkActiveDarken = 0.205;
+    private const double DarkSchemeLightWhiteMix = 0.28;
+    private const double DarkSchemeLightHoverWhiteMix = 0.18;
+    private const double DarkSchemeLightActiveWhiteMix = 0.09;
+    private const double DarkSchemeDisabledBlackMix = 0.47;
+    private const double DarkSchemeDisabledTextBlackMix = 0.23;
+    private const double DarkSchemeDisabledChromaScale = 0.85;
+
+    /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields by deriving OKLCH-shifted hex values from <paramref name="mainHex"/>.</summary>
     /// <param name="variants">Target variants to fill in-place. Already-populated properties are preserved.</param>
     /// <param name="mainHex">Source color in <c>#RGB</c> or <c>#RRGGBB</c> form. Whitespace is trimmed.</param>
     /// <remarks>
@@ -21,14 +58,19 @@ public static class BitThemeColorDerivation
     /// throwing.
     /// </para>
     /// <para>
-    /// The variants are derived by shifting only the HSV <em>value</em> (brightness) of the resolved
+    /// Variants are derived in the perceptually uniform OKLCH space from the resolved
     /// <see cref="BitThemeColorVariants.Main"/> color - falling back to <paramref name="mainHex"/>
-    /// when a preset <c>Main</c> is not a parseable hex color - hue and saturation are preserved. The result is clamped to the
-    /// [0,1] value range, so for an already very bright base color the "light" steps
-    /// (<see cref="BitThemeColorVariants.Light"/> / <c>LightHover</c> / <c>LightActive</c>) can
-    /// saturate at white and collapse to the same hex, and likewise the "dark" steps can converge
-    /// for a near-black base. This is a convenience helper for sparse themes rather than a full
-    /// perceptual palette generator; set the variants explicitly when you need precise tints/shades.
+    /// when a preset <c>Main</c> is not a parseable hex color. The interactive and dark steps
+    /// (<c>MainHover</c>/<c>MainActive</c>/<c>Dark</c>/<c>DarkHover</c>/<c>DarkActive</c>) scale
+    /// OKLab lightness down at constant hue; the tint steps (<c>Light</c>/<c>LightHover</c>/
+    /// <c>LightActive</c>/<c>Disabled</c>/<c>DisabledText</c>) are white mixes. All step sizes are
+    /// calibrated to the packaged Fluent palette, so a derived role behaves like a packaged one -
+    /// including the light family's ordering, where <c>Light</c> is the lightest value and its
+    /// hover/active states step back toward <c>Main</c>. <see cref="BitThemeColorVariants.Focus"/>
+    /// is aliased to the resolved <c>Main</c> (matching <c>--bit-clr-*-focus</c> in the packaged
+    /// palettes). Because OKLab lightness is perceptual, the derived interactive fills keep a
+    /// ≥ 3:1 WCAG contrast against the auto-selected <c>Text</c> for any seed color (covered by
+    /// tests); set the variants explicitly when you need precise tints/shades.
     /// </para>
     /// <para>
     /// The auto-generated <see cref="BitThemeColorVariants.Text"/> (on-color text) is set to whichever
@@ -40,6 +82,21 @@ public static class BitThemeColorDerivation
     /// </para>
     /// </remarks>
     public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex)
+    {
+        FillColorRoleFromMain(variants, mainHex, BitThemeColorScheme.Light);
+    }
+
+    /// <summary>
+    /// Scheme-aware variant of <see cref="FillColorRoleFromMain(BitThemeColorVariants?, string?)"/>.
+    /// <paramref name="mainHex"/> is the role's main color <em>as it should appear in that scheme</em>
+    /// (for a dark scheme, typically a brightened brand color - <see cref="BitThemeFactory.CreateDarkTheme(string)"/>
+    /// performs that brightening automatically). <see cref="BitThemeColorScheme.Dark"/> flips the
+    /// step directions to the packaged dark palette's conventions: interactive states dim toward
+    /// black, tints stay closer to main, and disabled colors become deep desaturated shades.
+    /// All other guarantees (no-op on invalid input, presets preserved, contrast-picked
+    /// <see cref="BitThemeColorVariants.Text"/>, <c>Focus</c> aliasing <c>Main</c>) are identical.
+    /// </summary>
+    public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex, BitThemeColorScheme scheme)
     {
         if (variants is null) return;
 
@@ -53,23 +110,46 @@ public static class BitThemeColorDerivation
 
         variants.Main ??= baseColor.Hex;
 
-        // Derive the brightness-shifted variants from the resolved Main (a caller may have preset it
-        // to a different color than mainHex, and the variants should form one family with it),
-        // falling back to the validated mainHex when the preset Main is not a parseable hex color
-        // (e.g. a CSS var() reference) - mirroring how Text resolves its background below.
+        // Derive the shifted variants from the resolved Main (a caller may have preset it to a
+        // different color than mainHex, and the variants should form one family with it), falling
+        // back to the validated mainHex when the preset Main is not a parseable hex color (e.g. a
+        // CSS var() reference) - mirroring how Text resolves its background below.
         var sourceColor = BitThemeColorContrast.TryNormalizeHex(variants.Main, out var mainSourceHex)
             ? new BitInternalColor(mainSourceHex)
             : baseColor;
-        var (h, s, v) = sourceColor.Hsv;
+        var (l, c, h) = BitThemeOklch.FromRgb(sourceColor.R, sourceColor.G, sourceColor.B);
 
-        variants.MainHover ??= ToHex(h, s, ScaleV(v, 0.96));
-        variants.MainActive ??= ToHex(h, s, ScaleV(v, 0.90));
-        variants.Dark ??= ToHex(h, s, ScaleV(v, 0.82));
-        variants.DarkHover ??= ToHex(h, s, ScaleV(v, 0.76));
-        variants.DarkActive ??= ToHex(h, s, ScaleV(v, 0.70));
-        variants.Light ??= ToHex(h, s, AddV(v, 0.08));
-        variants.LightHover ??= ToHex(h, s, AddV(v, 0.12));
-        variants.LightActive ??= ToHex(h, s, AddV(v, 0.16));
+        if (scheme is BitThemeColorScheme.Dark)
+        {
+            variants.MainHover ??= MixWithBlack(l, c, h, DarkSchemeMainHoverBlackMix);
+            variants.MainActive ??= MixWithBlack(l, c, h, DarkSchemeMainActiveBlackMix);
+            variants.Dark ??= Darken(l, c, h, DarkSchemeDarkDarken);
+            variants.DarkHover ??= Darken(l, c, h, DarkSchemeDarkHoverDarken);
+            variants.DarkActive ??= Darken(l, c, h, DarkSchemeDarkActiveDarken);
+            variants.Light ??= MixWithWhite(l, c, h, DarkSchemeLightWhiteMix);
+            variants.LightHover ??= MixWithWhite(l, c, h, DarkSchemeLightHoverWhiteMix);
+            variants.LightActive ??= MixWithWhite(l, c, h, DarkSchemeLightActiveWhiteMix);
+            variants.Disabled ??= MixWithBlack(l, c * DarkSchemeDisabledChromaScale, h, DarkSchemeDisabledBlackMix);
+            variants.DisabledText ??= MixWithBlack(l, c * DarkSchemeDisabledChromaScale, h, DarkSchemeDisabledTextBlackMix);
+        }
+        else
+        {
+            variants.MainHover ??= Darken(l, c, h, MainHoverDarken);
+            variants.MainActive ??= Darken(l, c, h, MainActiveDarken);
+            variants.Dark ??= Darken(l, c, h, DarkDarken);
+            variants.DarkHover ??= Darken(l, c, h, DarkHoverDarken);
+            variants.DarkActive ??= Darken(l, c, h, DarkActiveDarken);
+            variants.Light ??= MixWithWhite(l, c, h, LightWhiteMix);
+            variants.LightHover ??= MixWithWhite(l, c, h, LightHoverWhiteMix);
+            variants.LightActive ??= MixWithWhite(l, c, h, LightActiveWhiteMix);
+            variants.Disabled ??= MixWithWhite(l, c, h, DisabledWhiteMix);
+            variants.DisabledText ??= MixWithWhite(l, c, h, DisabledTextWhiteMix);
+        }
+
+        // The packaged palettes alias the focus indicator to the role's main color
+        // (--bit-clr-pri-focus: var(--bit-clr-pri)). Copying the resolved Main string keeps that
+        // aliasing even when Main was preset to a non-hex value such as a CSS var() reference.
+        variants.Focus ??= variants.Main;
 
         // On-color text: pick the higher-contrast of black/white against the actual Main background
         // (a caller may have preset Main to a value other than mainHex). When that preset Main is not
@@ -82,14 +162,20 @@ public static class BitThemeColorDerivation
         }
     }
 
-    private static string ToHex(double h, double s, double v, double a = 1)
-        => new BitInternalColor(h, s, Clamp01(v), a).Hex!;
+    // Multiplicative lightness scaling keeps the steps distinct for any L > 0 (they only converge
+    // at pure black), and constant hue/chroma keeps a darkened accent rich instead of muddy.
+    private static string Darken(double l, double c, double h, double amount)
+        => BitThemeOklch.ToHex(l * (1 - amount), c, h);
 
-    private static double ScaleV(double v, double factor) => Clamp01(v * factor);
+    // An OKLab white mix moves lightness toward 1 and scales chroma down by the same factor, so
+    // tints stay in-gamut and pastel by construction, and steps stay distinct for any L < 1.
+    private static string MixWithWhite(double l, double c, double h, double amount)
+        => BitThemeOklch.ToHex(l + ((1 - l) * amount), c * (1 - amount), h);
 
-    private static double AddV(double v, double delta) => Clamp01(v + delta);
-
-    private static double Clamp01(double v) => v < 0 ? 0 : v > 1 ? 1 : v;
+    // An OKLab black mix scales lightness AND chroma down together (unlike Darken, which keeps
+    // chroma), producing the dimmed-not-richer look interactive fills have on a dark surface.
+    private static string MixWithBlack(double l, double c, double h, double amount)
+        => BitThemeOklch.ToHex(l * (1 - amount), c * (1 - amount), h);
 
     // Picks black or white on-color text using the same WCAG sRGB relative-luminance contrast as
     // BitThemeColorContrast (rather than a YIQ 0.299/0.587/0.114 brightness heuristic, which could

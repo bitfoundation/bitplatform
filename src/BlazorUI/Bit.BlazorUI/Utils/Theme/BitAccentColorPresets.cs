@@ -1,7 +1,9 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Sample accent (primary) hex values for branding - assign to <see cref="BitThemeColors.Primary"/> or derive via <see cref="BitThemeColorDerivation"/>.
+/// Sample accent (primary) hex values for branding - feed one to <see cref="BitThemeFactory"/> for a
+/// complete light/dark theme, assign to <see cref="BitThemeColors.Primary"/>, or derive via
+/// <see cref="BitThemeColorDerivation"/>.
 /// </summary>
 public static class BitAccentColorPresets
 {

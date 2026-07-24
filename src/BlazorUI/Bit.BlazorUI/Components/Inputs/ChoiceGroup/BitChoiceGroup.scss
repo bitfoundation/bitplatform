@@ -352,6 +352,12 @@
     }
 }
 
+// Per-role color blocks - intentionally hand-written, NOT an @each loop over $bit-color-roles.
+// Like BitCheckbox, BitChoiceGroup diverges from the shared role vocabulary: the semantic roles
+// pin fixed neutral chrome (--bit-chg-clr-bg -> bg-sec, --bit-chg-clr-brd -> brd-pri) rather than
+// role slots, and the surface tiers use the matching-tier contrast (sfg -> bg-sec, not the map's
+// `on` = bg-pri). Looping over role($tokens, on) would recolor the secondary/tertiary surface
+// roles - a visual regression. Keep them explicit. (See BitCheckbox for the same rationale.)
 .bit-chg-pri {
     --bit-chg-clr: #{$clr-pri};
     --bit-chg-clr-bg: #{$clr-bg-sec};

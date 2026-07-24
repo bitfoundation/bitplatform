@@ -235,7 +235,7 @@
     // including the ones whose button background is transparent.
     color: currentcolor;
     background-color: rgb(128 128 128 / 25%);
-    background-color: color-mix(in srgb, currentcolor 20%, transparent);
+    background-color: translucent(currentcolor, 20%);
 }
 
 .bit-btg-spn {

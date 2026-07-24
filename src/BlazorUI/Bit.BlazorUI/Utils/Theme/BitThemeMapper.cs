@@ -268,6 +268,16 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-ntr-gray210", bitTheme.Color.Neutral.Gray210);
         addCssVar("--bit-clr-ntr-gray220", bitTheme.Color.Neutral.Gray220);
 
+        addCssVar("--bit-sem-surface-page", bitTheme.Color.Semantic.SurfacePage);
+        addCssVar("--bit-sem-surface-elevated", bitTheme.Color.Semantic.SurfaceElevated);
+        addCssVar("--bit-sem-surface-muted", bitTheme.Color.Semantic.SurfaceMuted);
+        addCssVar("--bit-sem-text-primary", bitTheme.Color.Semantic.TextPrimary);
+        addCssVar("--bit-sem-text-secondary", bitTheme.Color.Semantic.TextSecondary);
+        addCssVar("--bit-sem-border-default", bitTheme.Color.Semantic.BorderDefault);
+        addCssVar("--bit-sem-accent-primary", bitTheme.Color.Semantic.AccentPrimary);
+        addCssVar("--bit-sem-focus-ring", bitTheme.Color.Semantic.FocusRing);
+        addCssVar("--bit-sem-focus-color", bitTheme.Color.Semantic.FocusColor);
+
         addCssVar("--bit-shd-cal", bitTheme.BoxShadow.Callout);
         addCssVar("--bit-shd-cal2", bitTheme.BoxShadow.Callout2);
         addCssVar("--bit-shd-sm", bitTheme.BoxShadow.Sm);
@@ -463,7 +473,9 @@ internal static class BitThemeMapper
     /// shadows, sizes, durations, easings, font-family lists - none of which use them), so rejecting
     /// the whole value is safe and avoids partially-stripped, malformed output.
     /// </remarks>
-    private static bool IsUnsafeCssTokenValue(string value)
+    // Internal (not private) so BitThemeUtilities.WithAlpha can validate its input against the
+    // exact same rule the emission path enforces, instead of duplicating the character list.
+    internal static bool IsUnsafeCssTokenValue(string value)
     {
         foreach (var ch in value)
         {
@@ -540,6 +552,7 @@ internal static class BitThemeMapper
             Background = src.Background ?? new(),
             Border = src.Border ?? new(),
             Neutral = src.Neutral ?? new(),
+            Semantic = src.Semantic ?? new(),
             Required = src.Required,
         };
     }
@@ -847,6 +860,16 @@ internal static class BitThemeMapper
         result.Color.Neutral.Gray200 = bitTheme.Color.Neutral.Gray200 ?? other.Color.Neutral.Gray200;
         result.Color.Neutral.Gray210 = bitTheme.Color.Neutral.Gray210 ?? other.Color.Neutral.Gray210;
         result.Color.Neutral.Gray220 = bitTheme.Color.Neutral.Gray220 ?? other.Color.Neutral.Gray220;
+
+        result.Color.Semantic.SurfacePage = bitTheme.Color.Semantic.SurfacePage ?? other.Color.Semantic.SurfacePage;
+        result.Color.Semantic.SurfaceElevated = bitTheme.Color.Semantic.SurfaceElevated ?? other.Color.Semantic.SurfaceElevated;
+        result.Color.Semantic.SurfaceMuted = bitTheme.Color.Semantic.SurfaceMuted ?? other.Color.Semantic.SurfaceMuted;
+        result.Color.Semantic.TextPrimary = bitTheme.Color.Semantic.TextPrimary ?? other.Color.Semantic.TextPrimary;
+        result.Color.Semantic.TextSecondary = bitTheme.Color.Semantic.TextSecondary ?? other.Color.Semantic.TextSecondary;
+        result.Color.Semantic.BorderDefault = bitTheme.Color.Semantic.BorderDefault ?? other.Color.Semantic.BorderDefault;
+        result.Color.Semantic.AccentPrimary = bitTheme.Color.Semantic.AccentPrimary ?? other.Color.Semantic.AccentPrimary;
+        result.Color.Semantic.FocusRing = bitTheme.Color.Semantic.FocusRing ?? other.Color.Semantic.FocusRing;
+        result.Color.Semantic.FocusColor = bitTheme.Color.Semantic.FocusColor ?? other.Color.Semantic.FocusColor;
 
         result.BoxShadow.Callout = bitTheme.BoxShadow.Callout ?? other.BoxShadow.Callout;
         result.BoxShadow.Callout2 = bitTheme.BoxShadow.Callout2 ?? other.BoxShadow.Callout2;

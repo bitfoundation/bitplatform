@@ -247,6 +247,14 @@
     --bit-chb-lbl-flex-direction: row;
 }
 
+// Per-role color blocks - intentionally hand-written, NOT an @each loop over $bit-color-roles.
+// Unlike the 20 loop-driven components, BitCheckbox's on-colors diverge from the shared role
+// vocabulary: for the surface tiers it uses the *matching-tier* contrast color (sbg -> fg-sec,
+// tbg -> fg-ter, sfg -> bg-sec, ...) rather than the map's `on` slot, which is always the primary
+// contrast (fg-pri / bg-pri). It also carries two slots the shared map has no concept of
+// (--bit-chb-clr-txt-sec, --bit-chb-clr-txt-hover). Converting these to role($tokens, on) would
+// change the rendered check/label colors for the secondary/tertiary surface roles - a visual
+// regression, not a refactor. Keep them explicit. (See BitChoiceGroup for the same rationale.)
 .bit-chb-pri {
     --bit-chb-clr: #{$clr-pri};
     --bit-chb-clr-hover: #{$clr-pri-hover};

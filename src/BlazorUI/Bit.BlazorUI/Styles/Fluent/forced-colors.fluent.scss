@@ -54,6 +54,14 @@
         //2px instead of the default 1px (0.0625rem)
         --bit-shp-brd-width: 0.125rem;
 
+        //A stronger focus indicator for the elevated-contrast cohort: 3px instead of the default
+        //2px ring, offset a step further from the element. These flow through --bit-shd-focus-ring
+        //(which reads both tokens) to every focus-ring() call, so the whole library reacts. Focus
+        //visibility is unambiguously good to strengthen here - unlike disabled/muted colors, whose
+        //meaning depends on staying subdued - so it is safe to promote wholesale.
+        --bit-shp-focus-ring-width: 0.1875rem;
+        --bit-shp-focus-ring-offset: 0.1875rem;
+
         //tertiary (subtle) separators and text step up to the secondary tier,
         //which lifts the weakest contrast pairs without touching the theme's palette
         --bit-clr-brd-ter: var(--bit-clr-brd-sec);

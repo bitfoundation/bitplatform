@@ -28,10 +28,39 @@ public sealed class BitThemeContrastPreferenceTests
         Assert.IsTrue(contrastWidth > defaultWidth, "prefers-contrast: more should thicken borders, not thin them.");
     }
 
-    private static double ExtractBorderWidthPx(string scss)
+    // The focus indicator is strengthened for the elevated-contrast cohort. This must stay a real
+    // change (not accidentally equal to the default) and must flow through the composite
+    // --bit-shd-focus-ring token, which reads --bit-shp-focus-ring-width; if that wiring is broken
+    // the ring would silently keep its default thickness.
+    [TestMethod]
+    public void PrefersContrastMoreStrengthensTheFocusRing()
     {
-        var match = Regex.Match(scss, @"--bit-shp-brd-width:\s*([\d.]+)(px|rem)");
-        Assert.IsTrue(match.Success, "--bit-shp-brd-width declaration not found.");
+        var stylesDir = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent");
+        var shapes = File.ReadAllText(Path.Combine(stylesDir, "shapes.fluent.scss"));
+        var forced = File.ReadAllText(Path.Combine(stylesDir, "forced-colors.fluent.scss"));
+
+        var defaultWidth = ExtractTokenPx(shapes, "--bit-shp-focus-ring-width");
+
+        var contrastBlock = Regex.Match(forced, @"prefers-contrast:\s*more\)\s*\{(?<body>[\s\S]*?)\n\}").Groups["body"].Value;
+        Assert.AreNotEqual(string.Empty, contrastBlock, "prefers-contrast: more block not found.");
+        var contrastWidth = ExtractTokenPx(contrastBlock, "--bit-shp-focus-ring-width");
+
+        Assert.IsTrue(contrastWidth > defaultWidth,
+            $"prefers-contrast: more should thicken the focus ring (default {defaultWidth}px, got {contrastWidth}px).");
+
+        // The composite focus-ring shadow must actually consume the width token, otherwise the
+        // override above is inert.
+        Assert.IsTrue(
+            Regex.IsMatch(shapes, @"--bit-shd-focus-ring:[\s\S]*?var\(--bit-shp-focus-ring-width\)"),
+            "--bit-shd-focus-ring must reference var(--bit-shp-focus-ring-width) for the override to take effect.");
+    }
+
+    private static double ExtractBorderWidthPx(string scss) => ExtractTokenPx(scss, "--bit-shp-brd-width");
+
+    private static double ExtractTokenPx(string scss, string token)
+    {
+        var match = Regex.Match(scss, Regex.Escape(token) + @":\s*([\d.]+)(px|rem)");
+        Assert.IsTrue(match.Success, $"{token} declaration not found.");
 
         var value = double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
         return match.Groups[2].Value == "rem" ? value * 16 : value;

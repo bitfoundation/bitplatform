@@ -46,4 +46,56 @@ public static class BitThemeUtilities
     {
         return BitThemeMapper.Merge(overrides ?? new BitTheme(), baseline ?? new BitTheme());
     }
+
+    /// <summary>
+    /// Returns a CSS <c>color-mix()</c> expression that renders <paramref name="cssColor"/> at
+    /// <paramref name="opacity"/> - the way to composite translucency from theme tokens without
+    /// per-alpha token variants or channel variables.
+    /// </summary>
+    /// <param name="cssColor">
+    /// Any CSS color expression: a token reference (<c>var(--bit-clr-pri)</c>), a hex literal,
+    /// <c>currentcolor</c>, a system color, or even another <c>color-mix()</c>. Surrounding
+    /// whitespace is trimmed.
+    /// </param>
+    /// <param name="opacity">The opacity to keep, from 0 (fully transparent) to 1 (unchanged).</param>
+    /// <remarks>
+    /// <para>
+    /// Mixing with <c>transparent</c> in sRGB scales only the alpha channel, so
+    /// <c>WithAlpha("#1A86D8", 0.2)</c> renders identically to <c>rgba(26, 134, 216, 0.2)</c> -
+    /// but unlike a precomputed rgba value it also works when the input is a <c>var()</c>
+    /// reference whose concrete color is only known in the browser. The returned expression is a
+    /// valid theme token value: it passes the mapper's injection screening, so it can be assigned
+    /// to any <see cref="BitTheme"/> color slot (e.g. a brand-tinted overlay or shadow color).
+    /// <c>color-mix()</c> is Baseline across evergreen browsers since mid-2023.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="cssColor"/> is null, blank, or contains characters that could escape a CSS
+    /// declaration (the same screening <see cref="ToCssVariables"/> applies on emission).
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="opacity"/> is NaN or outside [0, 1].</exception>
+    public static string WithAlpha(string cssColor, double opacity)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(cssColor);
+
+        if (double.IsNaN(opacity) || opacity < 0 || opacity > 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(opacity), opacity, "Opacity must be between 0 and 1.");
+        }
+
+        var trimmed = cssColor.Trim();
+
+        // Reject early with a clear error instead of letting the composed expression be silently
+        // dropped later by the mapper's emission screening.
+        if (BitThemeMapper.IsUnsafeCssTokenValue(trimmed))
+        {
+            throw new ArgumentException(
+                $"'{cssColor}' contains characters that are not valid inside a CSS color expression.",
+                nameof(cssColor));
+        }
+
+        // Invariant formatting: "0.####" never emits a decimal comma and trims trailing zeros
+        // (0.125 → "12.5%", 0.2 → "20%").
+        return FormattableString.Invariant($"color-mix(in srgb, {trimmed} {opacity * 100:0.####}%, transparent)");
+    }
 }

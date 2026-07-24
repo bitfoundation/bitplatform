@@ -13,6 +13,9 @@
 
     <ItemGroup>
       <Compile Include="..\..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitInternalColor.cs" Link="Components\Inputs\ColorPicker\BitInternalColor.cs" />
+      <!-- Compile-linked so the derivation tests can verify OKLCH lightness/hue invariants with
+           the exact same conversion the library derives with (same pattern as BitInternalColor). -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeOklch.cs" Link="Utils\Theme\BitThemeOklch.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
@@ -49,6 +52,15 @@
         <!-- Full library Styles tree for the reverse token-contract test: every mapper-emitted
              bit token (CSS custom property) must be declared or consumed somewhere in these stylesheets. -->
         <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- Component SCSS tree + the checked-in inventory for the per-component CSS variable
+             contract test (BitComponentCssVariablesContractTests): the per-component custom-property
+             names are documented public API and must not drift from the sources without an update. -->
+        <None Include="..\..\Bit.BlazorUI\Components\**\*.scss" Link="component-styles\%(RecursiveDir)%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI\component-css-variables.md" Link="component-css-variables.md">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

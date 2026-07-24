@@ -28,6 +28,24 @@ $html-font-size: 16px;
 }
 
 /*
+ * translucent($color, $percent)
+ * --------------------------------------------------
+ * Applies alpha to ANY color expression - a var() token reference, currentcolor, a system color,
+ * or a literal - by mixing it with transparent in sRGB, which scales the alpha channel while
+ * leaving the color channels untouched (translucent(X, 20%) === rgba(X, 0.2)). This is how alpha
+ * is composited from theme tokens without maintaining per-alpha token variants or separate
+ * channel variables. $percent is the opacity kept.
+ *
+ * color-mix is Baseline (all evergreen engines since mid-2023). Where a legacy fallback matters,
+ * declare it on the preceding line so unsupporting engines keep it:
+ *     background-color: rgb(128 128 128 / 25%);
+ *     background-color: translucent(currentcolor, 20%);
+ */
+@function translucent($color, $percent) {
+    @return color-mix(in srgb, #{$color} #{$percent}, transparent);
+}
+
+/*
  * focus-ring($color, $offset)
  * --------------------------------------------------
  * Renders a consistent, theme-aware focus indicator across components.

@@ -173,6 +173,8 @@
                 <b>Layout</b> &mdash; <BitTag>--bit-layout-density-scale</BitTag>, breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
                 <br />
                 <b>Semantic aliases</b> &mdash; <BitTag>--bit-sem-*</BitTag> (intent-named pointers to the primitives)
+                <br />
+                <b>Per-component</b> &mdash; <BitTag>--bit-&lt;cmp&gt;-*</BitTag> (each component's own knobs; see <i>Per-component variables</i> below)
             </BitText>
 
             <br />
@@ -225,8 +227,8 @@
             <br />
 
             <BitText>
-                <b>Semantic aliases</b> let app code declare intent without coupling to a specific primitive token. They live in
-                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent/semantic-tokens.fluent.scss" Target="_blank">semantic-tokens.fluent.scss</BitLink>:
+                <b>Semantic aliases</b> are the intent tier for <i>your app's</i> CSS: purpose-named tokens defined over the primitives, shipped in every bundle regardless of the active theme (they are pure <BitTag>var()</BitTag> references, so they track whatever palette is loaded). They live in
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/semantic-tokens.scss" Target="_blank">semantic-tokens.scss</BitLink>:
             </BitText>
 
             <br />
@@ -244,10 +246,56 @@
             <br />
 
             <BitText>
+                The two tiers have deliberately different override semantics. <b>Components consume primitives</b> (and their per-role/per-component variables), never the aliases &mdash; so overriding a primitive retunes components <i>and</i> the aliases that point at it, while overriding a semantic token retunes only the app styling that opted into that intent. Semantic tokens are themable from C# via <BitTag>BitTheme.Color.Semantic</BitTag>:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">var theme = new BitTheme();
+
+// Give elevated app surfaces a subtle brand tint - components are unaffected.
+theme.Color.Semantic.SurfaceElevated =
+    BitThemeUtilities.WithAlpha("var(--bit-clr-pri-light)", 0.35);
+
+await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
+
+            <br />
+
+            <BitText>
                 <b>SCSS variables.</b> If you author styles in <BitTag>scss</BitTag>, the
                 <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Styles/abstracts/_bit-css-variables.scss" Target="_blank">_bit-css-variables.scss</BitLink>
                 file mirrors every <BitTag>--bit-*</BitTag> token as an SCSS variable so you can write <BitTag>color: $clr-pri</BitTag> instead of <BitTag>var(--bit-clr-pri)</BitTag>.
             </BitText>
+
+            <br />
+
+            <BitText Element="h4" Typography="BitTypography.H6">Per-component variables</BitText>
+
+            <br />
+
+            <BitText>
+                Below the theme tokens sits a third tier: every component exposes its own themable knobs as <BitTag>--bit-&lt;cmp&gt;-*</BitTag> custom properties (for example <BitTag>--bit-btn-clr</BitTag>, <BitTag>--bit-btn-padding</BitTag>, <BitTag>--bit-chb-box-size</BitTag>), assigned on the component root by its role/variant classes and consumed by its internal selectors. These names are <b>stable, contract-tested public API</b> &mdash; the full inventory (currently 268 variables across 31 components) is published in
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/component-css-variables.md" Target="_blank">component-css-variables.md</BitLink>, and a build-time test fails if any name drifts without an inventory update.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Override them app-wide from your CSS, or per instance via the component's <BitTag>Style</BitTag> / <BitTag>Class</BitTag> parameters &mdash; a surgical alternative to a full <BitTag>BitTheme</BitTag> when you only need to retune one component:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="css">/* app-wide: every primary button gets a custom fill and padding */
+.bit-btn-pri {
+    --bit-btn-clr: #6C2BD9;
+    --bit-btn-padding: 0.75rem 1.5rem;
+}</CodeBox>
+
+            <br />
+
+            <CodeBox Language="cshtml">&lt;!-- one instance: no theme, no stylesheet, just the knob --&gt;
+&lt;BitButton Style="--bit-btn-clr: #6C2BD9"&gt;Brandy&lt;/BitButton&gt;</CodeBox>
         </BitCard>
 
         <br />
@@ -623,7 +671,30 @@ var preference = Context.Request.Cookies[BitThemeCookie.PreferenceCookieName];
             <br />
 
             <BitText>
-                <BitTag>BitThemeColorDerivation</BitTag> fills the role steps (<BitTag>Main</BitTag>, <BitTag>MainHover</BitTag>, <BitTag>MainActive</BitTag>, <BitTag>Dark</BitTag>, <BitTag>Light</BitTag>, <BitTag>Text</BitTag>, &hellip;) from a single brand color via HSV math. Caller-set values are preserved.
+                The fastest path from a brand color to a working theme is <BitTag>BitThemeFactory</BitTag>: give it one hex value and it derives the complete primary role - all 13 slots - for a light and a dark scheme. The same brand color feeds both; the dark factory brightens it toward white at constant hue so the accent keeps its identity on a dark surface, mirroring the relationship between the packaged fluent and fluent-dark palettes.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// One brand color → complete light & dark theme overlays.
+var light = BitThemeFactory.CreateLightTheme("#7C3AED");
+var dark  = BitThemeFactory.CreateDarkTheme("#7C3AED");
+
+await BitThemeManager.ApplyBitThemeAsync(isDark ? dark : light);
+
+// Seed more roles when your brand defines them; unseeded
+// roles keep the packaged stylesheet defaults.
+var themed = BitThemeFactory.CreateLightTheme(new BitThemeAccentColors
+{
+    Primary = "#7C3AED",
+    Success = "#107C10",
+    Error = "#C50F1F",
+});</CodeBox>
+
+            <br />
+
+            <BitText>
+                Under the hood, <BitTag>BitThemeColorDerivation</BitTag> fills the role steps (<BitTag>Main</BitTag>, <BitTag>MainHover</BitTag>, <BitTag>MainActive</BitTag>, <BitTag>Dark</BitTag>, <BitTag>Light</BitTag>, <BitTag>Disabled</BitTag>, <BitTag>Focus</BitTag>, <BitTag>Text</BitTag>, &hellip;) from a single main color in the perceptually uniform OKLCH space: hover/active/dark shades shift lightness at constant hue, and light/disabled tints are white mixes (black mixes in the dark scheme) - with step sizes calibrated to the packaged Fluent palettes, so derived roles keep a &#8805;3:1 contrast between the auto-selected <BitTag>Text</BitTag> and the interactive fills. Caller-set values are preserved, so you can pin any slot and derive the rest.
             </BitText>
 
             <br />
@@ -641,6 +712,13 @@ BitThemeColorDerivation.FillColorRoleFromMain(
     theme.Color.Success,
     mainHex: "#107C10");
 
+// Dark-scheme derivation is explicit here (BitThemeFactory brightens
+// the brand color for you; this overload expects the dark-scheme main).
+BitThemeColorDerivation.FillColorRoleFromMain(
+    theme.Color.Info,
+    mainHex: "#569FFF",
+    scheme: BitThemeColorScheme.Dark);
+
 await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
             <br />
@@ -655,6 +733,66 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
 bool passesNormal = BitThemeColorContrast.MeetsWcagAaNormalText(ratio); // false
 bool passesLarge  = BitThemeColorContrast.MeetsWcagAaLargeText(ratio);  // true</CodeBox>
+
+            <br />
+
+            <BitText Element="h4" Typography="BitTypography.H6">APCA contrast (advisory)</BitText>
+
+            <br />
+
+            <BitText>
+                The same class also exposes <b>APCA</b> (Advanced Perceptual Contrast Algorithm) &mdash; the perceptually-tuned, <b>polarity-aware</b> method that is the candidate for the in-progress WCAG 3. WCAG 2.x overstates contrast for dark color pairs, so it is a poor guide when tuning dark themes; APCA scores dark-text-on-light differently from light-text-on-dark and tracks perceived readability across the whole lightness range. Treat it as <b>advisory</b> &mdash; WCAG 2.x remains the formal conformance bar (WCAG 3 is still a Working Draft), which is why the built-in palettes and <BitTag>BitThemeColorDerivation</BitTag> are tuned to WCAG.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// APCA is directional: pass text first, background second.
+// Returns a signed Lc (positive = dark text on light bg, negative = the reverse);
+// judge readability by the magnitude.
+double lc = BitThemeColorContrast.GetApcaContrast(textHex: "#212121", backgroundHex: "#569FFF"); // 49.1
+
+bool okForBody  = BitThemeColorContrast.MeetsApcaBodyText(lc);   // |Lc| >= 75
+bool okForLarge = BitThemeColorContrast.MeetsApcaLargeText(lc);  // |Lc| >= 60
+bool okForUi    = BitThemeColorContrast.MeetsApcaNonText(lc);    // |Lc| >= 45</CodeBox>
+
+            <br />
+
+            <BitText>
+                Because the two methods measure differently, they can disagree &mdash; deliberately. A mid-tone accent that WCAG pushes toward <i>dark</i> on-text to clear 4.5:1 may actually read better with <i>white</i> text under APCA. Use APCA to sanity-check dark-theme readability; keep WCAG as the pass/fail gate you report against.
+            </BitText>
+
+            <br />
+
+            <BitText Element="h4" Typography="BitTypography.H6">Translucent colors from tokens</BitText>
+
+            <br />
+
+            <BitText>
+                Every <BitTag>--bit-*</BitTag> color token holds a complete color, so alpha is composited at the point of use with <BitTag>color-mix()</BitTag> - no per-alpha token variants or separate channel variables are needed, and it works even when the concrete color is only known in the browser (a <BitTag>var()</BitTag> chain, <BitTag>currentcolor</BitTag>, a forced-colors system color):
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="css">/* a 12% brand-tinted surface, in plain app CSS */
+.highlight {
+    background-color: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);
+}</CodeBox>
+
+            <br />
+
+            <BitText>
+                In C#, <BitTag>BitThemeUtilities.WithAlpha</BitTag> builds the same expression - validated against the theme system's injection screening, so the result is safe to assign to any <BitTag>BitTheme</BitTag> token:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">var theme = new BitTheme();
+
+// A brand-tinted modal overlay instead of the default black one.
+theme.Color.Background.Overlay =
+    BitThemeUtilities.WithAlpha("var(--bit-clr-pri-dark)", 0.35);
+
+await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
         </BitCard>
 
         <br />
@@ -689,6 +827,45 @@ string json = BitThemeSerialization.Serialize(myTheme, writeIndented: true);
 
 // Load it back (every nested object is rehydrated, even if the JSON omitted it)
 BitTheme restored = BitThemeSerialization.Deserialize(json);</CodeBox>
+
+            <br />
+
+            <BitText Element="h4" Typography="BitTypography.H6">Design Tokens (DTCG) interop</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeDtcg</BitTag> round-trips a theme through the
+                <BitLink Href="https://www.designtokens.org/tr/" Target="_blank">W3C Design Tokens Community Group</BitLink>
+                format, so a <BitTag>BitTheme</BitTag> can flow to and from design tooling that speaks DTCG &mdash; Tokens Studio (Figma), Style Dictionary, and the wider token pipeline. It uses bit's own group structure as the token namespace (<BitTag>color.primary.main</BitTag>, <BitTag>boxShadow.md</BitTag>, &hellip;) and the string-value token profile the ecosystem consumes:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// Export a theme as a DTCG token document for a designer / Style Dictionary
+string dtcg = BitThemeDtcg.Export(myTheme);
+
+// Import DTCG tokens (from Tokens Studio, a build pipeline, etc.) back into a theme
+BitTheme fromDesign = BitThemeDtcg.Import(dtcg);
+await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
+
+            <br />
+
+            <BitText>
+                Exported tokens carry a DTCG <BitTag>$type</BitTag> on the uniformly-typed groups (<BitTag>color</BitTag>, <BitTag>boxShadow</BitTag> &rarr; <BitTag>shadow</BitTag>, <BitTag>spacing</BitTag> &rarr; <BitTag>dimension</BitTag>, <BitTag>zIndex</BitTag> &rarr; <BitTag>number</BitTag>). On import, DTCG aliases (<BitTag>"&#123;color.primary.main&#125;"</BitTag>) are resolved to concrete values, and the 2025.10 object forms for <BitTag>color</BitTag>/<BitTag>dimension</BitTag> plus numeric values are accepted:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="json">{
+  "color": {
+    "$type": "color",
+    "primary": {
+      "main":      { "$value": "#1A86D8" },
+      "mainHover": { "$value": "{color.primary.main}" }
+    }
+  }
+}</CodeBox>
         </BitCard>
 
         <br />
@@ -1011,8 +1188,8 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
 
     private static BitTheme BuildTenantTheme(string accent)
     {
-        var theme = new BitTheme { Shape = { BorderRadius = "0.5rem" } };
-        BitThemeColorDerivation.FillColorRoleFromMain(theme.Color.Primary, accent);
+        var theme = BitThemeFactory.CreateLightTheme(accent);
+        theme.Shape.BorderRadius = "0.5rem";
         return theme;
     }
 }</CodeBox>
@@ -1064,7 +1241,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
             <br />
 
             <BitText>
-                Everything else is additive: <BitTag>BitThemeName</BitTag> (typed theme names), <BitTag>BitThemeNotifications</BitTag> (theme-change events; subscribing alone wires them up), <BitTag>BitThemeSsr</BitTag> and the <BitTag>bit-theme-preference</BitTag> cookie (flash-free first paint), <BitTag>BitThemeColorDerivation</BitTag>/<BitTag>BitThemeColorContrast</BitTag> (palette generation and WCAG checks), the density/accent presets, and <BitTag>BitExternalThemeLoader</BitTag> &mdash; each covered in its own section above.
+                Everything else is additive: <BitTag>BitThemeName</BitTag> (typed theme names), <BitTag>BitThemeNotifications</BitTag> (theme-change events; subscribing alone wires them up), <BitTag>BitThemeSsr</BitTag> and the <BitTag>bit-theme-preference</BitTag> cookie (flash-free first paint), <BitTag>BitThemeColorDerivation</BitTag>/<BitTag>BitThemeColorContrast</BitTag> (palette generation and WCAG + advisory APCA checks), the density/accent presets, and <BitTag>BitExternalThemeLoader</BitTag> &mdash; each covered in its own section above.
             </BitText>
         </BitCard>
 
@@ -1101,7 +1278,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
             <BitText>
                 <b>Authoring</b>
                 <br />
-                <BitTag>BitTheme</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeUtilities</BitTag> (Merge, ToCssVariables) &nbsp;&middot;&nbsp; <BitTag>BitThemeSerialization</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeColorDerivation</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeColorContrast</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitAccentColorPresets</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeBreakpointDefaults</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeDensityPresets</BitTag>
+                <BitTag>BitTheme</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeFactory</BitTag> (CreateLightTheme, CreateDarkTheme) &nbsp;&middot;&nbsp; <BitTag>BitThemeUtilities</BitTag> (Merge, ToCssVariables, WithAlpha) &nbsp;&middot;&nbsp; <BitTag>BitThemeSerialization</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeDtcg</BitTag> (Export, Import) &nbsp;&middot;&nbsp; <BitTag>BitThemeColorDerivation</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeColorContrast</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitAccentColorPresets</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeBreakpointDefaults</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeDensityPresets</BitTag>
             </BitText>
 
             <br />
