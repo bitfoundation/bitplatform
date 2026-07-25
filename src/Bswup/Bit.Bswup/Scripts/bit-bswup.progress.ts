@@ -93,6 +93,32 @@
             reloadStatusEl && (reloadStatusEl.textContent = '');
         }
 
+        // Grace period before an auto-reload that has not navigated is assumed stalled and the
+        // manual reload button is surfaced as a fallback.
+        const AUTO_RELOAD_FALLBACK_MS = 10000;
+
+        // Drives an auto-reload while guaranteeing the user is never left with neither a reload nor
+        // a button. On the UPDATE path reload() intentionally NEVER settles - the page is about to
+        // navigate away (see bit-bswup.ts) - so relying on reload() rejecting to detect a stall
+        // (WAITING_SKIPPED / controllerchange never arriving after SKIP_WAITING) can't work: the
+        // .catch would never fire and an autoReload user would sit silently one version behind with
+        // no prompt. Arm a timer that runs the caller's onFallback (reveal the manual button, and
+        // whatever UI each site needs) if the page has not navigated within the grace period; the
+        // SAME onFallback also runs if reload() rejects. A successful reload either unloads the page
+        // (discarding the timer) or, on a first install, resolves reload() and clears it - then
+        // onSettle runs so the caller can finalize (e.g. hide the splash).
+        function autoReloadWithFallback(reload: any, onFallback: () => void, onSettle?: () => void) {
+            const timer = setTimeout(onFallback, AUTO_RELOAD_FALLBACK_MS);
+            // Promise.resolve tolerates a non-thenable reload() return too.
+            Promise.resolve(typeof reload === 'function' ? reload() : undefined).then(() => {
+                clearTimeout(timer);
+                onSettle && onSettle();
+            }).catch(() => {
+                clearTimeout(timer);
+                onFallback();
+            });
+        }
+
         // Resolve the optional user handler lazily rather than capturing window[handler] once
         // here at start(): if the host registers its handler after this script runs (a racey
         // script order), an early capture would bind `undefined` forever and the custom handler
@@ -191,7 +217,11 @@
                             assetsEl.prepend(li);
                         }
 
-                        const percent = Math.round(data.percent);
+                        // Guard against a non-finite percent: Math.round(undefined) is NaN, which
+                        // would emit an invalid aria-valuenow="NaN" (assistive tech mis-announces
+                        // it), a "NaN%" CSS var, and visible "NaN%" text. Clamp to a valid 0-100.
+                        const rawPercent = Number(data.percent);
+                        const percent = Number.isFinite(rawPercent) ? Math.max(0, Math.min(100, Math.round(rawPercent))) : 0;
                         const perStr = `${percent}%`;
                         bswupEl && bswupEl.style.setProperty('--bit-bswup-percent', perStr)
                         bswupEl && bswupEl.style.setProperty('--bit-bswup-percent-text', `"${perStr}"`)
@@ -210,15 +240,16 @@
                         }
 
                         if (autoReload_ || data.firstInstall) {
-                            data.reload().then(() => {
-                                hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
-                                bswupEl && (bswupEl.style.display = 'none');
-                            }).catch(() => {
-                                // Auto-reload failed (e.g. skipWaiting/activation rejected). Without
-                                // this the splash could stay hidden with no way forward, so restore
-                                // the splash and offer a manual retry wired to data.reload.
+                            // On a stall (reload never navigates) or a reject, restore the splash
+                            // and offer a manual retry wired to data.reload - the original
+                            // reject-recovery behavior, now also covering a silent stall. On a
+                            // clean resolve (first install completing) hide the splash instead.
+                            autoReloadWithFallback(data.reload, () => {
                                 bswupEl && (bswupEl.style.display = 'block');
                                 showReloadButton(data.reload, 'block');
+                            }, () => {
+                                hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
+                                bswupEl && (bswupEl.style.display = 'none');
                             });
                         } else {
                             // The button lives OUTSIDE #bit-bswup (see BswupProgress.razor)
@@ -230,11 +261,12 @@
 
                     case BswupMessage.updateReady:
                         if (autoReload_) {
-                            // Wrap in Promise.resolve so a non-promise return is handled too, and
-                            // fall back to a manual reload button if the auto-reload rejects.
-                            Promise.resolve(data.reload()).catch(() => {
-                                showReloadButton(data.reload, 'inline');
-                            });
+                            // Fall back to the manual reload button if the auto-reload rejects OR
+                            // stalls without navigating - the update path's reload() never settles,
+                            // so a silently-stalled skipWaiting would otherwise leave no prompt. No
+                            // splash reveal here: an update runs behind a healthy app (the button
+                            // lives outside #bit-bswup).
+                            autoReloadWithFallback(data.reload, () => showReloadButton(data.reload, 'inline'));
                         } else {
                             // Shown without touching #bit-bswup: when an update is already
                             // staged at page load no progress event ever revealed the overlay,

@@ -93,12 +93,17 @@ export class FakeResponse {
         this.headers = init.headers || {};
         this.ok = this.status >= 200 && this.status < 300;
         this.bodyUsed = false;
+        // A followed redirect sets response.redirected. The worker must strip it before replaying
+        // the response to a navigation (redirect mode 'manual'), or the browser throws - see
+        // cleanRedirect in bit-bswup.sw.ts. A freshly constructed Response is never redirected,
+        // so a rebuilt response correctly reports false unless a test opts one in.
+        this.redirected = init.redirected || false;
     }
     clone() {
         // Real Response.clone() throws once the body is consumed - keeping that here is what
         // lets the harness catch a missing clone() before a cache.put.
         if (this.bodyUsed) throw new TypeError("Failed to execute 'clone': Response body is already used");
-        const copy = new FakeResponse(this.body, { status: this.status, statusText: this.statusText, headers: this.headers });
+        const copy = new FakeResponse(this.body, { status: this.status, statusText: this.statusText, headers: this.headers, redirected: this.redirected });
         copy.cloned = true;
         return copy;
     }

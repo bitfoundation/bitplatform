@@ -296,6 +296,84 @@ describe('range requests', () => {
         expect(seen).toHaveLength(1);
         expect(seen[0].includes('?v=')).toBe(false);
     });
+
+    // A cached 200 that still declares Content-Encoding cannot be byte-sliced: blob() yields the
+    // DECODED body, so a 206 carrying the encoded header would make the client inflate raw slice
+    // bytes (corrupt). Fall back to the full response rather than emit a mislabeled 206.
+    it('falls back to the full response when the cached body declares a content encoding', async () => {
+        const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN, configure: includeMp4 });
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        await cache.put(`${ORIGIN}/clip.mp4.h1`, new FakeResponse(TEXT, { status: 200, headers: new Headers({ 'content-encoding': 'br', 'content-type': 'video/mp4' }) }));
+
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+        expect(response.status).toBe(200); // not sliced
+        expect(decode(response)).toBe(TEXT);
+    });
+
+    // 'identity' is the no-op encoding and must still slice normally.
+    it('still slices when the content encoding is identity', async () => {
+        const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN, configure: includeMp4 });
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        await cache.put(`${ORIGIN}/clip.mp4.h1`, new FakeResponse(TEXT, { status: 200, headers: new Headers({ 'content-encoding': 'identity' }) }));
+
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+        expect(response.status).toBe(206);
+        expect(decode(response)).toBe('2345');
+    });
+});
+
+// The active-mode heal path caches whatever it fetches under the asset key. With SRI enabled it
+// must fetch the VERIFIED versioned request (integrity attached), not the page's plain request -
+// otherwise a lazily-healed asset (missed a lax precache, or evicted) could cache tampered bytes
+// and serve them offline as trusted. Every other download path already attaches integrity.
+describe('active-mode lazy heal respects integrity', () => {
+    const asset = { url: 'app.js', hash: 'sha256-abc' };
+
+    it('fetches the verified versioned request, not the plain page request', async () => {
+        const seen = [];
+        const sw = boot({
+            config: { isPassive: false, enableIntegrityCheck: true },
+            assets: [asset],
+            fetchHandler: async (url, req) => { seen.push({ url, integrity: req && req.integrity }); return new FakeResponse('verified', { status: 200 }); },
+        });
+
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
+        expect(handled).toBe(true);
+        expect(decodeBody(response)).toBe('verified');
+        // The versioned request carries the ?v= buster and the integrity attribute; the plain
+        // page request carries neither. ?v= present proves the heal did not downgrade SRI.
+        expect(seen).toHaveLength(1);
+        expect(seen[0].url.includes('?v=')).toBe(true);
+        expect(seen[0].integrity).toBe('sha256-abc');
+    });
+
+    it('does not cache tampered bytes when the verified fetch fails SRI', async () => {
+        const sw = boot({
+            config: { isPassive: false, enableIntegrityCheck: true },
+            assets: [asset],
+            fetchHandler: async () => { throw new TypeError('integrity mismatch'); },
+        });
+
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
+        expect(response.type).toBe('error'); // failed, not served
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1'] || []).toHaveLength(0);
+    });
+
+    // A ranged heal keeps the page's own request: a 206 can't be SRI-verified and Safari needs
+    // the Range to reach the server, so the versioned/integrity request must NOT be substituted.
+    it('keeps the plain request for a ranged heal even with integrity enabled', async () => {
+        const seen = [];
+        const sw = boot({
+            config: { isPassive: false, enableIntegrityCheck: true },
+            assets: [asset],
+            fetchHandler: async url => { seen.push(url); return new FakeResponse('part', { status: 206 }); },
+        });
+
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js`, headers: { range: 'bytes=0-1' } });
+        expect(response.status).toBe(206);
+        expect(seen).toHaveLength(1);
+        expect(seen[0].includes('?v=')).toBe(false); // plain request, Range preserved
+    });
 });
 
 // Offline navigation is the core feature: every route the user deep-links to must come back
@@ -378,6 +456,59 @@ describe('offline navigation (SPA default document)', () => {
         const cache = await sw.caches.open('bit-bswup:/ - v1');
         const cached = await cache.match(`${ORIGIN}/index.html.idx`);
         expect(cached && cached.body).toBe('the real shell');
+    });
+});
+
+// A navigation request's redirect mode is 'manual', so a response with response.redirected ===
+// true cannot be replayed to it - the browser throws "a redirected response was used for a
+// request whose redirect mode is not 'follow'" and the navigation hard-fails. Hosts that
+// 30x-redirect the shell URL ('/' -> '/index.html' on Cloudflare Pages / Netlify / many reverse
+// proxies) make the followed shell response carry that flag, so offline deep-link navigations
+// break. serveAsset must strip the flag by rebuilding the response before it reaches a navigation.
+describe('redirected shell responses are cleaned for navigations', () => {
+    const assets = [{ url: 'index.html', hash: 'idx' }];
+
+    it('rebuilds a cached redirected shell served to a deep-link navigation', async () => {
+        const sw = boot({ config: { isPassive: true }, assets, fetchHandler: NETWORK_DOWN });
+        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        await cache.put(`${ORIGIN}/index.html.idx`, new FakeResponse('the app shell', { status: 200, redirected: true }));
+
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter/42`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        // Body is preserved, and the redirected flag the browser rejects is gone.
+        expect(decodeBody(response)).toBe('the app shell');
+        expect(response.redirected).toBeFalsy();
+    });
+
+    it('rebuilds a network-fetched redirected shell on a cache miss', async () => {
+        const sw = boot({
+            config: { isPassive: false },
+            assets,
+            fetchHandler: async url =>
+                url.includes('index.html')
+                    ? new FakeResponse('the real shell', { status: 200, redirected: true })
+                    : new FakeResponse('route html', { status: 200 }),
+        });
+
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter/42`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(decodeBody(response)).toBe('the real shell');
+        expect(response.redirected).toBeFalsy();
+    });
+
+    // A non-navigation subresource request (script/img) has redirect mode 'follow', so a
+    // redirected response is legitimate there - the worker must not needlessly rebuild it.
+    it('leaves a redirected non-navigation response untouched', async () => {
+        const sw = boot({
+            config: { isPassive: false },
+            assets: [{ url: 'app.js', hash: 'h1' }],
+            fetchHandler: async () => new FakeResponse('from-network', { status: 200, redirected: true }),
+        });
+
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js`, mode: 'cors' });
+        expect(handled).toBe(true);
+        expect(decodeBody(response)).toBe('from-network');
+        expect(response.redirected).toBe(true); // not rebuilt
     });
 });
 

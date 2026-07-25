@@ -102,6 +102,23 @@ describe('download progress rendering', () => {
         expect(() => ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 100, index: 0, asset: null }))
             .not.toThrow();
     });
+
+    // A non-finite percent must never reach the DOM as "NaN": aria-valuenow="NaN" is invalid ARIA
+    // (assistive tech mis-announces it) and "NaN%" is visible garbage. It clamps to a valid 0-100.
+    it('clamps a non-finite percent to 0 instead of emitting NaN', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: undefined, index: 1, asset: { url: 'a.js', hash: 'h' } });
+
+        expect(ctx.elements['bit-bswup-progress-bar'].getAttribute('aria-valuenow')).toBe('0');
+        expect(ctx.elements['bit-bswup-percent'].textContent).toBe('0%');
+    });
+
+    it('clamps an out-of-range percent to 100', () => {
+        const ctx = progressPage({ elements: fullSplash });
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 250, index: 1, asset: { url: 'a.js', hash: 'h' } });
+
+        expect(ctx.elements['bit-bswup-progress-bar'].getAttribute('aria-valuenow')).toBe('100');
+    });
 });
 
 describe('error handling', () => {
@@ -202,6 +219,23 @@ describe('update ready', () => {
 
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.reject(new Error('nope')) });
         await ctx.settle();
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+    });
+
+    // The update path's reload() NEVER settles (the page is about to navigate), so a silently
+    // stalled skipWaiting - WAITING_SKIPPED / controllerchange never arriving - cannot surface
+    // through reload() rejecting. A fallback timer must reveal the manual button anyway, so an
+    // autoReload user is never left stuck one version behind with no prompt.
+    it('surfaces the manual button if an auto-reload stalls without navigating', async () => {
+        const ctx = progressPage({ elements: fullSplash, clampLongTimers: true });
+        ctx.window.BitBswupProgress.config({ autoReload: true });
+
+        ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => new Promise(() => { }) }); // never settles
+
+        // Not shown synchronously - the fallback timer is still pending.
+        expect(ctx.elements['bit-bswup-reload'].style.display).not.toBe('inline');
+        // clampLongTimers fires the 10s AUTO_RELOAD_FALLBACK_MS at the harness's ~5ms clamp.
+        await new Promise(r => setTimeout(r, 25));
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
     });
 });

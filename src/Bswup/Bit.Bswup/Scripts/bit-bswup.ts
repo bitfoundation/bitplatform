@@ -163,7 +163,13 @@ if (!BitBswup.initialized) {
                 return reload();
             });
             let cleanup: () => void = () => { registrationReady.then(() => { if (!registrationFailed) cleanup(); }); };
-            let blazorStartResolver: (value: unknown) => void;
+            // Every first-install reload() call queues its resolver here; CLIENTS_CLAIMED resolves
+            // ALL of them, not just the last. A single downloadFinished can reach reload() more
+            // than once (the built-in progress handler and a user handler both act on the same
+            // payload, or a worker emits two completion signals), and a last-writer-wins single
+            // resolver would strand every earlier reload() promise pending forever - hanging any
+            // caller that awaits it to tear down its splash.
+            const blazorStartResolvers: Array<(value: unknown) => void> = [];
 
             // Captured once the registration resolves so the polling helpers (timer /
             // visibilitychange) and the page-facing BitBswup.checkForUpdate() can all call
@@ -394,7 +400,7 @@ if (!BitBswup.initialized) {
                     // arrives we start Blazor and resolve this promise so callers can finalize
                     // (e.g. hide the splash) - no reload anywhere on this path.
                     return new Promise<void>((res) => {
-                        blazorStartResolver = res as (value: unknown) => void;
+                        blazorStartResolvers.push(res as (value: unknown) => void);
                         whenActive().then((worker) => {
                             if (worker) {
                                 worker.postMessage('CLAIM_CLIENTS');
@@ -714,7 +720,9 @@ if (!BitBswup.initialized) {
                     const startPromise = startBlazor(true);
 
                     const onStarted = () => {
-                        blazorStartResolver?.(undefined);
+                        // Resolve (and clear) every queued first-install reload() promise, not
+                        // just the most recent - see blazorStartResolvers.
+                        blazorStartResolvers.splice(0).forEach(resolve => resolve(undefined));
                         source?.postMessage('BLAZOR_STARTED');
                     };
 
@@ -802,7 +810,12 @@ if (!BitBswup.initialized) {
                 if (type === 'progress') {
                     handle(BswupMessage.downloadProgress, { ...data, firstInstall: !hasActiveWorker });
 
-                    if (data.percent >= 100) {
+                    // Guard the deref: a stray/foreign 'progress' message (the JSON-parse guard
+                    // above exists precisely because unrelated senders can post here) may carry no
+                    // data, and `data.percent` would throw out of the whole message handler. The
+                    // sibling branches ('bypass' uses data?.firstTime, 'error' uses data && ...)
+                    // already guard; this one did not.
+                    if (data && data.percent >= 100) {
                         const firstInstall = !hasActiveWorker;
                         handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
                     }

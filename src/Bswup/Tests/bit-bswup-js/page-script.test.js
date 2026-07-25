@@ -1379,4 +1379,15 @@ describe('malformed worker messages', () => {
         expect(() => ctx.message('not json at all')).not.toThrow();
         expect(() => ctx.message(JSON.stringify('a bare string'))).not.toThrow();
     });
+
+    // A stray/foreign 'progress' message with no data must not crash the handler: the sibling
+    // branches guard their deref (bypass uses data?.firstTime, error uses data && ...), and the
+    // JSON-parse guard exists precisely because unrelated senders can post here.
+    it('ignores a progress message that carries no data instead of throwing', async () => {
+        const ctx = page();
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+        expect(() => ctx.message(JSON.stringify({ type: 'progress' }))).not.toThrow();
+        expect(() => ctx.message(JSON.stringify({ type: 'progress', data: null }))).not.toThrow();
+    });
 });

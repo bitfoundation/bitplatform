@@ -601,7 +601,45 @@ function handleFetch(e: any) {
 // straight to respondWith, and a rejection there is an unrecoverable network error for the
 // page rather than a fallback to the network. Every await is therefore guarded, and the
 // degradation order is cache -> network -> stale cache -> explicit network error.
+//
+// A navigation request's redirect mode is 'manual', not 'follow', so replaying a response whose
+// `redirected` flag is set throws "a redirected response was used for a request whose redirect
+// mode is not 'follow'" and hard-fails the navigation. That flag gets set whenever the host
+// 30x-redirects the shell URL - '/' -> '/index.html' on Cloudflare Pages / Netlify / many
+// reverse proxies is the classic case - so the followed response Bswup caches (or fetches) for
+// the app shell carries redirected === true and every later offline navigation to a deep link
+// breaks. serveAssetCore does the real work; this wrapper strips the redirect flag from the
+// response before it reaches a navigation. cleanRedirect is a no-op for the overwhelmingly
+// common non-redirected response, so the hot path buffers nothing.
 async function serveAsset(e: any, req: Request, asset: any, start: string) {
+    const response = await serveAssetCore(e, req, asset, start);
+    return (req && (req as any).mode === 'navigate') ? await cleanRedirect(response) : response;
+}
+
+// Rebuilds a response so its `redirected` flag is cleared (see serveAsset). Returns the response
+// untouched unless it is actually redirected - the common path pays nothing. Best-effort: on any
+// read failure the original response is returned unchanged, which is no worse than the network
+// error an offline navigation would otherwise get. The reconstructed response uses the followed
+// target's 2xx status (never a 3xx - Response rejects a null body with a redirect status, and a
+// navigation cannot consume a bare redirect anyway).
+async function cleanRedirect(response: Response) {
+    if (!response || !(response as any).redirected) return response;
+    try {
+        const body = await response.clone().blob();
+        const init: any = {
+            status: (response as any).status || 200,
+            statusText: (response as any).statusText || '',
+            headers: new Headers((response as any).headers),
+        };
+        diagFetch('*** cleanRedirect - rebuilding a redirected navigation response:', (response as any).url);
+        return new Response(body, init);
+    } catch (err) {
+        diagFetch('*** cleanRedirect failed - returning the response unchanged:', err);
+        return response;
+    }
+}
+
+async function serveAssetCore(e: any, req: Request, asset: any, start: string) {
     // Concrete assets are keyed/fetched via their reqUrl (+ hash / ?v= cache-buster). A pattern
     // asset (a RegExp externalAssets entry, e.g. resource-collection.<hash>.js) has no precomputed
     // URL, so it is keyed and fetched by the actual request.
@@ -642,7 +680,25 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
     // (see reqMatchesAsset), whose route URL must not supply the bytes cached under the
     // default document's key.
     if (!self.isPassive && asset.reqUrl && reqMatchesAsset) {
-        const response = await tryFetch(req);
+        // The write-back below caches whatever comes back under the asset's key, so when SRI is
+        // enabled for this asset the bytes must be verified first. Fetching the page's own plain
+        // request (which carries no `integrity`) would let a lazily-healed asset - one that
+        // missed a lax precache or was evicted - accept tampered/mismatched bytes and cache them
+        // as trusted, served offline forever. Every other download path attaches integrity
+        // (addCache and the versioned lazy path below both go through createNewAssetRequest); this
+        // branch used `req` directly, silently downgrading SRI. Fetch the verified versioned
+        // request instead when integrity applies. Skipped for a ranged request: a 206 cannot be
+        // SRI-verified anyway, and the page's own Range must reach the server (Safari media), so
+        // that case keeps using `req`. createNewAssetRequest can throw on a pathological composed
+        // URL, so guard it and fall back to the plain request (serveAsset must never reject).
+        let healRequest: Request = req;
+        if (asset.hash?.startsWith('sha') && self.enableIntegrityCheck && !getRangeHeader(req)) {
+            try { healRequest = createNewAssetRequest(asset); } catch (err) {
+                diagFetch('*** serveAsset - createNewAssetRequest threw on the heal path; using the plain request:', err);
+                healRequest = req;
+            }
+        }
+        const response = await tryFetch(healRequest);
         if (!response) {
             return await lastResort(bitBswupCache, req, asset);
         }
@@ -661,7 +717,17 @@ async function serveAsset(e: any, req: Request, asset: any, start: string) {
     // bodies (filled by whatever non-ranged request comes first). Except when the request
     // does not target the asset's own URL (a ranged navigation fallback, a degenerate case):
     // there the versioned request is the only one that fetches the right bytes.
-    const request = (asset.reqUrl && (!getRangeHeader(req) || !reqMatchesAsset)) ? createNewAssetRequest(asset) : req;
+    // serveAsset must never reject (it is handed straight to respondWith, where a rejection is a
+    // hard network error, not a fallback). createNewAssetRequest can throw on a pathological
+    // composed URL - new URL()/new Request() - exactly as addCache guards against at install
+    // time. Build it defensively and fall back to the page's own request on failure.
+    let request: Request = req;
+    if (asset.reqUrl && (!getRangeHeader(req) || !reqMatchesAsset)) {
+        try { request = createNewAssetRequest(asset); } catch (err) {
+            diagFetch('*** serveAsset - createNewAssetRequest threw; using the plain request:', err);
+            request = req;
+        }
+    }
     let response = await tryFetch(request);
 
     // The versioned request carries a `?v=` buster and, with enableCacheControl, no-store
@@ -801,6 +867,17 @@ async function applyRangeHeader(req: Request, response: Response) {
         const rangeHeader = getRangeHeader(req);
         if (!rangeHeader) return response;
         if (response.status !== 200) return response;
+
+        // A stored 200 that still declares a transfer Content-Encoding (gzip/br/...) cannot be
+        // byte-sliced: blob() yields the DECODED body, so a range computed over decoded bytes
+        // paired with the original encoded Content-Encoding header would tell the client to
+        // inflate raw slice bytes - a corrupt result, with Content-Range/Content-Length in the
+        // wrong units. Browsers normally strip Content-Encoding from a decoded Response so this
+        // rarely fires; when it does, fall back to the full response rather than emit a
+        // mislabeled 206.
+        const headerBag: any = (response as any).headers;
+        const contentEncoding = (headerBag && typeof headerBag.get === 'function' && headerBag.get('content-encoding') || '').trim().toLowerCase();
+        if (contentEncoding && contentEncoding !== 'identity') return response;
 
         // Clone before reading: on any fallback path the original response must still carry
         // an unconsumed body for the page. Read as a Blob, not an ArrayBuffer: browsers keep
