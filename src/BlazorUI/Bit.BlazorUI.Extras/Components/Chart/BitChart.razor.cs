@@ -533,13 +533,6 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     private bool CanAnimate => AnimationEnabled;
 
     /// <summary>
-    /// This event is fired once, on the component's first render, after the interop setup attempt has run.
-    /// It fires unconditionally - regardless of whether <see cref="Config"/> was set or the chart setup
-    /// actually succeeded - so treat it as a "first render completed" signal rather than a guarantee that the
-    /// JavaScript chart object is available. Note that the chart setup (<c>BitChartJsSetupChart</c>) has
-    /// already been attempted by the time this callback fires, so it is not a suitable place to register
-    /// plugins or custom JavaScript options that need to be present during setup. Any such registration must
-    /// happen before first render (i.e. before <see cref="Config"/> is assigned).
     /// True when a positive per-element delay is configured: each data element animates in sequence
     /// rather than the whole data group animating as one unit. Not used for radial/circular charts.
     /// </summary>
