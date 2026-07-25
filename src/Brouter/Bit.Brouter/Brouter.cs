@@ -715,6 +715,40 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     }
 
     /// <summary>
+    /// Unrenders the routes the pending commit removes from the screen (present in the previously
+    /// committed chain but not in the new one) BEFORE the winner's chain mounts. Each departed
+    /// route's Matched flag is already false, so a render request re-renders it without its content
+    /// region, unmounting AND disposing the departing subtree synchronously on this dispatcher.
+    /// That ordering is load-bearing: subscriptions the departing subtree holds must be released
+    /// before the incoming subtree registers its own - most notably a layout's SectionOutlet, where
+    /// a second subscriber on the same section ID is an InvalidOperationException (#12752). The
+    /// built-in Router never hits this because it keeps one RouteView/layout instance alive across
+    /// navigations; Brouter's per-route subtrees swap instead, so the swap must dispose-then-mount.
+    /// Routes present in both chains are untouched - their content survives the commit and keeps
+    /// its component instances (renavigation semantics). Leaf -> root, mirroring disposal order.
+    /// Returns false when a Refresh's synchronous disposal started a new navigation that
+    /// superseded this one - the caller must abandon the commit immediately.
+    /// </summary>
+    private bool UnrenderDepartedRoutes(List<Broute> matchedChain)
+    {
+        // Each Refresh disposes the departed subtree synchronously, and a Dispose can run user
+        // code that starts a new navigation - which, if it commits synchronously, reassigns
+        // _committedChain out from under this loop. Snapshot the chain so the indices stay
+        // coherent, and stop at the first supersession so no further Refresh unmounts content
+        // on behalf of a navigation that will never commit (or that the newer one just mounted).
+        var departingChain = _committedChain;
+        var version = _navVersion;
+        for (var i = departingChain.Length - 1; i >= 0; i--)
+        {
+            var node = departingChain[i];
+            if (matchedChain.Contains(node)) continue;
+            node.Refresh();
+            if (version != _navVersion) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Runs the pre-render arrival preparation for a chain about to be committed (per-parameter
     /// keep-alive sibling deactivation - see <see cref="Broute.PrepareArrival"/>). Root -> leaf,
     /// like guards and loaders. Must run after the chain's parameters are committed and before the
@@ -2297,16 +2331,27 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             }
 
             // Route-lifecycle departures for the routes this commit removes from the screen. They
-            // must fire BEFORE SetMatched: its StateHasChanged renders synchronously on this
-            // dispatcher, unmounting (and disposing) the departing content - and the Disposing
-            // notification's contract is that its synchronous part runs first. Routes present in
-            // both chains aren't notified here: their content survives the commit untouched (the
+            // must fire BEFORE the unmount render below (a Disposing callback's synchronous part
+            // runs while the departing components are still alive). Routes present in both chains
+            // aren't notified here: their content survives the commit untouched (the
             // no-pending-render path never unmounted it) and resolves as a renavigation below.
             if (departuresNotified is false)
             {
                 NotifyChainDepartures(ctx, _committedChain, matchedChain);
                 // Departure callbacks run synchronously into user code and can start a new
                 // navigation; abandon this commit before it mutates state the newer one owns.
+                if (token.IsCancellationRequested || version != _navVersion) return;
+
+                // Unmount (and dispose) the departed routes' content before SetMatched mounts the
+                // new chain - the departing subtree's subscriptions (e.g. a layout's SectionOutlet)
+                // must be released before the new subtree registers its own; see
+                // UnrenderDepartedRoutes. The pending-UI render already unmounted everything when
+                // departuresNotified is true, so this only runs on the no-pending-render path.
+                // The renders dispose departing components synchronously; a Dispose can run user
+                // code that starts a new navigation - the same supersession hazard as the
+                // departure callbacks above. UnrenderDepartedRoutes detects that mid-loop and
+                // reports it; the token check covers cancellation without a version bump.
+                if (UnrenderDepartedRoutes(matchedChain) is false) return;
                 if (token.IsCancellationRequested || version != _navVersion) return;
             }
 
