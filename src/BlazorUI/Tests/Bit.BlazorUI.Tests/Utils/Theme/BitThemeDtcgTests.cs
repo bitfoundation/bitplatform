@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -79,6 +80,48 @@ public sealed class BitThemeDtcgTests
         Assert.IsFalse(root["color"]!["semantic"]!["accentPrimary"]!.AsObject().ContainsKey("$type"));
         // ...but the shadow-valued token overrides to shadow.
         Assert.AreEqual("shadow", root["color"]!["semantic"]!["focusRing"]!["$type"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void ExportEmitsNumericValueForNumberTypedTokens()
+    {
+        var theme = new BitTheme();
+        theme.ZIndex.Modal = "1300";
+
+        var root = JsonNode.Parse(BitThemeDtcg.Export(theme))!.AsObject();
+        var value = root["zIndex"]!["modal"]!["$value"]!;
+
+        // DTCG requires a `number` token's $value to be a JSON number, not a string.
+        Assert.AreEqual(JsonValueKind.Number, value.GetValueKind());
+        Assert.AreEqual(1300, value.GetValue<int>());
+    }
+
+    [TestMethod]
+    public void ExportKeepsNonNumericNumberSlotAsString()
+    {
+        var theme = new BitTheme();
+        // A var() reference in a number slot cannot be a JSON number; it must stay a string so the
+        // reference survives instead of being dropped.
+        theme.ZIndex.Modal = "var(--app-modal-z)";
+
+        var root = JsonNode.Parse(BitThemeDtcg.Export(theme))!.AsObject();
+        var value = root["zIndex"]!["modal"]!["$value"]!;
+
+        Assert.AreEqual(JsonValueKind.String, value.GetValueKind());
+        Assert.AreEqual("var(--app-modal-z)", value.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void NumberTokenRoundTripsThroughDtcg()
+    {
+        var theme = new BitTheme();
+        theme.ZIndex.Modal = "1300";
+        theme.ZIndex.Base = "1";
+
+        var restored = BitThemeDtcg.Import(BitThemeDtcg.Export(theme));
+
+        Assert.AreEqual("1300", restored.ZIndex.Modal);
+        Assert.AreEqual("1", restored.ZIndex.Base);
     }
 
     [TestMethod]
@@ -190,6 +233,22 @@ public sealed class BitThemeDtcgTests
         var theme = BitThemeDtcg.Import(json);
 
         Assert.AreEqual("#1A86D8", theme.Color.Primary.Main);
+    }
+
+    [TestMethod]
+    public void ImportDoesNotThrowOnMalformedDimensionObject()
+    {
+        // A dimension object whose "value" is not a number/string (here a bool) has no dimension
+        // mapping. Import must drop the token gracefully per its lenient contract, not throw
+        // InvalidOperationException from GetValue<string>() on a non-string node.
+        const string json = """
+        { "spacing": { "scalingFactor": { "$type": "dimension", "$value": { "value": true, "unit": "px" } } } }
+        """;
+
+        var theme = BitThemeDtcg.Import(json);
+
+        // Token dropped -> falls back to default (unset), and nothing else is emitted.
+        Assert.AreEqual("{}", BitThemeSerialization.Serialize(theme));
     }
 
     [TestMethod]

@@ -97,6 +97,22 @@ public sealed class BitThemeSsrTests
     }
 
     [TestMethod]
+    public void InlineHeadScriptBaseFallsBackToConfiguredLightThemeNotLiteralLight()
+    {
+        // BitTheme.ts init resolves its base to Theme._lightTheme (= the bit-theme-light attribute
+        // value), so the SSR base fallback must use `lt`, not the literal 'light'. Otherwise a page
+        // with <html bit-theme-light="fluent-light"> and no bit-theme/-default/-system paints
+        // bit-theme="light" on the server but bit-theme="fluent-light" on hydration - a theme flash.
+        var body = BitThemeSsr.InlineHeadScriptBody;
+
+        Assert.IsTrue(
+            body.Contains($"base=r.getAttribute('{BitThemeAttributeNames.Theme}')||r.getAttribute('{BitThemeAttributeNames.ThemeDefault}')||lt;", StringComparison.Ordinal),
+            "Base fallback must resolve to the configured light theme (lt), matching BitTheme.ts init precedence.");
+        Assert.IsFalse(body.Contains("||'light';", StringComparison.Ordinal),
+            "Base fallback must not use the literal 'light' (it diverges from the client's _lightTheme).");
+    }
+
+    [TestMethod]
     public void BuildRootThemeAttributesEmitsConcretePreferenceDirectly()
     {
         Assert.AreEqual("bit-theme=\"dark\"", BitThemeSsr.BuildRootThemeAttributes("dark"));

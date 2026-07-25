@@ -477,6 +477,9 @@ internal static class BitThemeMapper
     // exact same rule the emission path enforces, instead of duplicating the character list.
     internal static bool IsUnsafeCssTokenValue(string value)
     {
+        var doubleQuotes = 0;
+        var singleQuotes = 0;
+
         foreach (var ch in value)
         {
             switch (ch)
@@ -492,8 +495,22 @@ internal static class BitThemeMapper
                 case '\r':
                 case '\f':  // null / newlines / form feed
                     return true;
+                case '"':
+                    doubleQuotes++;
+                    break;
+                case '\'':
+                    singleQuotes++;
+                    break;
             }
         }
+
+        // An unbalanced (odd count) quote leaves a CSS string open at the end of the declaration,
+        // so the browser's tokenizer swallows the following ";--next:…" declarations (and the user's
+        // trailing style) up to the next quote or EOF - silently dropping sibling tokens to their
+        // stylesheet defaults. Balanced quotes are legitimate (e.g. a font-family value like
+        // '"Segoe UI", Arial'), so only reject an unmatched count rather than quotes wholesale.
+        // Backslash is already rejected above, so there are no escaped quotes to account for here.
+        if ((doubleQuotes & 1) == 1 || (singleQuotes & 1) == 1) return true;
 
         // Comment markers could swallow trailing declarations in the inline-style concatenation
         // (e.g. "red/*" eating the following ";--next:..." up to a later "*/").

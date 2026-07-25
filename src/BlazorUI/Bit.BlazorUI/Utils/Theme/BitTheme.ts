@@ -45,6 +45,9 @@ namespace BitBlazorUI {
         private static THEME_ATTRIBUTE = ATTR_THEME;
         private static THEME_STORAGE_KEY = STORAGE_KEY;
 
+        /** DOM event dispatched on `document` after every theme change, so non-CSS consumers can react. */
+        public static readonly THEME_CHANGE_EVENT = 'bit-theme-change';
+
         private static _persist = false;
         private static _persistCookie = false;
         private static _darkTheme: string = 'dark';
@@ -65,6 +68,29 @@ namespace BitBlazorUI {
 
         private static _schemeMediaQuery: MediaQueryList | null = null;
         private static _onSchemeChange = () => Theme.applyResolvedSystemThemeFromOs();
+
+        private static _storageListenerAttached = false;
+        // Mirror a persisted-theme change made in ANOTHER tab into this one, so all tabs of the same
+        // app stay in sync. The `storage` event fires only in tabs OTHER than the one that wrote, so
+        // re-applying here can never loop back with our own set(). Gated on _persist because only the
+        // localStorage-backed store raises this event (cookie-only persistence does not).
+        private static _onStorage = (e: StorageEvent) => {
+            if (!Theme._persist) return;
+            // e.key is null when storage was cleared; otherwise it must be our key.
+            if (e.key !== null && e.key !== Theme.THEME_STORAGE_KEY) return;
+            const next = e.newValue;
+            if (!next) return;
+            // Skip when the other tab's concrete choice is already applied here: avoids a redundant
+            // set() (re-persist + re-dispatch) rippling across 3+ tabs. "system" is always processed
+            // because the OS scheme may differ from the currently painted attribute.
+            if (next !== Theme.SYSTEM_THEME &&
+                Theme.getActualTheme(next) === (document.documentElement.getAttribute(ATTR_THEME) || '')) {
+                return;
+            }
+            // Mirror the other tab's intent (including a switch to "system"); set() resolves and
+            // re-cascades. storage events never fire in the tab that wrote, so this cannot loop.
+            Theme.set(next);
+        };
 
         private static _dotnetNotifier: DotNetObject | null = null;
 
@@ -163,6 +189,15 @@ namespace BitBlazorUI {
             if (deferPersistCookie) {
                 Theme._persistCookie = true;
             }
+
+            Theme.attachStorageSyncListener();
+        }
+
+        private static attachStorageSyncListener() {
+            if (Theme._storageListenerAttached) return;
+            if (typeof window === 'undefined' || !window.addEventListener) return;
+            Theme._storageListenerAttached = true;
+            window.addEventListener('storage', Theme._onStorage);
         }
 
         public static onChange(fn: onThemeChangeType) {
@@ -389,6 +424,17 @@ namespace BitBlazorUI {
             try {
                 Theme._onThemeChange?.(newTheme, oldTheme);
             } catch { /* application callback failed; not actionable here */ }
+
+            // Broadcast a DOM event so non-CSS consumers (charts, canvas, iframes, third-party
+            // widgets) can react without owning the single _onThemeChange callback. Best-effort:
+            // a missing CustomEvent / document (non-browser host) must not break theme switching.
+            try {
+                if (typeof document !== 'undefined' && typeof CustomEvent === 'function') {
+                    document.dispatchEvent(new CustomEvent(Theme.THEME_CHANGE_EVENT, {
+                        detail: { newTheme, oldTheme },
+                    }));
+                }
+            } catch { /* event dispatch unavailable; not actionable here */ }
             const n = Theme._dotnetNotifier;
             if (n) {
                 // Swallow rejections so a disposed circuit / receiver does not surface as an

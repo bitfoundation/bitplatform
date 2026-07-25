@@ -122,6 +122,8 @@ public sealed class BitThemeMapperContractTests
     [DataRow("red<script", DisplayName = "html metacharacter")]
     [DataRow("\\65 vil", DisplayName = "css escape sequence")]
     [DataRow("red\n;color:blue", DisplayName = "newline")]
+    [DataRow("a\"b", DisplayName = "unbalanced double quote swallows siblings")]
+    [DataRow("a'b", DisplayName = "unbalanced single quote swallows siblings")]
     public void ToCssVariablesDropsInjectionProneTokenValues(string maliciousValue)
     {
         var theme = new BitTheme();

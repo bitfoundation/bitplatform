@@ -141,7 +141,12 @@ public static class BitThemeSsr
             $"lt=r.getAttribute('{themeLight}')||'light'," +
             $"dk=r.getAttribute('{themeDark}')||'dark'," +
             "m=window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches," +
-            $"base=r.getAttribute('{theme}')||r.getAttribute('{themeDefault}')||'light';" +
+            // Fall back to the CONFIGURED light theme (lt), not the literal 'light': BitTheme.ts init
+            // resolves its base to Theme._lightTheme (= bit-theme-light's value). Using 'light' here
+            // would paint a different attribute than hydration for <html bit-theme-light="fluent-light">
+            // with no bit-theme/-default/-system - a flash of the wrong theme. lt already defaults to
+            // 'light', so this is strictly safer.
+            $"base=r.getAttribute('{theme}')||r.getAttribute('{themeDefault}')||lt;" +
             $"if(r.hasAttribute('{themeSystem}')){{base=m?dk:lt;}}" +
             "var cur=base,got=false;" +
             $"if(r.hasAttribute('{themePersist}')){{try{{var s=localStorage.getItem(k);if(s){{cur=s;got=true;}}}}catch(e){{}}}}" +

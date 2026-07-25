@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -118,10 +119,13 @@ public static partial class BitThemeDtcg
             return group;
         }
 
-        // Leaf: a bit token value is always a string. Wrap it as a DTCG token object.
+        // Leaf: a bit token value is always a string in the model. Wrap it as a DTCG token object,
+        // emitting a JSON *number* $value for number-typed tokens so the output is DTCG-conformant
+        // (a `number` token's $value must be a JSON number, not a string).
         if (node is JsonValue)
         {
-            var token = new JsonObject { [ValueKey] = node.GetValue<string>() };
+            var raw = node.GetValue<string>();
+            var token = new JsonObject { [ValueKey] = BuildLeafValue(raw, path) };
 
             var leafType = LeafTypeOverride(path);
             if (leafType is not null)
@@ -133,6 +137,50 @@ public static partial class BitThemeDtcg
         }
 
         return null;
+    }
+
+    // Builds a leaf's $value node. DTCG requires `number` tokens to carry a JSON number (not a
+    // string), so a number-typed token whose value is a plain numeric literal is emitted as a
+    // number; everything else (colors, dimensions, shadows, and any non-numeric value such as a
+    // var() reference that slipped into a number slot) stays a string, preserving the documented
+    // string-value profile that carries var() references and composites.
+    private static JsonNode BuildLeafValue(string raw, string path)
+    {
+        if (EffectiveDtcgType(path) == "number")
+        {
+            var trimmed = raw.Trim();
+            if (double.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+            {
+                // Parse rather than Create(double) so the exact literal is preserved (1300 stays the
+                // integer 1300, not 1300.0). JsonNode.Parse rejects JSON-invalid numerics (e.g. a
+                // leading '+'), in which case we fall through to the string form.
+                try
+                {
+                    if (JsonNode.Parse(trimmed) is JsonValue parsed
+                        && parsed.GetValueKind() == JsonValueKind.Number)
+                    {
+                        return parsed;
+                    }
+                }
+                catch (JsonException)
+                {
+                    // Not a JSON-representable number; keep the string form below.
+                }
+            }
+        }
+
+        return JsonValue.Create(raw);
+    }
+
+    // The DTCG $type in effect for a leaf: an explicit leaf override wins, otherwise the type
+    // inherited from its top-level group (matching what Export writes onto the group node).
+    private static string? EffectiveDtcgType(string path)
+    {
+        var leafType = LeafTypeOverride(path);
+        if (leafType is not null) return leafType;
+
+        var topSegment = path.Split('.', 2)[0];
+        return TopLevelGroupType(topSegment);
     }
 
     // The top-level branches whose entire subtree shares one DTCG type. Mixed branches (typography,
@@ -218,11 +266,17 @@ public static partial class BitThemeDtcg
             return hex.GetValue<string>();
         }
 
-        // Dimension object: { "value": 16, "unit": "px" } → "16px".
+        // Dimension object: { "value": 16, "unit": "px" } → "16px". Only number/string magnitudes
+        // are meaningful; a bool/object/array "value" has no dimension mapping, so drop the token
+        // (return null) rather than calling GetValue<string>() on it - which would throw
+        // InvalidOperationException and break Import's documented lenient (never-throw) contract.
         if (value.TryGetPropertyValue("value", out var v) && v is not null
             && value.TryGetPropertyValue("unit", out var u) && u?.GetValueKind() == JsonValueKind.String)
         {
-            var number = v.GetValueKind() == JsonValueKind.Number ? v.ToJsonString() : v.GetValue<string>();
+            var valueKind = v.GetValueKind();
+            if (valueKind is not (JsonValueKind.Number or JsonValueKind.String)) return null;
+
+            var number = valueKind == JsonValueKind.Number ? v.ToJsonString() : v.GetValue<string>();
             return $"{number}{u.GetValue<string>()}";
         }
 
