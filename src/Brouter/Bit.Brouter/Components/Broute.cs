@@ -384,6 +384,15 @@ public class Broute : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Re-renders this route so its output reflects the current <see cref="Matched"/> state. Used by
+    /// the navigation pipeline to unmount a departed route's content BEFORE the winning chain's
+    /// commit render mounts the new content (see Brouter.UnrenderDepartedRoutes): the departing
+    /// subtree must be disposed first so framework subscriptions it holds (e.g. a layout's
+    /// SectionOutlet) are released before the incoming subtree registers its own.
+    /// </summary>
+    internal void Refresh() => StateHasChanged();
+
     // The resolved retained-instance budget: per-route KeepAliveMax, else the global default.
     // Clamped to >= 1 so a misconfigured 0/negative value degrades to the singleton behavior
     // instead of rendering nothing.
