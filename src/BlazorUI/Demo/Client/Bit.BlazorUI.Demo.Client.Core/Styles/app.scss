@@ -1,9 +1,27 @@
 @import 'abstracts/_functions.scss';
 @import 'abstracts/_bit-css-variables.scss';
 
+// The docs shell sits on top of the component library, so it has to make a few decisions the
+// library deliberately leaves open: how the site chrome is typeset, how far a line of prose may
+// run, and how strongly a surface is separated from the page. They live here as custom properties
+// because the global stylesheet and every scoped .razor.scss have to agree on them.
+:root {
+    --demo-font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --demo-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    // Surfaces are separated by a hairline border rather than a drop shadow: on a documentation
+    // page the same card repeats dozens of times, and stacked shadows read as noise long before
+    // they read as depth. Square, because rounding every one of those repeats is exactly the
+    // decoration the borders are there to avoid. Anything that does need a radius takes the
+    // library's own $bit-shape-border-radius rather than inventing a second shape scale.
+    --demo-content-width: #{rem2(1200px)};
+    // Comfortable reading measure for prose; long descriptions get capped at this, tables and
+    // examples still use the full column.
+    --demo-measure: 76ch;
+}
+
 * {
     box-sizing: border-box;
-    font-family: "Segoe UI";
+    font-family: var(--demo-font-sans);
     -webkit-text-size-adjust: none;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
@@ -15,6 +33,18 @@ html, body, #app-container {
     width: 100%;
     height: 100%;
     scroll-behavior: smooth;
+}
+
+code, kbd, pre, samp {
+    font-family: var(--demo-font-mono);
+}
+
+// Scoped to the docs chrome on purpose: the scrollbars inside .example-container belong to the
+// components being demonstrated and must keep looking like whatever the library renders. Both
+// properties are theme-driven, which also fixes the hardcoded light gutters in the dark theme.
+html, body, .site-content, pre, .table-view, .side-rail {
+    scrollbar-width: thin;
+    scrollbar-color: $bit-color-border-primary transparent;
 }
 
 h1, h2, h3, h4, h5 {
@@ -52,12 +82,11 @@ p {
 
 .pivot-sticky-header {
     z-index: 10;
-    opacity: 0.85;
     overflow: auto;
     position: sticky;
     padding: 0.25rem 0.5rem;
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-primary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
     top: calc(rem2(75px) + var(--bit-env-inset-top) + var(--demo-motion-bar-height));
 
     .bit-ios & {

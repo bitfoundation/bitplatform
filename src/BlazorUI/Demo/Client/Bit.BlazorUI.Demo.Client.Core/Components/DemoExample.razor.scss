@@ -7,44 +7,86 @@
     display: flex;
     max-width: 100%;
     flex-flow: column nowrap;
-    margin-bottom: rem2(36px);
+    margin-bottom: rem2(32px);
     justify-content: flex-start;
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
 }
 
+// Title on the left, actions on the right, both in normal flow. The title used to be positioned
+// absolutely against the header's bottom edge, which forced a hardcoded right margin so it would
+// not slide under the buttons - a long component name overflowed anyway.
 .box-header {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    position: relative;
-    align-items: flex-end;
-    margin-top: rem2(32px);
+    column-gap: 1rem;
+    align-items: center;
     box-sizing: border-box;
     justify-content: space-between;
+    padding: rem2(8px) rem2(12px);
+    background-color: $bit-color-background-secondary;
     border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
 .header-btn-group {
-    gap: 2px;
-    width: 100%;
+    gap: rem2(4px);
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     flex-flow: row nowrap;
     justify-content: flex-end;
+    margin-inline-start: auto;
 }
 
 .box-content {
     width: 100%;
-    position: relative;
     min-height: rem2(70px);
     box-sizing: border-box;
 }
 
+.code-panel {
+    // A block formatting context. BitCollapse pulls its collapsed content up with negative margins
+    // so it occupies no space, and without a BFC here those margins escape the panel and drag the
+    // preview below it upwards.
+    overflow: hidden;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+    // Collapsed, the panel is squeezed to nothing, so the rule above would draw a stray line across
+    // an empty strip.
+    &[inert] {
+        border-bottom: none;
+    }
+}
+
+// Holds the copy button clear of the code. The button itself is left exactly as BitActionButton
+// renders it; only this wrapper is positioned, and it carries the code surface's own background so
+// a long line never runs underneath the glyph.
+.copy-btn-holder {
+    z-index: 1;
+    display: flex;
+    top: rem2(8px);
+    right: rem2(8px);
+    position: absolute;
+    background-color: $bit-color-background-secondary;
+}
+
+.code-holder {
+    position: relative;
+}
+
+// The stage the component is shown on: kept on the plain surface so a demo is never tinted by
+// the page behind it.
 .example-container {
     overflow: auto;
     padding: rem2(24px);
+    background-color: $bit-color-background-primary;
 
     @include lt-lg {
-        padding: rem2(24px) 0;
+        padding: rem2(16px);
     }
 
     &::-webkit-scrollbar {
@@ -57,81 +99,12 @@
 }
 
 ::deep {
+    // Layout only - the heading's size and color come from BitText's own Typography and Color
+    // parameters. Sticky headers overlap the top of the page, so an anchored example has to stop
+    // short of one.
     .section-title {
-        scroll-margin: rem2(80px);
-    }
-
-    .header-btn {
-        height: 100%;
-        min-height: rem2(40px);
-        border-bottom: none !important;
-        border-radius: rem2(4px) rem2(4px) 0 0;
-        border: rem2(1px) solid $bit-color-border-secondary;
-
-        &.show-code {
-            font-weight: normal;
-            min-width: rem2(125px);
-            padding: rem2(4px) rem2(12px);
-
-            i {
-                font-size: 1.125rem;
-            }
-
-            @include lt-lg {
-                min-width: unset;
-                width: rem2(42px);
-
-                .show-code-lbl {
-                    display: none;
-                }
-            }
-        }
-
-        &.code-shown {
-            background-color: $bit-color-background-secondary;
-        }
-
-        &.copy-link {
-            z-index: 1;
-            display: flex;
-            min-width: unset;
-            width: rem2(42px);
-            align-items: center;
-            padding: 0 rem2(20px);
-            justify-content: center;
-            transition: width 0.2s ease-in-out;
-            background-color: $bit-color-background-primary;
-
-            &.copied {
-                overflow: hidden;
-                width: rem2(128px);
-                white-space: nowrap;
-                pointer-events: none;
-            }
-        }
-    }
-
-    .copy-btn {
-        z-index: 1;
-        display: flex;
-        top: rem2(16px);
-        min-width: unset;
-        right: rem2(10px);
-        width: rem2(34px);
-        height: rem2(34px);
-        position: absolute;
-        align-items: center;
-        justify-content: center;
-        border-radius: rem2(17px);
-        transition: width 0.2s ease-in-out;
-        background-color: $bit-color-background-secondary;
-        border: rem2(1px) solid $bit-color-border-secondary;
-
-        &.copied {
-            overflow: hidden;
-            width: rem2(128px);
-            white-space: nowrap;
-            pointer-events: none;
-        }
+        min-width: 0;
+        overflow-wrap: anywhere;
+        scroll-margin: rem2(90px);
     }
 }

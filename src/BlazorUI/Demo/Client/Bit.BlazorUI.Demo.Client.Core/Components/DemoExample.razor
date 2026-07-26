@@ -15,28 +15,30 @@
 }
 else
 {
+    @* One bordered card per example: title bar, the source, then the live preview. The buttons are
+       plain BitActionButtons at their small size - the toolbar reads as quiet because of what the
+       components already are, not because the demo restyles them. *@
     <section class="box">
         <div class="box-header">
-            <BitText Element="h3" Typography="BitTypography.H5" Class="section-title" Id="@Id" example-section-title>@Title</BitText>
+            <BitText Element="h3"
+                     Typography="BitTypography.H6"
+                     Color="BitColor.PrimaryForeground"
+                     Class="section-title" Id="@Id" example-section-title>@Title</BitText>
             @if (RazorCode is not null || CsharpCode is not null)
             {
                 <div class="header-btn-group">
-                    <BitActionButton OnClick="() => showCode = !showCode"
-                                     Class="@($"header-btn show-code{(showCode ? " code-shown":"")}")"
-                                     Classes="@(new() { Content = "show-code-lbl" })"
-                                     IconName="@BitIconName.CodeEdit"
-                                     Title="@(showCode ? "Hide code" : "Show code")">
-                        @(showCode ? "Hide code" : "Show code")
-                    </BitActionButton>
-                    <BitActionButton Class="@($"header-btn copy-link {(isLinkCopied ? "copied" : "")}")"
-                                     Styles="@(new() { Content = (isLinkCopied ? "" : "display: none") })"
-                                     Title="@copyLinkMessage"
+                    <BitActionButton IconOnly
+                                     Size="BitSize.Small"
                                      IconName="@linkIcon"
-                                     OnClick="@CopyLinkToClipboard">
-                        @if (isLinkCopied)
-                        {
-                            <span>@copyLinkMessage</span>
-                        }
+                                     Title="@copyLinkMessage"
+                                     Color="BitColor.SecondaryForeground"
+                                     OnClick="@CopyLinkToClipboard" />
+                    <BitActionButton Size="BitSize.Small"
+                                     OnClick="ToggleCode"
+                                     IconName="@BitIconName.CodeEdit"
+                                     Title="@(showCode ? "Hide code" : "Show code")"
+                                     Color="@(showCode ? BitColor.Primary : BitColor.SecondaryForeground)">
+                        @(showCode ? "Hide code" : "Show code")
                     </BitActionButton>
                 </div>
             }
@@ -44,21 +46,25 @@ else
 
         <div class="box-content">
 
-            @if (showCode)
+            @if (RazorCode is not null || CsharpCode is not null)
             {
-                <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : "")}")"
-                                 Styles="@(new() { Content = (isCodeCopied ? "" : "display: none") })"
-                                 Title="@copyCodeMessage"
-                                 IconName="@codeIcon"
-                                 OnClick="@CopyCodeToClipboard">
-                    @if (isCodeCopied)
-                    {
-                        <span>@copyCodeMessage</span>
-                    }
-                </BitActionButton>
+                @* BitCollapse animates both directions, which means the panel has to stay in the DOM
+                   while it is closed. inert keeps that hidden copy out of the tab order and the
+                   accessibility tree, so a keyboard user never lands on a code block they cannot see. *@
+                <div class="code-panel" inert="@(showCode is false)">
+                    <BitCollapse Expanded="showCode">
+                        <div class="code-holder" id="@_codeElementId">
+                            <div class="copy-btn-holder">
+                                <BitActionButton IconOnly
+                                                 Size="BitSize.Small"
+                                                 IconName="@codeIcon"
+                                                 Title="@copyCodeMessage"
+                                                 Color="BitColor.SecondaryForeground"
+                                                 OnClick="@CopyCodeToClipboard" />
+                            </div>
 
-                <pre class="code">
-                
+                            <pre class="code">
+
                 <code class="language-cshtml">
                     @RazorCode?.Trim()
                 </code>
@@ -72,8 +78,10 @@ else
                     </code>
                 }
             </pre>
+                        </div>
+                    </BitCollapse>
+                </div>
             }
-
 
             <div class="example-container">
                 @ChildContent

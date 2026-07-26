@@ -5,8 +5,18 @@
 .header {
     width: 100%;
     backdrop-filter: blur(20px);
-    box-shadow: $bit-box-shadow-1;
     -webkit-backdrop-filter: blur(20px);
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+    // Declared on the chrome rather than globally: inside an example the focus ring belongs to the
+    // component being demonstrated, and a second outline over it would show readers something the
+    // library does not actually render.
+    a:focus-visible,
+    button:focus-visible {
+        outline: rem2(2px) solid $bit-color-primary;
+        outline-offset: rem2(2px);
+        border-radius: $bit-shape-border-radius;
+    }
 }
 
 .container {
@@ -55,14 +65,22 @@
 
 .link {
     height: 100%;
+    display: flex;
     cursor: pointer;
     line-height: 1.5;
-    padding-bottom: 0;
-    padding: rem2(10px);
-    font-size: rem2(16px);
+    align-items: center;
+    font-size: rem2(15px);
     text-decoration: none;
     box-sizing: border-box;
+    padding: rem2(8px) rem2(12px);
+    border-radius: $bit-shape-border-radius;
     color: $bit-color-foreground-secondary;
+    transition: color $bit-motion-duration-short $bit-motion-easing;
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-secondary;
+    }
 
     &.active {
         font-weight: 600;
@@ -71,27 +89,43 @@
 }
 
 .right-section {
-    gap: 1rem;
+    gap: 0.5rem;
     display: flex;
     align-items: center;
 }
 
 .github-btn {
     cursor: pointer;
-    width: rem2(40px);
-    height: rem2(40px);
-    border-radius: 50%;
+    width: rem2(36px);
+    height: rem2(36px);
+    background-size: rem2(22px);
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: $bit-shape-border-radius;
+    transition: background-color $bit-motion-duration-short $bit-motion-easing;
+
+    &:hover {
+        background-color: $bit-color-background-secondary;
+    }
 }
 
+// A quiet icon button next to the GitHub link rather than a filled primary disc: the theme
+// switch is a preference, not the call to action on the page.
 .toggle-theme-btn {
     padding: 0;
-    border: none;
     cursor: pointer;
-    height: rem2(35px);
-    min-width: rem2(35px);
-    border-radius: 50%;
-    color: $bit-color-primary-text;
-    background-color: $bit-color-primary;
+    width: rem2(36px);
+    height: rem2(36px);
+    background-color: transparent;
+    border-radius: $bit-shape-border-radius;
+    color: $bit-color-foreground-secondary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+    transition: color $bit-motion-duration-short $bit-motion-easing;
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-secondary;
+    }
 
     .icon-container {
         height: 100%;

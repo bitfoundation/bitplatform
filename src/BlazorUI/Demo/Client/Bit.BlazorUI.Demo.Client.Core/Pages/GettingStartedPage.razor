@@ -16,14 +16,16 @@
 
 <section class="page-container">
     <BitParams Parameters="_cascadingParams">
-        <BitText Element="h1" Typography="BitTypography.H3" Gutter>Getting Started</BitText>
+        <header class="page-header">
+            <BitText Element="h1" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">Getting Started</BitText>
+        </header>
 
-        <BitText Element="p" Typography="BitTypography.H6" Gutter>
-            Follow these steps to install the library, import the namespace, add the shared styles/scripts,
-            and make sure updates reach your users without cache hiccups.
-        </BitText>
-
-        <br /><br />
+        <div class="page-lead">
+            <BitText Element="p" Typography="BitTypography.H6" Color="BitColor.SecondaryForeground">
+                Follow these steps to install the library, import the namespace, add the shared styles/scripts,
+                and make sure updates reach your users without cache hiccups.
+            </BitText>
+        </div>
 
         <BitCard>
             <BitText Element="h2" Typography="BitTypography.H4" Gutter>1. Install</BitText>

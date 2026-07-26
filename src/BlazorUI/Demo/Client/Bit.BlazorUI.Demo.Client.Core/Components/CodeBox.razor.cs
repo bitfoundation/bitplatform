@@ -2,8 +2,7 @@
 
 public partial class CodeBox
 {
-    private string? _codeIcon;
-    private bool _isCodeCopied = false;
+    private string _codeIcon = BitIconName.Copy;
     private string _copyCodeMessage = "Copy code";
     private ElementReference _preElementRef = default!;
 
@@ -24,15 +23,13 @@ public partial class CodeBox
         var codeSample = await JSRuntime.GetInnerText(_preElementRef);
         await JSRuntime.CopyToClipboard(codeSample.Trim());
 
-        _codeIcon = "Accept";
+        _codeIcon = BitIconName.CheckMark;
         _copyCodeMessage = "Code copied!";
-        _isCodeCopied = true;
 
         StateHasChanged();
 
         await Task.Delay(1000);
-        _isCodeCopied = false;
-        _codeIcon = null;
+        _codeIcon = BitIconName.Copy;
         _copyCodeMessage = "Copy code";
 
         StateHasChanged();

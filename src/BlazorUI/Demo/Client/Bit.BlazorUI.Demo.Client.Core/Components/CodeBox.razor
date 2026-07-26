@@ -5,23 +5,16 @@
     <div class="code-box">
         @if (HideCopyButton is false)
         {
-            <BitActionButton IconName="@_codeIcon"
-                             Title="@_copyCodeMessage"
-                             OnClick="@CopyCodeToClipboard"
-                             Class="@($"copy-btn {(_isCodeCopied ? "copied" : string.Empty)}")"
-                             Styles="@(new() { Content = (_isCodeCopied ? string.Empty : "margin: unset") })">
-                @if (_isCodeCopied)
-                {
-                    <span>@_copyCodeMessage</span>
-                }
-                else
-                {
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <rect x="6.5" y="6.5" width="9" height="12" rx="1.5" stroke="currentColor" />
-                        <path d="M8.5 6C8.5 5.17157 9.17157 4.5 10 4.5H16C16.8284 4.5 17.5 5.17157 17.5 6V15C17.5 15.8284 16.8284 16.5 16 16.5" stroke="currentColor" />
-                    </svg>
-                }
-            </BitActionButton>
+            @* Only the wrapper is positioned; the button is left exactly as BitActionButton renders
+               it, and confirms the copy by swapping its icon and its title. *@
+            <div class="copy-btn-holder">
+                <BitActionButton IconOnly
+                                 Size="BitSize.Small"
+                                 IconName="@_codeIcon"
+                                 Title="@_copyCodeMessage"
+                                 Color="BitColor.SecondaryForeground"
+                                 OnClick="@CopyCodeToClipboard" />
+            </div>
         }
 
         <pre @ref="_preElementRef"

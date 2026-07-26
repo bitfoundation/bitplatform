@@ -10,6 +10,14 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     background-color: $bit-color-background-primary;
+
+    // Matches the header's ring; see the note there for why it is not declared globally.
+    a:focus-visible,
+    button:focus-visible {
+        outline: rem2(2px) solid $bit-color-primary;
+        outline-offset: rem2(2px);
+        border-radius: $bit-shape-border-radius;
+    }
 }
 
 section {

@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 @using System.Text.Json;
 
@@ -122,26 +122,31 @@ else
     <div class="demo-page @(_forceAnimation ? "bit-fam" : null)">
         <div class="page-container example">
 
-            <BitText Element="h1" Typography="BitTypography.H3">
-                @Name
-            </BitText>
+            <header class="page-header">
+                <BitText Element="h1" Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
+                    @Name
+                </BitText>
 
-            @if (SecondaryNames?.Length > 0)
-            {
-                <br />
-                <BitStack Horizontal AutoHeight>
-                    @foreach (var name in SecondaryNames)
-                    {
-                        <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
-                    }
-                </BitStack>
-            }
-
-            <br /><br /><br />
+                @if (SecondaryNames?.Length > 0)
+                {
+                    <div class="page-aliases">
+                        @foreach (var name in SecondaryNames)
+                        {
+                            @* Alternative names are metadata about the component, so they are set as
+                               tags rather than as a second line of heading-sized text competing with
+                               the title. *@
+                            <BitTag Text="@name" Size="BitSize.Small" Variant="BitVariant.Outline"
+                                    Color="BitColor.TertiaryBackground" />
+                        }
+                    </div>
+                }
+            </header>
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {
-                <section id="overview-section" class="page-section">
+                @* The description reads as the page's lead paragraph. .page-lead strips the card
+                   framing .page-section would otherwise give it. *@
+                <section id="overview-section" class="page-section page-lead">
                     @if (DescriptionTemplate is not null)
                     {
                         @DescriptionTemplate
@@ -156,7 +161,10 @@ else
             @if (Notes.HasValue() || NotesTemplate is not null)
             {
                 <section id="notes-section" class="page-section">
-                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                    <div class="section-heading">
+                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Notes</BitText>
+                        <BitSeparator />
+                    </div>
                     @if (NotesTemplate is not null)
                     {
                         @NotesTemplate
@@ -175,7 +183,10 @@ else
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
                 <section id="introduction-section" class="page-section">
-                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
+                    <div class="section-heading">
+                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Introduction</BitText>
+                        <BitSeparator />
+                    </div>
                     @if (IntroductionVideoUrl.HasValue())
                     {
                         <div class="video-container">
@@ -200,12 +211,18 @@ else
             }
 
             <section id="usage-section" class="page-section">
-                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+                <div class="section-heading">
+                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Usage</BitText>
+                    <BitSeparator />
+                </div>
                 @(ChildContent ?? Examples)
             </section>
 
             <section id="api-section" class="page-section">
-                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">API</BitText>
+                <div class="section-heading">
+                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">API</BitText>
+                    <BitSeparator />
+                </div>
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
@@ -245,7 +262,10 @@ else
             </section>
 
             <section id="feedback-section" class="page-section">
-                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+                <div class="section-heading">
+                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Feedback</BitText>
+                    <BitSeparator />
+                </div>
                 <BitText Element="p">
                     You can give us your feedback through our
                     <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
