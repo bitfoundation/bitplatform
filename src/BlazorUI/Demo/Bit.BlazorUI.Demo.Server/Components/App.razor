@@ -14,7 +14,13 @@
 #else
     var blazorWebScript = "_framework/bit.blazor.web.es2019.js";
 #endif
-    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    // The ChartLegacy demo can't run its samples in WebAssembly: Blazor's lazy assembly loading isn't
+    // compatible with the multi-threaded WASM runtime this app is built with, so BitChartLegacyDemo renders
+    // a note explaining that instead of the samples. Prerendering that page would paint the samples on the
+    // server and then swap them for the note as soon as WASM boots, so prerendering is turned off for it.
+    // Builds without the WASM client render in Blazor Server mode, where the samples work, so they keep it.
+    var chartLegacyOnWasm = includeWasm && HttpContext.Request.Path.StartsWithSegments("/components/legacy/chart");
+    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0 || chartLegacyOnWasm;
     // Without the WASM client in the build, WebAssembly render modes can't boot, so fall back to Blazor Server
     // even where AppRenderMode.Current would pick WebAssembly (e.g. Release with IncludeWasm=false).
     var renderMode = noPrerender
