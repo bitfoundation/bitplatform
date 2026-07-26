@@ -13,6 +13,11 @@
     var comboBoxAddButtonIconCss = BitIconInfo.From(ComboBoxAddButtonIcon, ComboBoxAddButtonIconName ?? "Add")?.GetCssClasses();
     var itemCheckIconCss = GetItemCheckIconCss();
 
+    // The search may run an arbitrary user-provided function over the whole item set, so it is
+    // evaluated once per render here and the result is reused by everything that needs it below
+    // (the empty state, the select all state and the items themselves).
+    var searchedItems = GetSearchedItems();
+
     RenderFragment emptyContent =
         @<div style="@Styles?.EmptyContent" class="bit-drp-emp @Classes?.EmptyContent">
             @if (EmptyTemplate is not null)
@@ -40,7 +45,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(IsOpen? _calloutId : null)">
+     aria-owns="@(IsOpen? _scrollContainerId : null)">
     @if (LabelTemplate is not null)
     {
         <label id="@_labelId">
@@ -68,7 +73,7 @@
          aria-disabled="@(IsEnabled is false)"
          aria-expanded=@(IsOpen ? "true" : "false")
          aria-labelledby="@GetDropdownAriaLabelledby()"
-         aria-controls="@(IsOpen? _calloutId : null)">
+         aria-controls="@(IsOpen? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
         {
@@ -145,7 +150,9 @@
 
         @if (IsEnabled && ShowClearButton && _selectedItems.Count > 0)
         {
-            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
+            @* The keydown is stopped here so activating this button with the keyboard cannot
+               reach the trigger's keydown handler and toggle the callout as well. *@
+            <button @onclick="HandleOnClearClick" @onclick:stopPropagation @onkeydown:stopPropagation
                     type="button"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
@@ -192,14 +199,14 @@
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
 
+@* The listbox role belongs to the scroll container rather than the callout, because the callout also
+   holds the search box, the select all item and the header/footer templates, none of which are
+   allowed children of a listbox. *@
 <div @onkeydown="HandleOnCalloutKeyDown"
      id="@_calloutId"
      tabindex="0"
-     role="listbox"
      style="@Styles?.Callout"
-     class="@GetCalloutCssClasses()"
-     aria-labelledby="@_labelId"
-     aria-multiselectable="@(MultiSelect ? "true" : null)">
+     class="@GetCalloutCssClasses()">
 
     @if (Responsive)
     {
@@ -303,7 +310,7 @@
 
     @if (MultiSelect && ShowSelectAll && ItemsProvider is null)
     {
-        var (allSelected, anySelected) = GetSelectAllState();
+        var (allSelected, anySelected) = GetSelectAllState(searchedItems);
         var selectAllClasses = "bit-drp-sac bit-drp-iwr" +
                                (allSelected ? " bit-drp-chd" : string.Empty) +
                                (anySelected && allSelected is false ? " bit-drp-sai" : string.Empty) +
@@ -315,7 +322,7 @@
                     type="button"
                     role="checkbox"
                     style="@Styles?.SelectAllButton"
-                    class="bit-drp-mcn @Classes?.SelectAllButton"
+                    class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
                     aria-checked="@selectAllAriaChecked">
                 <div style="@Styles?.SelectAllCheckBox"
                      class="bit-drp-chb @Classes?.SelectAllCheckBox">
@@ -332,13 +339,16 @@
     }
 
     <div id="@_scrollContainerId"
+         role="listbox"
          style="@Styles?.ScrollContainer"
-         class="bit-drp-scn @Classes?.ScrollContainer">
+         class="bit-drp-scn @Classes?.ScrollContainer"
+         aria-labelledby="@_labelId"
+         aria-multiselectable="@(MultiSelect ? "true" : null)">
         @if (Virtualize)
         {
             if (ItemsProvider is null)
             {
-                <Virtualize Items="GetSearchedItems()"
+                <Virtualize Items="searchedItems"
                             ItemSize="ItemSize"
                             OverscanCount="OverscanCount"
                             Placeholder="VirtualizePlaceholder">
@@ -371,20 +381,20 @@
                 @(Options ?? ChildContent)
             </CascadingValue>
 
-            @if (HasNoVisibleItems())
+            @if (HasNoVisibleItems(searchedItems))
             {
                 @emptyContent
             }
         }
         else
         {
-            @if (HasNoVisibleItems())
+            @if (HasNoVisibleItems(searchedItems))
             {
                 @emptyContent
             }
             else
             {
-                @foreach (var item in GetSearchedItems())
+                @foreach (var item in searchedItems)
                 {
                     <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
                 }

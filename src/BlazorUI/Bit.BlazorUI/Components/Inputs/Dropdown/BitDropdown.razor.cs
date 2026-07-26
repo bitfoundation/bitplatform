@@ -275,7 +275,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The maximum number of items that can be selected in multi select mode. Zero or null means no limit.
+    /// The maximum number of items that can be selected in multi select mode.
+    /// A value that is not greater than zero (and null) means no limit.
     /// </summary>
     [Parameter] public int? MaxSelectedItems { get; set; }
 
@@ -440,6 +441,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     /// <summary>
     /// Shows the select all item in the callout in multi select mode.
+    /// It has no effect when the items are provided by an ItemsProvider, since the items that are not
+    /// loaded yet cannot be selected.
     /// </summary>
     [Parameter] public bool ShowSelectAll { get; set; }
 
@@ -710,7 +713,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             stringBuilder.Append(" bit-drp-chd");
         }
 
-        if (GetIsEnabled(item) is false || (isSelected is false && IsMaxSelectedItemsReached))
+        if (GetIsItemDisabled(item))
         {
             stringBuilder.Append(" bit-drp-ids");
         }
@@ -718,7 +721,28 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return stringBuilder.ToString();
     }
 
-    internal bool IsMaxSelectedItemsReached => MultiSelect && MaxSelectedItems is > 0 && (Values?.Count() ?? 0) >= MaxSelectedItems.Value;
+    // Reaching the selection limit makes the items that are not selected yet unavailable, so they are
+    // disabled like any other disabled item instead of only being styled as such.
+    internal bool GetIsItemDisabled(TItem item)
+    {
+        if (GetIsEnabled(item) is false) return true;
+
+        return IsMaxSelectedItemsReached && GetIsSelected(item) is false;
+    }
+
+    internal bool IsMaxSelectedItemsReached => MultiSelect && MaxSelectedItems is > 0 && IsValuesCountAtLeast(MaxSelectedItems.Value);
+
+    // This is evaluated once per rendered item, so a full enumeration of Values (which is an
+    // IEnumerable and may be lazy) has to be avoided: collections expose their count directly, and
+    // for anything else it is enough to know whether the limit is already reached.
+    private bool IsValuesCountAtLeast(int count)
+    {
+        if (Values is null) return false;
+
+        if (Values is ICollection<TValue?> collection) return collection.Count >= count;
+
+        return Values.Skip(count - 1).Any();
+    }
 
     internal int? GetTotalItems()
     {
@@ -1322,6 +1346,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsOpen is false) return;
 
         _rateLimiter.Reset();
+        _typeAheadBuffer = string.Empty;
 
         if (await AssignIsOpen(false) is false) return;
 
@@ -1341,6 +1366,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await FocusOnSearchBox();
     }
 
+    // The default behavior of the navigation keys handled here is prevented by the keydown listener of
+    // Dropdowns.ts (Blazor cannot preventDefault per key), so the keys handled here and the ones listed
+    // there have to be kept in sync.
     private async Task HandleOnTriggerKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
@@ -1386,6 +1414,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
+    // See the note on HandleOnTriggerKeyDown about keeping these keys in sync with Dropdowns.ts.
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false || IsOpen is false) return;
@@ -1417,7 +1446,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 await _dropdownWrapperRef.FocusAsync();
                 break;
             case "Tab":
+                // The callout is rendered at the end of the document, so leaving it without moving the
+                // focus back to the dropdown would continue the tab order from an unrelated place.
                 await CloseCallout();
+                await _dropdownWrapperRef.FocusAsync();
                 break;
             default:
                 // In Combo mode the combo input is the type-ahead, and printable keys
@@ -1430,6 +1462,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
+    // Keep this in sync with the isPrintable helper of Dropdowns.ts.
     private static bool IsPrintableKey(KeyboardEventArgs e)
     {
         return e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false;
@@ -1454,7 +1487,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private ValueTask FocusItem(string mode, string? character = null)
     {
-        return _js.BitDropdownsFocusItem(_calloutId, mode, character);
+        return _js.BitDropdownsFocusItem(_calloutId, mode, character, Virtualize);
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -1640,14 +1673,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         UpdateSelectedItemsFromValues();
     }
 
-    private bool HasNoVisibleItems()
+    private bool HasNoVisibleItems(ICollection<TItem> searchedItems)
     {
-        return GetSearchedItems().Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
+        return searchedItems.Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
     }
 
-    private (bool AllSelected, bool AnySelected) GetSelectAllState()
+    private (bool AllSelected, bool AnySelected) GetSelectAllState(ICollection<TItem> searchedItems)
     {
-        var candidates = GetSelectAllCandidateItems();
+        var candidates = GetSelectAllCandidateItems(searchedItems);
         if (candidates.Count == 0) return (false, false);
 
         var selectedCount = candidates.Count(GetIsSelected);
@@ -1655,11 +1688,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return (selectedCount == candidates.Count, selectedCount > 0);
     }
 
-    private List<TItem> GetSelectAllCandidateItems()
+    private List<TItem> GetSelectAllCandidateItems(ICollection<TItem> searchedItems)
     {
-        return [.. GetSearchedItems().Where(i => GetItemType(i) == BitDropdownItemType.Normal &&
-                                                 GetIsHidden(i) is false &&
-                                                 GetIsEnabled(i))];
+        return [.. searchedItems.Where(i => GetItemType(i) == BitDropdownItemType.Normal &&
+                                            GetIsHidden(i) is false &&
+                                            GetIsEnabled(i))];
     }
 
     private async Task HandleOnSelectAllClick()
@@ -1669,15 +1702,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (MultiSelect is false) return;
         if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
-        var candidates = GetSelectAllCandidateItems();
+        var candidates = GetSelectAllCandidateItems(GetSearchedItems());
         if (candidates.Count == 0) return;
+
+        var comparer = EqualityComparer<TValue>.Default;
 
         List<TValue?> newValues;
         if (candidates.TrueForAll(GetIsSelected))
         {
             // All (searched) items are selected, so the select all item clears them, keeping
             // the selected values that are not part of the current search results.
-            var comparer = EqualityComparer<TValue>.Default;
             var candidateValues = candidates.Select(GetValue).ToList();
             newValues = [.. (Values ?? []).Where(v => candidateValues.Exists(cv => comparer.Equals(cv, v)) is false)];
         }
@@ -1693,7 +1727,24 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
         }
 
+        // The items added dynamically in the ComboBox mode are not part of Items, so assigning the
+        // values (which rebuilds the selected items from Items) would drop them; they are kept here
+        // as long as their values are still selected.
+        var dynamicItems = Combo && Dynamic
+            ? _selectedItems.FindAll(si => Items?.Contains(si) is not true)
+            : [];
+
         await AssignValues(newValues);
+
+        foreach (var item in dynamicItems)
+        {
+            if (newValues.Exists(v => comparer.Equals(v, GetValue(item))) is false) continue;
+            if (_selectedItems.Exists(si => comparer.Equals(GetValue(si), GetValue(item)))) continue;
+
+            _selectedItems.Add(item);
+            ClassBuilder.Reset();
+        }
+
         await OnValuesChange.InvokeAsync([.. (Values ?? [])!]);
     }
 

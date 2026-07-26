@@ -826,8 +826,10 @@
     <div>
         The dropdown is fully operable with the keyboard: <b>Enter</b>, <b>Space</b> and the arrow keys open the callout,
         <b>ArrowUp</b> and <b>ArrowDown</b> move the focus between the items, <b>Home</b> and <b>End</b> jump to the first and last item,
-        <b>PageUp</b> and <b>PageDown</b> jump ten items at a time, typing characters moves the focus to the next matching item,
+        <b>PageUp</b> and <b>PageDown</b> jump several items at a time, typing characters moves the focus to the next matching item,
         <b>Enter</b> and <b>Space</b> select the focused item and <b>Escape</b> closes the callout.
+        In virtualize mode only the rendered items take part in the type-ahead, since the ones that have not been
+        rendered yet have no text to match against.
     </div>
     <br />
     <div class="example-content">
@@ -859,7 +861,8 @@
         When the <b>ShowSelectAll</b> parameter is true, a select all item renders at the top of the callout of the
         multi select dropdown that selects or clears all items at once and shows an indeterminate state when only
         some items are selected. Disabled items are skipped, the <b>SelectAllText</b> parameter customizes its text
-        and combined with the search box, it only applies to the search result.
+        and combined with the search box, it only applies to the search result. It is not available when the
+        items come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected.
     </div>
     <br />
     <div class="example-content">

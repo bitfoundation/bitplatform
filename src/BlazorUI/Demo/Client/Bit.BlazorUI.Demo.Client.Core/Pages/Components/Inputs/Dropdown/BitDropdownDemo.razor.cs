@@ -298,7 +298,7 @@ public partial class BitDropdownDemo
             Name = "MaxSelectedItems",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The maximum number of items that can be selected in multi select mode. Zero or null means no limit.",
+            Description = "The maximum number of items that can be selected in multi select mode. A value that is not greater than zero (and null) means no limit.",
         },
         new()
         {
@@ -511,7 +511,7 @@ public partial class BitDropdownDemo
             Name = "ShowSelectAll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows the select all item in the callout in multi select mode.",
+            Description = "Shows the select all item in the callout in multi select mode. It has no effect when the items are provided by an ItemsProvider, since the items that are not loaded yet cannot be selected.",
         },
         new()
         {
@@ -1148,6 +1148,41 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "SelectAllContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the select all item container of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "SelectAllButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the select all item button of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "SelectAllCheckBox",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the select all item check box of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "SelectAllCheckIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the select all item check icon of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "SelectAllText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the select all item text of the multi-select BitDropdown."
+               },
+               new()
+               {
                    Name = "ScrollContainer",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1215,41 +1250,6 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the empty state content of the BitDropdown."
-               },
-               new()
-               {
-                   Name = "SelectAllContainer",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the select all item container of the multi-select BitDropdown."
-               },
-               new()
-               {
-                   Name = "SelectAllButton",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the select all item button of the multi-select BitDropdown."
-               },
-               new()
-               {
-                   Name = "SelectAllCheckBox",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the select all item check box of the multi-select BitDropdown."
-               },
-               new()
-               {
-                   Name = "SelectAllCheckIcon",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the select all item check icon of the multi-select BitDropdown."
-               },
-               new()
-               {
-                   Name = "SelectAllText",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the select all item text of the multi-select BitDropdown."
                },
             ],
         }

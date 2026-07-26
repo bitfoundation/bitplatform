@@ -2,6 +2,21 @@ namespace BitBlazorUI {
     export class Dropdowns {
         private static _handlers = new Map<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }[]>();
 
+        // The number of animation frames to wait for the items revealed by a programmatic scroll in
+        // virtualize mode to be rendered, before giving up and using whatever is rendered by then.
+        private static readonly VIRTUALIZE_RENDER_FRAMES = 20;
+
+        // The keys whose default behavior (scrolling the page or the callout) has to be prevented
+        // because the dropdown handles them itself. They mirror the keys handled by the
+        // HandleOnTriggerKeyDown and HandleOnCalloutKeyDown methods of BitDropdown, which is where a
+        // key added to or removed from these lists has to be reflected as well.
+        private static readonly TRIGGER_KEYS = ['ArrowDown', 'ArrowUp'];
+        private static readonly CALLOUT_KEYS = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp'];
+
+        // These are only handled when the focus is not in the search/combo input, where they keep
+        // their caret behavior.
+        private static readonly CARET_KEYS = ['Home', 'End'];
+
         // Attaches keydown listeners that only prevent the default behavior (e.g. page scrolling)
         // of the navigation keys. The actual keyboard logic runs in the Blazor keydown handlers,
         // which cannot conditionally preventDefault per key.
@@ -12,10 +27,17 @@ namespace BitBlazorUI {
 
             const isTextInput = (e: KeyboardEvent) => (e.target as HTMLElement)?.tagName === 'INPUT';
 
+            // Keep this in sync with IsPrintableKey of BitDropdown.
+            const isPrintable = (e: KeyboardEvent) => e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.altKey && !e.metaKey;
+
             const root = document.getElementById(id);
             if (root) {
                 const handler = (e: KeyboardEvent) => {
-                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || (e.key === ' ' && !isTextInput(e))) {
+                    // Buttons inside the trigger (e.g. the clear button) are activated by Space and
+                    // Enter themselves, so their keys must keep their default behavior.
+                    if ((e.target as HTMLElement)?.closest('button')) return;
+
+                    if (Dropdowns.TRIGGER_KEYS.indexOf(e.key) > -1 || (e.key === ' ' && !isTextInput(e))) {
                         e.preventDefault();
                     }
                 };
@@ -26,10 +48,19 @@ namespace BitBlazorUI {
             const callout = document.getElementById(calloutId);
             if (callout) {
                 const handler = (e: KeyboardEvent) => {
-                    // Home/End must keep their caret behavior while typing in the search/combo inputs.
-                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'PageDown' || e.key === 'PageUp' ||
-                        ((e.key === 'Home' || e.key === 'End') && !isTextInput(e))) {
+                    if (Dropdowns.CALLOUT_KEYS.indexOf(e.key) > -1 ||
+                        (Dropdowns.CARET_KEYS.indexOf(e.key) > -1 && !isTextInput(e))) {
                         e.preventDefault();
+                        return;
+                    }
+
+                    // In ComboBox mode the input is the type-ahead, so the arrow keys having moved the
+                    // focus to an option must not stop the filtering: a printable key returns the focus
+                    // to the input, and since its default is not prevented the character lands there.
+                    if (!isTextInput(e) && isPrintable(e)) {
+                        const combo = (callout.querySelector('.bit-drp-icb') ??
+                                       root?.querySelector('.bit-drp-inp')) as HTMLElement | null;
+                        combo?.focus();
                     }
                 };
                 callout.addEventListener('keydown', handler);
@@ -47,39 +78,119 @@ namespace BitBlazorUI {
             Dropdowns._handlers.delete(id);
         }
 
-        public static focusItem(calloutId: string, mode: string, char: string | null) {
+        public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean) {
             const callout = document.getElementById(calloutId);
             if (!callout) return;
 
-            const items = (Array.from(callout.querySelectorAll('.bit-drp-itm, .bit-drp-mcn')) as HTMLElement[])
+            const scroller = callout.querySelector('.bit-drp-scn') as HTMLElement | null;
+
+            let items = Dropdowns._getItems(callout);
+            if (items.length === 0) return;
+
+            let current = items.indexOf(document.activeElement as HTMLElement);
+
+            // In virtualize mode only the items around the visible window exist in the DOM, so moving
+            // beyond it means scrolling first and continuing with the items rendered afterwards.
+            if (virtualize && Dropdowns._isScrollable(scroller)) {
+                const scrolled = await Dropdowns._scrollFor(callout, scroller!, mode, items);
+                if (scrolled) {
+                    items = scrolled.items;
+                    current = scrolled.items.indexOf(document.activeElement as HTMLElement);
+                    mode = scrolled.mode;
+                }
+            }
+
+            const index = Dropdowns._resolveIndex(items, current, mode, char, virtualize);
+
+            if (index > -1) {
+                items[index].focus();
+            }
+        }
+
+        // The options plus the select all item, which is not an option (it is a checkbox outside of the
+        // listbox) but still has to be reachable with the arrow keys.
+        private static _getItems(callout: HTMLElement) {
+            return (Array.from(callout.querySelectorAll('[role="option"], .bit-drp-sab')) as HTMLElement[])
                 .filter(el => !(el as HTMLButtonElement).disabled &&
                     el.getAttribute('aria-disabled') !== 'true' &&
                     !el.closest('.bit-drp-ids') &&
                     el.offsetParent !== null);
-            if (items.length === 0) return;
+        }
 
-            const current = items.indexOf(document.activeElement as HTMLElement);
-            let index = -1;
+        private static _isScrollable(scroller: HTMLElement | null) {
+            return !!scroller && scroller.scrollHeight > scroller.clientHeight + 1;
+        }
+
+        // Scrolls the item container for the jump modes and resolves once the items revealed by the
+        // scroll have been rendered, mapping the mode to where the focus goes in the new window.
+        private static async _scrollFor(callout: HTMLElement, scroller: HTMLElement, mode: string, items: HTMLElement[]) {
+            const max = scroller.scrollHeight - scroller.clientHeight;
+
+            let top: number;
+            let nextMode = mode;
 
             if (mode === 'first') {
-                index = 0;
+                top = 0;
             } else if (mode === 'last') {
-                index = items.length - 1;
-            } else if (mode === 'next') {
-                index = current < 0 ? 0 : (current + 1) % items.length;
-            } else if (mode === 'prev') {
-                index = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
-            } else if (mode === 'nextPage') {
-                index = current < 0 ? 0 : Math.min(current + 10, items.length - 1);
+                top = max;
             } else if (mode === 'prevPage') {
-                index = current < 0 ? items.length - 1 : Math.max(current - 10, 0);
-            } else if (mode === 'selected') {
-                // Focus the selected option if there is one, otherwise the first one (APG combobox pattern).
-                index = items.findIndex(el => el.classList.contains('bit-drp-sel') || el.getAttribute('aria-selected') === 'true');
-                if (index < 0) {
-                    index = 0;
+                top = scroller.scrollTop - scroller.clientHeight;
+                nextMode = 'first';
+            } else if (mode === 'nextPage') {
+                top = scroller.scrollTop + scroller.clientHeight;
+                nextMode = 'last';
+            } else {
+                // The arrow keys move one item at a time, which scrolls the focused item into view and
+                // makes virtualization render the next ones on its own.
+                return null;
+            }
+
+            top = Math.max(0, Math.min(max, top));
+            if (top === scroller.scrollTop) return null;
+
+            const first = items[0];
+            const last = items[items.length - 1];
+
+            scroller.scrollTop = top;
+
+            for (let i = 0; i < Dropdowns.VIRTUALIZE_RENDER_FRAMES; i++) {
+                await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+                const rendered = Dropdowns._getItems(callout);
+                if (rendered.length > 0 && (rendered[0] !== first || rendered[rendered.length - 1] !== last)) {
+                    return { items: rendered, mode: nextMode };
                 }
-            } else if (mode === 'char' && char) {
+            }
+
+            return { items: Dropdowns._getItems(callout), mode: nextMode };
+        }
+
+        private static _resolveIndex(items: HTMLElement[], current: number, mode: string, char: string | null, virtualize: boolean) {
+            // Wrapping around is only correct when every item is rendered; in virtualize mode the ends
+            // of the rendered window are not the ends of the list, so the focus stops there instead.
+            const wrap = (index: number) => virtualize
+                ? Math.max(0, Math.min(items.length - 1, index))
+                : (index + items.length) % items.length;
+
+            if (mode === 'first') return 0;
+
+            if (mode === 'last') return items.length - 1;
+
+            if (mode === 'next') return current < 0 ? 0 : wrap(current + 1);
+
+            if (mode === 'prev') return current < 0 ? items.length - 1 : wrap(current - 1);
+
+            if (mode === 'nextPage') return current < 0 ? 0 : Math.min(current + 10, items.length - 1);
+
+            if (mode === 'prevPage') return current < 0 ? items.length - 1 : Math.max(current - 10, 0);
+
+            if (mode === 'selected') {
+                // Focus the selected option if there is one, otherwise the first one (APG combobox pattern).
+                const index = items.findIndex(el => el.classList.contains('bit-drp-sel') || el.getAttribute('aria-selected') === 'true');
+                return index < 0 ? 0 : index;
+            }
+
+            if (mode === 'char' && char) {
                 // Type-ahead per the APG: a repeated single character cycles through the options starting
                 // with it, while a multi-character buffer matches the accumulated string without leaving
                 // the current option (so typing a longer prefix refines the match instead of jumping).
@@ -89,16 +200,16 @@ namespace BitBlazorUI {
                 const start = current < 0 ? 0 : (sameChar ? current + 1 : current);
                 for (let i = 0; i < items.length; i++) {
                     const candidate = (start + i) % items.length;
+                    // The select all item is not an option, so its text must not be matched.
+                    if (items[candidate].getAttribute('role') !== 'option') continue;
+
                     if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(query) === 0) {
-                        index = candidate;
-                        break;
+                        return candidate;
                     }
                 }
             }
 
-            if (index > -1) {
-                items[index].focus();
-            }
+            return -1;
         }
     }
 }
