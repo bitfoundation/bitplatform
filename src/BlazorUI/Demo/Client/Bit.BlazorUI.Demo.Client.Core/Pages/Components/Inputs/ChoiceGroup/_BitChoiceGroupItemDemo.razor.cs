@@ -8,6 +8,8 @@ public partial class _BitChoiceGroupItemDemo
 
     private string? changedValue;
     private string? clickedItem;
+    private string? focusedItem;
+    private string? blurredItem;
 
     private int dynamicCounter = 3;
     private string? dynamicValue = "1";

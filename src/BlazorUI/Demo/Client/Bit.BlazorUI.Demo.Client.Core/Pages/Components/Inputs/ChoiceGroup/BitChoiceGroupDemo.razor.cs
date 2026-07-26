@@ -61,17 +61,17 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "Inline",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Renders the icons and images in a single line with the items in the ChoiceGroup."
-        },
-        new()
-        {
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders the items in the ChoiceGroup horizontally."
+        },
+        new()
+        {
+            Name = "Inline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the icons and images in a single line with the items in the ChoiceGroup."
         },
         new()
         {
@@ -118,9 +118,9 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "Name",
-            Type = "string",
-            DefaultValue = "Guid.NewGuid().ToString()",
-            Description = "Name of the ChoiceGroup, this unique name is used to group each item into the same logical component."
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name shared by the radio inputs of the items, which is what groups them into a single logical radio group. When not set, a unique name is generated for the ChoiceGroup."
         },
         new()
         {
@@ -140,6 +140,12 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "OnBlur",
+            Type = "EventCallback<TItem>",
+            Description = "Callback for when an item of the ChoiceGroup loses focus.",
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<TValue?>",
             Description = "Callback for when the selected value changes.",
@@ -149,6 +155,12 @@ public partial class BitChoiceGroupDemo
             Name = "OnClick",
             Type = "EventCallback<TItem>",
             Description = "Callback for when an enabled item is clicked, even the already selected one.",
+        },
+        new()
+        {
+            Name = "OnFocus",
+            Type = "EventCallback<TItem>",
+            Description = "Callback for when an item of the ChoiceGroup receives focus.",
         },
         new()
         {
@@ -458,7 +470,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "Value",
-                   Type = "string?",
+                   Type = "TValue?",
                    DefaultValue = "null",
                    Description = "The value returned when BitChoiceGroup item is checked.",
                },
@@ -466,7 +478,7 @@ public partial class BitChoiceGroupDemo
                {
                    Name = "Index",
                    Type = "int",
-                   DefaultValue = "null",
+                   DefaultValue = "0",
                    Description = "Index of the BitChoiceGroup item. This property's value is set by the component at render.",
                },
                new()
@@ -594,7 +606,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "Value",
-                   Type = "string?",
+                   Type = "TValue?",
                    DefaultValue = "null",
                    Description = "The value returned when BitChoiceGroup option is checked.",
                },
@@ -602,7 +614,7 @@ public partial class BitChoiceGroupDemo
                {
                    Name = "Index",
                    Type = "int",
-                   DefaultValue = "null",
+                   DefaultValue = "0",
                    Description = "Index of the BitChoiceGroup option. This property's value is set by the component at render.",
                },
                new()
@@ -691,6 +703,13 @@ public partial class BitChoiceGroupDemo
                    Type = "BitNameSelectorPair<TItem, BitImageSize?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.ImageSize))",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup option.",
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Prefix))",
+                   Description = "The text to show as a prefix for the BitChoiceGroup option.",
                },
                new()
                {

@@ -31,11 +31,11 @@
         font-weight: bold;
     }
 
+    // Only the look of the dot is customized here, never its position: the ChoiceGroup centers the dot
+    // in the circle itself, so a hard coded offset would fight that and depend on component internals.
     .custom-radio-btn::after {
         width: 8px;
         height: 8px;
-        border: none;
-        inset-inline-start: 6px;
         background-color: whitesmoke;
     }
 

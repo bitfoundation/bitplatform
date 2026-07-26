@@ -652,12 +652,18 @@ private readonly List<Order> prefixCustoms =
 <BitChoiceGroup Label=""Events"" Items=""basicCustoms"" DefaultValue=""@(""A"")""
                 OnChange=""(string? value) => changedValue = value""
                 OnClick=""(Order custom) => clickedCustom = custom.Name""
+                OnFocus=""(Order custom) => focusedCustom = custom.Name""
+                OnBlur=""(Order custom) => blurredCustom = custom.Name""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 <div>Changed value: <b>@changedValue</b></div>
-<div>Clicked custom: <b>@clickedCustom</b></div>";
+<div>Clicked custom: <b>@clickedCustom</b></div>
+<div>Focused custom: <b>@focusedCustom</b></div>
+<div>Blurred custom: <b>@blurredCustom</b></div>";
     private readonly string example14CsharpCode = @"
 private string? changedValue;
 private string? clickedCustom;
+private string? focusedCustom;
+private string? blurredCustom;
 
 public class Order
 {
@@ -1017,8 +1023,6 @@ private readonly List<Order> iconCustoms =
     .custom-radio-btn::after {
         width: 8px;
         height: 8px;
-        border: none;
-        inset-inline-start: 6px;
         background-color: whitesmoke;
     }
 

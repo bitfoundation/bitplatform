@@ -365,17 +365,23 @@ private string readOnlyValue = ""A"";";
     private readonly string example14RazorCode = @"
 <BitChoiceGroup Label=""Events"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string""
                 OnChange=""(string? value) => changedValue = value""
-                OnClick=""(BitChoiceGroupOption<string> option) => clickedOption = option.Text"">
+                OnClick=""(BitChoiceGroupOption<string> option) => clickedOption = option.Text""
+                OnFocus=""(BitChoiceGroupOption<string> option) => focusedOption = option.Text""
+                OnBlur=""(BitChoiceGroupOption<string> option) => blurredOption = option.Text"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 <div>Changed value: <b>@changedValue</b></div>
-<div>Clicked option: <b>@clickedOption</b></div>";
+<div>Clicked option: <b>@clickedOption</b></div>
+<div>Focused option: <b>@focusedOption</b></div>
+<div>Blurred option: <b>@blurredOption</b></div>";
     private readonly string example14CsharpCode = @"
 private string? changedValue;
-private string? clickedOption;";
+private string? clickedOption;
+private string? focusedOption;
+private string? blurredOption;";
 
     private readonly string example15RazorCode = @"
 <BitButton OnClick=""AddDynamicOption"">Add item</BitButton>
@@ -672,8 +678,6 @@ private void ReverseDynamicOptions()
     .custom-radio-btn::after {
         width: 8px;
         height: 8px;
-        border: none;
-        inset-inline-start: 6px;
         background-color: whitesmoke;
     }
 

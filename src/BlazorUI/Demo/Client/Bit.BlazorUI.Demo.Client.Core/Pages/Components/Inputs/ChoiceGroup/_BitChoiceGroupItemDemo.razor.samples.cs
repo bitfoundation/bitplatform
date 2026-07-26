@@ -437,12 +437,18 @@ private readonly List<BitChoiceGroupItem<string>> prefixItems =
     private readonly string example14RazorCode = @"
 <BitChoiceGroup Label=""Events"" Items=""basicItems"" DefaultValue=""@(""A"")""
                 OnChange=""(string? value) => changedValue = value""
-                OnClick=""(BitChoiceGroupItem<string> item) => clickedItem = item.Text"" />
+                OnClick=""(BitChoiceGroupItem<string> item) => clickedItem = item.Text""
+                OnFocus=""(BitChoiceGroupItem<string> item) => focusedItem = item.Text""
+                OnBlur=""(BitChoiceGroupItem<string> item) => blurredItem = item.Text"" />
 <div>Changed value: <b>@changedValue</b></div>
-<div>Clicked item: <b>@clickedItem</b></div>";
+<div>Clicked item: <b>@clickedItem</b></div>
+<div>Focused item: <b>@focusedItem</b></div>
+<div>Blurred item: <b>@blurredItem</b></div>";
     private readonly string example14CsharpCode = @"
 private string? changedValue;
 private string? clickedItem;
+private string? focusedItem;
+private string? blurredItem;
 
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
@@ -712,8 +718,6 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
     .custom-radio-btn::after {
         width: 8px;
         height: 8px;
-        border: none;
-        inset-inline-start: 6px;
         background-color: whitesmoke;
     }
 

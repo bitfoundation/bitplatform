@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @typeparam TItem
 @typeparam TValue
 
@@ -8,7 +8,15 @@
     var template = ChoiceGroup.GetTemplate(Item);
     var isChecked = ChoiceGroup.GetIsCheckedItem(Item);
     var description = ChoiceGroup.GetDescription(Item);
-    var descriptionId = ChoiceGroup.GetDescriptionId(Item);
+    var descriptionId = $"{inputId}-description";
+
+    // The description element belongs to the built-in item content, so a template that takes the content
+    // over also takes the description over. aria-describedby is only emitted when the element it points
+    // at is actually rendered, otherwise it would be a dangling reference.
+    var hasDescription = description.HasValue()
+                      && template is null
+                      && ChoiceGroup.ItemTemplate is null
+                      && ChoiceGroup.ItemLabelTemplate is null;
 }
 
 <div style="@ChoiceGroup.GetItemContainerCssStyles(Item)" class="@ChoiceGroup.GetItemContainerCssClasses(Item)" @attributes="ChoiceGroup.GetItemMarkerAttributes(Item)">
@@ -16,6 +24,8 @@
            @onclick="e => ChoiceGroup.HandleClick(Item)"
            @onclick:preventDefault="ChoiceGroup.ReadOnly"
            @onchange="e => ChoiceGroup.HandleChange(Item)"
+           @onfocus="e => ChoiceGroup.HandleFocus(Item)"
+           @onblur="e => ChoiceGroup.HandleBlur(Item)"
            type="radio"
            id="@inputId"
            checked=@isChecked
@@ -24,9 +34,9 @@
            required="@ChoiceGroup.Required"
            tabindex="@(ChoiceGroup.ReadOnly ? "-1" : null)"
            aria-label="@ChoiceGroup.GetAriaLabel(Item)"
-           aria-describedby="@(description.HasValue() ? descriptionId : null)"
+           aria-describedby="@(hasDescription ? descriptionId : null)"
            value="@ChoiceGroup.GetValue(Item)?.ToString()"
-           disabled="@(ChoiceGroup.GetIsEnabled(Item) is false)" />
+           disabled="@(ChoiceGroup.GetIsItemEnabled(Item) is false)" />
 
     <label for="@inputId" style="@ChoiceGroup.Styles?.ItemLabel" class="bit-chg-itl @ChoiceGroup.GetItemLabelCssClasses(Item) @ChoiceGroup.Classes?.ItemLabel">
         @if (template is not null)
@@ -39,7 +49,7 @@
         }
         else
         {
-            @if (prefix is not null)
+            @if (prefix.HasValue())
             {
                 <span style="@ChoiceGroup.Styles?.ItemPrefix" class="@ChoiceGroup.Classes?.ItemPrefix">@prefix</span>
             }
@@ -62,13 +72,12 @@
                 var imageSrc = ChoiceGroup.GetImageSrc(Item);
                 @if (imageSrc.HasValue())
                 {
-                    var imageSize = ChoiceGroup.GetImageSize(Item);
-
                     <div style="@ChoiceGroup.Styles?.ItemImageContainer" class="bit-chg-iic @ChoiceGroup.Classes?.ItemImageContainer">
-                        <div style="@(FormattableString.Invariant($"width:{imageSize.Width}px; height:{imageSize.Height}px;")) @ChoiceGroup.Styles?.ItemImageWrapper"
+                        <div style="@ChoiceGroup.GetImageWrapperCssStyles(Item)"
                              class="bit-chg-iiw @ChoiceGroup.Classes?.ItemImageWrapper">
-                            <img src="@(isChecked? ChoiceGroup.GetSelectedImageSrc(Item) : imageSrc)"
-                                 alt="@ChoiceGroup.GetImageAlt(Item)"
+                            @* An empty alt marks the image as decorative: the text of the item is the accessible name. *@
+                            <img src="@ChoiceGroup.GetImageSrcForState(Item, isChecked)"
+                                 alt="@(ChoiceGroup.GetImageAlt(Item) ?? string.Empty)"
                                  style="@ChoiceGroup.Styles?.ItemImage"
                                  class="@ChoiceGroup.Classes?.ItemImage">
                         </div>

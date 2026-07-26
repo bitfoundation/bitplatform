@@ -16,19 +16,21 @@
      aria-disabled="@(IsEnabled ? null : "true")"
      aria-orientation="@(Horizontal ? "horizontal" : "vertical")">
 
-    <label id="@_labelId"
-           disabled="@(IsEnabled is false)"
-           style="@Styles?.LabelContainer"
-           class="@Classes?.LabelContainer">
-        @if (LabelTemplate is not null)
-        {
-            @LabelTemplate
-        }
-        else if (Label.HasValue())
-        {
-            <span style="@Styles?.Label" class="bit-chg-lbl @Classes?.Label">@Label</span>
-        }
-    </label>
+    @if (HasLabel)
+    {
+        <label id="@_labelId"
+               style="@Styles?.LabelContainer"
+               class="@Classes?.LabelContainer">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Label" class="bit-chg-lbl @Classes?.Label">@Label</span>
+            }
+        </label>
+    }
 
     <div id="@_optionsContainerId" style="@Styles?.Container" class="bit-chg-cnt @Classes?.Container">
         @if (Options is not null || ChildContent is not null)

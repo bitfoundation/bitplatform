@@ -370,12 +370,14 @@
 </DemoExample>
 
 <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-    <div>Raises OnChange whenever the selected value changes, and OnClick on every click of an enabled option, including the already selected one.</div>
+    <div>Raises OnChange whenever the selected value changes, OnClick on every click of an enabled option, including the already selected one, and OnFocus and OnBlur as the focus moves between the options.</div>
     <br />
     <div class="example-content column">
         <BitChoiceGroup Label="Events" DefaultValue="@("A")" TItem="BitChoiceGroupOption<string>" TValue="string"
                         OnChange="(string? value) => changedValue = value"
-                        OnClick="(BitChoiceGroupOption<string> option) => clickedOption = option.Text">
+                        OnClick="(BitChoiceGroupOption<string> option) => clickedOption = option.Text"
+                        OnFocus="(BitChoiceGroupOption<string> option) => focusedOption = option.Text"
+                        OnBlur="(BitChoiceGroupOption<string> option) => blurredOption = option.Text">
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
@@ -383,6 +385,8 @@
         </BitChoiceGroup>
         <div>Changed value: <b>@changedValue</b></div>
         <div>Clicked option: <b>@clickedOption</b></div>
+        <div>Focused option: <b>@focusedOption</b></div>
+        <div>Blurred option: <b>@blurredOption</b></div>
     </div>
 </DemoExample>
 

@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-chg {
     display: flex;
@@ -18,7 +18,7 @@
             &::after {
                 content: " *";
                 color: $clr-req;
-                padding-right: spacing(1.5);
+                padding-inline-end: spacing(1.5);
             }
         }
     }
@@ -103,20 +103,25 @@
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
     }
 
+    // Centered with "inset:0 + margin:auto" rather than an inset/translate pair, which would disagree in
+    // RTL: a logical inset flips side there while a physical translate does not, so the two would compound
+    // and push the dot off center by half its width instead of cancelling out.
+    // The dot has its own size (rather than being derived as half the circle) so that the space left over
+    // around it is always an even number of pixels. Halving an odd leftover would put the dot on a half
+    // pixel while the ring stays on the pixel grid, which reads as an off center dot at the small and
+    // large sizes; only the medium size happens to divide evenly.
     &::after {
-        top: 50%;
+        inset: 0;
         opacity: 0;
         content: "";
-        aspect-ratio: 1;
+        margin: auto;
         position: absolute;
         border-radius: 50%;
         box-sizing: border-box;
-        inset-inline-start: 50%;
-        transform: translate(-50%, -50%);
         background-color: $clr-fg-sec-hover;
-        transition-property: background-color;
-        width: calc(var(--bit-chg-circle-size) / 2);
-        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        width: var(--bit-chg-dot-size, calc(var(--bit-chg-circle-size) / 2));
+        height: var(--bit-chg-dot-size, calc(var(--bit-chg-circle-size) / 2));
+        transition: opacity 0.2s cubic-bezier(0.4, 0, 0.23, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
     }
 
     @media (hover: hover) {
@@ -192,7 +197,7 @@
     .bit-chg-rad {
         position: absolute;
         top: calc(var(--bit-chg-circle-size) / 4);
-        right: calc(var(--bit-chg-circle-size) / 4);
+        inset-inline-end: calc(var(--bit-chg-circle-size) / 4);
 
         &::before {
             opacity: 0;
@@ -210,9 +215,6 @@
             }
         }
     }
-}
-
-.bit-chg-ncr {
 }
 
 .bit-chg-itx {
@@ -263,7 +265,6 @@
 .bit-chg-ico {
     speak: none;
     display: inline-block;
-    //width: var(--bit-chg-ico-size);
 }
 
 .bit-chg-inl {
@@ -280,10 +281,6 @@
     .bit-chg-icw {
         padding: 0;
         font-size: calc(var(--bit-chg-fontsize) + spacing(0.25));
-    }
-
-    .bit-chg-ico {
-        //width: unset;
     }
 }
 
@@ -380,41 +377,35 @@
 .bit-chg-pri {
     --bit-chg-clr: #{$clr-pri};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-pri};
     --bit-chg-clr-hover: #{$clr-pri-hover};
 }
 
 .bit-chg-sec {
     --bit-chg-clr: #{$clr-sec};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-sec};
     --bit-chg-clr-hover: #{$clr-sec-hover};
 }
 
 .bit-chg-ter {
     --bit-chg-clr: #{$clr-ter};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-ter};
     --bit-chg-clr-hover: #{$clr-ter-hover};
 }
 
 .bit-chg-inf {
     --bit-chg-clr: #{$clr-inf};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-inf};
     --bit-chg-clr-hover: #{$clr-inf-hover};
 }
 
 .bit-chg-suc {
     --bit-chg-clr: #{$clr-suc};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-suc};
     --bit-chg-clr-hover: #{$clr-suc-hover};
 }
 
 .bit-chg-wrn {
     --bit-chg-clr: #{$clr-wrn};
-    --bit-chg-clr-brd: #{$clr-wrn};
     --bit-chg-clr-hover: #{$clr-wrn-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
 }
@@ -422,13 +413,11 @@
 .bit-chg-swr {
     --bit-chg-clr: #{$clr-swr};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-swr};
     --bit-chg-clr-hover: #{$clr-swr-hover};
 }
 
 .bit-chg-err {
     --bit-chg-clr: #{$clr-err};
-    --bit-chg-clr-brd: #{$clr-err};
     --bit-chg-clr-hover: #{$clr-err-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
 }
@@ -436,20 +425,17 @@
 .bit-chg-pbg {
     --bit-chg-clr: #{$clr-bg-pri};
     --bit-chg-clr-bg: #{$clr-fg-pri};
-    --bit-chg-clr-brd: #{$clr-bg-pri};
     --bit-chg-clr-hover: #{$clr-bg-pri-hover};
 }
 
 .bit-chg-sbg {
     --bit-chg-clr: #{$clr-bg-sec};
     --bit-chg-clr-bg: #{$clr-fg-pri};
-    --bit-chg-clr-brd: #{$clr-bg-sec};
     --bit-chg-clr-hover: #{$clr-bg-sec-hover};
 }
 
 .bit-chg-tbg {
     --bit-chg-clr: #{$clr-bg-ter};
-    --bit-chg-clr-brd: #{$clr-bg-ter};
     --bit-chg-clr-hover: #{$clr-bg-ter-hover};
     --bit-chg-clr-bg: #{$clr-fg-pri};
 }
@@ -457,13 +443,11 @@
 .bit-chg-pfg {
     --bit-chg-clr: #{$clr-fg-pri};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-fg-pri};
     --bit-chg-clr-hover: #{$clr-fg-pri-hover};
 }
 
 .bit-chg-sfg {
     --bit-chg-clr: #{$clr-fg-sec};
-    --bit-chg-clr-brd: #{$clr-fg-sec};
     --bit-chg-clr-hover: #{$clr-fg-sec-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
 }
@@ -471,13 +455,11 @@
 .bit-chg-tfg {
     --bit-chg-clr: #{$clr-fg-ter};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-fg-ter};
     --bit-chg-clr-hover: #{$clr-fg-ter-hover};
 }
 
 .bit-chg-pbr {
     --bit-chg-clr: #{$clr-brd-pri};
-    --bit-chg-clr-brd: #{$clr-brd-pri};
     --bit-chg-clr-hover: #{$clr-brd-pri-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
 }
@@ -485,23 +467,24 @@
 .bit-chg-sbr {
     --bit-chg-clr: #{$clr-brd-sec};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-sec};
     --bit-chg-clr-hover: #{$clr-brd-sec-hover};
 }
 
 .bit-chg-tbr {
     --bit-chg-clr: #{$clr-brd-ter};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-ter};
     --bit-chg-clr-hover: #{$clr-brd-ter-hover};
 }
 
+// The dot size of each size is picked so that the circle size minus the dot size stays an even number of
+// pixels at the default spacing scale, which is what keeps the centered dot on the pixel grid: 14-6, 20-10
+// and 26-12. Deriving it as half the circle instead would leave an odd 7 and 13 for small and large.
 .bit-chg-sm {
     --bit-chg-item-gap: #{spacing(1)};
     --bit-chg-ico-size: #{spacing(3)};
     --bit-chg-fontsize: #{spacing(1.5)};
     --bit-chg-circle-size: #{spacing(1.75)};
-    --bit-chg-dot-position: #{spacing(0.8125)};
+    --bit-chg-dot-size: #{spacing(0.75)};
 }
 
 .bit-chg-md {
@@ -509,7 +492,7 @@
     --bit-chg-ico-size: #{spacing(4)};
     --bit-chg-fontsize: #{spacing(1.75)};
     --bit-chg-circle-size: #{spacing(2.5)};
-    --bit-chg-dot-position: #{spacing(1)};
+    --bit-chg-dot-size: #{spacing(1.25)};
 }
 
 .bit-chg-lg {
@@ -517,7 +500,7 @@
     --bit-chg-ico-size: #{spacing(5)};
     --bit-chg-fontsize: #{spacing(2)};
     --bit-chg-circle-size: #{spacing(3.25)};
-    --bit-chg-dot-position: #{spacing(1.25)};
+    --bit-chg-dot-size: #{spacing(1.5)};
 }
 
 .bit-chg-hor {

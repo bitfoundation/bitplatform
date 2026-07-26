@@ -189,14 +189,18 @@
 </DemoExample>
 
 <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-    <div>Raises OnChange whenever the selected value changes, and OnClick on every click of an enabled item, including the already selected one.</div>
+    <div>Raises OnChange whenever the selected value changes, OnClick on every click of an enabled item, including the already selected one, and OnFocus and OnBlur as the focus moves between the items.</div>
     <br />
     <div class="example-content column">
         <BitChoiceGroup Label="Events" Items="basicItems" DefaultValue="@("A")"
                         OnChange="(string? value) => changedValue = value"
-                        OnClick="(BitChoiceGroupItem<string> item) => clickedItem = item.Text" />
+                        OnClick="(BitChoiceGroupItem<string> item) => clickedItem = item.Text"
+                        OnFocus="(BitChoiceGroupItem<string> item) => focusedItem = item.Text"
+                        OnBlur="(BitChoiceGroupItem<string> item) => blurredItem = item.Text" />
         <div>Changed value: <b>@changedValue</b></div>
         <div>Clicked item: <b>@clickedItem</b></div>
+        <div>Focused item: <b>@focusedItem</b></div>
+        <div>Blurred item: <b>@blurredItem</b></div>
     </div>
 </DemoExample>
 
