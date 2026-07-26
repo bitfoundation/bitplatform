@@ -80,19 +80,24 @@ public sealed class BitThemeFactoryTests
     [TestMethod]
     public void CreateDarkThemeMatchesThePackagedDarkPalette()
     {
-        // Calibration pin: brand #1A86D8 is the packaged light primary, so the derived dark main
-        // must land on (a hue-faithful version of) the packaged dark primary #569FFF. The packaged
-        // value carries a hand-tuned ~8° hue shift the derivation intentionally does not copy, so
-        // only lightness is pinned.
-        var derived = BitThemeFactory.CreateDarkTheme("#1A86D8").Color.Primary.Main!;
+        // Calibration pin: brand #1276C6 is the packaged light primary, so the derived dark main
+        // must land on the packaged dark primary #4FA3F4. Both packaged palettes now place primary
+        // on the same hue, so hue is pinned alongside lightness (the earlier palettes carried a
+        // hand-tuned ~8° shift between the two schemes that the derivation did not copy).
+        var derived = BitThemeFactory.CreateDarkTheme("#1276C6").Color.Primary.Main!;
 
         var derivedColor = new BitInternalColor(derived);
-        var (derivedL, _, _) = BitThemeOklch.FromRgb(derivedColor.R, derivedColor.G, derivedColor.B);
-        var packagedColor = new BitInternalColor("#569FFF");
-        var (packagedL, _, _) = BitThemeOklch.FromRgb(packagedColor.R, packagedColor.G, packagedColor.B);
+        var (derivedL, _, derivedH) = BitThemeOklch.FromRgb(derivedColor.R, derivedColor.G, derivedColor.B);
+        var packagedColor = new BitInternalColor("#4FA3F4");
+        var (packagedL, _, packagedH) = BitThemeOklch.FromRgb(packagedColor.R, packagedColor.G, packagedColor.B);
 
         Assert.IsTrue(Math.Abs(derivedL - packagedL) < 0.02,
-            $"derived dark main {derived} (L={derivedL:F4}) should sit within 0.02 OKLab lightness of packaged #569FFF (L={packagedL:F4})");
+            $"derived dark main {derived} (L={derivedL:F4}) should sit within 0.02 OKLab lightness of packaged #4FA3F4 (L={packagedL:F4})");
+
+        var hueDelta = Math.Abs(derivedH - packagedH);
+        if (hueDelta > 180) hueDelta = 360 - hueDelta;
+        Assert.IsTrue(hueDelta < 3.0,
+            $"derived dark main {derived} (H={derivedH:F1}°) should share the hue of packaged #4FA3F4 (H={packagedH:F1}°)");
     }
 
     [TestMethod]

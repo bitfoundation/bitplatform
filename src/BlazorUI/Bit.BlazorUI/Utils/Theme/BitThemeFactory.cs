@@ -18,17 +18,19 @@ namespace Bit.BlazorUI;
 /// <see cref="CreateDarkTheme(string)"/>: the dark factory first brightens the brand toward white
 /// (constant hue) so the accent keeps its identity but reads correctly on a dark surface - the
 /// same relationship the packaged Fluent light/dark palettes have (light primary
-/// <c>#1A86D8</c> → dark primary <c>#569FFF</c>). To control the dark-scheme main yourself,
+/// <c>#1276C6</c> → dark primary <c>#4FA3F4</c>). To control the dark-scheme main yourself,
 /// derive directly with
 /// <see cref="BitThemeColorDerivation.FillColorRoleFromMain(BitThemeColorVariants?, string?, BitThemeColorScheme)"/>.
 /// </para>
 /// </remarks>
 public static class BitThemeFactory
 {
-    // The packaged dark palette's accent mains are ~21-24% OKLab white mixes of their light
-    // (brand) counterparts at constant hue; 0.23 reproduces primary #1A86D8 → #569FFF to within
-    // rounding.
-    private const double DarkSchemeMainWhiteMix = 0.23;
+    // 0.32 reproduces the packaged primary #1276C6 → #4FA3F4 to within rounding. Unlike the earlier
+    // palettes, the packaged light and dark mains are no longer one constant white mix apart across
+    // every role (each scheme anchors its own mains against its own surface: the light mains are set
+    // so white text on them clears 4.5:1, the dark mains so near-black text does), so this single
+    // fraction tracks primary and lands within a few lightness points on the other accent hues.
+    private const double DarkSchemeMainWhiteMix = 0.32;
 
     /// <summary>Builds a light-scheme theme overlay whose primary role is derived from <paramref name="accentHex"/>.</summary>
     /// <param name="accentHex">The brand color in <c>#RGB</c> or <c>#RRGGBB</c> form.</param>

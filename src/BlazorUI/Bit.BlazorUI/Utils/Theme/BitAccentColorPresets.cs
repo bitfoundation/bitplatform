@@ -7,7 +7,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 public static class BitAccentColorPresets
 {
-    public const string Blue = "#1A86D8";
+    // Blue is the packaged Fluent light palette's own primary; the rest are Fluent accent hues.
+    public const string Blue = "#1276C6";
     public const string Purple = "#8764B8";
     public const string Green = "#107C10";
     public const string Orange = "#CA5010";

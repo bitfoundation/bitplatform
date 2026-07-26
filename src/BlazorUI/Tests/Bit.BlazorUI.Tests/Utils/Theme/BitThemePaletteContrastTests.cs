@@ -11,15 +11,17 @@ public sealed class BitThemePaletteContrastTests
 {
     private static readonly string[] Roles = ["pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err"];
 
-    // Fill states that components pair with the role's -text on-color (e.g. filled buttons).
-    private static readonly string[] FillSuffixes = ["", "-hover", "-active"];
+    // Every fill state the role's -text on-color is actually painted over. Besides the main tier
+    // (filled buttons, tags, snackbars) that includes the dark tier, which BitToggleButton's checked
+    // state and BitPagination's selected page fill with while still drawing the on-color as text.
+    private static readonly string[] FillSuffixes = ["", "-hover", "-active", "-dark", "-dark-hover", "-dark-active"];
 
-    // 3.0 is the WCAG 1.4.11/1.4.3 large-text & UI-component floor, used as the hard gate so a
-    // palette tweak can never reintroduce unreadable combos (white on warning yellow was 1.91:1).
-    // 4.5 (AA normal text) is the target; the known deliberate exceptions below sit in between:
-    // light pri (#1A86D8 + white = 3.86) and err (#DF3A2E + white = 4.39), where white still beats
-    // any dark on-color and matches platform conventions for brand/danger fills.
-    private const double UiContrastFloor = 3.0;
+    // The palettes are solved so the on-color clears AA normal text on every fill it lands on, so
+    // the gate is the full 4.5 rather than the 1.4.11 UI floor of 3.0 - there are no longer any
+    // deliberate exceptions sitting between the two. This is the regression guard for that: it is
+    // what stops a future palette tweak from quietly reintroducing an unreadable pairing (white on
+    // warning yellow was once 1.91:1, and the on-color over the dark tier once fell to 2.34:1).
+    private const double UiContrastFloor = 4.5;
 
     [DataTestMethod]
     [DataRow("colors.fluent-light.scss")]

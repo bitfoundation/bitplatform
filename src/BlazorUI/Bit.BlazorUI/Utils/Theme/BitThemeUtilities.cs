@@ -61,7 +61,7 @@ public static class BitThemeUtilities
     /// <remarks>
     /// <para>
     /// Mixing with <c>transparent</c> in sRGB scales only the alpha channel, so
-    /// <c>WithAlpha("#1A86D8", 0.2)</c> renders identically to <c>rgba(26, 134, 216, 0.2)</c> -
+    /// <c>WithAlpha("#1276C6", 0.2)</c> renders identically to <c>rgba(18, 118, 198, 0.2)</c> -
     /// but unlike a precomputed rgba value it also works when the input is a <c>var()</c>
     /// reference whose concrete color is only known in the browser. The returned expression is a
     /// valid theme token value: it passes the mapper's injection screening, so it can be assigned

@@ -8,20 +8,25 @@ public static class BitThemeColorDerivation
 {
     // Interactive/dark steps: relative OKLab lightness scale at constant hue and chroma
     // (out-of-gamut chroma is reduced by BitThemeOklch). Factors are calibrated against the
-    // packaged Fluent light palette (e.g. primary #1A86D8 → hover #197FCD is L × 0.96).
-    private const double MainHoverDarken = 0.04;
-    private const double MainActiveDarken = 0.075;
-    private const double DarkDarken = 0.12;
-    private const double DarkHoverDarken = 0.15;
-    private const double DarkActiveDarken = 0.18;
+    // packaged Fluent light palette (e.g. primary #1276C6 → hover #0B6AB4 is L × 0.927).
+    // The packaged ramp steps by a fixed number of OKLCH lightness points rather than by a
+    // percentage, so these relative factors reproduce it exactly only near primary's own lightness
+    // and run shallower for a lighter seed / deeper for a darker one - the fixed-point spacing is
+    // what keeps the packaged steps perceptually even, and a seed-relative factor is what keeps a
+    // derived role's steps in proportion to a brand color of any lightness.
+    private const double MainHoverDarken = 0.071;
+    private const double MainActiveDarken = 0.133;
+    private const double DarkDarken = 0.217;
+    private const double DarkHoverDarken = 0.289;
+    private const double DarkActiveDarken = 0.353;
 
     // Light tints: OKLab mix with white (L moves toward 1, chroma scales down by the
     // same factor), again matching the packaged palette, where light/light-hover/light-active are
-    // ~58% / ~47.5% / ~37.5% white mixes of main. Note the hover/active steps of the light family
+    // ~53.5% / ~44.5% / ~37% white mixes of main. Note the hover/active steps of the light family
     // step BACK toward main (a tinted background darkens on hover), so Light is the lightest step.
-    private const double LightWhiteMix = 0.58;
-    private const double LightHoverWhiteMix = 0.475;
-    private const double LightActiveWhiteMix = 0.375;
+    private const double LightWhiteMix = 0.535;
+    private const double LightHoverWhiteMix = 0.445;
+    private const double LightActiveWhiteMix = 0.37;
 
     // Disabled pair (fill + its text), the one family that is NOT a relative step off main: the
     // lightness is an absolute OKLab target and the chroma is capped at a faint hue trace, matching
@@ -31,8 +36,12 @@ public static class BitThemeColorDerivation
     // state; an absolute target puts every role's disabled state at the same weight, which is what
     // makes it recognizable. The values are the packaged palettes' targets, so the 8 semantic roles
     // of both Fluent palettes come out of this method byte-identical (pinned by a derivation test).
+    // DisabledTextL is set so the pair clears 3:1 for every packaged role (the worst case is
+    // success, at 3.2:1): disabled controls are exempt from WCAG 1.4.3, but text nobody can read is
+    // still text nobody can read, so the palettes hold the pair at a legible-but-clearly-muted
+    // ratio instead of the ~2.3:1 an unconstrained lightness band produced.
     private const double DisabledL = 0.94;
-    private const double DisabledTextL = 0.69;
+    private const double DisabledTextL = 0.61;
     private const double DisabledC = 0.030;
     private const double DisabledTextC = 0.040;
 
@@ -48,22 +57,26 @@ public static class BitThemeColorDerivation
     private const double DarkSchemeDisabledMaxScale = 0.85;
     private const double DarkSchemeDisabledTextMaxScale = 0.95;
 
-    // Dark-scheme steps, calibrated the same way against the packaged Fluent dark palette (whose
-    // primary AND secondary families agree on these fractions to within rounding). Interactive
-    // states are black mixes (a fill on a dark surface dims on interaction), the dark family keeps
-    // chroma while lowering lightness, and the light family still mixes toward white but far less
-    // (the dark main is already bright). The disabled pair is not part of this group - it targets the
-    // absolute lightness band above.
-    private const double DarkSchemeMainHoverBlackMix = 0.075;
-    private const double DarkSchemeMainActiveBlackMix = 0.15;
-    private const double DarkSchemeDarkDarken = 0.14;
-    private const double DarkSchemeDarkHoverDarken = 0.17;
-    private const double DarkSchemeDarkActiveDarken = 0.205;
-    private const double DarkSchemeLightWhiteMix = 0.28;
-    private const double DarkSchemeLightHoverWhiteMix = 0.18;
-    private const double DarkSchemeLightActiveWhiteMix = 0.09;
+    // Dark-scheme steps, calibrated the same way against the packaged Fluent dark palette. On a dark
+    // surface interaction moves a fill TOWARD the light source, so - unlike the light scheme, and
+    // unlike this type's own earlier black-mix steps - every interactive step here LIGHTENS: hover
+    // and active mix toward white, the dark family sits below main and its own hover/active step
+    // back up toward it, and the light family keeps mixing further toward white. That is the
+    // direction Fluent 2's dark hover tokens and the packaged dark palette both take.
+    //
+    // The lightening steps are white MIXES rather than relative L scales on purpose: a mix can never
+    // overshoot white, so the nine steps stay monotonically ordered even for a near-white seed,
+    // where an L-multiplying step would clamp at 1.0 and cross the light family.
+    private const double DarkSchemeMainHoverWhiteMix = 0.14;
+    private const double DarkSchemeMainActiveWhiteMix = 0.24;
+    private const double DarkSchemeDarkDarken = 0.121;
+    private const double DarkSchemeDarkHoverDarken = 0.074;
+    private const double DarkSchemeDarkActiveDarken = 0.041;
+    private const double DarkSchemeLightWhiteMix = 0.415;
+    private const double DarkSchemeLightHoverWhiteMix = 0.561;
+    private const double DarkSchemeLightActiveWhiteMix = 0.664;
     private const double DarkSchemeDisabledL = 0.30;
-    private const double DarkSchemeDisabledTextL = 0.52;
+    private const double DarkSchemeDisabledTextL = 0.58;
 
     /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields by deriving OKLCH-shifted hex values from <paramref name="mainHex"/>.</summary>
     /// <param name="variants">Target variants to fill in-place. Already-populated properties are preserved.</param>
@@ -146,8 +159,8 @@ public static class BitThemeColorDerivation
 
         if (scheme is BitThemeColorScheme.Dark)
         {
-            variants.MainHover ??= MixWithBlack(l, c, h, DarkSchemeMainHoverBlackMix);
-            variants.MainActive ??= MixWithBlack(l, c, h, DarkSchemeMainActiveBlackMix);
+            variants.MainHover ??= MixWithWhite(l, c, h, DarkSchemeMainHoverWhiteMix);
+            variants.MainActive ??= MixWithWhite(l, c, h, DarkSchemeMainActiveWhiteMix);
             variants.Dark ??= Darken(l, c, h, DarkSchemeDarkDarken);
             variants.DarkHover ??= Darken(l, c, h, DarkSchemeDarkHoverDarken);
             variants.DarkActive ??= Darken(l, c, h, DarkSchemeDarkActiveDarken);
@@ -196,11 +209,6 @@ public static class BitThemeColorDerivation
     // tints stay in-gamut and pastel by construction, and steps stay distinct for any L < 1.
     private static string MixWithWhite(double l, double c, double h, double amount)
         => BitThemeOklch.ToHex(l + ((1 - l) * amount), c * (1 - amount), h);
-
-    // An OKLab black mix scales lightness AND chroma down together (unlike Darken, which keeps
-    // chroma), producing the dimmed-not-richer look interactive fills have on a dark surface.
-    private static string MixWithBlack(double l, double c, double h, double amount)
-        => BitThemeOklch.ToHex(l * (1 - amount), c * (1 - amount), h);
 
     // Mutes a color to an absolute lightness while keeping its hue and a capped trace of its chroma:
     // the disabled recipe, where the point is that the result does NOT track the role's own

@@ -296,7 +296,7 @@ public sealed class BitThemeColorDerivationTests
 
         // The light family is a tinted background: Light is the palest step and its hover/active
         // states step BACK toward Main (a tinted surface darkens on interaction) - matching the
-        // packaged Fluent palette (pri-light #A3CFEF → hover #8CC3EC → active #76B6E8). All three
+        // packaged Fluent palette (pri-light #85C1FF → hover #74B4F6 → active #66A9EE). All three
         // stay lighter than Main.
         Assert.IsTrue(lightLum   > mainLum,   "Light should be lighter than Main");
         Assert.IsTrue(lHoverLum  > mainLum,   "LightHover should be lighter than Main");
@@ -551,26 +551,27 @@ public sealed class BitThemeColorDerivationTests
     [TestMethod]
     public void FillColorRoleFromMainDarkSchemeVariantsAreOrderedByPerceptualLightness()
     {
-        // Dark-scheme ordering differs from light in one respect: the dark family interleaves with
-        // the interactive states (in the packaged dark palette, dark sits between hover and
-        // active), so the chains are asserted separately: interactive states dim from Main, the
-        // dark family dims further among itself, and the light family still sits above Main with
-        // Light as its palest step.
-        foreach (var seed in new[] { "#569FFF", "#FF9E67", "#FFE500", "#6B21A8" })
+        // On a dark surface every interactive step moves TOWARD the light source, the opposite of
+        // the light scheme, so the whole nine-step ramp is one monotonically increasing chain:
+        // the dark family sits below Main and steps back up toward it, Main's own hover/active
+        // climb past Main, and the light family climbs furthest. This is the direction the packaged
+        // dark palette takes; asserting the single chain also pins that no step crosses another for
+        // a near-white seed, where a lightening step could otherwise clamp at white.
+        foreach (var seed in new[] { "#4FA3F4", "#F49666", "#FFE500", "#6B21A8" })
         {
             var v = new BitThemeColorVariants();
             BitThemeColorDerivation.FillColorRoleFromMain(v, seed, BitThemeColorScheme.Dark);
 
             var main = OklabLightness(v.Main!);
 
-            Assert.IsTrue(OklabLightness(v.Light!) > OklabLightness(v.LightHover!), $"Light > LightHover for {seed}");
-            Assert.IsTrue(OklabLightness(v.LightHover!) > OklabLightness(v.LightActive!), $"LightHover > LightActive for {seed}");
-            Assert.IsTrue(OklabLightness(v.LightActive!) > main, $"LightActive > Main for {seed}");
-            Assert.IsTrue(main > OklabLightness(v.MainHover!), $"Main > MainHover for {seed}");
-            Assert.IsTrue(OklabLightness(v.MainHover!) > OklabLightness(v.MainActive!), $"MainHover > MainActive for {seed}");
-            Assert.IsTrue(main > OklabLightness(v.Dark!), $"Main > Dark for {seed}");
-            Assert.IsTrue(OklabLightness(v.Dark!) > OklabLightness(v.DarkHover!), $"Dark > DarkHover for {seed}");
-            Assert.IsTrue(OklabLightness(v.DarkHover!) > OklabLightness(v.DarkActive!), $"DarkHover > DarkActive for {seed}");
+            Assert.IsTrue(OklabLightness(v.Dark!) < OklabLightness(v.DarkHover!), $"Dark < DarkHover for {seed}");
+            Assert.IsTrue(OklabLightness(v.DarkHover!) < OklabLightness(v.DarkActive!), $"DarkHover < DarkActive for {seed}");
+            Assert.IsTrue(OklabLightness(v.DarkActive!) < main, $"DarkActive < Main for {seed}");
+            Assert.IsTrue(main < OklabLightness(v.MainHover!), $"Main < MainHover for {seed}");
+            Assert.IsTrue(OklabLightness(v.MainHover!) < OklabLightness(v.MainActive!), $"MainHover < MainActive for {seed}");
+            Assert.IsTrue(OklabLightness(v.MainActive!) < OklabLightness(v.Light!), $"MainActive < Light for {seed}");
+            Assert.IsTrue(OklabLightness(v.Light!) < OklabLightness(v.LightHover!), $"Light < LightHover for {seed}");
+            Assert.IsTrue(OklabLightness(v.LightHover!) < OklabLightness(v.LightActive!), $"LightHover < LightActive for {seed}");
             Assert.IsTrue(OklabLightness(v.Disabled!) < main, $"Disabled < Main for {seed}");
             Assert.IsTrue(OklabLightness(v.DisabledText!) > OklabLightness(v.Disabled!), $"DisabledText > Disabled for {seed}");
         }
