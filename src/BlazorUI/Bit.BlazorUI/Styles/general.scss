@@ -27,6 +27,17 @@ button {
     }
 }
 
+// Opts a subtree out of the reduced-motion collapse in motion.fluent.scss (BitComponentBase.ForceAnimation).
+// The durations are inherited custom properties, so re-pointing them at the -full tokens here restores the
+// unreduced values for this element and everything under it, without touching the document root. The
+// literal fallbacks keep this working for a consumer theme that defines --bit-mot-duration* by hand and
+// therefore has no -full tokens to fall back on.
+.bit-fam {
+    --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
+    --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
+    --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
+}
+
 .bit-input-hidden {
     left: 0;
     bottom: 0;

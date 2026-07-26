@@ -963,6 +963,8 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
 
             <BitText>
                 <b>Reduced motion.</b> Under <BitTag>prefers-reduced-motion: reduce</BitTag>, all <BitTag>--bit-mot-duration*</BitTag> tokens collapse to <BitTag>0.01ms</BitTag>, so transitions effectively disable.
+                The unreduced values stay available in the matching <BitTag>--bit-mot-duration*-full</BitTag> tokens, which is also where you change a duration since it feeds both states.
+                A single component can opt out with the <BitTag>ForceAnimation</BitTag> parameter (it renders the <BitTag>bit-fam</BitTag> class, which restores the full durations for that element and its content).
                 <br /><br />
                 <b>Forced colors / high contrast.</b> Under <BitTag>forced-colors: active</BitTag> (Windows High Contrast), the palette switches to system colors (<BitTag>CanvasText</BitTag>, <BitTag>Canvas</BitTag>, <BitTag>Highlight</BitTag>, <BitTag>LinkText</BitTag>), shadows drop to <BitTag>none</BitTag>, and the focus ring uses the system <BitTag>Highlight</BitTag> color so it stays visible.
                 <br /><br />

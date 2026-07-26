@@ -4,6 +4,23 @@
     width: fit-content;
     align-items: center;
     justify-content: center;
+
+    // Loading animations loop forever, so they keep literal durations and handle reduced motion by
+    // slowing down here rather than through the --bit-mot-duration* tokens: a near-zero looping
+    // duration renders as flicker, and stopping a loader outright drops the only signal that work is
+    // still in progress. Every duration and delay in every loading component is written as a multiple
+    // of this factor, so the animation is stretched as a whole and the phase offsets that stagger the
+    // parts against each other survive - scaling the durations alone would bunch them up.
+    --bit-ldn-mot-factor: 1;
+}
+
+// ForceAnimation renders .bit-fam on the component root, which is .bit-ldn itself, and it is honored
+// on an ancestor too so that opting a whole subtree in behaves the same as for the token-driven
+// animations, which inherit the class's custom properties.
+@media (prefers-reduced-motion: reduce) {
+    .bit-ldn:not(.bit-fam):not(.bit-fam *) {
+        --bit-ldn-mot-factor: 3;
+    }
 }
 
 .bit-ldn-lbl {

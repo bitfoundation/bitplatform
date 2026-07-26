@@ -1,7 +1,15 @@
+// The -full tokens hold the unreduced durations and are never touched by the reduced-motion query
+// below, so they stay the single place to theme a duration: overriding --bit-mot-duration-full
+// changes both the normal value and the one .bit-fam restores. Components always read the plain
+// --bit-mot-duration* tokens; only the reduced-motion opt-out (.bit-fam in general.scss) reads -full.
 :root {
-    --bit-mot-duration: 200ms;
-    --bit-mot-duration-short: 100ms;
-    --bit-mot-duration-long: 300ms;
+    --bit-mot-duration-full: 200ms;
+    --bit-mot-duration-short-full: 100ms;
+    --bit-mot-duration-long-full: 300ms;
+
+    --bit-mot-duration: var(--bit-mot-duration-full);
+    --bit-mot-duration-short: var(--bit-mot-duration-short-full);
+    --bit-mot-duration-long: var(--bit-mot-duration-long-full);
     --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
 }
 

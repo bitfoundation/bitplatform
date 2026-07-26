@@ -9,6 +9,31 @@
     flex-direction: row;
 }
 
+// The page-wide escape hatch from the reduced-motion collapse. It is meaningless when motion is not
+// being reduced, so it only exists in that state; --demo-motion-bar-height (app.scss) is 0 outside
+// this query, which is what keeps the other sticky bars in their original place.
+.motion-bar {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .motion-bar {
+        z-index: 10;
+        display: flex;
+        position: sticky;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 0.5rem 1rem;
+        box-shadow: $bit-box-shadow-callout;
+        background-color: $bit-color-background-primary;
+        top: calc(rem2(66px) + var(--bit-env-inset-top));
+
+        .bit-ios & {
+            top: calc(rem2(66px) + env(safe-area-inset-top));
+        }
+    }
+}
+
 .page-container.example {
     width: 80%;
     flex-grow: 1;

@@ -72,6 +72,51 @@ public class BitRollerLoadingTests : BunitTestContext
         StringAssert.Contains(style, "--bit-ldn-font-size:10px");
     }
 
+    [TestMethod,
+        DataRow(BitColor.Primary, "var(--bit-clr-pri)"),
+        DataRow(BitColor.Secondary, "var(--bit-clr-sec)"),
+        DataRow(BitColor.Tertiary, "var(--bit-clr-ter)"),
+        DataRow(BitColor.Info, "var(--bit-clr-inf)"),
+        DataRow(BitColor.Success, "var(--bit-clr-suc)"),
+        DataRow(BitColor.Warning, "var(--bit-clr-wrn)"),
+        DataRow(BitColor.SevereWarning, "var(--bit-clr-swr)"),
+        DataRow(BitColor.Error, "var(--bit-clr-err)"),
+        DataRow(BitColor.PrimaryBackground, "var(--bit-clr-bg-pri)"),
+        DataRow(BitColor.SecondaryBackground, "var(--bit-clr-bg-sec)"),
+        DataRow(BitColor.TertiaryBackground, "var(--bit-clr-bg-ter)"),
+        DataRow(BitColor.PrimaryForeground, "var(--bit-clr-fg-pri)"),
+        DataRow(BitColor.SecondaryForeground, "var(--bit-clr-fg-sec)"),
+        DataRow(BitColor.TertiaryForeground, "var(--bit-clr-fg-ter)"),
+        DataRow(BitColor.PrimaryBorder, "var(--bit-clr-brd-pri)"),
+        DataRow(BitColor.SecondaryBorder, "var(--bit-clr-brd-sec)"),
+        DataRow(BitColor.TertiaryBorder, "var(--bit-clr-brd-ter)"),
+        DataRow(null, "var(--bit-clr-pri)")
+        ]
+    public void BitRollerLoadingColorTest(BitColor? color, string expectedColor)
+    {
+        var component = RenderComponent<BitRollerLoading>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        var style = component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, $"--bit-ldn-color: {expectedColor}");
+    }
+
+    [TestMethod]
+    public void BitRollerLoadingShouldHonorCustomColorWhenColorIsNotSet()
+    {
+        var component = RenderComponent<BitRollerLoading>(parameters =>
+        {
+            parameters.Add(p => p.CustomColor, "hotpink");
+        });
+
+        var style = component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "--bit-ldn-color: hotpink");
+    }
+
     [TestMethod]
     public void BitRollerLoadingShouldRespectRootStyleAndClass()
     {

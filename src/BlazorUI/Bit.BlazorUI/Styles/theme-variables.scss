@@ -209,6 +209,18 @@ $clr-req: var(--bit-clr-req);
 
 //disabled - per-role disabled colors
 //
+//Values - every role's pair is generated from one recipe so that "disabled" reads as a single state
+//rather than a per-role variant: keep the role's OKLCH hue, drain the chroma to a faint trace
+//(<= 0.03 for the fill, <= 0.04 for the text), and park the OKLab lightness on a fixed target -
+//L 0.94 / 0.69 (fill / text) in the light palettes, L 0.30 / 0.52 in the dark ones. Because the
+//target is absolute rather than a mix of the role's main color, every disabled fill and every
+//disabled label lands at the same visual weight whatever the role: ~2.8:1 (light) / ~3.7:1 (dark)
+//for the label on the page background, ~2.4:1 for the label on its own disabled fill, and ~1.2:1
+//(light) / ~1.5:1 (dark) for the fill against the page background. That is far enough below the
+//enabled state to be unmistakable and far enough above the surface to stay readable. The generic
+//$clr-fg-dis below is the achromatic member of the same band, so a disabled form field matches a
+//disabled role. BitThemeColorDerivation applies the same recipe to roles derived at runtime.
+//
 //Convention - two intentional disabled conventions coexist:
 //  * Role-filled components (Button, Badge, Tag, Icon, Link, Checkbox, ChoiceGroup, Pivot headers,
 //    NavBar, Pagination, Timeline, ...) express disabled through their per-role component vars fed

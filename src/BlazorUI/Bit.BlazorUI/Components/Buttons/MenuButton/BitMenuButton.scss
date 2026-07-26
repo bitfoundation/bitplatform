@@ -12,6 +12,8 @@
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
+    // The variants below repaint all three on hover/active, so they animate together from here.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &:focus-visible,
     &:has(:focus-visible) {
@@ -53,11 +55,18 @@
     border-width: spacing(0.2125);
     border-style: $shp-border-style;
     animation: bit-mnb-spinner-animation 1.3s linear infinite;
-
-    @media (prefers-reduced-motion: reduce) {
-        animation-duration: 4s;
-    }
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+
+    // The spinner loops forever, so it keeps a literal duration and calms down under reduced motion
+    // here instead of going through the --bit-mot-duration* tokens (a near-zero looping duration
+    // renders as flicker). ForceAnimation renders .bit-fam on the component root rather than on the
+    // spinner, so the opt-out is matched on an ancestor as well, the same way the token-driven
+    // animations inherit it.
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation-duration: 4s;
+        }
+    }
 }
 
 .bit-mnb-opb,
@@ -73,6 +82,7 @@
     justify-content: center;
     background-color: inherit;
     padding: var(--bit-mnb-padding);
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -146,8 +156,12 @@
 }
 
 .bit-mnb-cal {
+    // The entry offset is signed by where the callout was placed, so it always slides out of the
+    // button: downward when it opens below it, upward when there was only room above. The attribute
+    // is set by Callouts.playEntryAnimation, which knows the placement only after measuring.
+    --bit-mnb-cal-tra-ent: translateY(#{spacing(-0.5)});
     --bit-mnb-cal-opa: 0;
-    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
+    --bit-mnb-cal-tra: var(--bit-mnb-cal-tra-ent);
     display: none;
     position: fixed;
     overflow: hidden auto;
@@ -157,13 +171,28 @@
     opacity: var(--bit-mnb-cal-opa);
     box-shadow: $box-shadow-callout;
     transform: var(--bit-mnb-cal-tra);
-    transition: opacity $mot-duration-short, transform $mot-duration-long;
+    transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     background-color: var(--bit-mnb-cal-bg, #{$clr-bg-pri});
+
+    &[data-bit-cal-pos="above"] {
+        --bit-mnb-cal-tra-ent: translateY(#{spacing(0.5)});
+    }
 
     &.bit-mnb-ocl {
         --bit-mnb-cal-opa: 1;
         --bit-mnb-cal-tra: translateY(0);
+    }
+
+    // The from-state of the opening animation. The callout is display:none while closed, so it has
+    // no before-change style to transition from once it opens: Callouts.playEntryAnimation applies
+    // this class with transitions suppressed, forces it into effect, then drops it, which leaves the
+    // callout transitioning from here to the open state above. Declared last so it wins over
+    // .bit-mnb-ocl, which is already on the element by the time the callout is positioned.
+    &.bit-cal-ent {
+        transition: none;
+        --bit-mnb-cal-opa: 0;
+        --bit-mnb-cal-tra: var(--bit-mnb-cal-tra-ent);
     }
 }
 
@@ -196,6 +225,7 @@
     box-sizing: border-box;
     text-decoration: none;
     background-color: transparent;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &[disabled] {
         cursor: default;

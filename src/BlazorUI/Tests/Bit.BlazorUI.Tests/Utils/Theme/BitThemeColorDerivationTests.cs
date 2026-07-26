@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Utils.Theme;
@@ -595,6 +598,53 @@ public sealed class BitThemeColorDerivationTests
                     $"Text {v.Text} on {name} {hex} (dark scheme, seed {seed}) is {ratio:F2}:1, below the {floor}:1 floor");
             }
         }
+    }
+
+    // ── Calibration against the packaged palettes ─────────────────────────────
+
+    [DataTestMethod]
+    [DataRow("colors.fluent-light.scss", BitThemeColorScheme.Light)]
+    [DataRow("colors.fluent-dark.scss", BitThemeColorScheme.Dark)]
+    public void DerivedDisabledPairMatchesThePackagedPalettes(string paletteFile, BitThemeColorScheme scheme)
+    {
+        // The disabled pair is the one family generated from an absolute recipe rather than a
+        // relative step off main, and the derivation constants ARE the packaged palettes' targets.
+        // Deriving from each packaged role's main color must therefore reproduce the palette's own
+        // -dis / -dis-text values byte for byte - which is what makes the class's promise that "a
+        // derived role behaves like a packaged one" true for the disabled state, and what catches a
+        // palette retune that forgets to bring the derivation along (or vice versa).
+        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent", paletteFile);
+        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
+
+        var scss = File.ReadAllText(path);
+
+        string? token(string name)
+        {
+            var match = Regex.Match(scss, $@"--bit-clr-{name}:\s*(#[0-9A-Fa-f]{{6}})\s*;");
+            return match.Success ? match.Groups[1].Value.ToUpperInvariant() : null;
+        }
+
+        var mismatches = new List<string>();
+        foreach (var role in new[] { "pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err" })
+        {
+            var main = token(role);
+            Assert.IsNotNull(main, $"--bit-clr-{role} not found in {paletteFile}.");
+
+            var variants = new BitThemeColorVariants();
+            BitThemeColorDerivation.FillColorRoleFromMain(variants, main, scheme);
+
+            foreach (var (suffix, derived) in new[] { ("dis", variants.Disabled!), ("dis-text", variants.DisabledText!) })
+            {
+                var packaged = token($"{role}-{suffix}");
+                if (string.Equals(packaged, derived.ToUpperInvariant(), StringComparison.Ordinal) is false)
+                {
+                    mismatches.Add($"--bit-clr-{role}-{suffix}: palette {packaged}, derived {derived}");
+                }
+            }
+        }
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), mismatches,
+            $"{paletteFile} disabled colors drifted from BitThemeColorDerivation: {string.Join("; ", mismatches)}");
     }
 
     // ── Whitespace trimming ───────────────────────────────────────────────────

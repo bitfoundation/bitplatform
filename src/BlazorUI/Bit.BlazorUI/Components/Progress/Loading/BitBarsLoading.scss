@@ -13,16 +13,16 @@
     display: inline-block;
     width: var(--bit-ldn-bar-16);
     background: var(--bit-ldn-color);
-    animation: bit-ldn-bar-anm 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+    animation: bit-ldn-bar-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 0.5, 0.5, 1) infinite;
 }
 
 .bit-ldn-bar-ch1 {
-    animation-delay: -0.24s;
+    animation-delay: calc(-0.24s * var(--bit-ldn-mot-factor, 1));
     left: var(--bit-ldn-bar-8);
 }
 
 .bit-ldn-bar-ch2 {
-    animation-delay: -0.12s;
+    animation-delay: calc(-0.12s * var(--bit-ldn-mot-factor, 1));
     left: var(--bit-ldn-bar-32);
 }
 

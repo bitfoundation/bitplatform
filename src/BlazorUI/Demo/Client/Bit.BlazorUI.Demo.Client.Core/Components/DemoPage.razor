@@ -116,8 +116,12 @@
 }
 else
 {
-    <div class="demo-page">
+    @* bit-fam is the class BitComponentBase.ForceAnimation renders. Setting it here rather than on each
+       sample restores the full motion durations for everything on the page, since those are inherited
+       custom properties. *@
+    <div class="demo-page @(_forceAnimation ? "bit-fam" : null)">
         <div class="page-container example">
+
             <BitText Element="h1" Typography="BitTypography.H3">
                 @Name
             </BitText>
@@ -132,7 +136,7 @@ else
                     }
                 </BitStack>
             }
-            
+
             <br /><br /><br />
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
@@ -163,6 +167,10 @@ else
                     }
                 </section>
             }
+
+            <div class="motion-bar">
+                <BitToggle @bind-Value="_forceAnimation" Text="ForceAnimation (apply to the whole page)" />
+            </div>
 
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
@@ -222,7 +230,8 @@ else
                 {
                     <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-                    <DemoParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+                    <DemoParametersTable Name="BitComponentBase" NameSuffix="public members"
+                                         Parameters="_componentBasePublicMembers" />
                 }
 
                 <DemoSubClassesTable Classes="SubClasses" />
@@ -251,11 +260,13 @@ else
                     <br />
                     <BitText Element="p">
                         Or you can
-                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                                 Target="_blank">review</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                        Target="_blank">review</BitLink>
                         /
-                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                                 Target="_blank">edit</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                        Target="_blank">edit</BitLink>
                         this page on GitHub.
                     </BitText>
                 }
@@ -279,11 +290,13 @@ else
                     <br />
                     <BitText Element="p">
                         Or you can
-                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                                 Target="_blank">review</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                        Target="_blank">review</BitLink>
                         /
-                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                                 Target="_blank">edit</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                        Target="_blank">edit</BitLink>
                         this component on GitHub.
                     </BitText>
                 }
@@ -293,11 +306,13 @@ else
                     <br />
                     <BitText Element="p">
                         Or you can
-                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
-                                 Target="_blank">review</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
+                        Target="_blank">review</BitLink>
                         /
-                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
-                                 Target="_blank">edit</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
+                        Target="_blank">edit</BitLink>
                         this component on GitHub.
                     </BitText>
                 }

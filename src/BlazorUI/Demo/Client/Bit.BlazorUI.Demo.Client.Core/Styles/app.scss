@@ -36,6 +36,20 @@ p {
     }
 }
 
+// The height of DemoPage's reduced-motion toggle bar, published here because two unrelated
+// stylesheets need to agree on it: the bar sizes itself from this value, and every other sticky
+// element on a demo page offsets its own top by it so they stack instead of overlapping. It stays
+// 0 while the bar is hidden, which is every state except reduced motion.
+:root {
+    --demo-motion-bar-height: 0rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --demo-motion-bar-height: #{rem2(32px)};
+    }
+}
+
 .pivot-sticky-header {
     z-index: 10;
     opacity: 0.85;
@@ -44,10 +58,10 @@ p {
     padding: 0.25rem 0.5rem;
     box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-secondary;
-    top: calc(rem2(75px) + var(--bit-env-inset-top));
+    top: calc(rem2(75px) + var(--bit-env-inset-top) + var(--demo-motion-bar-height));
 
     .bit-ios & {
-        top: calc(rem2(75px) + env(safe-area-inset-top));
+        top: calc(rem2(75px) + env(safe-area-inset-top) + var(--demo-motion-bar-height));
     }
 }
 

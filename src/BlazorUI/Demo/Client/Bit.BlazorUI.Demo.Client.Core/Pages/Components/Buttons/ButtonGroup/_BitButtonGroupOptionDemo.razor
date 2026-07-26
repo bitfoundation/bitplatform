@@ -1,8 +1,10 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div>
-        Related buttons are grouped by declaring a BitButtonGroupOption for each of them inside a single ButtonGroup, which
+        Related buttons are grouped by declaring a BitButtonGroupOption for each of them inside a single ButtonGroup,
+        which
         joins them into one unit with shared borders and rounded outer corners. Options render in markup order even when
-        some of them are added or removed conditionally. By default the buttons are plain actions that cannot be toggled,
+        some of them are added or removed conditionally. By default the buttons are plain actions that cannot be
+        toggled,
         and the whole group is a single tab stop the arrow keys move through.
     </div>
     <br />
@@ -23,39 +25,57 @@
     <div class="example-content">
         <div>Fill (default)</div>
         <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" IsEnabled="false" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" IsEnabled="false" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Variant="BitVariant.Fill" IsEnabled="false" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" IsEnabled="false" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" IsEnabled="false" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
         <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" IsEnabled="false" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" IsEnabled="false" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Variant="BitVariant.Outline" IsEnabled="false" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" IsEnabled="false" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" IsEnabled="false" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
         <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" IsEnabled="false" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" IsEnabled="false" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Variant="BitVariant.Text" IsEnabled="false" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" IsEnabled="false" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" IsEnabled="false" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>
@@ -96,8 +116,10 @@
 
 <DemoExample Title="IconOnly" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
     <div>
-        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact toolbars
-        and tight spaces. Because such a button has no visible label, give each option an <strong>AriaLabel</strong> (or at
+        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact
+        toolbars
+        and tight spaces. Because such a button has no visible label, give each option an <strong>AriaLabel</strong> (or
+        at
         least a <strong>Title</strong>) so it stays understandable to screen reader users.
     </div>
     <br /><br />
@@ -160,8 +182,10 @@
 
 <DemoExample Title="ReversedIcon" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        The option's <strong>ReversedIcon</strong> swaps the icon and the text, putting the icon after the content instead
-        of before it. It is set per option, so a single button can point the other way (useful for a trailing "next" arrow).
+        The option's <strong>ReversedIcon</strong> swaps the icon and the text, putting the icon after the content
+        instead
+        of before it. It is set per option, so a single button can point the other way (useful for a trailing "next"
+        arrow).
     </div>
     <br /><br />
     <div class="example-content">
@@ -192,13 +216,17 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>Toggle</strong> turns the group into a single-select one, where at most one button is toggled at a time
+        The <strong>Toggle</strong> turns the group into a single-select one, where at most one button is toggled at a
+        time
         (a shorthand for <strong>SelectionMode="BitButtonGroupSelectionMode.Single"</strong>). It renders as a
-        <strong>radiogroup</strong> whose buttons report their state through <strong>aria-checked</strong>. Toggled buttons
+        <strong>radiogroup</strong> whose buttons report their state through <strong>aria-checked</strong>. Toggled
+        buttons
         can swap their text and icon through the option's <strong>OnText</strong>/<strong>OffText</strong> and
-        <strong>OnIconName</strong>/<strong>OffIconName</strong>; when they do, also set an <strong>AriaLabel</strong> so
+        <strong>OnIconName</strong>/<strong>OffIconName</strong>; when they do, also set an <strong>AriaLabel</strong>
+        so
         the accessible name stays the same as the state changes. The toggled key is read and set through
         <strong>ToggleKey</strong>, seeded by <strong>DefaultToggleKey</strong>, and every change raises
         <strong>OnToggleChange</strong>. Options without an explicit <strong>Key</strong> get one generated for them.
@@ -207,44 +235,60 @@
     <div class="example-content">
         <div>Fill (default)</div>
         <BitButtonGroup Toggle Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-            <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+            <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX"
+                                  OffIconName="@BitIconName.Rewind" />
+            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume"
+                                  OffIconName="@BitIconName.Play" />
+            <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX"
+                                  OffIconName="@BitIconName.FastForward" ReversedIcon />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
         <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-            <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+            <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX"
+                                  OffIconName="@BitIconName.Rewind" />
+            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume"
+                                  OffIconName="@BitIconName.Play" />
+            <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX"
+                                  OffIconName="@BitIconName.FastForward" ReversedIcon />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
         <BitButtonGroup Toggle Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-            <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+            <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX"
+                                  OffIconName="@BitIconName.Rewind" />
+            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume"
+                                  OffIconName="@BitIconName.Play" />
+            <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX"
+                                  OffIconName="@BitIconName.FastForward" ReversedIcon />
         </BitButtonGroup>
     </div>
     <br /><br /><br /><br />
     <div>Binding:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" @bind-ToggleKey="toggleKey">
-        <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-        <BitButtonGroupOption Key="play" OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-        <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+        <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX"
+                              OffIconName="@BitIconName.Rewind" />
+        <BitButtonGroupOption Key="play" OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume"
+                              OffIconName="@BitIconName.Play" />
+        <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)"
+                              OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
     </BitButtonGroup>
     <div>Toggle key: @toggleKey</div>
     <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
     <br /><br /><br /><br />
     <div>OnToggleChange:</div><br />
-    <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupOption o) => onChangeToggleOption = o">
-        <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-        <BitButtonGroupOption Key="play" OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-        <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+    <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="forward"
+                    OnToggleChange="(BitButtonGroupOption o) => onChangeToggleOption = o">
+        <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX"
+                              OffIconName="@BitIconName.Rewind" />
+        <BitButtonGroupOption Key="play" OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume"
+                              OffIconName="@BitIconName.Play" />
+        <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)"
+                              OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
     </BitButtonGroup>
     <div>Changed toggle: @onChangeToggleOption?.Key , @onChangeToggleOption?.IsToggled</div>
     <br /><br /><br /><br />
@@ -252,7 +296,8 @@
         <strong>FixedToggle</strong> makes the selection mandatory: clicking the toggled button no longer un-toggles it,
         so the group always keeps exactly one answer.
     </div><br />
-    <BitButtonGroup Toggle FixedToggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="medium">
+    <BitButtonGroup Toggle FixedToggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                    DefaultToggleKey="medium">
         <BitButtonGroupOption Key="low" Text="Low" />
         <BitButtonGroupOption Key="medium" Text="Medium" />
         <BitButtonGroupOption Key="high" Text="High" />
@@ -270,29 +315,37 @@
         <div class="example-content">
             <div>Fill (default)</div>
             <BitButtonGroup Variant="BitVariant.Fill" Vertical TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div>Outline</div>
             <BitButtonGroup Variant="BitVariant.Outline" Vertical TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div>Text</div>
             <BitButtonGroup Variant="BitVariant.Text" Vertical TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8"
+             PreventRenderForMcpClient>
     <div>
-        Clicks can be handled in two places: the group's <strong>OnItemClick</strong> receives whichever option was clicked,
+        Clicks can be handled in two places: the group's <strong>OnItemClick</strong> receives whichever option was
+        clicked,
         and each option's own <strong>OnClick</strong> handles just that button. Both run on every click, the group's
         callback first. Disabled and loading buttons raise neither.
     </div>
@@ -310,9 +363,12 @@
     <div class="example-content">
         <div>Item's Click event:</div>
         <BitButtonGroup TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Increase" IconName="@BitIconName.Add" OnClick="_ => { clickCounter++; StateHasChanged(); }" />
-            <BitButtonGroupOption Text="Reset" IconName="@BitIconName.Reset" OnClick="_ => { clickCounter=0; StateHasChanged(); }" />
-            <BitButtonGroupOption Text="Decrease" IconName="@BitIconName.Remove" OnClick="_ => { clickCounter--; StateHasChanged(); }" />
+            <BitButtonGroupOption Text="Increase" IconName="@BitIconName.Add"
+                                  OnClick="_ => { clickCounter++; StateHasChanged(); }" />
+            <BitButtonGroupOption Text="Reset" IconName="@BitIconName.Reset"
+                                  OnClick="_ => { clickCounter=0; StateHasChanged(); }" />
+            <BitButtonGroupOption Text="Decrease" IconName="@BitIconName.Remove"
+                                  OnClick="_ => { clickCounter--; StateHasChanged(); }" />
         </BitButtonGroup>
         <div>Click count: <b>@clickCounter</b></div>
     </div>
@@ -320,37 +376,44 @@
 
 <DemoExample Title="FullWidth" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
     <div>
-        The <strong>FullWidth</strong> stretches the group to 100% of its container's width. The extra space is shared by
+        The <strong>FullWidth</strong> stretches the group to 100% of its container's width. The extra space is shared
+        by
         the buttons in proportion to their content, so wider labels stay wider - pair it with
         <BitLink Href="#example11"><strong>Justified</strong></BitLink> when every button should end up the same width.
     </div>
     <br /><br />
     <div class="example-content">
         <BitButtonGroup FullWidth Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup FullWidth Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>
 
 
-<DemoExample Title="Multiple" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+<DemoExample Title="Multiple" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10"
+             PreventRenderForMcpClient>
     <div>
-        Setting the <strong>SelectionMode</strong> to <strong>Multiple</strong> lets any number of buttons be toggled at the
+        Setting the <strong>SelectionMode</strong> to <strong>Multiple</strong> lets any number of buttons be toggled at
+        the
         same time. The toggled keys are available through the <strong>ToggleKeys</strong> two-way bound parameter.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Binding:</div>
-        <BitButtonGroup Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        @bind-ToggleKeys="formatKeys">
+        <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Multiple" @bind-ToggleKeys="formatKeys">
             <BitButtonGroupOption Key="bold" Text="Bold" IconName="@BitIconName.Bold" />
             <BitButtonGroupOption Key="italic" Text="Italic" IconName="@BitIconName.Italic" />
             <BitButtonGroupOption Key="underline" Text="Underline" IconName="@BitIconName.Underline" />
@@ -360,11 +423,8 @@
     <br /><br />
     <div class="example-content">
         <div><strong>MaxToggles</strong> caps how many buttons can be toggled at once:</div>
-        <BitButtonGroup Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        MaxToggles="2"
-                        DefaultToggleKeys="@defaultKeys">
+        <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Multiple" MaxToggles="2" DefaultToggleKeys="@defaultKeys">
             <BitButtonGroupOption Key="bold" Text="Bold" IconName="@BitIconName.Bold" />
             <BitButtonGroupOption Key="italic" Text="Italic" IconName="@BitIconName.Italic" />
             <BitButtonGroupOption Key="underline" Text="Underline" IconName="@BitIconName.Underline" />
@@ -373,11 +433,8 @@
     <br /><br />
     <div class="example-content">
         <div><strong>FixedToggle</strong> keeps at least one button toggled:</div>
-        <BitButtonGroup Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        FixedToggle
-                        DefaultToggleKeys="@defaultKeys">
+        <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Multiple" FixedToggle DefaultToggleKeys="@defaultKeys">
             <BitButtonGroupOption Key="bold" Text="Bold" IconName="@BitIconName.Bold" />
             <BitButtonGroupOption Key="italic" Text="Italic" IconName="@BitIconName.Italic" />
             <BitButtonGroupOption Key="underline" Text="Underline" IconName="@BitIconName.Underline" />
@@ -394,19 +451,24 @@
     <div class="example-content">
         <div>Default (buttons are sized by their content)</div>
         <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Day" /><BitButtonGroupOption Text="Week" /><BitButtonGroupOption Text="A whole month" />
+            <BitButtonGroupOption Text="Day" />
+            <BitButtonGroupOption Text="Week" />
+            <BitButtonGroupOption Text="A whole month" />
         </BitButtonGroup>
         <br />
         <div>Justified (buttons share the width equally)</div>
         <BitButtonGroup FullWidth Justified Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Day" /><BitButtonGroupOption Text="Week" /><BitButtonGroupOption Text="A whole month" />
+            <BitButtonGroupOption Text="Day" />
+            <BitButtonGroupOption Text="Week" />
+            <BitButtonGroupOption Text="A whole month" />
         </BitButtonGroup>
     </div>
 </DemoExample>
 
 <DemoExample Title="Detached" RazorCode="@example12RazorCode" Id="example12" PreventRenderForMcpClient>
     <div>
-        The <strong>Detached</strong> breaks the buttons apart: the border and the rounding move from the group onto each
+        The <strong>Detached</strong> breaks the buttons apart: the border and the rounding move from the group onto
+        each
         button, so they read as separate buttons that still share the group's color, size, and selection behavior.
         The <strong>Gap</strong> takes any CSS length and sets the space between them.
     </div>
@@ -414,55 +476,71 @@
     <div class="example-content">
         <div>Fill (default)</div>
         <BitButtonGroup Detached Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
         <BitButtonGroup Detached Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Gap</div>
         <BitButtonGroup Detached Gap="1.5rem" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>
 
 <DemoExample Title="Rounded" RazorCode="@example13RazorCode" Id="example13" PreventRenderForMcpClient>
     <div>
-        The <strong>Rounded</strong> renders pill shaped corners. On an attached group only the outer corners are rounded,
+        The <strong>Rounded</strong> renders pill shaped corners. On an attached group only the outer corners are
+        rounded,
         while combining it with <strong>Detached</strong> turns every button into its own pill.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Attached</div>
         <BitButtonGroup Rounded Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Rounded Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Detached</div>
         <BitButtonGroup Rounded Detached Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Rounded Detached Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>
 
 <DemoExample Title="Overflow" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
     <div>
-        The <strong>Overflow</strong> decides what happens when the buttons do not fit: <strong>Wrap</strong> moves them onto
+        The <strong>Overflow</strong> decides what happens when the buttons do not fit: <strong>Wrap</strong> moves them
+        onto
         more lines, <strong>Scroll</strong> keeps one line and lets the group scroll sideways &mdash; by swiping, by
         shift+wheel, or with the arrow keys, since the scrollbar itself is hidden so that the border keeps hugging
         the buttons &mdash; <strong>Scrollbar</strong> does the same but keeps the scrollbar visible as an affordance,
@@ -474,10 +552,17 @@
     <div class="example-content">
         <div>Wrap</div>
         <div class="overflow-container">
-            <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption" Overflow="BitButtonGroupOverflow.Wrap">
-                <BitButtonGroupOption Text="January" /><BitButtonGroupOption Text="February" /><BitButtonGroupOption Text="March" />
-                <BitButtonGroupOption Text="April" /><BitButtonGroupOption Text="May" /><BitButtonGroupOption Text="June" />
-                <BitButtonGroupOption Text="July" /><BitButtonGroupOption Text="August" /><BitButtonGroupOption Text="September" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                            Overflow="BitButtonGroupOverflow.Wrap">
+                <BitButtonGroupOption Text="January" />
+                <BitButtonGroupOption Text="February" />
+                <BitButtonGroupOption Text="March" />
+                <BitButtonGroupOption Text="April" />
+                <BitButtonGroupOption Text="May" />
+                <BitButtonGroupOption Text="June" />
+                <BitButtonGroupOption Text="July" />
+                <BitButtonGroupOption Text="August" />
+                <BitButtonGroupOption Text="September" />
             </BitButtonGroup>
         </div>
     </div>
@@ -485,10 +570,17 @@
     <div class="example-content">
         <div>Scroll</div>
         <div class="overflow-container">
-            <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption" Overflow="BitButtonGroupOverflow.Scroll">
-                <BitButtonGroupOption Text="January" /><BitButtonGroupOption Text="February" /><BitButtonGroupOption Text="March" />
-                <BitButtonGroupOption Text="April" /><BitButtonGroupOption Text="May" /><BitButtonGroupOption Text="June" />
-                <BitButtonGroupOption Text="July" /><BitButtonGroupOption Text="August" /><BitButtonGroupOption Text="September" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                            Overflow="BitButtonGroupOverflow.Scroll">
+                <BitButtonGroupOption Text="January" />
+                <BitButtonGroupOption Text="February" />
+                <BitButtonGroupOption Text="March" />
+                <BitButtonGroupOption Text="April" />
+                <BitButtonGroupOption Text="May" />
+                <BitButtonGroupOption Text="June" />
+                <BitButtonGroupOption Text="July" />
+                <BitButtonGroupOption Text="August" />
+                <BitButtonGroupOption Text="September" />
             </BitButtonGroup>
         </div>
     </div>
@@ -496,10 +588,17 @@
     <div class="example-content">
         <div>Scrollbar</div>
         <div class="overflow-container">
-            <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption" Overflow="BitButtonGroupOverflow.Scrollbar">
-                <BitButtonGroupOption Text="January" /><BitButtonGroupOption Text="February" /><BitButtonGroupOption Text="March" />
-                <BitButtonGroupOption Text="April" /><BitButtonGroupOption Text="May" /><BitButtonGroupOption Text="June" />
-                <BitButtonGroupOption Text="July" /><BitButtonGroupOption Text="August" /><BitButtonGroupOption Text="September" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                            Overflow="BitButtonGroupOverflow.Scrollbar">
+                <BitButtonGroupOption Text="January" />
+                <BitButtonGroupOption Text="February" />
+                <BitButtonGroupOption Text="March" />
+                <BitButtonGroupOption Text="April" />
+                <BitButtonGroupOption Text="May" />
+                <BitButtonGroupOption Text="June" />
+                <BitButtonGroupOption Text="July" />
+                <BitButtonGroupOption Text="August" />
+                <BitButtonGroupOption Text="September" />
             </BitButtonGroup>
         </div>
     </div>
@@ -513,11 +612,8 @@
     <br /><br />
     <div class="example-content">
         <div>Single</div>
-        <BitButtonGroup ShowSelectionIndicator
-                        Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption"
-                        SelectionMode="BitButtonGroupSelectionMode.Single"
-                        DefaultToggleKey="list">
+        <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Single" DefaultToggleKey="list">
             <BitButtonGroupOption Key="list" Text="List" IconName="@BitIconName.BulletedList" />
             <BitButtonGroupOption Key="grid" Text="Grid" IconName="@BitIconName.GridViewMedium" />
             <BitButtonGroupOption Key="tile" Text="Tile" IconName="@BitIconName.Tiles" />
@@ -526,11 +622,8 @@
     <br /><br />
     <div class="example-content">
         <div>Multiple</div>
-        <BitButtonGroup ShowSelectionIndicator
-                        Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        DefaultToggleKeys="@indicatorDefaultKeys">
+        <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Multiple" DefaultToggleKeys="@indicatorDefaultKeys">
             <BitButtonGroupOption Key="name" Text="Name" />
             <BitButtonGroupOption Key="size" Text="Size" />
             <BitButtonGroupOption Key="date" Text="Date" />
@@ -538,19 +631,21 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Loading &amp; Badge" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Loading &amp; Badge" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode"
+             Id="example16" PreventRenderForMcpClient>
     <div>
-        Each button can show a spinner in place of its icon by setting the option's IsLoading, which also blocks its click,
+        Each button can show a spinner in place of its icon by setting the option's IsLoading, which also blocks its
+        click,
         and can render a short count at its end by setting the option's Badge.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Loading:</div>
         <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Save" IconName="@BitIconName.Save"
-                                  IsLoading="@(loadingKey == "save")" OnClick="@(() => HandleLoadingClick("save"))" />
-            <BitButtonGroupOption Text="Sync" IconName="@BitIconName.Sync"
-                                  IsLoading="@(loadingKey == "sync")" OnClick="@(() => HandleLoadingClick("sync"))" />
+            <BitButtonGroupOption Text="Save" IconName="@BitIconName.Save" IsLoading="@(loadingKey == "save")"
+                                  OnClick="@(() => HandleLoadingClick("save"))" />
+            <BitButtonGroupOption Text="Sync" IconName="@BitIconName.Sync" IsLoading="@(loadingKey == "sync")"
+                                  OnClick="@(() => HandleLoadingClick("sync"))" />
             <BitButtonGroupOption Text="Publish" IconName="@BitIconName.PublishContent"
                                   IsLoading="@(loadingKey == "publish")" OnClick="@(() => HandleLoadingClick("publish"))" />
         </BitButtonGroup>
@@ -579,7 +674,8 @@
         <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Home" IconName="@BitIconName.Home" Href="/" />
             <BitButtonGroupOption Text="Components" IconName="@BitIconName.Puzzle" Href="/components" />
-            <BitButtonGroupOption Text="GitHub" IconName="@BitIconName.OpenInNewWindow" Href="https://github.com/bitfoundation/bitplatform" Target="_blank" />
+            <BitButtonGroupOption Text="GitHub" IconName="@BitIconName.OpenInNewWindow"
+                                  Href="https://github.com/bitfoundation/bitplatform" Target="_blank" />
         </BitButtonGroup>
     </div>
 </DemoExample>
@@ -587,7 +683,8 @@
 <DemoExample Title="Templates" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
     <div>
         The content of the buttons can be replaced entirely: the group's <strong>ItemTemplate</strong> re-renders every
-        button, while an option's own <strong>Template</strong> re-renders only that one and wins over the group's template.
+        button, while an option's own <strong>Template</strong> re-renders only that one and wins over the group's
+        template.
         A template replaces the icon, text, and badge, so anything the button needs has to be part of it.
     </div>
     <br /><br />
@@ -627,9 +724,12 @@
 
 <DemoExample Title="Tooltips" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
     <div>
-        An option's <strong>Title</strong> becomes the native tooltip of its button, which is the cheapest way to explain an
-        icon-only button on hover. In a toggle group, <strong>OnTitle</strong> and <strong>OffTitle</strong> let the tooltip
-        follow the toggle state and fall back to Title when they are not set. A tooltip is not an accessible name, so keep
+        An option's <strong>Title</strong> becomes the native tooltip of its button, which is the cheapest way to
+        explain an
+        icon-only button on hover. In a toggle group, <strong>OnTitle</strong> and <strong>OffTitle</strong> let the
+        tooltip
+        follow the toggle state and fall back to Title when they are not set. A tooltip is not an accessible name, so
+        keep
         setting <strong>AriaLabel</strong> for icon-only buttons.
     </div>
     <br /><br />
@@ -637,85 +737,75 @@
         <div>Hover the buttons to see their tooltips:</div>
         <BitButtonGroup IconOnly Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
             <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" Title="Add a new record" AriaLabel="Add" />
-            <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" Title="Edit the selected record" AriaLabel="Edit" />
-            <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" Title="Delete the selected record" AriaLabel="Delete" />
+            <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" Title="Edit the selected record"
+                                  AriaLabel="Edit" />
+            <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" Title="Delete the selected record"
+                                  AriaLabel="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>OnTitle &amp; OffTitle (toggle the button and hover it again):</div>
         <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="mute">
-            <BitButtonGroupOption Key="mute"
-                                  AriaLabel="Mute"
-                                  OnText="Muted"
-                                  OffText="Mute"
-                                  OnTitle="The sound is muted, click to unmute"
-                                  OffTitle="Click to mute the sound"
-                                  OnIconName="@BitIconName.Volume0"
-                                  OffIconName="@BitIconName.Volume3" />
-            <BitButtonGroupOption Key="repeat"
-                                  AriaLabel="Repeat"
-                                  OnText="Repeating"
-                                  OffText="Repeat"
-                                  OnTitle="Repeat is on, click to turn it off"
-                                  OffTitle="Click to repeat the playlist"
-                                  OnIconName="@BitIconName.RepeatOne"
-                                  OffIconName="@BitIconName.RepeatAll" />
+            <BitButtonGroupOption Key="mute" AriaLabel="Mute" OnText="Muted" OffText="Mute"
+                                  OnTitle="The sound is muted, click to unmute" OffTitle="Click to mute the sound"
+                                  OnIconName="@BitIconName.Volume0" OffIconName="@BitIconName.Volume3" />
+            <BitButtonGroupOption Key="repeat" AriaLabel="Repeat" OnText="Repeating" OffText="Repeat"
+                                  OnTitle="Repeat is on, click to turn it off" OffTitle="Click to repeat the playlist"
+                                  OnIconName="@BitIconName.RepeatOne" OffIconName="@BitIconName.RepeatAll" />
         </BitButtonGroup>
     </div>
 </DemoExample>
 
 <DemoExample Title="Accessibility" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
     <div>
-        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons in the
-        Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole group is a single
+        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons in
+        the
+        Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole group is a
+        single
         tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the group an AriaLabel.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Tab into the group, then navigate it using the arrow, Home, and End keys:</div>
-        <BitButtonGroup AriaLabel="Text alignment"
-                        Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption"
-                        SelectionMode="BitButtonGroupSelectionMode.Single"
-                        DefaultToggleKey="start">
+        <BitButtonGroup AriaLabel="Text alignment" Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Single" DefaultToggleKey="start">
             <BitButtonGroupOption Key="start" Text="Start" IconName="@BitIconName.AlignLeft" AriaLabel="Align start" />
-            <BitButtonGroupOption Key="center" Text="Center" IconName="@BitIconName.AlignCenter" AriaLabel="Align center" />
+            <BitButtonGroupOption Key="center" Text="Center" IconName="@BitIconName.AlignCenter"
+                                  AriaLabel="Align center" />
             <BitButtonGroupOption Key="end" Text="End" IconName="@BitIconName.AlignRight" AriaLabel="Align end" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>SelectOnFocus</strong> makes the selection follow the keyboard focus:</div>
-        <BitButtonGroup AriaLabel="Text alignment (selection follows focus)"
-                        SelectOnFocus
-                        Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption"
-                        SelectionMode="BitButtonGroupSelectionMode.Single"
-                        DefaultToggleKey="start">
+        <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption" SelectionMode="BitButtonGroupSelectionMode.Single" DefaultToggleKey="start">
             <BitButtonGroupOption Key="start" Text="Start" IconName="@BitIconName.AlignLeft" AriaLabel="Align start" />
-            <BitButtonGroupOption Key="center" Text="Center" IconName="@BitIconName.AlignCenter" AriaLabel="Align center" />
+            <BitButtonGroupOption Key="center" Text="Center" IconName="@BitIconName.AlignCenter"
+                                  AriaLabel="Align center" />
             <BitButtonGroupOption Key="end" Text="End" IconName="@BitIconName.AlignRight" AriaLabel="Align end" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>DisabledInteractive</strong> keeps the disabled buttons focusable, so they stay discoverable:</div>
-        <BitButtonGroup AriaLabel="Operations with a disabled button"
-                        DisabledInteractive
-                        Variant="BitVariant.Outline"
+        <BitButtonGroup AriaLabel="Operations with a disabled button" DisabledInteractive Variant="BitVariant.Outline"
                         TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" IsEnabled="false" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" IsEnabled="false" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
-        <div><strong>Navigable="false"</strong> restores the natural tab order, making every button its own tab stop:</div>
-        <BitButtonGroup AriaLabel="Operations"
-                        Navigable="false"
-                        Variant="BitVariant.Outline"
+        <div><strong>Navigable="false"</strong> restores the natural tab order, making every button its own tab stop:
+        </div>
+        <BitButtonGroup AriaLabel="Operations" Navigable="false" Variant="BitVariant.Outline"
                         TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>
@@ -723,111 +813,160 @@
 <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
     <div>
         The <strong>Color</strong> sets the palette of the whole group - its border, fill, hover and active states, the
-        focus ring, and the darker shade used for toggled buttons - from the theme's general, background, foreground, and
+        focus ring, and the darker shade used for toggled buttons - from the theme's general, background, foreground,
+        and
         border colors.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Primary</div>
         <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Secondary</div>
         <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Tertiary</div>
         <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Info</div>
         <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Success</div>
         <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Warning</div>
         <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>SevereWarning</div>
         <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Error</div>
         <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
@@ -835,39 +974,60 @@
         <div class="example-content">
             <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
             <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
             <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
             <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
             <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
             <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
             <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
     </div>
@@ -875,78 +1035,114 @@
     <div class="example-content">
         <div>PrimaryForeground</div>
         <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>SecondaryForeground</div>
         <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>TertiaryForeground</div>
         <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>PrimaryBorder</div>
         <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>SecondaryBorder</div>
         <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>TertiaryBorder</div>
         <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
@@ -954,224 +1150,373 @@
     <br />
     <div class="example-content">
         <div>Primary</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Secondary</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Tertiary</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Info</div>
         <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Success</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Warning</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>SevereWarning</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Error</div>
         <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div style="background:var(--bit-clr-fg-sec);padding:1rem">
         <div class="example-content">
             <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Text"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Text"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
-            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Text"
+                            TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
             </BitButtonGroup>
         </div>
     </div>
     <br /><br />
     <div class="example-content">
         <div>PrimaryForeground</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>SecondaryForeground</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>TertiaryForeground</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>PrimaryBorder</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>SecondaryBorder</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>TertiaryBorder</div>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Text"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>
@@ -1183,27 +1528,27 @@
         <strong>BitIconInfo.Fa</strong> (FontAwesome), <strong>BitIconInfo.Bi</strong> (Bootstrap Icons), and
         <strong>BitIconInfo.Css</strong>. When both are set, Icon takes precedence over IconName.
     </div>
-    
+
     <br />
     <br />
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-    
+
     <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
         <BitButtonGroupOption Text="Add" Icon="@("fa-solid fa-plus")" />
         <BitButtonGroupOption Text="Edit" Icon="@("fa-solid fa-pen")" />
         <BitButtonGroupOption Text="Delete" Icon="@("fa-solid fa-trash")" />
     </BitButtonGroup>
-    
+
     <br />
     <br />
-    
+
     <BitButtonGroup Variant="BitVariant.Outline" Color="BitColor.Secondary" TItem="BitButtonGroupOption">
         <BitButtonGroupOption Text="Add" Icon="@BitIconInfo.Css("fa-solid fa-plus")" />
         <BitButtonGroupOption Text="Edit" Icon="@BitIconInfo.Css("fa-solid fa-pen")" />
         <BitButtonGroupOption Text="Delete" Icon="@BitIconInfo.Css("fa-solid fa-trash")" />
     </BitButtonGroup>
-    
+
     <br />
     <br />
 
@@ -1217,45 +1562,64 @@
 <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
     <div>
         The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which scale the font
-        size and padding of every button, along with the spinner, badge, and selection indicator that follow the text size.
+        size and padding of every button, along with the spinner, badge, and selection indicator that follow the text
+        size.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Small</div>
         <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Medium</div>
         <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Large</div>
         <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
         <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>
@@ -1263,42 +1627,51 @@
 <DemoExample Title="Style &amp; Class" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>
         Styling works at three levels: <strong>Style</strong> and <strong>Class</strong> target the root element, each
-        option's own <strong>Style</strong> and <strong>Class</strong> target a single button, and <strong>Styles</strong>
+        option's own <strong>Style</strong> and <strong>Class</strong> target a single button, and
+        <strong>Styles</strong>
         and <strong>Classes</strong> reach every part of the component - Root, Button, ToggledButton, Icon, Text, Badge,
         Spinner, and SelectionIndicator.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Component's style & class:</div>
-        <BitButtonGroup Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+        <BitButtonGroup Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
 
         <BitButtonGroup Class="custom-class" Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Item's style & class:</div>
         <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
-            <BitButtonGroupOption Text="Styled" IconName="@BitIconName.Brush" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
+            <BitButtonGroupOption Text="Styled" IconName="@BitIconName.Brush"
+                                  Style="color: tomato; border-color: brown; background-color: peachpuff;" />
             <BitButtonGroupOption Text="Classed" IconName="@BitIconName.FormatPainter" Class="custom-item" />
         </BitButtonGroup>
     </div>
     <br /><br />
     <div class="example-content">
         <div><b>Styles</b> & <b>Classes</b>:</div>
-        <BitButtonGroup Variant="BitVariant.Text"
-                        TItem="BitButtonGroupOption"
+        <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption"
                         Styles="@(new() { Button = "color: darkcyan; border-color: deepskyblue; background-color: azure;" })">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
 
-        <BitButtonGroup Variant="BitVariant.Text"
-                        TItem="BitButtonGroupOption"
+        <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption"
                         Classes="@(new() { Button = "custom-btn" })">
-            <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
     </div>
 </DemoExample>

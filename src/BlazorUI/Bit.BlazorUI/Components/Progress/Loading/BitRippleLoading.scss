@@ -13,11 +13,11 @@
     position: absolute;
     border-radius: 50%;
     border: var(--bit-ldn-rpl-4) solid var(--bit-ldn-color);
-    animation: bit-ldn-rpl-anm 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    animation: bit-ldn-rpl-anm calc(1s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
 .bit-ldn-rpl-ch2 {
-    animation-delay: -0.5s;
+    animation-delay: calc(-0.5s * var(--bit-ldn-mot-factor, 1));
 }
 
 @keyframes bit-ldn-rpl-anm {

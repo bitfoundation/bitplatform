@@ -130,6 +130,13 @@
 
 .bit-pvt-lnk {
     .bit-pvti {
+        // Every item carries the indicator color, not just the selected one, so the item losing the
+        // selection stays painted while its indicator scales away. Unselected items are collapsed to
+        // a zero scale (see .bit-pvti::before), so this paints nothing until an item is selected.
+        &::before {
+            background-color: var(--bit-pvt-clr);
+        }
+
         @media(hover:hover) {
             &:hover {
                 cursor: pointer;
@@ -140,10 +147,6 @@
     }
 
     .bit-pvti-sel {
-        &::before {
-            background-color: var(--bit-pvt-clr);
-        }
-
         @media(hover:hover) {
             &:hover {
                 &::before {
@@ -231,6 +234,22 @@
         @include focus-ring(var(--bit-pvt-clr-focus));
     }
 
+    // The selection indicator lives on every item rather than only on the selected one: a pseudo
+    // element that is generated when the item becomes selected has no previous computed style to
+    // transition from, so it would pop into place. Keeping it on all items lets the outgoing item
+    // scale its indicator away while the incoming one scales its own in.
+    &::before {
+        bottom: 0;
+        content: "";
+        position: absolute;
+        transform: scaleX(0);
+        height: spacing(0.25);
+        inset-inline-end: spacing(1);
+        inset-inline-start: spacing(1);
+        background-color: transparent;
+        transition: inset-inline-start $mot-duration-long $mot-easing 0s, inset-inline-end $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
+    }
+
     > span {
         height: 100%;
         display: flex;
@@ -274,15 +293,10 @@
         @include focus-ring(var(--bit-pvt-clr-focus));
     }
 
+    // Only the scale differs from the unselected state; the geometry, color and transition all come
+    // from .bit-pvti::before so both ends of a selection change animate with the same curve.
     &::before {
-        bottom: 0;
-        content: "";
-        position: absolute;
-        height: spacing(0.25);
-        inset-inline-end: spacing(1);
-        background-color: transparent;
-        inset-inline-start: spacing(1);
-        transition: inset-inline-start $mot-duration-long $mot-easing 0s, inset-inline-end $mot-duration-long $mot-easing 0s;
+        transform: scaleX(1);
     }
 
     span {
@@ -292,14 +306,22 @@
 
 .bit-pvt-sta,
 .bit-pvt-end {
+    // The indicator runs down the side here, so it collapses along the other axis. Both rules below
+    // are needed: this one outweighs the unqualified .bit-pvti-sel::before, so the selected state has
+    // to be restated at this specificity or the vertical indicator would stay collapsed.
+    .bit-pvti::before {
+        bottom: auto;
+        top: spacing(1);
+        width: spacing(0.25);
+        transform: scaleY(0);
+        inset-inline-start: 0;
+        height: calc(100% - spacing(2));
+        transition: top $mot-duration-long $mot-easing 0s, height $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
+    }
+
     .bit-pvti-sel {
         &::before {
-            bottom: auto;
-            top: spacing(1);
-            width: spacing(0.25);
-            inset-inline-start: 0;
-            height: calc(100% - spacing(2));
-            transition: top $mot-duration-long $mot-easing 0s, height $mot-duration-long $mot-easing 0s;
+            transform: scaleY(1);
         }
 
         @media(hover:hover) {

@@ -11,6 +11,9 @@
     border-radius: $shp-border-radius;
     --bit-btg-itm-brd-wid: #{$shp-border-width};
     --bit-btg-itm-brd-wid-ver: 0;
+    // Only the border is painted on the group itself: the filled and outline variants repaint it
+    // while the group is hovered, so it animates in step with the buttons inside it.
+    transition: border-color $mot-duration-short $mot-easing;
 
     // The ring is rendered on the group container (like the MenuButton split-button) because the
     // root's overflow:hidden would clip a box-shadow ring drawn on the focused item itself.
@@ -105,6 +108,9 @@
     background-color: var(--bit-btg-itm-clr-bg);
     border-inline-end-width: var(--bit-btg-itm-brd-wid);
     border-block-end-width: var(--bit-btg-itm-brd-wid-ver);
+    // The hover, active, checked and disabled states all resolve through the --bit-btg-itm-clr-*
+    // tokens above, so animating the three properties here covers every variant of the group.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -249,10 +255,18 @@
     border-top-color: var(--bit-btg-itm-clr-txt);
     animation: bit-btg-spinner-animation 1.3s linear infinite;
 
-    @media (prefers-reduced-motion: reduce) {
-        animation-duration: 4s;
-    }
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+
+    // The spinner loops forever, so it keeps a literal duration and calms down under reduced motion
+    // here instead of going through the --bit-mot-duration* tokens (a near-zero looping duration
+    // renders as flicker). ForceAnimation renders .bit-fam on the group root rather than on the
+    // spinner, so the opt-out is matched on an ancestor as well, the same way the token-driven
+    // animations inherit it.
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation-duration: 4s;
+        }
+    }
 }
 
 @keyframes bit-btg-spinner-animation {

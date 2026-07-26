@@ -13,6 +13,7 @@
     padding: var(--bit-acb-padding);
     font-size: var(--bit-acb-fontsize);
     -webkit-tap-highlight-color: transparent;
+    transition: color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -37,11 +38,21 @@
         pointer-events: none;
         color: var(--bit-acb-clr-dis-text);
         --bit-acb-clr-ico: var(--bit-acb-clr-dis-text);
+
+        // AllowDisabledFocus keeps a disabled button in the tab order, so the indicator has to stay
+        // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
+        // contradicts the inert look and reads as actionable.
+        &:focus-visible {
+            @include focus-ring(var(--bit-acb-clr-dis-text));
+        }
     }
 }
 
+// The hover/active/disabled states retarget --bit-acb-clr-ico on the button, which changes the
+// computed color here, so the transition has to sit on the icon to animate along with the label.
 .bit-acb-ico {
     color: var(--bit-acb-clr-ico);
+    transition: color $mot-duration-short $mot-easing;
 }
 
 .bit-acb-spn {

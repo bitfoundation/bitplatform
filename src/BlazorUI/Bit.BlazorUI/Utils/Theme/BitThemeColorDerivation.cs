@@ -15,22 +15,45 @@ public static class BitThemeColorDerivation
     private const double DarkHoverDarken = 0.15;
     private const double DarkActiveDarken = 0.18;
 
-    // Light/disabled tints: OKLab mix with white (L moves toward 1, chroma scales down by the
+    // Light tints: OKLab mix with white (L moves toward 1, chroma scales down by the
     // same factor), again matching the packaged palette, where light/light-hover/light-active are
     // ~58% / ~47.5% / ~37.5% white mixes of main. Note the hover/active steps of the light family
     // step BACK toward main (a tinted background darkens on hover), so Light is the lightest step.
     private const double LightWhiteMix = 0.58;
     private const double LightHoverWhiteMix = 0.475;
     private const double LightActiveWhiteMix = 0.375;
-    private const double DisabledWhiteMix = 0.58;
-    private const double DisabledTextWhiteMix = 0.45;
+
+    // Disabled pair (fill + its text), the one family that is NOT a relative step off main: the
+    // lightness is an absolute OKLab target and the chroma is capped at a faint hue trace, matching
+    // the recipe of the packaged palettes (see the "disabled" note in theme-variables.scss). A
+    // relative mix would inherit main's lightness, so a bright role and a dark one would land on
+    // different disabled weights and the state would read as a per-role variant instead of one
+    // state; an absolute target puts every role's disabled state at the same weight, which is what
+    // makes it recognizable. The values are the packaged palettes' targets, so the 8 semantic roles
+    // of both Fluent palettes come out of this method byte-identical (pinned by a derivation test).
+    private const double DisabledL = 0.94;
+    private const double DisabledTextL = 0.69;
+    private const double DisabledC = 0.030;
+    private const double DisabledTextC = 0.040;
+
+    // Dark-scheme ceilings: for a seed darker than the targets themselves, the absolute values would
+    // make the disabled pair LIGHTER than main, i.e. more prominent than the enabled state, so they
+    // are capped to a fraction of the seed's own lightness. The two fractions differ so the
+    // fill-below-text ordering survives the cap. For every packaged dark role (all of which are
+    // bright, as a dark palette's accents must be) the cap is inert and the target applies.
+    // The light scheme needs no mirror of this: there the disabled text can legitimately land darker
+    // than a pale accent such as warning yellow, whose brightness comes from chroma rather than
+    // luminance - dropping the chroma is what marks it disabled, and keeping every role in one
+    // lightness band matters more than a luminance ordering that carries no perceptual meaning.
+    private const double DarkSchemeDisabledMaxScale = 0.85;
+    private const double DarkSchemeDisabledTextMaxScale = 0.95;
 
     // Dark-scheme steps, calibrated the same way against the packaged Fluent dark palette (whose
     // primary AND secondary families agree on these fractions to within rounding). Interactive
     // states are black mixes (a fill on a dark surface dims on interaction), the dark family keeps
-    // chroma while lowering lightness, the light family still mixes toward white but far less (the
-    // dark main is already bright), and disabled colors are deep black mixes with extra
-    // desaturation so they read as muted against a dark background.
+    // chroma while lowering lightness, and the light family still mixes toward white but far less
+    // (the dark main is already bright). The disabled pair is not part of this group - it targets the
+    // absolute lightness band above.
     private const double DarkSchemeMainHoverBlackMix = 0.075;
     private const double DarkSchemeMainActiveBlackMix = 0.15;
     private const double DarkSchemeDarkDarken = 0.14;
@@ -39,9 +62,8 @@ public static class BitThemeColorDerivation
     private const double DarkSchemeLightWhiteMix = 0.28;
     private const double DarkSchemeLightHoverWhiteMix = 0.18;
     private const double DarkSchemeLightActiveWhiteMix = 0.09;
-    private const double DarkSchemeDisabledBlackMix = 0.47;
-    private const double DarkSchemeDisabledTextBlackMix = 0.23;
-    private const double DarkSchemeDisabledChromaScale = 0.85;
+    private const double DarkSchemeDisabledL = 0.30;
+    private const double DarkSchemeDisabledTextL = 0.52;
 
     /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields by deriving OKLCH-shifted hex values from <paramref name="mainHex"/>.</summary>
     /// <param name="variants">Target variants to fill in-place. Already-populated properties are preserved.</param>
@@ -63,7 +85,9 @@ public static class BitThemeColorDerivation
     /// when a preset <c>Main</c> is not a parseable hex color. The interactive and dark steps
     /// (<c>MainHover</c>/<c>MainActive</c>/<c>Dark</c>/<c>DarkHover</c>/<c>DarkActive</c>) scale
     /// OKLab lightness down at constant hue; the tint steps (<c>Light</c>/<c>LightHover</c>/
-    /// <c>LightActive</c>/<c>Disabled</c>/<c>DisabledText</c>) are white mixes. All step sizes are
+    /// <c>LightActive</c>) are white mixes; and the disabled pair (<c>Disabled</c>/
+    /// <c>DisabledText</c>) is muted to an absolute lightness with the chroma capped at a faint hue
+    /// trace, so a disabled role looks the same whatever its main color is. All step sizes are
     /// calibrated to the packaged Fluent palette, so a derived role behaves like a packaged one -
     /// including the light family's ordering, where <c>Light</c> is the lightest value and its
     /// hover/active states step back toward <c>Main</c>. <see cref="BitThemeColorVariants.Focus"/>
@@ -92,7 +116,8 @@ public static class BitThemeColorDerivation
     /// (for a dark scheme, typically a brightened brand color - <see cref="BitThemeFactory.CreateDarkTheme(string)"/>
     /// performs that brightening automatically). <see cref="BitThemeColorScheme.Dark"/> flips the
     /// step directions to the packaged dark palette's conventions: interactive states dim toward
-    /// black, tints stay closer to main, and disabled colors become deep desaturated shades.
+    /// black, tints stay closer to main, and the disabled pair targets the dark palettes' lightness
+    /// band (a dim fill with a mid-tone label) instead of the light palettes' pale one.
     /// All other guarantees (no-op on invalid input, presets preserved, contrast-picked
     /// <see cref="BitThemeColorVariants.Text"/>, <c>Focus</c> aliasing <c>Main</c>) are identical.
     /// </summary>
@@ -129,8 +154,8 @@ public static class BitThemeColorDerivation
             variants.Light ??= MixWithWhite(l, c, h, DarkSchemeLightWhiteMix);
             variants.LightHover ??= MixWithWhite(l, c, h, DarkSchemeLightHoverWhiteMix);
             variants.LightActive ??= MixWithWhite(l, c, h, DarkSchemeLightActiveWhiteMix);
-            variants.Disabled ??= MixWithBlack(l, c * DarkSchemeDisabledChromaScale, h, DarkSchemeDisabledBlackMix);
-            variants.DisabledText ??= MixWithBlack(l, c * DarkSchemeDisabledChromaScale, h, DarkSchemeDisabledTextBlackMix);
+            variants.Disabled ??= Muted(Math.Min(DarkSchemeDisabledL, l * DarkSchemeDisabledMaxScale), c, h, DisabledC);
+            variants.DisabledText ??= Muted(Math.Min(DarkSchemeDisabledTextL, l * DarkSchemeDisabledTextMaxScale), c, h, DisabledTextC);
         }
         else
         {
@@ -142,8 +167,8 @@ public static class BitThemeColorDerivation
             variants.Light ??= MixWithWhite(l, c, h, LightWhiteMix);
             variants.LightHover ??= MixWithWhite(l, c, h, LightHoverWhiteMix);
             variants.LightActive ??= MixWithWhite(l, c, h, LightActiveWhiteMix);
-            variants.Disabled ??= MixWithWhite(l, c, h, DisabledWhiteMix);
-            variants.DisabledText ??= MixWithWhite(l, c, h, DisabledTextWhiteMix);
+            variants.Disabled ??= Muted(DisabledL, c, h, DisabledC);
+            variants.DisabledText ??= Muted(DisabledTextL, c, h, DisabledTextC);
         }
 
         // The packaged palettes alias the focus indicator to the role's main color
@@ -176,6 +201,12 @@ public static class BitThemeColorDerivation
     // chroma), producing the dimmed-not-richer look interactive fills have on a dark surface.
     private static string MixWithBlack(double l, double c, double h, double amount)
         => BitThemeOklch.ToHex(l * (1 - amount), c * (1 - amount), h);
+
+    // Mutes a color to an absolute lightness while keeping its hue and a capped trace of its chroma:
+    // the disabled recipe, where the point is that the result does NOT track the role's own
+    // lightness (see the DisabledL note above).
+    private static string Muted(double targetL, double c, double h, double maxC)
+        => BitThemeOklch.ToHex(targetL, Math.Min(c, maxC), h);
 
     // Picks black or white on-color text using the same WCAG sRGB relative-luminance contrast as
     // BitThemeColorContrast (rather than a YIQ 0.299/0.587/0.114 brightness heuristic, which could

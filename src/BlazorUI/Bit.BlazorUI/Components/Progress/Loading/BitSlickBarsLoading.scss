@@ -15,31 +15,31 @@
     width: var(--bit-ldn-sbr-8);
     background: var(--bit-ldn-color);
     margin-left: var(--bit-ldn-sbr-2);
-    animation: bit-ldn-sbr-anm 0.8s infinite ease-in-out;
+    animation: bit-ldn-sbr-anm calc(0.8s * var(--bit-ldn-mot-factor, 1)) infinite ease-in-out;
 }
 
 .bit-ldn-sbr-ch1 {
-    animation-delay: 0s;
+    animation-delay: calc(0s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-sbr-ch2 {
-    animation-delay: -0.7s;
+    animation-delay: calc(-0.7s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-sbr-ch3 {
-    animation-delay: -0.6s;
+    animation-delay: calc(-0.6s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-sbr-ch4 {
-    animation-delay: -0.5s;
+    animation-delay: calc(-0.5s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-sbr-ch5 {
-    animation-delay: -0.4s;
+    animation-delay: calc(-0.4s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-sbr-ch6 {
-    animation-delay: -0.3s;
+    animation-delay: calc(-0.3s * var(--bit-ldn-mot-factor, 1));
 }
 
 @keyframes bit-ldn-sbr-anm {

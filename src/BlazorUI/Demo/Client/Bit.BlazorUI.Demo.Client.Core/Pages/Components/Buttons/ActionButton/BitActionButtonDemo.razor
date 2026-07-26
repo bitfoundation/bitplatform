@@ -565,7 +565,11 @@
             </div>
         </div>
         <br /><br />
-        <div><b>Disabled</b>:</div>
+        <div>
+            <b>Disabled</b>: each color keeps its own disabled shade, but every one of them is muted to the same
+            lightness with only a trace of the original hue left, so the inert state carries the same weight whatever
+            the <b>Color</b> is and never reads as a merely dimmed accent that is still clickable.
+        </div>
         <br />
         <div class="example-content">
             <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Primary">Primary</BitActionButton>
@@ -748,8 +752,9 @@
         <div>
             A disabled button is normally removed from the tab order, which means keyboard and screen reader users can miss that the action
             exists at all. Setting <b>AllowDisabledFocus</b> conveys the disabled state through <code>aria-disabled</code> instead of the native
-            disabled attribute, so the button stays focusable and discoverable while its click remains suppressed. Tab through the two buttons
-            below to feel the difference.
+            disabled attribute, so the button stays focusable and discoverable while its click remains suppressed. The focus ring is drawn in the
+            muted disabled color rather than the color of the button, so the focus stays visible without suggesting the action is available.
+            Tab through the two buttons below to feel the difference.
         </div>
 
         <br />

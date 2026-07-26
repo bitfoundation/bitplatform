@@ -20,6 +20,10 @@
     gap: var(--bit-tgb-icn-margin);
     --bit-tgb-icn-margin: #{spacing(0.5)};
 
+    // The variants below repaint all three on hover/active, and .bit-tgb-chk swaps them again when the
+    // button is toggled, so they animate together from here.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
     &:focus-visible {
         @include focus-ring(var(--bit-tgb-clr-focus));
     }
@@ -112,9 +116,16 @@
     border-top-color: currentcolor;
     animation: bit-tgb-spinner-animation 1.3s cubic-bezier(0.53, 0.21, 0.29, 0.67) infinite;
 
+    // The spinner loops forever, so it keeps a literal duration and calms down under reduced motion
+    // here instead of going through the --bit-mot-duration* tokens (a near-zero looping duration
+    // renders as flicker). ForceAnimation renders .bit-fam on the component root rather than on the
+    // spinner, so the opt-out is matched on an ancestor as well, the same way the token-driven
+    // animations inherit it.
     @media (prefers-reduced-motion: reduce) {
-        animation-duration: 4s;
-        animation-timing-function: linear;
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation-duration: 4s;
+            animation-timing-function: linear;
+        }
     }
 }
 
