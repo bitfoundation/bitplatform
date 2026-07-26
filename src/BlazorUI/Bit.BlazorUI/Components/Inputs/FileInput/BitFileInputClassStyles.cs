@@ -18,6 +18,11 @@ public class BitFileInputClassStyles
     public string? Label { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the description (hint) of the BitFileInput.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the file list container of the BitFileInput.
     /// </summary>
     public string? FileList { get; set; }

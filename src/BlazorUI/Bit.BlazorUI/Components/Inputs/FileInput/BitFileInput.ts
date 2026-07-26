@@ -2,17 +2,19 @@ namespace BitBlazorUI {
     export class FileInput {
         private static _fileInputs: BitFileInputItem[] = [];
 
-        public static setup(
+        public static async setup(
             id: string,
             inputElement: HTMLInputElement,
             append: boolean,
-            showPreview: boolean) {
+            showPreview: boolean,
+            readImageDimensions: boolean) {
 
             if (!append) {
                 FileInput.clear(id);
             }
 
-            const lastIndex = append ? FileInput._fileInputs.filter(f => f.id === id).length : 0;
+            const existingItems = append ? FileInput._fileInputs.filter(f => f.id === id) : [];
+            const lastIndex = existingItems.length ? Math.max(...existingItems.map(f => f.index)) + 1 : 0;
             const files = Array.from(inputElement.files!).map((file, index) => ({
                 name: file.name,
                 size: file.size,
@@ -21,7 +23,9 @@ namespace BitBlazorUI {
                 previewUrl: (showPreview && file.type.startsWith('image/')) ? URL.createObjectURL(file) : null,
                 fileId: Utils.uuidv4(),
                 file: file,
-                index: (index + lastIndex)
+                index: (index + lastIndex),
+                width: null as number | null,
+                height: null as number | null
             }));
 
             files.forEach((f) => {
@@ -29,18 +33,42 @@ namespace BitBlazorUI {
                 FileInput._fileInputs.push(inputItem);
             });
 
+            // the input has to be emptied before awaiting anything, otherwise selecting the same file
+            // right after would not raise a change event.
             inputElement.value = '';
+
+            if (readImageDimensions) {
+                await Promise.all(files
+                    .filter(f => f.type.startsWith('image/'))
+                    .map(async f => {
+                        const size = await FileInput.readImageSize(f.file);
+                        f.width = size.width;
+                        f.height = size.height;
+                    }));
+            }
 
             return files;
         }
 
-        public static setupDragDrop(dropZoneElement: HTMLElement, inputElement: HTMLInputElement, dragClass: string, dragStyle: string | null) {
+        public static setupDragDrop(
+            dropZoneElement: HTMLElement,
+            inputElement: HTMLInputElement,
+            dragClass: string,
+            dragStyle: string | null,
+            allowDrop: boolean,
+            allowPaste: boolean,
+            expandDirectories: boolean) {
+
             let dragCounter = 0;
             let originalStyle: string | null = null;
             const dragClasses = dragClass.split(' ').filter(c => c.length > 0);
 
             function hasFiles(e: DragEvent) {
                 return !!e.dataTransfer && Array.prototype.includes.call(e.dataTransfer.types, 'Files');
+            }
+
+            function canAcceptDrop(e: DragEvent) {
+                return allowDrop && !inputElement.disabled && hasFiles(e);
             }
 
             function addDragState() {
@@ -73,13 +101,20 @@ namespace BitBlazorUI {
 
             function onDragEnter(e: DragEvent) {
                 e.preventDefault();
-                if (inputElement.disabled || !hasFiles(e)) return;
+                if (!canAcceptDrop(e)) return;
 
                 addDragState();
             }
 
             function onDragOver(e: DragEvent) {
+                // the default must always be prevented, otherwise the browser navigates away
+                // to the dropped file and the app state gets lost.
                 e.preventDefault();
+
+                if (!e.dataTransfer) return;
+
+                // gives the OS the correct drag cursor (a copy badge or a no-drop sign).
+                e.dataTransfer.dropEffect = canAcceptDrop(e) ? 'copy' : 'none';
             }
 
             function onDragLeave(e: DragEvent) {
@@ -89,15 +124,24 @@ namespace BitBlazorUI {
                 removeDragState(false);
             }
 
-            function setFiles(files: FileList) {
-                if (files.length === 0) return;
+            function setFiles(files: File[] | FileList) {
+                const list = Array.from(files as ArrayLike<File>);
+                if (list.length === 0) return;
 
-                if (!inputElement.multiple && files.length > 1) {
+                // a directory input always hands over many files through the dialog,
+                // so a dropped folder must not be trimmed down to a single file either.
+                const acceptsMany = inputElement.multiple || inputElement.webkitdirectory;
+
+                if (!acceptsMany && list.length > 1) {
                     const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(files[0]);
+                    dataTransfer.items.add(list[0]);
                     inputElement.files = dataTransfer.files;
-                } else {
+                } else if (files instanceof FileList) {
                     inputElement.files = files;
+                } else {
+                    const dataTransfer = new DataTransfer();
+                    list.forEach(f => dataTransfer.items.add(f));
+                    inputElement.files = dataTransfer.files;
                 }
 
                 const event = new Event('change', { bubbles: true });
@@ -108,13 +152,23 @@ namespace BitBlazorUI {
                 e.preventDefault();
                 removeDragState(true);
 
-                if (inputElement.disabled) return;
+                if (!allowDrop || inputElement.disabled || !e.dataTransfer) return;
 
-                setFiles(e.dataTransfer!.files);
+                if (!expandDirectories) {
+                    setFiles(e.dataTransfer.files);
+                    return;
+                }
+
+                // the entries of a DataTransfer are only readable synchronously inside the event handler,
+                // so they get collected first and walked afterwards.
+                const entries = FileInput.readDroppedEntries(e.dataTransfer);
+                const fallback = Array.from(e.dataTransfer.files);
+
+                FileInput.collectEntries(entries).then(files => setFiles(files.length ? files : fallback));
             }
 
             function onPaste(e: ClipboardEvent) {
-                if (inputElement.disabled) return;
+                if (!allowPaste || inputElement.disabled) return;
                 if (!e.clipboardData || e.clipboardData.files.length === 0) return;
 
                 setFiles(e.clipboardData.files);
@@ -127,6 +181,15 @@ namespace BitBlazorUI {
             dropZoneElement.addEventListener('paste', onPaste);
 
             return {
+                update: (newAllowDrop: boolean, newAllowPaste: boolean, newExpandDirectories: boolean) => {
+                    allowDrop = newAllowDrop;
+                    allowPaste = newAllowPaste;
+                    expandDirectories = newExpandDirectories;
+
+                    if (!allowDrop) {
+                        removeDragState(true);
+                    }
+                },
                 dispose: () => {
                     dropZoneElement.removeEventListener('dragenter', onDragEnter);
                     dropZoneElement.removeEventListener('dragover', onDragOver);
@@ -172,6 +235,87 @@ namespace BitBlazorUI {
         public static reset(id: string, inputElement: HTMLInputElement) {
             FileInput.clear(id);
             inputElement.value = '';
+        }
+
+        private static async readImageSize(file: File): Promise<{ width: number | null, height: number | null }> {
+            // createImageBitmap decodes off the main thread and needs no DOM, so it is the fast path.
+            if (typeof createImageBitmap === 'function') {
+                try {
+                    const bitmap = await createImageBitmap(file);
+                    const size = { width: bitmap.width, height: bitmap.height };
+                    bitmap.close();
+                    return size;
+                } catch { /* falls back to the image element below (e.g. for SVG on some browsers) */ }
+            }
+
+            return new Promise(resolve => {
+                const url = URL.createObjectURL(file);
+                const image = new Image();
+
+                const finish = (width: number | null, height: number | null) => {
+                    URL.revokeObjectURL(url);
+                    resolve({ width, height });
+                };
+
+                image.onload = () => finish(image.naturalWidth, image.naturalHeight);
+                image.onerror = () => finish(null, null);
+                image.src = url;
+            });
+        }
+
+        private static readDroppedEntries(dataTransfer: DataTransfer): any[] {
+            const items = dataTransfer.items;
+            if (!items || items.length === 0) return [];
+
+            const entries: any[] = [];
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i] as any;
+                if (item.kind !== 'file') continue;
+
+                entries.push(item.webkitGetAsEntry ? item.webkitGetAsEntry() : item.getAsFile());
+            }
+
+            return entries.filter(e => !!e);
+        }
+
+        private static async collectEntries(entries: any[]): Promise<File[]> {
+            const files: File[] = [];
+
+            for (const entry of entries) {
+                await FileInput.collectEntry(entry, files);
+            }
+
+            return files;
+        }
+
+        private static async collectEntry(entry: any, files: File[]): Promise<void> {
+            if (entry instanceof File) {
+                files.push(entry);
+                return;
+            }
+
+            if (entry.isFile) {
+                return new Promise<void>(resolve => entry.file(
+                    (file: File) => { files.push(file); resolve(); },
+                    () => resolve()));
+            }
+
+            if (entry.isDirectory) {
+                const reader = entry.createReader();
+
+                // readEntries only returns a batch at a time, so it must be called until it comes back empty.
+                while (true) {
+                    const batch: any[] = await new Promise(resolve => reader.readEntries(
+                        (result: any[]) => resolve(result),
+                        () => resolve([])));
+
+                    if (batch.length === 0) break;
+
+                    for (const child of batch) {
+                        await FileInput.collectEntry(child, files);
+                    }
+                }
+            }
         }
     }
 

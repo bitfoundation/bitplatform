@@ -13,10 +13,40 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "AllowDrop",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether files can be selected by dragging them from the operating system and dropping them on the component.",
+        },
+        new()
+        {
+            Name = "AllowDuplicates",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether a file that is already in the file list can be selected again. When disabled, a newly selected file matching an existing one by name, size and last modified time is marked as invalid with the DuplicateErrorMessage instead of being added as a second entry.",
+        },
+        new()
+        {
             Name = "AllowedExtensions",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "[\"*\"]",
-            Description = "Allowed file extensions for validation purposes (e.g., [\".jpg\", \".png\", \".pdf\"]). Use [\"*\"] to allow all file types. Files not matching these extensions will be marked as invalid.",
+            Description = "Allowed file types for validation purposes, accepting both file extensions (e.g., [\".jpg\", \".png\", \".pdf\"]) and MIME types with an optional wildcard (e.g., [\"image/*\", \"application/pdf\"]). The leading dot of an extension is optional and the matching is case-insensitive. Use [\"*\"] to allow all file types. Files not matching any of these entries will be marked as invalid.",
+        },
+        new()
+        {
+            Name = "AllowPaste",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether files can be selected by pasting them from the clipboard onto the component. The paste is only captured while the focus is inside the component, so the browse button must be focused first.",
+        },
+        new()
+        {
+            Name = "AnnouncementProvider",
+            Type = "Func<IReadOnlyList<BitFileInputInfo>, string?>?",
+            DefaultValue = "null",
+            Description = "Custom provider of the text announced by the screen reader through the live region of the component whenever the file list changes. Receives the current file list and returns the text to announce, or null to announce nothing. When not set, a built-in English announcement is used.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
         },
         new()
         {
@@ -59,10 +89,31 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A short hint rendered under the browse button and wired to it through aria-describedby, which is the place to spell out the accepted file types and the size limits so that both sighted and screen reader users learn the constraints before hitting them."
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom Razor template of the hint rendered under the browse button, taking precedence over Description."
+        },
+        new()
+        {
             Name = "Directory",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to select folders (directories) instead of files, rendered as the webkitdirectory attribute. All files inside the selected folder and its subfolders will be added to the file list."
+            Description = "Whether to select folders (directories) instead of files, rendered as the webkitdirectory attribute. All files inside the selected folder and its subfolders will be added to the file list. It also makes a dropped folder expand into its contents instead of being ignored."
+        },
+        new()
+        {
+            Name = "DuplicateErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom error message displayed when a file is selected again while AllowDuplicates is disabled. Defaults to \"The file is already selected\"."
         },
         new()
         {
@@ -72,6 +123,13 @@ public partial class BitFileInputDemo
             Description = "Custom validation function called for each newly selected file after the built-in validations pass. Return an error message to mark the file as invalid, or null to accept it.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
+        },
+        new()
+        {
+            Name = "FileSizeFormatter",
+            Type = "Func<long, string>?",
+            DefaultValue = "null",
+            Description = "Custom formatter of the file size shown under the name of each file item. Receives the size of the file in bytes and returns the text to display, which is the place to localize the units or to switch between the binary and the decimal bases. When not set, a built-in humanizer is used.",
         },
         new()
         {
@@ -140,6 +198,20 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "MaxTotalSize",
+            Type = "long",
+            DefaultValue = "0",
+            Description = "Maximum allowed total size in bytes of all the files in the file list. Files pushing the accumulated size beyond this limit will be marked as invalid, becoming valid again once removals free up room. Set to 0 for no total size limit."
+        },
+        new()
+        {
+            Name = "MaxTotalSizeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom error message displayed when a file makes the total size of the file list exceed the maximum total size. Defaults to \"The total size of the files is larger than the max total size\"."
+        },
+        new()
+        {
             Name = "MinSize",
             Type = "long",
             DefaultValue = "0",
@@ -176,9 +248,26 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "OnInvalid",
+            Type = "EventCallback<BitFileInputInfo[]>",
+            Description = "Callback invoked right after OnChange whenever the file list holds at least one invalid file, providing an array of only the invalid files along with their validation messages.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
+        },
+        new()
+        {
             Name = "OnRemove",
             Type = "EventCallback<BitFileInputInfo>",
             Description = "Callback invoked for each file that gets removed from the file list, either through the remove button or the RemoveFile method.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
+        },
+        new()
+        {
+            Name = "ReadImageDimensions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to decode every selected image file to fill the Width and Height properties of its file info with the pixel dimensions, which makes it possible to enforce resolution rules from a FileValidator. Decoding costs time and memory proportional to the images, so it is disabled by default.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -199,6 +288,13 @@ public partial class BitFileInputDemo
             Description = "Gets or sets the name of the remove button icon from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "RemoveButtonTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The tooltip of the remove button, which is also used as the prefix of its accessible label (e.g., \"Remove report.pdf\"). Defaults to \"Remove\"."
         },
         new()
         {
@@ -262,9 +358,9 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "ReadContentAsync",
-            Type = "(BitFileInputInfo fileInfo) => Task",
+            Type = "(BitFileInputInfo? fileInfo = null) => Task",
             DefaultValue = "",
-            Description = "Reads the content of the specified file from the browser and populates its Content property with the byte array. Only reads valid and enabled files.",
+            Description = "Reads the content of the specified file from the browser and populates its Content property with the byte array, or reads every valid file of the file list when no file is specified. Only reads valid files and only while the component is enabled.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -349,6 +445,20 @@ public partial class BitFileInputDemo
                },
                new()
                {
+                   Name = "Width",
+                   Type = "int?",
+                   DefaultValue = "null",
+                   Description = "The width of the image in pixels, only populated for decodable image files when the ReadImageDimensions parameter of the BitFileInput is enabled. It is null for anything else."
+               },
+               new()
+               {
+                   Name = "Height",
+                   Type = "int?",
+                   DefaultValue = "null",
+                   Description = "The height of the image in pixels, only populated for decodable image files when the ReadImageDimensions parameter of the BitFileInput is enabled. It is null for anything else."
+               },
+               new()
+               {
                    Name = "IsValid",
                    Type = "bool",
                    DefaultValue = "true",
@@ -396,6 +506,13 @@ public partial class BitFileInputDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the browse button (label) of the BitFileInput."
+               },
+               new()
+               {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the description (hint) of the BitFileInput."
                },
                new()
                {
@@ -532,9 +649,41 @@ public partial class BitFileInputDemo
 
     private BitFileInput bitFileInput = default!;
 
+
+    private bool allowDrop = true;
+    private bool allowPaste = true;
+
+
     private string? ValidateEmptyFile(BitFileInputInfo file)
     {
         return file.Size == 0 ? "Empty files are not allowed" : null;
+    }
+
+
+    private string? ValidateImageDimensions(BitFileInputInfo file)
+    {
+        if (file.Width is null || file.Height is null) return "This image could not be decoded";
+
+        return (file.Width < 300 || file.Height < 300)
+            ? $"The image is {file.Width}×{file.Height}, smaller than the required 300×300"
+            : null;
+    }
+
+
+    private static readonly string[] farsiUnits = ["بایت", "کیلوبایت", "مگابایت", "گیگابایت"];
+
+    private string FormatFileSizeInFarsi(long size)
+    {
+        double value = size;
+        var unit = 0;
+
+        while (value >= 1024 && unit < farsiUnits.Length - 1)
+        {
+            value /= 1024;
+            unit++;
+        }
+
+        return $"{Math.Round(value, 1)} {farsiUnits[unit]}";
     }
 
 
@@ -556,13 +705,13 @@ public partial class BitFileInputDemo
 
         AddEventLog($"OnChange: {files.Length} file(s) selected");
 
-        foreach (var file in files)
-        {
-            if (file.IsValid && file.Content is null)
-            {
-                await eventsFileInput.ReadContentAsync(file);
-            }
-        }
+        // reads the content of every valid file of the list.
+        await eventsFileInput.ReadContentAsync();
+    }
+
+    private void HandleOnInvalid(BitFileInputInfo[] files)
+    {
+        AddEventLog($"OnInvalid: {string.Join(", ", files.Select(f => $"{f.Name} ({f.Message})"))}");
     }
 
     private void HandleOnRemove(BitFileInputInfo file)
@@ -582,4 +731,16 @@ public partial class BitFileInputDemo
 
 
     private BitFileInput publicApiFileInput = default!;
+
+
+    private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
+    {
+        if (files.Count == 0) return "No attachment yet.";
+
+        var rejected = files.Count(f => f.IsValid is false);
+
+        return rejected == 0
+            ? $"{files.Count} attachment(s) ready to send."
+            : $"{files.Count - rejected} attachment(s) ready to send, {rejected} rejected as too large.";
+    }
 }

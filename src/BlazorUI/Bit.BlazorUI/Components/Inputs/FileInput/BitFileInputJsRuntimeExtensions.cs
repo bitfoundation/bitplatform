@@ -15,9 +15,11 @@ internal static class BitFileInputJsRuntimeExtensions
                                                                     string id,
                                                                     ElementReference element,
                                                                     bool append,
-                                                                    bool showPreview)
+                                                                    bool showPreview,
+                                                                    bool readImageDimensions)
     {
-        return jsRuntime.Invoke<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", id, element, append, showPreview);
+        return jsRuntime.Invoke<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup",
+                                                    id, element, append, showPreview, readImageDimensions);
     }
 
     /// <summary>
@@ -28,9 +30,14 @@ internal static class BitFileInputJsRuntimeExtensions
                                                                             ElementReference dragDropZoneElement,
                                                                             ElementReference inputFileElement,
                                                                             string dragClass,
-                                                                            string? dragStyle)
+                                                                            string? dragStyle,
+                                                                            bool allowDrop,
+                                                                            bool allowPaste,
+                                                                            bool expandDirectories)
     {
-        return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileInput.setupDragDrop", dragDropZoneElement, inputFileElement, dragClass, dragStyle);
+        return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileInput.setupDragDrop",
+                                                    dragDropZoneElement, inputFileElement, dragClass, dragStyle,
+                                                    allowDrop, allowPaste, expandDirectories);
     }
 
     /// <summary>

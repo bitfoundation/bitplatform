@@ -109,6 +109,135 @@ public class BitFileInputTests : BunitTestContext
         Assert.AreEqual(".jpg,.png,.gif", fileInput.GetAttribute("accept"));
     }
 
+    [TestMethod]
+    public void BitFileInputShouldNormalizeAllowedExtensionsInTheAcceptAttribute()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            // the leading dot is optional and the entries get trimmed.
+            parameters.Add(p => p.AllowedExtensions, new[] { "jpg", " .png ", "gif" });
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.AreEqual(".jpg,.png,.gif", fileInput.GetAttribute("accept"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldKeepMimeTypesOfAllowedExtensionsInTheAcceptAttribute()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowedExtensions, new[] { "image/*", "application/pdf", "txt" });
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.AreEqual("image/*,application/pdf,.txt", fileInput.GetAttribute("accept"));
+    }
+
+    [TestMethod,
+        DataRow("*"),
+        DataRow("*.*"),
+        DataRow("*/*")
+    ]
+    public void BitFileInputShouldNotSetAcceptAttributeForAllowAllExtensions(string wildcard)
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowedExtensions, new[] { wildcard });
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.IsFalse(fileInput.HasAttribute("accept"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldNotSetAcceptAttributeForEmptyAllowedExtensions()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowedExtensions, []);
+        });
+
+        var fileInput = component.Find(".bit-fin-fi");
+
+        Assert.IsFalse(fileInput.HasAttribute("accept"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRenderTheDescriptionAndWireItToTheBrowseButton()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "PDF only, up to 5 MB.");
+        });
+
+        var description = component.Find(".bit-fin-dsc");
+        var button = component.Find(".bit-fin-lbl");
+
+        Assert.AreEqual("PDF only, up to 5 MB.", description.TextContent.Trim());
+        Assert.AreEqual(description.GetAttribute("id"), button.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldPreferTheDescriptionTemplateOverTheDescription()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "plain text");
+            parameters.Add(p => p.DescriptionTemplate, builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-description");
+                builder.AddContent(2, "templated");
+                builder.CloseElement();
+            });
+        });
+
+        var description = component.Find(".bit-fin-dsc");
+
+        Assert.IsNotNull(description.QuerySelector(".custom-description"));
+        Assert.DoesNotContain("plain text", description.TextContent);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldNotRenderTheDescriptionByDefault()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        var button = component.Find(".bit-fin-lbl");
+
+        Assert.IsEmpty(component.FindAll(".bit-fin-dsc"));
+        Assert.IsFalse(button.HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldSetAriaLabelOnTheBrowseButton()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Select a document to attach");
+        });
+
+        var button = component.Find(".bit-fin-lbl");
+
+        Assert.AreEqual("Select a document to attach", button.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRenderAPoliteLiveRegion()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        var liveRegion = component.Find(".bit-fin-lvr");
+
+        Assert.AreEqual("status", liveRegion.GetAttribute("role"));
+        Assert.AreEqual("polite", liveRegion.GetAttribute("aria-live"));
+        Assert.AreEqual("true", liveRegion.GetAttribute("aria-atomic"));
+    }
+
     [TestMethod,
         DataRow("Select File"),
         DataRow("Choose Files"),

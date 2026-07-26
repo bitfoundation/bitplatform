@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileInput is a file input component that wraps the HTML file input element and enables file selection
@@ -7,8 +7,14 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitFileInput : BitComponentBase
 {
+    private bool _allowDrop = true;
+    private bool _allowPaste = true;
+    private bool _expandDirectories;
+    private string? _announcement;
+    private bool _announcementMarker;
     private ElementReference _inputRef;
     private string _buttonId = default!;
+    private string _descriptionId = default!;
     private List<BitFileInputInfo> _files = [];
     private IJSObjectReference _dropZoneRef = default!;
 
@@ -26,10 +32,40 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public string? Accept { get; set; }
 
     /// <summary>
-    /// Allowed file extensions for validation purposes (e.g., [".jpg", ".png", ".pdf"]).
-    /// Use ["*"] to allow all file types. Files not matching these extensions will be marked as invalid.
+    /// Whether files can be selected by dragging them from the operating system and dropping them on the component.
+    /// The default value is true.
+    /// </summary>
+    [Parameter] public bool AllowDrop { get; set; } = true;
+
+    /// <summary>
+    /// Whether a file that is already in the file list can be selected again.
+    /// When disabled, a newly selected file matching an existing one by name, size and last modified time
+    /// is marked as invalid with the <see cref="DuplicateErrorMessage"/> instead of being added as a second entry.
+    /// The default value is true.
+    /// </summary>
+    [Parameter] public bool AllowDuplicates { get; set; } = true;
+
+    /// <summary>
+    /// Allowed file types for validation purposes, accepting both file extensions (e.g., [".jpg", ".png", ".pdf"])
+    /// and MIME types with an optional wildcard (e.g., ["image/*", "application/pdf"]).
+    /// The leading dot of an extension is optional and the matching is case-insensitive.
+    /// Use ["*"] to allow all file types. Files not matching any of these entries will be marked as invalid.
     /// </summary>
     [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = ["*"];
+
+    /// <summary>
+    /// Whether files can be selected by pasting them from the clipboard onto the component.
+    /// The paste is only captured while the focus is inside the component, so the browse button must be focused first.
+    /// The default value is true.
+    /// </summary>
+    [Parameter] public bool AllowPaste { get; set; } = true;
+
+    /// <summary>
+    /// Custom provider of the text announced by the screen reader through the live region of the component
+    /// whenever the file list changes. Receives the current file list and returns the text to announce,
+    /// or null to announce nothing. When not set, a built-in English announcement is used.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<BitFileInputInfo>, string?>? AnnouncementProvider { get; set; }
 
     /// <summary>
     /// Whether to append newly selected files to the existing file list instead of replacing it.
@@ -61,16 +97,43 @@ public partial class BitFileInput : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// A short hint rendered under the browse button and wired to it through aria-describedby,
+    /// which is the place to spell out the accepted file types and the size limits so that both sighted
+    /// and screen reader users learn the constraints before hitting them.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom Razor template of the hint rendered under the browse button, taking precedence over <see cref="Description"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
     /// Whether to select folders (directories) instead of files, rendered as the webkitdirectory attribute.
     /// All files inside the selected folder and its subfolders will be added to the file list.
+    /// It also makes a dropped folder expand into its contents instead of being ignored.
     /// </summary>
     [Parameter] public bool Directory { get; set; }
+
+    /// <summary>
+    /// Custom error message displayed when a file is selected again while <see cref="AllowDuplicates"/> is disabled.
+    /// Defaults to "The file is already selected".
+    /// </summary>
+    [Parameter] public string? DuplicateErrorMessage { get; set; }
 
     /// <summary>
     /// Custom validation function called for each newly selected file after the built-in validations pass.
     /// Return an error message to mark the file as invalid, or null to accept it.
     /// </summary>
     [Parameter] public Func<BitFileInputInfo, string?>? FileValidator { get; set; }
+
+    /// <summary>
+    /// Custom formatter of the file size shown under the name of each file item.
+    /// Receives the size of the file in bytes and returns the text to display,
+    /// which is the place to localize the units or to switch between the binary and the decimal bases.
+    /// When not set, a built-in humanizer is used.
+    /// </summary>
+    [Parameter] public Func<long, string>? FileSizeFormatter { get; set; }
 
     /// <summary>
     /// Custom Razor template for rendering individual file items in the file list.
@@ -124,6 +187,19 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public string? MaxSizeErrorMessage { get; set; }
 
     /// <summary>
+    /// Maximum allowed total size in bytes of all the files in the file list.
+    /// Files pushing the accumulated size beyond this limit will be marked as invalid,
+    /// becoming valid again once removals free up room. Set to 0 for no total size limit.
+    /// </summary>
+    [Parameter] public long MaxTotalSize { get; set; }
+
+    /// <summary>
+    /// Custom error message displayed when a file makes the total size of the file list exceed the maximum total size.
+    /// Defaults to "The total size of the files is larger than the max total size".
+    /// </summary>
+    [Parameter] public string? MaxTotalSizeErrorMessage { get; set; }
+
+    /// <summary>
     /// Minimum allowed file size in bytes for validation.
     /// Files smaller than this size will be marked as invalid. Set to 0 for no size limit.
     /// </summary>
@@ -153,10 +229,24 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public EventCallback<BitFileInputInfo[]> OnChange { get; set; }
 
     /// <summary>
+    /// Callback invoked right after <see cref="OnChange"/> whenever the file list holds at least one invalid file,
+    /// providing an array of only the invalid files along with their validation messages.
+    /// </summary>
+    [Parameter] public EventCallback<BitFileInputInfo[]> OnInvalid { get; set; }
+
+    /// <summary>
     /// Callback invoked for each file that gets removed from the file list,
     /// either through the remove button or the <see cref="RemoveFile"/> method.
     /// </summary>
     [Parameter] public EventCallback<BitFileInputInfo> OnRemove { get; set; }
+
+    /// <summary>
+    /// Whether to decode every selected image file to fill the <see cref="BitFileInputInfo.Width"/> and
+    /// <see cref="BitFileInputInfo.Height"/> properties with its pixel dimensions, which makes it possible to
+    /// enforce resolution rules from a <see cref="FileValidator"/>. Decoding costs time and memory proportional
+    /// to the images, so it is disabled by default.
+    /// </summary>
+    [Parameter] public bool ReadImageDimensions { get; set; }
 
     /// <summary>
     /// Gets or sets the remove button icon using custom CSS classes for external icon libraries.
@@ -168,6 +258,12 @@ public partial class BitFileInput : BitComponentBase
     /// Gets or sets the name of the remove button icon from the built-in Fluent UI icons.
     /// </summary>
     [Parameter] public string? RemoveButtonIconName { get; set; }
+
+    /// <summary>
+    /// The tooltip of the remove button, which is also used as the prefix of its accessible label
+    /// (e.g., "Remove report.pdf"). Defaults to "Remove".
+    /// </summary>
+    [Parameter] public string? RemoveButtonTitle { get; set; }
 
     /// <summary>
     /// Whether to display a preview thumbnail for image files in the file list.
@@ -229,17 +325,32 @@ public partial class BitFileInput : BitComponentBase
 
         await _js.BitFileInputReset(UniqueId, _inputRef);
 
+        Announce();
+
         StateHasChanged();
     }
 
     /// <summary>
     /// Reads the content of the specified file from the browser and populates its <see cref="BitFileInputInfo.Content"/> property
-    /// with the byte array. Only reads valid and enabled files.
+    /// with the byte array, or reads every valid file of the file list when no file is specified.
+    /// Only reads valid files and only while the component is enabled.
     /// </summary>
-    /// <param name="fileInfo">The file info whose content should be loaded.</param>
-    public async Task ReadContentAsync(BitFileInputInfo fileInfo)
+    /// <param name="fileInfo">The file info whose content should be loaded, or null to load all the valid files.</param>
+    public async Task ReadContentAsync(BitFileInputInfo? fileInfo = null)
     {
+        if (IsDisposed) return;
         if (IsEnabled is false) return;
+
+        if (fileInfo is null)
+        {
+            foreach (var file in _files.ToArray())
+            {
+                await ReadContentAsync(file);
+            }
+
+            return;
+        }
+
         if (fileInfo.IsValid is false) return;
 
         fileInfo.Content = await _js.BitFileInputReadContent(UniqueId, fileInfo.FileId);
@@ -252,6 +363,7 @@ public partial class BitFileInput : BitComponentBase
     /// <param name="fileInfo">The file to remove, or null to remove all files.</param>
     public async Task RemoveFile(BitFileInputInfo? fileInfo = null)
     {
+        if (IsEnabled is false) return;
         if (_files.Any() is false) return;
 
         if (fileInfo is null)
@@ -276,12 +388,16 @@ public partial class BitFileInput : BitComponentBase
             await OnRemove.InvokeAsync(fileInfo);
         }
 
-        ApplyMaxCountValidation();
+        ApplyListValidations();
 
-        await OnChange.InvokeAsync([.. _files]);
+        await InvokeChangeCallbacksAsync();
 
         StateHasChanged();
     }
+
+
+
+    private bool _HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
 
 
@@ -331,44 +447,114 @@ public partial class BitFileInput : BitComponentBase
     {
         InputId = $"FileInput-{UniqueId}-input";
         _buttonId = $"FileInput-{UniqueId}-label";
+        _descriptionId = $"FileInput-{UniqueId}-description";
 
         return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (_dropZoneRef is null) return;
+        if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory) return;
+
+        _allowDrop = AllowDrop;
+        _allowPaste = AllowPaste;
+        _expandDirectories = Directory;
+
+        try
+        {
+            await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender is false) return;
 
+        _allowDrop = AllowDrop;
+        _allowPaste = AllowPaste;
+        _expandDirectories = Directory;
+
         var dragClass = $"bit-fin-drg {Classes?.Dragging}".Trim();
 
-        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef, dragClass, Styles?.Dragging);
+        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef, dragClass, Styles?.Dragging,
+                                                           _allowDrop, _allowPaste, _expandDirectories);
     }
 
 
+
+    private static bool AllowsAllFileTypes(IReadOnlyCollection<string>? allowedExtensions)
+    {
+        return allowedExtensions is null
+            || allowedExtensions.Count == 0
+            || allowedExtensions.Any(ext => ext?.Trim() is "*" or "*.*" or "*/*");
+    }
+
+    private static IEnumerable<string> GetNormalizedExtensions(IReadOnlyCollection<string> allowedExtensions)
+    {
+        // an entry is either a MIME type (it contains a slash) or a file extension whose leading dot is optional.
+        return allowedExtensions.Select(ext => ext?.Trim())
+                                .Where(ext => ext.HasValue())
+                                .Select(ext => ext!.Contains('/') || ext.StartsWith('.') ? ext : $".{ext}");
+    }
 
     private string? GetAcceptValue()
     {
         if (Accept.HasValue()) return Accept;
 
-        if (AllowedExtensions.Count == 0 || AllowedExtensions.Any(ext => ext == "*")) return null;
+        if (AllowsAllFileTypes(AllowedExtensions)) return null;
 
-        return string.Join(",", AllowedExtensions);
+        var accept = string.Join(",", GetNormalizedExtensions(AllowedExtensions));
+
+        return accept.HasValue() ? accept : null;
     }
 
-    private bool IsFileTypeNotAllowed(BitFileInputInfo file)
+    private static bool IsFileTypeNotAllowed(BitFileInputInfo file, string[]? allowedTypes)
     {
-        // If AllowedExtensions contains "*", all file types are allowed
-        if (AllowedExtensions.Count == 0 || AllowedExtensions.Any(ext => ext == "*")) return false;
+        // a null list means every file type is allowed.
+        if (allowedTypes is null) return false;
 
         var extension = Path.GetExtension(file.Name);
 
-        // Files without an extension are not in the allowed list
-        if (extension.HasNoValue()) return true;
+        foreach (var entry in allowedTypes)
+        {
+            if (entry.Contains('/'))
+            {
+                if (file.ContentType.HasNoValue()) continue;
 
-        return AllowedExtensions.Any(ext => ext.Equals(extension, StringComparison.OrdinalIgnoreCase)) is false;
+                if (entry.EndsWith("/*", StringComparison.Ordinal))
+                {
+                    // a wildcard MIME type like "image/*" matches every subtype of that group.
+                    if (file.ContentType.StartsWith(entry[..^1], StringComparison.OrdinalIgnoreCase)) return false;
+                }
+                else if (entry.Equals(file.ContentType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                continue;
+            }
+
+            // files without an extension can never match an extension entry.
+            if (extension.HasNoValue()) continue;
+
+            if (entry.Equals(extension, StringComparison.OrdinalIgnoreCase)) return false;
+        }
+
+        return true;
     }
 
-    private void ValidateFile(BitFileInputInfo file)
+    // two selections of the same file are indistinguishable by their name, size and last modified time,
+    // which is as close to an identity as the browser exposes for a picked file.
+    private static string GetFileIdentity(BitFileInputInfo file)
+    {
+        return $"{file.Name}|{file.Size}|{file.LastModified}";
+    }
+
+    private void ValidateFile(BitFileInputInfo file, string[]? allowedTypes)
     {
         if (MaxSize > 0 && file.Size > MaxSize)
         {
@@ -380,14 +566,24 @@ public partial class BitFileInput : BitComponentBase
             file.IsValid = false;
             file.Message = MinSizeErrorMessage ?? "The file size is smaller than the min size";
         }
-        else if (IsFileTypeNotAllowed(file))
+        else if (IsFileTypeNotAllowed(file, allowedTypes))
         {
             file.IsValid = false;
             file.Message = NotAllowedExtensionErrorMessage ?? "The file type is not allowed";
         }
         else if (FileValidator is not null)
         {
-            var message = FileValidator(file);
+            string? message;
+
+            try
+            {
+                message = FileValidator(file);
+            }
+            catch (Exception ex)
+            {
+                // a throwing custom validator invalidates its own file instead of aborting the whole selection.
+                message = ex.Message;
+            }
 
             if (message.HasValue())
             {
@@ -406,42 +602,122 @@ public partial class BitFileInput : BitComponentBase
             _files.Clear();
         }
 
-        var newFiles = await _js.BitFileInputSetup(UniqueId, _inputRef, Append, ShowPreview);
+        var newFiles = await _js.BitFileInputSetup(UniqueId, _inputRef, Append, ShowPreview, ReadImageDimensions);
+
+        if (IsDisposed) return;
+
+        // the allowed types and the identities of the existing files are resolved once per selection
+        // instead of once per file, since a folder selection can easily carry thousands of files.
+        var allowedTypes = AllowsAllFileTypes(AllowedExtensions)
+                            ? null
+                            : GetNormalizedExtensions(AllowedExtensions).ToArray();
+
+        var knownFiles = AllowDuplicates ? null : new HashSet<string>(_files.Select(GetFileIdentity), StringComparer.Ordinal);
 
         foreach (var file in newFiles)
         {
-            ValidateFile(file);
+            if (knownFiles is not null && knownFiles.Add(GetFileIdentity(file)) is false)
+            {
+                file.IsValid = false;
+                file.Message = DuplicateErrorMessage ?? "The file is already selected";
+            }
+            else
+            {
+                ValidateFile(file, allowedTypes);
+            }
+
+            _files.Add(file);
         }
 
-        _files.AddRange(newFiles);
+        ApplyListValidations();
 
-        ApplyMaxCountValidation();
-
-        await OnChange.InvokeAsync([.. _files]);
+        await InvokeChangeCallbacksAsync();
     }
 
-    private void ApplyMaxCountValidation()
+    private void ApplyListValidations()
     {
-        if (MaxCount <= 0) return;
+        // the list level limits are re-evaluated from scratch so that files invalidated by a previous
+        // evaluation can become valid again as soon as removals free up room.
+        for (var index = 0; index < _files.Count; index++)
+        {
+            var file = _files[index];
 
-        var index = 0;
+            file.Index = index;
+
+            if (file.ListValidationFailed is false) continue;
+
+            file.ListValidationFailed = false;
+            file.IsValid = true;
+            file.Message = null;
+        }
+
+        var count = 0;
+        var totalSize = 0L;
+
         foreach (var file in _files)
         {
-            if (index++ < MaxCount)
-            {
-                if (file.MaxCountExceeded is false) continue;
+            // only the files that are otherwise valid consume the budget of the list level limits.
+            if (file.IsValid is false) continue;
 
-                file.MaxCountExceeded = false;
-                file.IsValid = true;
-                file.Message = null;
-            }
-            else if (file.IsValid)
+            if (MaxCount > 0 && count >= MaxCount)
             {
-                file.MaxCountExceeded = true;
-                file.IsValid = false;
-                file.Message = MaxCountErrorMessage ?? "The maximum number of files is exceeded";
+                Invalidate(file, MaxCountErrorMessage ?? "The maximum number of files is exceeded");
+            }
+            else if (MaxTotalSize > 0 && totalSize + file.Size > MaxTotalSize)
+            {
+                Invalidate(file, MaxTotalSizeErrorMessage ?? "The total size of the files is larger than the max total size");
+            }
+            else
+            {
+                count++;
+                totalSize += file.Size;
             }
         }
+
+        static void Invalidate(BitFileInputInfo file, string message)
+        {
+            file.ListValidationFailed = true;
+            file.IsValid = false;
+            file.Message = message;
+        }
+    }
+
+    private async Task InvokeChangeCallbacksAsync()
+    {
+        Announce();
+
+        await OnChange.InvokeAsync([.. _files]);
+
+        if (OnInvalid.HasDelegate is false) return;
+
+        var invalidFiles = _files.Where(f => f.IsValid is false).ToArray();
+
+        if (invalidFiles.Length == 0) return;
+
+        await OnInvalid.InvokeAsync(invalidFiles);
+    }
+
+    private void Announce()
+    {
+        var text = GetAnnouncementText();
+
+        // screen readers skip a live region update that repeats the previous text verbatim,
+        // so an invisible zero width space is alternated to make every update unique.
+        _announcementMarker = !_announcementMarker;
+
+        _announcement = text.HasValue() && _announcementMarker ? text + '\u200B' : text;
+    }
+
+    private string? GetAnnouncementText()
+    {
+        if (AnnouncementProvider is not null) return AnnouncementProvider(_files);
+
+        if (_files.Count == 0) return "No file selected.";
+
+        var invalidCount = _files.Count(f => f.IsValid is false);
+
+        return $"{_files.Count} file{(_files.Count == 1 ? string.Empty : "s")} selected." +
+               (invalidCount > 0 ? $" {invalidCount} of them invalid." : string.Empty);
     }
 
     private string GetFileElClass(bool isValid)

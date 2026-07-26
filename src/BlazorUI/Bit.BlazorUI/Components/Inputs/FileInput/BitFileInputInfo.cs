@@ -45,6 +45,18 @@ public class BitFileInputInfo
     [JsonPropertyName("previewUrl")] public string? PreviewUrl { get; set; }
 
     /// <summary>
+    /// The width of the image in pixels, only populated for decodable image files when the
+    /// ReadImageDimensions parameter of the BitFileInput is enabled. It is null for anything else.
+    /// </summary>
+    [JsonPropertyName("width")] public int? Width { get; set; }
+
+    /// <summary>
+    /// The height of the image in pixels, only populated for decodable image files when the
+    /// ReadImageDimensions parameter of the BitFileInput is enabled. It is null for anything else.
+    /// </summary>
+    [JsonPropertyName("height")] public int? Height { get; set; }
+
+    /// <summary>
     /// The last modified time of the file reported by the browser, as a DateTimeOffset.
     /// </summary>
     [JsonIgnore] public DateTimeOffset LastModifiedDate => DateTimeOffset.FromUnixTimeMilliseconds(LastModified);
@@ -66,6 +78,7 @@ public class BitFileInputInfo
     /// </summary>
     [JsonIgnore] public byte[]? Content { get; internal set; }
 
-    // Tracks whether the file was invalidated by the MaxCount limit, so it can become valid again once removals free up room.
-    [JsonIgnore] internal bool MaxCountExceeded { get; set; }
+    // Tracks whether the file was invalidated by a list level limit (MaxCount or MaxTotalSize),
+    // so it can become valid again once removals free up room.
+    [JsonIgnore] internal bool ListValidationFailed { get; set; }
 }

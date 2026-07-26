@@ -75,6 +75,12 @@
     }
 }
 
+.bit-fin-dsc {
+    color: $clr-fg-sec;
+    margin-top: spacing(0.5);
+    font-size: var(--bit-fin-fs-fontsize);
+}
+
 .bit-fin-fl {
     margin: 0;
     padding: 0;
@@ -184,9 +190,30 @@
         background-color: $clr-bg-sec-active;
     }
 
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+        background-color: $clr-bg-dis;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $clr-bg-dis;
+            }
+        }
+    }
+
     i {
         font-size: var(--bit-fin-ico-fontsize);
     }
+}
+
+.bit-fin-lvr {
+    top: auto;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
 }
 
 .bit-fin-pri {
