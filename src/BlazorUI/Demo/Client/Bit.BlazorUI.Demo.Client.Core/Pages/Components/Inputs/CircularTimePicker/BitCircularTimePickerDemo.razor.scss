@@ -16,7 +16,7 @@
     overflow: hidden;
     margin-bottom: rem2(10px);
     background-color: $bit-color-error-light;
-    border-left: rem2(5px) solid $bit-color-requried;
+    border-left: rem2(5px) solid $bit-color-required;
 }
 
 ::deep {
@@ -116,7 +116,7 @@
 
     .validation-message {
         font-size: rem2(12px);
-        color: $bit-color-requried;
+        color: $bit-color-required;
     }
 
     .validation-errors {

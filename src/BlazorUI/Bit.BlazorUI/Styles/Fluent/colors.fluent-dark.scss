@@ -1,5 +1,9 @@
+// The `:root [bit-theme=…]` descendant twins scope this palette to ANY element carrying the
+// bit-theme attribute (see the note in colors.fluent-light.scss).
 :root[bit-theme="dark"],
-:root[bit-theme="fluent-dark"] {
+:root [bit-theme="dark"],
+:root[bit-theme="fluent-dark"],
+:root [bit-theme="fluent-dark"] {
     color-scheme: dark;
     //primary
     --bit-clr-pri: #569FFF;

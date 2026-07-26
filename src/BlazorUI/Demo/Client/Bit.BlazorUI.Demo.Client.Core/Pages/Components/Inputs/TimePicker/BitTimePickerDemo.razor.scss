@@ -4,7 +4,7 @@
     overflow: hidden;
     margin-bottom: 0.625rem;
     background-color: $bit-color-error-light;
-    border-left: 0.25rem solid $bit-color-requried;
+    border-left: 0.25rem solid $bit-color-required;
 }
 
 .example-content {
@@ -93,7 +93,7 @@
 
     .validation-message {
         font-size: 0.75rem;
-        color: $bit-color-requried;
+        color: $bit-color-required;
     }
 
     .validation-errors {

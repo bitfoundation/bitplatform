@@ -28,4 +28,27 @@ public sealed class BitThemeDensityPresetsTests
         Assert.IsTrue(mapped.TryGetValue("--bit-layout-density-scale", out var value) && value == "0.9");
         Assert.IsFalse(mapped.ContainsKey("--bit-spa-scaling-factor"));
     }
+
+    [TestMethod]
+    public void SpaciousOverlaySetsUnitlessDensityScaleOnly()
+    {
+        var overlay = BitThemeDensityPresets.CreateSpaciousOverlay();
+
+        Assert.IsTrue(double.TryParse(overlay.Layout.DensityScale, NumberStyles.Float, CultureInfo.InvariantCulture, out var scale),
+            $"DensityScale '{overlay.Layout.DensityScale}' must be a plain unitless number; spacing() multiplies it with the --bit-spa-scaling-factor length.");
+        Assert.IsTrue(scale > 1, $"A spacious overlay must expand spacing (scale > 1), got {scale}.");
+
+        // Same invariant as the compact overlay: the base spacing unit is a CSS length and must
+        // not be overridden by a density preset.
+        Assert.IsNull(overlay.Spacing.ScalingFactor, "The spacious overlay must not override the spacing base unit.");
+    }
+
+    [TestMethod]
+    public void SpaciousOverlayEmitsDensityScaleCssVariable()
+    {
+        var mapped = BitThemeUtilities.ToCssVariables(BitThemeDensityPresets.CreateSpaciousOverlay());
+
+        Assert.IsTrue(mapped.TryGetValue("--bit-layout-density-scale", out var value) && value == "1.1");
+        Assert.IsFalse(mapped.ContainsKey("--bit-spa-scaling-factor"));
+    }
 }

@@ -36,7 +36,9 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: var(--bit-acb-clr-dis-text);
+        // The role color only ever reaches the icon here (the label sits on $clr-fg-pri), so the
+        // disabled label follows the achromatic disabled foreground instead of the role's dis-text.
+        color: $clr-fg-dis;
         --bit-acb-clr-ico: var(--bit-acb-clr-dis-text);
 
         // AllowDisabledFocus keeps a disabled button in the tab order, so the indicator has to stay

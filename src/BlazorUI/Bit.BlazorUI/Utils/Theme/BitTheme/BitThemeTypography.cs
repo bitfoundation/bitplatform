@@ -44,9 +44,10 @@ public class BitThemeTypographyVariants
 }
 
 /// <summary>
-/// Label-style variants (<see cref="BitThemeTypography.Button"/> and
-/// <see cref="BitThemeTypography.Overline"/>) that additionally control <c>text-transform</c>
-/// (<c>--bit-tpg-{variant}-text-transform</c>) and <c>display</c> (<c>--bit-tpg-{variant}-display</c>).
+/// Label-style variants (<see cref="BitThemeTypography.Button"/>, <see cref="BitThemeTypography.Overline"/>,
+/// and - via <see cref="BitThemeInheritTypographyVariants"/> - <see cref="BitThemeTypography.Inherit"/>)
+/// that additionally control <c>text-transform</c> (<c>--bit-tpg-{variant}-text-transform</c>) and
+/// <c>display</c> (<c>--bit-tpg-{variant}-display</c>).
 /// </summary>
 public class BitThemeLabelTypographyVariants : BitThemeTypographyVariants
 {
@@ -57,9 +58,12 @@ public class BitThemeLabelTypographyVariants : BitThemeTypographyVariants
 /// <summary>
 /// The <see cref="BitThemeTypography.Inherit"/> variant, which additionally allows overriding
 /// <c>font-family</c> (<c>--bit-tpg-inherit-font-family</c>). Every other variant inherits the
-/// root-level <see cref="BitThemeTypography.FontFamily"/>.
+/// root-level <see cref="BitThemeTypography.FontFamily"/>. Deriving from
+/// <see cref="BitThemeLabelTypographyVariants"/> also exposes <c>text-transform</c>
+/// (<c>--bit-tpg-inherit-text-transform</c>) and <c>display</c> (<c>--bit-tpg-inherit-display</c>),
+/// matching the packaged stylesheet, which declares both tokens for this variant.
 /// </summary>
-public class BitThemeInheritTypographyVariants : BitThemeTypographyVariants
+public class BitThemeInheritTypographyVariants : BitThemeLabelTypographyVariants
 {
     public string? FontFamily { get; set; }
 }

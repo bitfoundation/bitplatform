@@ -1,6 +1,15 @@
 // Windows High Contrast / forced-colors: preserve readability with system palette.
+//
+// Selector specificity is deliberate: a bare `:root` here is (0,1,0), which LOSES to the
+// (0,2,0) `:root[bit-theme="…"]` palette selectors whenever the document pins a preset - the
+// palette hexes would silently beat the system-palette remap. Tripling `:root` lifts this block
+// to (0,3,0) so it wins over any packaged (or similarly-specific app) palette block, while inline
+// theme overrides (an explicit runtime choice) still take precedence as inline style always does.
+// The `[bit-theme]` twin covers scoped-preset elements, whose OWN palette declarations would
+// otherwise beat these values arriving only by inheritance from :root.
 @media (forced-colors: active) {
-    :root {
+    :root:root:root,
+    :root:root:root [bit-theme] {
         --bit-clr-fg-pri: CanvasText;
         --bit-clr-fg-sec: CanvasText;
         --bit-clr-fg-ter: CanvasText;
@@ -49,8 +58,12 @@
 // Use a concrete width value rather than self-referencing var(--bit-shp-brd-width, …) - a custom
 // property cannot reference its own current value (the cycle resolves to the fallback per
 // the CSS spec, which makes the intent unclear and brittle across engines).
+// Same specificity rationale as the forced-colors block above: the border-width and tier-promotion
+// remaps must out-specify the (0,2,0) shapes/colors palette selectors, and reach scoped-preset
+// elements whose own palette declarations would beat inherited values.
 @media (prefers-contrast: more) {
-    :root {
+    :root:root:root,
+    :root:root:root [bit-theme] {
         //2px instead of the default 1px (0.0625rem)
         --bit-shp-brd-width: 0.125rem;
 

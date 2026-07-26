@@ -233,7 +233,14 @@ public class BitThemeProvider : ComponentBase
 
     private static string BuildCssVarStyle(BitTheme theme)
     {
-        var cssVars = BitThemeUtilities.ToCssVariables(theme);
+        var cssVars = BitThemeMapper.MapToCssVariables(theme);
+
+        // Re-declare the semantic aliases whose target primitives this theme overrides, so app CSS
+        // reading the alias tier inside this provider tracks the override (an alias's var() is
+        // substituted where the alias is DEFINED, so the :root-level default would otherwise keep
+        // the document palette's value). See BitThemeMapper.AugmentWithSemanticAliasReSubstitution.
+        BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVars);
+
         return string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));
     }
 }

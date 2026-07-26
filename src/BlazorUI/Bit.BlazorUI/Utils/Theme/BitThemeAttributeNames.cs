@@ -33,6 +33,14 @@ public static class BitThemeAttributeNames
     /// <summary>Resolved name to use when <see cref="ThemeSystem"/> is active and <c>prefers-color-scheme</c> is light.</summary>
     public const string ThemeLight = "bit-theme-light";
 
+    /// <summary>
+    /// Marker attribute that opts theme swaps into the View Transitions API: the page cross-fades
+    /// to the new palette instead of hard-swapping. Checked live on every change, so it can be
+    /// added/removed at runtime. Ignored (plain swap) when the browser lacks
+    /// <c>document.startViewTransition</c> or the user prefers reduced motion.
+    /// </summary>
+    public const string ThemeViewTransition = "bit-theme-view-transition";
+
     /// <summary><c>localStorage</c> key used by the client script when persistence is enabled.</summary>
     public const string ThemeStorageKey = "bit-current-theme";
 }

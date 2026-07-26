@@ -1,7 +1,17 @@
+// The `:root [bit-theme=…]` descendant twins scope this palette to ANY element carrying the
+// bit-theme attribute (an always-light card inside a dark page, a per-tenant region, …); custom
+// property inheritance re-themes that subtree. They share the (0,2,0) specificity of the
+// root-level selectors, so the root cascade is unchanged and app overrides keep winning the same
+// way in both placements. Note: elements that escape the subtree in the DOM (portalled modals /
+// callouts rendered at body level) inherit the document palette instead - same as any scoped
+// theming mechanism.
 :root,
 :root[bit-theme="light"],
+:root [bit-theme="light"],
 :root[bit-theme="fluent"],
-:root[bit-theme="fluent-light"] {
+:root [bit-theme="fluent"],
+:root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"] {
     color-scheme: light;
     //primary
     --bit-clr-pri: #1A86D8;

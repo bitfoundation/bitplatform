@@ -27,4 +27,18 @@ public static class BitThemeDensityPresets
             Layout = { DensityScale = "0.9" },
         };
     }
+
+    /// <summary>
+    /// The airy counterpart of <see cref="CreateCompactOverlay"/>: a theme overlay that relaxes
+    /// component rhythm via <see cref="BitThemeLayout.DensityScale"/> (<c>1.1</c>), for
+    /// touch-first or low-density reading surfaces. Like the compact overlay, it leaves
+    /// <see cref="BitThemeSpacings.ScalingFactor"/> (the base spacing unit) untouched.
+    /// </summary>
+    public static BitTheme CreateSpaciousOverlay()
+    {
+        return new BitTheme
+        {
+            Layout = { DensityScale = "1.1" },
+        };
+    }
 }

@@ -9,6 +9,8 @@ namespace BitBlazorUI {
     const ATTR_THEME_PERSIST_COOKIE = 'bit-theme-persist-cookie';
     const ATTR_THEME_DARK = 'bit-theme-dark';
     const ATTR_THEME_LIGHT = 'bit-theme-light';
+    // Opt-in marker: animate theme swaps with the View Transitions API (see swapThemeAttribute).
+    const ATTR_THEME_VIEW_TRANSITION = 'bit-theme-view-transition';
     const STORAGE_KEY = 'bit-current-theme';
     // Kept aligned with BitThemeCookie.PreferenceCookieName in C#. When cookie persistence is
     // enabled, the client mirrors the persisted preference into this cookie so the server can read
@@ -256,7 +258,9 @@ namespace BitBlazorUI {
 
             const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
 
-            document.documentElement.setAttribute(Theme.THEME_ATTRIBUTE, Theme._currentTheme);
+            // Never animate the startup application (there is nothing meaningful to transition at
+            // boot, and a transition would add a frame capture to every page load).
+            Theme.swapThemeAttribute(Theme._currentTheme, /* skipTransition: */ fromInit);
 
             Theme.dispatchThemeChange(Theme._currentTheme, oldTheme);
 
@@ -266,13 +270,23 @@ namespace BitBlazorUI {
         }
 
         public static toggleDarkLight() {
+            // Re-sync from the bit-theme attribute first (the source of truth, same as get()) so a
+            // toggle issued after an external attribute write - a non-bit script or dev tooling
+            // setting bit-theme directly - acts on what is actually painted instead of a stale
+            // _currentTheme. Read the attribute directly (not via get(), which would overwrite
+            // _currentTheme before the fallback could use it) and fall back to _currentTheme when
+            // the attribute is absent - which also bridges the one-frame window in which a pending
+            // view transition has not applied the new attribute yet, since set() updates
+            // _currentTheme synchronously.
+            const current = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || Theme._currentTheme;
+
             // Toggle relative to the configured dark theme: when the dark theme is active switch to
             // light, otherwise switch to dark. Anchoring on the dark theme (rather than the light
             // one) means a configured pair such as bit-theme-light="fluent-light" /
             // bit-theme-dark="fluent-dark" toggles correctly in BOTH directions, and any other
             // current value (a custom or unrecognized theme) resolves to the dark theme instead of
             // silently collapsing to light.
-            Theme._currentTheme = Theme._currentTheme === Theme._darkTheme
+            Theme._currentTheme = current === Theme._darkTheme
                 ? Theme._lightTheme
                 : Theme._darkTheme;
 
@@ -414,8 +428,44 @@ namespace BitBlazorUI {
             if (resolved === oldTheme) return;
 
             Theme._currentTheme = resolved;
-            document.documentElement.setAttribute(Theme.THEME_ATTRIBUTE, resolved);
+            Theme.swapThemeAttribute(resolved);
             Theme.dispatchThemeChange(resolved, oldTheme);
+        }
+
+        /**
+         * Writes the bit-theme attribute, optionally inside a View Transition so the whole page
+         * cross-fades to the new palette instead of hard-swapping. Opt-in via the
+         * bit-theme-view-transition attribute on the document element (checked live, so it can be
+         * toggled at runtime). The transition is skipped - falling back to a plain synchronous
+         * attribute write - when the API is unavailable or the user prefers reduced motion.
+         *
+         * Note: startViewTransition invokes its callback asynchronously (after capturing the old
+         * frame), so with the transition active the attribute updates a frame later than the
+         * Theme.set call. _currentTheme is always updated synchronously by the callers, and the
+         * change notifications carry the explicit old/new names, so observers are unaffected.
+         */
+        private static swapThemeAttribute(themeName: string, skipTransition?: boolean) {
+            const apply = () => document.documentElement.setAttribute(Theme.THEME_ATTRIBUTE, themeName);
+
+            // A no-op swap (re-setting the already-applied theme, e.g. pinning the currently
+            // resolved preset) must not run a transition: startViewTransition captures and
+            // cross-fades even when the callback changes nothing visible.
+            if (skipTransition || document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) === themeName) {
+                apply();
+                return;
+            }
+
+            try {
+                const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
+                if (document.documentElement.hasAttribute(ATTR_THEME_VIEW_TRANSITION) &&
+                    typeof doc.startViewTransition === 'function' &&
+                    !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+                    doc.startViewTransition(apply);
+                    return;
+                }
+            } catch { /* View Transition unavailable or failed to start; fall through to the direct swap */ }
+
+            apply();
         }
 
         private static dispatchThemeChange(newTheme: string, oldTheme: string) {

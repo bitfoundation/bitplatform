@@ -51,7 +51,7 @@
             <br />
 
             <BitText>
-                Underneath, every component reads <BitTag>--bit-*</BitTag> CSS custom properties. Presets set them via stylesheet rules selected by <BitTag>:root[bit-theme="…"]</BitTag>; <BitTag>BitThemeProvider</BitTag> and <BitTag>ApplyBitThemeAsync</BitTag> override them via inline <BitTag>style</BitTag>. Inline wins, so brand tweaks apply on top of any preset.
+                Underneath, every component reads <BitTag>--bit-*</BitTag> CSS custom properties. Presets set them via stylesheet rules selected by the <BitTag>bit-theme</BitTag> attribute &mdash; on <BitTag>:root</BitTag> for the whole document, or on any element to re-theme just that subtree (<i>scoped presets</i>, see the Presets section); <BitTag>BitThemeProvider</BitTag> and <BitTag>ApplyBitThemeAsync</BitTag> override them via inline <BitTag>style</BitTag>. Inline wins, so brand tweaks apply on top of any preset.
             </BitText>
         </BitCard>
 
@@ -120,8 +120,17 @@
       bit-theme-light="brand-light"
       bit-theme-dark="brand-dark"&gt;...&lt;/html&gt;
 
+&lt;!-- Animate theme swaps (View Transitions API cross-fade) --&gt;
+&lt;html bit-theme-system bit-theme-view-transition&gt;...&lt;/html&gt;
+
 &lt;!-- Mix and match --&gt;
 &lt;html bit-theme-system bit-theme-persist bit-theme-default="fluent-light"&gt;...&lt;/html&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                <BitTag>bit-theme-view-transition</BitTag> is purely presentational: when present, every theme swap (from <BitTag>SetThemeAsync</BitTag>, <BitTag>ToggleDarkLightAsync</BitTag>, the JS API, or an OS appearance change while following the system) runs inside <BitTag>document.startViewTransition</BitTag>, so the page cross-fades to the new palette instead of hard-swapping. It is checked live on every change &mdash; add or remove it at runtime to turn the effect on or off &mdash; and it is skipped automatically (falling back to an instant swap) in browsers without the View Transitions API and for users with <BitTag>prefers-reduced-motion: reduce</BitTag>. Style the animation itself in CSS via the standard <BitTag>::view-transition-old(root)</BitTag> / <BitTag>::view-transition-new(root)</BitTag> pseudo-elements (e.g. a circular reveal instead of the default cross-fade).
+            </BitText>
 
             <br />
 
@@ -246,7 +255,7 @@
             <br />
 
             <BitText>
-                The two tiers have deliberately different override semantics. <b>Components consume primitives</b> (and their per-role/per-component variables), never the aliases &mdash; so overriding a primitive retunes components <i>and</i> the aliases that point at it, while overriding a semantic token retunes only the app styling that opted into that intent. Semantic tokens are themable from C# via <BitTag>BitTheme.Color.Semantic</BitTag>:
+                The two tiers have deliberately different override semantics. <b>Components consume primitives</b> (and their per-role/per-component variables), never the aliases &mdash; so overriding a primitive retunes components <i>and</i> the aliases that point at it, while overriding a semantic token retunes only the app styling that opted into that intent. This holds for every override path: CSS custom properties substitute <BitTag>var()</BitTag> references at the element that <i>defines</i> them, so for inline overrides (<BitTag>BitThemeProvider</BitTag> / <BitTag>ApplyBitThemeAsync</BitTag>) the theme system automatically re-declares any alias whose target primitive the theme touches on the same element &mdash; keeping the alias in lock-step with the override for that subtree, while untouched intents (and explicitly-set alias values) are left alone. Semantic tokens are themable from C# via <BitTag>BitTheme.Color.Semantic</BitTag>:
             </BitText>
 
             <br />
@@ -336,6 +345,32 @@ await _bitThemeManager.SetThemeAsync(BitThemeName.System);
 // Custom theme name (matches your CSS selector)
 var corporate = BitThemeName.Custom("acme-dark");
 await _bitThemeManager.SetThemeAsync(corporate);</CodeBox>
+
+            <br />
+
+            <BitText Element="h4" Typography="BitTypography.H6">Scoped presets</BitText>
+
+            <br />
+
+            <BitText>
+                The <BitTag>bit-theme</BitTag> attribute is not limited to <BitTag>&lt;html&gt;</BitTag>: put it on <b>any element</b> and the named packaged palette (colors, shadows, <BitTag>color-scheme</BitTag>, and the semantic aliases) re-themes just that subtree via CSS custom-property inheritance &mdash; no C# involved. Use it for an always-dark hero section, a print-preview that stays light, or side-by-side theme comparisons:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="cshtml">&lt;!-- The page follows the user's theme; this section is always dark --&gt;
+&lt;section bit-theme="dark"&gt;
+    &lt;BitCard&gt;
+        &lt;BitText Typography="BitTypography.H5"&gt;Always-dark hero&lt;/BitText&gt;
+        &lt;BitButton&gt;Call to action&lt;/BitButton&gt;
+    &lt;/BitCard&gt;
+&lt;/section&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                Scoped presets and <BitTag>BitThemeProvider</BitTag> are complementary: the attribute swaps a subtree to a <i>named palette</i> from CSS, the provider overlays <i>individual token values</i> from a C# <BitTag>BitTheme</BitTag> object &mdash; and they can nest. One caveat applies to both: components that render at the document level (modals, callouts with <BitTag>AbsolutePosition</BitTag> disabled, snackbars) escape the subtree in the DOM, so they inherit the document palette rather than the scoped one.
+            </BitText>
 
             <br />
 
@@ -531,6 +566,18 @@ await BitThemeManager.ApplyBitThemeAsync(new BitTheme
             <BitText>
                 Need a named cascade so multiple providers can coexist? Set <BitTag>ThemeName</BitTag> and read it with <BitTag>[CascadingParameter(Name = "&hellip;")]</BitTag>.
             </BitText>
+
+            <br />
+
+            <BitText>
+                <b>Performance: the <BitTag>Frozen</BitTag> parameter.</b> By default the provider rebuilds its merged theme and CSS-variable string on every parameters update, so mutating a <BitTag>BitTheme</BitTag> instance in place is picked up automatically. When you hand the provider a stable instance and never mutate it, set <BitTag>Frozen="true"</BitTag> to skip that per-render rebuild entirely while the <BitTag>Theme</BitTag> / parent-theme references are unchanged. The trade-off: in-place mutations of a frozen theme are no longer detected &mdash; assign a <i>new</i> <BitTag>BitTheme</BitTag> instance to apply changes.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="cshtml">&lt;BitThemeProvider Theme="_stableTheme" Frozen="true"&gt;
+    &lt;HeavySubtree /&gt;
+&lt;/BitThemeProvider&gt;</CodeBox>
         </BitCard>
 
         <br />
@@ -917,6 +964,9 @@ await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
             <CodeBox Language="csharp">// Compact overlay = Layout.DensityScale "0.9" (unitless multiplier over the spacing unit)
 var compact = BitThemeDensityPresets.CreateCompactOverlay();
 
+// Spacious overlay = Layout.DensityScale "1.1" - for touch-first / airy layouts
+var spacious = BitThemeDensityPresets.CreateSpaciousOverlay();
+
 // Merge on top of your tenant theme
 var dense = BitThemeUtilities.Merge(overrides: compact, baseline: tenantTheme);
 
@@ -1027,7 +1077,7 @@ await ThemeLoader.DetachStylesheetAsync("tenant-theme");</CodeBox>
             <br />
 
             <BitText>
-                <b>Note.</b> <BitTag>BitCss.Var</BitTag> covers color, shadow, z-index, shape, spacing, and typography tokens today. Motion (<BitTag>--bit-mot-*</BitTag>), layout (<BitTag>--bit-layout-*</BitTag>), breakpoints (<BitTag>--bit-bp-*</BitTag>), and semantic aliases (<BitTag>--bit-sem-*</BitTag>) are not yet wrapped &mdash; reference them by name (<BitTag>var(--bit-mot-duration)</BitTag>) until that surface lands.
+                <b>Coverage.</b> <BitTag>BitCss.Var</BitTag> wraps every theme token family: color (including the per-role <BitTag>Focus</BitTag>/<BitTag>Disabled</BitTag>/<BitTag>DisabledText</BitTag> slots), shadow (with <BitTag>Shadow.FocusRing</BitTag>), z-index, shape (with the focus-ring width/offset), spacing, typography, motion (<BitTag>BitCss.Var.Motion</BitTag>), layout &amp; breakpoints (<BitTag>BitCss.Var.Layout</BitTag>), and the semantic aliases (<BitTag>BitCss.Var.Semantic</BitTag>).
             </BitText>
         </BitCard>
 
@@ -1086,6 +1136,16 @@ BitBlazorUI.Theme.clearAppliedTheme(document.body);</CodeBox>
 
 const dark = BitBlazorUI.Theme.isSystemDark();          // boolean
 const stored = BitBlazorUI.Theme.getPersisted();        // null when persistence is off</CodeBox>
+
+            <br />
+
+            <BitText>
+                <BitTag>onChange</BitTag> holds a <b>single</b> callback (a later call, or an <BitTag>init</BitTag> with an <BitTag>onChange</BitTag> option, replaces the previous one). When several independent consumers need to observe theme changes, listen to the <BitTag>bit-theme-change</BitTag> <BitTag>CustomEvent</BitTag> instead &mdash; it is dispatched on <BitTag>document</BitTag> after every change (including OS-driven ones), supports any number of listeners, and works from third-party scripts that know nothing about bit:
+            </BitText>
+
+            <CodeBox Language="js">document.addEventListener('bit-theme-change', (e) => {
+    console.log(`theme: ${e.detail.oldTheme} -> ${e.detail.newTheme}`);
+});</CodeBox>
 
             <br />
 
@@ -1231,7 +1291,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
 
             <BitText>
                 <b>4. Typography variants were restructured.</b>
-                Per-variant <BitTag>FontFamily</BitTag> was removed &mdash; the font family is global (<BitTag>Typography.FontFamily</BitTag>), with <BitTag>Typography.Inherit.FontFamily</BitTag> as the per-element escape hatch. <BitTag>TextTransform</BitTag> and <BitTag>Display</BitTag> now exist only on the <BitTag>Button</BitTag> and <BitTag>Overline</BitTag> variants, which are typed <BitTag>BitThemeLabelTypographyVariants</BitTag> &mdash; so <BitTag>Typography.Button = new BitThemeTypographyVariants()</BitTag> no longer compiles; assign a <BitTag>BitThemeLabelTypographyVariants</BitTag> or set properties on the existing instance instead.
+                Per-variant <BitTag>FontFamily</BitTag> was removed &mdash; the font family is global (<BitTag>Typography.FontFamily</BitTag>), with <BitTag>Typography.Inherit.FontFamily</BitTag> as the per-element escape hatch. <BitTag>TextTransform</BitTag> and <BitTag>Display</BitTag> now exist only on the <BitTag>Button</BitTag>, <BitTag>Overline</BitTag>, and <BitTag>Inherit</BitTag> variants, which are typed <BitTag>BitThemeLabelTypographyVariants</BitTag> (or a derivative) &mdash; so <BitTag>Typography.Button = new BitThemeTypographyVariants()</BitTag> no longer compiles; assign a <BitTag>BitThemeLabelTypographyVariants</BitTag> or set properties on the existing instance instead.
             </BitText>
 
             <br />
@@ -1270,7 +1330,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
                 <br />
                 <BitTag>BitThemeManager</BitTag>: <BitTag>SetThemeAsync</BitTag>, <BitTag>ToggleDarkLightAsync</BitTag>, <BitTag>GetCurrentThemeAsync</BitTag>, <BitTag>GetCurrentPersistedThemeAsync</BitTag>, <BitTag>IsSystemInDarkModeAsync</BitTag>, <BitTag>ApplyBitThemeAsync</BitTag>, <BitTag>ClearBitThemeOverridesAsync</BitTag>, <BitTag>EnsureThemeNotificationsRegisteredAsync</BitTag>
                 <br /><br />
-                <BitTag>BitThemeProvider</BitTag> (component): <BitTag>Theme</BitTag>, <BitTag>RootElement</BitTag>, <BitTag>ThemeName</BitTag>, splatted attributes
+                <BitTag>BitThemeProvider</BitTag> (component): <BitTag>Theme</BitTag>, <BitTag>RootElement</BitTag>, <BitTag>ThemeName</BitTag>, <BitTag>Frozen</BitTag>, splatted attributes
                 <br /><br />
                 <BitTag>BitThemeNotifications.ThemeChanged</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeChangedEventArgs</BitTag>
             </BitText>
@@ -1290,7 +1350,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
                 <br />
                 <BitTag>BitThemeSsr</BitTag>: <BitTag>InlineHeadScript</BitTag>, <BitTag>InlineHeadScriptBody</BitTag>, <BitTag>BuildInlineHeadScript(nonce)</BitTag>
                 <br />
-                <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> &nbsp;&middot;&nbsp; <BitTag>bit-theme-persist-cookie</BitTag> (attribute)
+                <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> &nbsp;&middot;&nbsp; <BitTag>bit-theme-persist-cookie</BitTag> (attribute) &nbsp;&middot;&nbsp; <BitTag>bit-theme-view-transition</BitTag> (attribute)
                 <br />
                 <BitTag>BitExternalThemeLoader</BitTag>: <BitTag>AttachStylesheetAsync</BitTag>, <BitTag>DetachStylesheetAsync</BitTag>
             </BitText>

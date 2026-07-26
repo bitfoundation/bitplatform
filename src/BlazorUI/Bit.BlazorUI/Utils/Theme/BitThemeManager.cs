@@ -7,6 +7,9 @@ namespace Bit.BlazorUI;
 /// <see cref="SetThemeAsync"/> selects packaged Fluent CSS for <c>:root[bit-theme]</c>.
 /// <see cref="ApplyBitThemeAsync"/> sets <c>--bit-*</c> variables on the target element (default <c>document.body</c>), overriding stylesheet defaults for that subtree.
 /// Nested <see cref="BitThemeProvider"/> scopes overrides to its root element.
+/// Theme swaps (from <see cref="SetThemeAsync"/>, <see cref="ToggleDarkLightAsync"/>, or OS-driven
+/// updates) animate via the View Transitions API when the document element carries the
+/// <see cref="BitThemeAttributeNames.ThemeViewTransition"/> marker attribute.
 /// </summary>
 public class BitThemeManager : IAsyncDisposable
 {
@@ -108,11 +111,22 @@ public class BitThemeManager : IAsyncDisposable
     }
 
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>
+    /// <remarks>
+    /// Semantic aliases (<c>--bit-sem-*</c>) whose target primitive the theme overrides are
+    /// re-declared on the target element as well, so app CSS reading the alias tier tracks the
+    /// override (an alias's <c>var()</c> reference is substituted where the alias is defined, so
+    /// the <c>:root</c>-level default would otherwise keep the document palette's value).
+    /// Explicitly-set alias values always win over this re-declaration.
+    /// </remarks>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask ApplyBitThemeAsync(BitTheme? bitTheme, ElementReference? element = null)
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
-        await _js.BitThemeApplyBitTheme(BitThemeUtilities.ToCssVariables(bitTheme), element);
+
+        var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
+        BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
+
+        await _js.BitThemeApplyBitTheme(cssVariables, element);
     }
 
     /// <summary>

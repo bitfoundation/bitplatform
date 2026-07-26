@@ -2,6 +2,50 @@
 
 internal static class BitThemeMapper
 {
+    /// <summary>
+    /// The semantic alias tier's default targets, mirroring <c>Styles/semantic-tokens.scss</c>
+    /// (pinned to it by a contract test). Used by <see cref="AugmentWithSemanticAliasReSubstitution"/>.
+    /// </summary>
+    internal static readonly IReadOnlyDictionary<string, string> SemanticAliasTargets = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["--bit-sem-surface-page"] = "--bit-clr-bg-pri",
+        ["--bit-sem-surface-elevated"] = "--bit-clr-bg-sec",
+        ["--bit-sem-surface-muted"] = "--bit-clr-bg-ter",
+        ["--bit-sem-text-primary"] = "--bit-clr-fg-pri",
+        ["--bit-sem-text-secondary"] = "--bit-clr-fg-sec",
+        ["--bit-sem-border-default"] = "--bit-clr-brd-pri",
+        ["--bit-sem-accent-primary"] = "--bit-clr-pri",
+        ["--bit-sem-focus-ring"] = "--bit-shd-focus-ring",
+        ["--bit-sem-focus-color"] = "--bit-clr-pri-focus",
+    };
+
+    /// <summary>
+    /// Re-declares a semantic alias (as its default <c>var()</c> reference) next to any primitive
+    /// the mapped theme overrides, so the alias tracks the override for the styled subtree.
+    /// </summary>
+    /// <remarks>
+    /// This is required by how CSS custom properties compute: an alias's <c>var()</c> reference is
+    /// substituted at the element that DEFINES the alias (<c>:root</c>, via
+    /// <c>semantic-tokens.scss</c>), and descendants inherit the already-substituted value. Inline
+    /// overrides applied lower in the tree (a <see cref="BitThemeProvider"/> wrapper, or
+    /// <see cref="BitThemeManager.ApplyBitThemeAsync"/> on <c>document.body</c> / a target element)
+    /// would therefore retune components - which read primitives - while app CSS reading the alias
+    /// kept the document palette's stale value. Re-declaring the alias on the same element re-runs
+    /// the substitution against the overridden primitive. Only aliases whose target primitive the
+    /// theme actually sets are re-declared (a sparse overlay must not clobber unrelated,
+    /// possibly-customized intents), and an alias the theme sets explicitly always wins.
+    /// </remarks>
+    internal static void AugmentWithSemanticAliasReSubstitution(Dictionary<string, string> cssVariables)
+    {
+        foreach (var (alias, target) in SemanticAliasTargets)
+        {
+            if (cssVariables.ContainsKey(alias)) continue; // explicit alias value wins
+            if (cssVariables.ContainsKey(target) is false) continue; // primitive untouched; keep the inherited alias
+
+            cssVariables[alias] = $"var({target})";
+        }
+    }
+
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
     {
         var result = new Dictionary<string, string>();
@@ -406,6 +450,8 @@ internal static class BitThemeMapper
         addCssVar("--bit-tpg-inherit-font-size", bitTheme.Typography.Inherit.FontSize);
         addCssVar("--bit-tpg-inherit-line-height", bitTheme.Typography.Inherit.LineHeight);
         addCssVar("--bit-tpg-inherit-letter-spacing", bitTheme.Typography.Inherit.LetterSpacing);
+        addCssVar("--bit-tpg-inherit-text-transform", bitTheme.Typography.Inherit.TextTransform);
+        addCssVar("--bit-tpg-inherit-display", bitTheme.Typography.Inherit.Display);
 
         addCssVar("--bit-tpg-overline-margin", bitTheme.Typography.Overline.Margin);
         addCssVar("--bit-tpg-overline-font-weight", bitTheme.Typography.Overline.FontWeight);
@@ -1016,6 +1062,8 @@ internal static class BitThemeMapper
         result.Typography.Inherit.FontSize = bitTheme.Typography.Inherit.FontSize ?? other.Typography.Inherit.FontSize;
         result.Typography.Inherit.LineHeight = bitTheme.Typography.Inherit.LineHeight ?? other.Typography.Inherit.LineHeight;
         result.Typography.Inherit.LetterSpacing = bitTheme.Typography.Inherit.LetterSpacing ?? other.Typography.Inherit.LetterSpacing;
+        result.Typography.Inherit.TextTransform = bitTheme.Typography.Inherit.TextTransform ?? other.Typography.Inherit.TextTransform;
+        result.Typography.Inherit.Display = bitTheme.Typography.Inherit.Display ?? other.Typography.Inherit.Display;
 
         result.Typography.Overline.Margin = bitTheme.Typography.Overline.Margin ?? other.Typography.Overline.Margin;
         result.Typography.Overline.FontWeight = bitTheme.Typography.Overline.FontWeight ?? other.Typography.Overline.FontWeight;
