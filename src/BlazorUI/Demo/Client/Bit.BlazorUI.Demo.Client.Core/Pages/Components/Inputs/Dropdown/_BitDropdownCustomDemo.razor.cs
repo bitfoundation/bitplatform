@@ -177,6 +177,12 @@ public partial class _BitDropdownCustomDemo
 
     private string clearValue = "f-app";
     private IEnumerable<string> clearValues = ["f-app", "f-ban"];
+    private int clearCounter;
+
+    private string calloutState = "closed";
+
+    private bool isLoadingItems;
+    private ICollection<Product> delayedCustoms = [];
 
     private string? immediateSearchValue;
     private string? debouncedSearchValue;
@@ -269,6 +275,21 @@ public partial class _BitDropdownCustomDemo
     private void HandleOnDynamicAdd(Product item)
     {
         comboBoxCustoms.Add(item);
+    }
+
+    private void HandleOnCalloutOpen() => calloutState = "opened";
+
+    private void HandleOnCalloutClose() => calloutState = "closed";
+
+    private async Task LoadDelayedCustoms()
+    {
+        isLoadingItems = true;
+        delayedCustoms = [];
+
+        await Task.Delay(2000);
+
+        delayedCustoms = GetBasicCustoms();
+        isLoadingItems = false;
     }
 
     private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(

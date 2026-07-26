@@ -15,21 +15,47 @@
 
     RenderFragment emptyContent =
         @<div style="@Styles?.EmptyContent" class="bit-drp-emp @Classes?.EmptyContent">
-            @if (EmptyTemplate is not null)
+            @if (HasSearchText && (NoResultsTemplate is not null || NoResultsText.HasValue()))
+            {
+                @if (NoResultsTemplate is not null)
+                {
+                    @NoResultsTemplate
+                }
+                else
+                {
+                    @NoResultsText
+                }
+            }
+            else if (EmptyTemplate is not null)
             {
                 @EmptyTemplate
             }
             else
             {
-                @(EmptyText ?? "No items found")
+                @(EmptyText ?? (HasSearchText ? "No results found" : "No items found"))
+            }
+        </div>;
+
+    RenderFragment loadingContent =
+        @<div style="@Styles?.LoadingContainer" class="bit-drp-ldc @Classes?.LoadingContainer" role="status" aria-live="polite">
+            @if (LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <div style="@Styles?.Spinner" class="bit-drp-spn @Classes?.Spinner"></div>
+                <span style="@Styles?.LoadingText" class="@Classes?.LoadingText">@(LoadingText ?? "Loading...")</span>
             }
         </div>;
 }
 
-@if (Virtualize && (Options ?? ChildContent) is not null)
+@if ((Virtualize || IsLoading) && (Options ?? ChildContent) is not null)
 {
-    @* In virtualize mode the items have to be rendered from the (registered) Items collection, so the
-       options only register themselves here without rendering their items in place. *@
+    @* In virtualize mode the items have to be rendered from the (registered) Items collection, and while
+       loading the callout shows the loading content instead of them, so the options only register
+       themselves here without rendering their items in place. Keeping them mounted (rather than dropping
+       them from the tree) preserves both the registration and the markup order of the items. *@
     <CascadingValue Value="this" IsFixed="true">
         <div style="display:none" hidden>@(Options ?? ChildContent)</div>
     </CascadingValue>
@@ -40,7 +66,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(IsOpen? _calloutId : null)">
+     aria-owns="@(IsOpen? _scrollContainerId : null)">
     @if (LabelTemplate is not null)
     {
         <label id="@_labelId">
@@ -65,10 +91,12 @@
          tabindex=@(IsEnabled ? 0 : -1)
          aria-haspopup="listbox"
          aria-required="@Required"
+         aria-readonly="@(ReadOnly ? "true" : null)"
+         aria-invalid="@(ValueInvalid is true ? "true" : null)"
          aria-disabled="@(IsEnabled is false)"
          aria-expanded=@(IsOpen ? "true" : "false")
          aria-labelledby="@GetDropdownAriaLabelledby()"
-         aria-controls="@(IsOpen? _calloutId : null)">
+         aria-controls="@(IsOpen? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
         {
@@ -83,20 +111,37 @@
             </span>
         }
 
+        @* No live region here: this element names the combobox through aria-labelledby, so a screen
+           reader reads the new selection when the focus returns to the trigger. Announcing it on every
+           render would repeat the whole selection after each keystroke typed into the combo input. *@
         <span id="@_dropdownTextContainerId"
               style="@Styles?.TextContainer"
-              class="bit-drp-tcn @Classes?.TextContainer"
-              aria-live="polite"
-              aria-atomic="true"
-              aria-invalid="false">
+              class="bit-drp-tcn @Classes?.TextContainer">
 
             @if (Chips)
             {
-                @foreach (var item in _selectedItems)
+                @foreach (var item in _selectedItems.Take(GetDisplayedItemsCount()))
                 {
                     <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
                         @GetText(item)
-                        <i style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation />
+                        @if (IsEnabled && ReadOnly is false)
+                        {
+                            @* A button so the chip can be removed with the keyboard and is announced as an action. *@
+                            <button @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation
+                                    type="button"
+                                    style="@Styles?.ChipsRemoveButton"
+                                    class="bit-drp-crb @Classes?.ChipsRemoveButton"
+                                    aria-label="@($"Remove {GetText(item)}")">
+                                <i aria-hidden="true" style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" />
+                            </button>
+                        }
+                    </span>
+                }
+
+                @if (GetOverflowItemsCount() > 0)
+                {
+                    <span style="@Styles?.OverflowChip" class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip">
+                        @GetOverflowText()
                     </span>
                 }
             }
@@ -123,9 +168,11 @@
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
-                       role="combobox"
                        value="@_searchText"
+                       readonly="@ReadOnly"
                        aria-label="@AriaLabel"
+                       aria-autocomplete="list"
+                       aria-controls="@(IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
@@ -143,18 +190,23 @@
             }
         </span>
 
-        @if (IsEnabled && ShowClearButton && _selectedItems.Count > 0)
+        @if (IsEnabled && ReadOnly is false && ShowClearButton && _selectedItems.Count > 0)
         {
             <button @onclick="HandleOnClearClick" @onclick:stopPropagation
                     type="button"
+                    aria-label="Clear selection"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
-                <i class="@clearButtonIconCss" />
+                <i aria-hidden="true" class="@clearButtonIconCss" />
             </button>
         }
 
         <span class="bit-drp-icn">
-            @if (CaretDownTemplate is not null)
+            @if (IsLoading)
+            {
+                <div aria-hidden="true" style="@Styles?.Spinner" class="bit-drp-spn @Classes?.Spinner"></div>
+            }
+            else if (CaretDownTemplate is not null)
             {
                 @CaretDownTemplate
             }
@@ -179,7 +231,8 @@
             </span>
         }
     </div>
-    <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
+    @* Mirrors the selection into a native control so the value takes part in a plain HTML form post. *@
+    <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple="@MultiSelect">
         @foreach (var item in _selectedItems)
         {
             <option value="@GetValue(item)" selected>@GetText(item)</option>
@@ -192,14 +245,13 @@
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
 
+@* The listbox role lives on the scroll container, not here: the search box, the select all row and the
+   responsive panel header are not options and must not be children of the listbox. *@
 <div @onkeydown="HandleOnCalloutKeyDown"
      id="@_calloutId"
      tabindex="0"
-     role="listbox"
      style="@Styles?.Callout"
-     class="@GetCalloutCssClasses()"
-     aria-labelledby="@_labelId"
-     aria-multiselectable="@(MultiSelect ? "true" : null)">
+     class="@GetCalloutCssClasses()">
 
     @if (Responsive)
     {
@@ -285,29 +337,32 @@
                    style="@Styles?.ComboBoxInput"
                    class="bit-drp-icb @Classes?.ComboBoxInput"
                    type="text"
-                   role="combobox"
                    value="@_searchText"
+                   readonly="@ReadOnly"
                    aria-label="@AriaLabel"
+                   aria-autocomplete="list"
+                   aria-controls="@_scrollContainerId"
                    placeholder="@Placeholder"
                    autocomplete="@BitAutoCompleteValue.NewPassword"
                    disabled="@(IsEnabled is false)" />
 
             <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
                     type="button"
+                    aria-label="Add"
                     style="@Styles?.ResponsiveComboAddButton"
                     class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
-                <i class="@comboBoxAddButtonIconCss" />
+                <i aria-hidden="true" class="@comboBoxAddButtonIconCss" />
             </button>
         </div>
     }
 
-    @if (MultiSelect && ShowSelectAll && ItemsProvider is null)
+    @if (MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false)
     {
         var (allSelected, anySelected) = GetSelectAllState();
         var selectAllClasses = "bit-drp-sac bit-drp-iwr" +
                                (allSelected ? " bit-drp-chd" : string.Empty) +
                                (anySelected && allSelected is false ? " bit-drp-sai" : string.Empty) +
-                               (IsEnabled ? string.Empty : " bit-drp-ids");
+                               (IsEnabled && ReadOnly is false ? string.Empty : " bit-drp-ids");
         var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
         <div style="@Styles?.SelectAllContainer"
              class="@selectAllClasses @Classes?.SelectAllContainer">
@@ -332,13 +387,20 @@
     }
 
     <div id="@_scrollContainerId"
+         role="listbox"
          style="@Styles?.ScrollContainer"
-         class="bit-drp-scn @Classes?.ScrollContainer">
-        @if (Virtualize)
+         class="bit-drp-scn @Classes?.ScrollContainer"
+         aria-labelledby="@_labelId"
+         aria-multiselectable="@(MultiSelect ? "true" : null)">
+        @if (IsLoading)
+        {
+            @loadingContent
+        }
+        else if (Virtualize)
         {
             if (ItemsProvider is null)
             {
-                <Virtualize Items="GetSearchedItems()"
+                <Virtualize Items="GetDisplayItems()"
                             ItemSize="ItemSize"
                             OverscanCount="OverscanCount"
                             Placeholder="VirtualizePlaceholder">
@@ -384,7 +446,7 @@
             }
             else
             {
-                @foreach (var item in GetSearchedItems())
+                @foreach (var item in GetDisplayItems())
                 {
                     <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
                 }
@@ -395,6 +457,15 @@
     @if (CalloutFooterTemplate is not null)
     {
         <div id="@_footerId">@CalloutFooterTemplate</div>
+    }
+
+    @if (HasSearchText && IsLoading is false)
+    {
+        @* A search silently changes the length of a list a screen reader user cannot see, so the new
+           result count is announced. Only rendered while searching, to stay quiet otherwise. *@
+        <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
+            @GetSearchResultsText()
+        </div>
     }
 
 </div>

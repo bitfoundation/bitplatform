@@ -8,10 +8,31 @@ public partial class BitDropdownDemo
     [
         new()
         {
+            Name = "AutoClearSearch",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Clears the typed search text after each selection in the multi select ComboBox mode, so the next item is picked from the full list instead of from the previous filter.",
+        },
+        new()
+        {
             Name = "AutoFocusSearchBox",
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables auto-focusing of the SearchBox input when the callout is open.",
+        },
+        new()
+        {
+            Name = "HideSelectedItems",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the already selected items from the callout, which suits a multi select dropdown whose selection is visible as chips and whose list is therefore only about what is left to pick.",
+        },
+        new()
+        {
+            Name = "HighlightSearch",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Highlights the part of the item text that matched the current search text in the callout. Only applies to the default item rendering, not to a custom ItemTemplate.",
         },
         new()
         {
@@ -228,6 +249,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched. The dropdown stays interactive, so the user can still open the callout and see the loading state.",
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -274,6 +302,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ItemsProviderDebounceTime",
+            Type = "int",
+            DefaultValue = "100",
+            Description = "The delay in milliseconds before an ItemsProvider request is issued, which collapses the bursts of requests produced by fast scrolling and typing into a single one.",
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -295,10 +330,38 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render in the callout in place of the items while IsLoading is enabled.",
+        },
+        new()
+        {
+            Name = "LoadingText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text to render in the callout in place of the items while IsLoading is enabled. Defaults to \"Loading...\".",
+        },
+        new()
+        {
             Name = "MaxSelectedItems",
             Type = "int?",
             DefaultValue = "null",
             Description = "The maximum number of items that can be selected in multi select mode. Zero or null means no limit.",
+        },
+        new()
+        {
+            Name = "MaxDisplayedItems",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The maximum number of selected items rendered in the dropdown itself. Beyond it, the chips display collapses the extra ones into an overflow indicator and the text display switches to a summary. Zero or null renders every selected item.",
+        },
+        new()
+        {
+            Name = "MinSearchLength",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The number of characters the search text must reach before the items get filtered. While the search text is shorter, the full list is shown and no search is performed.",
         },
         new()
         {
@@ -332,15 +395,47 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "NoResultsTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render in the callout when the current search has no result. Falls back to the EmptyTemplate when not set.",
+        },
+        new()
+        {
+            Name = "NoResultsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text to render in the callout when the current search has no result. Falls back to the EmptyText when not set.",
+        },
+        new()
+        {
+            Name = "OnClear",
+            Type = "EventCallback",
+            Description = "The callback that is called when the selection gets cleared by the clear button.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "The click callback for the dropdown.",
         },
         new()
         {
+            Name = "OnClose",
+            Type = "EventCallback",
+            Description = "The callback that is called when the callout gets closed.",
+        },
+        new()
+        {
             Name = "OnDynamicAdd",
             Type = "EventCallback<string>",
             Description = "The callback that is called when a new item is on added Dynamic ComboBox mode.",
+        },
+        new()
+        {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            Description = "The callback that is called when the callout gets opened.",
         },
         new()
         {
@@ -359,6 +454,13 @@ public partial class BitDropdownDemo
             Name = "OnValuesChange",
             Type = "EventCallback<IEnumerable<TValue?>>",
             Description = "The callback that called when selected items change.",
+        },
+        new()
+        {
+            Name = "OverflowTextFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the overflow indicator that stands for the selected items beyond MaxDisplayedItems in the chips display, for example \"+{0}\".",
         },
         new()
         {
@@ -483,7 +585,23 @@ public partial class BitDropdownDemo
             Name = "SearchFunction",
             Type = "Func<ICollection<TItem>, string, ICollection<TItem>>?",
             DefaultValue = "null",
-            Description = "Custom search function to be used in place of the default search algorithm.",
+            Description = "Custom search function to be used in place of the default search algorithm. Takes precedence over SearchMode, which only configures the default algorithm.",
+        },
+        new()
+        {
+            Name = "SearchMode",
+            Type = "BitDropdownSearchMode",
+            DefaultValue = "BitDropdownSearchMode.Contains",
+            Description = "Determines how the text of an item is matched against the search text by the default (case-insensitive) search algorithm. Ignored when a SearchFunction is provided.",
+            LinkType = LinkType.Link,
+            Href = "#search-mode-enum",
+        },
+        new()
+        {
+            Name = "SearchResultsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the message announced to screen readers with the number of items the current search produced, for example \"{0} results available\". Defaults to the English message.",
         },
         new()
         {
@@ -491,6 +609,13 @@ public partial class BitDropdownDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text of the select all item in multi select mode.",
+        },
+        new()
+        {
+            Name = "SelectedItemsTextFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format that replaces the joined item texts in the dropdown once more than MaxDisplayedItems items are selected, for example \"{0} items selected\".",
         },
         new()
         {
@@ -512,6 +637,15 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows the select all item in the callout in multi select mode.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the dropdown.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -1127,6 +1261,41 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "ComboBoxInput",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the ComboBox input of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "Chips",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chips container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "OverflowChip",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow chip of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ChipsRemoveButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chips's remove button of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ChipsRemoveIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chips's remove icon of the BitDropdown."
+               },
+               new()
+               {
                    Name = "SearchBoxClearButtonContainer",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1204,6 +1373,13 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "ItemHighlight",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the highlighted part of the item text of the BitDropdown."
+               },
+               new()
+               {
                    Name = "ItemDivider",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1211,10 +1387,59 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "PrefixContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the dropdown's prefix container."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the dropdown's prefix."
+               },
+               new()
+               {
+                   Name = "SuffixContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the dropdown's suffix container."
+               },
+               new()
+               {
+                   Name = "Suffix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the dropdown's suffix."
+               },
+               new()
+               {
                    Name = "EmptyContent",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the empty state content of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "LoadingContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the loading state container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "LoadingText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the loading state text of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "Spinner",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the loading spinner of the BitDropdown."
                },
                new()
                {
@@ -1251,6 +1476,20 @@ public partial class BitDropdownDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the select all item text of the multi-select BitDropdown."
                },
+               new()
+               {
+                   Name = "ResponsiveComboInputContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the ComboBox input container in responsive mode of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ResponsiveComboAddButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the add new item combo box button in responsive mode of the BitDropdown."
+               },
             ],
         }
     ];
@@ -1278,6 +1517,66 @@ public partial class BitDropdownDemo
                 {
                     Name = "Divider",
                     Description = "Dropdown items are being rendered as a divider, just draw a line.",
+                    Value = "2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "search-mode-enum",
+            Name = "BitDropdownSearchMode",
+            Description = "Determines how the text of an item is matched against the search text.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Contains",
+                    Description = "An item matches when its text contains the search text.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "StartsWith",
+                    Description = "An item matches when its text starts with the search text.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "EndsWith",
+                    Description = "An item matches when its text ends with the search text.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Equals",
+                    Description = "An item matches when its text is equal to the search text.",
+                    Value = "3",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Small",
+                    Description = "The small size.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Medium",
+                    Description = "The medium size.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Large",
+                    Description = "The large size.",
                     Value = "2",
                 }
             ]

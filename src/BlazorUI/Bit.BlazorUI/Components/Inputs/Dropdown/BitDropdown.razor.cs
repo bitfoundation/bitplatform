@@ -10,12 +10,21 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
-    private int? _totalItems;
+    private int? _providerTotalItems;
     private string? _searchText;
     private int _optionsVersion;
     private int _searchedItemsCacheVersion = -1;
     private string? _searchedItemsCacheKey;
+    private List<TItem>? _searchedItems;
     private HashSet<TItem>? _searchedItemsCache;
+    private string? _positionsCacheKey;
+    private int _positionsCacheVersion = -1;
+    private Dictionary<TItem, int>? _itemPositions;
+    private int _selectionVersion;
+    private string? _displayItemsCacheKey;
+    private int _displayItemsCacheVersion = -1;
+    private int _displayItemsSelectionVersion = -1;
+    private List<TItem>? _displayItems;
     private bool _isResponsiveMode;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
@@ -50,9 +59,27 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
 
     /// <summary>
+    /// Clears the typed search text after each selection in the multi select ComboBox mode, so the next
+    /// item is picked from the full list instead of from the previous filter.
+    /// </summary>
+    [Parameter] public bool AutoClearSearch { get; set; }
+
+    /// <summary>
     /// Enables auto-focusing of the SearchBox input when the callout is open.
     /// </summary>
     [Parameter] public bool AutoFocusSearchBox { get; set; }
+
+    /// <summary>
+    /// Removes the already selected items from the callout, which suits a multi select dropdown whose
+    /// selection is visible as chips and whose list is therefore only about what is left to pick.
+    /// </summary>
+    [Parameter] public bool HideSelectedItems { get; set; }
+
+    /// <summary>
+    /// Highlights the part of the item text that matched the current search text in the callout.
+    /// Only applies to the default item rendering, not to a custom <see cref="ItemTemplate"/>.
+    /// </summary>
+    [Parameter] public bool HighlightSearch { get; set; }
 
     /// <summary>
     /// Custom template to render as a footer in the callout.
@@ -224,6 +251,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public bool Immediate { get; set; }
 
     /// <summary>
+    /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
+    /// The dropdown stays interactive, so the user can still open the callout and see the loading state.
+    /// </summary>
+    [Parameter] public bool IsLoading { get; set; }
+
+    /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
@@ -260,6 +293,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public BitDropdownItemsProvider<TItem>? ItemsProvider { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before an <see cref="ItemsProvider"/> request is issued, which collapses
+    /// the bursts of requests produced by fast scrolling and typing into a single one.
+    /// </summary>
+    [Parameter] public int ItemsProviderDebounceTime { get; set; } = 100;
+
+    /// <summary>
     /// The custom template for rendering the items of the dropdown.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -275,9 +314,32 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// The custom template to render in the callout in place of the items while <see cref="IsLoading"/> is enabled.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// The text to render in the callout in place of the items while <see cref="IsLoading"/> is enabled.
+    /// </summary>
+    [Parameter] public string? LoadingText { get; set; }
+
+    /// <summary>
     /// The maximum number of items that can be selected in multi select mode. Zero or null means no limit.
     /// </summary>
     [Parameter] public int? MaxSelectedItems { get; set; }
+
+    /// <summary>
+    /// The maximum number of selected items rendered in the dropdown itself. Beyond it, the chips display
+    /// collapses the extra ones into an overflow indicator and the text display switches to a summary.
+    /// Zero or null renders every selected item.
+    /// </summary>
+    [Parameter] public int? MaxDisplayedItems { get; set; }
+
+    /// <summary>
+    /// The number of characters the search text must reach before the items get filtered.
+    /// While the search text is shorter, the full list is shown and no search is performed.
+    /// </summary>
+    [Parameter] public int MinSearchLength { get; set; }
 
     /// <summary>
     /// Enables the multi select mode.
@@ -288,6 +350,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The delimiter for joining the values to create the text of the dropdown in multi select mode.
     /// </summary>
     [Parameter] public string MultiSelectDelimiter { get; set; } = ", ";
+
+    /// <summary>
+    /// The composite format of the overflow indicator that stands for the selected items beyond
+    /// <see cref="MaxDisplayedItems"/> in the chips display, for example "+{0}".
+    /// </summary>
+    [Parameter] public string? OverflowTextFormat { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -301,14 +369,41 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     public bool NoBorder { get; set; }
 
     /// <summary>
+    /// The custom template to render in the callout when the current search has no result.
+    /// Falls back to the <see cref="EmptyTemplate"/> when not set.
+    /// </summary>
+    [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
+    /// The text to render in the callout when the current search has no result.
+    /// Falls back to the <see cref="EmptyText"/> when not set.
+    /// </summary>
+    [Parameter] public string? NoResultsText { get; set; }
+
+    /// <summary>
+    /// The callback that is called when the selection gets cleared by the clear button.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>
     /// The click callback for the dropdown.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// The callback that is called when the callout gets closed.
+    /// </summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>
     /// The callback that is called when a new item is on added Dynamic ComboBox mode.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnDynamicAdd { get; set; }
+
+    /// <summary>
+    /// The callback that is called when the callout gets opened.
+    /// </summary>
+    [Parameter] public EventCallback OnOpen { get; set; }
 
     /// <summary>
     /// The callback that called when an item gets selected.
@@ -420,13 +515,32 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     /// <summary>
     /// Custom search function to be used in place of the default search algorithm.
+    /// Takes precedence over <see cref="SearchMode"/>, which only configures the default algorithm.
     /// </summary>
     [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
+
+    /// <summary>
+    /// Determines how the text of an item is matched against the search text by the default
+    /// (case-insensitive) search algorithm. Ignored when a <see cref="SearchFunction"/> is provided.
+    /// </summary>
+    [Parameter] public BitDropdownSearchMode SearchMode { get; set; } = BitDropdownSearchMode.Contains;
+
+    /// <summary>
+    /// The composite format of the message announced to screen readers with the number of items the
+    /// current search produced, for example "{0} results available". Defaults to the English message.
+    /// </summary>
+    [Parameter] public string? SearchResultsText { get; set; }
 
     /// <summary>
     /// The text of the select all item in multi select mode.
     /// </summary>
     [Parameter] public string? SelectAllText { get; set; }
+
+    /// <summary>
+    /// The composite format that replaces the joined item texts in the dropdown once more than
+    /// <see cref="MaxDisplayedItems"/> items are selected, for example "{0} items selected".
+    /// </summary>
+    [Parameter] public string? SelectedItemsTextFormat { get; set; }
 
     /// <summary>
     /// Shows the clear button when an item is selected.
@@ -442,6 +556,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Shows the select all item in the callout in multi select mode.
     /// </summary>
     [Parameter] public bool ShowSelectAll { get; set; }
+
+    /// <summary>
+    /// The size of the dropdown.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitDropdown.
@@ -551,23 +671,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await InvokeAsync(StateHasChanged);
     }
 
+    // The swipe interop of the responsive panel expects all four callbacks to exist, but only the
+    // close one has a behavior here: the panel is dismissed, it does not follow the finger.
     [JSInvokable("OnStart")]
-    public async Task _OnStart(decimal startX, decimal startY)
-    {
-
-    }
+    public Task _OnStart(decimal startX, decimal startY) => Task.CompletedTask;
 
     [JSInvokable("OnMove")]
-    public async Task _OnMove(decimal diffX, decimal diffY)
-    {
-
-    }
+    public Task _OnMove(decimal diffX, decimal diffY) => Task.CompletedTask;
 
     [JSInvokable("OnEnd")]
-    public async Task _OnEnd(decimal diffX, decimal diffY)
-    {
-
-    }
+    public Task _OnEnd(decimal diffX, decimal diffY) => Task.CompletedTask;
 
     [JSInvokable("OnClose")]
     public async Task _OnClose()
@@ -595,7 +708,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     internal void RegisterOption(BitDropdownOption<TValue> option)
     {
         Items!.Add((option as TItem)!);
-        _totalItems = null;
+        _searchedItems = null;
+        _itemPositions = null;
+        _displayItems = null;
         _searchedItemsCache = null;
 
         UpdateSelectedItemsFromValues();
@@ -609,23 +724,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // cache is reset in OnParametersSet so a change to Items cannot reuse results from a previous set.
     internal bool ShouldRenderOptionItem(TItem item)
     {
-        if (_searchText.HasNoValue()) return true;
+        if (HideSelectedItems && GetItemType(item) == BitDropdownItemType.Normal && GetIsSelected(item)) return false;
 
-        // The search runs over the whole item set (and may be a user-provided SearchFunction), so
-        // evaluate it once per search text and reuse the result for every option during the render
-        // cycle instead of re-running it for each item. The cache is also keyed on _optionsVersion,
-        // which the options bump when their own parameters change, so an option whose data changed
-        // (e.g. its Text) without the dropdown itself re-rendering cannot be matched against a stale
-        // result. Because Blazor sets every sibling option's parameters before any of them render,
-        // the version is stable during the option render pass and the set is rebuilt at most once.
-        if (_searchedItemsCache is null ||
-            _searchedItemsCacheKey != _searchText ||
-            _searchedItemsCacheVersion != _optionsVersion)
-        {
-            _searchedItemsCacheKey = _searchText;
-            _searchedItemsCacheVersion = _optionsVersion;
-            _searchedItemsCache = [.. GetSearchedItems()];
-        }
+        if (SearchText is null) return true;
+
+        // Every option asks this during the render cycle, so the searched items are looked up as a set
+        // instead of scanning the result list once per option. GetSearchedItems keeps the underlying
+        // results keyed on the search text and _optionsVersion (which the options bump when their own
+        // parameters change) and drops this set whenever it recomputes them, so an option whose data
+        // changed without the dropdown itself re-rendering cannot be matched against a stale result.
+        _searchedItemsCache ??= [.. GetSearchedItems()];
 
         return _searchedItemsCache.Contains(item);
     }
@@ -661,7 +769,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         var item = (option as TItem)!;
         Items!.Remove(item);
-        _totalItems = null;
+        _searchedItems = null;
+        _itemPositions = null;
+        _displayItems = null;
         _searchedItemsCache = null;
 
         if (_selectedItems.Contains(item))
@@ -720,24 +830,50 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     internal bool IsMaxSelectedItemsReached => MultiSelect && MaxSelectedItems is > 0 && (Values?.Count() ?? 0) >= MaxSelectedItems.Value;
 
-    internal int? GetTotalItems()
+    // The position of each selectable item within the list as it is currently rendered, so an option can
+    // report "3 of 10" instead of just being one of an unnamed set. It is a map built once per search
+    // rather than an index lookup per item, which is what made an earlier attempt at this quadratic.
+    private Dictionary<TItem, int> GetItemPositions()
     {
-        if (Items is null) return null;
+        var search = SearchText;
 
-        if (_totalItems.HasValue is false)
+        if (_itemPositions is null ||
+            _positionsCacheKey != search ||
+            _positionsCacheVersion != _optionsVersion)
         {
-            _totalItems = Items.Count(i => GetItemType(i) == BitDropdownItemType.Normal);
+            _positionsCacheKey = search;
+            _positionsCacheVersion = _optionsVersion;
+            _itemPositions = [];
+
+            var position = 0;
+            foreach (var item in GetDisplayItems())
+            {
+                if (GetItemType(item) != BitDropdownItemType.Normal) continue;
+                if (GetIsHidden(item)) continue;
+
+                _itemPositions[item] = ++position;
+            }
         }
 
-        return _totalItems.Value;
+        return _itemPositions;
+    }
+
+    internal int? GetTotalItems()
+    {
+        // With an ItemsProvider only a window of the list is loaded, so the size of the whole set is the
+        // one the provider reported, and the position within it is not knowable from the window alone.
+        if (ItemsProvider is not null) return _providerTotalItems;
+
+        if (Items is null) return null;
+
+        return GetItemPositions().Count;
     }
 
     internal int? GetItemPosInSet(TItem item)
     {
-        return null;
+        if (ItemsProvider is not null) return null;
 
-        // This code was removed because it caused performance issues when the items parameter had a large number of records.
-        //return Items?.Where(i => GetItemType(i) == BitDropdownItemType.Normal).ToList().IndexOf(item) + 1;
+        return GetItemPositions().TryGetValue(item, out var position) ? position : null;
     }
 
     internal bool GetIsSelected(TItem item)
@@ -1051,7 +1187,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         ClassBuilder.Register(() => GetColorClass());
 
+        ClassBuilder.Register(() => GetSizeClass());
+
         ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-drp-rol" : string.Empty);
 
         ClassBuilder.Register(() => _selectedItems?.Count > 0 ? "bit-drp-hvl" : string.Empty);
 
@@ -1136,7 +1276,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // Items (or the search inputs) may have changed with this parameter set, so drop any cached
         // search results (and item count) computed for the previous one; they get rebuilt on demand.
-        _totalItems = null;
+        _searchedItems = null;
+        _itemPositions = null;
+        _displayItems = null;
         _searchedItemsCache = null;
 
         base.OnParametersSet();
@@ -1220,6 +1362,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                     _selectedItems.Remove(item);
                     ClassBuilder.Reset();
                 }
+            }
+
+            if (AutoClearSearch)
+            {
+                // The callout stays open after a multi select pick, so without this the next item has to
+                // be found through the filter left over from the previous one.
+                await ClearSearchBox();
+                await ClearComboBoxInput();
             }
 
             await OnSelectItem.InvokeAsync(item);
@@ -1309,6 +1459,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
                 _selectedItems.Add(item);
             }
+            else if (ItemsProvider is not null && comparer.Equals(CurrentValue, default))
+            {
+                // With an ItemsProvider a value that matches none of the loaded items usually just means
+                // its item has not been fetched yet, so the selected item is kept. An empty value however
+                // is a real deselection and has to drop the item the trigger is still showing.
+                _selectedItems.Clear();
+            }
         }
 
         ClassBuilder.Reset();
@@ -1396,7 +1553,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 await FocusItem("next");
                 break;
             case "ArrowUp":
-                await FocusItem("prev");
+                // Alt+ArrowUp dismisses the popup and returns to the trigger, per the APG combobox pattern.
+                if (e.AltKey)
+                {
+                    await CloseCallout();
+                    await _dropdownWrapperRef.FocusAsync();
+                }
+                else
+                {
+                    await FocusItem("prev");
+                }
                 break;
             case "PageDown":
                 await FocusItem("nextPage");
@@ -1537,6 +1703,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private void OnSetIsOpen()
     {
         _ = ClearSearchBox();
+
+        // The combo input doubles as the search input, so a text that was typed but never committed
+        // to a selection must not survive the callout, otherwise the trigger keeps showing a filter
+        // term instead of the current selection the next time the dropdown is opened.
+        _ = ClearComboBoxInput();
+
+        _ = IsOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync();
     }
 
     private async ValueTask FocusOnSearchBox()
@@ -1561,6 +1734,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _searchText = null;
 
         RefreshOptions();
+
+        // The items of a virtualized combo box come from the ItemsProvider filtered by the search
+        // text, so dropping the text has to re-request them just like clearing the search box does.
+        await SearchVirtualized();
     }
 
     private async ValueTask FocusOnComboBoxInput()
@@ -1573,17 +1750,98 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await _comboBoxInputRef.FocusAsync();
     }
 
+    // The term the items are actually filtered by. It is null until the typed text is long enough for
+    // MinSearchLength, so a short term shows the full list instead of a nearly unfiltered one (and, with
+    // an ItemsProvider, does not turn every first keystroke into a query).
+    private string? SearchText => _searchText.HasValue() && _searchText!.Length >= MinSearchLength ? _searchText : null;
+
+    internal bool IsItemTextMatch(string? text)
+    {
+        if (text is null) return false;
+
+        var search = SearchText;
+        if (search is null) return true;
+
+        return SearchMode switch
+        {
+            BitDropdownSearchMode.StartsWith => text.StartsWith(search, StringComparison.OrdinalIgnoreCase),
+            BitDropdownSearchMode.EndsWith => text.EndsWith(search, StringComparison.OrdinalIgnoreCase),
+            BitDropdownSearchMode.Equals => text.Equals(search, StringComparison.OrdinalIgnoreCase),
+            _ => text.Contains(search, StringComparison.OrdinalIgnoreCase)
+        };
+    }
+
+    // The index at which the item text matched the search, so the default item rendering can highlight
+    // exactly the matched part. Returns -1 when there is nothing to highlight.
+    internal int GetHighlightIndex(string? text)
+    {
+        if (HighlightSearch is false) return -1;
+        if (text is null) return -1;
+
+        var search = SearchText;
+        if (search is null) return -1;
+
+        return SearchMode switch
+        {
+            BitDropdownSearchMode.StartsWith => text.StartsWith(search, StringComparison.OrdinalIgnoreCase) ? 0 : -1,
+            BitDropdownSearchMode.EndsWith => text.EndsWith(search, StringComparison.OrdinalIgnoreCase) ? text.Length - search.Length : -1,
+            BitDropdownSearchMode.Equals => text.Equals(search, StringComparison.OrdinalIgnoreCase) ? 0 : -1,
+            _ => text.IndexOf(search, StringComparison.OrdinalIgnoreCase)
+        };
+    }
+
+    internal int GetHighlightLength() => SearchText?.Length ?? 0;
+
+    // The searched items are read several times while the callout renders (the empty state check, the
+    // item list itself and the select all state), and the search may be a user-provided SearchFunction
+    // over the whole item set, so the result is computed once per search text and reused. An unfiltered
+    // list needs no work at all, so it keeps returning the live collection and cannot go stale.
     private ICollection<TItem> GetSearchedItems()
     {
         var items = ItemsProvider is null ? Items : _lastShownItems;
         if (items is null) return [];
 
-        return _searchText.HasNoValue()
-                ? items
-                : SearchFunction is not null
-                    ? SearchFunction.Invoke(items, _searchText!)
-                    : [.. items.Where(i => GetItemType(i) == BitDropdownItemType.Normal &&
-                                           GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) is true)];
+        var search = SearchText;
+        if (search is null) return items;
+
+        if (_searchedItems is null ||
+            _searchedItemsCacheKey != search ||
+            _searchedItemsCacheVersion != _optionsVersion)
+        {
+            _searchedItemsCacheKey = search;
+            _searchedItemsCacheVersion = _optionsVersion;
+            _searchedItemsCache = null;
+            _searchedItems = SearchFunction is not null
+                ? [.. SearchFunction.Invoke(items, search)]
+                : [.. items.Where(i => GetItemType(i) == BitDropdownItemType.Normal && IsItemTextMatch(GetText(i)))];
+        }
+
+        return _searchedItems;
+    }
+
+    // What the callout actually renders: the search result, minus the already selected items when they
+    // are meant to disappear from the list. Kept separate from GetSearchedItems so that the select all
+    // item still works over the full result rather than over the leftovers. The result is cached like
+    // the search itself, so that repeated reads during one render (and Virtualize, which re-renders
+    // everything when handed a new collection instance) see the same list.
+    private ICollection<TItem> GetDisplayItems()
+    {
+        var items = GetSearchedItems();
+
+        if (HideSelectedItems is false) return items;
+
+        if (_displayItems is null ||
+            _displayItemsCacheKey != SearchText ||
+            _displayItemsCacheVersion != _optionsVersion ||
+            _displayItemsSelectionVersion != _selectionVersion)
+        {
+            _displayItemsCacheKey = SearchText;
+            _displayItemsCacheVersion = _optionsVersion;
+            _displayItemsSelectionVersion = _selectionVersion;
+            _displayItems = [.. items.Where(i => GetItemType(i) != BitDropdownItemType.Normal || GetIsSelected(i) is false)];
+        }
+
+        return _displayItems;
     }
 
     private string GetSearchBoxClasses()
@@ -1638,11 +1896,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
 
         UpdateSelectedItemsFromValues();
+
+        await OnClear.InvokeAsync();
+    }
+
+    // Tells the empty state of an unsuccessful search apart from the empty state of an empty list, so
+    // the callout can show "no results for what you typed" instead of "there is nothing here".
+    private bool HasSearchText => SearchText is not null;
+
+    private string GetSearchResultsText()
+    {
+        var count = GetSearchedItems().Count(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false);
+
+        return SearchResultsText is not null
+                ? string.Format(SearchResultsText, count)
+                : count == 1 ? "1 result available" : $"{count} results available";
     }
 
     private bool HasNoVisibleItems()
     {
-        return GetSearchedItems().Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
+        return GetDisplayItems().Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
     }
 
     private (bool AllSelected, bool AnySelected) GetSelectAllState()
@@ -1718,6 +1991,27 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await CloseCallout();
     }
 
+    // The height available to the scrollable item list is the callout's height minus the parts that sit
+    // above it, so every one of those parts has to be reported here or the callout overflows the
+    // viewport. The values mirror the --bit-drp-h (search box) and --bit-drp-itm-h plus its bottom
+    // border (select all row) of each size in the stylesheet.
+    private int GetCalloutScrollOffset()
+    {
+        var offset = 0;
+
+        if (ShowSearchBox && Combo is false)
+        {
+            offset += Size switch { BitSize.Small => 26, BitSize.Large => 40, _ => 32 };
+        }
+
+        if (MultiSelect && ShowSelectAll && ItemsProvider is null)
+        {
+            offset += Size switch { BitSize.Small => 31, BitSize.Large => 45, _ => 37 };
+        }
+
+        return offset;
+    }
+
     private async Task ToggleCallout()
     {
         if (IsEnabled is false || IsDisposed) return;
@@ -1734,7 +2028,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: _scrollContainerId,
-            scrollOffset: ShowSearchBox && Combo is false ? 32 : 0,
+            scrollOffset: GetCalloutScrollOffset(),
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: PreserveCalloutWidth is false,
@@ -1747,61 +2041,28 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ItemsProvider is null) return default;
 
         // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
-        // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
-        // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
-        await Task.Delay(100);
+        // The token is not passed to the delay on purpose: a cancellation is a normal outcome here (the
+        // user kept scrolling or typing) and is reported by returning an empty result, not by throwing.
+        if (ItemsProviderDebounceTime > 0)
+        {
+            await Task.Delay(ItemsProviderDebounceTime);
+        }
 
         if (request.CancellationToken.IsCancellationRequested) return default;
 
         // Combine the query parameters from Virtualize with the ones from PaginationState
-        var providerRequest = new BitDropdownItemsProviderRequest<TItem>(request.StartIndex, request.Count, _searchText, request.CancellationToken);
+        var providerRequest = new BitDropdownItemsProviderRequest<TItem>(request.StartIndex, request.Count, SearchText, request.CancellationToken);
         var providerResult = await ItemsProvider(providerRequest);
 
         if (request.CancellationToken.IsCancellationRequested) return default;
 
         _lastShownItems = [.. providerResult.Items];
+        _providerTotalItems = providerResult.TotalItemCount;
 
         UpdateSelectedItemsFromValues();
         await InvokeAsync(StateHasChanged);
 
         return new ItemsProviderResult<TItem>(providerResult.Items, providerResult.TotalItemCount);
-    }
-
-    private bool CheckInvalidForSelect(TItem item)
-    {
-        if (item is BitDropdownItem<TValue> dropdownItem)
-        {
-            return dropdownItem.IsHidden is false &&
-                   dropdownItem.IsEnabled &&
-                   dropdownItem.ItemType == BitDropdownItemType.Normal &&
-                   dropdownItem.Id.HasNoValue();
-        }
-
-        if (item is BitDropdownOption<TValue> dropdownOption)
-        {
-            return dropdownOption.IsHidden is false &&
-                   dropdownOption.IsEnabled &&
-                   dropdownOption.ItemType == BitDropdownItemType.Normal &&
-                   dropdownOption.Id.HasNoValue();
-        }
-
-        if (NameSelectors is null) return false;
-
-        if (NameSelectors.IsHidden.Selector is not null &&
-            NameSelectors.IsEnabled.Selector is not null &&
-            NameSelectors.ItemType.Selector is not null &&
-            NameSelectors.Id.Selector is not null)
-        {
-            return NameSelectors.IsHidden.Selector!(item) is false &&
-                   NameSelectors.IsEnabled.Selector!(item) &&
-                   NameSelectors.ItemType.Selector!(item) == BitDropdownItemType.Normal &&
-                   NameSelectors.Id.Selector!(item).HasNoValue();
-        }
-
-        return item.GetValueFromProperty<bool>(NameSelectors.IsHidden.Name) is false &&
-               item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name) &&
-               item.GetValueFromProperty<BitDropdownItemType>(NameSelectors.ItemType.Name) == BitDropdownItemType.Normal &&
-               item.GetValueFromProperty<string?>(NameSelectors.Id.Name).HasNoValue();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
@@ -2001,9 +2262,38 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
+    // The number of selected items the dropdown itself renders, the rest being collapsed into the
+    // overflow indicator (chips) or the summary text.
+    private int GetDisplayedItemsCount()
+    {
+        return MaxDisplayedItems is > 0 && _selectedItems.Count > MaxDisplayedItems.Value
+                ? MaxDisplayedItems.Value
+                : _selectedItems.Count;
+    }
+
+    private int GetOverflowItemsCount() => _selectedItems.Count - GetDisplayedItemsCount();
+
+    private string GetOverflowText()
+    {
+        var count = GetOverflowItemsCount();
+
+        return OverflowTextFormat is not null ? string.Format(OverflowTextFormat, count) : $"+{count}";
+    }
+
     private string? GetText()
     {
-        return MultiSelect ? string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText)) : GetText(_selectedItems.FirstOrDefault());
+        if (MultiSelect is false) return GetText(_selectedItems.FirstOrDefault());
+
+        // Past the display limit the individual texts stop being readable in the width of a dropdown,
+        // so a count of the selection says more than a truncated list of names.
+        if (GetOverflowItemsCount() > 0)
+        {
+            return SelectedItemsTextFormat is not null
+                    ? string.Format(SelectedItemsTextFormat, _selectedItems.Count)
+                    : $"{_selectedItems.Count} items selected";
+        }
+
+        return string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
     }
 
     private void OnSetValues()
@@ -2032,6 +2322,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private void SetIsSelectedForSelectedItems()
     {
+        // Every selection change passes through here, so this is where the caches that depend on which
+        // items are selected (the hidden-when-selected list) learn that they are out of date.
+        _selectionVersion++;
+
         var items = ItemsProvider is null ? Items : _lastShownItems;
         if (items is null) return;
 
@@ -2060,6 +2354,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             classes.Add("bit-drp-res");
         }
 
+        if (ReadOnly)
+        {
+            // The callout is rendered outside the root element, so it needs its own read-only marker to
+            // stop the items from advertising an interaction the component silently ignores.
+            classes.Add("bit-drp-rol");
+        }
+
         if (Dir is BitDir.Rtl)
         {
             classes.Add("bit-drp-rtl");
@@ -2067,7 +2368,22 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         classes.Add(GetColorClass());
 
+        // The callout renders outside the root element, so the size class has to be repeated on it for
+        // the items to follow the size of the dropdown they belong to.
+        classes.Add(GetSizeClass());
+
         return string.Join(' ', classes).Trim();
+    }
+
+    private string GetSizeClass()
+    {
+        return Size switch
+        {
+            BitSize.Small => "bit-drp-sm",
+            BitSize.Medium => "bit-drp-md",
+            BitSize.Large => "bit-drp-lg",
+            _ => string.Empty
+        };
     }
 
     private string GetColorClass()

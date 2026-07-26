@@ -1,6 +1,16 @@
 @import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// The size of the control and of its callout is driven by these variables so a single size class,
+// applied to the root element and repeated on the callout, resizes every part consistently.
+@mixin drp-size-medium {
+    --bit-drp-fs: #{spacing(1.75)};
+    --bit-drp-h: #{spacing(4)};
+    --bit-drp-lh: #{spacing(3.75)};
+    --bit-drp-itm-h: #{spacing(4.5)};
+    --bit-drp-itm-fs: #{spacing(1.875)};
+}
+
 .bit-drp {
     width: 100%;
     display: flex;
@@ -10,6 +20,7 @@
     --bit-drp-clr: #{$clr-pri};
     --bit-drp-clr-hover: #{$clr-pri-hover};
     --bit-drp-clr-text: #{$clr-pri-text};
+    @include drp-size-medium;
 
     &.bit-drp-req {
         .bit-drp-lbl {
@@ -135,7 +146,7 @@
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
-    min-height: spacing(4);
+    min-height: var(--bit-drp-h);
     box-sizing: border-box;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
@@ -193,8 +204,8 @@
     white-space: nowrap;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
-    line-height: spacing(3.75);
+    font-size: var(--bit-drp-fs);
+    line-height: var(--bit-drp-lh);
     border-radius: spacing(0.25);
     padding-inline-start: spacing(1);
 }
@@ -205,7 +216,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: spacing(0.5);
-        min-height: spacing(4);
+        min-height: var(--bit-drp-h);
         padding: spacing(1) spacing(3.5) spacing(1) spacing(1);
     }
 }
@@ -214,13 +225,45 @@
     display: flex;
     cursor: default;
     gap: spacing(0.5);
+    align-items: center;
     padding: 0 spacing(0.5);
     border-radius: spacing(0.25);
     background-color: $clr-bg-sec;
     border: $shp-border-width $shp-border-style $clr-brd-sec;
+}
+
+// Stands for the selected items that did not fit in the chips display.
+.bit-drp-ovf {
+    cursor: default;
+    font-weight: 600;
+    color: var(--bit-drp-clr-text);
+    border-color: var(--bit-drp-clr);
+    background-color: var(--bit-drp-clr);
+}
+
+.bit-drp-crb {
+    padding: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    color: inherit;
+    align-items: center;
+    outline: transparent;
+    border-radius: spacing(0.25);
+    background-color: transparent;
 
     i {
-        cursor: pointer;
+        font-size: spacing(1.5);
+    }
+
+    &:focus-visible {
+        outline: spacing(0.25) $shp-border-style var(--bit-drp-clr);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+        }
     }
 }
 
@@ -249,7 +292,7 @@
     color: $clr-fg-pri;
     position: relative;
     align-items: center;
-    height: spacing(4.5);
+    height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
     line-height: spacing(2.5);
@@ -361,7 +404,7 @@
     user-select: none;
     position: relative;
     align-items: center;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     background-color: transparent;
 }
 
@@ -404,11 +447,11 @@
     box-shadow: none;
     font-weight: 400;
     border-radius: 0;
-    height: spacing(4);
+    height: var(--bit-drp-h);
     align-items: stretch;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     color: $clr-fg-pri;
     border-style: $shp-border-style;
     border-color: $clr-brd-pri;
@@ -436,11 +479,11 @@
     box-shadow: none;
     font-weight: 400;
     border-radius: 0;
-    height: spacing(4);
+    height: var(--bit-drp-h);
     align-items: stretch;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     color: $clr-fg-pri;
     border-style: $shp-border-style;
     border-color: $clr-brd-pri;
@@ -635,8 +678,9 @@
     overflow: hidden;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
     animation-fill-mode: both;
+    @include drp-size-medium;
     animation-duration: 0.367s;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -656,11 +700,11 @@
     cursor: default;
     font-weight: 600;
     user-select: none;
-    height: spacing(4.5);
+    height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
-    font-size: spacing(1.875);
-    line-height: spacing(4.5);
+    font-size: var(--bit-drp-itm-fs);
+    line-height: var(--bit-drp-itm-h);
     background: none transparent;
 }
 
@@ -677,13 +721,13 @@
     color: $clr-fg-pri;
     white-space: nowrap;
     align-items: center;
-    height: spacing(4.5);
+    height: var(--bit-drp-itm-h);
     outline: transparent;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.875);
+    font-size: var(--bit-drp-itm-fs);
     line-height: spacing(2.5);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
@@ -699,12 +743,39 @@
         cursor: default;
         color: $clr-fg-dis;
 
+        // The item text carries its own color, so it has to follow the disabled state explicitly.
+        .bit-drp-itx {
+            color: $clr-fg-dis;
+        }
+
         @media (hover: hover) {
             &:hover {
                 background-color: transparent;
             }
         }
     }
+
+// The matched part of an item text while a search is active.
+.bit-drp-hlt {
+    font-weight: 600;
+    border-radius: spacing(0.25);
+    color: var(--bit-drp-clr-text);
+    background-color: var(--bit-drp-clr);
+}
+
+// Announces the number of items the current search produced, for screen reader users who cannot see
+// the list shrink as they type. Kept out of view but not out of the accessibility tree.
+.bit-drp-lvr {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: none;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
 
 .bit-drp-sel {
     background-color: $clr-bg-sec;
@@ -728,11 +799,82 @@
     user-select: none;
     color: $clr-fg-sec;
     align-items: center;
-    height: spacing(4.5);
+    height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: var(--bit-drp-fs);
+}
+
+.bit-drp-ldc {
+    display: flex;
+    cursor: default;
+    gap: spacing(1);
+    user-select: none;
+    color: $clr-fg-sec;
+    align-items: center;
+    height: var(--bit-drp-itm-h);
+    padding: 0 spacing(1);
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: var(--bit-drp-fs);
+}
+
+.bit-drp-spn {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-color: $clr-brd-sec;
+    border-width: spacing(0.2125);
+    border-style: $shp-border-style;
+    border-top-color: var(--bit-drp-clr);
+    animation: bit-drp-spinner-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}
+
+@keyframes bit-drp-spinner-animation {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Read-only keeps the dropdown focusable and its callout browsable, but nothing inside it can be
+// changed, so none of the parts should advertise an interaction that gets silently ignored.
+.bit-drp-rol {
+    .bit-drp-wrp {
+        cursor: default;
+    }
+
+    .bit-drp-itm,
+    .bit-drp-iwr,
+    .bit-drp-mcn {
+        cursor: default;
+    }
+
+    @media (hover: hover) {
+        .bit-drp-itm:hover,
+        .bit-drp-iwr:hover {
+            background-color: transparent;
+        }
+
+        .bit-drp-iwr:hover .bit-drp-chm {
+            opacity: 0;
+        }
+
+        .bit-drp-iwr.bit-drp-chd:hover {
+            background-color: $clr-bg-sec;
+
+            .bit-drp-chm {
+                opacity: 1;
+            }
+        }
+
+        .bit-drp-sel:hover {
+            background-color: $clr-bg-sec;
+        }
+    }
 }
 
 .bit-drp-sac {
@@ -852,6 +994,27 @@
         right: unset;
         transform: translateX(-100%);
     }
+}
+
+
+.bit-drp-sm {
+    --bit-drp-fs: #{spacing(1.5)};
+    --bit-drp-h: #{spacing(3.25)};
+    --bit-drp-lh: #{spacing(3)};
+    --bit-drp-itm-h: #{spacing(3.75)};
+    --bit-drp-itm-fs: #{spacing(1.625)};
+}
+
+.bit-drp-md {
+    @include drp-size-medium;
+}
+
+.bit-drp-lg {
+    --bit-drp-fs: #{spacing(2)};
+    --bit-drp-h: #{spacing(5)};
+    --bit-drp-lh: #{spacing(4.75)};
+    --bit-drp-itm-h: #{spacing(5.5)};
+    --bit-drp-itm-fs: #{spacing(2.125)};
 }
 
 

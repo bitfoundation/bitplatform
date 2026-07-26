@@ -1165,7 +1165,7 @@ public class BitDropdownTests : BunitTestContext
             }
         });
 
-        var chipIcon = component.Find(".bit-drp-chp > i");
+        var chipIcon = component.Find(".bit-drp-chp > .bit-drp-crb > i");
 
         if (iconName is not null)
         {

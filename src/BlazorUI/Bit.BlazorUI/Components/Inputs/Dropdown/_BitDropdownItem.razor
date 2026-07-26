@@ -9,9 +9,20 @@
     var isHidden = Dropdown.GetIsHidden(Item);
     var isEnabled = Dropdown.GetIsEnabled(Item);
     var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
+
+    // The part of the item text that matched the search, so it can be emphasized. It is rendered as
+    // three separate pieces of text rather than as markup, so the item text is never treated as HTML.
+    // The markup below is repeated in both branches on purpose: holding it in a local RenderFragment
+    // would hand Blazor a new delegate on every render, which re-creates the item subtree and with it
+    // the click handler of the button that contains it.
+    var highlightIndex = itemType == BitDropdownItemType.Normal ? Dropdown.GetHighlightIndex(text) : -1;
+    var highlightLength = Dropdown.GetHighlightLength();
+    var highlighted = highlightIndex >= 0 && highlightLength > 0 && text is not null;
 }
 
-<div style="@Dropdown.GetStyle(Item)" class="@Dropdown.GetClass(Item)">
+@* The wrappers carry the per-item style and layout only; marking them presentational keeps the option
+   elements as the direct children of the listbox for assistive technologies. *@
+<div role="presentation" style="@Dropdown.GetStyle(Item)" class="@Dropdown.GetClass(Item)">
     @if (itemType == BitDropdownItemType.Header)
     {
         @if (Dropdown.HeaderTemplate is not null)
@@ -31,7 +42,8 @@
     {
         @if (Dropdown.MultiSelect)
         {
-            <div style="@(isHidden ? "display: none" : "") @Dropdown.Styles?.ItemWrapper"
+            <div role="presentation"
+                 style="@(isHidden ? "display: none" : "") @Dropdown.Styles?.ItemWrapper"
                  class="@Dropdown.GetItemWrapperCssClasses(Item) @Dropdown.Classes?.ItemWrapper">
                 <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
                         id="@id"
@@ -65,9 +77,17 @@
                             <i style="@Dropdown.Styles?.ItemIcon"
                                class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                         }
-                        <span style="@Dropdown.Styles?.ItemText"
-                              class="bit-drp-itx @Dropdown.Classes?.ItemText">
-                            @text
+                        <span style="@Dropdown.Styles?.ItemText" class="bit-drp-itx @Dropdown.Classes?.ItemText">
+                            @if (highlighted)
+                            {
+                                @text!.Substring(0, highlightIndex)
+                                <span style="@Dropdown.Styles?.ItemHighlight" class="bit-drp-hlt @Dropdown.Classes?.ItemHighlight">@text!.Substring(highlightIndex, highlightLength)</span>
+                                @text!.Substring(highlightIndex + highlightLength)
+                            }
+                            else
+                            {
+                                @text
+                            }
                         </span>
                     }
                 </button>
@@ -101,9 +121,17 @@
                         <i style="@Dropdown.Styles?.ItemIcon"
                            class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                     }
-                    <span style="@Dropdown.Styles?.ItemText"
-                          class="@Dropdown.Classes?.ItemText">
-                        @text
+                    <span style="@Dropdown.Styles?.ItemText" class="bit-drp-itx @Dropdown.Classes?.ItemText">
+                        @if (highlighted)
+                        {
+                            @text!.Substring(0, highlightIndex)
+                            <span style="@Dropdown.Styles?.ItemHighlight" class="bit-drp-hlt @Dropdown.Classes?.ItemHighlight">@text!.Substring(highlightIndex, highlightLength)</span>
+                            @text!.Substring(highlightIndex + highlightLength)
+                        }
+                        else
+                        {
+                            @text
+                        }
                     </span>
                 }
             </button>
