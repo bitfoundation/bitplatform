@@ -119,34 +119,37 @@ else
     @* bit-fam is the class BitComponentBase.ForceAnimation renders. Setting it here rather than on each
        sample restores the full motion durations for everything on the page, since those are inherited
        custom properties. *@
-    <div class="demo-page @(_forceAnimation ? "bit-fam" : null)">
+    <BitStack Horizontal AutoHeight Gap="0" Class="@(_forceAnimation ? "bit-fam" : null)">
         <div class="page-container example">
 
-            <header class="page-header">
+            <BitStack Element="header" Horizontal Wrap AutoHeight
+                      Gap="1rem"
+                      Class="page-header"
+                      VerticalAlign="BitAlignment.Baseline">
                 <BitText Element="h1" Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
                     @Name
                 </BitText>
 
                 @if (SecondaryNames?.Length > 0)
                 {
-                    <div class="page-aliases">
+                    <BitStack Horizontal Wrap FitWidth AutoHeight Gap="0.375rem">
                         @foreach (var name in SecondaryNames)
                         {
                             @* Alternative names are metadata about the component, so they are set as
                                tags rather than as a second line of heading-sized text competing with
                                the title. *@
                             <BitTag Text="@name" Size="BitSize.Small" Variant="BitVariant.Outline"
-                                    Color="BitColor.TertiaryBackground" />
+                                    Color="BitColor.Info" />
                         }
-                    </div>
+                    </BitStack>
                 }
-            </header>
+            </BitStack>
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {
-                @* The description reads as the page's lead paragraph. .page-lead strips the card
-                   framing .page-section would otherwise give it. *@
-                <section id="overview-section" class="page-section page-lead">
+                @* The description reads as the page's lead paragraph: prose on the bare page,
+                   not one more card. *@
+                <section id="overview-section" class="page-lead">
                     @if (DescriptionTemplate is not null)
                     {
                         @DescriptionTemplate
@@ -160,7 +163,9 @@ else
 
             @if (Notes.HasValue() || NotesTemplate is not null)
             {
-                <section id="notes-section" class="page-section">
+                <BitCard Id="notes-section" FullWidth
+                         Background="BitColorKind.Primary"
+                         Class="page-section">
                     <div class="section-heading">
                         <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Notes</BitText>
                         <BitSeparator />
@@ -173,7 +178,7 @@ else
                     {
                         @Notes
                     }
-                </section>
+                </BitCard>
             }
 
             <div class="motion-bar">
@@ -182,16 +187,19 @@ else
 
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
-                <section id="introduction-section" class="page-section">
+                <BitCard Id="introduction-section" FullWidth
+                         Background="BitColorKind.Primary"
+                         Class="page-section">
                     <div class="section-heading">
                         <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Introduction</BitText>
                         <BitSeparator />
                     </div>
                     @if (IntroductionVideoUrl.HasValue())
                     {
-                        <div class="video-container">
+                        <BitStack Horizontal AutoHeight Class="video-container"
+                                  HorizontalAlign="BitAlignment.Center">
                             <video src="@IntroductionVideoUrl" controls />
-                        </div>
+                        </BitStack>
                         <br />
                     }
                     @if (Introduction.HasValue() || IntroductionTemplate is not null)
@@ -207,21 +215,24 @@ else
                             </BitText>
                         }
                     }
-                </section>
+                </BitCard>
             }
 
-            <section id="usage-section" class="page-section">
+            <BitCard Id="usage-section" FullWidth
+                     Background="BitColorKind.Primary"
+                     Class="page-section">
                 <div class="section-heading">
                     <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Usage</BitText>
-                    <BitSeparator />
+                    <br />
                 </div>
                 @(ChildContent ?? Examples)
-            </section>
+            </BitCard>
 
-            <section id="api-section" class="page-section">
+            <BitCard Id="api-section" FullWidth
+                     Background="BitColorKind.Primary"
+                     Class="page-section">
                 <div class="section-heading">
                     <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">API</BitText>
-                    <BitSeparator />
                 </div>
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
@@ -259,9 +270,12 @@ else
                 {
                     <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
                 }
-            </section>
+            </BitCard>
 
-            <section id="feedback-section" class="page-section">
+            <BitCard Id="feedback-section" FullWidth NoShadow
+                     Background="BitColorKind.Primary"
+                     Border="BitColorKind.Secondary"
+                     Class="page-section">
                 <div class="section-heading">
                     <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Feedback</BitText>
                     <BitSeparator />
@@ -336,8 +350,8 @@ else
                         this component on GitHub.
                     </BitText>
                 }
-            </section>
+            </BitCard>
         </div>
         <SideRail />
-    </div>
+    </BitStack>
 }

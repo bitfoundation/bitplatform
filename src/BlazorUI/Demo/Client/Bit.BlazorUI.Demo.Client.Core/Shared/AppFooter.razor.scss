@@ -61,21 +61,6 @@ a {
     text-decoration: none;
 }
 
-.links-container {
-    gap: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-}
-
-.column {
-    height: 100%;
-    display: flex;
-    align-items: flex-start;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-}
-
 .bit-logo {
     width: rem2(32px);
     height: rem2(27px);
@@ -99,11 +84,9 @@ a {
     }
 }
 
-.address-info {
-    display: flex;
-    gap: rem2(3px);
-    flex-flow: column nowrap;
-
+// The link columns, the address block and the social row are BitStacks; their leftovers live in
+// ::deep because a stack's root div does not carry this file's scope attribute.
+::deep .address-info {
     @include sm {
         margin-bottom: rem2(30px);
     }
@@ -143,12 +126,7 @@ a {
     margin-top: rem2(16px);
 }
 
-.social-link-group {
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-    justify-content: center;
-
+::deep .social-link-group {
     @include sm {
         margin-bottom: rem2(8px);
     }

@@ -2,7 +2,9 @@
 
 public partial class CodeBox
 {
-    private string _codeIcon = BitIconName.Copy;
+    // No icon while idle - the button renders its own copy glyph as an inline svg instead.
+    private string? _codeIcon;
+    private bool _isCodeCopied = false;
     private string _copyCodeMessage = "Copy code";
     private ElementReference _preElementRef = default!;
 
@@ -25,11 +27,13 @@ public partial class CodeBox
 
         _codeIcon = BitIconName.CheckMark;
         _copyCodeMessage = "Code copied!";
+        _isCodeCopied = true;
 
         StateHasChanged();
 
         await Task.Delay(1000);
-        _codeIcon = BitIconName.Copy;
+        _isCodeCopied = false;
+        _codeIcon = null;
         _copyCodeMessage = "Copy code";
 
         StateHasChanged();

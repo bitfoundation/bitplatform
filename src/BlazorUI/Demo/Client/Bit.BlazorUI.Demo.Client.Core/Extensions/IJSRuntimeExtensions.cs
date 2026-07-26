@@ -26,4 +26,14 @@ public static class IJSRuntimeExtensions
     {
         return await jsRuntime.Invoke<string>("getInnerText", element);
     }
+
+    public static async Task RegisterWindowResizeListener<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName) where T : class
+    {
+        await jsRuntime.InvokeVoid("registerWindowResizeListener", id, dotnetObj, methodName);
+    }
+
+    public static async Task UnregisterWindowResizeListener(this IJSRuntime jsRuntime, string id)
+    {
+        await jsRuntime.InvokeVoid("unregisterWindowResizeListener", id);
+    }
 }

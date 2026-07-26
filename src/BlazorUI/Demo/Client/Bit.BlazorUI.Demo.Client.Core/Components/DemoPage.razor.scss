@@ -3,12 +3,6 @@
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 
-.demo-page {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-}
-
 // The page-wide escape hatch from the reduced-motion collapse. It is meaningless when motion is not
 // being reduced, so it only exists in that state; --demo-motion-bar-height (app.scss) is 0 outside
 // this query, which is what keeps the other sticky bars in their original place.
@@ -41,32 +35,22 @@
     flex: 1 1 auto;
 }
 
-// .page-header / .page-lead / .section-heading are shared with the other top-level pages and live
-// in MainLayout.razor.scss; only the tag row below is specific to a component page.
-.page-aliases {
-    display: flex;
-    flex-wrap: wrap;
-    gap: rem2(6px);
-}
+::deep {
+    // The chrome sections are BitCards and the rail scrolls to them by id, so they have to stop
+    // short of the sticky headers; same for the plain lead section.
+    .page-lead,
+    .page-section {
+        scroll-margin: rem2(90px);
+    }
 
-.page-section {
-    scroll-margin: rem2(90px);
-}
-
-.video-container {
-    display: flex;
-    justify-content: center;
-
-    video {
+    .video-container video {
         width: 80%;
         border-width: $bit-shape-border-width;
         border-style: $bit-shape-border-style;
         border-radius: $bit-shape-border-radius;
         border-color: $bit-color-border-tertiary;
     }
-}
 
-::deep {
     .sec-con {
         scroll-margin: rem2(90px);
     }

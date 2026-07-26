@@ -47,6 +47,14 @@ html, body, .site-content, pre, .table-view, .side-rail {
     scrollbar-color: $bit-color-border-primary transparent;
 }
 
+// The nav panel hides its scrollbar. Its own ::-webkit-scrollbar { width: 0 } no longer works
+// here, because scrollbar-color is an inherited property: the value set on html above reaches the
+// panel and switches its scrollbar to the standard styling model, which ignores the webkit
+// pseudo-element. Hiding it with the standard property covers both models.
+.bit-npn {
+    scrollbar-width: none;
+}
+
 h1, h2, h3, h4, h5 {
     margin: 0;
 }
@@ -82,11 +90,12 @@ p {
 
 .pivot-sticky-header {
     z-index: 10;
+    opacity: 0.85;
     overflow: auto;
     position: sticky;
     padding: 0.25rem 0.5rem;
-    background-color: $bit-color-background-primary;
-    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-secondary;
     top: calc(rem2(75px) + var(--bit-env-inset-top) + var(--demo-motion-bar-height));
 
     .bit-ios & {

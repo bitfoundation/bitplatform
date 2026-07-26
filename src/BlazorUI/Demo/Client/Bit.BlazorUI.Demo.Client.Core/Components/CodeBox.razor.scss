@@ -13,6 +13,7 @@
     line-height: rem2(22px);
     font-size: rem2(13.5px);
     font-family: var(--demo-font-mono);
+    border-radius: $bit-shape-border-radius;
     background-color: $bit-color-background-secondary;
     border: rem2(1px) solid $bit-color-border-secondary;
     padding: rem2(14px) rem2(48px) rem2(14px) rem2(16px);
@@ -45,13 +46,31 @@
     }
 }
 
-// Positions the copy button clear of the code and carries the code surface's own background, so a
-// long line never runs underneath the glyph. Nothing here reaches the button itself.
-.copy-btn-holder {
+// The copy button floats over the code surface and confirms the copy by growing from its glyph
+// into one wide enough for the "Code copied!" label, so the confirmation slides in instead of
+// snapping open. The theme's motion tokens make the grow collapse under prefers-reduced-motion
+// and come back with a page's ForceAnimation toggle (bit-fam), like the library's own components.
+::deep .copy-btn {
+    padding: 0;
     z-index: 1;
-    display: flex;
-    top: rem2(6px);
-    right: rem2(6px);
+    top: rem2(8px);
+    right: rem2(8px);
+    min-width: unset;
+    width: rem2(32px);
+    height: rem2(32px);
     position: absolute;
-    background-color: $bit-color-background-secondary;
+    padding-left: rem2(4px);
+    transition: width $bit-motion-duration $bit-motion-easing;
+
+    &:hover {
+        background-color: $bit-color-background-primary;
+    }
+
+    &.copied {
+        overflow: hidden;
+        width: rem2(128px);
+        white-space: nowrap;
+        pointer-events: none;
+        background-color: $bit-color-background-primary;
+    }
 }

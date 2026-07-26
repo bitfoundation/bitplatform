@@ -43,9 +43,9 @@ public partial class DemoExample
         return code;
     }
 
-    // Both copy buttons confirm by swapping their icon for a checkmark and updating their title,
-    // which is also their accessible name. The previous inline "Code copied!" label needed a width
-    // transition on the button to stop it snapping open, and that meant styling the component.
+    // Both copy buttons confirm by swapping their icon for a checkmark and growing into an inline
+    // "copied" label; the title doubles as the accessible name for the same confirmation.
+    private bool isCodeCopied = false;
     private string codeIcon = BitIconName.Copy;
     private string copyCodeMessage = "Copy code";
     private async Task CopyCodeToClipboard()
@@ -58,16 +58,19 @@ public partial class DemoExample
 
         codeIcon = BitIconName.CheckMark;
         copyCodeMessage = "Code copied!";
+        isCodeCopied = true;
 
         StateHasChanged();
 
         await Task.Delay(1000);
+        isCodeCopied = false;
         codeIcon = BitIconName.Copy;
         copyCodeMessage = "Copy code";
 
         StateHasChanged();
     }
 
+    private bool isLinkCopied = false;
     private string linkIcon = BitIconName.Link;
     private string copyLinkMessage = "Copy link";
     private async Task CopyLinkToClipboard()
@@ -79,10 +82,12 @@ public partial class DemoExample
 
         linkIcon = BitIconName.CheckMark;
         copyLinkMessage = "Link copied!";
+        isLinkCopied = true;
 
         StateHasChanged();
 
         await Task.Delay(1000);
+        isLinkCopied = false;
         linkIcon = BitIconName.Link;
         copyLinkMessage = "Copy link";
 

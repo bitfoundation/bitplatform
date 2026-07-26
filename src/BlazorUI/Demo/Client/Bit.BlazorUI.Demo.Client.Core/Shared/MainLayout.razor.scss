@@ -26,15 +26,13 @@
         }
     }
 
+    // The chrome sections are BitCards (full-width, primary background, secondary border, no
+    // shadow); only the rhythm of the page - padding, spacing between cards and the muted body
+    // color - stays here.
     .page-section {
-        width: 100%;
         padding: rem2(32px);
-        position: relative;
-        box-sizing: border-box;
         margin-bottom: rem2(24px);
         color: $bit-color-foreground-secondary;
-        background-color: $bit-color-background-primary;
-        border: rem2(1px) solid $bit-color-border-secondary;
 
         @include sm {
             padding: rem2(20px);
@@ -45,28 +43,18 @@
         }
     }
 
-    // Every top-level page opens the same way: title, optional metadata beside it, then a lead
-    // paragraph. These are the demo's own wrappers - the size, weight and color of the text inside
-    // them come from BitText's Typography and Color parameters, never from here.
+    // Every top-level page opens the same way: a header row (a BitStack on the component pages,
+    // a plain element on the prose pages where the title is its only child), then a lead
+    // paragraph. Text sizes and colors come from BitText's own parameters, never from here.
     .page-header {
-        display: flex;
-        flex-wrap: wrap;
-        column-gap: 1rem;
-        row-gap: 0.5rem;
-        align-items: baseline;
         overflow-wrap: anywhere;
         margin-bottom: rem2(20px);
     }
 
     // The lead is prose, not one more boxed section: after the H1 the reader should hit a
-    // sentence, not another frame. Declared after .page-section so it wins on source order when
-    // both classes are on the same element.
+    // sentence, not another frame.
     .page-lead {
-        border: none;
-        padding: 0;
-        background: none;
         margin-bottom: rem2(40px);
-        max-width: var(--demo-measure);
     }
 
     // Heading plus its BitSeparator, so the eye can find the boundary between Usage, API and

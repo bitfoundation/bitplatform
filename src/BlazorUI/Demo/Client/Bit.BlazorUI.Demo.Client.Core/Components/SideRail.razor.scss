@@ -18,15 +18,49 @@
     }
 }
 
+// The floating button that stands in for the rail once it is hidden. It only exists on the
+// screens where the rail does not, so the two can never show together. It sits quietly at the
+// top-end corner, just below the app header, where the rail itself would have started.
+.side-rail-fab {
+    display: none;
+
+    @include lt-xl {
+        z-index: 10;
+        display: block;
+        position: fixed;
+        inset-inline-end: rem2(16px);
+        top: calc(rem2(80px) + var(--bit-env-inset-top));
+    }
+}
+
+// The panel reuses the rail's content. BitPanel's container clips overflow without scrolling it,
+// so the nav fills the panel and owns the scrolling itself; the thin width plus the scrollbar
+// color inherited from the page keep it consistent with the rest of the docs chrome.
+.side-rail-panel {
+    height: 100%;
+    display: block;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    padding: rem2(20px) rem2(24px);
+}
+
+// Quiet by design: a small outlined circle whose only extra chrome is the page background behind
+// it, so the icon stays legible over whatever scrolls underneath.
+::deep .side-rail-fab-btn {
+    width: rem2(32px);
+    height: rem2(32px);
+    border-radius: 50%;
+    background-color: $bit-color-background-primary;
+}
+
 // The hairline is the rail's spine: it ties the entries together and, being the only rule in the
-// margin, marks the column as secondary without adding another box to the page.
-.side-rail-list {
+// margin, marks the column as secondary without adding another box to the page. The list itself
+// is a BitStack (Element="ul"), so only what a stack cannot express stays here, in ::deep because
+// the stack's root element does not carry this file's scope attribute.
+::deep .side-rail-list {
     padding: 0;
-    display: flex;
     list-style: none;
-    gap: rem2(2px);
     margin: rem2(10px) 0 0;
-    flex-flow: column nowrap;
     border-inline-start: rem2(2px) solid $bit-color-border-secondary;
 
     li {

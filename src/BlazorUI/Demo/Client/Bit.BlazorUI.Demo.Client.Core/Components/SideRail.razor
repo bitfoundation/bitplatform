@@ -7,20 +7,49 @@
 <nav class="side-rail" aria-label="On this page">
     @if (_items.Count > 0)
     {
-        <BitText Element="p" Typography="BitTypography.Overline" Color="BitColor.TertiaryForeground">
-            On this page
-        </BitText>
-        <ul class="side-rail-list">
-            @foreach (var item in _items)
-            {
-                <li>
-                    <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline>
-                        <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Start">
-                            @item.Title
-                        </BitText>
-                    </BitLink>
-                </li>
-            }
-        </ul>
+        @_railContent
     }
 </nav>
+
+@* Below the xl breakpoint the sticky rail is hidden, and the same content folds into a BitPanel
+   opened by a floating button - the same move the nav panel makes into the header's menu button.
+   Following a link closes the panel (see ScrollToItem). *@
+@if (_items.Count > 0)
+{
+    <div class="side-rail-fab">
+        <BitButton IconOnly FixedColor
+                   Size="BitSize.Small"
+                   AriaLabel="On this page"
+                   Variant="BitVariant.Text"
+                   Color="BitColor.SecondaryBackground"
+                   IconName="@BitIconName.BulletedList"
+                   OnClick="() => _isPanelOpen = true" />
+    </div>
+
+    <BitPanel @bind-IsOpen="_isPanelOpen" Position="BitPanelPosition.End" Size="280">
+        <nav class="side-rail-panel" aria-label="On this page">
+            @_railContent
+        </nav>
+    </BitPanel>
+}
+
+@code {
+    private RenderFragment _railContent =>
+        @<text>
+            <BitText Element="p" Typography="BitTypography.Overline" Color="BitColor.TertiaryForeground">
+                On this page
+            </BitText>
+            <BitStack Element="ul" AutoHeight Gap="0.125rem" Class="side-rail-list">
+                @foreach (var item in _items)
+                {
+                    <li>
+                        <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline Color="BitColor.Info" Class="side-rail-link">
+                            <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Start">
+                                @item.Title
+                            </BitText>
+                        </BitLink>
+                    </li>
+                }
+            </BitStack>
+        </text>;
+}

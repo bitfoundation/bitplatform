@@ -35,24 +35,37 @@ function getInnerText(element: HTMLElement) {
     return element?.innerText;
 }
 
+const windowResizeListeners: { [key: string]: () => void } = {};
+
+function registerWindowResizeListener(id: string, dotnetObj: any, methodName: string) {
+    unregisterWindowResizeListener(id);
+
+    const listener = () => dotnetObj.invokeMethodAsync(methodName);
+    windowResizeListeners[id] = listener;
+    window.addEventListener('resize', listener);
+}
+
+function unregisterWindowResizeListener(id: string) {
+    const listener = windowResizeListeners[id];
+    if (listener == null) return;
+
+    window.removeEventListener('resize', listener);
+    delete windowResizeListeners[id];
+}
+
 declare namespace BitBlazorUI {
     class Theme { static init(options: any): void; }
 }
 
+// Theme-dependent styling in the app keys off the bit-theme attribute the library script keeps on
+// the document element, so this callback only has to maintain what CSS cannot reach: the browser
+// chrome color.
 BitBlazorUI.Theme.init({
     system: true,
     persist: true,
     onChange: (newTheme: string, oldTheme: string) => {
         const name = (newTheme ?? '').toLowerCase();
         const isDark = name === 'dark' || name.endsWith('-dark');
-        if (isDark) {
-            document.body.classList.add('bit-blazorui-dark-theme');
-            document.body.classList.remove('bit-blazorui-light-theme');
-            document.querySelector("meta[name=theme-color]")?.setAttribute('content', '#0d1117');
-        } else {
-            document.body.classList.add('bit-blazorui-light-theme');
-            document.body.classList.remove('bit-blazorui-dark-theme');
-            document.querySelector("meta[name=theme-color]")?.setAttribute('content', '#ffffff');
-        }
+        document.querySelector("meta[name=theme-color]")?.setAttribute('content', isDark ? '#0d1117' : '#ffffff');
     }
 });

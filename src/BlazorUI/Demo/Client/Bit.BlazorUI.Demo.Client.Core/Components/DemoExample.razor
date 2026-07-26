@@ -15,34 +15,46 @@
 }
 else
 {
-    @* One bordered card per example: title bar, the source, then the live preview. The buttons are
-       plain BitActionButtons at their small size - the toolbar reads as quiet because of what the
-       components already are, not because the demo restyles them. *@
+    @* One open block per example: title bar over a hairline, the source, then the live preview.
+       The copy buttons confirm by growing into their "copied" label, so the empty content span is
+       kept hidden until there is a label to show - otherwise it would offset the icon. *@
     <section class="box">
-        <div class="box-header">
+        <BitStack Horizontal Wrap AutoHeight
+                  Gap="1rem"
+                  Class="box-header"
+                  VerticalAlign="BitAlignment.Center"
+                  HorizontalAlign="BitAlignment.SpaceBetween">
             <BitText Element="h3"
                      Typography="BitTypography.H6"
                      Color="BitColor.PrimaryForeground"
                      Class="section-title" Id="@Id" example-section-title>@Title</BitText>
             @if (RazorCode is not null || CsharpCode is not null)
             {
-                <div class="header-btn-group">
-                    <BitActionButton IconOnly
-                                     Size="BitSize.Small"
+                <BitStack Horizontal FitWidth AutoHeight
+                          Gap="0.25rem"
+                          Class="header-btn-group"
+                          VerticalAlign="BitAlignment.Center">
+                    <BitActionButton Class="@($"header-btn copy-link{(isLinkCopied ? " copied" : "")}")"
+                                     Styles="@(new() { Content = (isLinkCopied ? "" : "display: none") })"
                                      IconName="@linkIcon"
                                      Title="@copyLinkMessage"
                                      Color="BitColor.SecondaryForeground"
-                                     OnClick="@CopyLinkToClipboard" />
-                    <BitActionButton Size="BitSize.Small"
+                                     OnClick="@CopyLinkToClipboard">
+                        @if (isLinkCopied)
+                        {
+                            <span>@copyLinkMessage</span>
+                        }
+                    </BitActionButton>
+                    <BitActionButton Class="header-btn"
                                      OnClick="ToggleCode"
                                      IconName="@BitIconName.CodeEdit"
                                      Title="@(showCode ? "Hide code" : "Show code")"
                                      Color="@(showCode ? BitColor.Primary : BitColor.SecondaryForeground)">
                         @(showCode ? "Hide code" : "Show code")
                     </BitActionButton>
-                </div>
+                </BitStack>
             }
-        </div>
+        </BitStack>
 
         <div class="box-content">
 
@@ -54,14 +66,16 @@ else
                 <div class="code-panel" inert="@(showCode is false)">
                     <BitCollapse Expanded="showCode">
                         <div class="code-holder" id="@_codeElementId">
-                            <div class="copy-btn-holder">
-                                <BitActionButton IconOnly
-                                                 Size="BitSize.Small"
-                                                 IconName="@codeIcon"
-                                                 Title="@copyCodeMessage"
-                                                 Color="BitColor.SecondaryForeground"
-                                                 OnClick="@CopyCodeToClipboard" />
-                            </div>
+                            <BitActionButton Class="@($"copy-btn{(isCodeCopied ? " copied" : "")}")"
+                                             Styles="@(new() { Content = (isCodeCopied ? "" : "display: none") })"
+                                             IconName="@codeIcon"
+                                             Title="@copyCodeMessage"
+                                             OnClick="@CopyCodeToClipboard">
+                                @if (isCodeCopied)
+                                {
+                                    <span>@copyCodeMessage</span>
+                                }
+                            </BitActionButton>
 
                             <pre class="code">
 
