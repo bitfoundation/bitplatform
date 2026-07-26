@@ -5,6 +5,8 @@ public partial class _BitChoiceGroupOptionDemo
     private string oneWayValue = "A";
     private string twoWayValue = "A";
     private string readOnlyValue = "A";
+    private bool showAutoFocus;
+    private string? uncontrolledValue = "A";
 
     private string? changedValue;
     private string? clickedOption;

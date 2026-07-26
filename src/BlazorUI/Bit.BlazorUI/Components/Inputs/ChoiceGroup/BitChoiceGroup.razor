@@ -3,6 +3,8 @@
 @typeparam TItem
 @typeparam TValue
 
+@* The invalid state belongs to the choice as a whole, not to the option that happens to be focused,
+   so the group carries the aria-invalid too and not only the individual radio inputs of the base class. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="radiogroup"
@@ -11,7 +13,9 @@
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel"
      aria-labelledby="@GetAriaLabelledBy()"
+     aria-describedby="@GetAriaDescribedBy()"
      aria-required="@(Required ? "true" : null)"
+     aria-invalid="@(ValueInvalid is true ? "true" : null)"
      aria-readonly="@(ReadOnly ? "true" : null)"
      aria-disabled="@(IsEnabled ? null : "true")"
      aria-orientation="@(Horizontal ? "horizontal" : "vertical")">
@@ -30,6 +34,22 @@
                 <span style="@Styles?.Label" class="bit-chg-lbl @Classes?.Label">@Label</span>
             }
         </label>
+    }
+
+    @if (HasDescription)
+    {
+        <div id="@_descriptionId"
+             style="@Styles?.Description"
+             class="bit-chg-gds @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
     }
 
     <div id="@_optionsContainerId" style="@Styles?.Container" class="bit-chg-cnt @Classes?.Container">

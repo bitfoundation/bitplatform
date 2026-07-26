@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
@@ -210,5 +211,90 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
 
         Assert.IsNotNull(describedBy);
         Assert.AreEqual("desc A", component.Find($"#{describedBy}").TextContent);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotRenderAGroupDescriptionWhenThereIsNone()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-chg-gds").Count);
+        Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldReferenceItsGroupDescription()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Description, "pick the one you need");
+        });
+
+        var describedBy = component.Find(".bit-chg").GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(describedBy);
+        Assert.AreEqual("pick the one you need", component.Find($"#{describedBy}").TextContent);
+        Assert.IsTrue(component.Find($"#{describedBy}").ClassList.Contains("bit-chg-gds"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldPreferTheDescriptionTemplateOverTheDescription()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Description, "plain description");
+            parameters.Add(p => p.DescriptionTemplate, (RenderFragment)(builder => builder.AddContent(0, "templated description")));
+        });
+
+        var describedBy = component.Find(".bit-chg").GetAttribute("aria-describedby");
+
+        Assert.AreEqual("templated description", component.Find($"#{describedBy}").TextContent);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldKeepTheGroupDescriptionAndTheItemDescriptionsSeparate()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Description, "group description");
+        });
+
+        var groupDescribedBy = component.Find(".bit-chg").GetAttribute("aria-describedby");
+        var itemDescribedBy = component.Find(".bit-chg-icn input").GetAttribute("aria-describedby");
+
+        Assert.AreNotEqual(groupDescribedBy, itemDescribedBy);
+        Assert.AreEqual("group description", component.Find($"#{groupDescribedBy}").TextContent);
+        Assert.AreEqual("desc A", component.Find($"#{itemDescribedBy}").TextContent);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderTheTitleOfEachItem()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Title = "the whole story of A" },
+            new() { Text = "B", Value = "B" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var containers = component.FindAll(".bit-chg-icn");
+
+        Assert.AreEqual("the whole story of A", containers[0].GetAttribute("title"));
+        Assert.IsFalse(containers[1].HasAttribute("title"));
     }
 }

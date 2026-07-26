@@ -68,6 +68,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Style));
 
     /// <summary>
+    /// The Suffix field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Suffix { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Suffix));
+
+    /// <summary>
     /// Template field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> Template { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Template));
@@ -76,6 +81,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     /// The Text field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Text { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Text));
+
+    /// <summary>
+    /// The Title field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Title { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Title));
 
     /// <summary>
     /// The Value field name and selector of the custom input class.

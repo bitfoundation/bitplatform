@@ -44,7 +44,7 @@
 </DemoExample>
 
 <DemoExample Title="Images and Icons" RazorCode="@example3RazorCode" Id="example3" PreventRenderForMcpClient>
-    <div>Displays items as image or icon tiles. An image item can provide a different image for its checked state, and the Inline mode renders the image or icon on the same line as the item text.</div>
+    <div>Displays items as image or icon tiles: ImageSrc with an optional ImageSize renders a picture, IconName (or Icon for an external library) renders a glyph, and SelectedImageSrc swaps in a second picture while the item is checked. The images are marked decorative so the item text carries the accessible name; set ImageAlt only when the picture says something the text does not. The Inline mode drops the tile layout and puts the image or icon on the same line as the text.</div>
     <br /><br />
     <div class="example-content">
         <BitChoiceGroup Label="Image Options"
@@ -105,7 +105,7 @@
 </DemoExample>
 
 <DemoExample Title="Horizontal" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
-    <div>Lays out the items horizontally instead of the default vertical stack, wrapping onto new lines when the available width runs out.</div>
+    <div>Lays out the items in a row instead of the default vertical stack, wrapping onto new lines when the available width runs out. The aria-orientation of the radiogroup follows this parameter, so assistive technology announces the same orientation the eye sees.</div>
     <br />
     <div class="example-content column">
         <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" Horizontal>
@@ -145,11 +145,32 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Reversed" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
-    <div>Moves the radio circle to the far end of each item, rendering it after the item content.</div>
+<DemoExample Title="LabelPosition" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
+    <div>Places the content of each option on any of the four sides of its radio circle. End is the default and renders the circle first; Start renders the content first and additionally aligns the options to the end of the group, so the circles line up in one column once the group is wider than its options (which is what the FullWidth section combines it with). Top and Bottom stack the content above or below the circle. Options rendered as image or icon tiles lay their own content out and are not affected.</div>
     <br />
     <div class="example-content column">
-         <BitChoiceGroup Label="Reversed" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" Reversed Horizontal>
+        <BitChoiceGroup Label="End (default)" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitLabelPosition.End" Horizontal>
+            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+            <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+            <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="Start" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" Horizontal>
+            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+            <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+            <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="Top" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Top" Horizontal>
+            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+            <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+            <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="Bottom" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Bottom" Horizontal>
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />
@@ -159,7 +180,7 @@
 </DemoExample>
 
 <DemoExample Title="LabelTemplate" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
-    <div>Replaces the plain text label of the ChoiceGroup with fully custom content using the LabelTemplate.</div>
+    <div>Replaces the plain text label of the ChoiceGroup with fully custom content using the LabelTemplate. The label element itself is still rendered and the group still points its aria-labelledby at it, so whatever the template renders becomes the accessible name of the radio group; keep readable text in there, and reach for AriaLabel or AriaLabelledBy when the template is purely decorative.</div>
     <br />
     <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")">
         <LabelTemplate>
@@ -177,13 +198,16 @@
 </DemoExample>
 
 <DemoExample Title="Item templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-    <div>Customizes the item rendering at different levels: ItemPrefixTemplate prepends content to each item, ItemLabelTemplate replaces the content next to the radio circle, and ItemTemplate or the per-item Template takes over the whole item rendering.</div>
+    <div>Customizes the item rendering at four different levels, from the smallest scope to the largest: ItemPrefixTemplate and ItemSuffixTemplate add content before and after the built-in option content and leave it in place, ItemLabelTemplate replaces the content next to the radio circle but keeps the circle, and ItemTemplate (or the Template of a single option, which wins over it) takes over the whole option rendering including the circle.</div>
     <br />
     <div class="example-content">
-        <BitChoiceGroup Label="ItemPrefixTemplate" TItem="BitChoiceGroupOption<string>" TValue="string">
+        <BitChoiceGroup Label="ItemPrefixTemplate & ItemSuffixTemplate" TItem="BitChoiceGroupOption<string>" TValue="string">
             <ItemPrefixTemplate Context="option">
                 @(option.Index + 1).&nbsp;
             </ItemPrefixTemplate>
+            <ItemSuffixTemplate Context="option">
+                &nbsp;<b>(@option.Value)</b>
+            </ItemSuffixTemplate>
             <Options>
                 <BitChoiceGroupOption Text="Option A" Value="@("A")" />
                 <BitChoiceGroupOption Text="Option B" Value="@("B")" />
@@ -255,9 +279,21 @@
 </DemoExample>
 
 <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <div>Binds the selected value with one-way binding (Value), where only the model drives the ChoiceGroup, or two-way binding (@@bind-Value) that keeps the model and the ChoiceGroup in sync.</div>
+    <div>Binds the selected value in three ways. DefaultValue only seeds the initial selection and then leaves the ChoiceGroup to own its value, reporting every change through OnChange; this uncontrolled mode is how most of the examples on this page are set up. Value alone is one-way: the model drives the ChoiceGroup and a click cannot write back, so editing the text box below moves the selection but clicking an option does not change the text box. @@bind-Value is two-way and keeps the model and the ChoiceGroup in sync in both directions.</div>
     <br />
     <div class="example-content">
+        <div>
+            <BitChoiceGroup Label="Uncontrolled (DefaultValue)" DefaultValue="@("A")"
+                            OnChange="(string? value) => uncontrolledValue = value"
+                            TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+            <br />
+            <div>Selected: <b>@uncontrolledValue</b></div>
+        </div>
         <div>
             <BitChoiceGroup Label="One-way" Value="@oneWayValue"
                             TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -284,7 +320,7 @@
 </DemoExample>
 
 <DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
-    <div>Integrates with EditForm and data annotations, marking the group as invalid and showing the validation message until a choice is made. The Required parameter adds the required asterisk to the group label.</div>
+    <div>Integrates with EditForm and data annotations. While the field is invalid the radiogroup and its inputs carry aria-invalid and the radio circles turn red, until a choice is made. Required is separate from the validation attribute of the model: it adds the required asterisk to the label and the aria-required of the group, so set both.</div>
     <br />
     @if (string.IsNullOrEmpty(successMessage))
     {
@@ -312,7 +348,7 @@
     <BitButton Variant="BitVariant.Outline" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
 </DemoExample>
 
-<DemoExample Title="Descriptions" RazorCode="@example10RazorCode" Id="example10">
+<DemoExample Title="Item descriptions" RazorCode="@example10RazorCode" Id="example10">
     <div>Adds secondary text under each option using the Description parameter. The description is automatically linked to its input via aria-describedby, so screen readers announce it along with the option label.</div>
     <br />
     <div class="example-content">
@@ -325,7 +361,7 @@
 </DemoExample>
 
 <DemoExample Title="ReadOnly" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <div>Prevents changing the value using the ReadOnly parameter while keeping the normal (non-disabled) appearance; readonly items are also removed from the keyboard tab order.</div>
+    <div>Prevents changing the value while keeping the normal, non-disabled appearance. Unlike IsEnabled="false" the group stays fully reachable: Tab still lands on the checked item and the arrow keys still move the focus, so the choice can be read with the keyboard and a screen reader, and the value is still submitted with the form. The group reports aria-readonly, and every attempt to commit a change (a click, Space, or an arrow key) is cancelled, so the selection cannot move.</div>
     <br />
     <div class="example-content">
         <BitChoiceGroup Label="ReadOnly" ReadOnly @bind-Value="readOnlyValue" TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -357,20 +393,32 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Prefix" RazorCode="@example13RazorCode" Id="example13">
-    <div>Adds plain text in front of each option using the Prefix parameter, rendered before the radio circle. For arbitrary prefix content, use the ItemPrefixTemplate shown in the Item templates section.</div>
+<DemoExample Title="Prefix & Suffix" RazorCode="@example13RazorCode" Id="example13">
+    <div>Wraps the content of each option in plain text: Prefix is rendered in front of the radio circle and Suffix after the content of the option. Pairing Suffix with FullWidth and an auto inline start margin turns it into a trailing column, which is where a price or a hint usually belongs. For arbitrary content on either end, use the ItemPrefixTemplate and ItemSuffixTemplate shown in the Item templates section.</div>
     <br />
-    <div class="example-content">
-        <BitChoiceGroup Label="Shipping method" DefaultValue="@("Standard")" TItem="BitChoiceGroupOption<string>" TValue="string">
+    <div class="example-content column">
+        <BitChoiceGroup Label="Shipping method (Prefix)" DefaultValue="@("Standard")" TItem="BitChoiceGroupOption<string>" TValue="string">
             <BitChoiceGroupOption Text="Standard" Value="@("Standard")" Prefix="$0 — " />
             <BitChoiceGroupOption Text="Express" Value="@("Express")" Prefix="$10 — " />
             <BitChoiceGroupOption Text="Overnight" Value="@("Overnight")" Prefix="$25 — " />
         </BitChoiceGroup>
+
+        <div class="example-box">
+            <BitChoiceGroup Label="Shipping method (Suffix)"
+                            DefaultValue="@("Standard")"
+                            FullWidth
+                            Styles="@(new() { ItemSuffix = "margin-inline-start: auto;" })"
+                            TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Standard" Value="@("Standard")" Suffix="Free" />
+                <BitChoiceGroupOption Text="Express" Value="@("Express")" Suffix="$10" />
+                <BitChoiceGroupOption Text="Overnight" Value="@("Overnight")" Suffix="$25" />
+            </BitChoiceGroup>
+        </div>
     </div>
 </DemoExample>
 
 <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-    <div>Raises OnChange whenever the selected value changes, OnClick on every click of an enabled option, including the already selected one, and OnFocus and OnBlur as the focus moves between the options.</div>
+    <div>Raises OnChange with the new value whenever the selection actually changes, and OnClick with the whole option on every activation of an enabled option, including a click on the already selected one and an arrow key press, which the browser also reports as a click. OnFocus and OnBlur fire with the option as the focus moves between the options. All four stay silent while the group is disabled or read-only.</div>
     <br />
     <div class="example-content column">
         <BitChoiceGroup Label="Events" DefaultValue="@("A")" TItem="BitChoiceGroupOption<string>" TValue="string"
@@ -413,7 +461,108 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Group description" RazorCode="@example16RazorCode" Id="example16">
+    <div>Adds a helper text under the label to explain the whole set of choices, as opposed to the per-option Description that explains a single option. The group points its aria-describedby at it, so a screen reader announces it right after the name of the group. DescriptionTemplate replaces the plain text with custom content and takes precedence over Description when both are set.</div>
+    <br />
+    <div class="example-content column">
+        <BitChoiceGroup Label="Deployment target"
+                        Description="Only the selected environment receives the new build."
+                        DefaultValue="@("Staging")"
+                        TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Development" Value="@("Development")" />
+            <BitChoiceGroupOption Text="Staging" Value="@("Staging")" />
+            <BitChoiceGroupOption Text="Production" Value="@("Production")" />
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="Deployment target" DefaultValue="@("Staging")" TItem="BitChoiceGroupOption<string>" TValue="string">
+            <DescriptionTemplate>
+                <div class="custom-description">
+                    <BitIcon IconName="@BitIconName.Info" />
+                    <span>Only the selected environment receives the new build.</span>
+                </div>
+            </DescriptionTemplate>
+            <Options>
+                <BitChoiceGroupOption Text="Development" Value="@("Development")" />
+                <BitChoiceGroupOption Text="Staging" Value="@("Staging")" />
+                <BitChoiceGroupOption Text="Production" Value="@("Production")" />
+            </Options>
+        </BitChoiceGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="FullWidth" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
+    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest option, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the options additionally share that width in equal columns. In the vertical layout every option row spans the full width, so LabelPosition.Start now has room to push the options to the far edge; stretching the option label over that row as well turns it into the label-at-the-start, circle-at-the-end list found in settings pages.</div>
+    <br />
+    <div class="example-content column">
+        <div class="example-box">
+            <BitChoiceGroup Label="Default (hugs the widest option)" DefaultValue="@("A")" Horizontal TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+        </div>
+        <div class="example-box">
+            <BitChoiceGroup Label="FullWidth (horizontal, equal columns)" DefaultValue="@("A")" Horizontal FullWidth TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+        </div>
+        <div class="example-box">
+            <BitChoiceGroup Label="FullWidth + LabelPosition.Start (options at the far edge)" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" FullWidth TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+        </div>
+        <div class="example-box">
+            <BitChoiceGroup Label="FullWidth + LabelPosition.Start + stretched option label (settings list)"
+                            DefaultValue="@("A")"
+                            LabelPosition="BitLabelPosition.Start" FullWidth
+                            Styles="@(new() { ItemLabel = "width: 100%; justify-content: space-between;" })"
+                            TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Item title" RazorCode="@example18RazorCode" Id="example18">
+    <div>Sets the native browser tooltip of an option through its Title, which is handy when the option text is an abbreviation or gets clipped. Keep it supplementary: a title never appears on keyboard focus and is announced inconsistently by screen readers, so anything every user has to read belongs in the option text, its AriaLabel, or its Description.</div>
+    <br />
+    <div class="example-content">
+        <BitChoiceGroup Label="Delivery window (hover an option)" DefaultValue="@("24h")" TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="1 h" Value="@("1h")" Title="Delivered within one hour of dispatch" />
+            <BitChoiceGroupOption Text="24 h" Value="@("24h")" Title="Delivered within one business day" />
+            <BitChoiceGroupOption Text="72 h" Value="@("72h")" Title="Delivered within three business days" />
+        </BitChoiceGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="AutoFocus" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+    <div>Moves the keyboard focus into the ChoiceGroup on its first render. It lands on the checked option, or on the first enabled option when nothing is checked, which is exactly the option the Tab key would reach, and it is skipped entirely while the group is disabled or read-only. The button below mounts a fresh ChoiceGroup so the focus move stays visible on demand instead of stealing the focus as soon as this page loads.</div>
+    <br />
+    <div class="example-content column">
+        <BitButton OnClick="() => showAutoFocus = !showAutoFocus">@(showAutoFocus ? "Unmount" : "Mount") the auto focused ChoiceGroup</BitButton>
+        @if (showAutoFocus)
+        {
+            <BitChoiceGroup AutoFocus Label="Auto focused" DefaultValue="@("B")" TItem="BitChoiceGroupOption<string>" TValue="string">
+                <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+            </BitChoiceGroup>
+        }
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
         <div>Colors the radio circle and the checked state of the items using the BitColor palette, with Primary being the default.</div>
         <br />
         <div>
@@ -578,7 +727,7 @@
         </div>
     </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
     <div>Renders icons from external libraries like Font Awesome or Bootstrap Icons using the Icon parameter, instead of the built-in icon font used by IconName.</div>
     
     <br />
@@ -609,7 +758,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
     <div>Comes in Small, Medium (default), and Large sizes that scale the radio circle, text, icons, and item spacing together.</div>
     <br /><br />
     <div>Basic ChoiceGroup</div>
@@ -703,7 +852,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
     <div>Customizes the appearance at every level: Style and Class on the root element, per-item styles and classes, and the Styles and Classes objects that target the internal parts of the component, including the checked state of the items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -768,7 +917,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>Renders the ChoiceGroup in right-to-left mode; the layout is mirrored and the keyboard arrow keys follow the text direction.</div>
     <br />
     <div dir="rtl" class="example-content">

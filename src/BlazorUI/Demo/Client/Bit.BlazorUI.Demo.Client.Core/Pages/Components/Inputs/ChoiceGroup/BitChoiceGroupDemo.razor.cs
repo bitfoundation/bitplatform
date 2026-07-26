@@ -54,6 +54,27 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The description (helper text) of the ChoiceGroup, rendered under its label. The group references it through its aria-describedby, so screen readers announce it along with the name of the group."
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom RenderFragment for the description (helper text) of the ChoiceGroup. Takes precedence over Description when both are set."
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands the ChoiceGroup to the full width of its container instead of hugging its widest item. In the horizontal layout the items also share that width equally."
+        },
+        new()
+        {
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
@@ -96,6 +117,13 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "ItemSuffixTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "Used to add a suffix to each item, rendered after the content of the item."
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -107,6 +135,15 @@ public partial class BitChoiceGroupDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The label for the ChoiceGroup."
+        },
+        new()
+        {
+            Name = "LabelPosition",
+            Type = "BitLabelPosition?",
+            DefaultValue = "null",
+            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it. Items rendered as image or icon tiles lay their own content out and ignore this parameter.",
+            LinkType = LinkType.Link,
+            Href = "#label-position-enum",
         },
         new()
         {
@@ -182,13 +219,6 @@ public partial class BitChoiceGroupDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the ChoiceGroup required and adds the required asterisk to its label."
-        },
-        new()
-        {
-            Name = "Reversed",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the label and radio button location."
         },
         new()
         {
@@ -325,6 +355,39 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Id = "label-position-enum",
+            Name = "BitLabelPosition",
+            Description = "Defines where the content of an item is rendered relative to its radio circle.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Top",
+                    Description="Renders the content above the radio circle.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="Renders the content after the radio circle. This is the default.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="Renders the content below the radio circle.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="Renders the content before the radio circle and aligns the items to the end of the group.",
+                    Value="3",
+                }
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "",
@@ -455,6 +518,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Suffix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text to show as a suffix for the BitChoiceGroup item, rendered after its content.",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "RenderFragment<BitChoiceGroupItem<TValue>>?",
                    DefaultValue = "null",
@@ -466,6 +536,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Text to show as the content of BitChoiceGroup item.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title attribute (the native tooltip) of the BitChoiceGroup item. Supplementary text only: use AriaLabel or Description for content that has to reach every user.",
                },
                new()
                {
@@ -591,6 +668,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Suffix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text to show as a suffix for the BitChoiceGroup option, rendered after its content.",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "RenderFragment<BitChoiceGroupOption<TValue>>?",
                    DefaultValue = "null",
@@ -602,6 +686,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Text to show as the content of BitChoiceGroup option.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title attribute (the native tooltip) of the BitChoiceGroup option. Supplementary text only: use AriaLabel or Description for content that has to reach every user.",
                },
                new()
                {
@@ -727,6 +818,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Suffix",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Suffix))",
+                   Description = "The text to show as a suffix for the BitChoiceGroup option, rendered after its content.",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Template))",
@@ -738,6 +836,13 @@ public partial class BitChoiceGroupDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Text))",
                    Description = "Text to show as the content of BitChoiceGroup option.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Title))",
+                   Description = "The title attribute (the native tooltip) of the BitChoiceGroup option.",
                },
                new()
                {
@@ -788,6 +893,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label of the BitChoiceGroup.",
+               },
+               new()
+               {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the description (helper text) of the BitChoiceGroup.",
                },
                new()
                {
@@ -865,6 +977,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the prefix of each item of the BitChoiceGroup.",
+               },
+               new()
+               {
+                   Name = "ItemSuffix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the suffix of each item of the BitChoiceGroup.",
                },
                new()
                {

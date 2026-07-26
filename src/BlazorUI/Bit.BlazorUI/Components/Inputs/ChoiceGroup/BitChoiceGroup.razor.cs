@@ -14,6 +14,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private bool _optionsOrderDirty;
     private bool _defaultValueApplied;
     private TValue? _appliedDefaultValue;
+    private string _descriptionId = default!;
     private string _optionsContainerId = default!;
 
 
@@ -59,6 +60,25 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The description (helper text) of the ChoiceGroup, rendered under its label. The group references it
+    /// through its aria-describedby, so screen readers announce it along with the name of the group.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom RenderFragment for the description (helper text) of the ChoiceGroup.
+    /// Takes precedence over <see cref="Description"/> when both are set.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// Expands the ChoiceGroup to the full width of its container instead of hugging its widest item.
+    /// In the horizontal layout the items also share that width equally.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// The gap between the items of the ChoiceGroup.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -92,6 +112,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public RenderFragment<TItem>? ItemPrefixTemplate { get; set; }
 
     /// <summary>
+    /// Used to add a suffix to each item, rendered after the content of the item.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemSuffixTemplate { get; set; }
+
+    /// <summary>
     /// Used to customize the label for the Item content.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -100,6 +125,14 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// The label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// The position of the content of each item relative to its radio circle. The default is
+    /// <see cref="BitLabelPosition.End"/>, which renders the circle first and the content after it.
+    /// Items rendered as image or icon tiles lay their own content out and ignore this parameter.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition? LabelPosition { get; set; }
 
     /// <summary>
     /// Custom RenderFragment for the label of the ChoiceGroup.
@@ -136,12 +169,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
-
-    /// <summary>
-    /// Reverses the label and radio button location.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Reversed { get; set; }
 
     /// <summary>
     /// The size of the BitChoiceGroup.
@@ -229,6 +256,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         _name = $"BitChoiceGroup-{UniqueId}-input-name";
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
+        _descriptionId = $"BitChoiceGroup-{UniqueId}-description";
         _optionsContainerId = $"BitChoiceGroup-{UniqueId}-options-container";
 
         InitDefaultValue();
@@ -318,7 +346,18 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
 
-        ClassBuilder.Register(() => Reversed ? "bit-chg-rvs" : string.Empty);
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitLabelPosition.Top => "bit-chg-ltp",
+            BitLabelPosition.Bottom => "bit-chg-lbm",
+            BitLabelPosition.Start => "bit-chg-lst",
+            BitLabelPosition.End => "bit-chg-led",
+            _ => "bit-chg-led"
+        });
+
+        ClassBuilder.Register(() => FullWidth ? "bit-chg-flw" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-chg-rdo" : string.Empty);
 
         ClassBuilder.Register(() => Color switch
         {
@@ -391,6 +430,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     internal bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
     private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : null);
+
+    // Same reasoning as the label: the description element is only rendered when there is a description to
+    // show, so the reference is only emitted then. Left null otherwise, which lets an aria-describedby that
+    // the consumer splatted through HtmlAttributes survive instead of being overwritten with an empty value.
+    internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    private string? GetAriaDescribedBy() => HasDescription ? _descriptionId : null;
 
     // The index is used instead of the value, because a value is free-form (it can contain spaces or any
     // other character that is not valid in an id) and is not guaranteed to be unique among the items,
@@ -764,6 +810,28 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return item.GetValueFromProperty<string?>(NameSelectors.Prefix.Name);
     }
 
+    internal string? GetSuffix(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Suffix;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Suffix;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Suffix.Selector is not null)
+        {
+            return NameSelectors.Suffix.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Suffix.Name);
+    }
+
     internal string? GetSelectedImageSrc(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
@@ -850,6 +918,28 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
+    }
+
+    internal string? GetTitle(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Title;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Title;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
     }
 
     internal TValue? GetValue(TItem item)

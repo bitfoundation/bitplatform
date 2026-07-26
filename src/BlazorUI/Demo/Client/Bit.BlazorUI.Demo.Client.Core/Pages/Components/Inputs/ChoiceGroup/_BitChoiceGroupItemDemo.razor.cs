@@ -5,6 +5,8 @@ public partial class _BitChoiceGroupItemDemo
     private string oneWayValue = "A";
     private string twoWayValue = "A";
     private string readOnlyValue = "A";
+    private bool showAutoFocus;
+    private string? uncontrolledValue = "A";
 
     private string? changedValue;
     private string? clickedItem;
@@ -117,11 +119,32 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Overnight", Value = "Overnight", Prefix = "$25 — " }
     ];
 
+    private readonly List<BitChoiceGroupItem<string>> suffixItems =
+    [
+        new() { Text = "Standard", Value = "Standard", Suffix = "Free" },
+        new() { Text = "Express", Value = "Express", Suffix = "$10" },
+        new() { Text = "Overnight", Value = "Overnight", Suffix = "$25" }
+    ];
+
     private readonly List<BitChoiceGroupItem<string>> descriptionItems =
     [
         new() { Text = "Daily", Value = "Daily", Description = "Backs up every night at 2 AM." },
         new() { Text = "Weekly", Value = "Weekly", Description = "Backs up every Sunday at 2 AM." },
         new() { Text = "Monthly", Value = "Monthly", Description = "Backs up on the first day of each month." }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> deploymentItems =
+    [
+        new() { Text = "Development", Value = "Development" },
+        new() { Text = "Staging", Value = "Staging" },
+        new() { Text = "Production", Value = "Production" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> titleItems =
+    [
+        new() { Text = "1 h", Value = "1h", Title = "Delivered within one hour of dispatch" },
+        new() { Text = "24 h", Value = "24h", Title = "Delivered within one business day" },
+        new() { Text = "72 h", Value = "72h", Title = "Delivered within three business days" }
     ];
 
     private readonly List<BitChoiceGroupItem<string>> itemLabelTemplates =

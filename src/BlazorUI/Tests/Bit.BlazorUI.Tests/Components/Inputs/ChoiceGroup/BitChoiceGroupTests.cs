@@ -254,8 +254,11 @@ public class BitChoiceGroupTests : BunitTestContext
         }
     }
 
+    // A read-only group is not a disabled one: it stays reachable so the choice can still be read with the
+    // keyboard and a screen reader, and it keeps submitting its value. What makes it read-only is that the
+    // activation is cancelled, which is covered by BitChoiceGroupShouldNotChangeTheValueWhenReadOnly.
     [TestMethod]
-    public void BitChoiceGroupShouldRemoveInputsFromTabOrderWhenReadOnly()
+    public void BitChoiceGroupShouldKeepInputsReachableAndEnabledWhenReadOnly()
     {
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -267,11 +270,16 @@ public class BitChoiceGroupTests : BunitTestContext
 
         foreach (var input in inputs)
         {
-            Assert.AreEqual("-1", input.GetAttribute("tabindex"));
+            Assert.IsFalse(input.HasAttribute("tabindex"));
         }
+
+        // Read-only must not disable anything by itself; the one disabled input here is the item that
+        // opts out through its own IsEnabled, which read-only has nothing to do with.
+        Assert.AreEqual(1, inputs.Count(i => i.HasAttribute("disabled")));
 
         var bitChoiceGroup = component.Find(".bit-chg");
         Assert.AreEqual("true", bitChoiceGroup.GetAttribute("aria-readonly"));
+        Assert.IsFalse(bitChoiceGroup.HasAttribute("aria-disabled"));
     }
 
     [TestMethod]

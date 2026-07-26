@@ -4,6 +4,7 @@
 
 @{
     var prefix = ChoiceGroup.GetPrefix(Item);
+    var suffix = ChoiceGroup.GetSuffix(Item);
     var inputId = ChoiceGroup.GetInputId(Item);
     var template = ChoiceGroup.GetTemplate(Item);
     var isChecked = ChoiceGroup.GetIsCheckedItem(Item);
@@ -19,7 +20,15 @@
                       && ChoiceGroup.ItemLabelTemplate is null;
 }
 
-<div style="@ChoiceGroup.GetItemContainerCssStyles(Item)" class="@ChoiceGroup.GetItemContainerCssClasses(Item)" @attributes="ChoiceGroup.GetItemMarkerAttributes(Item)">
+<div title="@ChoiceGroup.GetTitle(Item)"
+     style="@ChoiceGroup.GetItemContainerCssStyles(Item)"
+     class="@ChoiceGroup.GetItemContainerCssClasses(Item)"
+     @attributes="ChoiceGroup.GetItemMarkerAttributes(Item)">
+    @* A read-only group stays reachable and keeps its value in the submitted form data (that is what
+       separates it from a disabled one), so the inputs are left in the tab order. Cancelling the click is
+       what makes it read-only: the browser routes both a mouse click and a keyboard activation (Space, and
+       the arrow keys that move the selection of a radio group) through a cancelable click, and cancelling
+       it runs the radio's "canceled activation steps", which restore the previous checkedness. *@
     <input @ref="_inputElement" @attributes="ChoiceGroup.InputHtmlAttributes"
            @onclick="e => ChoiceGroup.HandleClick(Item)"
            @onclick:preventDefault="ChoiceGroup.ReadOnly"
@@ -32,7 +41,6 @@
            class="bit-chg-inp"
            name="@ChoiceGroup.GetName()"
            required="@ChoiceGroup.Required"
-           tabindex="@(ChoiceGroup.ReadOnly ? "-1" : null)"
            aria-label="@ChoiceGroup.GetAriaLabel(Item)"
            aria-describedby="@(hasDescription ? descriptionId : null)"
            value="@ChoiceGroup.GetValue(Item)?.ToString()"
@@ -115,6 +123,17 @@
                 {
                     <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
                 }
+            }
+
+            @* The mirror image of the prefix above: the per item text wins over the template, so a single
+               item can opt out of the shared template with a plain text of its own. *@
+            @if (suffix.HasValue())
+            {
+                <span style="@ChoiceGroup.Styles?.ItemSuffix" class="@ChoiceGroup.Classes?.ItemSuffix">@suffix</span>
+            }
+            else if (ChoiceGroup.ItemSuffixTemplate is not null)
+            {
+                @ChoiceGroup.ItemSuffixTemplate(Item)
             }
         }
     </label>

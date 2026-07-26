@@ -148,7 +148,13 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 ];";
 
     private readonly string example5RazorCode = @"
-<BitChoiceGroup Label=""Reversed"" Items=""basicItems"" DefaultValue=""@(""A"")"" Reversed Horizontal />";
+<BitChoiceGroup Label=""End (default)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.End"" Horizontal />
+
+<BitChoiceGroup Label=""Start"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" Horizontal />
+
+<BitChoiceGroup Label=""Top"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Top"" Horizontal />
+
+<BitChoiceGroup Label=""Bottom"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Bottom"" Horizontal />";
     private readonly string example5CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
@@ -247,10 +253,13 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
     }
 </style>
 
-<BitChoiceGroup Label=""ItemPrefixTemplate"" Items=""basicItems"" DefaultValue=""@string.Empty"">
+<BitChoiceGroup Label=""ItemPrefixTemplate & ItemSuffixTemplate"" Items=""basicItems"" DefaultValue=""@string.Empty"">
     <ItemPrefixTemplate Context=""item"">
         @(item.Index + 1).&nbsp;
     </ItemPrefixTemplate>
+    <ItemSuffixTemplate Context=""item"">
+        &nbsp;<b>(@item.Value)</b>
+    </ItemSuffixTemplate>
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""ItemLabelTemplate"" Items=""itemLabelTemplates"" @bind-Value=""itemLabelTemplateValue"">
@@ -336,6 +345,10 @@ protected override void OnInitialized()
 }";
 
     private readonly string example8RazorCode = @"
+<BitChoiceGroup Label=""Uncontrolled (DefaultValue)"" Items=""basicItems"" DefaultValue=""@(""A"")""
+                OnChange=""(string? value) => uncontrolledValue = value"" />
+<div>Selected: <b>@uncontrolledValue</b></div>
+
 <BitChoiceGroup Label=""One-way"" Items=""basicItems"" Value=""@oneWayValue"" />
 <BitTextField @bind-Value=""oneWayValue"" />
 
@@ -344,6 +357,7 @@ protected override void OnInitialized()
     private readonly string example8CsharpCode = @"
 private string oneWayValue = ""A"";
 private string twoWayValue = ""A"";
+private string? uncontrolledValue = ""A"";
 
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
@@ -425,13 +439,26 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
 ];";
 
     private readonly string example13RazorCode = @"
-<BitChoiceGroup Label=""Shipping method"" Items=""prefixItems"" DefaultValue=""@(""Standard"")"" />";
+<BitChoiceGroup Label=""Shipping method (Prefix)"" Items=""prefixItems"" DefaultValue=""@(""Standard"")"" />
+
+<BitChoiceGroup Label=""Shipping method (Suffix)""
+                Items=""suffixItems""
+                DefaultValue=""@(""Standard"")""
+                FullWidth
+                Styles=""@(new() { ItemSuffix = ""margin-inline-start: auto;"" })"" />";
     private readonly string example13CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> prefixItems =
 [
     new() { Text = ""Standard"", Value = ""Standard"", Prefix = ""$0 — "" },
     new() { Text = ""Express"", Value = ""Express"", Prefix = ""$10 — "" },
     new() { Text = ""Overnight"", Value = ""Overnight"", Prefix = ""$25 — "" }
+];
+
+private readonly List<BitChoiceGroupItem<string>> suffixItems =
+[
+    new() { Text = ""Standard"", Value = ""Standard"", Suffix = ""Free"" },
+    new() { Text = ""Express"", Value = ""Express"", Suffix = ""$10"" },
+    new() { Text = ""Overnight"", Value = ""Overnight"", Suffix = ""$25"" }
 ];";
 
     private readonly string example14RazorCode = @"
@@ -497,7 +524,79 @@ private void ReverseDynamicItems()
 }";
 
     private readonly string example16RazorCode = @"
-<BitChoiceGroup Color=""BitColor.Primary"" 
+<BitChoiceGroup Label=""Deployment target""
+                Description=""Only the selected environment receives the new build.""
+                Items=""deploymentItems""
+                DefaultValue=""@(""Staging"")"" />
+
+<BitChoiceGroup Label=""Deployment target"" Items=""deploymentItems"" DefaultValue=""@(""Staging"")"">
+    <DescriptionTemplate>
+        <div class=""custom-description"">
+            <BitIcon IconName=""@BitIconName.Info"" />
+            <span>Only the selected environment receives the new build.</span>
+        </div>
+    </DescriptionTemplate>
+</BitChoiceGroup>";
+    private readonly string example16CsharpCode = @"
+private readonly List<BitChoiceGroupItem<string>> deploymentItems =
+[
+    new() { Text = ""Development"", Value = ""Development"" },
+    new() { Text = ""Staging"", Value = ""Staging"" },
+    new() { Text = ""Production"", Value = ""Production"" }
+];";
+
+    private readonly string example17RazorCode = @"
+<BitChoiceGroup Label=""Default (hugs the widest item)"" Items=""basicItems"" DefaultValue=""@(""A"")"" Horizontal />
+
+<BitChoiceGroup Label=""FullWidth (horizontal, equal columns)"" Items=""basicItems"" DefaultValue=""@(""A"")"" Horizontal FullWidth />
+
+<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (items at the far edge)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth />
+
+<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + stretched item label (settings list)""
+                Items=""basicItems""
+                DefaultValue=""@(""A"")""
+                LabelPosition=""BitLabelPosition.Start""
+                FullWidth
+                Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })"" />";
+    private readonly string example17CsharpCode = @"
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
+];";
+
+    private readonly string example18RazorCode = @"
+<BitChoiceGroup Label=""Delivery window (hover an item)"" Items=""titleItems"" DefaultValue=""@(""24h"")"" />";
+    private readonly string example18CsharpCode = @"
+private readonly List<BitChoiceGroupItem<string>> titleItems =
+[
+    new() { Text = ""1 h"", Value = ""1h"", Title = ""Delivered within one hour of dispatch"" },
+    new() { Text = ""24 h"", Value = ""24h"", Title = ""Delivered within one business day"" },
+    new() { Text = ""72 h"", Value = ""72h"", Title = ""Delivered within three business days"" }
+];";
+
+    private readonly string example19RazorCode = @"
+<BitButton OnClick=""() => showAutoFocus = !showAutoFocus"">@(showAutoFocus ? ""Unmount"" : ""Mount"") the auto focused ChoiceGroup</BitButton>
+
+@if (showAutoFocus)
+{
+    <BitChoiceGroup AutoFocus Label=""Auto focused"" Items=""basicItems"" DefaultValue=""@(""B"")"" />
+}";
+    private readonly string example19CsharpCode = @"
+private bool showAutoFocus;
+
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
+    new() { Text = ""Item A"", Value = ""A"" },
+    new() { Text = ""Item B"", Value = ""B"" },
+    new() { Text = ""Item C"", Value = ""C"" },
+    new() { Text = ""Item D"", Value = ""D"" }
+];";
+
+    private readonly string example20RazorCode = @"
+<BitChoiceGroup Color=""BitColor.Primary""
                 Label=""Primary"" 
                 Horizontal
                 Items=""basicItems""
@@ -598,7 +697,7 @@ private void ReverseDynamicItems()
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[1].Value"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
     new() { Text = ""Item A"", Value = ""A"" },
@@ -607,7 +706,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
     new() { Text = ""Item D"", Value = ""D"" }
 ];";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -616,7 +715,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
 <BitChoiceGroup Label=""External Icons (Inline)"" Items=""externalIconItems"" DefaultValue=""@(""Day"")"" Inline />
 
 <BitChoiceGroup Label=""External Icons (Horizontal)"" Items=""externalIconItems"" DefaultValue=""@(""Day"")"" Horizontal />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> externalIconItems =
 [
     new() { Text = ""Day"", Value = ""Day"", Icon = BitIconInfo.Fa(""solid sun"") },
@@ -624,7 +723,7 @@ private readonly List<BitChoiceGroupItem<string>> externalIconItems =
     new() { Text = ""Month"", Value = ""Month"", Icon = BitIconInfo.Bi(""calendar-month"") }
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitChoiceGroup Size=""BitSize.Small""
                 Label=""Small""
                 Items=""basicItems""
@@ -675,7 +774,7 @@ private readonly List<BitChoiceGroupItem<string>> externalIconItems =
                 Items=""iconItems"" 
                 DefaultValue=""@(""Day"")""
                 Horizontal />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
     new() { Text = ""Item A"", Value = ""A"" },
@@ -691,7 +790,7 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
 ];";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -764,7 +863,7 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
                                    ItemText = ""custom-text"",
                                    ItemChecked = ""custom-checked"",
                                    ItemRadioButton = ""custom-radio-btn"" })"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
     new() { Text = ""Item A"", Value = ""A"" },
@@ -781,10 +880,10 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems =
     new() { Text = ""Item D"", Value = ""D"", Class = ""custom-item"" }
 ];";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitChoiceGroup Label=""ساده"" Items=""rtlItems"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />
 <BitChoiceGroup Label=""غیرفعال"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />";
-    private readonly string example20CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
 {
     new() { Text = ""بخش آ"", Value = ""A"" },

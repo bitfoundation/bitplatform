@@ -76,6 +76,11 @@ public class BitChoiceGroupItem<TValue>
     public string? Style { get; set; }
 
     /// <summary>
+    /// The text to show as a suffix for the BitChoiceGroup item, rendered after its content.
+    /// </summary>
+    public string? Suffix { get; set; }
+
+    /// <summary>
     /// The custom template for the BitChoiceGroup item.
     /// </summary>
     public RenderFragment<BitChoiceGroupItem<TValue>>? Template { get; set; }
@@ -84,6 +89,12 @@ public class BitChoiceGroupItem<TValue>
     /// Text to show as the content of BitChoiceGroup item.
     /// </summary>
     public string? Text { get; set; }
+
+    /// <summary>
+    /// The title attribute (the native tooltip) of the BitChoiceGroup item. This is supplementary text only:
+    /// use <see cref="AriaLabel"/> or <see cref="Description"/> for content that has to reach every user.
+    /// </summary>
+    public string? Title { get; set; }
 
     /// <summary>
     /// The value returned when BitChoiceGroup item is checked.

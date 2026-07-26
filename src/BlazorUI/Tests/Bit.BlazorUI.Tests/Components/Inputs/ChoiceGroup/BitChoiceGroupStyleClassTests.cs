@@ -138,4 +138,84 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
         Assert.IsTrue(container.ClassList.Contains("item-class"));
         Assert.IsTrue(container.ClassList.Contains("container-class"));
     }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldOnlyMarkTheRootAsFullWidthWhenAsked()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg").ClassList.Contains("bit-chg-flw"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.FullWidth, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-chg-flw"));
+    }
+
+    [TestMethod]
+    [DataRow(null, "bit-chg-led")]
+    [DataRow(BitLabelPosition.End, "bit-chg-led")]
+    [DataRow(BitLabelPosition.Start, "bit-chg-lst")]
+    [DataRow(BitLabelPosition.Top, "bit-chg-ltp")]
+    [DataRow(BitLabelPosition.Bottom, "bit-chg-lbm")]
+    public void BitChoiceGroupShouldApplyTheLabelPositionClass(BitLabelPosition? labelPosition, string expectedClass)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.LabelPosition, labelPosition);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+
+        // Exactly one of the four position classes is applied, so they cannot fight over the flex direction.
+        var applied = new[] { "bit-chg-led", "bit-chg-lst", "bit-chg-ltp", "bit-chg-lbm" }
+                        .Count(root.ClassList.Contains);
+
+        Assert.AreEqual(1, applied);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldOnlyMarkTheRootAsReadOnlyWhenAsked()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg").ClassList.Contains("bit-chg-rdo"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-chg-rdo"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldApplyTheDescriptionStyleAndClass()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Description, "a description");
+            parameters.Add(p => p.Classes, new BitChoiceGroupClassStyles { Description = "description-class" });
+            parameters.Add(p => p.Styles, new BitChoiceGroupClassStyles { Description = "color: red" });
+        });
+
+        var description = component.Find(".bit-chg-gds");
+
+        Assert.IsTrue(description.ClassList.Contains("description-class"));
+        Assert.AreEqual("color: red", description.GetAttribute("style"));
+    }
 }

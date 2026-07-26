@@ -84,6 +84,11 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The text to show as a suffix for the BitChoiceGroup option, rendered after its content.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
     /// The custom template for the BitChoiceGroup option.
     /// </summary>
     [Parameter] public RenderFragment<BitChoiceGroupOption<TValue>>? Template { get; set; }
@@ -92,6 +97,12 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     /// Text to show as the content of BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The title attribute (the native tooltip) of the BitChoiceGroup option. This is supplementary text only:
+    /// use <see cref="AriaLabel"/> or <see cref="Description"/> for content that has to reach every user.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
     /// <summary>
     /// This value is returned when BitChoiceGroup option is checked.

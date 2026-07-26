@@ -13,6 +13,12 @@
     --bit-chg-flex-flow: column nowrap;
     --bit-chg-justify-content: flex-start;
 
+    // Wins over the "fit-content" above through the extra class, so the declaration order
+    // of the two rules in this file cannot silently decide which width applies.
+    &.bit-chg-flw {
+        width: 100%;
+    }
+
     &.bit-chg-req {
         .bit-chg-lbl {
             &::after {
@@ -48,6 +54,14 @@
     overflow-wrap: break-word;
 }
 
+.bit-chg-gds {
+    display: block;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    font-size: calc(var(--bit-chg-fontsize) - #{spacing(0.25)});
+}
+
 .bit-chg-cnt {
     display: flex;
     gap: var(--bit-chg-item-gap);
@@ -58,9 +72,49 @@
     --bit-chg-flex-flow: row wrap;
 }
 
-.bit-chg-rvs {
+// Fills the container instead of hugging the widest item. In the horizontal layout the items also share
+// the width equally, so the group reads as a set of evenly distributed options rather than a left aligned
+// row trailed by empty space. "min-width: fit-content" keeps an item from being squeezed below its own
+// content, so a long item pushes the row to wrap instead of collapsing every item into a narrow column.
+.bit-chg-flw {
+    .bit-chg-cnt {
+        width: 100%;
+    }
+
+    &.bit-chg-hor {
+        .bit-chg-icn {
+            flex: 1 1 0;
+            min-width: fit-content;
+        }
+    }
+}
+
+// The position of the content of an item relative to its radio circle. The markup order inside an item
+// label is [prefix, circle, content, suffix], so each position is just the flex-direction that puts the
+// content on the requested side of the circle. These are custom properties rather than a direct
+// "flex-direction" declaration on purpose: the tile layout of an image or icon item (.bit-chg-ili)
+// overrides flex-direction at a single class of specificity, and a descendant selector here would beat
+// it and break the tile.
+.bit-chg-led {
+    --bit-chg-flex-direction: row;
+    --bit-chg-justify-content: flex-start;
+}
+
+// Start also pushes the items to the end of the group, so that in the vertical layout the circles line up
+// in a single column at the far edge instead of drifting with the width of each item's content.
+.bit-chg-lst {
     --bit-chg-justify-content: flex-end;
     --bit-chg-flex-direction: row-reverse;
+}
+
+.bit-chg-ltp {
+    --bit-chg-justify-content: flex-start;
+    --bit-chg-flex-direction: column-reverse;
+}
+
+.bit-chg-lbm {
+    --bit-chg-flex-direction: column;
+    --bit-chg-justify-content: flex-start;
 }
 
 .bit-chg-icn {
@@ -221,12 +275,15 @@
     display: inline-block;
 }
 
+// A minimum rather than a fixed height: it still reserves the two lines the tile layout is designed
+// around (so a row of tiles keeps a common baseline), but a longer text or a description grows the tile
+// instead of being silently cut off by the overflow below.
 .bit-chg-itw {
     display: block;
     overflow: hidden;
     font-weight: 400;
-    height: spacing(4);
     position: relative;
+    min-height: spacing(4);
     max-width: spacing(8);
     white-space: pre-wrap;
     line-height: spacing(1.875);
@@ -331,6 +388,56 @@
 
     .bit-chg-itx {
         font-weight: bold;
+    }
+}
+
+// Read-only keeps the enabled colors (it is not a disabled group) but drops every affordance that
+// promises the value can be changed: the pointer cursor and the hover feedback of the circle and the tile.
+.bit-chg-rdo {
+    .bit-chg-itl,
+    .bit-chg-ili {
+        cursor: default;
+    }
+
+    @media (hover: hover) {
+        // An unchecked item must not preview a selection that cannot be made, so its hover is reset
+        // to the resting look: no dot, no highlighted ring and no tile border.
+        .bit-chg-icn:not(.bit-chg-ich) {
+            .bit-chg-rad:hover {
+                &::before {
+                    border-color: $clr-brd-pri;
+                }
+
+                &::after {
+                    opacity: 0;
+                }
+            }
+
+            .bit-chg-ili:hover {
+                border-color: transparent;
+
+                .bit-chg-rad::before {
+                    opacity: 0;
+                }
+            }
+        }
+
+        // The checked item keeps its dot and its border, they just stop brightening on hover.
+        .bit-chg-ich {
+            .bit-chg-rad:hover {
+                &::before {
+                    border-color: var(--bit-chg-clr);
+                }
+
+                &::after {
+                    background-color: var(--bit-chg-clr);
+                }
+            }
+
+            .bit-chg-ili:hover {
+                border-color: var(--bit-chg-clr);
+            }
+        }
     }
 }
 

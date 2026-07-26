@@ -5,6 +5,8 @@ public partial class _BitChoiceGroupCustomDemo
     private string oneWayValue = "A";
     private string twoWayValue = "A";
     private string readOnlyValue = "A";
+    private bool showAutoFocus;
+    private string? uncontrolledValue = "A";
 
     private string? changedValue;
     private string? clickedCustom;
@@ -115,11 +117,32 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "Overnight", ItemValue = "Overnight", Prefix = "$25 — " }
     ];
 
+    private readonly List<Order> suffixCustoms =
+    [
+        new() { Name = "Standard", ItemValue = "Standard", Fee = "Free" },
+        new() { Name = "Express", ItemValue = "Express", Fee = "$10" },
+        new() { Name = "Overnight", ItemValue = "Overnight", Fee = "$25" }
+    ];
+
     private readonly List<Order> descriptionCustoms =
     [
         new() { Name = "Daily", ItemValue = "Daily", Summary = "Backs up every night at 2 AM." },
         new() { Name = "Weekly", ItemValue = "Weekly", Summary = "Backs up every Sunday at 2 AM." },
         new() { Name = "Monthly", ItemValue = "Monthly", Summary = "Backs up on the first day of each month." }
+    ];
+
+    private readonly List<Order> deploymentCustoms =
+    [
+        new() { Name = "Development", ItemValue = "Development" },
+        new() { Name = "Staging", ItemValue = "Staging" },
+        new() { Name = "Production", ItemValue = "Production" }
+    ];
+
+    private readonly List<Order> titleCustoms =
+    [
+        new() { Name = "1 h", ItemValue = "1h", Tooltip = "Delivered within one hour of dispatch" },
+        new() { Name = "24 h", ItemValue = "24h", Tooltip = "Delivered within one business day" },
+        new() { Name = "72 h", ItemValue = "72h", Tooltip = "Delivered within three business days" }
     ];
 
     private readonly List<Order> itemLabelTemplateCustoms =

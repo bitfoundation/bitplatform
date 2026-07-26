@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
@@ -122,5 +123,63 @@ public class BitChoiceGroupItemContentTests : BunitTestContext
 
         StringAssert.Contains(labels[0].TextContent, "[0]");
         StringAssert.Contains(labels[1].TextContent, "$10 — ");
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderTheSuffixAfterTheItemContent()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "Standard", Value = "Standard", Suffix = "Free" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Classes, new BitChoiceGroupClassStyles { ItemSuffix = "suffix-class" });
+        });
+
+        var label = component.Find(".bit-chg-itl");
+
+        Assert.AreEqual("Free", component.Find(".suffix-class").TextContent);
+        StringAssert.EndsWith(label.TextContent.Trim(), "Free");
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldFallBackToTheItemSuffixTemplateForAnEmptySuffix()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A" },
+            new() { Text = "B", Value = "B", Suffix = "$10" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemSuffixTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddContent(0, $"[{item.Index}]"));
+        });
+
+        var labels = component.FindAll(".bit-chg-itl");
+
+        StringAssert.Contains(labels[0].TextContent, "[0]");
+        StringAssert.Contains(labels[1].TextContent, "$10");
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotRenderTheSuffixWhenATemplateTakesOverTheItem()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Suffix = "Free" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddContent(0, item.Text));
+        });
+
+        Assert.AreEqual("A", component.Find(".bit-chg-itl").TextContent.Trim());
     }
 }

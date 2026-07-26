@@ -11,6 +11,12 @@
         }
     }
 
+    .custom-description {
+        gap: rem2(4px);
+        display: flex;
+        align-items: center;
+    }
+
     .custom-class {
         color: dodgerblue;
         margin-inline: 16px;
