@@ -2,25 +2,68 @@
 @inherits AppComponentBase
 
 <div class="hero-section-content">
-    <BitText Typography="BitTypography.H1">bit BlazorUI</BitText>
-    <BitText Typography="BitTypography.Subtitle1" Element="p" Gutter>bit BlazorUI components are native, easy-to-customize, and work seamlessly in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</BitText>
-    <br />
-    <BitButton Href="/getting-started" Size="BitSize.Large" IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
-        Get started
-    </BitButton>
+    <BitText Element="h1" Typography="BitTypography.H2" Class="hero-title">
+        Build <span class="hero-title-accent">beautiful</span> Blazor apps, faster
+    </BitText>
+    <BitText Typography="BitTypography.Subtitle1" Element="p" Class="hero-subtitle">
+        bit BlazorUI is an open-source suite of 80+ native components written entirely in C#, easy to customize,
+        working seamlessly in all interactive Blazor modes: WASM, Server, Hybrid (MAUI), and pre-rendering.
+    </BitText>
+    <BitStack Horizontal Wrap Gap="1rem" AutoSize Class="hero-actions">
+        <BitButton Href="/getting-started" Size="BitSize.Large" IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+            Get started
+        </BitButton>
+        <BitButton Href="/components" Size="BitSize.Large" Variant="BitVariant.Outline">
+            Explore components
+        </BitButton>
+    </BitStack>
+    <div class="hero-install">
+        <CodeBox>dotnet add package Bit.BlazorUI</CodeBox>
+    </div>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <BitText Element="span" Typography="BitTypography.H6" Class="hero-stat-value">80+</BitText>
+            <BitText Element="span" Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">Components</BitText>
+        </div>
+        <div class="hero-stat">
+            <BitText Element="span" Typography="BitTypography.H6" Class="hero-stat-value">100% C#</BitText>
+            <BitText Element="span" Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">Native Blazor</BitText>
+        </div>
+        <div class="hero-stat">
+            <BitText Element="span" Typography="BitTypography.H6" Class="hero-stat-value">~400KB</BitText>
+            <BitText Element="span" Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">Full suite size</BitText>
+        </div>
+        <div class="hero-stat">
+            <BitText Element="span" Typography="BitTypography.H6" Class="hero-stat-value">.NET 8.0+</BitText>
+            <BitText Element="span" Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">Framework</BitText>
+        </div>
+    </div>
+    <div class="hero-theming">
+        <BitText Element="span" Typography="BitTypography.Subtitle2">Make it yours:</BitText>
+        @foreach (var (name, hex) in _accents)
+        {
+            <button type="button"
+                    title="@name"
+                    aria-label="@($"Apply the {name} accent color to this page")"
+                    class="accent-swatch@(_activeAccent == hex ? " accent-swatch--active" : null)"
+                    style="--swatch-color: @hex"
+                    @onclick="() => ApplyAccentAsync(hex)"></button>
+        }
+        <BitLink Href="/theming" Class="hero-theming-link">Explore theming</BitLink>
+    </div>
 </div>
 <div class="hero-section-content">
-    <div class="hero-section-components @BitCss.Class.Color.Background.Secondary.Main">
+    <div class="hero-section-components">
         <div class="hero-section-components-col">
-            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
+            <div class="component-box">
                 <BitDropdown Label="Select multiple products"
                              Items="_productDropdownItems"
                              MultiSelect="true"
                              Placeholder="Select an option"
-                             Style="width: 326px; margin: 20px 0 20px 0"
+                             Style="width: 100%"
                              TItem="BitDropdownItem<string>" TValue="string" />
             </div>
-            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
+            <div class="component-box">
                 <BitColorPicker ShowPreview="true" @bind-Color="@_selectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
             </div>
             <div class="component-box--transparent" style="height: fit-content;">
@@ -37,7 +80,7 @@
                     <BitChoiceGroupOption Text="Disabled" IsEnabled="false" Value=@("disabled_option") IconName="@BitIconName.BarChartVerticalFill" />
                 </BitChoiceGroup>
             </div>
-            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
+            <div class="component-box">
                 <BitSlider Label="Origin from zero"
                            Min="-5"
                            Max="5"
@@ -48,7 +91,7 @@
                            IsOriginFromZero="true"
                            Style="width: 100%" />
             </div>
-            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
+            <div class="component-box">
                 <BitButton IsEnabled="true"
                            SecondaryText="This is a button"
                            Style="margin-right: 10px">
@@ -72,7 +115,7 @@
                 <BitPivotItem HeaderText="Comments" Key="Comments"></BitPivotItem>
                 <BitPivotItem HeaderText="FAQ" Key="FAQ"></BitPivotItem>
             </BitPivot>
-            <div class="tab-content @(BitCss.Class.Color.Background.Primary.Main)">
+            <div class="tab-content">
                 @if (_pivotSelectedKey == "Overview")
                 {
                     <div>This is the "Overview" tab.</div>
