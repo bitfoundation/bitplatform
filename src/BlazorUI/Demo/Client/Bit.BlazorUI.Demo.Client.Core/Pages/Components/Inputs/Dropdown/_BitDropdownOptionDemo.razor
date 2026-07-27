@@ -1107,11 +1107,13 @@
         The dropdown is fully operable with the keyboard, following the ARIA authoring practices for a combobox:
         <b>Enter</b>, <b>Space</b> and the arrow keys open the callout and put the focus on the selected item (or the
         first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
-        first and the last one, <b>PageUp</b> and <b>PageDown</b> jump ten items at a time, <b>Enter</b> and <b>Space</b>
+        first and the last one, <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
         select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
         dropdown, and <b>Tab</b> closes it and moves on. Typing printable characters runs a typeahead: the accumulated characters jump to the
         item starting with them, repeating one character cycles through the items starting with it, and the buffer
-        resets after a short pause. Disabled and hidden items are skipped throughout.
+        resets after a short pause. Disabled and hidden items are skipped throughout. In virtualize mode only the
+        rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
+        match against.
     </div>
     <br />
     <div class="example-content">
@@ -1145,7 +1147,8 @@
         indeterminate state while only some of the items are selected, so it doubles as a summary of the current
         selection. It only ever applies to what the user can actually see: disabled items are skipped, and while a
         search is active it selects the search result rather than the whole list, leaving selections made outside the
-        result untouched. The <b>SelectAllText</b> parameter customizes its text.
+        result untouched. The <b>SelectAllText</b> parameter customizes its text. It is not available when the items
+        come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected.
     </div>
     <br />
     <div class="example-content">

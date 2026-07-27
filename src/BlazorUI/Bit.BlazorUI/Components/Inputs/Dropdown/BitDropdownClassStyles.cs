@@ -123,6 +123,31 @@ public class BitDropdownClassStyles
     public string? SearchBoxClearIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the select all item container of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item button of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item check box of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllCheckBox { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item check icon of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllCheckIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item text of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllText { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the scroll container of the BitDropdown.
     /// </summary>
     public string? ScrollContainer { get; set; }
@@ -173,26 +198,6 @@ public class BitDropdownClassStyles
     public string? ItemDivider { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the dropdown's prefix container.
-    /// </summary>
-    public string? PrefixContainer { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the dropdown's prefix.
-    /// </summary>
-    public string? Prefix { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the dropdown's suffix container.
-    /// </summary>
-    public string? SuffixContainer { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the dropdown's suffix.
-    /// </summary>
-    public string? Suffix { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the empty state content of the BitDropdown.
     /// </summary>
     public string? EmptyContent { get; set; }
@@ -213,29 +218,24 @@ public class BitDropdownClassStyles
     public string? Spinner { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the select all item container of the multi-select BitDropdown.
+    /// Custom CSS classes/styles for the dropdown's prefix container.
     /// </summary>
-    public string? SelectAllContainer { get; set; }
+    public string? PrefixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the select all item button of the multi-select BitDropdown.
+    /// Custom CSS classes/styles for the dropdown's prefix.
     /// </summary>
-    public string? SelectAllButton { get; set; }
+    public string? Prefix { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the select all item check box of the multi-select BitDropdown.
+    /// Custom CSS classes/styles for the dropdown's suffix container.
     /// </summary>
-    public string? SelectAllCheckBox { get; set; }
+    public string? SuffixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the select all item check icon of the multi-select BitDropdown.
+    /// Custom CSS classes/styles for the dropdown's suffix.
     /// </summary>
-    public string? SelectAllCheckIcon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the select all item text of the multi-select BitDropdown.
-    /// </summary>
-    public string? SelectAllText { get; set; }
+    public string? Suffix { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the ComboBox input container in responsive mode of the BitDropdown.

@@ -796,14 +796,16 @@
 .bit-drp-emp {
     display: flex;
     cursor: default;
+    text-align: center;
     user-select: none;
     color: $clr-fg-sec;
     align-items: center;
-    height: var(--bit-drp-itm-h);
-    padding: 0 spacing(1);
     box-sizing: border-box;
     justify-content: center;
+    overflow-wrap: break-word;
     font-size: var(--bit-drp-fs);
+    min-height: var(--bit-drp-itm-h);
+    padding: spacing(1) spacing(1.5);
 }
 
 .bit-drp-ldc {

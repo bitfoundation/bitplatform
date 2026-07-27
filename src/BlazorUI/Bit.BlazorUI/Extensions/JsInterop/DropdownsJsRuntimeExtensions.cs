@@ -12,8 +12,8 @@ internal static class DropdownsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.dispose", id);
     }
 
-    internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, string mode, string? character)
+    internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, string mode, string? character, bool virtualize)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusItem", calloutId, mode, character);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusItem", calloutId, mode, character, virtualize);
     }
 }

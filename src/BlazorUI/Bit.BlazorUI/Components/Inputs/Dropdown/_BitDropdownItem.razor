@@ -7,8 +7,8 @@
     var id = Dropdown.GetId(Item);
     var text = Dropdown.GetText(Item);
     var isHidden = Dropdown.GetIsHidden(Item);
-    var isEnabled = Dropdown.GetIsEnabled(Item);
     var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
+    var isDisabled = itemType == BitDropdownItemType.Normal && Dropdown.GetIsItemDisabled(Item);
 
     // The part of the item text that matched the search, so it can be emphasized. It is rendered as
     // three separate pieces of text rather than as markup, so the item text is never treated as HTML.
@@ -50,12 +50,12 @@
                         type="button"
                         role="option"
                         title="@Dropdown.GetTitle(Item)"
-                        disabled=@(isEnabled is false)
+                        disabled=@isDisabled
                         style="@Dropdown.Styles?.ItemButton"
                         class="bit-drp-mcn @Dropdown.Classes?.ItemButton"
                         aria-label="@Dropdown.GetAriaLabel(Item)"
                         aria-setsize="@Dropdown.GetTotalItems()"
-                        aria-disabled="@(isEnabled is false)"
+                        aria-disabled="@isDisabled"
                         aria-selected="@(isSelected ? "true" : "false")"
                         aria-posinset="@Dropdown.GetItemPosInSet(Item)">
                     <div style="@Dropdown.Styles?.ItemCheckBox"
@@ -100,13 +100,13 @@
                     type="button"
                     role="option"
                     title="@Dropdown.GetTitle(Item)"
-                    disabled=@(isEnabled is false)
-                    tabindex="@(isEnabled ? 0 : -1)"
+                    disabled=@isDisabled
+                    tabindex="@(isDisabled ? -1 : 0)"
                     style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemButton"
                     class="bit-drp-itm@(isSelected ? " bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
                     aria-label="@Dropdown.GetAriaLabel(Item)"
                     aria-setsize="@Dropdown.GetTotalItems()"
-                    aria-disabled="@(isEnabled is false)"
+                    aria-disabled="@isDisabled"
                     aria-selected="@(isSelected ? "true" : "false")"
                     aria-posinset="@Dropdown.GetItemPosInSet(Item)">
                 @if (Dropdown.ItemTemplate is not null)

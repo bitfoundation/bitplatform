@@ -192,7 +192,9 @@
 
         @if (IsEnabled && ReadOnly is false && ShowClearButton && _selectedItems.Count > 0)
         {
-            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
+            @* The keydown is stopped here so activating this button with the keyboard cannot
+               reach the trigger's keydown handler and toggle the callout as well. *@
+            <button @onclick="HandleOnClearClick" @onclick:stopPropagation @onkeydown:stopPropagation
                     type="button"
                     aria-label="Clear selection"
                     style="@Styles?.ClearButton"
@@ -245,8 +247,9 @@
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
 
-@* The listbox role lives on the scroll container, not here: the search box, the select all row and the
-   responsive panel header are not options and must not be children of the listbox. *@
+@* The listbox role lives on the scroll container, not here: the search box, the select all row, the
+   responsive panel header and the header/footer templates are not options and must not be children
+   of the listbox. *@
 <div @onkeydown="HandleOnCalloutKeyDown"
      id="@_calloutId"
      tabindex="0"
@@ -370,7 +373,7 @@
                     type="button"
                     role="checkbox"
                     style="@Styles?.SelectAllButton"
-                    class="bit-drp-mcn @Classes?.SelectAllButton"
+                    class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
                     aria-checked="@selectAllAriaChecked">
                 <div style="@Styles?.SelectAllCheckBox"
                      class="bit-drp-chb @Classes?.SelectAllCheckBox">
