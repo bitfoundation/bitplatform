@@ -12,6 +12,16 @@ public static class IJSRuntimeExtensions
         return await jsRuntime.Invoke<SideRailItem[]>("getSideRailItems");
     }
 
+    public static async Task RegisterSideRailScrollSpy<T>(this IJSRuntime jsRuntime, string id, DotNetObjectReference<T> dotnetObj, string methodName, string?[] sectionIds) where T : class
+    {
+        await jsRuntime.InvokeVoid("registerSideRailScrollSpy", id, dotnetObj, methodName, sectionIds);
+    }
+
+    public static async Task UnregisterSideRailScrollSpy(this IJSRuntime jsRuntime, string id)
+    {
+        await jsRuntime.InvokeVoid("unregisterSideRailScrollSpy", id);
+    }
+
     public static async Task CopyToClipboard(this IJSRuntime jsRuntime, string codeSampleContentForCopy)
     {
         await jsRuntime.InvokeVoid("copyToClipboard", codeSampleContentForCopy);

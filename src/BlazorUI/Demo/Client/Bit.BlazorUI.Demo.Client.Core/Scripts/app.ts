@@ -19,6 +19,68 @@ function getSideRailItems() {
     }));
 }
 
+const sideRailScrollSpies: { [key: string]: () => void } = {};
+
+function registerSideRailScrollSpy(id: string, dotnetObj: any, methodName: string, sectionIds: string[]) {
+    unregisterSideRailScrollSpy(id);
+
+    let activeId: string | null = null;
+    let frame = 0;
+
+    const update = () => {
+        frame = 0;
+
+        // The activation line sits just below the sticky header: a section scrolled to via the rail
+        // lands at 90-112px from the top (its scroll-margin), so it must fall on the active side of
+        // the line. The active section is then the last one in document order whose top has passed
+        // the line; before the first one arrives there (page top), the first entry stands in.
+        const line = 130;
+        let current: string | null = null;
+
+        for (const sectionId of sectionIds) {
+            const element = document.getElementById(sectionId);
+            if (element == null) continue;
+
+            if (element.getBoundingClientRect().top <= line) {
+                current = sectionId;
+            }
+        }
+
+        current = current ?? sectionIds[0] ?? null;
+
+        if (current !== activeId) {
+            activeId = current;
+            dotnetObj.invokeMethodAsync(methodName, current);
+        }
+    };
+
+    // Capturing on window keeps the spy agnostic about which element actually scrolls the page
+    // (scroll events do not bubble, but they do capture); the rAF gate collapses the bursts a
+    // scroll produces into one measurement per frame.
+    const listener = () => {
+        if (frame !== 0) return;
+        frame = requestAnimationFrame(update);
+    };
+
+    sideRailScrollSpies[id] = () => {
+        window.removeEventListener('scroll', listener, true);
+        window.removeEventListener('resize', listener);
+        if (frame !== 0) cancelAnimationFrame(frame);
+    };
+    window.addEventListener('scroll', listener, true);
+    window.addEventListener('resize', listener);
+
+    listener();
+}
+
+function unregisterSideRailScrollSpy(id: string) {
+    const detach = sideRailScrollSpies[id];
+    if (detach == null) return;
+
+    detach();
+    delete sideRailScrollSpies[id];
+}
+
 function copyToClipboard(codeSampleContentForCopy: string) {
     navigator.clipboard.writeText(codeSampleContentForCopy);
 }

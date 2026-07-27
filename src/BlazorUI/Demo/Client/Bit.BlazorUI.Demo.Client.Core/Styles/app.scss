@@ -103,6 +103,14 @@ p {
     }
 }
 
+// A page hosting this bar has one more sticky layer over its examples, so DemoExample's anchored
+// section titles need more clearance than the 7rem they fall back to. Published as a variable on
+// the page rather than a selector into the pivot's markup, so it holds for any pivot that adopts
+// the class.
+.page-container:has(.pivot-sticky-header) {
+    --demo-section-scroll-margin: 11rem;
+}
+
 #components-reconnect-modal {
     color: black;
 }

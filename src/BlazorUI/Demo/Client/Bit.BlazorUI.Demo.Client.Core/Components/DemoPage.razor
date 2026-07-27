@@ -352,6 +352,6 @@ else
                 }
             </BitCard>
         </div>
-        <SideRail />
+        <SideRail HasNotes="@(Notes.HasValue() || NotesTemplate is not null)" />
     </BitStack>
 }

@@ -72,11 +72,13 @@
 
     // Layout only - the heading's size and color come from BitText's own Typography and Color
     // parameters. Sticky headers overlap the top of the page, so an anchored example has to stop
-    // short of one.
+    // short of one. How many sticky bars are stacked above depends on the hosting page (multi-API
+    // pages pin a pivot bar too), so the clearance is a variable the page sets (app.scss) and only
+    // the plain-page fallback lives here.
     .section-title {
         min-width: 0;
-        scroll-margin: 7rem;
         overflow-wrap: anywhere;
+        scroll-margin: var(--demo-section-scroll-margin, 7rem);
     }
 
     // The theme's motion tokens rather than hardcoded durations, so these transitions collapse

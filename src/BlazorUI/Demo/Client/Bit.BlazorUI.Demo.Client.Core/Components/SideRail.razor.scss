@@ -28,8 +28,12 @@
         z-index: 10;
         display: block;
         position: fixed;
-        inset-inline-end: 2rem;
+        inset-inline-end: 3rem;
         top: calc(4.5rem + #{$bit-env-inset-top});
+    }
+
+    @include lt-md {
+        inset-inline-end: 2rem;
     }
 }
 
@@ -64,7 +68,31 @@
     border-inline-start: rem2(2px) solid $bit-color-border-secondary;
 
     li {
+        position: relative;
         padding: rem2(3px) rem2(12px);
         overflow-wrap: anywhere;
+    }
+
+    // The current section: its entry takes the primary color and some weight, and its stretch of
+    // the spine lights up in the same color - drawn as an overlay on the list's own hairline so
+    // active and inactive entries keep exactly the same geometry.
+    li.active {
+        &::before {
+            content: '';
+            top: 0;
+            bottom: 0;
+            width: rem2(2px);
+            position: absolute;
+            inset-inline-start: rem2(-2px);
+            background-color: $bit-color-primary;
+        }
+
+        .side-rail-link {
+            color: $bit-color-primary;
+
+            * {
+                font-weight: 600;
+            }
+        }
     }
 }

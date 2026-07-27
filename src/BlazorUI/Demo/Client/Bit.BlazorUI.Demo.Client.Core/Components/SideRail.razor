@@ -42,8 +42,10 @@
             <BitStack Element="ul" AutoHeight Gap="0.125rem" Class="side-rail-list">
                 @foreach (var item in _items)
                 {
-                    <li>
-                        <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline Color="BitColor.Info" Class="side-rail-link">
+                    var isActive = item.Id == _activeItemId;
+                    <li class="@(isActive ? "active" : null)">
+                        <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline Color="BitColor.Info" Class="side-rail-link"
+                                 aria-current="@(isActive ? "location" : null)">
                             <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Start">
                                 @item.Title
                             </BitText>
