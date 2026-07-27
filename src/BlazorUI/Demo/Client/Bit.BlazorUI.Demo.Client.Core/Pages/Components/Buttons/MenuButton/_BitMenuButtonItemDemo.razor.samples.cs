@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonItemDemo
 {
@@ -517,7 +517,162 @@ private static List<BitMenuButtonItem> dropDirectionItems =
 
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" Split />
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Split />
-<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Split />";
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Split />
+
+
+<div><b>Disabled</b>:</div>
+
+<BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" IsEnabled=""false"" />
+<BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" IsEnabled=""false"" />
+<BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""Secondary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"" IsEnabled=""false"" />
+<BitMenuButton Text=""Secondary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" IsEnabled=""false"" />
+<BitMenuButton Text=""Secondary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""Secondary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Secondary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Secondary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""Tertiary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"" IsEnabled=""false"" />
+<BitMenuButton Text=""Tertiary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" IsEnabled=""false"" />
+<BitMenuButton Text=""Tertiary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""Tertiary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Tertiary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Tertiary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""Info"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" IsEnabled=""false"" />
+<BitMenuButton Text=""Info"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" IsEnabled=""false"" />
+<BitMenuButton Text=""Info"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Info"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""Info"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Info"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Info"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Info"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""Success"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" IsEnabled=""false"" />
+<BitMenuButton Text=""Success"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"" IsEnabled=""false"" />
+<BitMenuButton Text=""Success"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Success"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""Success"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Success"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Success"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Success"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""Warning"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"" IsEnabled=""false"" />
+<BitMenuButton Text=""Warning"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" IsEnabled=""false"" />
+<BitMenuButton Text=""Warning"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""Warning"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Warning"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Warning"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""SevereWarning"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" />
+<BitMenuButton Text=""SevereWarning"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" />
+<BitMenuButton Text=""SevereWarning"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""SevereWarning"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SevereWarning"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SevereWarning"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""Error"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" IsEnabled=""false"" />
+<BitMenuButton Text=""Error"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" IsEnabled=""false"" />
+<BitMenuButton Text=""Error"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""Error"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Error"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""Error"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" IsEnabled=""false"" Split />
+
+
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Split />
+
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" Split />
+
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" Split />
+</div>
+
+
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" Split />
+
+
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" />
+
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split />";
 
     private readonly string example18CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =

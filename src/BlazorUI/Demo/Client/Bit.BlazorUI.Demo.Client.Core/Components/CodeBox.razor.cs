@@ -2,6 +2,7 @@
 
 public partial class CodeBox
 {
+    // No icon while idle - the button renders its own copy glyph as an inline svg instead.
     private string? _codeIcon;
     private bool _isCodeCopied = false;
     private string _copyCodeMessage = "Copy code";
@@ -24,7 +25,7 @@ public partial class CodeBox
         var codeSample = await JSRuntime.GetInnerText(_preElementRef);
         await JSRuntime.CopyToClipboard(codeSample.Trim());
 
-        _codeIcon = "Accept";
+        _codeIcon = BitIconName.CheckMark;
         _copyCodeMessage = "Code copied!";
         _isCodeCopied = true;
 

@@ -3,6 +3,7 @@
 .bit-chb {
     cursor: pointer;
     width: fit-content;
+    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
     --bit-chb-box-clr-brd: #{$clr-brd-pri};
@@ -19,6 +20,10 @@
     &.bit-inv {
         --bit-chb-box-clr-brd: #{$clr-err};
 
+        .bit-chb-inp:focus-visible ~ .bit-chb-lbl .bit-chb-box {
+            @include focus-ring($clr-err-focus);
+        }
+
         &.bit-chb-ckd {
             --bit-chb-box-clr-bg: #{$clr-err};
             --bit-chb-box-clr-brd: #{$clr-err};
@@ -32,20 +37,20 @@
 
     &.bit-dis {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-chb-clr-dis-text);
         pointer-events: none;
-        --bit-chb-ico-clr: #{$clr-fg-dis};
-        --bit-chb-ico-clr-bg: #{$clr-bg-dis};
-        --bit-chb-box-clr-brd: #{$clr-brd-dis};
+        --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
+        --bit-chb-ico-clr-bg: var(--bit-chb-clr-dis);
+        --bit-chb-box-clr-brd: var(--bit-chb-clr-dis);
 
         &.bit-chb-ckd {
-            --bit-chb-ico-clr: #{$clr-fg-dis};
-            --bit-chb-box-clr-bg: #{$clr-bg-dis};
-            --bit-chb-box-clr-brd: #{$clr-bg-dis};
+            --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
+            --bit-chb-box-clr-bg: var(--bit-chb-clr-dis);
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-dis);
         }
 
         &.bit-chb-ind {
-            --bit-chb-ico-clr-bg: #{$clr-bg-dis};
+            --bit-chb-ico-clr-bg: var(--bit-chb-clr-dis);
         }
     }
 }
@@ -62,9 +67,9 @@
     pointer-events: none;
     clip-path: inset(50%);
 
+    // Focus lands on this hidden input, so the themed ring is drawn on the visible box.
     &:focus-visible ~ .bit-chb-lbl .bit-chb-box {
-        outline-offset: spacing(0.25);
-        outline: spacing(0.25) solid var(--bit-chb-clr);
+        @include focus-ring(var(--bit-chb-clr-focus));
     }
 }
 
@@ -100,7 +105,7 @@
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    transition-duration: 200ms;
+    transition-duration: $mot-duration;
     width: var(--bit-chb-box-size);
     height: var(--bit-chb-box-size);
     border-style: $shp-border-style;
@@ -110,7 +115,7 @@
     border-color: var(--bit-chb-box-clr-brd);
     background-color: var(--bit-chb-box-clr-bg);
     transition-property: background, border, border-color;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+    transition-timing-function: $mot-easing;
 
     .bit-chb-ico {
         display: flex;
@@ -121,7 +126,7 @@
     width: 100%;
     height: 100%;
     display: flex;
-    transition: 0.1s;
+    transition: $mot-duration-short;
     align-items: center;
     justify-content: center;
     color: var(--bit-chb-ico-clr);
@@ -211,7 +216,7 @@
     }
 
     &.bit-dis {
-        --bit-chb-ico-clr: #{$clr-fg-dis};
+        --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
     }
 }
 
@@ -242,12 +247,23 @@
     --bit-chb-lbl-flex-direction: row;
 }
 
+// Per-role color blocks - intentionally hand-written, NOT an @each loop over $bit-color-roles.
+// Unlike the 20 loop-driven components, BitCheckbox's on-colors diverge from the shared role
+// vocabulary: for the surface tiers it uses the *matching-tier* contrast color (sbg -> fg-sec,
+// tbg -> fg-ter, sfg -> bg-sec, ...) rather than the map's `on` slot, which is always the primary
+// contrast (fg-pri / bg-pri). It also carries two slots the shared map has no concept of
+// (--bit-chb-clr-txt-sec, --bit-chb-clr-txt-hover). Converting these to role($tokens, on) would
+// change the rendered check/label colors for the secondary/tertiary surface roles - a visual
+// regression, not a refactor. Keep them explicit. (See BitChoiceGroup for the same rationale.)
 .bit-chb-pri {
     --bit-chb-clr: #{$clr-pri};
     --bit-chb-clr-hover: #{$clr-pri-hover};
     --bit-chb-clr-txt: #{$clr-pri-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-pri-text};
+    --bit-chb-clr-dis: #{$clr-pri-dis};
+    --bit-chb-clr-dis-text: #{$clr-pri-dis-text};
+    --bit-chb-clr-focus: #{$clr-pri-focus};
 }
 
 .bit-chb-sec {
@@ -256,6 +272,9 @@
     --bit-chb-clr-txt: #{$clr-sec-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-sec-text};
+    --bit-chb-clr-dis: #{$clr-sec-dis};
+    --bit-chb-clr-dis-text: #{$clr-sec-dis-text};
+    --bit-chb-clr-focus: #{$clr-sec-focus};
 }
 
 .bit-chb-ter {
@@ -264,6 +283,9 @@
     --bit-chb-clr-txt: #{$clr-ter-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-ter-text};
+    --bit-chb-clr-dis: #{$clr-ter-dis};
+    --bit-chb-clr-dis-text: #{$clr-ter-dis-text};
+    --bit-chb-clr-focus: #{$clr-ter-focus};
 }
 
 .bit-chb-inf {
@@ -272,6 +294,9 @@
     --bit-chb-clr-txt: #{$clr-inf-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-inf-text};
+    --bit-chb-clr-dis: #{$clr-inf-dis};
+    --bit-chb-clr-dis-text: #{$clr-inf-dis-text};
+    --bit-chb-clr-focus: #{$clr-inf-focus};
 }
 
 .bit-chb-suc {
@@ -280,6 +305,9 @@
     --bit-chb-clr-txt: #{$clr-suc-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-suc-text};
+    --bit-chb-clr-dis: #{$clr-suc-dis};
+    --bit-chb-clr-dis-text: #{$clr-suc-dis-text};
+    --bit-chb-clr-focus: #{$clr-suc-focus};
 }
 
 .bit-chb-wrn {
@@ -288,6 +316,9 @@
     --bit-chb-clr-txt: #{$clr-wrn-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-wrn-text};
+    --bit-chb-clr-dis: #{$clr-wrn-dis};
+    --bit-chb-clr-dis-text: #{$clr-wrn-dis-text};
+    --bit-chb-clr-focus: #{$clr-wrn-focus};
 }
 
 .bit-chb-swr {
@@ -296,6 +327,9 @@
     --bit-chb-clr-txt: #{$clr-swr-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-swr-text};
+    --bit-chb-clr-dis: #{$clr-swr-dis};
+    --bit-chb-clr-dis-text: #{$clr-swr-dis-text};
+    --bit-chb-clr-focus: #{$clr-swr-focus};
 }
 
 .bit-chb-err {
@@ -304,6 +338,9 @@
     --bit-chb-clr-txt: #{$clr-err-text};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-err-text};
+    --bit-chb-clr-dis: #{$clr-err-dis};
+    --bit-chb-clr-dis-text: #{$clr-err-dis-text};
+    --bit-chb-clr-focus: #{$clr-err-focus};
 }
 
 .bit-chb-pbg {
@@ -312,6 +349,9 @@
     --bit-chb-clr-txt: #{$clr-fg-pri};
     --bit-chb-clr-txt-sec: #{$clr-bg-sec};
     --bit-chb-clr-txt-hover: #{$clr-fg-pri-hover};
+    --bit-chb-clr-dis: #{$clr-bg-pri-dis};
+    --bit-chb-clr-dis-text: #{$clr-bg-pri-dis-text};
+    --bit-chb-clr-focus: #{$clr-bg-pri-focus};
 }
 
 .bit-chb-sbg {
@@ -320,6 +360,9 @@
     --bit-chb-clr-txt: #{$clr-fg-sec};
     --bit-chb-clr-txt-sec: #{$clr-bg-sec};
     --bit-chb-clr-txt-hover: #{$clr-fg-sec-hover};
+    --bit-chb-clr-dis: #{$clr-bg-sec-dis};
+    --bit-chb-clr-dis-text: #{$clr-bg-sec-dis-text};
+    --bit-chb-clr-focus: #{$clr-bg-sec-focus};
 }
 
 .bit-chb-tbg {
@@ -328,6 +371,9 @@
     --bit-chb-clr-txt: #{$clr-fg-ter};
     --bit-chb-clr-txt-sec: #{$clr-bg-sec};
     --bit-chb-clr-txt-hover: #{$clr-fg-ter-hover};
+    --bit-chb-clr-dis: #{$clr-bg-ter-dis};
+    --bit-chb-clr-dis-text: #{$clr-bg-ter-dis-text};
+    --bit-chb-clr-focus: #{$clr-bg-ter-focus};
 }
 
 .bit-chb-pfg {
@@ -336,6 +382,9 @@
     --bit-chb-clr-txt: #{$clr-bg-pri};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-bg-pri-hover};
+    --bit-chb-clr-dis: #{$clr-fg-pri-dis};
+    --bit-chb-clr-dis-text: #{$clr-fg-pri-dis-text};
+    --bit-chb-clr-focus: #{$clr-fg-pri-focus};
 }
 
 .bit-chb-sfg {
@@ -344,6 +393,9 @@
     --bit-chb-clr-txt: #{$clr-bg-sec};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-bg-sec-hover};
+    --bit-chb-clr-dis: #{$clr-fg-sec-dis};
+    --bit-chb-clr-dis-text: #{$clr-fg-sec-dis-text};
+    --bit-chb-clr-focus: #{$clr-fg-sec-focus};
 }
 
 .bit-chb-tfg {
@@ -352,6 +404,9 @@
     --bit-chb-clr-txt: #{$clr-bg-ter};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-bg-ter-hover};
+    --bit-chb-clr-dis: #{$clr-fg-ter-dis};
+    --bit-chb-clr-dis-text: #{$clr-fg-ter-dis-text};
+    --bit-chb-clr-focus: #{$clr-fg-ter-focus};
 }
 
 .bit-chb-pbr {
@@ -360,6 +415,9 @@
     --bit-chb-clr-txt: #{$clr-fg-pri};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-fg-pri-hover};
+    --bit-chb-clr-dis: #{$clr-brd-pri-dis};
+    --bit-chb-clr-dis-text: #{$clr-brd-pri-dis-text};
+    --bit-chb-clr-focus: #{$clr-brd-pri-focus};
 }
 
 .bit-chb-sbr {
@@ -368,6 +426,9 @@
     --bit-chb-clr-txt: #{$clr-fg-sec};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-fg-sec-hover};
+    --bit-chb-clr-dis: #{$clr-brd-sec-dis};
+    --bit-chb-clr-dis-text: #{$clr-brd-sec-dis-text};
+    --bit-chb-clr-focus: #{$clr-brd-sec-focus};
 }
 
 .bit-chb-tbr {
@@ -376,6 +437,9 @@
     --bit-chb-clr-txt: #{$clr-fg-ter};
     --bit-chb-clr-txt-sec: #{$clr-fg-sec};
     --bit-chb-clr-txt-hover: #{$clr-fg-ter-hover};
+    --bit-chb-clr-dis: #{$clr-brd-ter-dis};
+    --bit-chb-clr-dis-text: #{$clr-brd-ter-dis-text};
+    --bit-chb-clr-focus: #{$clr-brd-ter-focus};
 }
 
 .bit-chb-sm {

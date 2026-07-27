@@ -4,6 +4,16 @@
     width: fit-content;
     align-items: center;
     justify-content: center;
+
+    // Loading animations loop forever, so they keep literal durations rather than going through the
+    // --bit-mot-duration* tokens: a near-zero looping duration renders as flicker, and stopping a
+    // loader outright drops the only signal that work is still in progress. Every duration and delay
+    // in every loading component is written as a multiple of this factor, so the animation is
+    // stretched as a whole and the phase offsets that stagger the parts against each other survive -
+    // scaling the durations alone would bunch them up. It follows the theme's shared loop factor,
+    // which already slows under reduced motion and is restored by ForceAnimation, and stays a knob a
+    // consumer can override on a single loader.
+    --bit-ldn-mot-factor: #{$mot-loop-factor};
 }
 
 .bit-ldn-lbl {

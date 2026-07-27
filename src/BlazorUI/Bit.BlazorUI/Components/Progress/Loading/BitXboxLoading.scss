@@ -22,7 +22,7 @@
     left: var(--bit-ldn-xbx-25f);
     width: var(--bit-ldn-xbx-50f);
     height: var(--bit-ldn-xbx-50f);
-    animation-duration: 0.85s;
+    animation-duration: calc(0.85s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-xbx-ch2 {
@@ -30,7 +30,7 @@
     left: var(--bit-ldn-xbx-125f);
     width: var(--bit-ldn-xbx-75f);
     height: var(--bit-ldn-xbx-75f);
-    animation-duration: 0.95s;
+    animation-duration: calc(0.95s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-xbx-ch3 {
@@ -38,7 +38,7 @@
     left: 0;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
-    animation-duration: 1.05s;
+    animation-duration: calc(1.05s * var(--bit-ldn-mot-factor, 1));
 }
 
 @keyframes bit-ldn-xbx-anm {

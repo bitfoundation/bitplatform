@@ -1,184 +1,269 @@
+// The `:root [bit-theme=…]` descendant twins scope this palette to ANY element carrying the
+// bit-theme attribute (an always-light card inside a dark page, a per-tenant region, …); custom
+// property inheritance re-themes that subtree. They share the (0,2,0) specificity of the
+// root-level selectors, so the root cascade is unchanged and app overrides keep winning the same
+// way in both placements. Note: elements that escape the subtree in the DOM (portalled modals /
+// callouts rendered at body level) inherit the document palette instead - same as any scoped
+// theming mechanism.
+// Ramp model - every family (semantic and neutral) uses the same nine slots:
+//   dark / dark-hover / dark-active  |  main / hover / active  |  light / light-hover / light-active
+// i.e. three tiers, each carrying the same two interaction steps. Interaction always moves the
+// fill TOWARD MORE CONTRAST with the surface it sits on, so states darken on the light
+// surfaces here.
+// Tones are laid out on evenly spaced OKLCH lightness steps at a fixed hue per family, so the
+// steps read as equal-sized to the eye and no family drifts in hue across its ramp.
+//
+// Contrast rules the values are solved against (WCAG 2.2):
+//   - '-text' (the on-color) keeps >= 4.5:1 over every slot it is painted on, which is main /
+//     hover / active AND dark / dark-hover / dark-active (BitToggleButton's checked state and
+//     BitPagination's selected page fill with the dark tier).
+//   - the '-light' tier is a standalone tint; the on-color is not painted over it.
+//   - '-dis-text' keeps >= 3:1 over '-dis'.
+//   - fg-pri/fg-sec/fg-ter stay >= 4.5:1 (fg-ter >= 3:1 on the deepest surfaces) over bg-pri,
+//     bg-sec and bg-ter; brd-pri stays >= 3:1 over all three (SC 1.4.11). brd-sec and brd-ter are
+//     the decorative stroke tiers (spinner tracks, menu separators, calendar grid lines) and are
+//     tuned for definition rather than to a contrast floor.
 :root,
 :root[bit-theme="light"],
+:root [bit-theme="light"],
 :root[bit-theme="fluent"],
-:root[bit-theme="fluent-light"] {
+:root [bit-theme="fluent"],
+:root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"] {
     color-scheme: light;
     //primary
-    --bit-clr-pri: #1A86D8;
-    --bit-clr-pri-hover: #197FCD;
-    --bit-clr-pri-active: #1779C2;
-    --bit-clr-pri-dark: #096FBD;
-    --bit-clr-pri-dark-hover: #0969B4;
-    --bit-clr-pri-dark-active: #0864AA;
-    --bit-clr-pri-light: #A3CFEF;
-    --bit-clr-pri-light-hover: #8CC3EC;
-    --bit-clr-pri-light-active: #76B6E8;
+    --bit-clr-pri: #1276C6;
+    --bit-clr-pri-hover: #0B6AB4;
+    --bit-clr-pri-active: #0460A5;
+    --bit-clr-pri-dark: #005391;
+    --bit-clr-pri-dark-hover: #00487F;
+    --bit-clr-pri-dark-active: #003E70;
+    --bit-clr-pri-light: #85C1FF;
+    --bit-clr-pri-light-hover: #74B4F6;
+    --bit-clr-pri-light-active: #66A9EE;
     --bit-clr-pri-text: #FFFFFF;
+    --bit-clr-pri-dis: #DDEDFF;
+    --bit-clr-pri-dis-text: #71869B;
     //secondary
-    --bit-clr-sec: #FF7D33;
-    --bit-clr-sec-hover: #F27730;
-    --bit-clr-sec-active: #E5712E;
-    --bit-clr-sec-dark: #DB621D;
-    --bit-clr-sec-dark-hover: #D05D1C;
-    --bit-clr-sec-dark-active: #C5581A;
-    --bit-clr-sec-light: #FFBE99;
-    --bit-clr-sec-light-hover: #FFB185;
-    --bit-clr-sec-light-active: #FFA470;
-    --bit-clr-sec-text: #FFFFFF;
+    --bit-clr-sec: #FD7F36;
+    --bit-clr-sec-hover: #F27832;
+    --bit-clr-sec-active: #E9732E;
+    --bit-clr-sec-dark: #DD6C2A;
+    --bit-clr-sec-dark-hover: #D56726;
+    --bit-clr-sec-dark-active: #CD6323;
+    --bit-clr-sec-light: #FFC7AC;
+    --bit-clr-sec-light-hover: #FFB490;
+    --bit-clr-sec-light-active: #FFA375;
+    --bit-clr-sec-text: #141414;
+    --bit-clr-sec-dis: #FDE6DA;
+    --bit-clr-sec-dis-text: #987C6F;
     //tertiary
-    --bit-clr-ter: #434343;
-    --bit-clr-ter-hover: #3C3C3C;
-    --bit-clr-ter-active: #363636;
-    --bit-clr-ter-dark: #2E2E2E;
-    --bit-clr-ter-dark-hover: #292929;
-    --bit-clr-ter-dark-active: #252525;
-    --bit-clr-ter-light: #A1A1A1;
-    --bit-clr-ter-light-hover: #8E8E8E;
-    --bit-clr-ter-light-active: #7B7B7B;
+    --bit-clr-ter: #424242;
+    --bit-clr-ter-hover: #383838;
+    --bit-clr-ter-active: #2F2F2F;
+    --bit-clr-ter-dark: #242424;
+    --bit-clr-ter-dark-hover: #1B1B1B;
+    --bit-clr-ter-dark-active: #131313;
+    --bit-clr-ter-light: #9E9E9E;
+    --bit-clr-ter-light-hover: #929292;
+    --bit-clr-ter-light-active: #878787;
     --bit-clr-ter-text: #FFFFFF;
+    --bit-clr-ter-dis: #EBEBEB;
+    --bit-clr-ter-dis-text: #838383;
     //info
-    --bit-clr-inf: #888F95;
-    --bit-clr-inf-hover: #81888E;
-    --bit-clr-inf-active: #7A8186;
-    --bit-clr-inf-dark: #5E656B;
-    --bit-clr-inf-dark-hover: #596066;
-    --bit-clr-inf-dark-active: #555B60;
-    --bit-clr-inf-light: #C3C7CA;
-    --bit-clr-inf-light-hover: #B8BCBF;
-    --bit-clr-inf-light-active: #ACB1B5;
+    --bit-clr-inf: #6B737C;
+    --bit-clr-inf-hover: #60686F;
+    --bit-clr-inf-active: #575E65;
+    --bit-clr-inf-dark: #4B5158;
+    --bit-clr-inf-dark-hover: #41464C;
+    --bit-clr-inf-dark-active: #383D42;
+    --bit-clr-inf-light: #B6BCC3;
+    --bit-clr-inf-light-hover: #A9B0B7;
+    --bit-clr-inf-light-active: #9EA5AC;
     --bit-clr-inf-text: #FFFFFF;
+    --bit-clr-inf-dis: #E3ECF7;
+    --bit-clr-inf-dis-text: #7C848D;
     //success
-    --bit-clr-suc: #49A94C;
-    --bit-clr-suc-hover: #45A148;
-    --bit-clr-suc-active: #429844;
-    --bit-clr-suc-dark: #318734;
-    --bit-clr-suc-dark-hover: #2F8031;
-    --bit-clr-suc-dark-active: #2C792F;
-    --bit-clr-suc-light: #A4D4A5;
-    --bit-clr-suc-light-hover: #92CB94;
-    --bit-clr-suc-light-active: #80C382;
+    --bit-clr-suc: #228422;
+    --bit-clr-suc-hover: #1B771C;
+    --bit-clr-suc-active: #156B16;
+    --bit-clr-suc-dark: #0D5D0F;
+    --bit-clr-suc-dark-hover: #065108;
+    --bit-clr-suc-dark-active: #014604;
+    --bit-clr-suc-light: #8CCD88;
+    --bit-clr-suc-light-hover: #7CC178;
+    --bit-clr-suc-light-active: #6FB66B;
     --bit-clr-suc-text: #FFFFFF;
+    --bit-clr-suc-dis: #E0F1DF;
+    --bit-clr-suc-dis-text: #768A74;
     //warning
-    --bit-clr-wrn: #F2B01F;
-    --bit-clr-wrn-hover: #E6A71D;
-    --bit-clr-wrn-active: #DA9E1C;
-    --bit-clr-wrn-dark: #D4950D;
-    --bit-clr-wrn-dark-hover: #C98E0C;
-    --bit-clr-wrn-dark-active: #BF860C;
-    --bit-clr-wrn-light: #F9D78F;
-    --bit-clr-wrn-light-hover: #F7D079;
-    --bit-clr-wrn-light-active: #F6C862;
-    --bit-clr-wrn-text: #FFFFFF;
+    --bit-clr-wrn: #EDAE12;
+    --bit-clr-wrn-hover: #DDA206;
+    --bit-clr-wrn-active: #D09700;
+    --bit-clr-wrn-dark: #BF8B00;
+    --bit-clr-wrn-dark-hover: #B48300;
+    --bit-clr-wrn-dark-active: #A97A00;
+    --bit-clr-wrn-light: #FFDC9D;
+    --bit-clr-wrn-light-hover: #FECC6B;
+    --bit-clr-wrn-light-active: #F7BF4E;
+    --bit-clr-wrn-text: #141414;
+    --bit-clr-wrn-dis: #F5EAD5;
+    --bit-clr-wrn-dis-text: #8F8168;
     //severe-warning
-    --bit-clr-swr: #D47E30;
-    --bit-clr-swr-hover: #C9782E;
-    --bit-clr-swr-active: #BF712B;
-    --bit-clr-swr-dark: #B2641D;
-    --bit-clr-swr-dark-hover: #A95F1C;
-    --bit-clr-swr-dark-active: #A05A1A;
-    --bit-clr-swr-light: #DF9E64;
-    --bit-clr-swr-light-hover: #DD9859;
-    --bit-clr-swr-light-active: #DA914F;
+    --bit-clr-swr: #CE4207;
+    --bit-clr-swr-hover: #BC3A01;
+    --bit-clr-swr-active: #AC3400;
+    --bit-clr-swr-dark: #972D00;
+    --bit-clr-swr-dark-hover: #852600;
+    --bit-clr-swr-dark-active: #762100;
+    --bit-clr-swr-light: #FFA488;
+    --bit-clr-swr-light-hover: #FE8F6D;
+    --bit-clr-swr-light-active: #F6825E;
     --bit-clr-swr-text: #FFFFFF;
+    --bit-clr-swr-dis: #FEE5DD;
+    --bit-clr-swr-dis-text: #997B72;
     //error
-    --bit-clr-err: #DF3A2E;
-    --bit-clr-err-hover: #D4372C;
-    --bit-clr-err-active: #C93429;
-    --bit-clr-err-dark: #BF261B;
-    --bit-clr-err-dark-hover: #B5241A;
-    --bit-clr-err-dark-active: #AC2218;
-    --bit-clr-err-light: #E76B62;
-    --bit-clr-err-light-hover: #E56158;
-    --bit-clr-err-light-active: #E4584D;
+    --bit-clr-err: #D2393B;
+    --bit-clr-err-hover: #C03234;
+    --bit-clr-err-active: #B02B2D;
+    --bit-clr-err-dark: #9D2225;
+    --bit-clr-err-dark-hover: #8B1A1E;
+    --bit-clr-err-dark-active: #7D1418;
+    --bit-clr-err-light: #FFA29B;
+    --bit-clr-err-light-hover: #FF8D85;
+    --bit-clr-err-light-active: #FA7C75;
     --bit-clr-err-text: #FFFFFF;
-    //foreground
+    --bit-clr-err-dis: #FFE4E1;
+    --bit-clr-err-dis-text: #9A7A77;
+    //foregrounds
     --bit-clr-fg-pri: #1A1A1A;
-    --bit-clr-fg-pri-hover: #111111;
-    --bit-clr-fg-pri-active: #070707;
-    --bit-clr-fg-pri-dark: #141414;
-    --bit-clr-fg-pri-dark-hover: #0D0D0D;
+    --bit-clr-fg-pri-hover: #121212;
+    --bit-clr-fg-pri-active: #0A0A0A;
+    --bit-clr-fg-pri-dark: #0D0D0D;
+    --bit-clr-fg-pri-dark-hover: #080808;
     --bit-clr-fg-pri-dark-active: #000000;
-    --bit-clr-fg-pri-light: #262626;
-    --bit-clr-fg-pri-light-hover: #191919;
-    --bit-clr-fg-pri-light-active: #111111;
-    --bit-clr-fg-sec: #5A5A5A;
-    --bit-clr-fg-sec-hover: #444444;
-    --bit-clr-fg-sec-active: #333333;
-    --bit-clr-fg-sec-dark: #4D4D4D;
-    --bit-clr-fg-sec-dark-hover: #3B3B3B;
-    --bit-clr-fg-sec-dark-active: #262626;
-    --bit-clr-fg-sec-light: #484848;
-    --bit-clr-fg-sec-light-hover: #515151;
-    --bit-clr-fg-sec-light-active: #414141;
-    --bit-clr-fg-ter: #999999;
-    --bit-clr-fg-ter-hover: #666666;
-    --bit-clr-fg-ter-active: #4D4D4D;
-    --bit-clr-fg-ter-dark: #8E8E8E;
-    --bit-clr-fg-ter-dark-hover: #5B5B5B;
-    --bit-clr-fg-ter-dark-active: #3B3B3B;
-    --bit-clr-fg-ter-light: #A7A7A7;
-    --bit-clr-fg-ter-light-hover: #747474;
-    --bit-clr-fg-ter-light-active: #5A5A5A;
-    --bit-clr-fg-dis: #AAAAAA;
+    --bit-clr-fg-pri-light: #2E2E2E;
+    --bit-clr-fg-pri-light-hover: #262626;
+    --bit-clr-fg-pri-light-active: #1F1F1F;
+    --bit-clr-fg-pri-dis: #EBEBEB;
+    --bit-clr-fg-pri-dis-text: #858585;
+    --bit-clr-fg-sec: #525252;
+    --bit-clr-fg-sec-hover: #454545;
+    --bit-clr-fg-sec-active: #383838;
+    --bit-clr-fg-sec-dark: #3D3D3D;
+    --bit-clr-fg-sec-dark-hover: #303030;
+    --bit-clr-fg-sec-dark-active: #242424;
+    --bit-clr-fg-sec-light: #6B6B6B;
+    --bit-clr-fg-sec-light-hover: #5E5E5E;
+    --bit-clr-fg-sec-light-active: #4D4D4D;
+    --bit-clr-fg-sec-dis: #EBEBEB;
+    --bit-clr-fg-sec-dis-text: #858585;
+    --bit-clr-fg-ter: #707070;
+    --bit-clr-fg-ter-hover: #636363;
+    --bit-clr-fg-ter-active: #575757;
+    --bit-clr-fg-ter-dark: #5C5C5C;
+    --bit-clr-fg-ter-dark-hover: #4F4F4F;
+    --bit-clr-fg-ter-dark-active: #424242;
+    --bit-clr-fg-ter-light: #8A8A8A;
+    --bit-clr-fg-ter-light-hover: #7D7D7D;
+    --bit-clr-fg-ter-light-active: #696969;
+    --bit-clr-fg-ter-dis: #EBEBEB;
+    --bit-clr-fg-ter-dis-text: #858585;
+    --bit-clr-fg-dis: #8F8F8F;
     //backgrounds
     --bit-clr-bg-pri: #FFFFFF;
-    --bit-clr-bg-pri-hover: #F2F2F2;
+    --bit-clr-bg-pri-hover: #F5F5F5;
     --bit-clr-bg-pri-active: #EBEBEB;
-    --bit-clr-bg-pri-dark: #EAEAEA;
-    --bit-clr-bg-pri-dark-hover: #E1E1E1;
-    --bit-clr-bg-pri-dark-active: #DBD9D9;
+    --bit-clr-bg-pri-dark: #EDEDED;
+    --bit-clr-bg-pri-dark-hover: #E3E3E3;
+    --bit-clr-bg-pri-dark-active: #D9D9D9;
     --bit-clr-bg-pri-light: #FFFFFF;
-    --bit-clr-bg-pri-light-hover: #F2F2F2;
+    --bit-clr-bg-pri-light-hover: #F5F5F5;
     --bit-clr-bg-pri-light-active: #EBEBEB;
+    --bit-clr-bg-pri-dis: #F7F7F7;
+    --bit-clr-bg-pri-dis-text: #8C8C8C;
     --bit-clr-bg-sec: #F5F5F5;
-    --bit-clr-bg-sec-hover: #F2F1F0;
-    --bit-clr-bg-sec-active: #E8E7E6;
-    --bit-clr-bg-sec-dark: #E0E0E0;
-    --bit-clr-bg-sec-dark-hover: #DBDBDB;
-    --bit-clr-bg-sec-dark-active: #CECECE;
-    --bit-clr-bg-sec-light: #F5F5F5;
-    --bit-clr-bg-sec-light-hover: #F2F1F0;
-    --bit-clr-bg-sec-light-active: #E8E7E6;
-    --bit-clr-bg-ter: #EDECEB;
-    --bit-clr-bg-ter-hover: #E5E5E4;
-    --bit-clr-bg-ter-active: #E0DFDF;
-    --bit-clr-bg-ter-dark: #DBDBDB;
-    --bit-clr-bg-ter-dark-hover: #CFCFCF;
-    --bit-clr-bg-ter-dark-active: #BEBEBE;
-    --bit-clr-bg-ter-light: #F1F1F1;
-    --bit-clr-bg-ter-light-hover: #EDEDED;
+    --bit-clr-bg-sec-hover: #EDEDED;
+    --bit-clr-bg-sec-active: #E6E6E6;
+    --bit-clr-bg-sec-dark: #E8E8E8;
+    --bit-clr-bg-sec-dark-hover: #E0E0E0;
+    --bit-clr-bg-sec-dark-active: #D9D9D9;
+    --bit-clr-bg-sec-light: #FCFCFC;
+    --bit-clr-bg-sec-light-hover: #F7F7F7;
+    --bit-clr-bg-sec-light-active: #F0F0F0;
+    --bit-clr-bg-sec-dis: #EDEDED;
+    --bit-clr-bg-sec-dis-text: #878787;
+    --bit-clr-bg-ter: #EBEBEB;
+    --bit-clr-bg-ter-hover: #E3E3E3;
+    --bit-clr-bg-ter-active: #DBDBDB;
+    --bit-clr-bg-ter-dark: #DEDEDE;
+    --bit-clr-bg-ter-dark-hover: #D6D6D6;
+    --bit-clr-bg-ter-dark-active: #CFCFCF;
+    --bit-clr-bg-ter-light: #F5F5F5;
+    --bit-clr-bg-ter-light-hover: #F0F0F0;
     --bit-clr-bg-ter-light-active: #E6E6E6;
-    --bit-clr-bg-dis: #F3F2F1;
+    --bit-clr-bg-ter-dis: #E3E3E3;
+    --bit-clr-bg-ter-dis-text: #808080;
+    --bit-clr-bg-dis: #F0F0F0;
     --bit-clr-bg-overlay: rgba(0, 0, 0, 0.4);
     //borders
-    --bit-clr-brd-pri: #777777;
-    --bit-clr-brd-pri-hover: #5E5E5E;
-    --bit-clr-brd-pri-active: #454545;
-    --bit-clr-brd-pri-dark: #646464;
-    --bit-clr-brd-pri-dark-hover: #4B4B4B;
-    --bit-clr-brd-pri-dark-active: #343434;
-    --bit-clr-brd-pri-light: #898989;
-    --bit-clr-brd-pri-light-hover: #6C6B6B;
-    --bit-clr-brd-pri-light-active: #535353;
-    --bit-clr-brd-sec: #B0AFAE;
-    --bit-clr-brd-sec-hover: #7D7C7C;
-    --bit-clr-brd-sec-active: #636362;
-    --bit-clr-brd-sec-dark: #A3A3A3;
-    --bit-clr-brd-sec-dark-hover: #6B6B6B;
-    --bit-clr-brd-sec-dark-active: #515151;
-    --bit-clr-brd-sec-light: #BFBFBF;
-    --bit-clr-brd-sec-light-hover: #8A8A8A;
-    --bit-clr-brd-sec-light-active: #727272;
-    --bit-clr-brd-ter: #DEDDDC;
-    --bit-clr-brd-ter-hover: #CBCBCB;
-    --bit-clr-brd-ter-active: #B0B0B0;
-    --bit-clr-brd-ter-dark: #CFCFCF;
-    --bit-clr-brd-ter-dark-hover: #B7B7B7;
-    --bit-clr-brd-ter-dark-active: #9F9F9F;
-    --bit-clr-brd-ter-light: #E9E9E9;
-    --bit-clr-brd-ter-light-hover: #D7D7D7;
-    --bit-clr-brd-ter-light-active: #C1C1C1;
-    --bit-clr-brd-dis: #E5E3DF;
+    --bit-clr-brd-pri: #707070;
+    --bit-clr-brd-pri-hover: #616161;
+    --bit-clr-brd-pri-active: #525252;
+    --bit-clr-brd-pri-dark: #595959;
+    --bit-clr-brd-pri-dark-hover: #4A4A4A;
+    --bit-clr-brd-pri-dark-active: #3B3B3B;
+    --bit-clr-brd-pri-light: #8C8C8C;
+    --bit-clr-brd-pri-light-hover: #7D7D7D;
+    --bit-clr-brd-pri-light-active: #696969;
+    --bit-clr-brd-pri-dis: #EBEBEB;
+    --bit-clr-brd-pri-dis-text: #858585;
+    --bit-clr-brd-sec: #ADADAD;
+    --bit-clr-brd-sec-hover: #9E9E9E;
+    --bit-clr-brd-sec-active: #8F8F8F;
+    --bit-clr-brd-sec-dark: #969696;
+    --bit-clr-brd-sec-dark-hover: #878787;
+    --bit-clr-brd-sec-dark-active: #787878;
+    --bit-clr-brd-sec-light: #C7C7C7;
+    --bit-clr-brd-sec-light-hover: #B8B8B8;
+    --bit-clr-brd-sec-light-active: #A6A6A6;
+    --bit-clr-brd-sec-dis: #EBEBEB;
+    --bit-clr-brd-sec-dis-text: #858585;
+    --bit-clr-brd-ter: #E0E0E0;
+    --bit-clr-brd-ter-hover: #D1D1D1;
+    --bit-clr-brd-ter-active: #C2C2C2;
+    --bit-clr-brd-ter-dark: #C9C9C9;
+    --bit-clr-brd-ter-dark-hover: #BABABA;
+    --bit-clr-brd-ter-dark-active: #ABABAB;
+    --bit-clr-brd-ter-light: #F2F2F2;
+    --bit-clr-brd-ter-light-hover: #E8E8E8;
+    --bit-clr-brd-ter-light-active: #D9D9D9;
+    --bit-clr-brd-ter-dis: #EBEBEB;
+    --bit-clr-brd-ter-dis-text: #858585;
+    --bit-clr-brd-dis: #E0E0E0;
+
     //req
     --bit-clr-req: #A4262C;
+    //focus (a11y) - color of the focus indicator per role.
+    //Aliased to the role's base color so they track theme/brand overrides.
+    //Override these directly to differentiate focus from base color.
+    --bit-clr-pri-focus: var(--bit-clr-pri);
+    --bit-clr-sec-focus: var(--bit-clr-sec);
+    --bit-clr-ter-focus: var(--bit-clr-ter);
+    --bit-clr-inf-focus: var(--bit-clr-inf);
+    --bit-clr-suc-focus: var(--bit-clr-suc);
+    --bit-clr-wrn-focus: var(--bit-clr-wrn);
+    --bit-clr-swr-focus: var(--bit-clr-swr);
+    --bit-clr-err-focus: var(--bit-clr-err);
+    --bit-clr-fg-pri-focus: var(--bit-clr-fg-pri);
+    --bit-clr-fg-sec-focus: var(--bit-clr-fg-sec);
+    --bit-clr-fg-ter-focus: var(--bit-clr-fg-ter);
+    //The background roles are aliased to the foreground color instead of their own background,
+    //otherwise the focus indicator would be drawn in the very color it sits on and stay invisible.
+    --bit-clr-bg-pri-focus: var(--bit-clr-fg-pri);
+    --bit-clr-bg-sec-focus: var(--bit-clr-fg-pri);
+    --bit-clr-bg-ter-focus: var(--bit-clr-fg-pri);
+    --bit-clr-brd-pri-focus: var(--bit-clr-brd-pri);
+    --bit-clr-brd-sec-focus: var(--bit-clr-brd-sec);
+    --bit-clr-brd-ter-focus: var(--bit-clr-brd-ter);
 }

@@ -111,90 +111,21 @@
     background-color: transparent;
 }
 
-.bit-msg-pri {
-    --bit-msg-clr-bg: #{$clr-pri};
-    --bit-msg-clr: #{$clr-pri-text};
-}
-
-.bit-msg-sec {
-    --bit-msg-clr-bg: #{$clr-sec};
-    --bit-msg-clr: #{$clr-sec-text};
-}
-
-.bit-msg-ter {
-    --bit-msg-clr-bg: #{$clr-ter};
-    --bit-msg-clr: #{$clr-ter-text};
-}
-
-.bit-msg-inf {
-    --bit-msg-clr-bg: #{$clr-inf};
-    --bit-msg-clr: #{$clr-inf-text};
-}
-
-.bit-msg-suc {
-    --bit-msg-clr-bg: #{$clr-suc};
-    --bit-msg-clr: #{$clr-suc-text};
-}
-
-.bit-msg-wrn {
-    --bit-msg-clr-bg: #{$clr-wrn};
-    --bit-msg-clr: #{$clr-wrn-text};
-}
-
-.bit-msg-swr {
-    --bit-msg-clr-bg: #{$clr-swr};
-    --bit-msg-clr: #{$clr-swr-text};
-}
-
-.bit-msg-err {
-    --bit-msg-clr-bg: #{$clr-err};
-    --bit-msg-clr: #{$clr-err-text};
-}
-
-
-.bit-msg-pbg {
-    --bit-msg-clr: #{$clr-fg-pri};
-    --bit-msg-clr-bg: #{$clr-bg-pri};
-}
-
-.bit-msg-sbg {
-    --bit-msg-clr: #{$clr-fg-pri};
-    --bit-msg-clr-bg: #{$clr-bg-sec};
-}
-
-.bit-msg-tbg {
-    --bit-msg-clr: #{$clr-fg-pri};
-    --bit-msg-clr-bg: #{$clr-bg-ter};
-}
-
-.bit-msg-pfg {
-    --bit-msg-clr: #{$clr-bg-pri};
-    --bit-msg-clr-bg: #{$clr-fg-pri};
-}
-
-.bit-msg-sfg {
-    --bit-msg-clr: #{$clr-bg-pri};
-    --bit-msg-clr-bg: #{$clr-fg-sec};
-}
-
-.bit-msg-tfg {
-    --bit-msg-clr: #{$clr-bg-pri};
-    --bit-msg-clr-bg: #{$clr-fg-ter};
-}
-
-.bit-msg-pbr {
-    --bit-msg-clr: #{$clr-fg-pri};
-    --bit-msg-clr-bg: #{$clr-brd-pri};
-}
-
-.bit-msg-sbr {
-    --bit-msg-clr: #{$clr-bg-pri};
-    --bit-msg-clr-bg: #{$clr-brd-sec};
-}
-
-.bit-msg-tbr {
-    --bit-msg-clr: #{$clr-bg-pri};
-    --bit-msg-clr-bg: #{$clr-brd-ter};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// The @if keeps each kind's original declaration order. Note: the hand-written sbr/tbr blocks this
+// replaces set --bit-msg-clr to $clr-bg-pri (near-white text on the light brd-sec/brd-ter fills,
+// ~2:1 contrast) while pbr correctly used $clr-fg-pri - a copy-paste bug the map's on slot fixes.
+@each $role, $tokens in $bit-color-roles {
+    .bit-msg-#{$role} {
+        @if role($tokens, kind) == semantic {
+            --bit-msg-clr-bg: #{role($tokens, main)};
+            --bit-msg-clr: #{role($tokens, on)};
+        }
+        @else {
+            --bit-msg-clr: #{role($tokens, on)};
+            --bit-msg-clr-bg: #{role($tokens, main)};
+        }
+    }
 }
 
 .bit-msg-sm {

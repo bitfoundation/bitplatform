@@ -3,24 +3,41 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .card-list {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-    width: calc(100% + 20px);
-    margin-left: -20px;
+    display: grid;
+    gap: rem2(20px);
+    margin-top: rem2(20px);
+    grid-template-columns: repeat(3, 1fr);
+
+    @include lt-lg {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include lt-md {
+        grid-template-columns: 1fr;
+    }
 
     .benefit-card {
-        flex-grow: 0;
-        padding: rem2(16px);
-        margin-top: rem2(20px);
-        min-width: rem2(275px);
-        min-height: rem2(241px);
-        margin-left: rem2(20px);
+        padding: rem2(24px);
         box-sizing: border-box;
-        border-radius: rem2(2px);
-        max-width: calc(25% - 20px);
-        flex-basis: calc(25% - 20px);
-        box-shadow: $bit-box-shadow-callout;
-        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        border-radius: $bit-shape-border-radius;
+        border: rem2(1px) solid $bit-color-border-secondary;
+        transition: border-color $bit-motion-duration $bit-motion-easing;
+
+        &:hover {
+            border-color: $bit-color-primary;
+        }
+    }
+
+    .benefit-card-icon {
+        display: flex;
+        width: rem2(40px);
+        height: rem2(40px);
+        align-items: center;
+        font-size: rem2(20px);
+        justify-content: center;
+        margin-bottom: rem2(16px);
+        border-radius: $bit-shape-border-radius;
+        background-color: $bit-color-background-secondary;
+        border: rem2(1px) solid $bit-color-border-secondary;
     }
 }

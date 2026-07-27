@@ -31,21 +31,21 @@
         height: $bit-env-height-available;
     }
 
+    // Kept at the size the old icon badge occupied, as a circle so the filled variant reads as a
+    // launcher rather than a stray button.
     .open-panel-button {
         padding: 0;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
         inset-inline-end: 2rem;
-
-        &:hover, &:active {
-            background-color: transparent;
-        }
 
         @include lt-md {
             inset-inline-end: 1rem;
         }
 
-        img {
-            width: 2.5rem;
-            height: 2.5rem;
+        i {
+            font-size: 1.5rem;
             pointer-events: none;
         }
     }

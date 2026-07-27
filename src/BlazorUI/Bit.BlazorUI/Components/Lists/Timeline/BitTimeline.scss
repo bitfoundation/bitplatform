@@ -17,9 +17,9 @@
     --bit-tln-dvd-top: 0;
     --bit-tln-dvd-height: 100%;
     --bit-tln-dvd-width: #{spacing(0.25)};
-    --bit-tln-clr-dis: #{$clr-fg-dis};
-    --bit-tln-clr-bg-dis: #{$clr-bg-dis};
-    --bit-tln-clr-brd-dis: #{$clr-brd-dis};
+    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
+    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
+    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
 
     &.bit-dis {
         cursor: default;
@@ -49,7 +49,7 @@
         user-select: none;
         pointer-events: none;
         color: var(--bit-tln-clr-dis);
-        --bit-tln-dot-ico-clr: #{$clr-fg-dis};
+        --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
     }
 }
 
@@ -177,52 +177,16 @@
     }
 }
 
-.bit-tln-pri, .bit-tln-ipr {
-    --bit-tln-clr: #{$clr-pri};
-    --bit-tln-clr-fg: #{$clr-pri-text};
-    --bit-tln-clr-ico: #{$clr-pri-text};
-}
-
-.bit-tln-sec, .bit-tln-ise {
-    --bit-tln-clr: #{$clr-sec};
-    --bit-tln-clr-fg: #{$clr-sec-text};
-    --bit-tln-clr-ico: #{$clr-sec-text};
-}
-
-.bit-tln-ter, .bit-tln-ite {
-    --bit-tln-clr: #{$clr-ter};
-    --bit-tln-clr-fg: #{$clr-ter-text};
-    --bit-tln-clr-ico: #{$clr-ter-text};
-}
-
-.bit-tln-inf, .bit-tln-iin {
-    --bit-tln-clr: #{$clr-inf};
-    --bit-tln-clr-fg: #{$clr-inf-text};
-    --bit-tln-clr-ico: #{$clr-inf-text};
-}
-
-.bit-tln-suc, .bit-tln-isu {
-    --bit-tln-clr: #{$clr-suc};
-    --bit-tln-clr-fg: #{$clr-suc-text};
-    --bit-tln-clr-ico: #{$clr-suc-text};
-}
-
-.bit-tln-wrn, .bit-tln-iwr {
-    --bit-tln-clr: #{$clr-wrn};
-    --bit-tln-clr-fg: #{$clr-wrn-text};
-    --bit-tln-clr-ico: #{$clr-wrn-text};
-}
-
-.bit-tln-swr, .bit-tln-isw {
-    --bit-tln-clr: #{$clr-swr};
-    --bit-tln-clr-fg: #{$clr-swr-text};
-    --bit-tln-clr-ico: #{$clr-swr-text};
-}
-
-.bit-tln-err, .bit-tln-ier {
-    --bit-tln-clr: #{$clr-err};
-    --bit-tln-clr-fg: #{$clr-err-text};
-    --bit-tln-clr-ico: #{$clr-err-text};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+// Each role also gets an item-level alias class: "i" + the role's first two letters (pri > ipr).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-tln-#{$role}, .bit-tln-i#{role-abbr($role)} {
+        --bit-tln-clr: #{role($tokens, main)};
+        --bit-tln-clr-fg: #{role($tokens, on)};
+        --bit-tln-clr-ico: #{role($tokens, on)};
+        --bit-tln-clr-dis-bg: #{role($tokens, dis)};
+        --bit-tln-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 .bit-tln-sm, .bit-tln-ism {

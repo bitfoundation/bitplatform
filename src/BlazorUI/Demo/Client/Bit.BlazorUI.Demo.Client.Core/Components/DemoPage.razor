@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 @using System.Text.Json;
 
@@ -116,28 +116,40 @@
 }
 else
 {
-    <div class="demo-page">
+    @* bit-fam is the class BitComponentBase.ForceAnimation renders. Setting it here rather than on each
+       sample restores the full motion durations for everything on the page, since those are inherited
+       custom properties. *@
+    <BitStack Horizontal AutoHeight Gap="0" Class="@(_forceAnimation ? "bit-fam" : null)">
         <div class="page-container example">
-            <BitText Element="h1" Typography="BitTypography.H3">
-                @Name
-            </BitText>
 
-            @if (SecondaryNames?.Length > 0)
-            {
-                <br />
-                <BitStack Horizontal AutoHeight>
-                    @foreach (var name in SecondaryNames)
-                    {
-                        <BitText Element="span" Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
-                    }
-                </BitStack>
-            }
-            
-            <br /><br /><br />
+            <BitStack Element="header" Horizontal Wrap AutoHeight
+                      Gap="1rem"
+                      Class="page-header"
+                      VerticalAlign="BitAlignment.Baseline">
+                <BitText Element="h1" Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
+                    @Name
+                </BitText>
+
+                @if (SecondaryNames?.Length > 0)
+                {
+                    <BitStack Horizontal Wrap FitWidth AutoHeight Gap="0.375rem">
+                        @foreach (var name in SecondaryNames)
+                        {
+                            @* Alternative names are metadata about the component, so they are set as
+                               tags rather than as a second line of heading-sized text competing with
+                               the title. *@
+                            <BitTag Text="@name" Size="BitSize.Small" Variant="BitVariant.Outline"
+                                    Color="BitColor.Info" />
+                        }
+                    </BitStack>
+                }
+            </BitStack>
 
             @if (Description.HasValue() || DescriptionTemplate is not null)
             {
-                <section id="overview-section" class="page-section">
+                @* The description reads as the page's lead paragraph: prose on the bare page,
+                   not one more card. *@
+                <section id="overview-section" class="page-lead">
                     @if (DescriptionTemplate is not null)
                     {
                         @DescriptionTemplate
@@ -151,8 +163,13 @@ else
 
             @if (Notes.HasValue() || NotesTemplate is not null)
             {
-                <section id="notes-section" class="page-section">
-                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                <BitCard Id="notes-section" FullWidth
+                         Background="BitColorKind.Primary"
+                         Class="page-section">
+                    <div class="section-heading">
+                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Notes</BitText>
+                        <BitSeparator />
+                    </div>
                     @if (NotesTemplate is not null)
                     {
                         @NotesTemplate
@@ -161,18 +178,28 @@ else
                     {
                         @Notes
                     }
-                </section>
+                </BitCard>
             }
+
+            <div class="motion-bar">
+                <BitToggle @bind-Value="_forceAnimation" Text="ForceAnimation (whole page)" />
+            </div>
 
             @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
             {
-                <section id="introduction-section" class="page-section">
-                    <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
+                <BitCard Id="introduction-section" FullWidth
+                         Background="BitColorKind.Primary"
+                         Class="page-section">
+                    <div class="section-heading">
+                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Introduction</BitText>
+                        <BitSeparator />
+                    </div>
                     @if (IntroductionVideoUrl.HasValue())
                     {
-                        <div class="video-container">
+                        <BitStack Horizontal AutoHeight Class="video-container"
+                                  HorizontalAlign="BitAlignment.Center">
                             <video src="@IntroductionVideoUrl" controls />
-                        </div>
+                        </BitStack>
                         <br />
                     }
                     @if (Introduction.HasValue() || IntroductionTemplate is not null)
@@ -188,16 +215,25 @@ else
                             </BitText>
                         }
                     }
-                </section>
+                </BitCard>
             }
 
-            <section id="usage-section" class="page-section">
-                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+            <BitCard Id="usage-section" FullWidth
+                     Background="BitColorKind.Primary"
+                     Class="page-section">
+                <div class="section-heading">
+                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Usage</BitText>
+                    <br />
+                </div>
                 @(ChildContent ?? Examples)
-            </section>
+            </BitCard>
 
-            <section id="api-section" class="page-section">
-                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">API</BitText>
+            <BitCard Id="api-section" FullWidth
+                     Background="BitColorKind.Primary"
+                     Class="page-section">
+                <div class="section-heading">
+                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">API</BitText>
+                </div>
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
 
@@ -222,7 +258,8 @@ else
                 {
                     <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-                    <DemoParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+                    <DemoParametersTable Name="BitComponentBase" NameSuffix="public members"
+                                         Parameters="_componentBasePublicMembers" />
                 }
 
                 <DemoSubClassesTable Classes="SubClasses" />
@@ -233,10 +270,16 @@ else
                 {
                     <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
                 }
-            </section>
+            </BitCard>
 
-            <section id="feedback-section" class="page-section">
-                <BitText Element="h2" Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+            <BitCard Id="feedback-section" FullWidth NoShadow
+                     Background="BitColorKind.Primary"
+                     Border="BitColorKind.Secondary"
+                     Class="page-section">
+                <div class="section-heading">
+                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Feedback</BitText>
+                    <BitSeparator />
+                </div>
                 <BitText Element="p">
                     You can give us your feedback through our
                     <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
@@ -251,11 +294,13 @@ else
                     <br />
                     <BitText Element="p">
                         Or you can
-                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                                 Target="_blank">review</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                        Target="_blank">review</BitLink>
                         /
-                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                                 Target="_blank">edit</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                        Target="_blank">edit</BitLink>
                         this page on GitHub.
                     </BitText>
                 }
@@ -279,11 +324,13 @@ else
                     <br />
                     <BitText Element="p">
                         Or you can
-                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                                 Target="_blank">review</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                        Target="_blank">review</BitLink>
                         /
-                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                                 Target="_blank">edit</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                        Target="_blank">edit</BitLink>
                         this component on GitHub.
                     </BitText>
                 }
@@ -293,16 +340,18 @@ else
                     <br />
                     <BitText Element="p">
                         Or you can
-                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
-                                 Target="_blank">review</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
+                        Target="_blank">review</BitLink>
                         /
-                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
-                                 Target="_blank">edit</BitLink>
+                        <BitLink
+                        Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")"
+                        Target="_blank">edit</BitLink>
                         this component on GitHub.
                     </BitText>
                 }
-            </section>
+            </BitCard>
         </div>
-        <SideRail />
-    </div>
+        <SideRail HasNotes="@(Notes.HasValue() || NotesTemplate is not null)" />
+    </BitStack>
 }

@@ -131,72 +131,11 @@
 }
 
 
-.bit-txt-pri {
-    color: $clr-pri;
-}
-
-.bit-txt-sec {
-    color: $clr-sec;
-}
-
-.bit-txt-ter {
-    color: $clr-ter;
-}
-
-.bit-txt-inf {
-    color: $clr-inf;
-}
-
-.bit-txt-suc {
-    color: $clr-suc;
-}
-
-.bit-txt-wrn {
-    color: $clr-wrn;
-}
-
-.bit-txt-swr {
-    color: $clr-swr;
-}
-
-.bit-txt-err {
-    color: $clr-err;
-}
-
-.bit-txt-pbg {
-    color: $clr-bg-pri;
-}
-
-.bit-txt-sbg {
-    color: $clr-bg-sec;
-}
-
-.bit-txt-tbg {
-    color: $clr-bg-ter;
-}
-
-.bit-txt-pfg {
-    color: $clr-fg-pri;
-}
-
-.bit-txt-sfg {
-    color: $clr-fg-sec;
-}
-
-.bit-txt-tfg {
-    color: $clr-fg-ter;
-}
-
-.bit-txt-pbr {
-    color: $clr-brd-pri;
-}
-
-.bit-txt-sbr {
-    color: $clr-brd-sec;
-}
-
-.bit-txt-tbr {
-    color: $clr-brd-ter;
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-txt-#{$role} {
+        color: role($tokens, main);
+    }
 }
 
 .bit-txt-rfg {

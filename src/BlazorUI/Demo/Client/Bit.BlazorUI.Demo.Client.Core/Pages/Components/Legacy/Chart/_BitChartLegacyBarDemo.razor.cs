@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Legacy;
-namespace Bit.BlazorUI.Legacy.Demo.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.Chart;
 
 public partial class _BitChartLegacyBarDemo
 {

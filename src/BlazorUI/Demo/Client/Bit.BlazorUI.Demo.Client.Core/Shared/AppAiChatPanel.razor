@@ -4,15 +4,18 @@
 <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => _isSmallScreen = isMatched" />
 
 <section>
+    @* A filled primary button rather than the old raster badge: the disc and the glyph now come from
+       the theme, so the launcher follows the accent the home page's swatches apply. *@
     <BitButton Float
                Draggable
+               Title="AI chat"
                FloatOffset="1rem"
+               Color="BitColor.Primary"
                Class="open-panel-button"
-               Variant="BitVariant.Text"
+               AriaLabel="Open the AI chat"
                OnClick="() => _isOpen = true"
-               Color="BitColor.PrimaryBackground"
-               FloatPosition="BitPosition.BottomRight"
-               IconUrl="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/ai-chat-icon-64.webp" />
+               IconName="@BitIconName.ChatBot"
+               FloatPosition="BitPosition.BottomRight" />
 
     <BitProPanel @bind-IsOpen="_isOpen"
                  ShowCloseButton

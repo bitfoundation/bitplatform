@@ -19,6 +19,68 @@ function getSideRailItems() {
     }));
 }
 
+const sideRailScrollSpies: { [key: string]: () => void } = {};
+
+function registerSideRailScrollSpy(id: string, dotnetObj: any, methodName: string, sectionIds: string[]) {
+    unregisterSideRailScrollSpy(id);
+
+    let activeId: string | null = null;
+    let frame = 0;
+
+    const update = () => {
+        frame = 0;
+
+        // The activation line sits just below the sticky header: a section scrolled to via the rail
+        // lands at 90-112px from the top (its scroll-margin), so it must fall on the active side of
+        // the line. The active section is then the last one in document order whose top has passed
+        // the line; before the first one arrives there (page top), the first entry stands in.
+        const line = 130;
+        let current: string | null = null;
+
+        for (const sectionId of sectionIds) {
+            const element = document.getElementById(sectionId);
+            if (element == null) continue;
+
+            if (element.getBoundingClientRect().top <= line) {
+                current = sectionId;
+            }
+        }
+
+        current = current ?? sectionIds[0] ?? null;
+
+        if (current !== activeId) {
+            activeId = current;
+            dotnetObj.invokeMethodAsync(methodName, current);
+        }
+    };
+
+    // Capturing on window keeps the spy agnostic about which element actually scrolls the page
+    // (scroll events do not bubble, but they do capture); the rAF gate collapses the bursts a
+    // scroll produces into one measurement per frame.
+    const listener = () => {
+        if (frame !== 0) return;
+        frame = requestAnimationFrame(update);
+    };
+
+    sideRailScrollSpies[id] = () => {
+        window.removeEventListener('scroll', listener, true);
+        window.removeEventListener('resize', listener);
+        if (frame !== 0) cancelAnimationFrame(frame);
+    };
+    window.addEventListener('scroll', listener, true);
+    window.addEventListener('resize', listener);
+
+    listener();
+}
+
+function unregisterSideRailScrollSpy(id: string) {
+    const detach = sideRailScrollSpies[id];
+    if (detach == null) return;
+
+    detach();
+    delete sideRailScrollSpies[id];
+}
+
 function copyToClipboard(codeSampleContentForCopy: string) {
     navigator.clipboard.writeText(codeSampleContentForCopy);
 }
@@ -35,20 +97,37 @@ function getInnerText(element: HTMLElement) {
     return element?.innerText;
 }
 
-declare class BitTheme { static init(options: any): void; };
+const windowResizeListeners: { [key: string]: () => void } = {};
 
-BitTheme.init({
+function registerWindowResizeListener(id: string, dotnetObj: any, methodName: string) {
+    unregisterWindowResizeListener(id);
+
+    const listener = () => dotnetObj.invokeMethodAsync(methodName);
+    windowResizeListeners[id] = listener;
+    window.addEventListener('resize', listener);
+}
+
+function unregisterWindowResizeListener(id: string) {
+    const listener = windowResizeListeners[id];
+    if (listener == null) return;
+
+    window.removeEventListener('resize', listener);
+    delete windowResizeListeners[id];
+}
+
+declare namespace BitBlazorUI {
+    class Theme { static init(options: any): void; }
+}
+
+// Theme-dependent styling in the app keys off the bit-theme attribute the library script keeps on
+// the document element, so this callback only has to maintain what CSS cannot reach: the browser
+// chrome color.
+BitBlazorUI.Theme.init({
     system: true,
     persist: true,
     onChange: (newTheme: string, oldTheme: string) => {
-        if (newTheme === 'dark') {
-            document.body.classList.add('bit-blazorui-dark-theme');
-            document.body.classList.remove('bit-blazorui-light-theme');
-            document.querySelector("meta[name=theme-color]")?.setAttribute('content', '#0d1117');
-        } else {
-            document.body.classList.add('bit-blazorui-light-theme');
-            document.body.classList.remove('bit-blazorui-dark-theme');
-            document.querySelector("meta[name=theme-color]")?.setAttribute('content', '#ffffff');
-        }
+        const name = (newTheme ?? '').toLowerCase();
+        const isDark = name === 'dark' || name.endsWith('-dark');
+        document.querySelector("meta[name=theme-color]")?.setAttribute('content', isDark ? '#0d1117' : '#ffffff');
     }
 });
