@@ -354,12 +354,29 @@ $box-shadow-focus-ring: var(--bit-shd-focus-ring);
 
 /*---- Motion ----*/
 //Durations for transitions and one-shot (entry/exit) animations; all three collapse to 0.01ms
-//under prefers-reduced-motion. Infinite/looping animations (spinners, loaders) must keep literal
-//durations with their own reduced-motion handling - a near-zero looping duration renders as flicker.
+//under prefers-reduced-motion.
 $mot-duration: var(--bit-mot-duration);
 $mot-duration-short: var(--bit-mot-duration-short);
 $mot-duration-long: var(--bit-mot-duration-long);
 $mot-easing: var(--bit-mot-easing);
+
+//Infinite/looping animations cannot use the durations above, since a near-zero looping duration
+//renders as flicker. They use these instead, which slow down under reduced motion rather than
+//collapsing, and are restored by ForceAnimation through the same inheritance - so a looping
+//animation written with them needs no reduced-motion media query of its own:
+//  - a circular spinner takes both spinner tokens, and so turns at the same speed as every other
+//    spinner in the library;
+//  - any other looping animation multiplies its literal duration (and its delays, if it staggers
+//    several parts) by the loop factor: calc(1.1s * var(--bit-mot-loop-factor, 1)).
+//The one case still needing a media query is an animation that must stop rather than slow: a
+//shimmer or skeleton, which is a placeholder for content that has not arrived rather than the signal
+//that work is in progress. Stopping cannot be expressed as a duration, and pausing at the first
+//keyframe would leave a fade-in placeholder invisible, so those write the query by hand and guard it
+//with `&:not(.bit-fam):not(.bit-fam *)` so ForceAnimation still opts out. A loader never stops - it
+//is the only thing telling the user the work is still running.
+$mot-duration-spinner: var(--bit-mot-duration-spinner);
+$mot-easing-spinner: var(--bit-mot-easing-spinner);
+$mot-loop-factor: var(--bit-mot-loop-factor);
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);

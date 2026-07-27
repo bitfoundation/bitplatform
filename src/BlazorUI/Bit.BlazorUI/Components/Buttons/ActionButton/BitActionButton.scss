@@ -65,13 +65,7 @@
     border-color: $clr-brd-sec;
     border-style: $shp-border-style;
     border-top-color: var(--bit-acb-clr-ico);
-    animation: bit-acb-spin 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
-
-    @media (prefers-reduced-motion: reduce) {
-        animation-duration: 4s;
-        animation-timing-function: linear;
-    }
+    animation: bit-acb-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 @keyframes bit-acb-spin {

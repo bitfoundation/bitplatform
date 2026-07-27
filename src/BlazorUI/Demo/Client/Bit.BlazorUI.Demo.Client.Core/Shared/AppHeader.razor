@@ -20,6 +20,15 @@
             <a class="link@(IsHomePage ? "" : " active")" href="/overview">Docs</a>
         </BitStack>
         <BitStack Horizontal FitWidth AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+            @* Not on the home page: the hero has the full-size switcher with the "Make it yours"
+               label explaining what it does, and two of the same control on one screen would just
+               raise the question of whether they are the same control. Narrow widths hand this off
+               to the nav drawer's copy - see AccentColorSwitcher's own stylesheet. *@
+            @if (IsHomePage is false)
+            {
+                <AccentColorSwitcher Placement="AccentColorSwitcherPlacement.Header" />
+            }
+
             <a class="github-btn" target="_blank" rel="noopener noreferrer" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
 
             <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">

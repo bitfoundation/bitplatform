@@ -64,6 +64,79 @@ public static class BitThemeFactory
         return Create(accents, BitThemeColorScheme.Dark);
     }
 
+    /// <summary>
+    /// Builds a <b>complete</b> light-scheme theme from one seed color: not just the primary role,
+    /// but the second accent, the status roles, every surface / text / stroke tier, and the gray
+    /// ramp - all derived from the seed's hue.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Where <see cref="CreateLightTheme(string)"/> returns a sparse overlay that recolors the accent
+    /// and leaves everything else to the packaged stylesheet, this returns a whole palette: the
+    /// accents rotate onto the seed's hue and the neutrals carry it as a faint tint, so the surfaces
+    /// belong to the same theme rather than sitting under it. The status roles keep their
+    /// conventional green/amber/red - only their weights and ramps are generated - unless
+    /// <see cref="BitThemeSeedOptions.SemanticHarmonizationDegrees"/> asks for them to lean toward the
+    /// brand.
+    /// </para>
+    /// <para>
+    /// Contrast is preserved by construction. Every role's lightness ladder is the packaged palette's
+    /// own - the seed supplies hue, and only the primary role takes the seed's lightness - so the
+    /// WCAG relationships those palettes were solved for (on-color ≥ 4.5:1 over its fills,
+    /// foregrounds ≥ 4.5:1 over the surfaces, <c>brd-pri</c> ≥ 3:1) hold for any brand color rather
+    /// than needing a per-seed check.
+    /// </para>
+    /// <para>
+    /// Seeding <see cref="BitAccentColorPresets.Blue"/> - the packaged palettes' own primary -
+    /// reproduces those palettes, so it is the natural "no change" input. The intent alias tier
+    /// (<c>--bit-sem-*</c>) is deliberately left unset: those tokens are <c>var()</c> references onto
+    /// the primitives this fills, so they follow the generated palette on their own, and pinning them
+    /// would freeze them instead.
+    /// </para>
+    /// </remarks>
+    /// <param name="seedHex">The brand color in <c>#RGB</c> or <c>#RRGGBB</c> form.</param>
+    /// <param name="options">Tuning for the neutral tint, status-hue harmonization, and the second accent. <see langword="null"/> uses the calibrated defaults.</param>
+    /// <exception cref="ArgumentException"><paramref name="seedHex"/> is not a valid hex color.</exception>
+    public static BitTheme CreateLightThemeFromSeed(string seedHex, BitThemeSeedOptions? options = null)
+    {
+        return CreateFromSeed(seedHex, BitThemeColorScheme.Light, options);
+    }
+
+    /// <summary>
+    /// Dark-scheme counterpart of <see cref="CreateLightThemeFromSeed(string, BitThemeSeedOptions?)"/>.
+    /// Pass the SAME brand color you pass to the light overload: the seed is read as a light-scheme
+    /// primary either way, and the dark palette it transforms already carries the packaged
+    /// light-to-dark relationship (<c>#1276C6</c> → <c>#4FA3F4</c>), so the accent arrives on the dark
+    /// surface correctly without the brand being brightened first.
+    /// </summary>
+    /// <remarks>
+    /// This is a finer relationship than <see cref="CreateDarkTheme(string)"/>'s, which has only the
+    /// brand color to work from and approximates the brightening with a fixed white mix. Seeding the
+    /// packaged primary here returns the packaged dark palette exactly; the accent-only overload lands
+    /// a few units off it.
+    /// </remarks>
+    /// <param name="seedHex">The brand color in <c>#RGB</c> or <c>#RRGGBB</c> form.</param>
+    /// <param name="options">Tuning for the neutral tint, status-hue harmonization, and the second accent. <see langword="null"/> uses the calibrated defaults.</param>
+    /// <exception cref="ArgumentException"><paramref name="seedHex"/> is not a valid hex color.</exception>
+    public static BitTheme CreateDarkThemeFromSeed(string seedHex, BitThemeSeedOptions? options = null)
+    {
+        return CreateFromSeed(seedHex, BitThemeColorScheme.Dark, options);
+    }
+
+    private static BitTheme CreateFromSeed(string seedHex, BitThemeColorScheme scheme, BitThemeSeedOptions? options)
+    {
+        // Same contract as the accent-only overloads: caller input, so a typo'd brand color fails
+        // loudly instead of silently producing a theme built on the wrong hue.
+        if (BitThemeColorContrast.TryNormalizeHex(seedHex, out var normalizedHex) is false)
+        {
+            throw new ArgumentException(
+                $"'{seedHex}' is not a valid hex color. Expected '#RGB' or '#RRGGBB'.",
+                nameof(seedHex));
+        }
+
+        return BitThemeSeedPalette.Generate(normalizedHex, scheme, BitThemeSeedOptions.Resolve(options));
+    }
+
     private static BitTheme Create(BitThemeAccentColors accents, BitThemeColorScheme scheme)
     {
         ArgumentNullException.ThrowIfNull(accents);

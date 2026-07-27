@@ -5,10 +5,12 @@
     <BitText Element="h1" Typography="BitTypography.H2" Class="hero-title">
         Build <span class="hero-title-accent">beautiful</span> Blazor apps, faster
     </BitText>
+    <br/>
     <BitText Typography="BitTypography.Subtitle1" Element="p" Class="hero-subtitle">
         bit BlazorUI is an open-source suite of 80+ native components written entirely in C#, easy to customize,
         working seamlessly in all interactive Blazor modes: WASM, Server, Hybrid (MAUI), and pre-rendering.
     </BitText>
+    <br/>
     <BitStack Horizontal Wrap Gap="1rem" AutoSize Class="hero-actions">
         <BitButton Href="/getting-started" Size="BitSize.Large" IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
             Get started
@@ -40,15 +42,7 @@
     </div>
     <div class="hero-theming">
         <BitText Element="span" Typography="BitTypography.Subtitle2">Make it yours:</BitText>
-        @foreach (var (name, hex) in _accents)
-        {
-            <button type="button"
-                    title="@name"
-                    aria-label="@($"Apply the {name} accent color to this page")"
-                    class="accent-swatch@(_activeAccent == hex ? " accent-swatch--active" : null)"
-                    style="--swatch-color: @hex"
-                    @onclick="() => ApplyAccentAsync(hex)"></button>
-        }
+        <AccentColorSwitcher />
         <BitLink Href="/theming" Class="hero-theming-link">Explore theming</BitLink>
     </div>
 </div>

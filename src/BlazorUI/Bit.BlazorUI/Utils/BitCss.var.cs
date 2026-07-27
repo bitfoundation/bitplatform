@@ -539,6 +539,9 @@ public static partial class BitCss
             public const string DurationShort = "--bit-mot-duration-short";
             public const string DurationLong = "--bit-mot-duration-long";
             public const string Easing = "--bit-mot-easing";
+            public const string DurationSpinner = "--bit-mot-duration-spinner";
+            public const string EasingSpinner = "--bit-mot-easing-spinner";
+            public const string LoopFactor = "--bit-mot-loop-factor";
         }
 
         public static class Layout

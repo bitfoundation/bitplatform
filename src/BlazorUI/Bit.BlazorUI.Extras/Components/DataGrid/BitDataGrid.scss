@@ -417,12 +417,7 @@ button.bit-dtg-htext {
     border-top-color: transparent;
     border-radius: 50%;
     vertical-align: middle;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .bit-dtg-spinner {
-        animation: bit-dtg-spin .7s linear infinite;
-    }
+    animation: bit-dtg-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 @keyframes bit-dtg-spin {
@@ -447,11 +442,15 @@ button.bit-dtg-htext {
             $clr-bg-sec 37%,
             $clr-brd-ter 63%);
     background-size: 400% 100%;
-}
+    animation: bit-dtg-shimmer 1.2s ease-in-out infinite;
 
-@media (prefers-reduced-motion: no-preference) {
-    .bit-dtg-skeleton {
-        animation: bit-dtg-shimmer 1.2s ease-in-out infinite;
+    // Unlike the spinner this is a placeholder rather than the progress signal, so reduced motion
+    // stops it outright the way BitTextShimmer does, leaving the static gradient. The .bit-fam
+    // opt-out is matched on an ancestor too, since the grid renders no .bit-fam of its own.
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation: none;
+        }
     }
 }
 

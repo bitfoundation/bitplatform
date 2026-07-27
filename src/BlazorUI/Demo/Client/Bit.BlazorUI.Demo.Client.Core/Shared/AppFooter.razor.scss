@@ -68,7 +68,13 @@ a {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url('images/bit-logo.svg');
+    background-image: url('images/bit-logo-light.svg');
+}
+
+:root[bit-theme$='dark'] {
+    .bit-logo {
+        background-image: url('images/bit-logo-dark.svg');
+    }
 }
 
 .go-to-top {

@@ -645,7 +645,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
     background-color: $clr-bg-pri;

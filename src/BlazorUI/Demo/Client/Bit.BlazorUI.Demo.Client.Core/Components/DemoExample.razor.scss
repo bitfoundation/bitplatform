@@ -75,8 +75,8 @@
     // short of one.
     .section-title {
         min-width: 0;
+        scroll-margin: 7rem;
         overflow-wrap: anywhere;
-        scroll-margin: rem2(90px);
     }
 
     // The theme's motion tokens rather than hardcoded durations, so these transitions collapse

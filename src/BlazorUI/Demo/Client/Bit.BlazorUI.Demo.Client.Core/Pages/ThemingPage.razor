@@ -177,7 +177,7 @@
                 <br />
                 <b>Typography</b> &mdash; <BitTag>--bit-tpg-*</BitTag> (font family/weight/line-height plus per-variant <BitTag>h1..h6</BitTag>, <BitTag>body1/2</BitTag>, <BitTag>subtitle1/2</BitTag>, <BitTag>caption1/2</BitTag>, <BitTag>button</BitTag>, <BitTag>overline</BitTag>, <BitTag>inherit</BitTag>)
                 <br />
-                <b>Motion</b> &mdash; <BitTag>--bit-mot-duration</BitTag>, <BitTag>--bit-mot-duration-short</BitTag>, <BitTag>--bit-mot-duration-long</BitTag>, <BitTag>--bit-mot-easing</BitTag>, plus the unreduced <BitTag>--bit-mot-duration*-full</BitTag> sources (see <i>Motion &amp; accessibility</i>)
+                <b>Motion</b> &mdash; <BitTag>--bit-mot-duration</BitTag>, <BitTag>--bit-mot-duration-short</BitTag>, <BitTag>--bit-mot-duration-long</BitTag>, <BitTag>--bit-mot-easing</BitTag>, the looping set <BitTag>--bit-mot-duration-spinner</BitTag>, <BitTag>--bit-mot-easing-spinner</BitTag>, <BitTag>--bit-mot-loop-factor</BitTag>, plus the unreduced <BitTag>*-full</BitTag> sources of both (see <i>Motion &amp; accessibility</i>)
                 <br />
                 <b>Layout</b> &mdash; <BitTag>--bit-layout-density-scale</BitTag>, breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
                 <br />
@@ -802,6 +802,73 @@ var themed = BitThemeFactory.CreateLightTheme(new BitThemeAccentColors
 
             <br />
 
+            <BitText Element="h4" Typography="BitTypography.H6">A whole theme from one color</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>CreateLightTheme</BitTag> recolors the accent and leaves everything else to the packaged stylesheet. <BitTag>CreateLightThemeFromSeed</BitTag> goes the rest of the way: one hex in, and you get the second accent, the status roles, every surface / text / stroke tier, and the gray ramp &mdash; a complete palette rather than an overlay.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// One brand color → an entire palette (~200 tokens), not just the accent.
+var light = BitThemeFactory.CreateLightThemeFromSeed("#7C3AED");
+var dark  = BitThemeFactory.CreateDarkThemeFromSeed("#7C3AED");
+
+await BitThemeManager.ApplyBitThemeAsync(isDark ? dark : light);
+
+// Every default is "change nothing beyond the hue rotation"; each knob is a move away from that.
+var tuned = BitThemeFactory.CreateLightThemeFromSeed("#7C3AED", new BitThemeSeedOptions
+{
+    NeutralTintChroma = 0.008,          // tint the light scheme's grays too (dark is already tinted)
+    SemanticHarmonizationDegrees = 8,   // lean green/amber/red toward the brand (off by default)
+    SecondaryHueShift = 90,             // pin the second accent instead of keeping Fluent's spacing
+    IncludeNeutrals = false,            // accents and status roles only
+});</CodeBox>
+
+            <br />
+
+            <BitText>
+                The palette is not calculated from step constants &mdash; it is <i>this</i> palette, the packaged Fluent one, with a hue rotation applied. That matters because the packaged values are hand-solved against the contrast rules their own stylesheets document, and hand-solved values have deliberate irregularities a fitted curve smooths away: a dark tier that stops early where the on-color is black, a light tier that runs into white. Transforming them keeps those decisions instead of re-deriving past them.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                So the <b>accents</b> rotate onto the seed's hue, with primary also shifted in lightness and chroma so its main slot lands exactly on the brand color you passed. Secondary, tertiary and info rotate by the same angle, which preserves Fluent's own spacing between them &mdash; the ~157° from primary to secondary, info sitting on primary's hue &mdash; without those numbers being written down anywhere. The <b>neutrals</b> rotate too, so the dark palette's already-tinted surfaces land on the new hue; the light palette's are pure gray, and rotation alone leaves them that way until <BitTag>NeutralTintChroma</BitTag> adds a tint. The <b>status roles</b> keep their conventional green/amber/red. Rotating them onto the seed is never offered &mdash; a blue "error" is a bug report waiting to happen &mdash; but <BitTag>SemanticHarmonizationDegrees</BitTag> will lean them a few degrees toward the brand if you want that.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Harmonization is off by default for two reasons. It is the only setting that can make the result disagree with the packaged palettes when the seed is their own primary. And Material's 15° cap is measured in CAM16 hue rather than OKLCH &mdash; ported across unchanged it over-rotates here, pulling the packaged green to a teal and the red to a magenta. Around 6-8° is the useful range in this color space.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Contrast survives the transform. Rotating hue happens at constant OKLCH lightness, which is perceptual rather than photometric, so WCAG ratios do move a little; a repair pass afterwards pulls back any ramp step whose on-color would no longer clear its floor, ending up at the same shallower ramp the packaged palettes give those roles by hand. The floors are the ones those palettes document about themselves &mdash; on-color &#8805; 4.5:1 over every fill it is painted on, foregrounds &#8805; 4.5:1 over all three surfaces, <BitTag>brd-pri</BitTag> &#8805; 3:1 &mdash; and tests grid them over ~200 seeds in both schemes.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Seeding <BitTag>BitAccentColorPresets.Blue</BitTag> &mdash; the packaged palettes' own primary &mdash; reproduces them <i>exactly</i>: all 199 tokens, byte for byte, in both schemes, which a test pins. Two tiers are deliberately left unset so they keep tracking rather than freezing: the <BitTag>--bit-sem-*</BitTag> aliases and the <BitTag>--bit-clr-*-focus</BitTag> indicators are <BitTag>var()</BitTag> references onto the primitives this fills, so they follow the generated palette on their own.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>Try it.</b> Each swatch below feeds one <BitTag>BitAccentColorPresets</BitTag> hex through <BitTag>CreateLightThemeFromSeed</BitTag> / <BitTag>CreateDarkThemeFromSeed</BitTag> and applies the result to this page &mdash; watch the surfaces, borders and body text move with the accent, not just the buttons. Toggle dark/light in the header afterwards to watch the same brand color get re-derived for the other scheme, and note that the choice survives a refresh (it is the same switcher as the one on the home page).
+            </BitText>
+
+            <br />
+
+            <AccentColorSwitcher />
+
+            <br />
+
             <BitText>
                 Under the hood, <BitTag>BitThemeColorDerivation</BitTag> fills the role steps (<BitTag>Main</BitTag>, <BitTag>MainHover</BitTag>, <BitTag>MainActive</BitTag>, <BitTag>Dark</BitTag>, <BitTag>Light</BitTag>, <BitTag>Disabled</BitTag>, <BitTag>Focus</BitTag>, <BitTag>Text</BitTag>, &hellip;) from a single main color in the perceptually uniform OKLCH space, at constant hue, with step sizes calibrated to the packaged Fluent palettes &mdash; so a derived role behaves like a packaged one, including the interaction direction: in the <b>light</b> scheme the states step down in lightness, in the <b>dark</b> scheme they step <i>up</i> (toward the light source), matching the packaged dark palette. Derived interactive fills keep &#8805;3:1 against the auto-selected <BitTag>Text</BitTag> for any seed. Caller-set values are preserved, so you can pin any slot and derive the rest.
             </BitText>
@@ -1069,10 +1136,17 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
 {
     Motion =
     {
-        Duration       = "200ms",                              // --bit-mot-duration
-        DurationShort  = "100ms",                              // --bit-mot-duration-short
-        DurationLong   = "300ms",                              // --bit-mot-duration-long
-        EasingStandard = "cubic-bezier(0.33, 0, 0.67, 1)",     // --bit-mot-easing
+        Duration        = "200ms",                              // --bit-mot-duration
+        DurationShort   = "100ms",                              // --bit-mot-duration-short
+        DurationLong    = "300ms",                              // --bit-mot-duration-long
+        EasingStandard  = "cubic-bezier(0.33, 0, 0.67, 1)",     // --bit-mot-easing
+
+        // Looping animations (spinners, loaders, indeterminate bars) cannot use the durations
+        // above: those collapse to a near-zero value under reduced motion, which renders as
+        // flicker rather than as stillness. They have their own tokens, which slow down instead.
+        DurationSpinner = "1.3s",                               // --bit-mot-duration-spinner
+        EasingSpinner   = "cubic-bezier(0.53, 0.21, 0.29, 0.67)", // --bit-mot-easing-spinner
+        LoopFactor      = "1",                                  // --bit-mot-loop-factor
     }
 };</CodeBox>
 
@@ -1102,6 +1176,8 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
                 <b>Reduced motion.</b> Under <BitTag>prefers-reduced-motion: reduce</BitTag>, all <BitTag>--bit-mot-duration*</BitTag> tokens collapse to <BitTag>0.01ms</BitTag>, so transitions effectively disable.
                 The unreduced values stay available in the matching <BitTag>--bit-mot-duration*-full</BitTag> tokens, which is also where you change a duration since it feeds both states.
                 A single component can opt out with the <BitTag>ForceAnimation</BitTag> parameter (it renders the <BitTag>bit-fam</BitTag> class, which restores the full durations for that element and its content).
+                <br /><br />
+                <b>Looping animations are slowed, not stopped.</b> A spinner or a loader is the only thing telling the user that work is still in progress, so it keeps running under reduced motion &mdash; and collapsing it to <BitTag>0.01ms</BitTag> would render as flicker rather than as stillness. Instead <BitTag>--bit-mot-duration-spinner</BitTag> goes to <BitTag>4s</BitTag> and <BitTag>--bit-mot-easing-spinner</BitTag> to <BitTag>linear</BitTag>, while <BitTag>--bit-mot-loop-factor</BitTag> rises to <BitTag>3</BitTag>, stretching every other looping animation (the indeterminate <BitTag>BitProgress</BitTag> bar, the staggered <BitTag>BitLoading</BitTag> variants) as a whole so the phase offsets between their parts survive. All three have <BitTag>-full</BitTag> sources and are restored by <BitTag>ForceAnimation</BitTag>, exactly like the durations above. The exception is a shimmer or skeleton &mdash; a placeholder for content that has not arrived rather than a progress signal &mdash; which stops outright.
                 <br /><br />
                 <b>Forced colors / high contrast.</b> Under <BitTag>forced-colors: active</BitTag> (Windows High Contrast), the palette switches to system colors (<BitTag>CanvasText</BitTag>, <BitTag>Canvas</BitTag>, <BitTag>Highlight</BitTag>, <BitTag>LinkText</BitTag>), shadows drop to <BitTag>none</BitTag>, and the focus ring uses the system <BitTag>Highlight</BitTag> color so it stays visible.
                 <br /><br />
@@ -1439,7 +1515,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
             <BitText>
                 <b>Authoring</b>
                 <br />
-                <BitTag>BitTheme</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeFactory</BitTag> (CreateLightTheme, CreateDarkTheme) &nbsp;&middot;&nbsp; <BitTag>BitThemeUtilities</BitTag> (Merge, ToCssVariables, WithAlpha) &nbsp;&middot;&nbsp; <BitTag>BitThemeSerialization</BitTag> (Serialize, Deserialize) &nbsp;&middot;&nbsp; <BitTag>BitThemeDtcg</BitTag> (Export, Import) &nbsp;&middot;&nbsp; <BitTag>BitThemeColorDerivation</BitTag> (FillColorRoleFromMain) &nbsp;&middot;&nbsp; <BitTag>BitThemeAccentColors</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeColorScheme</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitAccentColorPresets</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeBreakpointDefaults</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeDensityPresets</BitTag> (CreateCompactOverlay, CreateSpaciousOverlay)
+                <BitTag>BitTheme</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeFactory</BitTag> (CreateLightTheme, CreateDarkTheme, CreateLightThemeFromSeed, CreateDarkThemeFromSeed) &nbsp;&middot;&nbsp; <BitTag>BitThemeSeedOptions</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeUtilities</BitTag> (Merge, ToCssVariables, WithAlpha) &nbsp;&middot;&nbsp; <BitTag>BitThemeSerialization</BitTag> (Serialize, Deserialize) &nbsp;&middot;&nbsp; <BitTag>BitThemeDtcg</BitTag> (Export, Import) &nbsp;&middot;&nbsp; <BitTag>BitThemeColorDerivation</BitTag> (FillColorRoleFromMain) &nbsp;&middot;&nbsp; <BitTag>BitThemeAccentColors</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeColorScheme</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitAccentColorPresets</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeBreakpointDefaults</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeDensityPresets</BitTag> (CreateCompactOverlay, CreateSpaciousOverlay)
                 <br /><br />
                 <BitTag>BitThemeColorContrast</BitTag>: <BitTag>GetContrastRatio</BitTag>, <BitTag>MeetsWcagAaNormalText</BitTag>, <BitTag>MeetsWcagAaLargeText</BitTag>, <BitTag>GetApcaContrast</BitTag>, <BitTag>MeetsApcaBodyText</BitTag>, <BitTag>MeetsApcaLargeText</BitTag>, <BitTag>MeetsApcaNonText</BitTag>, <BitTag>ApcaBodyTextLc</BitTag>/<BitTag>ApcaLargeTextLc</BitTag>/<BitTag>ApcaNonTextLc</BitTag>
             </BitText>

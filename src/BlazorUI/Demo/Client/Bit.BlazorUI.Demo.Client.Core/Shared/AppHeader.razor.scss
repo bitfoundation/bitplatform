@@ -79,16 +79,17 @@
 }
 
 // Sized to match the theme toggle next to it. The octocat circle only spans ~87% of the svg's
-// viewBox, so the background is drawn oversized to put the VISIBLE mark at the button's rem2(32px);
+// viewBox, so the mark is drawn oversized to put the VISIBLE glyph at the button's rem2(32px);
 // anything past the ~13% built-in padding clips at the box edge, which is under half a pixel.
+// The svg is a mask rather than a picture, so the mark is painted with the theme's primary color and
+// follows the accent the home page's "Make it yours" swatches apply - a colored asset could not.
 .github-btn {
     cursor: pointer;
     width: rem2(32px);
     height: rem2(32px);
-    border-radius: 50%;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: rem2(37px) rem2(37px);
+    background-color: $bit-color-primary;
+    -webkit-mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
+    mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
 }
 
 .toggle-theme-btn {
@@ -130,10 +131,6 @@
         display: none;
     }
 
-    .github-btn {
-        background-image: url('images/github-icon-dark.svg');
-    }
-
     .logo {
         background-image: url('images/bit-logo-dark.svg');
     }
@@ -142,10 +139,6 @@
 :root:not([bit-theme$='dark']) {
     .dark-theme {
         display: none;
-    }
-
-    .github-btn {
-        background-image: url('images/github-icon-light.svg');
     }
 
     .logo {

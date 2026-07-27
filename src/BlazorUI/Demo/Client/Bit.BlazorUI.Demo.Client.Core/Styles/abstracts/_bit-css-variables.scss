@@ -339,6 +339,11 @@ $bit-motion-duration: var(--bit-mot-duration);
 $bit-motion-duration-short: var(--bit-mot-duration-short);
 $bit-motion-duration-long: var(--bit-mot-duration-long);
 $bit-motion-easing: var(--bit-mot-easing);
+//looping animations: these slow down under reduced motion instead of collapsing, since a near-zero
+//looping duration renders as flicker
+$bit-motion-duration-spinner: var(--bit-mot-duration-spinner);
+$bit-motion-easing-spinner: var(--bit-mot-easing-spinner);
+$bit-motion-loop-factor: var(--bit-mot-loop-factor);
 
 //layout
 $bit-layout-density-scale: var(--bit-layout-density-scale);

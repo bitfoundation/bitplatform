@@ -114,19 +114,7 @@
 
     // the button's own foreground already contrasts with its background in every variant and state
     border-top-color: currentcolor;
-    animation: bit-tgb-spinner-animation 1.3s cubic-bezier(0.53, 0.21, 0.29, 0.67) infinite;
-
-    // The spinner loops forever, so it keeps a literal duration and calms down under reduced motion
-    // here instead of going through the --bit-mot-duration* tokens (a near-zero looping duration
-    // renders as flicker). ForceAnimation renders .bit-fam on the component root rather than on the
-    // spinner, so the opt-out is matched on an ancestor as well, the same way the token-driven
-    // animations inherit it.
-    @media (prefers-reduced-motion: reduce) {
-        &:not(.bit-fam):not(.bit-fam *) {
-            animation-duration: 4s;
-            animation-timing-function: linear;
-        }
-    }
+    animation: bit-tgb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 .bit-tgb-lbl {

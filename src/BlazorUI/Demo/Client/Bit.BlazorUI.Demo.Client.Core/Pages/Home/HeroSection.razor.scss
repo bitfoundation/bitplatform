@@ -100,33 +100,6 @@
         }
     }
 
-    .accent-swatch {
-        margin: 0;
-        padding: 0;
-        cursor: pointer;
-        width: rem2(24px);
-        height: rem2(24px);
-        border-radius: 50%;
-        box-sizing: border-box;
-        background-color: var(--swatch-color);
-        border: rem2(1px) solid $bit-color-border-secondary;
-        transition: transform $bit-motion-duration $bit-motion-easing;
-
-        &:hover {
-            transform: scale(1.15);
-        }
-
-        &:focus-visible {
-            outline: rem2(2px) solid $bit-color-primary;
-            outline-offset: rem2(2px);
-        }
-
-        &--active {
-            outline: rem2(2px) solid var(--swatch-color);
-            outline-offset: rem2(2px);
-        }
-    }
-
     .hero-theming-link {
         margin-inline-start: rem2(6px);
     }
@@ -143,7 +116,6 @@
         margin-left: rem2(20px);
         border-radius: $bit-shape-border-radius;
         background-color: $bit-color-background-secondary;
-        border: rem2(1px) solid $bit-color-border-secondary;
 
         @include gt-md {
             max-height: rem2(700px);

@@ -39,5 +39,5 @@
 }
 
 .bit-ptr-spin {
-    animation: bit-spin 1s linear infinite;
+    animation: bit-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }

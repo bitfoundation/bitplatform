@@ -16,6 +16,10 @@
       <!-- Compile-linked so the derivation tests can verify OKLCH lightness/hue invariants with
            the exact same conversion the library derives with (same pattern as BitInternalColor). -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeOklch.cs" Link="Utils\Theme\BitThemeOklch.cs" />
+      <!-- Same pattern: the seed factory treats this transcription of the packaged stylesheets as the
+           source of truth for "the Fluent palette", so BitThemeFluentPaletteContractTests has to be
+           able to compare it against those stylesheets without opening the type up to the world. -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeFluentPalettes.cs" Link="Utils\Theme\BitThemeFluentPalettes.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous

@@ -477,6 +477,9 @@ internal static class BitThemeMapper
         addCssVar("--bit-mot-duration-short", bitTheme.Motion.DurationShort);
         addCssVar("--bit-mot-duration-long", bitTheme.Motion.DurationLong);
         addCssVar("--bit-mot-easing", bitTheme.Motion.EasingStandard);
+        addCssVar("--bit-mot-duration-spinner", bitTheme.Motion.DurationSpinner);
+        addCssVar("--bit-mot-easing-spinner", bitTheme.Motion.EasingSpinner);
+        addCssVar("--bit-mot-loop-factor", bitTheme.Motion.LoopFactor);
 
         addCssVar("--bit-layout-density-scale", bitTheme.Layout.DensityScale);
 
@@ -1089,6 +1092,9 @@ internal static class BitThemeMapper
         result.Motion.DurationShort = bitTheme.Motion.DurationShort ?? other.Motion.DurationShort;
         result.Motion.DurationLong = bitTheme.Motion.DurationLong ?? other.Motion.DurationLong;
         result.Motion.EasingStandard = bitTheme.Motion.EasingStandard ?? other.Motion.EasingStandard;
+        result.Motion.DurationSpinner = bitTheme.Motion.DurationSpinner ?? other.Motion.DurationSpinner;
+        result.Motion.EasingSpinner = bitTheme.Motion.EasingSpinner ?? other.Motion.EasingSpinner;
+        result.Motion.LoopFactor = bitTheme.Motion.LoopFactor ?? other.Motion.LoopFactor;
 
         result.Layout.DensityScale = bitTheme.Layout.DensityScale ?? other.Layout.DensityScale;
         result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;

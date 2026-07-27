@@ -80,7 +80,10 @@
     min-width: 33%;
     position: absolute;
     transition: width $mot-duration-long ease 0s;
-    animation: 3s ease 0s infinite normal none running bit-prb-animation;
+    // The sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
+    // taking the spinner tokens: 3s normally, stretched under reduced motion, restored inside a
+    // ForceAnimation subtree.
+    animation: calc(3s * var(--bit-mot-loop-factor, 1)) ease 0s infinite normal none running bit-prb-animation;
     background: linear-gradient(to right, $clr-bg-sec 0%, var(--bit-prb-bar-color) 50%, $clr-bg-sec 100%);
 }
 
@@ -126,8 +129,7 @@
     stroke: var(--bit-prb-bar-color);
     transition: stroke-dasharray $mot-duration-short ease-in-out;
     stroke-dasharray: calc(3.141 * 25% * 0.8), 500%;
-    animation: bit-prb-cir-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    animation: bit-prb-cir-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 

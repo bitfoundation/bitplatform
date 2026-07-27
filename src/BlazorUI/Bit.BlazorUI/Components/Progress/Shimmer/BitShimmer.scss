@@ -53,7 +53,7 @@
 
 .bit-smr-cnt {
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     animation-timing-function: ease;
     animation-name: bit-smr-anim-opacity;
 }
@@ -63,7 +63,7 @@
     overflow: hidden;
     position: relative;
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     background-color: $clr-bg-sec;
     animation-timing-function: ease;
     animation-name: bit-smr-anim-opacity;
@@ -76,14 +76,33 @@
     background: var(--bit-smr-bg-clr);
 }
 
+// The wave and the pulse loop forever, so they keep literal durations rather than the
+// --bit-mot-duration* tokens (a near-zero looping duration renders as flicker). Unlike a spinner
+// they are a placeholder for content that has not arrived rather than the signal that work is in
+// progress - the shimmer's own box already conveys that - so reduced motion stops them outright the
+// way BitTextShimmer does, leaving the static block behind: the wave parks its gradient off to the
+// left and the pulse settles at full opacity. ForceAnimation renders .bit-fam on the component root
+// rather than on these elements, so the opt-out is matched on an ancestor as well.
 .bit-smr-wav {
     transform: translateX(-100%);
     animation: bit-smr-anim-wave 1.6s linear 0.5s infinite;
     background: linear-gradient(90deg, transparent, var(--bit-smr-bg-clr), transparent);
+
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation: none;
+        }
+    }
 }
 
 .bit-smr-pul {
     animation: bit-smr-anim-pulse 1.6s ease-in-out 0.5s infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation: none;
+        }
+    }
 }
 
 

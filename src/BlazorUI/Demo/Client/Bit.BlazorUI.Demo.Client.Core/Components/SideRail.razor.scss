@@ -28,8 +28,8 @@
         z-index: 10;
         display: block;
         position: fixed;
-        inset-inline-end: rem2(16px);
-        top: calc(rem2(80px) + var(--bit-env-inset-top));
+        inset-inline-end: 2rem;
+        top: calc(4.5rem + var(--bit-env-inset-top));
     }
 }
 

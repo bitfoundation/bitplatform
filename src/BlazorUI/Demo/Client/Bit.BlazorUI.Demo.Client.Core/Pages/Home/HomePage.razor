@@ -71,11 +71,14 @@
                            IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
                     Get started
                 </BitButton>
-                <BitButton IconUrl="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/github-blue-icon.svg"
-                           Size="BitSize.Large"
+                @* The octocat is a masked span rather than an IconUrl image so it inherits the button's
+                   text color, which keeps it on the accent (and readable on the hover fill) instead of
+                   staying the one blue a colored asset would bake in. *@
+                <BitButton Size="BitSize.Large"
+                           Class="github-button"
                            Variant="BitVariant.Outline"
                            Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
-                    GitHub
+                    <span class="github-mark" aria-hidden="true"></span>GitHub
                 </BitButton>
                 <BitSpacer />
                 <GitHubEditButton GitHubUrl="Home/HomePage.razor" />
