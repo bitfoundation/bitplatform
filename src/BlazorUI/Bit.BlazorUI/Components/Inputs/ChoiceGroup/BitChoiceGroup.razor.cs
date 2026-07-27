@@ -29,7 +29,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public string? AriaLabelledBy { get; set; }
 
     /// <summary>
-    /// Determines if the ChoiceGroup is auto focused on first render, focusing its checked item (or its first item).
+    /// Determines if the ChoiceGroup is auto focused on first render, focusing its checked item, or its first
+    /// enabled item when nothing is checked. Nothing is focused when the target item is disabled.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 
