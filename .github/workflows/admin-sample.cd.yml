@@ -48,7 +48,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -118,7 +118,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --brouter false
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -179,7 +179,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'AdminPanel\**\appsettings*json'
       env:
@@ -253,7 +253,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -320,7 +320,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@452ffbbfb1c26fd5d9aaf24faffb59c5084257e9 # v2.0.0
+      uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
