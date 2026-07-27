@@ -553,7 +553,7 @@ private void ReverseDynamicOptions()
 private bool showAutoFocus;";
 
     private readonly string example20RazorCode = @"
-<BitChoiceGroup Color=""BitColor.Primary"" Label=""Primary""DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />

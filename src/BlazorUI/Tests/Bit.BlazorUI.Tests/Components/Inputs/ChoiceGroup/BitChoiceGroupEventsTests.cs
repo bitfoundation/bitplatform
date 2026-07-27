@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
@@ -136,7 +137,7 @@ public class BitChoiceGroupEventsTests : BunitTestContext
         var items = GetItems();
         items[0].IsEnabled = false;
 
-        RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.AutoFocus, true);
@@ -145,6 +146,7 @@ public class BitChoiceGroupEventsTests : BunitTestContext
         // Tabbing into the group skips the disabled first radio, so the focus target has to skip it too,
         // otherwise the auto focus lands on a disabled input and silently does nothing.
         Assert.AreEqual(1, FocusInvocationCount());
+        Assert.AreEqual(component.FindAll(".bit-chg-icn input")[1].GetAttribute("blazor:elementreference"), FocusedElementId());
     }
 
     [TestMethod]
@@ -163,5 +165,15 @@ public class BitChoiceGroupEventsTests : BunitTestContext
     private int FocusInvocationCount()
     {
         return Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", System.StringComparison.OrdinalIgnoreCase));
+    }
+
+    // The id of the element the focus interop was called with, so a test can assert which input was focused
+    // and not only that something was. It matches the blazor:elementreference attribute bUnit renders on the
+    // elements captured with @ref.
+    private string FocusedElementId()
+    {
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier.Contains("focus", System.StringComparison.OrdinalIgnoreCase));
+
+        return ((ElementReference)invocation.Arguments[0]!).Id;
     }
 }

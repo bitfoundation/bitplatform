@@ -19,7 +19,7 @@
 </DemoExample>
 
 <DemoExample Title="Disabled" RazorCode="@example2RazorCode" Id="example2" PreventRenderForMcpClient>
-    <div>Disables the whole ChoiceGroup or its individual items. Disabled items cannot be selected and are skipped by the keyboard navigation.</div>
+    <div>Disables the whole ChoiceGroup or its individual options. Disabled options cannot be selected and are skipped by the keyboard navigation.</div>
     <br />
     <div class="example-content">
         <BitChoiceGroup Label="Disabled ChoiceGroup"
@@ -44,7 +44,7 @@
 </DemoExample>
 
 <DemoExample Title="Images and Icons" RazorCode="@example3RazorCode" Id="example3" PreventRenderForMcpClient>
-    <div>Displays items as image or icon tiles: ImageSrc with an optional ImageSize renders a picture, IconName (or Icon for an external library) renders a glyph, and SelectedImageSrc swaps in a second picture while the item is checked. The images are marked decorative so the item text carries the accessible name; set ImageAlt only when the picture says something the text does not. The Inline mode drops the tile layout and puts the image or icon on the same line as the text.</div>
+    <div>Displays options as image or icon tiles: ImageSrc with an optional ImageSize renders a picture, IconName (or Icon for an external library) renders a glyph, and SelectedImageSrc swaps in a second picture while the option is checked. The images are marked decorative so the option text carries the accessible name; set ImageAlt only when the picture says something the text does not. The Inline mode drops the tile layout and puts the image or icon on the same line as the text.</div>
     <br /><br />
     <div class="example-content">
         <BitChoiceGroup Label="Image Options"
@@ -105,7 +105,7 @@
 </DemoExample>
 
 <DemoExample Title="Horizontal" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
-    <div>Lays out the items in a row instead of the default vertical stack, wrapping onto new lines when the available width runs out. The aria-orientation of the radiogroup follows this parameter, so assistive technology announces the same orientation the eye sees.</div>
+    <div>Lays out the options in a row instead of the default vertical stack, wrapping onto new lines when the available width runs out. The aria-orientation of the radiogroup follows this parameter, so assistive technology announces the same orientation the eye sees.</div>
     <br />
     <div class="example-content column">
         <BitChoiceGroup Label="Basic" TItem="BitChoiceGroupOption<string>" TValue="string" DefaultValue="@("A")" Horizontal>
@@ -361,7 +361,7 @@
 </DemoExample>
 
 <DemoExample Title="ReadOnly" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <div>Prevents changing the value while keeping the normal, non-disabled appearance. Unlike IsEnabled="false" the group stays fully reachable: Tab still lands on the checked item and the arrow keys still move the focus, so the choice can be read with the keyboard and a screen reader, and the value is still submitted with the form. The group reports aria-readonly, and every attempt to commit a change (a click, Space, or an arrow key) is cancelled, so the selection cannot move.</div>
+    <div>Prevents changing the value while keeping the normal, non-disabled appearance. Unlike IsEnabled="false" the group stays fully reachable: Tab still lands on the checked option and the arrow keys still move the focus, so the choice can be read with the keyboard and a screen reader, and the value is still submitted with the form. The group reports aria-readonly, and every attempt to commit a change (a click, Space, or an arrow key) is cancelled, so the selection cannot move.</div>
     <br />
     <div class="example-content">
         <BitChoiceGroup Label="ReadOnly" ReadOnly @bind-Value="readOnlyValue" TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -374,7 +374,7 @@
 </DemoExample>
 
 <DemoExample Title="Gap" RazorCode="@example12RazorCode" Id="example12">
-    <div>Customizes the gap between the items using any CSS length value, overriding the default spacing of the current size.</div>
+    <div>Customizes the gap between the options using any CSS length value, overriding the default spacing of the current size.</div>
     <br />
     <div class="example-content column">
         <BitChoiceGroup Label="1rem gap" Gap="1rem" DefaultValue="@("A")" TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -563,7 +563,7 @@
 </DemoExample>
 
 <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
-        <div>Colors the radio circle and the checked state of the items using the BitColor palette, with Primary being the default.</div>
+        <div>Colors the radio circle and the checked state of the options using the BitColor palette, with Primary being the default.</div>
         <br />
         <div>
             <div class="example-box">
@@ -759,7 +759,7 @@
 </DemoExample>
 
 <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
-    <div>Comes in Small, Medium (default), and Large sizes that scale the radio circle, text, icons, and item spacing together.</div>
+    <div>Comes in Small, Medium (default), and Large sizes that scale the radio circle, text, icons, and option spacing together.</div>
     <br /><br />
     <div>Basic ChoiceGroup</div>
     <div class="example-content column">
@@ -853,7 +853,7 @@
 </DemoExample>
 
 <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
-    <div>Customizes the appearance at every level: Style and Class on the root element, per-item styles and classes, and the Styles and Classes objects that target the internal parts of the component, including the checked state of the items.</div>
+    <div>Customizes the appearance at every level: Style and Class on the root element, per-option styles and classes, and the Styles and Classes objects that target the internal parts of the component, including the checked state of the options.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
     <br />
