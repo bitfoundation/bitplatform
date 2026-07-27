@@ -19,6 +19,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private HashSet<TItem>? _searchedItemsCache;
     private string? _positionsCacheKey;
     private int _positionsCacheVersion = -1;
+    private int _positionsSelectionVersion = -1;
     private Dictionary<TItem, int>? _itemPositions;
     private int _selectionVersion;
     private string? _displayItemsCacheKey;
@@ -861,12 +862,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         var search = SearchText;
 
+        // The selection version is part of the key because GetDisplayItems drops the selected items when
+        // HideSelectedItems is on, which shifts the position of every item that comes after them.
         if (_itemPositions is null ||
             _positionsCacheKey != search ||
-            _positionsCacheVersion != _optionsVersion)
+            _positionsCacheVersion != _optionsVersion ||
+            _positionsSelectionVersion != _selectionVersion)
         {
             _positionsCacheKey = search;
             _positionsCacheVersion = _optionsVersion;
+            _positionsSelectionVersion = _selectionVersion;
             _itemPositions = [];
 
             var position = 0;

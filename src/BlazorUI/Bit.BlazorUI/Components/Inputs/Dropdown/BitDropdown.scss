@@ -384,7 +384,7 @@
     align-items: center;
     white-space: nowrap;
     padding: 0 spacing(1.25);
-    min-height: spacing(3.75);
+    min-height: var(--bit-drp-h);
     color: $clr-fg-pri;
     background: $clr-bg-sec;
 

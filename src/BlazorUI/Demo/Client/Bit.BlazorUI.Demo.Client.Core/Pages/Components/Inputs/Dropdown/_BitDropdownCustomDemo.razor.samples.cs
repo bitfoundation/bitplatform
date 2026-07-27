@@ -559,6 +559,21 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              NameSelectors=""comboBoxNameSelectors""
              Placeholder=""Type to filter"" />";
     private readonly string example9CsharpCode = @"
+public class Product
+{
+    public string? Label { get; set; }
+    public string? CssClass { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? CssStyle { get; set; }
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
 private List<Product> GetBasicCustoms() => new()
 {
     new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
@@ -579,6 +594,37 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
     Value = { Selector = c => c.Value },
     ItemType = { Selector = c => c.Type },
     IsEnabled = { Selector = c => c.Disabled is false },
+};
+
+private List<Product> comboBoxCustoms = new()
+{
+    new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Divider },
+    new() { Text = ""Vegetables"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Class = { Selector = c => c.CssClass },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Style = { Selector = c => c.CssStyle },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
+    ValueSetter = (Product item, string value) => item.Value = value,
+    TextSetter = (string? text, Product item) => item.Text = text
 };";
 
     private readonly string example10RazorCode = @"
@@ -1224,6 +1270,21 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
              Placeholder=""Select items""
              DefaultValues=""@(new[] { ""f-app"", ""f-ban"" })"" />";
     private readonly string example16CsharpCode = @"
+public class Product
+{
+    public string? Label { get; set; }
+    public string? CssClass { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? CssStyle { get; set; }
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
 private List<Product> GetBasicCustoms() => new()
 {
     new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
@@ -1236,6 +1297,50 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Broccoli"", Value = ""v-bro"" },
     new() { Text = ""Carrot"", Value = ""v-car"" },
     new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
+};
+
+private List<Product> comboBoxCustoms = new()
+{
+    new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Divider },
+    new() { Text = ""Vegetables"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Class = { Selector = c => c.CssClass },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Style = { Selector = c => c.CssStyle },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
+    ValueSetter = (Product item, string value) => item.Value = value,
+    TextSetter = (string? text, Product item) => item.Text = text
 };";
 
     private readonly string example17RazorCode = @"
@@ -1630,6 +1735,19 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"" />";
     private readonly string example22CsharpCode = @"
+public class Product
+{
+    public string? Label { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
 private bool isLoadingItems;
 private ICollection<Product> delayedCustoms = [];
 
@@ -1656,6 +1774,19 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Broccoli"", Value = ""v-bro"" },
     new() { Text = ""Carrot"", Value = ""v-car"" },
     new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
 };";
 
     private readonly string example23RazorCode = @"
@@ -2104,6 +2235,19 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Size=""BitSize.Large""
              Placeholder=""Select an item"" />";
     private readonly string example26CsharpCode = @"
+public class Product
+{
+    public string? Label { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
 private List<Product> GetBasicCustoms() => new()
 {
     new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
