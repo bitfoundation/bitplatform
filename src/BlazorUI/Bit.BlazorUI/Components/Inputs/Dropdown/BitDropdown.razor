@@ -374,6 +374,7 @@
                     role="checkbox"
                     style="@Styles?.SelectAllButton"
                     class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
+                    disabled="@(IsEnabled is false || ReadOnly)"
                     aria-checked="@selectAllAriaChecked">
                 <div style="@Styles?.SelectAllCheckBox"
                      class="bit-drp-chb @Classes?.SelectAllCheckBox">
@@ -393,7 +394,7 @@
          role="listbox"
          style="@Styles?.ScrollContainer"
          class="bit-drp-scn @Classes?.ScrollContainer"
-         aria-labelledby="@_labelId"
+         aria-labelledby="@(HasLabel ? _labelId : null)"
          aria-multiselectable="@(MultiSelect ? "true" : null)">
         @if (IsLoading)
         {

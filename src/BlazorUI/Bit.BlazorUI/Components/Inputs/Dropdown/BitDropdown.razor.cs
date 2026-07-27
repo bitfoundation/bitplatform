@@ -1894,9 +1894,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return className.ToString();
     }
 
+    // Whether the label element carrying _labelId is rendered, so nothing references a missing element.
+    private bool HasLabel => LabelTemplate is not null || Label.HasValue();
+
     private string GetDropdownAriaLabelledby()
     {
-        return Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
+        return HasLabel ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
     }
 
     private async Task SearchVirtualized()

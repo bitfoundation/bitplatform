@@ -6,6 +6,10 @@ namespace BitBlazorUI {
         // virtualize mode to be rendered, before giving up and using whatever is rendered by then.
         private static readonly VIRTUALIZE_RENDER_FRAMES = 20;
 
+        // The number of items PageDown/PageUp move the focus by when the whole list is rendered (in
+        // virtualize mode the jump is a scroll of one visible window instead, see _scrollFor).
+        private static readonly PAGE_STEP = 10;
+
         // The keys whose default behavior (scrolling the page or the callout) has to be prevented
         // because the dropdown handles them itself. They mirror the keys handled by the
         // HandleOnTriggerKeyDown and HandleOnCalloutKeyDown methods of BitDropdown, which is where a
@@ -180,9 +184,9 @@ namespace BitBlazorUI {
 
             if (mode === 'prev') return current < 0 ? items.length - 1 : wrap(current - 1);
 
-            if (mode === 'nextPage') return current < 0 ? 0 : Math.min(current + 10, items.length - 1);
+            if (mode === 'nextPage') return current < 0 ? 0 : Math.min(current + Dropdowns.PAGE_STEP, items.length - 1);
 
-            if (mode === 'prevPage') return current < 0 ? items.length - 1 : Math.max(current - 10, 0);
+            if (mode === 'prevPage') return current < 0 ? items.length - 1 : Math.max(current - Dropdowns.PAGE_STEP, 0);
 
             if (mode === 'selected') {
                 // Focus the selected option if there is one, otherwise the first one (APG combobox pattern).
