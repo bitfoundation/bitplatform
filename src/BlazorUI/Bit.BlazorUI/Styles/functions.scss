@@ -19,12 +19,12 @@ $html-font-size: 16px;
 /*
  * spacing($value)
  * --------------------------------------------------
- * --bit-spa-scaling-factor is the base spacing unit (a CSS length, 0.5rem by default) and
- * --bit-layout-density-scale is a unitless multiplier for density presets (compact = < 1).
- * The density var carries a fallback of 1 so themes that never set it keep the base rhythm.
+ * $spacing-scaling-factor is the base spacing unit (a CSS length, 0.5rem by default) and
+ * $layout-density-scale is a unitless multiplier for density presets (compact = < 1).
+ * The density token carries a fallback of 1 so themes that never set it keep the base rhythm.
  */
 @function spacing($spacingValue) {
-    @return calc($spacing-scaling-factor * var(--bit-layout-density-scale, 1) * $spacingValue);
+    @return calc($spacing-scaling-factor * $layout-density-scale * $spacingValue);
 }
 
 /*
@@ -75,7 +75,7 @@ $html-font-size: 16px;
     // Inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss
     // so focus indicators still render if a consumer-defined theme omits that token.
     box-shadow: var(--bit-shd-focus-ring,
-        0 0 0 var(--bit-focus-ring-offset, #{$offset}) var(--bit-clr-bg-pri),
+        0 0 0 var(--bit-focus-ring-offset, #{$offset}) #{$clr-bg-pri},
         0 0 0 calc(var(--bit-focus-ring-offset, #{$offset}) + #{$shp-focus-ring-width}) var(--bit-focus-ring-color, #{$color}));
 
     // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the

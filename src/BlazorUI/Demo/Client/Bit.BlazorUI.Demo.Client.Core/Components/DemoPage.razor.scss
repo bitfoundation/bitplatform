@@ -20,7 +20,7 @@
         padding: 0.5rem 1rem;
         background-color: $bit-color-background-primary;
         border-bottom: rem2(1px) solid $bit-color-border-secondary;
-        top: calc(rem2(66px) + var(--bit-env-inset-top));
+        top: calc(rem2(66px) + #{$bit-env-inset-top});
 
         .bit-ios & {
             top: calc(rem2(66px) + env(safe-area-inset-top));

@@ -1,4 +1,6 @@
-﻿::deep {
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
     .example-content {
         gap: 0.5rem;
         display: flex;
@@ -17,7 +19,7 @@
         max-width: 30rem;
         overflow: hidden;
         resize: horizontal;
-        border: 1px dashed var(--bit-clr-brd-sec);
+        border: 1px dashed $bit-color-border-secondary;
     }
 
     .custom-template {

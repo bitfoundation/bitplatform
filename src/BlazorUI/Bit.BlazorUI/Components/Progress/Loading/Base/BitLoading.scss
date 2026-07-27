@@ -13,7 +13,7 @@
     // scaling the durations alone would bunch them up. It follows the theme's shared loop factor,
     // which already slows under reduced motion and is restored by ForceAnimation, and stays a knob a
     // consumer can override on a single loader.
-    --bit-ldn-mot-factor: var(--bit-mot-loop-factor, 1);
+    --bit-ldn-mot-factor: #{$mot-loop-factor};
 }
 
 .bit-ldn-lbl {

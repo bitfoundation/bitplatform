@@ -41,7 +41,7 @@
     border-radius: 0 3px 3px 0;
     // Not a spinner, so it scales its own duration by the shared loop factor: stretched under
     // reduced motion, restored inside a ForceAnimation subtree.
-    animation: bit-pdv-progress-slide calc(1.1s * var(--bit-mot-loop-factor, 1)) ease-in-out infinite;
+    animation: bit-pdv-progress-slide calc(1.1s * #{$mot-loop-factor}) ease-in-out infinite;
 }
 
 @keyframes bit-pdv-progress-slide {

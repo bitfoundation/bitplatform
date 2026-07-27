@@ -11,7 +11,7 @@
     height: fit-content;
     flex: 0 0 rem2(232px);
     padding: 0 rem2(24px) 2rem;
-    max-height: calc(var(--bit-env-win-height) - #{rem2(110px)});
+    max-height: calc(#{$bit-env-window-height} - #{rem2(110px)});
 
     @include lt-xl {
         display: none;
@@ -29,7 +29,7 @@
         display: block;
         position: fixed;
         inset-inline-end: 2rem;
-        top: calc(4.5rem + var(--bit-env-inset-top));
+        top: calc(4.5rem + #{$bit-env-inset-top});
     }
 }
 
