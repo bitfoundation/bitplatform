@@ -8,7 +8,11 @@
     broken worker or cache - with the self-destructing cleanup worker.
 </p>
 
-<p>Replace the <em>content</em> of your <code>service-worker.js</code> with:</p>
+<p>
+    Replace the <em>content</em> of your <code>service-worker.js</code> <strong>and</strong>
+    <code>service-worker.published.js</code> (the file deployed builds actually ship, via the
+    <code>ServiceWorker</code> item's <code>PublishedContent</code> mapping) with:
+</p>
 <CodeBlock Language="javascript" Code="self.importScripts('_content/Bit.Bswup/bit-bswup.sw-cleanup.js');" />
 
 <h2>What happens next</h2>

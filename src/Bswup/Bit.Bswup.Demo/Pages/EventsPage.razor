@@ -99,7 +99,10 @@
                     Whether the install actually stopped. Under the default <code>lax</code> tolerance a
                     failed asset is reported with <code>fatal: false</code> - the install still succeeds and
                     the asset is fetched from the network on first use - so treat it as a warning, not a
-                    dead app. Only <code>fatal: true</code> means no new version was installed.
+                    dead app. <code>fatal: true</code> means no usable staged version is available to this
+                    page - though a worker may still have been installed (a lax
+                    <code>install-infra</code> failure resolves the install so the worker can keep serving
+                    as a network pass-through).
                 </td>
             </tr>
             <tr>
@@ -155,11 +158,17 @@ function bitBswupHandler(type, data) {
 
         case BswupMessage.downloadFinished:
             if (data.firstInstall) {
-                // First install: claim + start Blazor, no page reload.
-                data.reload().then(() => {
+                // First install: claim + start Blazor, no page reload. Reveal the app even if
+                // the claim/start stalls or rejects - a hidden #app with no way out is worse
+                // than an app shown behind a stale splash.
+                const reveal = () => {
                     appEl.style.display = 'block';
                     bswupEl.style.display = 'none';
-                });
+                };
+                const failSafe = setTimeout(reveal, 10000);
+                data.reload()
+                    .catch(err => console.error('Bswup first install failed to start:', err))
+                    .then(() => { clearTimeout(failSafe); reveal(); });
             } else {
                 // Update: let the user accept it.
                 reloadButton.style.display = 'block';
@@ -183,7 +192,14 @@ function bitBswupHandler(type, data) {
                 // lax tolerance: the install continued; the asset lazy-fills later.
                 return console.warn('Bswup asset skipped:', data.reason, data.message);
             }
-            return console.error('Bswup install error:', data.reason, data.message, data);
+            console.error('Bswup install error:', data.reason, data.message, data);
+            if (data.firstInstall) {
+                // Fatal first-install failure: Bswup force-starts Blazor from the network;
+                // reveal the app instead of leaving it booted behind the splash.
+                appEl.style.display = 'block';
+                bswupEl.style.display = 'none';
+            }
+            return;
     }
 }";
 

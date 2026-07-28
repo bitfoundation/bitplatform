@@ -107,11 +107,15 @@ BitBswup.forceRefresh(() => true);                // every cache on the origin
 BitBswup.forceRefresh('bit-bswup');               // only Bswup's own caches
 BitBswup.forceRefresh(/^(bit-bswup|my-app-data)/) // a specific set";
 
-    private const string PollingCode = @"// check every hour from your own code (equivalent to updateInterval=""3600"")
-setInterval(() => BitBswup.checkForUpdate(), 60 * 60 * 1000);
+    private const string PollingCode = @"// consume the returned promise so a failed check is reported, not an unhandled rejection
+const checkNow = () => BitBswup.checkForUpdate()
+    .catch(err => console.warn('update check failed:', err));
+
+// check every hour from your own code (equivalent to updateInterval=""3600"")
+setInterval(checkNow, 60 * 60 * 1000);
 
 // or check whenever the user clicks a button, and react to the result
-document.getElementById('check-updates').onclick = () => BitBswup.checkForUpdate();";
+document.getElementById('check-updates').onclick = checkNow;";
 
     private const string PollingHandlerCode = @"window.bitBswupHandler = (message, data) => {
     switch (message) {

@@ -174,12 +174,14 @@
         const block = button.closest('.code-block');
         const code = block ? block.querySelector('pre code') : null;
         if (!code) return;
-        navigator.clipboard.writeText(code.textContent || '').then(() => {
-            const original = button.textContent;
-            button.textContent = 'Copied!';
+        const original = button.textContent;
+        const flash = text => {
+            button.textContent = text;
             button.disabled = true;
             setTimeout(() => { button.textContent = original; button.disabled = false; }, 1500);
-        });
+        };
+        if (!navigator.clipboard || !navigator.clipboard.writeText) return flash('Copy failed');
+        navigator.clipboard.writeText(code.textContent || '').then(() => flash('Copied!'), () => flash('Copy failed'));
     }
 
     // Blazor renders pages after this script runs (and on every navigation), so watch for the

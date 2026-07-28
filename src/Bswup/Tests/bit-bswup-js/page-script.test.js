@@ -1132,6 +1132,31 @@ describe('checkForUpdate outcomes', () => {
         expect(seen.some(([message]) => message === 'UPDATE_CHECK_FAILED')).toBe(true);
         expect(seen.some(([message]) => message === 'ERROR')).toBe(false);
     });
+
+    it('overlapping calls share one in-flight check (one reg.update, one outcome report)', async () => {
+        let updates = 0;
+        const { ctx, seen } = checkPage(async () => { updates++; });
+        await ctx.settle();
+
+        // Documented as "safe to call as often as you like": concurrent callers must join
+        // the in-flight check instead of racing reg.update() / the registration inspection.
+        await Promise.all([
+            ctx.window.BitBswup.checkForUpdate(),
+            ctx.window.BitBswup.checkForUpdate(),
+            ctx.window.BitBswup.checkForUpdate(),
+        ]);
+        await letTimersFire();
+        await ctx.settle();
+
+        expect(updates).toBe(1);
+        expect(seen.filter(([message]) => message === 'UPDATE_NOT_FOUND').length).toBe(1);
+
+        // A later, non-overlapping call runs a fresh check again.
+        await ctx.window.BitBswup.checkForUpdate();
+        await letTimersFire();
+        await ctx.settle();
+        expect(updates).toBe(2);
+    });
 });
 
 describe('update polling', () => {

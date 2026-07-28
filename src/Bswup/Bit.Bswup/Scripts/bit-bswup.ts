@@ -898,7 +898,24 @@ if (!BitBswup.initialized) {
             // the page-facing BitBswup.checkForUpdate(). Unlike the load-time fallback it can
             // report the outcome: if nothing new is staged after the check it emits
             // updateNotFound so callers can stop a spinner / show an "up to date" message.
-            async function checkForUpdate(): Promise<void> {
+            //
+            // Overlapping calls share one in-flight check (the public API is documented as
+            // safe to call as often as you like): the check is reg.update() followed by a
+            // yield and an installing/waiting inspection, so two interleaved runs could each
+            // read the registration mid-way through the other's update and announce a
+            // spurious updateNotFound - or double-announce the same outcome. Joining the
+            // in-flight promise gives every concurrent caller the same single check/report.
+            let updateCheckInFlight: Promise<void> | undefined;
+            function checkForUpdate(): Promise<void> {
+                if (updateCheckInFlight) {
+                    verbose('update check already in flight - joining it.');
+                    return updateCheckInFlight;
+                }
+                updateCheckInFlight = runUpdateCheck().finally(() => updateCheckInFlight = undefined);
+                return updateCheckInFlight;
+            }
+
+            async function runUpdateCheck(): Promise<void> {
                 if (!registration) {
                     warn('checkForUpdate called before the service worker registration was ready.');
                     return;

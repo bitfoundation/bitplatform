@@ -127,8 +127,11 @@ function bitBswupHandler(type, data) {
             // data.fatal says whether the install actually stopped. Under the default 'lax'
             // tolerance a failed asset is reported with `fatal: false` - the install still
             // succeeds and that asset is fetched from the network on first use - so treat it
-            // as a warning, not a dead app. Only `fatal: true` (an invalid manifest, or an
-            // abort under errorTolerance 'strict') means no new version was installed.
+            // as a warning, not a dead app. `fatal: true` (an invalid manifest, an abort under
+            // errorTolerance 'strict', or an 'install-infra' failure) means no usable staged
+            // version is available to this page. Note that a worker may still have been
+            // installed: a lax 'install-infra' failure resolves the install so the worker can
+            // keep serving as a network pass-through.
             //
             // data.firstInstall distinguishes where a fatal failure landed. `true`: it happened
             // before the app ever booted - Bswup starts the app without a service worker so it
@@ -263,7 +266,7 @@ The other settings are:
         /^service-worker\.js$/,
     ]
     ```
-    #### Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker. Only the browser should handle these files. 
+    **Keep in mind** that caching service-worker related files will corrupt the update cycle of the service-worker. Only the browser should handle these files.
 - `isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request. Note that passive mode does not skip the full download entirely: on a *first* install, once Blazor has started, the service worker still tops up the cache in the background with every asset not yet fetched, so the app ends up fully offline-capable - what passive mode buys is that the first paint is never blocked behind a full precache. Assets being lazily fetched by the app while that top-up runs can be downloaded twice in that window (both writes land on the same cache keys, so this is a bandwidth cost, not a correctness issue).
 - `enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
 - `errorTolerance`: Controls how the service worker reacts to asset download / cache failures during install. Possible values:
@@ -315,7 +318,7 @@ Behavior worth knowing:
 
 ## Backing out of Bswup (the cleanup worker)
 
-To fully remove Bswup from a deployed app (dropping offline support, or recovering clients stuck on a broken worker/cache), replace the *content* of your `service-worker.js` with:
+To fully remove Bswup from a deployed app (dropping offline support, or recovering clients stuck on a broken worker/cache), replace the *content* of your `service-worker.js` **and** `service-worker.published.js` (the file deployed builds actually ship, via the `ServiceWorker` item's `PublishedContent` mapping) with:
 
 ```js
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw-cleanup.js');
@@ -347,11 +350,15 @@ By default a service worker is only re-checked by the browser on navigation and 
 2. Call `BitBswup.checkForUpdate()` yourself, for example from a timer or after a user action.
 
 ```js
+// consume the returned promise so a failed check is reported, not an unhandled rejection
+const checkNow = () => BitBswup.checkForUpdate()
+    .catch(err => console.warn('update check failed:', err));
+
 // check every hour from your own code (equivalent to updateInterval="3600")
-setInterval(() => BitBswup.checkForUpdate(), 60 * 60 * 1000);
+setInterval(checkNow, 60 * 60 * 1000);
 
 // or check whenever the user clicks a button, and react to the result
-document.getElementById('check-updates').onclick = () => BitBswup.checkForUpdate();
+document.getElementById('check-updates').onclick = checkNow;
 ```
 
 Either way, the result surfaces through your `bitBswupHandler`: a found update flows through `updateFound`/`updateReady`, "nothing new" flows through `updateNotFound`, and a transient check failure flows through `updateCheckFailed` (handle it the same way as the other events, e.g. stop your spinner and optionally show a "couldn't check right now" hint - the app keeps running on the current version):

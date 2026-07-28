@@ -807,7 +807,7 @@ html[data-theme="dark"] .theme-icon-dark {
         display: inline-flex;
     }
 
-    .header-link-text {
+    .header-link {
         display: none;
     }
 
