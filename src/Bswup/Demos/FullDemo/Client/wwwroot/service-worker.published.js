@@ -54,6 +54,10 @@ self.noPrerenderQuery = 'no-prerender=true';
 
 self.isPassive = true;
 
+//// Diagnostics knobs (see the Bswup README for details):
+//self.enableDiagnostics = true;            // log install/activate/cache decisions to the console
+//self.enableFetchDiagnostics = true;       // additionally log every intercepted fetch (very verbose)
+
 //// Resiliency knobs (see the Bswup README for details):
 //self.errorTolerance = 'strict';           // abort the install if any asset fails ('lax' = best-effort lazy-fill, the default)
 //self.maxRetries = 2;                      // extra download attempts on transient failures (408/429/5xx, dropped connections)

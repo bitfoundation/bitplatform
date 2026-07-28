@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Bit.Bswup\Bit.Bswup.csproj" />
+        <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
+        <ProjectReference Include="..\..\..\Bit.Bswup\Bit.Bswup.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     </ItemGroup>
