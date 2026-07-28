@@ -758,22 +758,33 @@ if (!BitBswup.initialized) {
                     // re-activate, re-message UNREGISTER - an infinite reload loop. Routed
                     // through reloadOnce so it coordinates with the controllerchange reload
                     // that the cleanup worker's takeover also triggers.
-                    navigator.serviceWorker.getRegistration().then(reg => {
-                        Promise.resolve(reg?.unregister()).then(() => {
-                            if (navigator.serviceWorker.controller) {
-                                reloadOnce();
-                            } else {
-                                // An uncontrolled page has nothing to detach from - and while
-                                // a cleanup worker is deployed, this teardown signal is also
-                                // the earliest moment the page knows no install is coming.
-                                // Boot right away instead of waiting for the delayed
-                                // WAITING_SKIPPED nudge (or, worst case, the stall watchdog):
-                                // this keeps app startup instant for the whole
-                                // cleanup-deployment window.
-                                startBlazor(true);
-                            }
+                    const finishUnregister = () => {
+                        if (navigator.serviceWorker.controller) {
+                            reloadOnce();
+                        } else {
+                            // An uncontrolled page has nothing to detach from - and while
+                            // a cleanup worker is deployed, this teardown signal is also
+                            // the earliest moment the page knows no install is coming.
+                            // Boot right away instead of waiting for the delayed
+                            // WAITING_SKIPPED nudge (or, worst case, the stall watchdog):
+                            // this keeps app startup instant for the whole
+                            // cleanup-deployment window.
+                            startBlazor(true);
+                        }
+                    };
+                    navigator.serviceWorker.getRegistration()
+                        .then(reg => reg?.unregister())
+                        .then(finishUnregister)
+                        // Either call can reject (storage errors, a registration removed
+                        // concurrently). Recovering matters more than the unregister itself:
+                        // without this the promise rejected unhandled and finishUnregister
+                        // never ran, so a controlled page stayed attached to the worker being
+                        // torn down and an uncontrolled one waited on the stall watchdog to
+                        // boot. Run the same recovery either way.
+                        .catch(err => {
+                            warn('UNREGISTER teardown failed - recovering anyway', err);
+                            finishUnregister();
                         });
-                    });
                     return;
                 }
 

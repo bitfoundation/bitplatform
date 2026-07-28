@@ -1129,6 +1129,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // not a semantic; now the top-up deterministically fills whatever is still missing.
     if (passiveFirstTime && !ignoreProgressReport) {
         sendMessage({ type: 'bypass', data: { firstTime: true } });
+        diagGroupEnd();
         return;
     }
 

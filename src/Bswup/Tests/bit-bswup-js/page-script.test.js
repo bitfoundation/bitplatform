@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createPageContext, ORIGIN } from './harness.js';
+import { createPageContext, ORIGIN, waitFor } from './harness.js';
 
 /** A page with the bswup + blazor script tags in place, before bit-bswup.js is loaded. */
 function page(options = {}, { swOptions, blazor = true } = {}) {
@@ -504,6 +504,9 @@ describe('first-install stall watchdog', () => {
         };
     }
 
+    // Only for the NEGATIVE tests below, which assert the watchdog never fires: "nothing
+    // happened" has no state to poll for, so real time genuinely has to pass. Tests that wait
+    // for an observable effect use waitFor instead, which neither flakes nor pads the run.
     const letTimersFire = () => new Promise(r => setTimeout(r, 30));
 
     it('starts Blazor after total service-worker silence on a first install', async () => {
@@ -511,8 +514,7 @@ describe('first-install stall watchdog', () => {
             { swOptions: { registration: installingRegistration() } });
         ctx.load('bit-bswup.js');
         await ctx.settle();
-        await letTimersFire();
-        await ctx.settle();
+        await waitFor(() => ctx.window.__blazorStarted === 1, 'the stall watchdog to start Blazor');
 
         expect(ctx.window.__blazorStarted).toBe(1);
         expect(ctx.reloads.count).toBe(0);
@@ -1095,6 +1097,8 @@ describe('checkForUpdate outcomes', () => {
         return { ctx, seen, registration };
     }
 
+    // Kept only for the negative test below (asserting updateNotFound is NOT emitted), where
+    // there is no state to poll for. Positive waits use waitFor.
     const letTimersFire = () => new Promise(r => setTimeout(r, 20));
 
     it('emits updateNotFound when the check finds nothing new', async () => {
@@ -1102,8 +1106,8 @@ describe('checkForUpdate outcomes', () => {
         await ctx.settle();
 
         await ctx.window.BitBswup.checkForUpdate();
-        await letTimersFire();
-        await ctx.settle();
+        await waitFor(() => seen.some(([message]) => message === 'UPDATE_NOT_FOUND'),
+            'the check to report UPDATE_NOT_FOUND');
 
         expect(seen.some(([message]) => message === 'UPDATE_NOT_FOUND')).toBe(true);
     });
@@ -1145,16 +1149,15 @@ describe('checkForUpdate outcomes', () => {
             ctx.window.BitBswup.checkForUpdate(),
             ctx.window.BitBswup.checkForUpdate(),
         ]);
-        await letTimersFire();
-        await ctx.settle();
+        await waitFor(() => seen.some(([message]) => message === 'UPDATE_NOT_FOUND'),
+            'the shared in-flight check to report its single outcome');
 
         expect(updates).toBe(1);
         expect(seen.filter(([message]) => message === 'UPDATE_NOT_FOUND').length).toBe(1);
 
         // A later, non-overlapping call runs a fresh check again.
         await ctx.window.BitBswup.checkForUpdate();
-        await letTimersFire();
-        await ctx.settle();
+        await waitFor(() => updates === 2, 'the second, non-overlapping check to run');
         expect(updates).toBe(2);
     });
 });
