@@ -1,0 +1,34 @@
+﻿@inherits LayoutComponentBase
+
+<header class="docs-header">
+    <button type="button" class="icon-button menu-button" aria-label="Toggle navigation" onclick="BswupDemo.toggleSidebar()">☰</button>
+    <a class="brand" href="">
+        <img src="icon-512.png" alt="bit platform logo" />
+        <span><span class="brand-product">bit</span> Bswup</span>
+    </a>
+    <span class="version-badge">v10-6-0</span>
+    <div class="header-spacer"></div>
+    <a class="header-link" href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener">NuGet</a>
+    <a class="header-link" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">GitHub</a>
+    <button type="button" class="icon-button" aria-label="Toggle dark mode" onclick="BswupDemo.toggleTheme()">
+        <span class="theme-icon-light">🌙</span>
+        <span class="theme-icon-dark">☀️</span>
+    </button>
+</header>
+
+<aside class="docs-sidebar">
+    <NavMenu />
+</aside>
+<div class="docs-sidebar-backdrop" onclick="BswupDemo.closeSidebar()"></div>
+
+<main class="docs-main">
+    <article class="docs-content">
+        @Body
+    </article>
+    <footer class="docs-footer">
+        <span>© @DateTime.Now.Year bit platform - MIT licensed</span>
+        <a href="https://bitplatform.dev" target="_blank" rel="noopener">bitplatform.dev</a>
+        <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">Source</a>
+        <a href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener">Bit.Bswup on NuGet</a>
+    </footer>
+</main>

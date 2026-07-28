@@ -1,0 +1,91 @@
+﻿@page "/playground"
+
+<PageTitle>Live Playground - bit Bswup</PageTitle>
+
+<div id="bswup-playground">
+    <h1>Live Playground</h1>
+    <p class="docs-lead">
+        This documentation site is itself a Blazor WebAssembly app powered by Bswup. Inspect its service
+        worker, drive the <a href="javascript-api">JavaScript API</a>, and watch every lifecycle event
+        arrive in real time.
+    </p>
+
+    <Callout Type="tip" Title="Things to try">
+        <p>
+            Open dev tools → Network and switch to <b>Offline</b>, then reload - the app keeps working from
+            cache. Or open this site in a second tab, accept an update there, and watch this tab reload
+            itself onto the new version.
+        </p>
+    </Callout>
+
+    <div class="playground-grid">
+        <section class="playground-card">
+            <h3>Service worker status</h3>
+            <dl class="status-list">
+                <div><dt>Service worker</dt><dd id="pg-sw-supported">…</dd></div>
+                <div><dt>This page</dt><dd id="pg-sw-controller">…</dd></div>
+                <div><dt>Scope</dt><dd id="pg-sw-scope">…</dd></div>
+                <div><dt>Active worker</dt><dd id="pg-sw-state">…</dd></div>
+                <div><dt>Update staged</dt><dd id="pg-sw-waiting">…</dd></div>
+                <div><dt>Storage</dt><dd id="pg-storage-persisted">…</dd></div>
+            </dl>
+            <div class="actions">
+                <button type="button" class="button-secondary" onclick="BswupDemo.refreshStatus()">Refresh status</button>
+            </div>
+        </section>
+
+        <section class="playground-card">
+            <h3>Cache buckets</h3>
+            <p>
+                Bswup's buckets are scope-qualified:
+                <code>bit-bswup:&lt;scope-path&gt; - &lt;version&gt;</code>.
+            </p>
+            <ul id="pg-cache-list" class="cache-list"></ul>
+        </section>
+
+        <section class="playground-card">
+            <h3>Update lifecycle</h3>
+            <p>
+                <code>checkForUpdate()</code> re-fetches the service worker script; if nothing changed you
+                will see <code>UPDATE_NOT_FOUND</code> in the log below. <code>skipWaiting()</code>
+                activates a staged update immediately.
+            </p>
+            <div class="actions">
+                <button type="button" class="button-primary" onclick="BswupDemo.checkForUpdate()">Check for update</button>
+                <button type="button" class="button-secondary" onclick="BswupDemo.skipWaiting()">Skip waiting</button>
+            </div>
+        </section>
+
+        <section class="playground-card">
+            <h3>Storage &amp; reset</h3>
+            <p>
+                <code>persistStorage()</code> requests eviction-resistant storage (browsers may prompt or
+                apply engagement heuristics). <code>forceRefresh()</code> clears this app's caches,
+                unregisters its worker, and reloads - the last-resort client reset.
+            </p>
+            <div class="actions">
+                <button type="button" class="button-secondary" onclick="BswupDemo.persistStorage()">Persist storage</button>
+                <button type="button" class="button-secondary button-danger" onclick="BswupDemo.forceRefresh()">Force refresh</button>
+            </div>
+        </section>
+    </div>
+
+    <h2>Event log</h2>
+    <p>
+        Every <code>BswupMessage</code> raised on this page - fed by a custom handler chained after the
+        built-in progress UI via the <code>Handler</code>/<code>data-bit-bswup-handler</code> option
+        (newest first, capped at 200 entries).
+    </p>
+    <ul id="bswup-demo-events" class="event-log"></ul>
+</div>
+
+<div class="pager">
+    <a href="javascript-api">
+        <span class="pager-label">Previous</span>
+        <b>← JavaScript API</b>
+    </a>
+    <a class="pager-next" href="cleanup">
+        <span class="pager-label">Next</span>
+        <b>Backing Out of Bswup →</b>
+    </a>
+</div>

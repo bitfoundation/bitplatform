@@ -1,0 +1,20 @@
+﻿@* Clicking any link also closes the mobile sidebar; on desktop the class toggle is a no-op. *@
+<nav class="docs-nav" onclick="BswupDemo.closeSidebar()">
+    <div class="nav-section">Overview</div>
+    <NavLink href="" Match="NavLinkMatch.All">Introduction</NavLink>
+    <NavLink href="getting-started">Getting Started</NavLink>
+
+    <div class="nav-section">Reference</div>
+    <NavLink href="script-options">Script Options</NavLink>
+    <NavLink href="service-worker">Service Worker Settings</NavLink>
+    <NavLink href="events">Events &amp; Handler</NavLink>
+    <NavLink href="progress-ui">Progress UI</NavLink>
+    <NavLink href="javascript-api">JavaScript API</NavLink>
+
+    <div class="nav-section">Showcase</div>
+    <NavLink href="playground">Live Playground</NavLink>
+
+    <div class="nav-section">Guides</div>
+    <NavLink href="cleanup">Backing Out of Bswup</NavLink>
+    <NavLink href="migration">Migrating to 10-6-0</NavLink>
+</nav>

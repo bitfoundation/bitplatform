@@ -370,9 +370,9 @@ window.bitBswupHandler = (message, data) => {
 > those timers anyway); the next timer tick after the tab is foregrounded runs normally. For
 > an *immediate* check the moment the user comes back, also set `updateOnVisibility="true"`.
 
-## Upgrading to v-10.5.0
+## Upgrading to v-10-6-0
 
-v-10.5.0 is a resilience-focused release. Most changes are internal hardening, but the following are visible when upgrading; each is described in detail in its section above.
+v-10-6-0 is a resilience-focused release. Most changes are internal hardening, but the following are visible when upgrading; each is described in detail in its section above.
 
 **Behavior changes**
 

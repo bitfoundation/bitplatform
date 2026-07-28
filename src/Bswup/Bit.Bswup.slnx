@@ -7,11 +7,12 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Demos/">
-    <Project Path="Demos/BasicDemo/Bit.Bswup.Demo.csproj" />
+    <Project Path="Demos/BasicDemo/Bit.Bswup.BasicDemo.csproj" />
   </Folder>
   <Folder Name="/Demos/FullDemo/">
     <Project Path="Demos/FullDemo/Client/Bit.Bswup.FullDemo.Client.csproj" />
     <Project Path="Demos/FullDemo/Server/Bit.Bswup.FullDemo.Server.csproj" />
   </Folder>
   <Project Path="Bit.Bswup/Bit.Bswup.csproj" />
+  <Project Path="Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
 </Solution>

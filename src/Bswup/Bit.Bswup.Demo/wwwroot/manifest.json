@@ -1,6 +1,7 @@
-{
-    "name": "Bit.Bswup.FullDemo",
-    "short_name": "Bit.Bswup.FullDemo",
+﻿{
+    "name": "bit Bswup",
+    "short_name": "Bswup",
+    "description": "Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps.",
     "start_url": "./",
     "display": "standalone",
     "background_color": "#ffffff",
