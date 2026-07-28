@@ -428,7 +428,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "OnDynamicAdd",
-            Type = "EventCallback<string>",
+            Type = "EventCallback<TItem>",
             Description = "The callback that is called when a new item is on added Dynamic ComboBox mode.",
         },
         new()

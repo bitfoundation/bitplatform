@@ -1117,6 +1117,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
              Combo Chips
              MultiSelect
              AutoClearSearch
+             DefaultValues=""@(Array.Empty<string>())""
              Placeholder=""Type to filter, then pick""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
@@ -1347,6 +1348,22 @@ private readonly List<BitDropdownItem<string>> basicItems =
 ];";
 
     private readonly string example21RazorCode = @"
+<style>
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+    }
+
+    .custom-drp.custom-drp-empty {
+        color: orangered;
+        padding: 5px 12px;
+        justify-content: center;
+    }
+</style>
+
 <BitDropdown Label=""Default""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"" />
@@ -1427,6 +1444,22 @@ private readonly List<BitDropdownItem<string>> basicItems =
 ];";
 
     private readonly string example22RazorCode = @"
+<style>
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+    }
+
+    .custom-drp.custom-drp-empty {
+        color: orangered;
+        padding: 5px 12px;
+        justify-content: center;
+    }
+</style>
+
 <BitDropdown Label=""IsLoading""
              IsLoading
              DefaultValue=""@string.Empty""
@@ -1644,6 +1677,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              Chips
              MultiSelect
              ChipsRemoveIcon=""@BitIconInfo.Css(""bi bi-x-circle"")""
+             DefaultValues=""@(Array.Empty<string>())""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)

@@ -1024,6 +1024,22 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 };";
 
     private readonly string example21RazorCode = @"
+<style>
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+    }
+
+    .custom-drp.custom-drp-empty {
+        color: orangered;
+        padding: 5px 12px;
+        justify-content: center;
+    }
+</style>
+
 <BitDropdown Label=""Default""
              Items=""emptyItems""
              Placeholder=""Select an item""
@@ -1093,6 +1109,22 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 };";
 
     private readonly string example22RazorCode = @"
+<style>
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+    }
+
+    .custom-drp.custom-drp-empty {
+        color: orangered;
+        padding: 5px 12px;
+        justify-content: center;
+    }
+</style>
+
 <BitDropdown Label=""IsLoading""
              IsLoading
              Items=""GetBasicItems()""

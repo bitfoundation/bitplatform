@@ -430,7 +430,7 @@
     <div>
         Three parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
         is matched against the typed term &mdash; <b>Contains</b> (the default), <b>StartsWith</b>, <b>EndsWith</b> or
-        <b>Equals</b>, always ignoring case. <b>MinSearchLength</b> holds the filtering back until the term reaches the
+        <b>ExactMatch</b>, always ignoring case. <b>MinSearchLength</b> holds the filtering back until the term reaches the
         given number of characters, which keeps a one-letter term from being treated as a real query (and, with an
         <b>ItemsProvider</b>, from turning every first keystroke into a request). <b>HighlightSearch</b> emphasizes the
         matched part of each item text so the reason an item is in the result is visible at a glance. Whenever a search
@@ -1013,6 +1013,7 @@
                      Combo Chips
                      MultiSelect
                      AutoClearSearch
+                     DefaultValues="@(Array.Empty<string>())"
                      Placeholder="Type to filter, then pick"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
@@ -1504,6 +1505,7 @@
                      Chips
                      MultiSelect
                      ChipsRemoveIcon="@BitIconInfo.Css("bi bi-x-circle")"
+                     DefaultValues="@(Array.Empty<string>())"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)

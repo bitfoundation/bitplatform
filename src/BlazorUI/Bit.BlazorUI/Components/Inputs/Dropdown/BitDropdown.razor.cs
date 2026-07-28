@@ -2125,6 +2125,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _lastShownItems = [.. providerResult.Items];
         _providerTotalItems = providerResult.TotalItemCount;
 
+        // The caches below are keyed on the search text and the options version, neither of which changes
+        // when the provider hands over a different window of items for the same search, so they have to be
+        // dropped here or the new window would be filtered and positioned against the previous one.
+        _searchedItems = null;
+        _itemPositions = null;
+        _displayItems = null;
+        _searchedItemsCache = null;
+
         UpdateSelectedItemsFromValues();
         await InvokeAsync(StateHasChanged);
 
