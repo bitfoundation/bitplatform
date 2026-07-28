@@ -773,6 +773,14 @@ private void ReverseDynamicCustoms()
 }";
 
     private readonly string example16RazorCode = @"
+<style>
+    .custom-description {
+        gap: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+</style>
+
 <BitChoiceGroup Label=""Deployment target""
                 Description=""Only the selected environment receives the new build.""
                 Items=""deploymentCustoms""
