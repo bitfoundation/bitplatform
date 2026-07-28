@@ -49,7 +49,7 @@
     <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
   </Folder>
   <Folder Name="/Bswup/Demos/">
-    <Project Path="Bswup/Demos/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
+    <Project Path="Bswup/Demos/BasicDemo/Bit.Bswup.Demo.csproj" />
   </Folder>
   <Folder Name="/Bswup/Demos/FullDemo/">
     <Project Path="Bswup/Demos/FullDemo/Client/Bit.Bswup.FullDemo.Client.csproj" />
