@@ -23,6 +23,12 @@
         .bit-tgi-cnt {
             border-color: $clr-err;
         }
+
+        &.bit-tgi-fcs .bit-tgi-cnt {
+            @include focus-ring($clr-err-focus);
+
+            border-color: $clr-err-focus;
+        }
     }
 
     @media (hover: hover) {
@@ -42,19 +48,9 @@
 
 .bit-tgi-fcs {
     .bit-tgi-cnt {
-        border-color: $clr-pri;
-        outline: none;
+        @include focus-ring;
 
-        &::after {
-            content: "";
-            height: 2px;
-            left: -1px;
-            right: -1px;
-            bottom: -1px;
-            position: absolute;
-            background-color: $clr-pri;
-            border-radius: 0 0 $shp-border-radius $shp-border-radius;
-        }
+        border-color: $clr-pri-focus;
     }
 }
 

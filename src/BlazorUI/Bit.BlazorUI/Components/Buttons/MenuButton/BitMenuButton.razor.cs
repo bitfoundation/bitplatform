@@ -972,6 +972,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     private string? GetCalloutCss()
     {
         var openClass = IsOpen ? "bit-mnb-ocl" : null;
+
+        // While open the callout is reparented to the body, which takes it out of the subtree that
+        // carries the root's bit-fam class, so ForceAnimation has to be rendered on the callout
+        // itself for its opening animation to opt out of reduced motion.
+        var famClass = ForceAnimation ? "bit-fam" : null;
+
         var bgClass = Background switch
         {
             BitColorKind.Primary => "bit-mnb-bpg",
@@ -980,7 +986,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             BitColorKind.Transparent => "bit-mnb-brg",
             _ => null
         };
-        var result = $"{openClass} {bgClass}".Trim();
+        var result = $"{openClass} {famClass} {bgClass}".Trim();
         return result.HasValue() ? result : null;
     }
 

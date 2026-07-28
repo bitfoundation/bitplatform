@@ -302,7 +302,45 @@ public partial class BitIconDemo
 
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Accept"" />
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />";
+<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />
+
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem;color:var(--bit-clr-bg-sec)"">
+    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Accept"" />
+    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Bus"" />
+    <BitIcon Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Pinned"" />
+
+    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Accept"" />
+    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Bus"" />
+    <BitIcon Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Pinned"" />
+
+    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Accept"" />
+    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Bus"" />
+    <BitIcon Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Pinned"" />
+</div>
+
+<BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Pinned"" />";
 
     private readonly string example4RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

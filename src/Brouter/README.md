@@ -26,10 +26,11 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
-A runnable tour of every feature below lives in [`Demos`](Demos/) - run the
-[Server](Demos/Server/) project (`dotnet run`) and click through the home page cards; the
-same shared demo pages also run under [WASM](Demos/Wasm/) and [Auto](Demos/Auto/)
-render modes.
+Brouter's documentation website lives in [`Demos`](Demos/) - run the
+[Server](Demos/Server/) project (`dotnet run`) for the full site: a landing page, a docs hub
+under `/docs` with a page per feature area, and a `/playground` index of live, clickable demo
+routes. The same shared site also runs under [WASM](Demos/Wasm/) and [Auto](Demos/Auto/)
+render modes - and it is routed by Brouter itself.
 
 ## Quick start
 
@@ -588,6 +589,10 @@ animations out of the box (`o.ViewTransitionDefaultAnimations`, enabled by defau
   often off for *performance* reasons (VMs, remote desktops) rather than user preference, you can
   bypass it with `o.ViewTransitionRespectReducedMotion = false` - think twice, though: for
   motion-sensitive users `reduce` is a genuine request.
+
+Only actual navigations animate - the **initial load never does**. This matters with prerendering:
+the prerendered HTML is already on screen when the router becomes interactive, and animating the
+first (identical) interactive render would show an annoying double render of the same page.
 
 The defaults live in the CSS layer `bit-brouter`, so **any unlayered `::view-transition-*` rule in
 your own CSS overrides them automatically** - customize without specificity fights, or set

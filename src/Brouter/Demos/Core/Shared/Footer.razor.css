@@ -1,0 +1,106 @@
+.bb-footer {
+    margin-top: 3rem;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+    /* Pin the footer out of the page view transition, like the header. */
+    view-transition-name: bb-footer;
+}
+
+.bb-footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.25rem 1.5rem 1.5rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 2rem;
+}
+
+.bb-footer-brand {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+}
+
+.bb-footer-brand .bb-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--bb-radius);
+    background: linear-gradient(135deg, var(--bb-primary) 0%, var(--bb-accent) 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: .9rem;
+    flex-shrink: 0;
+}
+
+.bb-footer-name {
+    font-weight: 700;
+    color: var(--bb-text);
+}
+
+.bb-footer-tagline {
+    color: var(--bb-text-muted);
+    font-size: .82rem;
+    margin: .25rem 0 0;
+    line-height: 1.6;
+}
+
+.bb-footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+}
+
+.bb-footer-col h4 {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--bb-text-soft);
+    margin: 0 0 .35rem;
+}
+
+/* Anchors rendered by <BrouterLink> live in a child component - reach them via ::deep. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-footer-col ::deep a,
+.bb-footer-col a {
+    color: var(--bb-text-muted);
+    font-size: .875rem;
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-footer-col ::deep a:hover,
+.bb-footer-col a:hover {
+    color: var(--bb-primary);
+    text-decoration: none;
+}
+
+.bb-footer-bottom {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem;
+    border-top: 1px solid var(--bb-border);
+    color: var(--bb-text-soft);
+    font-size: .8rem;
+}
+
+.bb-footer-bottom a {
+    color: var(--bb-text-muted);
+}
+
+@media (max-width: 760px) {
+    .bb-footer-inner {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .bb-footer-brand {
+        grid-column: 1 / -1;
+    }
+}

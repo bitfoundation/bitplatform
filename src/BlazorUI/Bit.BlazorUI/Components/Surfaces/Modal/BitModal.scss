@@ -16,7 +16,7 @@
     font-size: spacing(1.75);
     font-family: $tg-font-family;
     background-color: transparent;
-    transition: opacity 300ms ease 0s;
+    transition: opacity $mot-duration-long ease 0s;
 }
 
 .bit-mdl-nta {

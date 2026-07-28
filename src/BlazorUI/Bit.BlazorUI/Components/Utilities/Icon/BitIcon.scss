@@ -7,7 +7,7 @@
     border-width: $shp-border-width;
 
     &.bit-dis {
-        color: $clr-fg-dis;
+        color: var(--bit-ico-clr-dis-text);
     }
 }
 
@@ -16,12 +16,24 @@
     color: var(--bit-ico-clr-txt);
     border-color: var(--bit-ico-clr);
     background-color: var(--bit-ico-clr);
+
+    &.bit-dis {
+        color: var(--bit-ico-clr-dis-text);
+        border-color: var(--bit-ico-clr-dis);
+        background-color: var(--bit-ico-clr-dis);
+    }
 }
 
 .bit-ico-out {
     color: var(--bit-ico-clr);
     border-color: var(--bit-ico-clr);
     background-color: transparent;
+
+    &.bit-dis {
+        color: var(--bit-ico-clr-dis-text);
+        border-color: var(--bit-ico-clr-dis);
+        background-color: transparent;
+    }
 }
 
 .bit-ico-txt {
@@ -30,92 +42,84 @@
     background-color: transparent;
     border: none;
     padding: 0;
+
+    &.bit-dis {
+        color: var(--bit-ico-clr-dis-text);
+    }
 }
 
 
-.bit-ico-pri {
-    --bit-ico-clr: #{$clr-pri};
-    --bit-ico-clr-txt: #{$clr-pri-text};
-}
-
-.bit-ico-sec {
-    --bit-ico-clr: #{$clr-sec};
-    --bit-ico-clr-txt: #{$clr-sec-text};
-}
-
-.bit-ico-ter {
-    --bit-ico-clr: #{$clr-ter};
-    --bit-ico-clr-txt: #{$clr-ter-text};
-}
-
-.bit-ico-inf {
-    --bit-ico-clr: #{$clr-inf};
-    --bit-ico-clr-txt: #{$clr-inf-text};
-}
-
-.bit-ico-suc {
-    --bit-ico-clr: #{$clr-suc};
-    --bit-ico-clr-txt: #{$clr-suc-text};
-}
-
-.bit-ico-wrn {
-    --bit-ico-clr: #{$clr-wrn};
-    --bit-ico-clr-txt: #{$clr-wrn-text};
-}
-
-.bit-ico-swr {
-    --bit-ico-clr: #{$clr-swr};
-    --bit-ico-clr-txt: #{$clr-swr-text};
-}
-
-.bit-ico-err {
-    --bit-ico-clr: #{$clr-err};
-    --bit-ico-clr-txt: #{$clr-err-text};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-ico-#{$role} {
+        --bit-ico-clr: #{role($tokens, main)};
+        --bit-ico-clr-txt: #{role($tokens, on)};
+        --bit-ico-clr-dis: #{role($tokens, dis)};
+        --bit-ico-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 .bit-ico-pbg {
     --bit-ico-clr: #{$clr-bg-pri};
     --bit-ico-clr-txt: #{$clr-fg-pri};
+    --bit-ico-clr-dis: #{$clr-bg-pri-dis};
+    --bit-ico-clr-dis-text: #{$clr-bg-pri-dis-text};
 }
 
 .bit-ico-sbg {
     --bit-ico-clr: #{$clr-bg-sec};
     --bit-ico-clr-txt: #{$clr-fg-sec};
+    --bit-ico-clr-dis: #{$clr-bg-sec-dis};
+    --bit-ico-clr-dis-text: #{$clr-bg-sec-dis-text};
 }
 
 .bit-ico-tbg {
     --bit-ico-clr: #{$clr-bg-ter};
     --bit-ico-clr-txt: #{$clr-fg-ter};
+    --bit-ico-clr-dis: #{$clr-bg-ter-dis};
+    --bit-ico-clr-dis-text: #{$clr-bg-ter-dis-text};
 }
 
 .bit-ico-pfg {
     --bit-ico-clr: #{$clr-fg-pri};
     --bit-ico-clr-txt: #{$clr-bg-pri};
+    --bit-ico-clr-dis: #{$clr-fg-pri-dis};
+    --bit-ico-clr-dis-text: #{$clr-fg-pri-dis-text};
 }
 
 .bit-ico-sfg {
     --bit-ico-clr: #{$clr-fg-sec};
     --bit-ico-clr-txt: #{$clr-bg-sec};
+    --bit-ico-clr-dis: #{$clr-fg-sec-dis};
+    --bit-ico-clr-dis-text: #{$clr-fg-sec-dis-text};
 }
 
 .bit-ico-tfg {
     --bit-ico-clr: #{$clr-fg-ter};
     --bit-ico-clr-txt: #{$clr-bg-ter};
+    --bit-ico-clr-dis: #{$clr-fg-ter-dis};
+    --bit-ico-clr-dis-text: #{$clr-fg-ter-dis-text};
 }
 
 .bit-ico-pbr {
-    --bit-ico-clr: #{$clr-bg-pri};
+    --bit-ico-clr: #{$clr-brd-pri};
     --bit-ico-clr-txt: #{$clr-fg-pri};
+    --bit-ico-clr-dis: #{$clr-brd-pri-dis};
+    --bit-ico-clr-dis-text: #{$clr-brd-pri-dis-text};
 }
 
 .bit-ico-sbr {
-    --bit-ico-clr: #{$clr-bg-sec};
+    --bit-ico-clr: #{$clr-brd-sec};
     --bit-ico-clr-txt: #{$clr-fg-sec};
+    --bit-ico-clr-dis: #{$clr-brd-sec-dis};
+    --bit-ico-clr-dis-text: #{$clr-brd-sec-dis-text};
 }
 
 .bit-ico-tbr {
-    --bit-ico-clr: #{$clr-bg-ter};
+    --bit-ico-clr: #{$clr-brd-ter};
     --bit-ico-clr-txt: #{$clr-fg-ter};
+    --bit-ico-clr-dis: #{$clr-brd-ter-dis};
+    --bit-ico-clr-dis-text: #{$clr-brd-ter-dis-text};
 }
 
 

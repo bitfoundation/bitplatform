@@ -12,6 +12,23 @@
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
+    // The variants below repaint all three on hover/active, so they animate together from here.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
+    &:focus-visible,
+    &:has(:focus-visible) {
+        @include focus-ring(var(--bit-mnb-clr-focus));
+    }
+
+    &.bit-dis {
+        cursor: default;
+        pointer-events: none;
+        color: var(--bit-mnb-clr-dis-text);
+        --bit-mnb-clr-spb: var(--bit-mnb-clr-dis-text);
+        --bit-mnb-clr-txt: var(--bit-mnb-clr-dis-text);
+        --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-dis-text);
+        --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-dis-text);
+    }
 
     @keyframes bit-mnb-spinner-animation {
         0% {
@@ -21,13 +38,6 @@
         100% {
             transform: rotate(360deg);
         }
-    }
-
-    &.bit-dis {
-        cursor: default;
-        color: $clr-fg-dis;
-        pointer-events: none;
-        --bit-mnb-clr-spb: #{$clr-fg-dis};
     }
 }
 
@@ -44,8 +54,7 @@
     border-top-color: currentColor;
     border-width: spacing(0.2125);
     border-style: $shp-border-style;
-    animation: bit-mnb-spinner-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    animation: bit-mnb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 .bit-mnb-opb,
@@ -61,6 +70,7 @@
     justify-content: center;
     background-color: inherit;
     padding: var(--bit-mnb-padding);
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -134,8 +144,12 @@
 }
 
 .bit-mnb-cal {
+    // The entry offset is signed by where the callout was placed, so it always slides out of the
+    // button: downward when it opens below it, upward when there was only room above. The attribute
+    // is set by Callouts.playEntryAnimation, which knows the placement only after measuring.
+    --bit-mnb-cal-tra-ent: translateY(#{spacing(-0.5)});
     --bit-mnb-cal-opa: 0;
-    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
+    --bit-mnb-cal-tra: var(--bit-mnb-cal-tra-ent);
     display: none;
     position: fixed;
     overflow: hidden auto;
@@ -145,13 +159,28 @@
     opacity: var(--bit-mnb-cal-opa);
     box-shadow: $box-shadow-callout;
     transform: var(--bit-mnb-cal-tra);
-    transition: opacity 100ms, transform 300ms;
+    transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     background-color: var(--bit-mnb-cal-bg, #{$clr-bg-pri});
+
+    &[data-bit-cal-pos="above"] {
+        --bit-mnb-cal-tra-ent: translateY(#{spacing(0.5)});
+    }
 
     &.bit-mnb-ocl {
         --bit-mnb-cal-opa: 1;
         --bit-mnb-cal-tra: translateY(0);
+    }
+
+    // The from-state of the opening animation. The callout is display:none while closed, so it has
+    // no before-change style to transition from once it opens: Callouts.playEntryAnimation applies
+    // this class with transitions suppressed, forces it into effect, then drops it, which leaves the
+    // callout transitioning from here to the open state above. Declared last so it wins over
+    // .bit-mnb-ocl, which is already on the element by the time the callout is positioned.
+    &.bit-cal-ent {
+        transition: none;
+        --bit-mnb-cal-opa: 0;
+        --bit-mnb-cal-tra: var(--bit-mnb-cal-tra-ent);
     }
 }
 
@@ -184,10 +213,11 @@
     box-sizing: border-box;
     text-decoration: none;
     background-color: transparent;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &[disabled] {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-mnb-clr-dis-text);
         pointer-events: none;
     }
 
@@ -225,8 +255,9 @@
     }
 
     &.bit-dis {
-        border-color: $clr-brd-dis;
-        background-color: $clr-bg-dis;
+        color: var(--bit-mnb-clr-dis-text);
+        border-color: var(--bit-mnb-clr-dis);
+        background-color: var(--bit-mnb-clr-dis);
     }
 }
 
@@ -247,7 +278,9 @@
     }
 
     &.bit-dis {
-        border-color: $clr-brd-dis;
+        color: var(--bit-mnb-clr-dis-text);
+        border-color: var(--bit-mnb-clr-dis);
+        background-color: transparent;
     }
 }
 
@@ -256,125 +289,25 @@
     border-color: transparent;
     background-color: transparent;
     --bit-mnb-clr-spb: var(--bit-mnb-clr);
+
+    &.bit-dis {
+        color: var(--bit-mnb-clr-dis-text);
+        border-color: transparent;
+        background-color: transparent;
+    }
 }
 
-.bit-mnb-pri {
-    --bit-mnb-clr: #{$clr-pri};
-    --bit-mnb-clr-txt: #{$clr-pri-text};
-    --bit-mnb-clr-hover: #{$clr-pri-hover};
-    --bit-mnb-clr-active: #{$clr-pri-active};
-}
-
-.bit-mnb-sec {
-    --bit-mnb-clr: #{$clr-sec};
-    --bit-mnb-clr-txt: #{$clr-sec-text};
-    --bit-mnb-clr-hover: #{$clr-sec-hover};
-    --bit-mnb-clr-active: #{$clr-sec-active};
-}
-
-.bit-mnb-ter {
-    --bit-mnb-clr: #{$clr-ter};
-    --bit-mnb-clr-txt: #{$clr-ter-text};
-    --bit-mnb-clr-hover: #{$clr-ter-hover};
-    --bit-mnb-clr-active: #{$clr-ter-active};
-}
-
-.bit-mnb-inf {
-    --bit-mnb-clr: #{$clr-inf};
-    --bit-mnb-clr-txt: #{$clr-inf-text};
-    --bit-mnb-clr-hover: #{$clr-inf-hover};
-    --bit-mnb-clr-active: #{$clr-inf-active};
-}
-
-.bit-mnb-suc {
-    --bit-mnb-clr: #{$clr-suc};
-    --bit-mnb-clr-txt: #{$clr-suc-text};
-    --bit-mnb-clr-hover: #{$clr-suc-hover};
-    --bit-mnb-clr-active: #{$clr-suc-active};
-}
-
-.bit-mnb-wrn {
-    --bit-mnb-clr: #{$clr-wrn};
-    --bit-mnb-clr-txt: #{$clr-wrn-text};
-    --bit-mnb-clr-hover: #{$clr-wrn-hover};
-    --bit-mnb-clr-active: #{$clr-wrn-active};
-}
-
-.bit-mnb-swr {
-    --bit-mnb-clr: #{$clr-swr};
-    --bit-mnb-clr-txt: #{$clr-swr-text};
-    --bit-mnb-clr-hover: #{$clr-swr-hover};
-    --bit-mnb-clr-active: #{$clr-swr-active};
-}
-
-.bit-mnb-err {
-    --bit-mnb-clr: #{$clr-err};
-    --bit-mnb-clr-txt: #{$clr-err-text};
-    --bit-mnb-clr-hover: #{$clr-err-hover};
-    --bit-mnb-clr-active: #{$clr-err-active};
-}
-
-.bit-mnb-pbg {
-    --bit-mnb-clr: #{$clr-bg-pri};
-    --bit-mnb-clr-txt: #{$clr-fg-pri};
-    --bit-mnb-clr-hover: #{$clr-bg-pri-hover};
-    --bit-mnb-clr-active: #{$clr-bg-pri-active};
-}
-
-.bit-mnb-sbg {
-    --bit-mnb-clr: #{$clr-bg-sec};
-    --bit-mnb-clr-txt: #{$clr-fg-pri};
-    --bit-mnb-clr-hover: #{$clr-bg-sec-hover};
-    --bit-mnb-clr-active: #{$clr-bg-sec-active};
-}
-
-.bit-mnb-tbg {
-    --bit-mnb-clr: #{$clr-bg-ter};
-    --bit-mnb-clr-txt: #{$clr-fg-pri};
-    --bit-mnb-clr-hover: #{$clr-bg-ter-hover};
-    --bit-mnb-clr-active: #{$clr-bg-ter-active};
-}
-
-.bit-mnb-pfg {
-    --bit-mnb-clr: #{$clr-fg-pri};
-    --bit-mnb-clr-txt: #{$clr-bg-pri};
-    --bit-mnb-clr-hover: #{$clr-fg-pri-hover};
-    --bit-mnb-clr-active: #{$clr-fg-pri-active};
-}
-
-.bit-mnb-sfg {
-    --bit-mnb-clr: #{$clr-fg-sec};
-    --bit-mnb-clr-txt: #{$clr-bg-pri};
-    --bit-mnb-clr-hover: #{$clr-fg-sec-hover};
-    --bit-mnb-clr-active: #{$clr-fg-sec-active};
-}
-
-.bit-mnb-tfg {
-    --bit-mnb-clr: #{$clr-fg-ter};
-    --bit-mnb-clr-txt: #{$clr-bg-pri};
-    --bit-mnb-clr-hover: #{$clr-fg-ter-hover};
-    --bit-mnb-clr-active: #{$clr-fg-ter-active};
-}
-
-.bit-mnb-pbr {
-    --bit-mnb-clr: #{$clr-brd-pri};
-    --bit-mnb-clr-txt: #{$clr-fg-pri};
-    --bit-mnb-clr-hover: #{$clr-brd-pri-hover};
-    --bit-mnb-clr-active: #{$clr-brd-pri-active};
-}
-
-.bit-mnb-sbr {
-    --bit-mnb-clr: #{$clr-brd-sec};
-    --bit-mnb-clr-txt: #{$clr-fg-pri};
-    --bit-mnb-clr-hover: #{$clr-brd-sec-hover};
-    --bit-mnb-clr-active: #{$clr-brd-sec-active};
-}
-
-.bit-mnb-tbr {
-    --bit-mnb-clr: #{$clr-brd-ter};
-    --bit-mnb-clr-txt: #{$clr-fg-pri};
-    --bit-mnb-clr-hover: #{$clr-brd-ter-hover};
-    --bit-mnb-clr-active: #{$clr-brd-ter-active};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-mnb-#{$role} {
+        --bit-mnb-clr: #{role($tokens, main)};
+        --bit-mnb-clr-txt: #{role($tokens, on)};
+        --bit-mnb-clr-hover: #{role($tokens, hover)};
+        --bit-mnb-clr-active: #{role($tokens, active)};
+        --bit-mnb-clr-focus: #{role($tokens, focus)};
+        --bit-mnb-clr-dis: #{role($tokens, dis)};
+        --bit-mnb-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 

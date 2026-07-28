@@ -1,0 +1,112 @@
+<PageTitle>Playground · Brouter</PageTitle>
+
+@* The live-demo index: every interactive route on this site, grouped by feature area. The
+   docs pages link into these same routes contextually; this page is the full map. *@
+
+<div class="bb-intro">
+    <h1>Playground</h1>
+    <p class="bb-subtitle">
+        Every feature on this site has a live, clickable demo - this site <em>is</em> the router.
+        Watch the URL bar as you click; each group links to the docs page that explains it.
+    </p>
+</div>
+
+<div class="bb-grid">
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Route matching</h3>
+        <p class="bb-card-desc">Typed parameters, optionals, defaults, complex segments, catch-alls and specificity - <BrouterLink Href="/docs/route-templates">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/counter/1234">/counter/1234 - typed {init:int}</BrouterLink></li>
+            <li><BrouterLink Href="/profile/saleh">/profile/saleh - trailing optional</BrouterLink></li>
+            <li><BrouterLink Href="/products/en/list">/products/en/list - middle optional</BrouterLink></li>
+            <li><BrouterLink Href="/blog">/blog - default value (action = "Index")</BrouterLink></li>
+            <li><BrouterLink Href="/files/report.pdf">/files/report.pdf - complex segment</BrouterLink></li>
+            <li><BrouterLink Href="/api/v2-10">/api/v2-10 - typed complex segment</BrouterLink></li>
+            <li><BrouterLink Href="/posts/2026/05/intro-to-brouter">/posts/… - catch-all</BrouterLink></li>
+            <li><BrouterLink Href="/assets/img/logo">/assets/img/logo - constrained catch-all</BrouterLink></li>
+            <li><BrouterLink Href="/rate/3">/rate/3 - constraint chaining</BrouterLink></li>
+            <li><BrouterLink Href="/anything/test">/anything/test - wildcard</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Constraints</h3>
+        <p class="bb-card-desc">All 18 built-in constraints, tested interactively - <BrouterLink Href="/docs/constraints">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/docs/constraints">Interactive constraint tester</BrouterLink></li>
+            <li><BrouterLink Href="/c/int/42">/c/int/42 - accepted, bound as int</BrouterLink></li>
+            <li><BrouterLink Href="/c/int/oops">/c/int/oops - rejected fallback</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested routes &amp; outlets</h3>
+        <p class="bb-card-desc">Parents render persistent layout, children fill outlets - <BrouterLink Href="/docs/nested-routes">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/nested">/nested - component parent + outlet</BrouterLink></li>
+            <li><BrouterLink Href="/nested2">/nested2 - two children, one outlet</BrouterLink></li>
+            <li><BrouterLink Href="/nested3">/nested3 - inline parent + outlet</BrouterLink></li>
+            <li><BrouterLink Href="/dashboard/stats">/dashboard/stats - named outlets, both regions</BrouterLink></li>
+            <li><BrouterLink Href="/dashboard/activity">/dashboard/activity - sidebar stays empty</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Guards &amp; locks</h3>
+        <p class="bb-card-desc">Preventive cancellation - the URL never moves - <BrouterLink Href="/docs/guards">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/g1">/g1 - allowed when the second is even</BrouterLink></li>
+            <li><BrouterLink Href="/g2">/g2 - async guard, even minute</BrouterLink></li>
+            <li><BrouterLink Href="/blocked">/blocked - guard always cancels</BrouterLink></li>
+            <li><BrouterLink Href="/editor">/editor - leave guard (unsaved changes)</BrouterLink></li>
+            <li><BrouterLink Href="/lock/1">/lock/1 - component lock + custom dialog</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Data loading</h3>
+        <p class="bb-card-desc">Loaders, SWR caching, preloading, deferred data, error boundaries - <BrouterLink Href="/docs/data-loading">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/data" Preload="BrouterLinkPreload.Intent">/data - loader + cache + revalidate + pager</BrouterLink></li>
+            <li><BrouterLink Href="/deferred" Preload="BrouterLinkPreload.Intent">/deferred - streamed slow details</BrouterLink></li>
+            <li><BrouterLink Href="/unstable">/unstable - loader throws, boundary retries</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Navigation &amp; history</h3>
+        <p class="bb-card-desc">Awaited outcomes, history entry state - <BrouterLink Href="/docs/navigation">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/outcomes">/outcomes - trigger each NavigateAsync result</BrouterLink></li>
+            <li><BrouterLink Href="/history-state">/history-state - state across Back/Forward</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Lifecycle &amp; keep-alive</h3>
+        <p class="bb-card-desc">Retention, per-parameter caching, lifecycle callbacks - <BrouterLink Href="/docs/lifecycle">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/sticky">/sticky - keep-alive note (state survives)</BrouterLink></li>
+            <li><BrouterLink Href="/fleeting">/fleeting - the no-retention control</BrouterLink></li>
+            <li><BrouterLink Href="/notes/1">/notes/1 - per-parameter caching (KeepAliveMax)</BrouterLink></li>
+            <li><BrouterLink Href="/lifecycle/1">/lifecycle/1 - IBrouterRoute callbacks live</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> View transitions</h3>
+        <p class="bb-card-desc">Shared-element morphs, direction-aware motion - <BrouterLink Href="/docs/view-transitions">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/gallery">/gallery - click a tile and watch it morph</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Discovery &amp; fallbacks</h3>
+        <p class="bb-card-desc">&#64;page discovery and not-found handling - <BrouterLink Href="/docs/page-discovery">docs</BrouterLink>.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/discovered/7?q=hello">/discovered/7?q=hello - a discovered &#64;page route</BrouterLink></li>
+            <li><BrouterLink Href="/no/such/page">/no/such/page - nothing matches → 404</BrouterLink></li>
+        </ul>
+    </section>
+</div>

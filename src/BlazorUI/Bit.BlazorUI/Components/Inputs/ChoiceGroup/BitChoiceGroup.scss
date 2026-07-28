@@ -24,6 +24,11 @@
     }
 
     &.bit-inv {
+        .bit-chg-ili:focus-visible,
+        input:focus-visible + .bit-chg-ili {
+            @include focus-ring($clr-err-focus);
+        }
+
         .bit-chg-rad {
             color: $clr-err;
             border-color: $clr-err;
@@ -100,7 +105,7 @@
         transform: translateY(-50%);
         width: var(--bit-chg-circle-size);
         border: $shp-border-width $shp-border-style $clr-brd-pri;
-        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        transition: border-color $mot-duration $mot-easing;
     }
 
     &::after {
@@ -116,7 +121,7 @@
         background-color: $clr-fg-sec-hover;
         transition-property: background-color;
         width: calc(var(--bit-chg-circle-size) / 2);
-        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        transition: border-width $mot-duration $mot-easing;
     }
 
     @media (hover: hover) {
@@ -153,9 +158,15 @@
     box-sizing: content-box;
     justify-content: center;
     min-height: spacing(2.5);
-    transition: all 0.2s ease;
+    transition: all $mot-duration ease;
+    border-radius: $shp-border-radius;
     padding-block-start: spacing(2.75);
     border: $shp-border-width $shp-border-style transparent;
+
+    &:focus-visible,
+    input:focus-visible + & {
+        @include focus-ring(var(--bit-chg-clr-focus));
+    }
 
     .bit-chg-rad {
         position: absolute;
@@ -206,7 +217,7 @@
 
 .bit-chg-iic {
     padding: 0 spacing(3.75);
-    transition: opacity 0.2s ease;
+    transition: opacity $mot-duration ease;
 
     .bit-chg-iiw {
         border-style: none;
@@ -309,21 +320,21 @@
     .bit-chg-rad {
         cursor: default;
         pointer-events: none;
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
 
         &::before {
-            border-color: $clr-brd-dis;
+            border-color: var(--bit-chg-clr-dis);
         }
 
         &::after {
-            background-color: $clr-bg-dis;
+            background-color: var(--bit-chg-clr-dis);
         }
     }
 
     .bit-chg-ili {
         cursor: default;
         border-color: transparent;
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
 
         @media (hover: hover) {
             &:hover {
@@ -333,19 +344,28 @@
     }
 
     .bit-chg-icw {
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
     }
 
     .bit-chg-ico {
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
     }
 }
 
+// Per-role color blocks - intentionally hand-written, NOT an @each loop over $bit-color-roles.
+// Like BitCheckbox, BitChoiceGroup diverges from the shared role vocabulary: the semantic roles
+// pin fixed neutral chrome (--bit-chg-clr-bg -> bg-sec, --bit-chg-clr-brd -> brd-pri) rather than
+// role slots, and the surface tiers use the matching-tier contrast (sfg -> bg-sec, not the map's
+// `on` = bg-pri). Looping over role($tokens, on) would recolor the secondary/tertiary surface
+// roles - a visual regression. Keep them explicit. (See BitCheckbox for the same rationale.)
 .bit-chg-pri {
     --bit-chg-clr: #{$clr-pri};
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-brd-pri};
     --bit-chg-clr-hover: #{$clr-pri-hover};
+    --bit-chg-clr-dis: #{$clr-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-pri-focus};
 }
 
 .bit-chg-sec {
@@ -353,6 +373,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-brd-sec};
     --bit-chg-clr-hover: #{$clr-sec-hover};
+    --bit-chg-clr-dis: #{$clr-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-sec-focus};
 }
 
 .bit-chg-ter {
@@ -360,6 +383,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-brd-ter};
     --bit-chg-clr-hover: #{$clr-ter-hover};
+    --bit-chg-clr-dis: #{$clr-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-ter-focus};
 }
 
 .bit-chg-inf {
@@ -367,6 +393,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-inf};
     --bit-chg-clr-hover: #{$clr-inf-hover};
+    --bit-chg-clr-dis: #{$clr-inf-dis};
+    --bit-chg-clr-dis-text: #{$clr-inf-dis-text};
+    --bit-chg-clr-focus: #{$clr-inf-focus};
 }
 
 .bit-chg-suc {
@@ -374,6 +403,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-suc};
     --bit-chg-clr-hover: #{$clr-suc-hover};
+    --bit-chg-clr-dis: #{$clr-suc-dis};
+    --bit-chg-clr-dis-text: #{$clr-suc-dis-text};
+    --bit-chg-clr-focus: #{$clr-suc-focus};
 }
 
 .bit-chg-wrn {
@@ -381,6 +413,9 @@
     --bit-chg-clr-brd: #{$clr-wrn};
     --bit-chg-clr-hover: #{$clr-wrn-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-wrn-dis};
+    --bit-chg-clr-dis-text: #{$clr-wrn-dis-text};
+    --bit-chg-clr-focus: #{$clr-wrn-focus};
 }
 
 .bit-chg-swr {
@@ -388,6 +423,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-swr};
     --bit-chg-clr-hover: #{$clr-swr-hover};
+    --bit-chg-clr-dis: #{$clr-swr-dis};
+    --bit-chg-clr-dis-text: #{$clr-swr-dis-text};
+    --bit-chg-clr-focus: #{$clr-swr-focus};
 }
 
 .bit-chg-err {
@@ -395,6 +433,9 @@
     --bit-chg-clr-brd: #{$clr-err};
     --bit-chg-clr-hover: #{$clr-err-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-err-dis};
+    --bit-chg-clr-dis-text: #{$clr-err-dis-text};
+    --bit-chg-clr-focus: #{$clr-err-focus};
 }
 
 .bit-chg-pbg {
@@ -402,6 +443,9 @@
     --bit-chg-clr-bg: #{$clr-fg-pri};
     --bit-chg-clr-brd: #{$clr-bg-pri};
     --bit-chg-clr-hover: #{$clr-bg-pri-hover};
+    --bit-chg-clr-dis: #{$clr-bg-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-bg-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-bg-pri-focus};
 }
 
 .bit-chg-sbg {
@@ -409,6 +453,9 @@
     --bit-chg-clr-bg: #{$clr-fg-pri};
     --bit-chg-clr-brd: #{$clr-bg-sec};
     --bit-chg-clr-hover: #{$clr-bg-sec-hover};
+    --bit-chg-clr-dis: #{$clr-bg-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-bg-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-bg-sec-focus};
 }
 
 .bit-chg-tbg {
@@ -416,6 +463,9 @@
     --bit-chg-clr-brd: #{$clr-bg-ter};
     --bit-chg-clr-hover: #{$clr-bg-ter-hover};
     --bit-chg-clr-bg: #{$clr-fg-pri};
+    --bit-chg-clr-dis: #{$clr-bg-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-bg-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-bg-ter-focus};
 }
 
 .bit-chg-pfg {
@@ -423,6 +473,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-fg-pri};
     --bit-chg-clr-hover: #{$clr-fg-pri-hover};
+    --bit-chg-clr-dis: #{$clr-fg-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-fg-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-fg-pri-focus};
 }
 
 .bit-chg-sfg {
@@ -430,6 +483,9 @@
     --bit-chg-clr-brd: #{$clr-fg-sec};
     --bit-chg-clr-hover: #{$clr-fg-sec-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-fg-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-fg-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-fg-sec-focus};
 }
 
 .bit-chg-tfg {
@@ -437,6 +493,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-fg-ter};
     --bit-chg-clr-hover: #{$clr-fg-ter-hover};
+    --bit-chg-clr-dis: #{$clr-fg-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-fg-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-fg-ter-focus};
 }
 
 .bit-chg-pbr {
@@ -444,6 +503,9 @@
     --bit-chg-clr-brd: #{$clr-brd-pri};
     --bit-chg-clr-hover: #{$clr-brd-pri-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-brd-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-brd-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-brd-pri-focus};
 }
 
 .bit-chg-sbr {
@@ -451,6 +513,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-brd-sec};
     --bit-chg-clr-hover: #{$clr-brd-sec-hover};
+    --bit-chg-clr-dis: #{$clr-brd-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-brd-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-brd-sec-focus};
 }
 
 .bit-chg-tbr {
@@ -458,6 +523,9 @@
     --bit-chg-clr-bg: #{$clr-bg-sec};
     --bit-chg-clr-brd: #{$clr-brd-ter};
     --bit-chg-clr-hover: #{$clr-brd-ter-hover};
+    --bit-chg-clr-dis: #{$clr-brd-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-brd-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-brd-ter-focus};
 }
 
 .bit-chg-sm {
@@ -495,5 +563,31 @@
 
     &.bit-chg-lg {
         --bit-chg-item-gap: #{spacing(3)};
+    }
+}
+
+// forced-colors: the checked radio dot is a background-painted ::after, which High Contrast
+// strips; repaint dot and ring with the system Highlight color so the checked option stays
+// visible. Placed last so it wins the same-specificity cascade over the normal checked rules.
+@media (forced-colors: active) {
+    .bit-chg-ich .bit-chg-rad {
+        &::before {
+            border-color: Highlight;
+        }
+
+        &::after {
+            background-color: Highlight;
+        }
+    }
+
+    // Declared after the checked rules so a checked + disabled radio renders GrayText.
+    .bit-chg-ids .bit-chg-rad {
+        &::before {
+            border-color: GrayText;
+        }
+
+        &::after {
+            background-color: GrayText;
+        }
     }
 }

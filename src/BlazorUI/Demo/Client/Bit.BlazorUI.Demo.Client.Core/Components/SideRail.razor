@@ -1,15 +1,57 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 
-<ul class="side-rail">
-    <li><b>On this page</b></li>
-    @foreach (var item in _items)
+@* The rail is built from the headings found in the DOM, so it is empty until after the first
+   render. The <nav> is rendered regardless to hold the column open - dropping it would let the
+   content column stretch and then snap back a frame later - but its label and rule only appear
+   once there is something to label. *@
+<nav class="side-rail" aria-label="On this page">
+    @if (_items.Count > 0)
     {
-        <li>
-            <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline>
-                <BitText Typography="BitTypography.Body2" Style="text-align: start;">
-                    @item.Title
-                </BitText>
-            </BitLink>
-        </li>
+        @_railContent
     }
-</ul>
+</nav>
+
+@* Below the xl breakpoint the sticky rail is hidden, and the same content folds into a BitPanel
+   opened by a floating button - the same move the nav panel makes into the header's menu button.
+   Following a link closes the panel (see ScrollToItem). *@
+@if (_items.Count > 0)
+{
+    <div class="side-rail-fab">
+        <BitButton IconOnly FixedColor
+                   Size="BitSize.Small"
+                   AriaLabel="On this page"
+                   Variant="BitVariant.Text"
+                   Color="BitColor.SecondaryBackground"
+                   IconName="@BitIconName.BulletedList"
+                   OnClick="() => _isPanelOpen = true" />
+    </div>
+
+    <BitPanel @bind-IsOpen="_isPanelOpen" Position="BitPanelPosition.End" Size="280">
+        <nav class="side-rail-panel" aria-label="On this page">
+            @_railContent
+        </nav>
+    </BitPanel>
+}
+
+@code {
+    private RenderFragment _railContent =>
+        @<text>
+            <BitText Element="p" Typography="BitTypography.Overline" Color="BitColor.TertiaryForeground">
+                On this page
+            </BitText>
+            <BitStack Element="ul" AutoHeight Gap="0.125rem" Class="side-rail-list">
+                @foreach (var item in _items)
+                {
+                    var isActive = item.Id == _activeItemId;
+                    <li class="@(isActive ? "active" : null)">
+                        <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline Color="BitColor.Info" Class="side-rail-link"
+                                 aria-current="@(isActive ? "location" : null)">
+                            <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Start">
+                                @item.Title
+                            </BitText>
+                        </BitLink>
+                    </li>
+                }
+            </BitStack>
+        </text>;
+}

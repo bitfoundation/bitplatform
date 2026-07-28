@@ -12,42 +12,42 @@
         pointer-events: none;
 
         .bit-srb-cnt {
-            color: $clr-fg-dis;
-            border-color: $clr-brd-dis;
-            background-color: $clr-bg-dis;
+            color: var(--bit-srb-clr-dis-text);
+            border-color: var(--bit-srb-clr-dis);
+            background-color: var(--bit-srb-clr-dis);
         }
 
         .bit-srb-iwp {
             i {
-                color: $clr-fg-dis;
+                color: var(--bit-srb-clr-dis-text);
             }
         }
 
         .bit-srb-pre,
         .bit-srb-suf {
-            color: $clr-fg-dis;
+            color: var(--bit-srb-clr-dis-text);
         }
 
         @media (hover: hover) {
             &:hover {
                 .bit-srb-cnt {
-                    border-color: $clr-brd-dis;
+                    border-color: var(--bit-srb-clr-dis);
                 }
 
                 .bit-srb-iwp {
                     i {
-                        color: $clr-fg-dis;
+                        color: var(--bit-srb-clr-dis-text);
                     }
                 }
             }
         }
 
         .bit-srb-sbn {
-            border-color: $clr-brd-dis;
-            background-color: $clr-bg-dis;
+            border-color: var(--bit-srb-clr-dis);
+            background-color: var(--bit-srb-clr-dis);
 
             i {
-                color: $clr-fg-dis;
+                color: var(--bit-srb-clr-dis-text);
             }
         }
 
@@ -84,13 +84,14 @@
         }
 
         &.bit-srb-foc {
-            .bit-srb-cnt::after {
-                border-color: $clr-err;
+            &:not(.bit-srb-und) .bit-srb-cnt {
+                @include focus-ring($clr-err-focus);
             }
 
             &.bit-srb-und {
-                .bit-srb-cnt::after {
-                    border-color: $clr-err;
+                .bit-srb-cnt,
+                .bit-srb-sbn {
+                    @include focus-underline-ring($clr-err-focus);
                 }
             }
         }
@@ -111,7 +112,7 @@
 
             &.bit-srb-foc {
                 .bit-srb-sbn {
-                    border-color: var(--bit-srb-clr);
+                    border-color: var(--bit-srb-clr-focus);
                 }
             }
 
@@ -152,7 +153,7 @@
     flex-direction: column;
     justify-content: center;
     color: var(--bit-srb-clr);
-    transition: width 0.167s ease 0s;
+    transition: width $mot-duration ease 0s;
 
     i {
         opacity: 1;
@@ -161,7 +162,7 @@
         height: unset;
         display: inline-block;
         color: var(--bit-srb-clr);
-        transition: opacity 0.167s ease 0s;
+        transition: opacity $mot-duration ease 0s;
     }
 }
 
@@ -343,35 +344,27 @@
     }
 
     .bit-srb-sbn {
-        border-color: var(--bit-srb-clr);
+        border-color: var(--bit-srb-clr-focus);
     }
 
-    .bit-srb-cnt::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style var(--bit-srb-clr);
+    &:not(.bit-srb-und) .bit-srb-cnt {
+        @include focus-ring(var(--bit-srb-clr-focus));
     }
 
     &.bit-srb-und {
-        .bit-srb-cnt::after,
-        .bit-srb-sbn::after {
-            content: "";
-            border: none;
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-bottom: spacing(0.25) $shp-border-style var(--bit-srb-clr);
+        .bit-srb-cnt,
+        .bit-srb-sbn {
+            @include focus-underline-ring(var(--bit-srb-clr-focus));
         }
     }
 }
 
 .bit-srb-nbr {
-    .bit-srb-cnt,
-    .bit-srb-cnt::after {
+    .bit-srb-cnt {
         border: none;
+
+        // Keep box-shadow unset here so the focus-ring mixin applied via .bit-srb-foc
+        // (and any :focus / :focus-visible states) can still render the focus indicator.
     }
 
     .bit-srb-sbn {
@@ -478,7 +471,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     box-shadow: $box-shadow-callout;
     background-color: $clr-bg-pri;
     animation-name: bit-fade-show, bit-slide-down;
@@ -549,121 +542,15 @@
 }
 
 
-.bit-srb-pri {
-    --bit-srb-clr: #{$clr-pri};
-    --bit-srb-clr-txt: #{$clr-pri-text};
-    --bit-srb-clr-hover: #{$clr-pri-hover};
-    --bit-srb-clr-active: #{$clr-pri-active};
-}
-
-.bit-srb-sec {
-    --bit-srb-clr: #{$clr-sec};
-    --bit-srb-clr-txt: #{$clr-sec-text};
-    --bit-srb-clr-hover: #{$clr-sec-hover};
-    --bit-srb-clr-active: #{$clr-sec-active};
-}
-
-.bit-srb-ter {
-    --bit-srb-clr: #{$clr-ter};
-    --bit-srb-clr-txt: #{$clr-ter-text};
-    --bit-srb-clr-hover: #{$clr-ter-hover};
-    --bit-srb-clr-active: #{$clr-ter-active};
-}
-
-.bit-srb-inf {
-    --bit-srb-clr: #{$clr-inf};
-    --bit-srb-clr-txt: #{$clr-inf-text};
-    --bit-srb-clr-hover: #{$clr-inf-hover};
-    --bit-srb-clr-active: #{$clr-inf-active};
-}
-
-.bit-srb-suc {
-    --bit-srb-clr: #{$clr-suc};
-    --bit-srb-clr-txt: #{$clr-suc-text};
-    --bit-srb-clr-hover: #{$clr-suc-hover};
-    --bit-srb-clr-active: #{$clr-suc-active};
-}
-
-.bit-srb-wrn {
-    --bit-srb-clr: #{$clr-wrn};
-    --bit-srb-clr-txt: #{$clr-wrn-text};
-    --bit-srb-clr-hover: #{$clr-wrn-hover};
-    --bit-srb-clr-active: #{$clr-wrn-active};
-}
-
-.bit-srb-swr {
-    --bit-srb-clr: #{$clr-swr};
-    --bit-srb-clr-txt: #{$clr-swr-text};
-    --bit-srb-clr-hover: #{$clr-swr-hover};
-    --bit-srb-clr-active: #{$clr-swr-active};
-}
-
-.bit-srb-err {
-    --bit-srb-clr: #{$clr-err};
-    --bit-srb-clr-txt: #{$clr-err-text};
-    --bit-srb-clr-hover: #{$clr-err-hover};
-    --bit-srb-clr-active: #{$clr-err-active};
-}
-
-.bit-srb-pbg {
-    --bit-srb-clr: #{$clr-bg-pri};
-    --bit-srb-clr-txt: #{$clr-fg-pri};
-    --bit-srb-clr-hover: #{$clr-bg-pri-hover};
-    --bit-srb-clr-active: #{$clr-bg-pri-active};
-}
-
-.bit-srb-sbg {
-    --bit-srb-clr: #{$clr-bg-sec};
-    --bit-srb-clr-txt: #{$clr-fg-pri};
-    --bit-srb-clr-hover: #{$clr-bg-sec-hover};
-    --bit-srb-clr-active: #{$clr-bg-sec-active};
-}
-
-.bit-srb-tbg {
-    --bit-srb-clr: #{$clr-bg-ter};
-    --bit-srb-clr-txt: #{$clr-fg-pri};
-    --bit-srb-clr-hover: #{$clr-bg-ter-hover};
-    --bit-srb-clr-active: #{$clr-bg-ter-active};
-}
-
-.bit-srb-pfg {
-    --bit-srb-clr: #{$clr-fg-pri};
-    --bit-srb-clr-txt: #{$clr-bg-pri};
-    --bit-srb-clr-hover: #{$clr-fg-pri-hover};
-    --bit-srb-clr-active: #{$clr-fg-pri-active};
-}
-
-.bit-srb-sfg {
-    --bit-srb-clr: #{$clr-fg-sec};
-    --bit-srb-clr-txt: #{$clr-bg-pri};
-    --bit-srb-clr-hover: #{$clr-fg-sec-hover};
-    --bit-srb-clr-active: #{$clr-fg-sec-active};
-}
-
-.bit-srb-tfg {
-    --bit-srb-clr: #{$clr-fg-ter};
-    --bit-srb-clr-txt: #{$clr-bg-pri};
-    --bit-srb-clr-hover: #{$clr-fg-ter-hover};
-    --bit-srb-clr-active: #{$clr-fg-ter-active};
-}
-
-.bit-srb-pbr {
-    --bit-srb-clr: #{$clr-brd-pri};
-    --bit-srb-clr-txt: #{$clr-fg-pri};
-    --bit-srb-clr-hover: #{$clr-brd-pri-hover};
-    --bit-srb-clr-active: #{$clr-brd-pri-active};
-}
-
-.bit-srb-sbr {
-    --bit-srb-clr: #{$clr-brd-sec};
-    --bit-srb-clr-txt: #{$clr-fg-pri};
-    --bit-srb-clr-hover: #{$clr-brd-sec-hover};
-    --bit-srb-clr-active: #{$clr-brd-sec-active};
-}
-
-.bit-srb-tbr {
-    --bit-srb-clr: #{$clr-brd-ter};
-    --bit-srb-clr-txt: #{$clr-fg-pri};
-    --bit-srb-clr-hover: #{$clr-brd-ter-hover};
-    --bit-srb-clr-active: #{$clr-brd-ter-active};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-srb-#{$role} {
+        --bit-srb-clr: #{role($tokens, main)};
+        --bit-srb-clr-txt: #{role($tokens, on)};
+        --bit-srb-clr-hover: #{role($tokens, hover)};
+        --bit-srb-clr-active: #{role($tokens, active)};
+        --bit-srb-clr-focus: #{role($tokens, focus)};
+        --bit-srb-clr-dis: #{role($tokens, dis)};
+        --bit-srb-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }

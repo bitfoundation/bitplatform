@@ -1,0 +1,34 @@
+@inherits AppComponentBase
+
+@{
+    var placementClass = Placement switch
+    {
+        AccentColorSwitcherPlacement.Header => " accent-switcher--header",
+        AccentColorSwitcherPlacement.NavPanel => " accent-switcher--nav-panel",
+        _ => null,
+    };
+}
+
+<div class="accent-switcher@(placementClass)">
+    @if (Placement is AccentColorSwitcherPlacement.NavPanel)
+    {
+        @* The header's copy sits between two icon buttons that explain themselves; in the drawer the
+           swatches are on their own, so they get a label. *@
+        <BitText Element="span" Typography="BitTypography.Caption1" Class="accent-switcher-label">Accent color</BitText>
+    }
+
+    <div class="accent-swatches">
+        @foreach (var (name, hex) in AppAccentColorService.Presets)
+        {
+            var isActive = _accentColorService.ActiveAccent == hex;
+
+            <button type="button"
+                    title="@name"
+                    aria-pressed="@(isActive ? "true" : "false")"
+                    aria-label="@($"Apply the {name} accent color")"
+                    class="accent-swatch@(isActive ? " accent-swatch--active" : null)"
+                    style="--swatch-color: @hex"
+                    @onclick="() => _accentColorService.ApplyAsync(hex)"></button>
+        }
+    </div>
+</div>

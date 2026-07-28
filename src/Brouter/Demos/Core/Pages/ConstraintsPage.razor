@@ -1,3 +1,5 @@
+<PageTitle>Constraints · Brouter docs</PageTitle>
+
 @* Interactive tester for every built-in constraint (plus a custom one). Each catalog entry has a
    real route registered in AppRouter: /c/{kind}/{v:token}. Testing navigates to that URL - if the
    constraint accepts, the constrained route wins by specificity and shows the bound value; if it
@@ -100,7 +102,7 @@ services.AddBitBrouterServices(o =&gt;
 <span class="c">// Then in any template:</span>
 &lt;<span class="k">Broute</span> Path=<span class="s">"/posts/{name:slug}"</span> ... /&gt;</pre>
     <div class="bb-try">
-        <BrouterLink Href="/templates" class="btn btn-primary">← All template shapes</BrouterLink>
+        <BrouterLink Href="/docs/route-templates" class="btn btn-primary">← All template shapes</BrouterLink>
     </div>
 </div>
 

@@ -12,6 +12,22 @@
     }
 }
 
+.clickable-box {
+    padding: 1rem;
+    cursor: pointer;
+    width: fit-content;
+    border-radius: 0.25rem;
+    border: 1px dashed gray;
+}
+
+.items-container {
+    gap: 0.5rem;
+    display: flex;
+    margin-top: 0.5rem;
+    margin-left: 1.5rem;
+    flex-direction: column;
+}
+
 ::deep {
     .custom-class {
         padding: 0.5rem;

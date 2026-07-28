@@ -67,7 +67,7 @@
         </p>
     }
     <div class="bb-try">
-        <BrouterLink Href="/constraints" class="btn btn-primary">← Back to the tester</BrouterLink>
+        <BrouterLink Href="/docs/constraints" class="btn btn-primary">← Back to the tester</BrouterLink>
         @if (Demo is not null)
         {
             <BrouterLink Href="@($"/c/{Demo.Kind}/{Uri.EscapeDataString(Rejected ? Demo.PassExample : Demo.FailExample)}")" class="btn btn-outline">

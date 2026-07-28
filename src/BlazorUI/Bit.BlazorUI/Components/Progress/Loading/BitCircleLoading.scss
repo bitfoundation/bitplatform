@@ -13,7 +13,7 @@
     height: var(--bit-ldn-size);
     margin: var(--bit-ldn-cir-8);
     background: var(--bit-ldn-color);
-    animation: bit-ldn-cir-anm 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    animation: bit-ldn-cir-anm calc(2.4s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
 @keyframes bit-ldn-cir-anm {

@@ -1,0 +1,90 @@
+<PageTitle>@("@page discovery · Brouter docs")</PageTitle>
+
+<div class="bb-intro">
+    <h1>&#64;page discovery</h1>
+    <p class="bb-subtitle">
+        Routes don't have to be hand-declared in one tree - scan assemblies for
+        <code>&#64;page</code> / <code>[Route]</code> components so templates stay colocated with
+        their pages.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Point Brouter at your assemblies</h3>
+    <p class="bb-card-desc">
+        <code>AppAssembly</code> and <code>AdditionalAssemblies</code> mirror the built-in Router's
+        parameters: every component annotated with <code>[Route]</code> (which is what
+        <code>&#64;page</code> compiles to) is discovered and matched alongside any hand-declared
+        <code>&lt;Broute&gt;</code> children - Razor class libraries and lazily-loaded assemblies
+        included. Growing the <code>AdditionalAssemblies</code> list (with a re-render) registers
+        new routes at runtime.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Counter.razor - the route lives next to the page *@@</span>
+<span class="k">@@page</span> <span class="s">"/counter/{start:int}"</span>
+
+&lt;h1&gt;Count: @@Start&lt;/h1&gt;
+
+<span class="k">@@code</span> {
+    [<span class="k">Parameter</span>] <span class="k">public int</span> Start { <span class="k">get</span>; <span class="k">set</span>; }                       <span class="c">// from {start:int}</span>
+    [<span class="k">Parameter</span>, <span class="k">SupplyParameterFromQuery</span>] <span class="k">public string</span>? Tab { <span class="k">get</span>; <span class="k">set</span>; } <span class="c">// from ?tab=</span>
+}
+
+<span class="c">@@* App router *@@</span>
+&lt;<span class="k">Brouter</span> AppAssembly=<span class="s">"@@typeof(App).Assembly"</span> AdditionalAssemblies=<span class="s">"@@_lazyLoaded"</span>&gt;
+    &lt;<span class="k">Broute</span> Path=<span class="s">"/"</span> RedirectTo=<span class="s">"/home"</span> /&gt;   <span class="c">@@* hand-declared routes still work *@@</span>
+&lt;/<span class="k">Brouter</span>&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/discovered/7?q=hello" class="btn btn-outline">/discovered/7?q=hello - a live discovered &#64;page route</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Parameter binding is identical</h3>
+    <p class="bb-card-desc">
+        Discovered and hand-declared routes bind the same way: route segments to same-named
+        <code>[Parameter]</code> properties, query values to
+        <code>[Parameter, SupplyParameterFromQuery]</code> properties. Brouter binds the query
+        values itself, so this works even where the framework's query supplier isn't registered.
+        Two framework rules to keep in mind: pair <code>[SupplyParameterFromQuery]</code> with
+        <code>[Parameter]</code> on routed components, and keep its property types within the set
+        the framework supplier can parse - for anything else (enums, for example) use Brouter's
+        opt-in <code>[BrouterQuery]</code> instead (see
+        <BrouterLink Href="/docs/route-parameters">route parameters</BrouterLink>).
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Shadowing &amp; ambiguity</h3>
+    <p class="bb-card-desc">
+        Registering two routes that match exactly the same URLs throws - mirroring the built-in
+        router's <code>AmbiguousMatchException</code> - instead of silently picking one. The one
+        allowed pairing: a hand-declared <code>&lt;Broute&gt;</code> with the exact template of a
+        discovered <code>&#64;page</code> <em>shadows</em> it, which is how you attach a
+        <code>Guard</code> or <code>Loader</code> to an existing page without touching it.
+    </p>
+    <pre class="bb-code"><span class="c">@@* ReportsPage declares @@page "/reports" - this shadow adds a guard to it: *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/reports"</span> Guard=<span class="s">"@@RequireSignIn"</span> Component=<span class="s">"@@typeof(ReportsPage)"</span> /&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Lazy route loading</h3>
+    <p class="bb-card-desc">
+        <code>OnNavigateAsync</code> runs before matching on every navigation (initial deep links
+        included). Returned assemblies are scanned and registered <em>within the same
+        navigation</em>, so the URL that triggered the load lands on the freshly-loaded page - the
+        WebAssembly <code>LazyAssemblyLoader</code> scenario without the
+        grow-a-list-and-re-render dance.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Brouter</span> OnNavigateAsync=<span class="s">"@@LoadRouteAssemblies"</span> Navigating=<span class="s">"@@LoadingUi"</span>&gt;…&lt;/<span class="k">Brouter</span>&gt;
+
+<span class="k">private async</span> ValueTask&lt;IEnumerable&lt;Assembly&gt;?&gt; LoadRouteAssemblies(BrouterNavigationContext ctx)
+{
+    <span class="k">if</span> (ctx.To.Path.StartsWith(<span class="s">"/reports"</span>))
+        <span class="k">return await</span> Lazy.LoadAssembliesAsync([<span class="s">"Reports.wasm"</span>]);
+    <span class="k">return null</span>;
+}</pre>
+    <p class="bb-card-desc">
+        Discovery reflects over the given assemblies - like the built-in Router, keep routable
+        components preserved when trimming.
+    </p>
+</div>

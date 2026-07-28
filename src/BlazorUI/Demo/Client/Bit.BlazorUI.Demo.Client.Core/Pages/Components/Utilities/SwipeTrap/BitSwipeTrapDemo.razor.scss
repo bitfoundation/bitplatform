@@ -1,4 +1,6 @@
-﻿.basic-container {
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.basic-container {
     width: 100%;
     cursor: grab;
     height: 500px;
@@ -91,7 +93,7 @@
     border-radius: 36px;
     border: 16px solid #333;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: var(--bit-clr-fg-sec);
+    background-color: $bit-color-foreground-secondary;
 
     .screen {
         width: 100%;
@@ -111,7 +113,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: var(--bit-clr-bg-sec);
+        background-color: $bit-color-background-secondary;
     }
 
     .main {

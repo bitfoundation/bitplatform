@@ -47,7 +47,7 @@
     align-items: center;
     font-size: spacing(3);
     justify-content: center;
-    transition: opacity 150ms ease;
+    transition: opacity $mot-duration ease;
 
     @media (hover: hover) {
         &:hover {
@@ -80,7 +80,7 @@
     display: inline-block;
     margin: 0 spacing(0.5);
     background-color: $clr-bg-ter;
-    transition: background-color 600ms ease;
+    transition: background-color $mot-duration-long ease;
 
     @media (hover: hover) {
         &:hover {

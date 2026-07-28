@@ -272,7 +272,42 @@ private List<Event> templateItems =
 
 <BitTimeline Horizontal Color=""BitColor.Error"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
 <BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
-<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />";
+<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+
+<div><b>Disabled</b>:</div>
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example8CsharpCode = @"
 public class Event
 {

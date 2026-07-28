@@ -4,6 +4,8 @@ public partial class DemoPage
 {
     private const string REPO_URL = "https://github.com/bitfoundation/bitplatform";
 
+    private bool _forceAnimation;
+
     [Parameter] public string Name { get; set; } = default!;
     [Parameter] public string[]? SecondaryNames { get; set; }
     [Parameter] public string? Description { get; set; }
@@ -49,6 +51,13 @@ public partial class DemoPage
             Description = "Gets or sets the text directionality for the component's content.",
             LinkType = LinkType.Link,
             Href = "#component-dir",
+        },
+        new()
+        {
+            Name = "ForceAnimation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gets or sets a value indicating whether the component's animations play at their full duration even when reduced motion is requested.",
         },
         new()
         {
@@ -315,6 +324,6 @@ public partial class DemoPage
 
 
     private readonly List<string> _notInheritedComponents = [
-        "CascadingValueProvider", "Chart", "DataGrid", "QuickGrid", "ModalService", "Params", "ProModalService"
+        "CascadingValueProvider", "Chart", "ChartLegacy", "DataGrid", "DataGridLegacy", "ModalService", "Params", "ProModalService"
     ];
 }

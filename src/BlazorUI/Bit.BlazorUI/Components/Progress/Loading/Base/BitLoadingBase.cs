@@ -150,6 +150,16 @@ public abstract class BitLoadingBase : BitComponentBase
                 BitColor.Warning => "var(--bit-clr-wrn)",
                 BitColor.SevereWarning => "var(--bit-clr-swr)",
                 BitColor.Error => "var(--bit-clr-err)",
+                BitColor.PrimaryBackground => "var(--bit-clr-bg-pri)",
+                BitColor.SecondaryBackground => "var(--bit-clr-bg-sec)",
+                BitColor.TertiaryBackground => "var(--bit-clr-bg-ter)",
+                BitColor.PrimaryForeground => "var(--bit-clr-fg-pri)",
+                BitColor.SecondaryForeground => "var(--bit-clr-fg-sec)",
+                BitColor.TertiaryForeground => "var(--bit-clr-fg-ter)",
+                BitColor.PrimaryBorder => "var(--bit-clr-brd-pri)",
+                BitColor.SecondaryBorder => "var(--bit-clr-brd-sec)",
+                BitColor.TertiaryBorder => "var(--bit-clr-brd-ter)",
+                // Color is nullable, so this also covers the unset case, where CustomColor applies.
                 _ => CustomColor ?? "var(--bit-clr-pri)"
             };
 

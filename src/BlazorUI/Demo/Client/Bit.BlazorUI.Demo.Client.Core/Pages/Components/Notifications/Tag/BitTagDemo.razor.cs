@@ -409,7 +409,33 @@ private bool isDismissed;";
 
 <BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Fill"" />&nbsp;
 <BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" />&nbsp;
-<BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" />";
+<BitTag Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" />
+
+<br /><br /><br />
+<div><b>Disabled</b>:</div>
+
+<BitTag IsEnabled=""false"" Text=""Primary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Primary"" />
+<BitTag IsEnabled=""false"" Text=""Secondary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Secondary"" />
+<BitTag IsEnabled=""false"" Text=""Tertiary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Tertiary"" />
+<BitTag IsEnabled=""false"" Text=""Info"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Info"" />
+<BitTag IsEnabled=""false"" Text=""Success"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Success"" />
+<BitTag IsEnabled=""false"" Text=""Warning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Warning"" />
+<BitTag IsEnabled=""false"" Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SevereWarning"" />
+<BitTag IsEnabled=""false"" Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" />
+
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitTag IsEnabled=""false"" Text=""PrimaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBackground"" />
+    <BitTag IsEnabled=""false"" Text=""SecondaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBackground"" />
+    <BitTag IsEnabled=""false"" Text=""TertiaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBackground"" />
+</div>
+
+<BitTag IsEnabled=""false"" Text=""PrimaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryForeground"" />
+<BitTag IsEnabled=""false"" Text=""SecondaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryForeground"" />
+<BitTag IsEnabled=""false"" Text=""TertiaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryForeground"" />
+
+<BitTag IsEnabled=""false"" Text=""PrimaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBorder"" />
+<BitTag IsEnabled=""false"" Text=""SecondaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBorder"" />
+<BitTag IsEnabled=""false"" Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" />";
 
     private readonly string example6RazorCode = @"
 <BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />

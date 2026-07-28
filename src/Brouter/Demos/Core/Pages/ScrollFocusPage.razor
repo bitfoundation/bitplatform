@@ -1,0 +1,70 @@
+<PageTitle>Scroll &amp; focus · Brouter docs</PageTitle>
+
+<div class="bb-intro">
+    <h1>Scroll &amp; focus management</h1>
+    <p class="bb-subtitle">
+        What should happen to the viewport - and to keyboard/screen-reader focus - after each
+        navigation. All configured once, on <code>BrouterOptions</code>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The four knobs</h3>
+    <p class="bb-card-desc">
+        These DOM effects run once the matched route is committed, so fragment and focus selectors
+        resolve against the <em>new</em> page. During static prerender they are skipped - there is
+        no DOM to act on.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Option</th><th>Behavior</th></tr></thead>
+        <tbody>
+            <tr><td>ScrollBehavior</td><td><code>ToTop</code> scrolls the window to the top on navigation (default <code>None</code> - SPAs otherwise keep the old scroll position on the new page).</td></tr>
+            <tr><td>ScrollToFragment</td><td>Navigating to <code>/docs#install</code> scrolls <code>#install</code> into view and focuses it. Default on; a found fragment target wins over everything else that navigation.</td></tr>
+            <tr><td>RestoreScrollPosition</td><td>Remembers each page's scroll position and restores it on Back/Forward, like native browsers. New navigations still use <code>ScrollBehavior</code>. Default off; enabling takes over <code>history.scrollRestoration</code>.</td></tr>
+            <tr><td>FocusOnNavigateSelector</td><td>Moves focus to a selector (e.g. <code>"h1"</code>) after navigation so assistive technologies announce the new page - the SPA-router counterpart of Blazor's <code>&lt;FocusOnNavigate&gt;</code>, and a WCAG-relevant concern. Non-focusable targets get <code>tabindex="-1"</code>.</td></tr>
+        </tbody>
+    </table>
+    <pre class="bb-code">builder.Services.AddBitBrouterServices(o =&gt;
+{
+    o.ScrollBehavior = BrouterScrollMode.ToTop;
+    o.ScrollToFragment = <span class="k">true</span>;
+    o.RestoreScrollPosition = <span class="k">true</span>;
+    o.ScrollPositionStorage = BrouterScrollPositionStorage.SessionStorage;
+    o.FocusOnNavigateSelector = <span class="s">"h1"</span>;
+});</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where restored positions live</h3>
+    <p class="bb-card-desc">
+        <code>ScrollPositionStorage</code> picks the store for remembered positions:
+        <code>Memory</code> (default - lost on a full reload), <code>SessionStorage</code>
+        (recommended: per-tab, auto-cleared on tab close, survives reloads), or
+        <code>LocalStorage</code> (survives restarts, shared across tabs). If the chosen store is
+        unavailable (private mode, quota), it falls back to memory.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Precedence when several apply</h3>
+    <p class="bb-card-desc">
+        If a fragment target resolves, it scrolls into view and takes focus - nothing else runs
+        that navigation. Otherwise, a Back/Forward with a remembered position restores it, else
+        <code>ScrollBehavior</code> applies; and only in these non-fragment cases does
+        <code>FocusOnNavigateSelector</code> then receive focus.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/route-templates#top" class="btn btn-outline">Try fragment scrolling on this site</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Navigation type awareness</h3>
+    <p class="bb-card-desc">
+        Scroll restoration is driven by <code>BrouterNavigationContext.NavigationType</code>
+        (<code>Push</code> / <code>Replace</code> / <code>Pop</code>) - the same signal your own
+        guards, loaders and hooks can branch on for "treat Back differently" logic like reusing
+        cached data on a <code>Pop</code>. See
+        <BrouterLink Href="/docs/navigation">navigation &amp; history</BrouterLink>.
+    </p>
+</div>

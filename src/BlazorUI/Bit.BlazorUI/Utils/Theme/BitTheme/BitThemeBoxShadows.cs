@@ -35,4 +35,5 @@ public class BitThemeBoxShadows
     public string? S22 { get; set; }
     public string? S23 { get; set; }
     public string? S24 { get; set; }
+    public string? FocusRing { get; set; }
 }

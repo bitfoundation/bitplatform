@@ -1,0 +1,117 @@
+<PageTitle>Getting started · Brouter docs</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        Install the package, register the services, declare two routes - a working router in five
+        minutes, in any Blazor render mode.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> 1 · Install</h3>
+    <p class="bb-card-desc">
+        <code>Bit.Brouter</code> targets net8.0, net9.0 and net10.0, and brings its JavaScript
+        along as a static web asset - there is no script tag to add. The optional
+        <code>Bit.Brouter.Generators</code> package is an analyzer-only companion that generates
+        the typed <code>BrouterRoutes</code> URL builders.
+    </p>
+    <pre class="bb-code"><span class="c"># The router itself:</span>
+dotnet add package Bit.Brouter
+
+<span class="c"># Optional - typed, compile-time-safe URL builders:</span>
+dotnet add package Bit.Brouter.Generators
+
+<span class="c">&lt;!-- ...or declare them in your .csproj. PrivateAssets="all" on the generator keeps
+     the analyzer out of your own package's dependencies: --&gt;</span>
+&lt;<span class="k">PackageReference</span> Include=<span class="s">"Bit.Brouter"</span> Version=<span class="s">"10.5.0"</span> /&gt;
+&lt;<span class="k">PackageReference</span> Include=<span class="s">"Bit.Brouter.Generators"</span> Version=<span class="s">"10.5.0"</span> PrivateAssets=<span class="s">"all"</span> /&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> 2 · Register the services</h3>
+    <p class="bb-card-desc">
+        Add <code>AddBitBrouterServices</code> in <code>Program.cs</code> (in a Blazor Web App,
+        register it on both the server and the client project), and add
+        <code>&#64;using Bit.Brouter</code> to your <code>_Imports.razor</code>. Every option has a
+        sensible default - the callback is where routing behavior is configured app-wide.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs</span>
+builder.Services.AddBitBrouterServices(o =&gt;
+{
+    o.CaseSensitive = <span class="k">false</span>;              <span class="c">// default</span>
+    o.IgnoreTrailingSlash = <span class="k">true</span>;         <span class="c">// default</span>
+    o.ViewTransitions = <span class="k">true</span>;             <span class="c">// animated page changes</span>
+    o.ScrollBehavior = BrouterScrollMode.ToTop;
+    o.ScrollToFragment = <span class="k">true</span>;            <span class="c">// /docs#install scrolls #install into view</span>
+    o.FocusOnNavigateSelector = <span class="s">"h1"</span>;     <span class="c">// move focus after navigation (accessibility)</span>
+    <span class="c">// constraints, loader caching, keep-alive and more live here too</span>
+});</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> 3 · Hand Brouter the URL space</h3>
+    <p class="bb-card-desc">
+        In a Blazor Web App, a single catch-all host page routes <em>every</em> URL to Brouter
+        (this is exactly how this site is wired). In a standalone WebAssembly app, render
+        <code>&lt;Brouter&gt;</code> directly from <code>App.razor</code> instead - no host page
+        needed.
+    </p>
+    <pre class="bb-code"><span class="c">@@* Host.razor - the built-in router maps every URL here; Brouter takes over. *@@</span>
+<span class="k">@@page</span> <span class="s">"/"</span>
+<span class="k">@@page</span> <span class="s">"/{*path}"</span>
+
+&lt;<span class="k">AppRouter</span> /&gt;
+
+<span class="k">@@code</span> {
+    [<span class="k">Parameter</span>] <span class="k">public string</span>? Path { <span class="k">get</span>; <span class="k">set</span>; }
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> 4 · Declare routes</h3>
+    <p class="bb-card-desc">
+        Routes are components, so a route tree is just markup. Templates are a superset-compatible
+        match of the built-in router's - so your existing <code>&#64;page</code> components keep
+        working: point <code>AppAssembly</code> at your app and they are discovered and matched
+        alongside the hand-declared tree.
+    </p>
+    <pre class="bb-code"><span class="c">@@* AppRouter.razor *@@</span>
+&lt;<span class="k">Brouter</span> NotFoundUrl=<span class="s">"404"</span> AppAssembly=<span class="s">"@@GetType().Assembly"</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/"</span> Component=<span class="s">"@@typeof(HomePage)"</span> /&gt;
+
+        &lt;<span class="k">Broute</span> Name=<span class="s">"user"</span> Path=<span class="s">"/users/{id:int}"</span>&gt;
+            &lt;<span class="k">Content</span>&gt;&lt;UserPage /&gt;&lt;/<span class="k">Content</span>&gt;
+        &lt;/<span class="k">Broute</span>&gt;
+
+        &lt;<span class="k">Broute</span> Path=<span class="s">"404"</span>&gt;
+            &lt;<span class="k">Content</span>&gt;&lt;h1&gt;404&lt;/h1&gt;&lt;p&gt;Nothing here.&lt;/p&gt;&lt;/<span class="k">Content</span>&gt;
+        &lt;/<span class="k">Broute</span>&gt;
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Brouter</span>&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> 5 · Link and navigate</h3>
+    <p class="bb-card-desc">
+        <code>&lt;BrouterLink&gt;</code> renders a real anchor with active-class and
+        <code>aria-current</code> handling; the injected <code>IBrouter</code> service is the
+        programmatic side.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BrouterLink</span> Href=<span class="s">"/users/42"</span>&gt;Saleh&lt;/<span class="k">BrouterLink</span>&gt;
+
+<span class="c">// anywhere, via DI:</span>
+<span class="k">@@inject</span> IBrouter brouter
+brouter.Navigate(<span class="s">"/users/42"</span>);</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where next?</h3>
+    <ul class="bb-detail-list">
+        <li><BrouterLink Href="/docs/route-templates">Route templates</BrouterLink> - the full grammar your paths can use.</li>
+        <li><BrouterLink Href="/docs/nested-routes">Nested routes &amp; outlets</BrouterLink> - persistent layouts around swapping children.</li>
+        <li><BrouterLink Href="/docs/guards">Guards</BrouterLink> and <BrouterLink Href="/docs/data-loading">data loading</BrouterLink> - the navigation pipeline.</li>
+        <li><BrouterLink Href="/docs/migration">Migration guide</BrouterLink> - moving an existing app off the built-in Router.</li>
+    </ul>
+</div>

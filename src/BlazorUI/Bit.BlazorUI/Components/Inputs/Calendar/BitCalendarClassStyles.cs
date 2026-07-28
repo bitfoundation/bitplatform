@@ -83,6 +83,11 @@ public class BitCalendarClassStyles
     public string? NextMonthNavIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the days' grid of the BitCalendar.
+    /// </summary>
+    public string? DaysGrid { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the header row of the days of the BitCalendar.
     /// </summary>
     public string? DaysHeaderRow { get; set; }
@@ -91,6 +96,11 @@ public class BitCalendarClassStyles
     /// Custom CSS classes/styles for the header of the week numbers of the BitCalendar.
     /// </summary>
     public string? WeekNumbersHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the weekday-name headers of the BitCalendar.
+    /// </summary>
+    public string? DayNameHeader { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for each row of the days of the BitCalendar.
@@ -116,6 +126,11 @@ public class BitCalendarClassStyles
     /// Custom CSS classes/styles for selected day button of the BitCalendar.
     /// </summary>
     public string? SelectedDayButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for highlighted day buttons of the BitCalendar.
+    /// </summary>
+    public string? HighlightedDayButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's input container of the BitCalendar.

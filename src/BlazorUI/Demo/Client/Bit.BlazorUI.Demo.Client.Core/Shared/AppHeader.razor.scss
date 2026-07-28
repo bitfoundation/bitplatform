@@ -5,22 +5,29 @@
 .header {
     width: 100%;
     backdrop-filter: blur(20px);
-    box-shadow: $bit-box-shadow-1;
     -webkit-backdrop-filter: blur(20px);
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+    // Declared on the chrome rather than globally: inside an example the focus ring belongs to the
+    // component being demonstrated, and a second outline over it would show readers something the
+    // library does not actually render.
+    a:focus-visible,
+    button:focus-visible {
+        outline: rem2(2px) solid $bit-color-primary;
+        outline-offset: rem2(2px);
+        border-radius: $bit-shape-border-radius;
+    }
 }
 
-.container {
-    width: 100%;
-    display: flex;
+// The container and its two ends are BitStacks; only the bar's height, gutters and the home-page
+// width cap stay here, in ::deep because a stack's root div does not carry this file's scope
+// attribute.
+::deep .container {
     margin-left: auto;
     margin-right: auto;
-    align-items: center;
-    flex-flow: row nowrap;
     min-height: rem2(65px);
-    box-sizing: border-box;
     padding-left: rem2(20px);
     padding-right: rem2(20px);
-    justify-content: space-between;
 
     @include lt-lg {
         padding-left: rem2(10px);
@@ -30,13 +37,6 @@
     &.home-page {
         max-width: rem2(1200px);
     }
-}
-
-.content {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
 }
 
 .logo {
@@ -55,14 +55,22 @@
 
 .link {
     height: 100%;
+    display: flex;
     cursor: pointer;
     line-height: 1.5;
-    padding-bottom: 0;
-    padding: rem2(10px);
-    font-size: rem2(16px);
+    align-items: center;
+    font-size: rem2(15px);
     text-decoration: none;
     box-sizing: border-box;
+    padding: rem2(8px) rem2(12px);
+    border-radius: $bit-shape-border-radius;
     color: $bit-color-foreground-secondary;
+    transition: color $bit-motion-duration-short $bit-motion-easing;
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-secondary;
+    }
 
     &.active {
         font-weight: 600;
@@ -70,25 +78,26 @@
     }
 }
 
-.right-section {
-    gap: 1rem;
-    display: flex;
-    align-items: center;
-}
-
+// Sized to match the theme toggle next to it. The octocat circle only spans ~87% of the svg's
+// viewBox, so the mark is drawn oversized to put the VISIBLE glyph at the button's rem2(32px);
+// anything past the ~13% built-in padding clips at the box edge, which is under half a pixel.
+// The svg is a mask rather than a picture, so the mark is painted with the theme's primary color and
+// follows the accent the home page's "Make it yours" swatches apply - a colored asset could not.
 .github-btn {
     cursor: pointer;
-    width: rem2(40px);
-    height: rem2(40px);
-    border-radius: 50%;
+    width: rem2(32px);
+    height: rem2(32px);
+    background-color: $bit-color-primary;
+    -webkit-mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
+    mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
 }
 
 .toggle-theme-btn {
     padding: 0;
     border: none;
     cursor: pointer;
-    height: rem2(35px);
-    min-width: rem2(35px);
+    height: rem2(32px);
+    min-width: rem2(32px);
     border-radius: 50%;
     color: $bit-color-primary-text;
     background-color: $bit-color-primary;
@@ -112,13 +121,14 @@
     }
 }
 
-.bit-blazorui-dark-theme {
+// The document's bit-theme attribute is the library's own live theme state, kept current by the
+// theme script itself, so the dark/light swap keys off it - and the two selectors are exact
+// complements, so exactly one of each pair is visible in every possible state. The old body
+// classes were applied only from the script's onChange callback and could go missing (e.g. after
+// a hot reload), which rendered both theme toggle buttons at once.
+:root[bit-theme$='dark'] {
     .light-theme {
         display: none;
-    }
-
-    .github-btn {
-        background-image: url('images/github-icon-dark.svg');
     }
 
     .logo {
@@ -126,13 +136,9 @@
     }
 }
 
-.bit-blazorui-light-theme {
+:root:not([bit-theme$='dark']) {
     .dark-theme {
         display: none;
-    }
-
-    .github-btn {
-        background-image: url('images/github-icon-light.svg');
     }
 
     .logo {

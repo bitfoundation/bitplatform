@@ -8,17 +8,17 @@
         .content-container {
             cursor: default;
             pointer-events: none;
-            color: $clr-fg-dis;
+            color: var(--bit-pvt-clr-dis-text);
         }
 
         .bit-pvti {
             cursor: default;
             pointer-events: none;
-            color: $clr-fg-dis;
+            color: var(--bit-pvt-clr-dis-text);
         }
 
         .bit-pvti-sel::before {
-            background-color: $clr-brd-dis;
+            background-color: var(--bit-pvt-clr-dis);
         }
     }
 }
@@ -130,6 +130,13 @@
 
 .bit-pvt-lnk {
     .bit-pvti {
+        // Every item carries the indicator color, not just the selected one, so the item losing the
+        // selection stays painted while its indicator scales away. Unselected items are collapsed to
+        // a zero scale (see .bit-pvti::before), so this paints nothing until an item is selected.
+        &::before {
+            background-color: var(--bit-pvt-clr);
+        }
+
         @media(hover:hover) {
             &:hover {
                 cursor: pointer;
@@ -140,10 +147,6 @@
     }
 
     .bit-pvti-sel {
-        &::before {
-            background-color: var(--bit-pvt-clr);
-        }
-
         @media(hover:hover) {
             &:hover {
                 &::before {
@@ -227,6 +230,26 @@
     background-color: transparent;
     color: $clr-fg-pri;
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+
+    // The selection indicator lives on every item rather than only on the selected one: a pseudo
+    // element that is generated when the item becomes selected has no previous computed style to
+    // transition from, so it would pop into place. Keeping it on all items lets the outgoing item
+    // scale its indicator away while the incoming one scales its own in.
+    &::before {
+        bottom: 0;
+        content: "";
+        position: absolute;
+        transform: scaleX(0);
+        height: spacing(0.25);
+        inset-inline-end: spacing(1);
+        inset-inline-start: spacing(1);
+        background-color: transparent;
+        transition: inset-inline-start $mot-duration-long $mot-easing 0s, inset-inline-end $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
+    }
+
     > span {
         height: 100%;
         display: flex;
@@ -239,10 +262,10 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $clr-fg-dis;
+        color: var(--bit-pvt-clr-dis-text);
 
         &.bit-pvti-sel::before {
-            background-color: $clr-brd-dis;
+            background-color: var(--bit-pvt-clr-dis);
         }
     }
 }
@@ -266,15 +289,14 @@
     line-height: spacing(5.5);
     background-color: transparent;
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr-focus));
+    }
+
+    // Only the scale differs from the unselected state; the geometry, color and transition all come
+    // from .bit-pvti::before so both ends of a selection change animate with the same curve.
     &::before {
-        bottom: 0;
-        content: "";
-        position: absolute;
-        height: spacing(0.25);
-        inset-inline-end: spacing(1);
-        background-color: transparent;
-        inset-inline-start: spacing(1);
-        transition: inset-inline-start 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, inset-inline-end 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
+        transform: scaleX(1);
     }
 
     span {
@@ -284,14 +306,22 @@
 
 .bit-pvt-sta,
 .bit-pvt-end {
+    // The indicator runs down the side here, so it collapses along the other axis. Both rules below
+    // are needed: this one outweighs the unqualified .bit-pvti-sel::before, so the selected state has
+    // to be restated at this specificity or the vertical indicator would stay collapsed.
+    .bit-pvti::before {
+        bottom: auto;
+        top: spacing(1);
+        width: spacing(0.25);
+        transform: scaleY(0);
+        inset-inline-start: 0;
+        height: calc(100% - spacing(2));
+        transition: top $mot-duration-long $mot-easing 0s, height $mot-duration-long $mot-easing 0s, transform $mot-duration-long $mot-easing 0s;
+    }
+
     .bit-pvti-sel {
         &::before {
-            bottom: auto;
-            top: spacing(1);
-            width: spacing(0.25);
-            inset-inline-start: 0;
-            height: calc(100% - spacing(2));
-            transition: top 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, height 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
+            transform: scaleY(1);
         }
 
         @media(hover:hover) {
@@ -305,107 +335,16 @@
     }
 }
 
-.bit-pvt-pri {
-    --bit-pvt-clr: #{$clr-pri};
-    --bit-pvt-clr-hover: #{$clr-pri-hover};
-    --bit-pvt-clr-text: #{$clr-pri-text};
-}
-
-.bit-pvt-sec {
-    --bit-pvt-clr: #{$clr-sec};
-    --bit-pvt-clr-hover: #{$clr-sec-hover};
-    --bit-pvt-clr-text: #{$clr-sec-text};
-}
-
-.bit-pvt-ter {
-    --bit-pvt-clr: #{$clr-ter};
-    --bit-pvt-clr-hover: #{$clr-ter-hover};
-    --bit-pvt-clr-text: #{$clr-ter-text};
-}
-
-.bit-pvt-inf {
-    --bit-pvt-clr: #{$clr-inf};
-    --bit-pvt-clr-hover: #{$clr-inf-hover};
-    --bit-pvt-clr-text: #{$clr-inf-text};
-}
-
-.bit-pvt-suc {
-    --bit-pvt-clr: #{$clr-suc};
-    --bit-pvt-clr-hover: #{$clr-suc-hover};
-    --bit-pvt-clr-text: #{$clr-suc-text};
-}
-
-.bit-pvt-wrn {
-    --bit-pvt-clr: #{$clr-wrn};
-    --bit-pvt-clr-hover: #{$clr-wrn-hover};
-    --bit-pvt-clr-text: #{$clr-wrn-text};
-}
-
-.bit-pvt-swr {
-    --bit-pvt-clr: #{$clr-swr};
-    --bit-pvt-clr-hover: #{$clr-swr-hover};
-    --bit-pvt-clr-text: #{$clr-swr-text};
-}
-
-.bit-pvt-err {
-    --bit-pvt-clr: #{$clr-err};
-    --bit-pvt-clr-hover: #{$clr-err-hover};
-    --bit-pvt-clr-text: #{$clr-err-text};
-}
-
-
-.bit-pvt-pbg {
-    --bit-pvt-clr: #{$clr-bg-pri};
-    --bit-pvt-clr-hover: #{$clr-bg-pri-hover};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-}
-
-.bit-pvt-sbg {
-    --bit-pvt-clr: #{$clr-bg-sec};
-    --bit-pvt-clr-hover: #{$clr-bg-sec-hover};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-}
-
-.bit-pvt-tbg {
-    --bit-pvt-clr: #{$clr-bg-ter};
-    --bit-pvt-clr-hover: #{$clr-bg-ter-hover};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-}
-
-.bit-pvt-pfg {
-    --bit-pvt-clr: #{$clr-fg-pri};
-    --bit-pvt-clr-hover: #{$clr-fg-pri-hover};
-    --bit-pvt-clr-text: #{$clr-bg-pri};
-}
-
-.bit-pvt-sfg {
-    --bit-pvt-clr: #{$clr-fg-sec};
-    --bit-pvt-clr-hover: #{$clr-fg-sec-hover};
-    --bit-pvt-clr-text: #{$clr-bg-pri};
-}
-
-.bit-pvt-tfg {
-    --bit-pvt-clr: #{$clr-fg-ter};
-    --bit-pvt-clr-hover: #{$clr-fg-ter-hover};
-    --bit-pvt-clr-text: #{$clr-bg-pri};
-}
-
-.bit-pvt-pbr {
-    --bit-pvt-clr: #{$clr-brd-pri};
-    --bit-pvt-clr-hover: #{$clr-brd-pri-hover};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-}
-
-.bit-pvt-sbr {
-    --bit-pvt-clr: #{$clr-brd-sec};
-    --bit-pvt-clr-hover: #{$clr-brd-sec-hover};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
-}
-
-.bit-pvt-tbr {
-    --bit-pvt-clr: #{$clr-brd-ter};
-    --bit-pvt-clr-hover: #{$clr-brd-ter-hover};
-    --bit-pvt-clr-text: #{$clr-fg-pri};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-pvt-#{$role} {
+        --bit-pvt-clr: #{role($tokens, main)};
+        --bit-pvt-clr-hover: #{role($tokens, hover)};
+        --bit-pvt-clr-focus: #{role($tokens, focus)};
+        --bit-pvt-clr-text: #{role($tokens, on)};
+        --bit-pvt-clr-dis: #{role($tokens, dis)};
+        --bit-pvt-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 // #region Slide overflow behavior
@@ -490,6 +429,20 @@
     box-shadow: $box-shadow-callout;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
     background-color: $clr-bg-pri;
+}
+
+// forced-colors: the selected-tab indicator is a background-painted ::before, which High Contrast
+// strips entirely; repaint it with the system Highlight color (GrayText when disabled) so the
+// selected tab stays distinguishable.
+@media (forced-colors: active) {
+    .bit-pvti-sel::before {
+        background-color: Highlight;
+    }
+
+    .bit-dis .bit-pvti-sel::before,
+    .bit-pvti-sel.bit-dis::before {
+        background-color: GrayText;
+    }
 }
 
 .bit-pvt-mni {
