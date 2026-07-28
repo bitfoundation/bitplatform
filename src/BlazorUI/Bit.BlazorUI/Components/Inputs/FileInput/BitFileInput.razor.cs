@@ -42,7 +42,8 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Whether a file that is already in the file list can be selected again.
     /// When disabled, a newly selected file matching an existing one by name, size and last modified time
-    /// is marked as invalid with the <see cref="DuplicateErrorMessage"/> instead of being added as a second entry.
+    /// is marked as invalid with the <see cref="DuplicateErrorMessage"/> instead of being added as a second entry,
+    /// becoming valid again once the file it duplicates is removed.
     /// The default value is true.
     /// </summary>
     [Parameter] public bool AllowDuplicates { get; set; } = true;

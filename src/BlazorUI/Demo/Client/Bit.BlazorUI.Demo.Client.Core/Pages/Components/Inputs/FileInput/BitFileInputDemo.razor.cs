@@ -23,7 +23,7 @@ public partial class BitFileInputDemo
             Name = "AllowDuplicates",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether a file that is already in the file list can be selected again. When disabled, a newly selected file matching an existing one by name, size and last modified time is marked as invalid with the DuplicateErrorMessage instead of being added as a second entry.",
+            Description = "Whether a file that is already in the file list can be selected again. When disabled, a newly selected file matching an existing one by name, size and last modified time is marked as invalid with the DuplicateErrorMessage instead of being added as a second entry, becoming valid again once the file it duplicates is removed.",
         },
         new()
         {

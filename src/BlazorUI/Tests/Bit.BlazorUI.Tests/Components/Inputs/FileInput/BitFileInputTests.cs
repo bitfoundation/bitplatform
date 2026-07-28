@@ -438,21 +438,30 @@ public class BitFileInputTests : BunitTestContext
     [TestMethod]
     public void BitFileInputShouldNotShowRemoveButtonByDefault()
     {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" }]);
+
         var component = RenderComponent<BitFileInput>();
 
-        var removeButtons = component.FindAll(".bit-fin-rbt");
-        
-        Assert.IsEmpty(removeButtons);
+        // without a file in the list there would be no remove button to begin with,
+        // so the assertion would hold no matter what ShowRemoveButton defaults to.
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.HasCount(1, component.FindAll(".bit-fin-itm"));
+        Assert.IsEmpty(component.FindAll(".bit-fin-rbt"));
     }
 
-    [Ignore]
     [TestMethod]
     public void BitFileInputShouldUseDefaultDeleteIconForRemoveButton()
     {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" }]);
+
         var component = RenderComponent<BitFileInput>(parameters =>
         {
             parameters.Add(p => p.ShowRemoveButton, true);
         });
+
+        // the remove buttons live inside the file items, so a file has to be selected first.
+        component.Find(".bit-fin-fi").Change(string.Empty);
 
         var removeButton = component.Find(".bit-fin-rbt");
         var icon = removeButton.QuerySelector("i");
@@ -462,17 +471,20 @@ public class BitFileInputTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--Delete"));
     }
 
-    [Ignore]
     [TestMethod]
     public void BitFileInputShouldRespectRemoveButtonIconWithBitIconInfo()
     {
         var iconInfo = new BitIconInfo("fa-solid fa-trash", baseClass: "", prefix: "");
+
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" }]);
 
         var component = RenderComponent<BitFileInput>(parameters =>
         {
             parameters.Add(p => p.ShowRemoveButton, true);
             parameters.Add(p => p.RemoveButtonIcon, iconInfo);
         });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
 
         var removeButton = component.Find(".bit-fin-rbt");
         var icon = removeButton.QuerySelector("i");
@@ -482,7 +494,6 @@ public class BitFileInputTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains("fa-trash"));
     }
 
-    [Ignore]
     [TestMethod,
         DataRow("Trash"),
         DataRow("Delete"),
@@ -490,11 +501,15 @@ public class BitFileInputTests : BunitTestContext
     ]
     public void BitFileInputShouldRespectRemoveButtonIconName(string iconName)
     {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" }]);
+
         var component = RenderComponent<BitFileInput>(parameters =>
         {
             parameters.Add(p => p.ShowRemoveButton, true);
             parameters.Add(p => p.RemoveButtonIconName, iconName);
         });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
 
         var removeButton = component.Find(".bit-fin-rbt");
         var icon = removeButton.QuerySelector("i");
@@ -504,11 +519,12 @@ public class BitFileInputTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [Ignore]
     [TestMethod]
     public void BitFileInputRemoveButtonIconShouldTakePrecedenceOverIconName()
     {
         var iconInfo = new BitIconInfo("fa-solid fa-trash", baseClass: "", prefix: "");
+
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" }]);
 
         var component = RenderComponent<BitFileInput>(parameters =>
         {
@@ -516,6 +532,8 @@ public class BitFileInputTests : BunitTestContext
             parameters.Add(p => p.RemoveButtonIcon, iconInfo);
             parameters.Add(p => p.RemoveButtonIconName, "Delete");
         });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
 
         var removeButton = component.Find(".bit-fin-rbt");
         var icon = removeButton.QuerySelector("i");
