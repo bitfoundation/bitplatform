@@ -2,10 +2,10 @@
 @page "/components/file-input"
 
 <PageOutlet Url="components/fileinput" Title="FileInput"
-            Description="A file selection component with browse, drag-and-drop and clipboard paste support, built-in size, total size, extension, MIME type, count, duplicate, image resolution and custom validation, image preview thumbnails, folder and camera capture modes, described constraints and screen reader announcements, and a fully templatable file list  selection only, no uploading involved." />
+            Description="A file selection component with browse, drag-and-drop and clipboard paste support, built-in size, total size, extension, MIME type, count, duplicate, image resolution and custom validation, image preview thumbnails, folder and camera capture modes, described constraints and screen reader announcements, and a fully templatable file list - selection only, no uploading involved." />
 
 <DemoPage Name="FileInput"
-          Description="BitFileInput is the selection half of working with files: it lets the user hand files to the app  through the file dialog, by dragging them out of the OS onto the component, or by pasting them from the clipboard  without uploading anything anywhere. Each selected file surfaces in C# as a BitFileInputInfo carrying its name, size, MIME type, last-modified time and, on request, the pixel dimensions of an image, and its content can be pulled on demand as a byte array. Selections are validated on arrival against per-file size bounds, a total size budget, allowed extensions or MIME types, a maximum file count, a no-duplicates rule and any custom rule; files that fail stay in the list, marked invalid with a customizable message, so the user can see exactly what went wrong, and the list level limits release their files again as soon as removals free up room. The built-in file list shows names, human-readable sizes, optional image thumbnails and per-file remove buttons, and both the browse area and the list items can be replaced wholesale with templates. Accessibility is wired in rather than bolted on: the constraints can be spelled out in a description tied to the browse button through aria-describedby, and every change of the list is announced through an ARIA live region. When it is time to actually send files to a server, reach for the BitFileUpload component instead."
+          Description="BitFileInput is the selection half of working with files: it lets the user hand files to the app - through the file dialog, by dragging them out of the OS onto the component, or by pasting them from the clipboard - without uploading anything anywhere. Each selected file surfaces in C# as a BitFileInputInfo carrying its name, size, MIME type, last-modified time and, on request, the pixel dimensions of an image, and its content can be pulled on demand as a byte array. Selections are validated on arrival against per-file size bounds, a total size budget, allowed extensions or MIME types, a maximum file count, a no-duplicates rule and any custom rule; files that fail stay in the list, marked invalid with a customizable message, so the user can see exactly what went wrong, and the list level limits release their files again as soon as removals free up room. The built-in file list shows names, human-readable sizes, optional image thumbnails and per-file remove buttons, and both the browse area and the list items can be replaced wholesale with templates. Accessibility is wired in rather than bolted on: the constraints can be spelled out in a description tied to the browse button through aria-describedby, and every change of the list is announced through an ARIA live region. When it is time to actually send files to a server, reach for the BitFileUpload component instead."
           Parameters="componentParameters" SubEnums="componentSubEnums" SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers" GitHubUrl="Inputs/FileInput/BitFileInput.razor"
           GitHubDemoUrl="Inputs/FileInput/BitFileInputDemo.razor">
@@ -416,70 +416,72 @@
 
         <br />
 
-        <BitFileInput @ref="bitFileInput" Multiple MaxSize="1024 * 1024 * 2"
-                      AllowedExtensions="@([".jpg", ".jpeg", ".png", ".bmp"])"
-                      Classes="@(new() { Dragging = "custom-drop-zone" })">
-            <LabelTemplate>
-                @if (bitFileInput.Files?.Any() is not true)
-                {
-                    <div class="browse-file" @onclick="() => bitFileInput.Browse()">
-                        <div class="browse-file-header">
-                            <i class="bit-icon bit-icon--CloudUpload" />
-                            <div>
-                                Drag and drop or
+        <div>
+            <BitFileInput @ref="bitFileInput" Multiple MaxSize="1024 * 1024 * 2"
+                          AllowedExtensions="@([".jpg", ".jpeg", ".png", ".bmp"])"
+                          Classes="@(new() { Dragging = "custom-drop-zone" })">
+                <LabelTemplate>
+                    @if (bitFileInput.Files?.Any() is not true)
+                    {
+                        <div class="browse-file" @onclick="() => bitFileInput.Browse()">
+                            <div class="browse-file-header">
+                                <i class="bit-icon bit-icon--CloudUpload" />
+                                <div>
+                                    Drag and drop or
+                                </div>
+                                <div>
+                                    <strong>
+                                        Browse files
+                                    </strong>
+                                </div>
                             </div>
-                            <div>
-                                <strong>
-                                    Browse files
-                                </strong>
-                            </div>
-                        </div>
 
-                        <div class="browse-file-footer">
-                            <div>Max file size: 2 MB</div>
-                            <div>Supported file types: jpg, jpeg, png, bmp</div>
+                            <div class="browse-file-footer">
+                                <div>Max file size: 2 MB</div>
+                                <div>Supported file types: jpg, jpeg, png, bmp</div>
+                            </div>
                         </div>
-                    </div>
-                }
-            </LabelTemplate>
-            <FileViewTemplate Context="file">
-                @if (!string.IsNullOrEmpty(file.Name))
-                {
-                    <div class="file-list">
-                        <div class="file-list-header">
-                            <div class="file-info">
-                                <div class="file-info-main">
-                                    <i class="bit-icon bit-icon--Page" />
-                                    <div class="file-info-data">
-                                        <div class="file-info-name">
-                                            @file.Name
+                    }
+                </LabelTemplate>
+                <FileViewTemplate Context="file">
+                    @if (!string.IsNullOrEmpty(file.Name))
+                    {
+                        <div class="file-list">
+                            <div class="file-list-header">
+                                <div class="file-info">
+                                    <div class="file-info-main">
+                                        <i class="bit-icon bit-icon--Page" />
+                                        <div class="file-info-data">
+                                            <div class="file-info-name">
+                                                @file.Name
+                                            </div>
+                                            <div>
+                                                @FileSizeHumanizer.Humanize(file.Size)
+                                            </div>
                                         </div>
-                                        <div>
-                                            @FileSizeHumanizer.Humanize(file.Size)
-                                        </div>
+                                    </div>
+
+                                    <div class="file-info-btns">
+                                        <i class="bit-icon bit-icon--Cancel remove-ico"
+                                           @onclick="() => bitFileInput.RemoveFile(file)" />
                                     </div>
                                 </div>
 
-                                <div class="file-info-btns">
-                                    <i class="bit-icon bit-icon--Cancel remove-ico"
-                                       @onclick="() => bitFileInput.RemoveFile(file)" />
-                                </div>
+                                @if (!file.IsValid)
+                                {
+                                    <div class="file-info-e-msg">@file.Message</div>
+                                }
                             </div>
 
-                            @if (!file.IsValid)
-                            {
-                                <div class="file-info-e-msg">@file.Message</div>
-                            }
+                            <div class="file-list-footer">
+                                <div>Max file size: 2 MB</div>
+                                <div>Supported file types: jpg, jpeg, png, bmp</div>
+                            </div>
                         </div>
-
-                        <div class="file-list-footer">
-                            <div>Max file size: 2 MB</div>
-                            <div>Supported file types: jpg, jpeg, png, bmp</div>
-                        </div>
-                    </div>
-                }
-            </FileViewTemplate>
-        </BitFileInput>
+                    }
+                </FileViewTemplate>
+            </BitFileInput>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Public API" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
@@ -539,7 +541,7 @@
         <div>
             <b>Variant</b> decides how much of the <b>Color</b> the browse button carries: <b>Fill</b>, the default,
             paints the whole button, <b>Outline</b> keeps only the rule around it, and <b>Text</b> drops both so the
-            button weighs no more than the text it holds  which is what you want when the file input sits among
+            button weighs no more than the text it holds - which is what you want when the file input sits among
             other form fields and should not read as the primary action of the page. All three fill in on hover and
             turn into the same dashed drop zone while a file is dragged over them, so the variant changes the resting
             look and nothing else.
@@ -691,30 +693,34 @@
 
         <div>Component's Style & Class:</div>
         <br />
-        <BitFileInput Label="Styled file input"
-                      Style="box-shadow: dodgerblue 0 0 1rem; border-radius: 1rem; padding: 0.5rem;" />
-        <br />
-        <BitFileInput Label="Classed file input" Class="custom-class" />
+        <div>
+            <BitFileInput Label="Styled file input"
+                          Style="box-shadow: dodgerblue 0 0 1rem; border-radius: 1rem; padding: 0.5rem;" />
+            <br />
+            <BitFileInput Label="Classed file input" Class="custom-class" />
+        </div>
 
         <br /><br /><br />
 
         <div><b>Styles</b> & <b>Classes</b>:</div>
         <br />
-        <BitFileInput Label="Styles" ShowRemoveButton Styles="@(new()
-                      {
-                          Label = "border-color: deeppink; background-color: deeppink; color: white;",
-                          Dragging = "background-color: lavenderblush;",
-                          FileName = "color: deeppink;",
-                          RemoveButton = "background-color: deeppink; color: white;"
-                      })" />
-        <br />
-        <BitFileInput Label="Classes" ShowRemoveButton Classes="@(new()
-                      {
-                          Label = "custom-label",
-                          Dragging = "custom-dragging",
-                          FileItem = "custom-item",
-                          RemoveButton = "custom-remove"
-                      })" />
+        <div>
+            <BitFileInput Label="Styles" ShowRemoveButton Styles="@(new()
+                          {
+                              Label = "border-color: deeppink; background-color: deeppink; color: white;",
+                              Dragging = "background-color: lavenderblush;",
+                              FileName = "color: deeppink;",
+                              RemoveButton = "background-color: deeppink; color: white;"
+                          })" />
+            <br />
+            <BitFileInput Label="Classes" ShowRemoveButton Classes="@(new()
+                          {
+                              Label = "custom-label",
+                              Dragging = "custom-dragging",
+                              FileItem = "custom-item",
+                              RemoveButton = "custom-remove"
+                          })" />
+        </div>
     </DemoExample>
 
     <DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28">

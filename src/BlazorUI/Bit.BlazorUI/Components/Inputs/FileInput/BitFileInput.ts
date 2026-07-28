@@ -1,5 +1,7 @@
 namespace BitBlazorUI {
     export class FileInput {
+        private static readonly IMAGE_SIZE_CONCURRENCY = 8;
+
         private static _fileInputs: BitFileInputItem[] = [];
 
         public static async setup(
@@ -40,13 +42,7 @@ namespace BitBlazorUI {
             inputElement.value = '';
 
             if (readImageDimensions) {
-                await Promise.all(files
-                    .filter(f => f.type.startsWith('image/'))
-                    .map(async f => {
-                        const size = await FileInput.readImageSize(f.file);
-                        f.width = size.width;
-                        f.height = size.height;
-                    }));
+                await FileInput.readImageSizes(files.filter(f => f.type.startsWith('image/')));
             }
 
             // the File itself is only of use on this side, so it is left out of the interop payload.
@@ -286,6 +282,23 @@ namespace BitBlazorUI {
         public static reset(id: string, inputElement: HTMLInputElement) {
             FileInput.clear(id);
             inputElement.value = '';
+        }
+
+        private static async readImageSizes(images: { file: File, width: number | null, height: number | null }[]): Promise<void> {
+            // a directory selection can carry thousands of images, and decoding them all at once would
+            // spike the memory and stall the tab, so a fixed window of workers walks the list instead.
+            let next = 0;
+
+            const worker = async () => {
+                while (next < images.length) {
+                    const image = images[next++];
+                    const size = await FileInput.readImageSize(image.file);
+                    image.width = size.width;
+                    image.height = size.height;
+                }
+            };
+
+            await Promise.all(Array.from({ length: Math.min(FileInput.IMAGE_SIZE_CONCURRENCY, images.length) }, worker));
         }
 
         private static async readImageSize(file: File): Promise<{ width: number | null, height: number | null }> {
