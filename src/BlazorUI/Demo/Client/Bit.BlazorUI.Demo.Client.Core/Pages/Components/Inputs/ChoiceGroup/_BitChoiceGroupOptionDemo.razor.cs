@@ -24,8 +24,8 @@ public partial class _BitChoiceGroupOptionDemo
     private string itemTemplateValue = "Day";
     private string itemTemplateValue2 = "Day";
     private string itemLabelTemplateValue = "Day";
-    public ChoiceGroupValidationModel validationModel = new();
-    public string? successMessage;
+    private ChoiceGroupValidationModel validationModel = new();
+    private string? successMessage;
 
 
     private void AddDynamicOption()

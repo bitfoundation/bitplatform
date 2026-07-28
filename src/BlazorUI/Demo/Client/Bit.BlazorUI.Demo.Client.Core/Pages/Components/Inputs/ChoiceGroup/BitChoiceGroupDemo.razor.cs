@@ -18,7 +18,7 @@ public partial class BitChoiceGroupDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the ChoiceGroup is auto focused on first render, focusing its checked item (or its first item)."
+            Description = "Determines if the ChoiceGroup is auto focused on first render, focusing its checked item, or its first enabled item when nothing is checked. Nothing is focused when the target item is disabled."
         },
         new()
         {
