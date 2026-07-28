@@ -61,7 +61,10 @@
             {
                 if (FileViewTemplate is not null)
                 {
-                    @FileViewTemplate(file)
+                    @* the custom template is wrapped so that every child of the list keeps carrying a listitem role *@
+                    <div @key="file.FileId" role="listitem">
+                        @FileViewTemplate(file)
+                    </div>
                 }
                 else
                 {

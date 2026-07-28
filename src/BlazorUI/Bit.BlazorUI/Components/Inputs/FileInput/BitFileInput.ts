@@ -14,7 +14,9 @@ namespace BitBlazorUI {
             }
 
             const existingItems = append ? FileInput._fileInputs.filter(f => f.id === id) : [];
-            const lastIndex = existingItems.length ? Math.max(...existingItems.map(f => f.index)) + 1 : 0;
+            // a reduce instead of a spread into Math.max, since a folder selection can carry
+            // more items than the argument limit of a function call.
+            const lastIndex = existingItems.reduce((max, f) => f.index + 1 > max ? f.index + 1 : max, 0);
             const files = Array.from(inputElement.files!).map((file, index) => ({
                 name: file.name,
                 size: file.size,
