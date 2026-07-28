@@ -64,7 +64,7 @@ namespace BitBlazorUI {
 
             let dragCounter = 0;
             let originalStyle: string | null = null;
-            const dragClasses = dragClass.split(' ').filter(c => c.length > 0);
+            let dragClasses = dragClass.split(' ').filter(c => c.length > 0);
 
             function hasFiles(e: DragEvent) {
                 return !!e.dataTransfer && Array.prototype.includes.call(e.dataTransfer.types, 'Files');
@@ -74,10 +74,7 @@ namespace BitBlazorUI {
                 return allowDrop && !inputElement.disabled && hasFiles(e);
             }
 
-            function addDragState() {
-                dragCounter++;
-                if (dragCounter > 1) return;
-
+            function applyDragStyling() {
                 dropZoneElement.classList.add(...dragClasses);
 
                 if (!dragStyle) return;
@@ -85,12 +82,7 @@ namespace BitBlazorUI {
                 dropZoneElement.setAttribute('style', [originalStyle, dragStyle].filter(s => s).join(';'));
             }
 
-            function removeDragState(force: boolean) {
-                if (dragCounter === 0) return;
-
-                dragCounter = force ? 0 : dragCounter - 1;
-                if (dragCounter > 0) return;
-
+            function clearDragStyling() {
                 dropZoneElement.classList.remove(...dragClasses);
 
                 if (!dragStyle) return;
@@ -100,6 +92,22 @@ namespace BitBlazorUI {
                     dropZoneElement.removeAttribute('style');
                 }
                 originalStyle = null;
+            }
+
+            function addDragState() {
+                dragCounter++;
+                if (dragCounter > 1) return;
+
+                applyDragStyling();
+            }
+
+            function removeDragState(force: boolean) {
+                if (dragCounter === 0) return;
+
+                dragCounter = force ? 0 : dragCounter - 1;
+                if (dragCounter > 0) return;
+
+                clearDragStyling();
             }
 
             function onDragEnter(e: DragEvent) {
@@ -198,10 +206,33 @@ namespace BitBlazorUI {
             window.addEventListener('drop', onDragCancel);
 
             return {
-                update: (newAllowDrop: boolean, newAllowPaste: boolean, newExpandDirectories: boolean) => {
+                update: (
+                    newAllowDrop: boolean,
+                    newAllowPaste: boolean,
+                    newExpandDirectories: boolean,
+                    newDragClass: string,
+                    newDragStyle: string | null) => {
+
                     allowDrop = newAllowDrop;
                     allowPaste = newAllowPaste;
                     expandDirectories = newExpandDirectories;
+
+                    if (newDragClass !== dragClass || newDragStyle !== dragStyle) {
+                        // an ongoing drag is already showing the old class and style, which have to come off
+                        // before they get replaced, otherwise nothing would ever take them off again.
+                        const isDragging = dragCounter > 0;
+                        if (isDragging) {
+                            clearDragStyling();
+                        }
+
+                        dragClass = newDragClass;
+                        dragClasses = dragClass.split(' ').filter(c => c.length > 0);
+                        dragStyle = newDragStyle;
+
+                        if (isDragging) {
+                            applyDragStyling();
+                        }
+                    }
 
                     if (!allowDrop) {
                         removeDragState(true);

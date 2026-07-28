@@ -10,6 +10,8 @@ public partial class BitFileInput : BitComponentBase
     private bool _allowDrop = true;
     private bool _allowPaste = true;
     private bool _expandDirectories;
+    private string? _dragClass;
+    private string? _dragStyle;
     private string? _announcement;
     private bool _announcementMarker;
     private ElementReference _inputRef;
@@ -470,17 +472,8 @@ public partial class BitFileInput : BitComponentBase
         await base.OnParametersSetAsync();
 
         if (_dropZoneRef is null) return;
-        if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory) return;
 
-        _allowDrop = AllowDrop;
-        _allowPaste = AllowPaste;
-        _expandDirectories = Directory;
-
-        try
-        {
-            await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await UpdateDropZone();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -490,14 +483,44 @@ public partial class BitFileInput : BitComponentBase
         _allowDrop = AllowDrop;
         _allowPaste = AllowPaste;
         _expandDirectories = Directory;
+        _dragClass = GetDragClass();
+        _dragStyle = Styles?.Dragging;
 
-        var dragClass = $"bit-fin-drg {Classes?.Dragging}".Trim();
-
-        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef, dragClass, Styles?.Dragging,
+        _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef, _dragClass, _dragStyle,
                                                            _allowDrop, _allowPaste, _expandDirectories);
+
+        if (IsDisposed) return;
+        if (_dropZoneRef is null) return;
+
+        // a parameter change that arrived while the setup was still awaiting found no drop zone to update yet,
+        // so the drop zone is synchronized once more against the parameters as they stand now.
+        await UpdateDropZone();
     }
 
 
+
+    private string GetDragClass() => $"bit-fin-drg {Classes?.Dragging}".Trim();
+
+    private async Task UpdateDropZone()
+    {
+        var dragClass = GetDragClass();
+        var dragStyle = Styles?.Dragging;
+
+        if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory &&
+            _dragClass == dragClass && _dragStyle == dragStyle) return;
+
+        _allowDrop = AllowDrop;
+        _allowPaste = AllowPaste;
+        _expandDirectories = Directory;
+        _dragClass = dragClass;
+        _dragStyle = dragStyle;
+
+        try
+        {
+            await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories, _dragClass, _dragStyle);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
 
     private static bool AllowsAllFileTypes(IReadOnlyCollection<string>? allowedExtensions)
     {
@@ -619,25 +642,15 @@ public partial class BitFileInput : BitComponentBase
 
         if (IsDisposed) return;
 
-        // the allowed types and the identities of the existing files are resolved once per selection
-        // instead of once per file, since a folder selection can easily carry thousands of files.
+        // the allowed types are resolved once per selection instead of once per file,
+        // since a folder selection can easily carry thousands of files.
         var allowedTypes = AllowsAllFileTypes(AllowedExtensions)
                             ? null
                             : GetNormalizedExtensions(AllowedExtensions).ToArray();
 
-        var knownFiles = AllowDuplicates ? null : new HashSet<string>(_files.Select(GetFileIdentity), StringComparer.Ordinal);
-
         foreach (var file in newFiles)
         {
-            if (knownFiles is not null && knownFiles.Add(GetFileIdentity(file)) is false)
-            {
-                file.IsValid = false;
-                file.Message = DuplicateErrorMessage ?? "The file is already selected";
-            }
-            else
-            {
-                ValidateFile(file, allowedTypes);
-            }
+            ValidateFile(file, allowedTypes);
 
             _files.Add(file);
         }
@@ -649,8 +662,8 @@ public partial class BitFileInput : BitComponentBase
 
     private void ApplyListValidations()
     {
-        // the list level limits are re-evaluated from scratch so that files invalidated by a previous
-        // evaluation can become valid again as soon as removals free up room.
+        // the list level rules are re-evaluated from scratch so that files invalidated by a previous
+        // evaluation can become valid again as soon as removals free up room or drop the original of a duplicate.
         for (var index = 0; index < _files.Count; index++)
         {
             var file = _files[index];
@@ -662,6 +675,24 @@ public partial class BitFileInput : BitComponentBase
             file.ListValidationFailed = false;
             file.IsValid = true;
             file.Message = null;
+        }
+
+        if (AllowDuplicates is false)
+        {
+            var knownFiles = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var file in _files)
+            {
+                // every file registers its identity, even an invalid one, so that a re-selection of a file
+                // already in the list is caught no matter why that file is invalid.
+                if (knownFiles.Add(GetFileIdentity(file))) continue;
+
+                // a file that already failed a validation of its own keeps that message,
+                // which would otherwise be lost as soon as the duplication is resolved.
+                if (file.IsValid is false) continue;
+
+                Invalidate(file, DuplicateErrorMessage ?? "The file is already selected");
+            }
         }
 
         var count = 0;

@@ -78,7 +78,7 @@ public class BitFileInputInfo
     /// </summary>
     [JsonIgnore] public byte[]? Content { get; internal set; }
 
-    // Tracks whether the file was invalidated by a list level limit (MaxCount or MaxTotalSize),
-    // so it can become valid again once removals free up room.
+    // Tracks whether the file was invalidated by a list level rule (a duplicate, MaxCount or MaxTotalSize),
+    // so it can become valid again once removals free up room or drop the original of a duplicate.
     [JsonIgnore] internal bool ListValidationFailed { get; set; }
 }

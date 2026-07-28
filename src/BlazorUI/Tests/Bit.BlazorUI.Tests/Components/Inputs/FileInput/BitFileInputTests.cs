@@ -229,15 +229,39 @@ public class BitFileInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFileInputShouldRenderAPoliteLiveRegion()
+    public async Task BitFileInputShouldRenderAPoliteLiveRegion()
     {
-        var component = RenderComponent<BitFileInput>();
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" },
+                    new() { Name = "file2.txt", Size = 100, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxSize, 50);
+        });
 
         var liveRegion = component.Find(".bit-fin-lvr");
 
         Assert.AreEqual("status", liveRegion.GetAttribute("role"));
         Assert.AreEqual("polite", liveRegion.GetAttribute("aria-live"));
         Assert.AreEqual("true", liveRegion.GetAttribute("aria-atomic"));
+        Assert.AreEqual(string.Empty, liveRegion.TextContent);
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        // the announcement carries the count of the files and of the invalid ones among them, and every other
+        // announcement ends with a zero width space so that a repeated text still counts as an update.
+        Assert.AreEqual("2 files selected. 1 of them invalid.\u200B", component.Find(".bit-fin-lvr").TextContent);
+
+        var instance = component.Instance;
+
+        await component.InvokeAsync(() => instance.RemoveFile(instance.Files[1]));
+
+        Assert.AreEqual("1 file selected.", component.Find(".bit-fin-lvr").TextContent);
+
+        await component.InvokeAsync(() => instance.RemoveFile(null));
+
+        Assert.AreEqual("No file selected.\u200B", component.Find(".bit-fin-lvr").TextContent);
     }
 
     [TestMethod,
@@ -629,6 +653,62 @@ public class BitFileInputTests : BunitTestContext
         Assert.IsFalse(files[1].IsValid);
         Assert.AreEqual("already there", files[1].Message);
         Assert.IsTrue(files[2].IsValid);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputShouldRevalidateDuplicatesAfterRemovingTheOriginal()
+    {
+        SetupFiles([new() { Name = "file.txt", Size = 10, LastModified = 1, FileId = "1" },
+                    new() { Name = "file.txt", Size = 10, LastModified = 1, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.AllowDuplicates, false);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var instance = component.Instance;
+
+        Assert.IsFalse(instance.Files[1].IsValid);
+
+        // removing the original leaves a single copy behind, which is no longer a duplicate of anything.
+        await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
+
+        Assert.HasCount(1, instance.Files);
+        Assert.IsTrue(instance.Files[0].IsValid);
+        Assert.IsNull(instance.Files[0].Message);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputShouldKeepTheOwnValidationMessageOfADuplicate()
+    {
+        SetupFiles([new() { Name = "big.txt", Size = 100, LastModified = 1, FileId = "1" },
+                    new() { Name = "big.txt", Size = 100, LastModified = 1, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.AllowDuplicates, false);
+            parameters.Add(p => p.MaxSize, 50);
+            parameters.Add(p => p.MaxSizeErrorMessage, "too big");
+            parameters.Add(p => p.DuplicateErrorMessage, "already there");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var instance = component.Instance;
+
+        // a file failing a validation of its own keeps that message instead of the duplicate one,
+        // so that removing the original does not turn an oversized file into a valid one.
+        Assert.AreEqual("too big", instance.Files[0].Message);
+        Assert.AreEqual("too big", instance.Files[1].Message);
+
+        await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
+
+        Assert.IsFalse(instance.Files[0].IsValid);
+        Assert.AreEqual("too big", instance.Files[0].Message);
     }
 
     [TestMethod]
