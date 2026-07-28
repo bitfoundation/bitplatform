@@ -329,8 +329,8 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <br />
 
             <BitText>
-                Below the theme tokens sits a third tier: every component exposes its own themable knobs as <BitTag>--bit-&lt;cmp&gt;-*</BitTag> custom properties (for example <BitTag>--bit-btn-clr</BitTag>, <BitTag>--bit-btn-padding</BitTag>, <BitTag>--bit-chb-box-size</BitTag>), assigned on the component root by its role/variant classes and consumed by its internal selectors. These names are <b>stable, contract-tested public API</b> &mdash; the full inventory (currently 268 variables across 31 components) is published in
-                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/component-css-variables.md" Target="_blank">component-css-variables.md</BitLink>, and a build-time test fails if any name drifts without an inventory update.
+                Below the theme tokens sits a third tier: every component exposes its own themable knobs as <BitTag>--bit-&lt;cmp&gt;-*</BitTag> custom properties (for example <BitTag>--bit-btn-clr</BitTag>, <BitTag>--bit-btn-padding</BitTag>, <BitTag>--bit-chb-box-size</BitTag>), assigned on the component root by its role/variant classes and consumed by its internal selectors. These names are <b>stable, contract-tested public API</b> &mdash; the full inventory (currently 282 variables across 33 components) is published in
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Tests/Bit.BlazorUI.Tests/Utils/Theme/component-css-variables.md" Target="_blank">component-css-variables.md</BitLink>, and a build-time test fails if any name drifts without an inventory update.
             </BitText>
 
             <br />

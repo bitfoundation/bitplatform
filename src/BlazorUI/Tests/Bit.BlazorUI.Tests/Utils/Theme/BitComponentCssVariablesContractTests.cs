@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 
 /// <summary>
 /// Pins the per-component CSS variable vocabulary (<c>--bit-&lt;cmp&gt;-*</c>) as stable public
-/// API. The checked-in inventory (<c>Bit.BlazorUI/component-css-variables.md</c>) is regenerated
+/// API. The checked-in inventory (<c>component-css-variables.md</c>, next to this test) is regenerated
 /// here from the component SCSS sources and compared verbatim: adding, renaming, or removing a
 /// component variable fails this test until the inventory is deliberately updated - which is the
 /// documented signal that the override surface changed for consumers.
@@ -43,7 +43,8 @@ public sealed class BitComponentCssVariablesContractTests
             Assert.Fail(
                 "The component CSS variable inventory has drifted from the SCSS sources. These names are " +
                 "documented public API: if the change is intentional, refresh the inventory by copying the " +
-                $"regenerated file over src/BlazorUI/Bit.BlazorUI/component-css-variables.md (written to: {dumpPath}) " +
+                "regenerated file over src/BlazorUI/Tests/Bit.BlazorUI.Tests/Utils/Theme/component-css-variables.md " +
+                $"(written to: {dumpPath}) " +
                 "and note the change in the release notes; otherwise revert the SCSS rename.");
         }
     }
