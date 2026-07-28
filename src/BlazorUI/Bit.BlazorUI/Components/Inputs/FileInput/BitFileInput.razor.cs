@@ -363,6 +363,7 @@ public partial class BitFileInput : BitComponentBase
     /// <param name="fileInfo">The file to remove, or null to remove all files.</param>
     public async Task RemoveFile(BitFileInputInfo? fileInfo = null)
     {
+        if (IsDisposed) return;
         if (IsEnabled is false) return;
         if (_files.Any() is false) return;
 
@@ -374,9 +375,13 @@ public partial class BitFileInput : BitComponentBase
 
             await _js.BitFileInputReset(UniqueId, _inputRef);
 
+            if (IsDisposed) return;
+
             foreach (var file in removedFiles)
             {
                 await OnRemove.InvokeAsync(file);
+
+                if (IsDisposed) return;
             }
         }
         else
@@ -385,12 +390,18 @@ public partial class BitFileInput : BitComponentBase
 
             await _js.BitFileInputRemoveFile(UniqueId, fileInfo.FileId);
 
+            if (IsDisposed) return;
+
             await OnRemove.InvokeAsync(fileInfo);
+
+            if (IsDisposed) return;
         }
 
         ApplyListValidations();
 
         await InvokeChangeCallbacksAsync();
+
+        if (IsDisposed) return;
 
         StateHasChanged();
     }

@@ -166,7 +166,9 @@ namespace BitBlazorUI {
                 const entries = FileInput.readDroppedEntries(e.dataTransfer);
                 const fallback = Array.from(e.dataTransfer.files);
 
-                FileInput.collectEntries(entries).then(files => setFiles(files.length ? files : fallback));
+                FileInput.collectEntries(entries)
+                    .then(files => setFiles(files.length ? files : fallback))
+                    .catch(() => setFiles(fallback));
             }
 
             function onPaste(e: ClipboardEvent) {

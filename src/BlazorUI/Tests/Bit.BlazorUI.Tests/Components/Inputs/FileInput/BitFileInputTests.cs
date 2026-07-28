@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -534,6 +536,236 @@ public class BitFileInputTests : BunitTestContext
         await component.InvokeAsync(() => instance.RemoveFile(null));
 
         Assert.IsEmpty(instance.Files);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRespectMaxCount()
+    {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" },
+                    new() { Name = "file2.txt", Size = 20, FileId = "2" },
+                    new() { Name = "file3.txt", Size = 30, FileId = "3" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxCount, 2);
+            parameters.Add(p => p.MaxCountErrorMessage, "too many");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var files = component.Instance.Files;
+
+        Assert.IsTrue(files[0].IsValid);
+        Assert.IsTrue(files[1].IsValid);
+        Assert.IsFalse(files[2].IsValid);
+        Assert.AreEqual("too many", files[2].Message);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRespectMaxTotalSize()
+    {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" },
+                    new() { Name = "file2.txt", Size = 20, FileId = "2" },
+                    new() { Name = "file3.txt", Size = 30, FileId = "3" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxTotalSize, 30);
+            parameters.Add(p => p.MaxTotalSizeErrorMessage, "too big");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var files = component.Instance.Files;
+
+        Assert.IsTrue(files[0].IsValid);
+        Assert.IsTrue(files[1].IsValid);
+        Assert.IsFalse(files[2].IsValid);
+        Assert.AreEqual("too big", files[2].Message);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRespectMinSize()
+    {
+        SetupFiles([new() { Name = "small.txt", Size = 5, FileId = "1" },
+                    new() { Name = "big.txt", Size = 50, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MinSize, 10);
+            parameters.Add(p => p.MinSizeErrorMessage, "too small");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var files = component.Instance.Files;
+
+        Assert.IsFalse(files[0].IsValid);
+        Assert.AreEqual("too small", files[0].Message);
+        Assert.IsTrue(files[1].IsValid);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRespectAllowDuplicatesWithDuplicateErrorMessage()
+    {
+        SetupFiles([new() { Name = "file.txt", Size = 10, LastModified = 1, FileId = "1" },
+                    new() { Name = "file.txt", Size = 10, LastModified = 1, FileId = "2" },
+                    new() { Name = "other.txt", Size = 10, LastModified = 1, FileId = "3" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.AllowDuplicates, false);
+            parameters.Add(p => p.DuplicateErrorMessage, "already there");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var files = component.Instance.Files;
+
+        Assert.IsTrue(files[0].IsValid);
+        Assert.IsFalse(files[1].IsValid);
+        Assert.AreEqual("already there", files[1].Message);
+        Assert.IsTrue(files[2].IsValid);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRespectFileValidator()
+    {
+        SetupFiles([new() { Name = "ok.txt", Size = 10, FileId = "1" },
+                    new() { Name = "bad.txt", Size = 10, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.FileValidator, file => file.Name.StartsWith("bad") ? "rejected" : null);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var files = component.Instance.Files;
+
+        Assert.IsTrue(files[0].IsValid);
+        Assert.IsFalse(files[1].IsValid);
+        Assert.AreEqual("rejected", files[1].Message);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldInvokeOnInvalidWithOnlyInvalidFiles()
+    {
+        SetupFiles([new() { Name = "ok.txt", Size = 10, FileId = "1" },
+                    new() { Name = "huge.txt", Size = 100, FileId = "2" }]);
+
+        BitFileInputInfo[]? invalidFiles = null;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxSize, 50);
+            parameters.Add(p => p.OnInvalid, files => invalidFiles = files);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.IsNotNull(invalidFiles);
+        Assert.HasCount(1, invalidFiles);
+        Assert.AreEqual("huge.txt", invalidFiles[0].Name);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputShouldInvokeOnRemoveForEachRemovedFile()
+    {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" },
+                    new() { Name = "file2.txt", Size = 20, FileId = "2" }]);
+
+        List<string> removedNames = [];
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.OnRemove, file => removedNames.Add(file.Name));
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var instance = component.Instance;
+
+        await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
+
+        Assert.AreEqual("file1.txt", string.Join(",", removedNames));
+
+        await component.InvokeAsync(() => instance.RemoveFile(null));
+
+        Assert.AreEqual("file1.txt,file2.txt", string.Join(",", removedNames));
+    }
+
+    [TestMethod]
+    public async Task BitFileInputShouldRecomputeValidationStateAfterRemoval()
+    {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" },
+                    new() { Name = "file2.txt", Size = 20, FileId = "2" },
+                    new() { Name = "file3.txt", Size = 30, FileId = "3" }]);
+
+        BitFileInputInfo[]? invalidFiles = null;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxCount, 2);
+            parameters.Add(p => p.OnInvalid, files => invalidFiles = files);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var instance = component.Instance;
+
+        Assert.IsNotNull(invalidFiles);
+        Assert.HasCount(1, invalidFiles);
+        Assert.AreEqual("file3.txt", invalidFiles[0].Name);
+
+        invalidFiles = null;
+
+        // removing a file frees up room, so the file invalidated by the count limit becomes valid again.
+        await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
+
+        Assert.HasCount(2, instance.Files);
+        Assert.IsTrue(instance.Files.All(f => f.IsValid));
+        Assert.AreEqual(0, instance.Files[0].Index);
+        Assert.AreEqual(1, instance.Files[1].Index);
+        Assert.IsNull(invalidFiles);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputRemoveFileShouldRespectIsEnabled()
+    {
+        SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" },
+                    new() { Name = "file2.txt", Size = 20, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var instance = component.Instance;
+
+        Assert.HasCount(2, instance.Files);
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
+        await component.InvokeAsync(() => instance.RemoveFile(null));
+
+        Assert.HasCount(2, instance.Files);
+    }
+
+    private void SetupFiles(BitFileInputInfo[] files)
+    {
+        Context.JSInterop.Setup<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", _ => true).SetResult(files);
     }
 
     [TestMethod]
