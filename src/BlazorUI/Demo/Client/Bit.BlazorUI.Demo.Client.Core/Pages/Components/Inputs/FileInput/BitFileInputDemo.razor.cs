@@ -328,6 +328,15 @@ public partial class BitFileInputDemo
             LinkType = LinkType.Link,
             Href = "#class-styles"
         },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the browse button, which decides how much of the Color it carries: a full fill, only an outline, or neither.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum"
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -641,6 +650,18 @@ public partial class BitFileInputDemo
                 new() { Name = "Small", Description = "The small size file input.", Value = "0" },
                 new() { Name = "Medium", Description = "The medium size file input.", Value = "1" },
                 new() { Name = "Large", Description = "The large size file input.", Value = "2" }
+            ]
+        },
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new() { Name = "Fill", Description = "Fill styled variant.", Value = "0" },
+                new() { Name = "Outline", Description = "Outline styled variant.", Value = "1" },
+                new() { Name = "Text", Description = "Text styled variant.", Value = "2" }
             ]
         }
     ];

@@ -11,21 +11,15 @@
         border-color: $clr-brd-dis;
         background-color: $clr-bg-dis;
 
+        //the browse button carries the role color while enabled, but a disabled file input reads as a
+        //neutral form field whatever its role and variant (see the disabled conventions in
+        //theme-variables.scss), so it drops the role colors for the generic disabled trio and stops
+        //answering the pointer. the border and the background are left to the variant blocks below,
+        //since which of the two is painted at all is exactly what the variants disagree on.
         .bit-fin-lbl {
             cursor: default;
             color: $clr-fg-dis;
-            border-color: $clr-brd-dis;
-
-            @media (hover: hover) {
-                &:hover {
-                    color: $clr-fg-dis;
-                    border-color: $clr-brd-dis;
-                }
-            }
-
-            &:active {
-                background-color: $clr-bg-dis;
-            }
+            pointer-events: none;
         }
     }
 }
@@ -34,6 +28,8 @@
     display: none;
 }
 
+//everything the three variants share; the colors themselves live in the variant blocks right below,
+//which is also why the border is declared without its color here.
 .bit-fin-lbl {
     outline: 0;
     display: flex;
@@ -43,35 +39,106 @@
     align-items: center;
     justify-content: center;
     border-radius: spacing(0.5);
-    color: var(--bit-fin-clr);
-    background-color: $clr-bg-pri;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
     min-height: var(--bit-fin-lbl-height);
     font-size: var(--bit-fin-lbl-fontsize);
     padding: var(--bit-fin-lbl-padding);
-    border: $shp-border-width $shp-border-style var(--bit-fin-clr);
-
-    @media (hover: hover) {
-        &:hover {
-            color: var(--bit-fin-clr-hover);
-            border-color: var(--bit-fin-clr-hover);
-        }
-    }
-
-    &:active {
-        background-color: $clr-bg-pri-active;
-    }
 
     i {
         margin-inline-end: spacing(0.625);
     }
 }
 
-.bit-fin-drg {
+//Fill - the default: a solid block of the role color labelled in the role's on-color.
+.bit-fin-fil {
+    .bit-fin-lbl {
+        color: var(--bit-fin-clr-txt);
+        border-color: var(--bit-fin-clr);
+        background-color: var(--bit-fin-clr);
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: var(--bit-fin-clr-hover);
+                background-color: var(--bit-fin-clr-hover);
+            }
+        }
+
+        &:active {
+            border-color: var(--bit-fin-clr-active);
+            background-color: var(--bit-fin-clr-active);
+        }
+    }
+
+    &.bit-dis .bit-fin-lbl {
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+}
+
+//Outline: only the rule around the button carries the role color at rest, and it fills in like the Fill
+//variant once a pointer lands on it.
+.bit-fin-otl {
+    .bit-fin-lbl {
+        color: var(--bit-fin-clr);
+        border-color: var(--bit-fin-clr);
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--bit-fin-clr-txt);
+                background-color: var(--bit-fin-clr-hover);
+            }
+        }
+
+        &:active {
+            color: var(--bit-fin-clr-txt);
+            background-color: var(--bit-fin-clr-active);
+        }
+    }
+
+    &.bit-dis .bit-fin-lbl {
+        border-color: $clr-brd-dis;
+        background-color: transparent;
+    }
+}
+
+//Text: neither rule nor fill at rest, for a file input that should not outweigh the fields around it.
+.bit-fin-txt {
+    .bit-fin-lbl {
+        color: var(--bit-fin-clr);
+        border-color: transparent;
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--bit-fin-clr-txt);
+                background-color: var(--bit-fin-clr-hover);
+            }
+        }
+
+        &:active {
+            color: var(--bit-fin-clr-txt);
+            background-color: var(--bit-fin-clr-active);
+        }
+    }
+
+    &.bit-dis .bit-fin-lbl {
+        border-color: transparent;
+        background-color: transparent;
+    }
+}
+
+//while a file is dragged over the component the browse button becomes the drop zone, and it does so the
+//same way in every variant: the hover shade of the role fills it, and the rule turns into a dashed one
+//in the on-color - the role color itself would vanish against that fill. the root class is repeated so
+//that the drop state outranks the per-variant :hover rules above, which are otherwise as specific.
+.bit-fin.bit-fin-drg {
     .bit-fin-lbl {
         border-style: dashed;
-        color: var(--bit-fin-clr-hover);
-        border-color: var(--bit-fin-clr-hover);
-        background-color: $clr-bg-pri-hover;
+        color: var(--bit-fin-clr-txt);
+        border-color: var(--bit-fin-clr-txt);
+        background-color: var(--bit-fin-clr-hover);
     }
 }
 
@@ -218,89 +285,14 @@
     clip-path: inset(50%);
 }
 
-.bit-fin-pri {
-    --bit-fin-clr: #{$clr-pri};
-    --bit-fin-clr-hover: #{$clr-pri-hover};
-}
-
-.bit-fin-sec {
-    --bit-fin-clr: #{$clr-sec};
-    --bit-fin-clr-hover: #{$clr-sec-hover};
-}
-
-.bit-fin-ter {
-    --bit-fin-clr: #{$clr-ter};
-    --bit-fin-clr-hover: #{$clr-ter-hover};
-}
-
-.bit-fin-inf {
-    --bit-fin-clr: #{$clr-inf};
-    --bit-fin-clr-hover: #{$clr-inf-hover};
-}
-
-.bit-fin-suc {
-    --bit-fin-clr: #{$clr-suc};
-    --bit-fin-clr-hover: #{$clr-suc-hover};
-}
-
-.bit-fin-wrn {
-    --bit-fin-clr: #{$clr-wrn};
-    --bit-fin-clr-hover: #{$clr-wrn-hover};
-}
-
-.bit-fin-swr {
-    --bit-fin-clr: #{$clr-swr};
-    --bit-fin-clr-hover: #{$clr-swr-hover};
-}
-
-.bit-fin-err {
-    --bit-fin-clr: #{$clr-err};
-    --bit-fin-clr-hover: #{$clr-err-hover};
-}
-
-.bit-fin-pbg {
-    --bit-fin-clr: #{$clr-bg-pri};
-    --bit-fin-clr-hover: #{$clr-bg-pri-hover};
-}
-
-.bit-fin-sbg {
-    --bit-fin-clr: #{$clr-bg-sec};
-    --bit-fin-clr-hover: #{$clr-bg-sec-hover};
-}
-
-.bit-fin-tbg {
-    --bit-fin-clr: #{$clr-bg-ter};
-    --bit-fin-clr-hover: #{$clr-bg-ter-hover};
-}
-
-.bit-fin-pfg {
-    --bit-fin-clr: #{$clr-fg-pri};
-    --bit-fin-clr-hover: #{$clr-fg-pri-hover};
-}
-
-.bit-fin-sfg {
-    --bit-fin-clr: #{$clr-fg-sec};
-    --bit-fin-clr-hover: #{$clr-fg-sec-hover};
-}
-
-.bit-fin-tfg {
-    --bit-fin-clr: #{$clr-fg-ter};
-    --bit-fin-clr-hover: #{$clr-fg-ter-hover};
-}
-
-.bit-fin-pbr {
-    --bit-fin-clr: #{$clr-brd-pri};
-    --bit-fin-clr-hover: #{$clr-brd-pri-hover};
-}
-
-.bit-fin-sbr {
-    --bit-fin-clr: #{$clr-brd-sec};
-    --bit-fin-clr-hover: #{$clr-brd-sec-hover};
-}
-
-.bit-fin-tbr {
-    --bit-fin-clr: #{$clr-brd-ter};
-    --bit-fin-clr-hover: #{$clr-brd-ter-hover};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-fin-#{$role} {
+        --bit-fin-clr: #{role($tokens, main)};
+        --bit-fin-clr-txt: #{role($tokens, on)};
+        --bit-fin-clr-hover: #{role($tokens, hover)};
+        --bit-fin-clr-active: #{role($tokens, active)};
+    }
 }
 
 .bit-fin-sm {

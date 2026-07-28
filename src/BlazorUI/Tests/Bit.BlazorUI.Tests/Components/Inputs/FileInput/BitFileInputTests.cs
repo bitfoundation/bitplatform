@@ -1014,6 +1014,27 @@ public class BitFileInputTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(BitVariant.Fill, "bit-fin-fil"),
+        DataRow(BitVariant.Outline, "bit-fin-otl"),
+        DataRow(BitVariant.Text, "bit-fin-txt"),
+        DataRow(null, "bit-fin-fil")
+    ]
+    public void BitFileInputShouldRespectVariant(BitVariant? variant, string expectedClass)
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            if (variant.HasValue)
+            {
+                parameters.Add(p => p.Variant, variant.Value);
+            }
+        });
+
+        var container = component.Find(".bit-fin");
+
+        Assert.IsTrue(container.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
         DataRow(BitSize.Small, "bit-fin-sm"),
         DataRow(BitSize.Medium, "bit-fin-md"),
         DataRow(BitSize.Large, "bit-fin-lg"),

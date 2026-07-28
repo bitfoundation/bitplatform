@@ -442,6 +442,19 @@ private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
 }";
 
     private readonly string example23RazorCode = @"
+<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" />
+<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" />
+<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" />
+
+<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" IsEnabled=""false"" />
+<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" IsEnabled=""false"" />
+<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" IsEnabled=""false"" />
+
+<BitFileInput Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Label=""Fill"" />
+<BitFileInput Variant=""BitVariant.Outline"" Color=""BitColor.Success"" Label=""Outline"" />
+<BitFileInput Variant=""BitVariant.Text"" Color=""BitColor.Success"" Label=""Text"" />";
+
+    private readonly string example24RazorCode = @"
 <BitFileInput Color=""BitColor.Primary"" Label=""Primary"" />
 <BitFileInput Color=""BitColor.Secondary"" Label=""Secondary"" />
 <BitFileInput Color=""BitColor.Tertiary"" Label=""Tertiary"" />
@@ -465,7 +478,7 @@ private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
 <BitFileInput Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" />
 <BitFileInput Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" />";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitFileInput Label=""Browse or drop a file""
@@ -495,14 +508,14 @@ private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
               ShowRemoveButton
               RemoveButtonIcon=""@BitIconInfo.Bi(""trash3-fill"")"" />";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitFileInput Size=""BitSize.Small"" Label=""Browse or drop a file"" ShowRemoveButton />
 
 <BitFileInput Size=""BitSize.Medium"" Label=""Browse or drop a file"" ShowRemoveButton />
 
 <BitFileInput Size=""BitSize.Large"" Label=""Browse or drop a file"" ShowRemoveButton />";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example27RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -511,8 +524,9 @@ private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
     }
 
     .custom-label {
-        color: mediumseagreen;
+        color: white;
         border-color: mediumseagreen;
+        background-color: mediumseagreen;
     }
 
     .custom-dragging {
@@ -536,7 +550,7 @@ private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
 
 <BitFileInput Label=""Styles""
               ShowRemoveButton
-              Styles=""@(new() { Label = ""border-color: deeppink; color: deeppink;"",
+              Styles=""@(new() { Label = ""border-color: deeppink; background-color: deeppink; color: white;"",
                                 Dragging = ""background-color: lavenderblush;"",
                                 FileName = ""color: deeppink;"",
                                 RemoveButton = ""background-color: deeppink; color: white;"" })"" />
@@ -548,7 +562,7 @@ private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
                                  FileItem = ""custom-item"",
                                  RemoveButton = ""custom-remove"" })"" />";
 
-    private readonly string example27RazorCode = @"
+    private readonly string example28RazorCode = @"
 <div dir=""rtl"">
     <BitFileInput Dir=""BitDir.Rtl"" Label=""انتخاب یا رها کردن فایل"" ShowRemoveButton RemoveButtonTitle=""حذف"" />
 </div>";

@@ -289,6 +289,13 @@ public partial class BitFileInput : BitComponentBase
     /// </summary>
     [Parameter] public BitFileInputClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// The visual variant of the browse button, which decides how much of the <see cref="Color"/> it carries:
+    /// a full fill, only an outline, or neither.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
+
 
 
     /// <summary>
@@ -422,6 +429,14 @@ public partial class BitFileInput : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-fin-fil",
+            BitVariant.Outline => "bit-fin-otl",
+            BitVariant.Text => "bit-fin-txt",
+            _ => "bit-fin-fil"
+        });
 
         ClassBuilder.Register(() => Color switch
         {
