@@ -129,9 +129,9 @@
         if (window.BitBswup && BitBswup.checkForUpdate) BitBswup.checkForUpdate();
     }
 
-    function skipWaiting() {
+    async function skipWaiting() {
         if (window.BitBswup && BitBswup.skipWaiting) {
-            const result = BitBswup.skipWaiting();
+            const result = await BitBswup.skipWaiting();
             record('(playground)', `BitBswup.skipWaiting() returned ${result} (${result ? 'a staged update is being activated' : 'no update was waiting'})`);
         }
     }

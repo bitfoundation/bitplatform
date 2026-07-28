@@ -107,9 +107,11 @@ BitBswup.forceRefresh(() => true);                // every cache on the origin
 BitBswup.forceRefresh('bit-bswup');               // only Bswup's own caches
 BitBswup.forceRefresh(/^(bit-bswup|my-app-data)/) // a specific set";
 
-    private const string PollingCode = @"// consume the returned promise so a failed check is reported, not an unhandled rejection
+    private const string PollingCode = @"// an ordinary failed check (offline, server hiccup) does NOT reject - it is reported through
+// the UPDATE_CHECK_FAILED message below. This catch is only for unexpected errors, such as a
+// call made before the registration is ready.
 const checkNow = () => BitBswup.checkForUpdate()
-    .catch(err => console.warn('update check failed:', err));
+    .catch(err => console.warn('unexpected update check error:', err));
 
 // check every hour from your own code (equivalent to updateInterval=""3600"")
 setInterval(checkNow, 60 * 60 * 1000);

@@ -350,9 +350,11 @@ By default a service worker is only re-checked by the browser on navigation and 
 2. Call `BitBswup.checkForUpdate()` yourself, for example from a timer or after a user action.
 
 ```js
-// consume the returned promise so a failed check is reported, not an unhandled rejection
+// an ordinary failed check (offline, server hiccup) does NOT reject - it is reported through
+// the updateCheckFailed message below. This catch is only for unexpected errors, such as a
+// call made before the registration is ready.
 const checkNow = () => BitBswup.checkForUpdate()
-    .catch(err => console.warn('update check failed:', err));
+    .catch(err => console.warn('unexpected update check error:', err));
 
 // check every hour from your own code (equivalent to updateInterval="3600")
 setInterval(checkNow, 60 * 60 * 1000);
