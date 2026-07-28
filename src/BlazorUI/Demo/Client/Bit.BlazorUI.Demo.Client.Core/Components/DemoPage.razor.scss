@@ -1,39 +1,58 @@
-﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 
-.demo-page {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
+// The page-wide escape hatch from the reduced-motion collapse. It is meaningless when motion is not
+// being reduced, so it only exists in that state; --demo-motion-bar-height (app.scss) is 0 outside
+// this query, which is what keeps the other sticky bars in their original place.
+.motion-bar {
+    display: none;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .motion-bar {
+        z-index: 10;
+        display: flex;
+        position: sticky;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 0.5rem 1rem;
+        background-color: $bit-color-background-primary;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+        top: calc(rem2(66px) + #{$bit-env-inset-top});
+
+        .bit-ios & {
+            top: calc(rem2(66px) + env(safe-area-inset-top));
+        }
+    }
+}
+
+// min-width:0 is what lets a wide example or a code line scroll inside the column instead of
+// stretching it and pushing the rail off screen.
 .page-container.example {
-    width: 80%;
-    flex-grow: 1;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
-.page-section {
-    scroll-margin: rem2(80px);
-}
+::deep {
+    // The chrome sections are BitCards and the rail scrolls to them by id, so they have to stop
+    // short of the sticky headers; same for the plain lead section.
+    .page-lead,
+    .page-section {
+        scroll-margin: rem2(90px);
+    }
 
-.video-container {
-    display: flex;
-    justify-content: center;
-
-    video {
+    .video-container video {
         width: 80%;
         border-width: $bit-shape-border-width;
         border-style: $bit-shape-border-style;
         border-radius: $bit-shape-border-radius;
         border-color: $bit-color-border-tertiary;
     }
-}
 
-::deep {
     .sec-con {
-        scroll-margin: rem2(80px);
+        scroll-margin: rem2(90px);
     }
 
     .table-view {
@@ -43,7 +62,8 @@
         border-spacing: 0;
         display: inline-grid;
         box-sizing: border-box;
-        margin-bottom: rem2(64px);
+        margin-bottom: rem2(40px);
+        border: rem2(1px) solid $bit-color-border-secondary;
     }
 
     .th-row {
@@ -53,7 +73,7 @@
         position: sticky;
         min-height: rem2(42px);
         color: $bit-color-foreground-primary;
-        background-color: $bit-color-background-primary;
+        background-color: $bit-color-background-secondary;
         border-bottom: rem2(1px) solid $bit-color-border-secondary;
     }
 
@@ -62,6 +82,10 @@
         display: flex;
         min-width: max-content;
         border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+        &:hover {
+            background-color: $bit-color-background-secondary;
+        }
 
         &:last-child {
             border: none;
@@ -76,7 +100,7 @@
         overflow: hidden;
         padding: rem2(12px);
         align-items: center;
-        font-size: rem2(14px);
+        font-size: rem2(13px);
         box-sizing: border-box;
         text-overflow: ellipsis;
         justify-content: flex-start;
@@ -91,15 +115,16 @@
         display: flex;
         text-align: left;
         overflow: hidden;
+        line-height: 1.6;
         padding: rem2(12px);
         text-overflow: clip;
         white-space: normal;
-        font-size: rem2(11px);
+        font-size: rem2(12px);
         box-sizing: border-box;
         word-break: break-word;
         align-items: flex-start;
         justify-content: flex-start;
-        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        font-family: var(--demo-font-mono);
 
         &:last-child {
             border: none;

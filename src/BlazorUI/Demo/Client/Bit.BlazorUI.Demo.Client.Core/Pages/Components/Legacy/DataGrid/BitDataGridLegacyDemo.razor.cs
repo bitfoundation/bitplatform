@@ -1,7 +1,7 @@
 using Bit.BlazorUI.Demo.Client.Core.Components;
 using Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo;
 
-namespace Bit.BlazorUI.Legacy.Demo.DataGrid;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.DataGrid;
 
 public partial class BitDataGridLegacyDemo : AppComponentBase
 {

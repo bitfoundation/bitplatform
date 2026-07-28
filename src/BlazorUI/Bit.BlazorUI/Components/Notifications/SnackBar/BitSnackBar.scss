@@ -78,94 +78,14 @@
     border-radius: spacing(0.375);
 }
 
-.bit-snb-pri {
-    --bit-snb-bg: #{$clr-pri};
-    --bit-snb-fg: #{$clr-pri-text};
-}
-
-.bit-snb-sec {
-    --bit-snb-bg: #{$clr-sec};
-    --bit-snb-fg: #{$clr-sec-text};
-}
-
-.bit-snb-ter {
-    --bit-snb-bg: #{$clr-ter};
-    --bit-snb-fg: #{$clr-ter-text};
-}
-
-.bit-snb-inf {
-    --bit-snb-bg: #{$clr-inf};
-    --bit-snb-fg: #{$clr-inf-text};
-}
-
-.bit-snb-suc {
-    --bit-snb-bg: #{$clr-suc};
-    --bit-snb-fg: #{$clr-suc-text};
-}
-
-.bit-snb-wrn {
-    --bit-snb-bg: #{$clr-wrn};
-    --bit-snb-fg: #{$clr-wrn-text};
-}
-
-.bit-snb-swr {
-    --bit-snb-bg: #{$clr-swr};
-    --bit-snb-fg: #{$clr-swr-text};
-}
-
-.bit-snb-err {
-    --bit-snb-bg: #{$clr-err};
-    --bit-snb-fg: #{$clr-err-text};
-}
-
-.bit-snb-pbg {
-    --bit-snb-bg: #{$clr-bg-pri};
-    --bit-snb-fg: #{$clr-fg-pri};
-}
-
-.bit-snb-pbg {
-    --bit-snb-bg: #{$clr-bg-pri};
-    --bit-snb-fg: #{$clr-fg-pri};
-}
-
-.bit-snb-sbg {
-    --bit-snb-bg: #{$clr-bg-sec};
-    --bit-snb-fg: #{$clr-fg-pri};
-}
-
-.bit-snb-tbg {
-    --bit-snb-bg: #{$clr-bg-ter};
-    --bit-snb-fg: #{$clr-fg-pri};
-}
-
-.bit-snb-pfg {
-    --bit-snb-bg: #{$clr-fg-pri};
-    --bit-snb-fg: #{$clr-bg-pri};
-}
-
-.bit-snb-sfg {
-    --bit-snb-bg: #{$clr-fg-sec};
-    --bit-snb-fg: #{$clr-bg-pri};
-}
-
-.bit-snb-tfg {
-    --bit-snb-bg: #{$clr-fg-ter};
-    --bit-snb-fg: #{$clr-bg-pri};
-}
-
-.bit-snb-pbr {
-    --bit-snb-bg: #{$clr-brd-pri};
-    --bit-snb-fg: #{$clr-fg-pri};
-}
-
-.bit-snb-sbr {
-    --bit-snb-bg: #{$clr-brd-sec};
-    --bit-snb-fg: #{$clr-fg-pri};
-}
-
-.bit-snb-tbr {
-    --bit-snb-bg: #{$clr-brd-ter};
-    --bit-snb-fg: #{$clr-fg-pri};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// (The hand-written run this replaces declared .bit-snb-pbg twice; the byte-identical duplicate
+// rule was dropped - identical declarations twice have no cascade effect.)
+@each $role, $tokens in $bit-color-roles {
+    .bit-snb-#{$role} {
+        --bit-snb-bg: #{role($tokens, main)};
+        --bit-snb-fg: #{role($tokens, on)};
+    }
 }
 
 

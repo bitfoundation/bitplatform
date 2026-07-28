@@ -4,17 +4,13 @@
 @page "/components/iconbutton"
 @page "/components/icon-button"
 
-<PageOutlet Url="components/button"
-            Title="Button"
+<PageOutlet Url="components/button" Title="Button"
             Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, icons, primary/secondary text, loading and auto-loading states, and link rendering." />
 
 <DemoPage Name="Button"
           Description="BitButton triggers an action or navigates when the user activates it. It renders a native button, or an anchor when an Href is provided, and offers Fill, Outline, and Text variants across a full palette of semantic colors and sizes. It supports start/end icons, an optional secondary line of text, built-in loading and auto-loading states that keep the button's size and accessible name, EditForm submission, and accessibility-first defaults such as focusable disabled buttons and automatic rel='noopener' on external links."
-          Parameters="componentParameters"
-          SubEnums="componentSubEnums"
-          SubClasses="componentSubClasses"
-          GitHubUrl="Buttons/Button/BitButton.razor"
-          GitHubDemoUrl="Buttons/Button/BitButtonDemo.razor">
+          Parameters="componentParameters" SubEnums="componentSubEnums" SubClasses="componentSubClasses"
+          GitHubUrl="Buttons/Button/BitButton.razor" GitHubDemoUrl="Buttons/Button/BitButtonDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>The simplest usage: place your label as the child content to render a Fill (default) primary button.</div>
         <br />
@@ -22,7 +18,11 @@
     </DemoExample>
 
     <DemoExample Title="Primary & Secondary" RazorCode="@example2RazorCode" Id="example2">
-        <div>BitButton can show two lines of text: the primary content (the child content) and an optional secondary line set via the <b>SecondaryText</b> parameter, useful for compound buttons that describe the action beneath its label.</div>
+        <div>
+            BitButton can show two lines of text: the primary content (the child content) and an optional secondary
+            line set via the <b>SecondaryText</b> parameter, useful for compound buttons that describe the action
+            beneath its label.
+        </div>
         <br />
         <div class="example-content">
             <BitButton>Primary text</BitButton>
@@ -35,8 +35,15 @@
     </DemoExample>
 
     <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3">
-        <div>BitButton offers three style variants to convey different levels of emphasis: <b>Fill</b> (default, a solid filled button for primary actions), <b>Outline</b> (a bordered button for secondary actions), and <b>Text</b> (a borderless button for the lowest-emphasis actions).</div>
-        <div>Using the <b>Variant</b> parameter and its value of type <BitLink Href="#variant-enum">BitVariant</BitLink> enum:</div>
+        <div>
+            BitButton offers three style variants to convey different levels of emphasis: <b>Fill</b> (default, a solid
+            filled button for primary actions), <b>Outline</b> (a bordered button for secondary actions), and
+            <b>Text</b> (a borderless button for the lowest-emphasis actions).
+        </div>
+        <div>
+            Using the <b>Variant</b> parameter and its value of type <BitLink Href="#variant-enum">BitVariant</BitLink>
+            enum:
+        </div>
         <br />
         <div class="example-content">
             <BitButton Variant="BitVariant.Fill">Fill</BitButton>
@@ -49,6 +56,8 @@
             <BitButton Variant="BitVariant.Outline" SecondaryText="this is the secondary text">Outline</BitButton>
             <BitButton Variant="BitVariant.Text" SecondaryText="this is the secondary text">Text</BitButton>
         </div>
+        <br /><br /><br />
+        <div><b>Disabled</b>:</div>
         <br />
         <div class="example-content">
             <BitButton Variant="BitVariant.Fill" IsEnabled="false">Fill</BitButton>
@@ -57,15 +66,25 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton Variant="BitVariant.Fill" SecondaryText="this is the secondary text" IsEnabled="false">Fill</BitButton>
-            <BitButton Variant="BitVariant.Outline" SecondaryText="this is the secondary text" IsEnabled="false">Outline</BitButton>
-            <BitButton Variant="BitVariant.Text" SecondaryText="this is the secondary text" IsEnabled="false">Text</BitButton>
+            <BitButton Variant="BitVariant.Fill" SecondaryText="this is the secondary text" IsEnabled="false">Fill
+            </BitButton>
+            <BitButton Variant="BitVariant.Outline" SecondaryText="this is the secondary text" IsEnabled="false">Outline
+            </BitButton>
+            <BitButton Variant="BitVariant.Text" SecondaryText="this is the secondary text" IsEnabled="false">Text
+            </BitButton>
         </div>
     </DemoExample>
 
     <DemoExample Title="Disabled" RazorCode="@example4RazorCode" Id="example4">
-        <div>By default, a disabled button remains focusable and discoverable by screen readers (rendering the <b>aria-disabled</b> attribute instead of the native <b>disabled</b> attribute), preserving a consistent tab order while its action is suppressed.</div>
-        <div>Setting <b>AllowDisabledFocus</b> to false renders the native <b>disabled</b> attribute and removes the button from the tab order.</div>
+        <div>
+            By default, a disabled button remains focusable and discoverable by screen readers (rendering the
+            <b>aria-disabled</b> attribute instead of the native <b>disabled</b> attribute), preserving a consistent tab
+            order while its action is suppressed.
+        </div>
+        <div>
+            Setting <b>AllowDisabledFocus</b> to false renders the native <b>disabled</b> attribute and removes the
+            button from the tab order.
+        </div>
         <br />
         <div class="example-content">
             <BitButton IsEnabled="false">Focusable disabled</BitButton>
@@ -74,7 +93,9 @@
     </DemoExample>
 
     <DemoExample Title="Title" RazorCode="@example5RazorCode" Id="example5">
-        <div>The <b>Title</b> parameter sets the native tooltip that appears when the pointer hovers over the button.</div>
+        <div>
+            The <b>Title</b> parameter sets the native tooltip that appears when the pointer hovers over the button.
+        </div>
         <br />
         <div class="example-content">
             <BitButton Title="This is a tooltip" Variant="BitVariant.Fill">Hover me</BitButton>
@@ -84,8 +105,15 @@
     </DemoExample>
 
     <DemoExample Title="Icon" RazorCode="@example6RazorCode" Id="example6">
-        <div>BitButton has an icon slot that renders an icon alongside the label, or on its own for an icon-only button. Set a built-in Fluent icon with <b>IconName</b>, or render a custom image with <b>IconUrl</b>. The icon sits at the start by default and can move to the end via the <b>IconPosition</b> parameter.</div>
-        <div>Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink> enum as its value:</div>
+        <div>
+            BitButton has an icon slot that renders an icon alongside the label, or on its own for an icon-only button.
+            Set a built-in Fluent icon with <b>IconName</b>, or render a custom image with <b>IconUrl</b>. The icon sits
+            at the start by default and can move to the end via the <b>IconPosition</b> parameter.
+        </div>
+        <div>
+            Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink>
+            enum as its value:
+        </div>
         <br />
         <div class="example-content">
             <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Fill" />
@@ -100,39 +128,63 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Fill">Start</BitButton>
-            <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Outline">Start</BitButton>
-            <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Text">Start</BitButton>
+            <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text"
+                       Variant="BitVariant.Fill">Start</BitButton>
+            <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text"
+                       Variant="BitVariant.Outline">Start</BitButton>
+            <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text"
+                       Variant="BitVariant.Text">Start</BitButton>
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">
+                End
+            </BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">
+                End
+            </BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">
+                End
+            </BitButton>
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text"
+                       Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text"
+                       Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text"
+                       Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
         </div>
         <br /><br />
         <div class="example-content">
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Fill">Start</BitButton>
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Outline">Start</BitButton>
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Text">Start</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
+                       Variant="BitVariant.Fill">Start</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
+                       Variant="BitVariant.Outline">Start</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
+                       Variant="BitVariant.Text">Start</BitButton>
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
+                       Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
+                       Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
+                       Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
         </div>
     </DemoExample>
 
     <DemoExample Title="Icon only" RazorCode="@example7RazorCode" Id="example7">
-        <div>Set <b>IconOnly</b> to render only the icon without any text, producing a compact square button that is common in toolbars and command bars.</div>
-        <div>An icon has no textual content, so always provide an <b>AriaLabel</b> to give the button an accessible name for screen readers.</div>
+        <div>
+            Set <b>IconOnly</b> to render only the icon without any text, producing a compact square button that is
+            common in toolbars and command bars.
+        </div>
+        <div>
+            An icon has no textual content, so always provide an <b>AriaLabel</b> to give the button an accessible name
+            for screen readers.
+        </div>
         <br />
         <div class="example-content">
             <BitButton IconOnly AriaLabel="Add" IconName="@BitIconName.Add" Variant="BitVariant.Fill" />
@@ -142,33 +194,47 @@
     </DemoExample>
 
     <DemoExample Title="Loading" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>The <b>IsLoading</b> parameter puts the button into a loading state that shows a spinner while an operation is in progress. The button keeps its original size and accessible name, and blocks further clicks so the action can't be triggered twice.</div>
-        <div>With <b>AutoLoading</b>, the button manages this state for you: it automatically enters the loading state while awaiting the <b>OnClick</b> handler and leaves it when the handler completes. Add <b>Reclickable</b> to allow clicking again during that loading state.</div>
+        <div>
+            The <b>IsLoading</b> parameter puts the button into a loading state that shows a spinner while an operation
+            is in progress. The button keeps its original size and accessible name, and blocks further clicks so the
+            action can't be triggered twice.
+        </div>
+        <div>
+            With <b>AutoLoading</b>, the button manages this state for you: it automatically enters the loading state
+            while awaiting the <b>OnClick</b> handler and leaves it when the handler completes. Add <b>Reclickable</b>
+            to allow clicking again during that loading state.
+        </div>
         <br /><br />
         <div class="example-content">
-            <BitButton IsLoading="fillIsLoading" Variant="BitVariant.Fill" Style="min-width: 11rem" OnClick="LoadingFillClick">
+            <BitButton IsLoading="fillIsLoading" Variant="BitVariant.Fill" Style="min-width: 11rem"
+                       OnClick="LoadingFillClick">
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="outlineIsLoading" Variant="BitVariant.Outline" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
+            <BitButton IsLoading="outlineIsLoading" Variant="BitVariant.Outline" Style="min-width: 11rem"
+                       OnClick="LoadingOutlineClick">
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="textIsLoading" Variant="BitVariant.Text" Style="min-width: 11rem" OnClick="LoadingTextClick">
+            <BitButton IsLoading="textIsLoading" Variant="BitVariant.Text" Style="min-width: 11rem"
+                       OnClick="LoadingTextClick">
                 Click me
             </BitButton>
         </div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading="fillIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" Style="min-width: 11rem" OnClick="LoadingFillClick">
+            <BitButton IsLoading="fillIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Fill"
+                       Style="min-width: 11rem" OnClick="LoadingFillClick">
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="outlineIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
+            <BitButton IsLoading="outlineIsLoading" SecondaryText="this is the secondary text"
+                       Variant="BitVariant.Outline" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="textIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Text" Style="min-width: 11rem" OnClick="LoadingTextClick">
+            <BitButton IsLoading="textIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Text"
+                       Style="min-width: 11rem" OnClick="LoadingTextClick">
                 Click me
             </BitButton>
         </div>
@@ -186,40 +252,34 @@
     </DemoExample>
 
     <DemoExample Title="Loading Label" RazorCode="@example9RazorCode" Id="example9">
-        <div>Set <b>LoadingLabel</b> to show a text next to the spinner during the loading state, and place it relative to the spinner (start, end, top, or bottom) with <b>LoadingLabelPosition</b>.</div>
-        <div>Using the <b>LoadingLabelPosition</b> parameter and its value of type <BitLink Href="#label-position-enum">BitLabelPosition</BitLink> enum:</div>
+        <div>
+            Set <b>LoadingLabel</b> to show a text next to the spinner during the loading state, and place it relative
+            to the spinner (start, end, top, or bottom) with <b>LoadingLabelPosition</b>.
+        </div>
+        <div>
+            Using the <b>LoadingLabelPosition</b> parameter and its value of type <BitLink Href="#label-position-enum">
+            BitLabelPosition</BitLink> enum:
+        </div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading="true"
-                       LoadingLabel="End..."
-                       Style="min-width: 6.5rem;"
-                       Variant="BitVariant.Outline"
+            <BitButton IsLoading="true" LoadingLabel="End..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
                        LoadingLabelPosition="BitLabelPosition.End">
                 End
             </BitButton>
 
-            <BitButton IsLoading="true"
-                       LoadingLabel="Start..."
-                       Style="min-width: 6.5rem;"
-                       Variant="BitVariant.Outline"
+            <BitButton IsLoading="true" LoadingLabel="Start..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
                        LoadingLabelPosition="BitLabelPosition.Start">
                 Start
             </BitButton>
         </div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading="true"
-                       LoadingLabel="Bottom..."
-                       Style="min-width: 6.5rem;"
-                       Variant="BitVariant.Outline"
+            <BitButton IsLoading="true" LoadingLabel="Bottom..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
                        LoadingLabelPosition="BitLabelPosition.Bottom">
                 Bottom
             </BitButton>
 
-            <BitButton IsLoading="true"
-                       LoadingLabel="Top..."
-                       Style="min-width: 6.5rem;"
-                       Variant="BitVariant.Outline"
+            <BitButton IsLoading="true" LoadingLabel="Top..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
                        LoadingLabelPosition="BitLabelPosition.Top">
                 Top
             </BitButton>
@@ -227,108 +287,145 @@
     </DemoExample>
 
     <DemoExample Title="Href" RazorCode="@example10RazorCode" Id="example10">
-        <div>When the <b>Href</b> parameter is set, BitButton renders a real anchor (<b>&lt;a&gt;</b>) element instead of a <b>&lt;button&gt;</b>, so it navigates like a genuine link while keeping the same look. Control where it opens with the <b>Target</b> parameter.</div>
-        <div>When the <b>Target</b> is set to <b>_blank</b> and no Rel is provided, <b>rel="noopener"</b> gets added automatically to protect against reverse-tabnabbing.</div>
+        <div>
+            When the <b>Href</b> parameter is set, BitButton renders a real anchor (<b>&lt;a&gt;</b>) element instead
+            of a <b>&lt;button&gt;</b>, so it navigates like a genuine link while keeping the same look. Control where
+            it opens with the <b>Target</b> parameter.
+        </div>
+        <div>
+            When the <b>Target</b> is set to <b>_blank</b> and no Rel is provided, <b>rel="noopener"</b> gets added
+            automatically to protect against reverse-tabnabbing.
+        </div>
         <br />
         <div class="example-content">
-            <BitButton Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+            <BitButton Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe"
+                       Variant="BitVariant.Outline">
                 Open bitplatform.dev
             </BitButton>
 
-            <BitButton Href="https://github.com/bitfoundation/bitplatform" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+            <BitButton Href="https://github.com/bitfoundation/bitplatform" IconName="@BitIconName.Globe"
+                       Variant="BitVariant.Outline">
                 Go to bitplatform GitHub
             </BitButton>
         </div>
         <br /><br />
-        <div>Using the <b>Download</b> parameter, the browser downloads the linked resource instead of navigating to it, using the provided value as the file name:</div>
+        <div>
+            Using the <b>Download</b> parameter, the browser downloads the linked resource instead of navigating to it,
+            using the provided value as the file name:
+        </div>
         <br />
         <div class="example-content">
-            <BitButton Download="bit-logo.svg"
-                       Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"
-                       IconName="@BitIconName.Download"
-                       Variant="BitVariant.Outline">
+            <BitButton Download="bit-logo.svg" Href="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"
+                       IconName="@BitIconName.Download" Variant="BitVariant.Outline">
                 Download the bit logo
             </BitButton>
         </div>
     </DemoExample>
 
     <DemoExample Title="Rel" RazorCode="@example11RazorCode" Id="example11">
-        <div>For link-rendered buttons, the <b>Rel</b> parameter sets the anchor's <b>rel</b> attribute, which describes the relationship between the current page and the linked one (for example <b>nofollow</b> or <b>noreferrer</b>).</div>
-        <div>The actual <b>rel</b> attribute value is generated from the provided <BitLink Href="#link-rels">BitLinkRels</BitLink> flags and is ignored for empty or hash-only hrefs.</div>
+        <div>
+            For link-rendered buttons, the <b>Rel</b> parameter sets the anchor's <b>rel</b> attribute, which describes
+            the relationship between the current page and the linked one (for example <b>nofollow</b> or
+            <b>noreferrer</b>).
+        </div>
+        <div>
+            The actual <b>rel</b> attribute value is generated from the provided
+            <BitLink Href="#link-rels">BitLinkRels</BitLink> flags and is ignored for empty or hash-only hrefs.
+        </div>
         <br />
         <div class="example-content">
-            <BitButton Rel="BitLinkRels.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+            <BitButton Rel="BitLinkRels.NoFollow" Href="https://bitplatform.dev" Target="_blank"
+                       IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
                 Open bitplatform.dev with a rel attribute (nofollow)
             </BitButton>
 
-            <BitButton Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+            <BitButton Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" Href="https://bitplatform.dev"
+                       Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
                 Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
             </BitButton>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Float & Draggable" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <div>A floating button is pinned to a corner or edge so it stays in view. Use <b>Float</b> to position it relative to the viewport, or <b>FloatAbsolute</b> to position it relative to its container. Choose the anchor with <b>FloatPosition</b>, adjust the spacing with <b>FloatOffset</b>, and add <b>Draggable</b> to let users move it around.</div>
-        <div>Using the <b>FloatPosition</b> parameter and its value of type <BitLink Href="#button-position">BitPosition</BitLink> enum:</div>
+    <DemoExample Title="Float & Draggable" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode"
+                 Id="example12">
+        <div>
+            A floating button is pinned to a corner or edge so it stays in view. Use <b>Float</b> to position it
+            relative to the viewport, or <b>FloatAbsolute</b> to position it relative to its container. Choose the
+            anchor with <b>FloatPosition</b>, adjust the spacing with <b>FloatOffset</b>, and add <b>Draggable</b> to
+            let users move it around.
+        </div>
+        <div>
+            Using the <b>FloatPosition</b> parameter and its value of type
+            <BitLink Href="#button-position">BitPosition</BitLink> enum:
+        </div>
         <br />
         <div class="example-content">
             <BitDropdown Label="FloatPosition" Items="floatPositionList" @bind-Value="floatPosition" FitWidth />
             <BitTextField Label="FloatOffset" @bind-Value="floatOffset" Immediate />
         </div>
         <br />
-        <BitButton IconOnly 
-                   Size="BitSize.Large" 
-                   IconName="@BitIconName.Add" 
-                   OnClick="ScrollToFloat" 
-                   Float Draggable
-                   FloatPosition="floatPosition" 
-                   FloatOffset="@floatOffset" />
+        <BitButton IconOnly Size="BitSize.Large" IconName="@BitIconName.Add" OnClick="ScrollToFloat" Float Draggable
+                   FloatPosition="floatPosition" FloatOffset="@floatOffset" />
         <br /><br />
         <div><b>FloatAbsolute & Draggable</b>:</div><br />
         <div style="position: relative; border:1px gray solid">
-            <BitButton IconOnly 
-                       IconName="@BitIconName.Edit" 
-                       Draggable
-                       FloatAbsolute
-                       FloatPosition="floatPosition" 
+            <BitButton IconOnly IconName="@BitIconName.Edit" Draggable FloatAbsolute FloatPosition="floatPosition"
                        FloatOffset="@floatOffset" />
             <div style="height:300px;overflow:auto;padding:0.5rem">
-                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
-                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
-                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                for ideas that change minds and spark emotions. This is where the journey begins your words will lead
+                the way.
                 <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
-                These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape. 
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and
+                dreams.
+                These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to
+                take shape.
+                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
                 are boundless. This space is yours to craft, yours to shape, yours to bring to life.
                 <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits 
-                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
-                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity
+                waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
+                infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with
+                the
+                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
                 shaped into meaning, and the emotions ready to resonate with every reader.
                 <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-                each word has the power to transform into something extraordinary. Here lies the start of something new - an 
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances
+                freely and
+                each word has the power to transform into something extraordinary. Here lies the start of something new
+                - an
+                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or
+                an
+                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The
+                journey
                 begins here, in this quiet moment where everything is possible.
             </div>
         </div>
     </DemoExample>
 
     <DemoExample Title="Button Type" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <div>The <b>ButtonType</b> parameter sets the native button type: <b>Submit</b> to submit the surrounding form, <b>Reset</b> to clear its inputs, and <b>Button</b> for a plain action. Inside an <b>EditForm</b> the type defaults to Submit; otherwise it defaults to Button.</div>
-        <div>Using the <b>ButtonType</b> parameter and its value of type <BitLink Href="#button-type-enum">BitButtonType</BitLink> enum:</div>
+        <div>
+            The <b>ButtonType</b> parameter sets the native button type: <b>Submit</b> to submit the surrounding form,
+            <b>Reset</b> to clear its inputs, and <b>Button</b> for a plain action. Inside an <b>EditForm</b> the type
+            defaults to Submit; otherwise it defaults to Button.
+        </div>
+        <div>
+            Using the <b>ButtonType</b> parameter and its value of type
+            <BitLink Href="#button-type-enum">BitButtonType</BitLink> enum:
+        </div>
         <br />
         <div class="form-container">
             @if (formIsValidSubmit is false)
             {
-                <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit"
+                          OnInvalidSubmit="HandleInvalidSubmit" novalidate>
                     <DataAnnotationsValidator />
 
                     <BitTextField Label="Required" Required @bind-Value="buttonValidationModel.RequiredText" />
@@ -351,12 +448,15 @@
             }
         </div>
         <br /><br />
-        <div>Using the <b>FormId</b> parameter, a submit button placed outside of the form element can still submit it:</div>
+        <div>
+            Using the <b>FormId</b> parameter, a submit button placed outside of the form element can still submit it:
+        </div>
         <br />
         <div class="form-container">
             @if (externalFormSubmitted is false)
             {
-                <EditForm id="demo-external-form" Model="externalFormModel" OnValidSubmit="HandleExternalFormValidSubmit" novalidate>
+                <EditForm id="demo-external-form" Model="externalFormModel" OnValidSubmit="HandleExternalFormValidSubmit"
+                          novalidate>
                     <DataAnnotationsValidator />
 
                     <BitTextField Label="Required" Required @bind-Value="externalFormModel.RequiredText" />
@@ -377,7 +477,11 @@
     </DemoExample>
 
     <DemoExample Title="Templates" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-        <div>For full control over the button's content, replace the primary and secondary sections with your own markup using the <b>PrimaryTemplate</b> and <b>SecondaryTemplate</b> render fragments (or simply pass child content).</div>
+        <div>
+            For full control over the button's content, replace the primary and secondary sections with your own markup
+            using the <b>PrimaryTemplate</b> and <b>SecondaryTemplate</b> render fragments (or simply pass child
+            content).
+        </div>
         <br />
         <div>
             <BitButton Class="custom-content">
@@ -396,7 +500,7 @@
                     <BitRollerLoading CustomSize="20" />
                 </SecondaryTemplate>
             </BitButton>
-            
+
             <br /><br />
 
             <BitButton Class="custom-content" Variant="BitVariant.Text">
@@ -413,7 +517,10 @@
             </BitButton>
         </div>
         <br /><br />
-        <div>Use the <b>LoadingTemplate</b> render fragment to replace the default spinner and label with your own loading indicator and message.</div>
+        <div>
+            Use the <b>LoadingTemplate</b> render fragment to replace the default spinner and label with your own
+            loading indicator and message.
+        </div>
         <br />
         <div class="example-content">
             <BitButton IsLoading="templateIsLoading" OnClick="LoadingTemplateClick">
@@ -429,13 +536,18 @@
     </DemoExample>
 
     <DemoExample Title="Events" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-        <div>The <b>OnClick</b> event is raised when the button is activated (by pointer, Enter, or Space). It is suppressed while the button is disabled or loading.</div>
+        <div>
+            The <b>OnClick</b> event is raised when the button is activated (by pointer, Enter, or Space). It is
+            suppressed while the button is disabled or loading.
+        </div>
         <br />
         <div class="example-content">
             <BitButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitButton>
         </div>
         <br /><br />
-        <div>Using the <b>StopPropagation</b> parameter, the click event stops bubbling up to the parent elements:</div>
+        <div>
+            Using the <b>StopPropagation</b> parameter, the click event stops bubbling up to the parent elements:
+        </div>
         <br />
         <div class="example-content" @onclick="() => parentClickCounter++">
             <BitButton StopPropagation OnClick="() => buttonClickCounter++">With StopPropagation</BitButton>
@@ -443,7 +555,9 @@
             <div>Button clicks: @buttonClickCounter, Parent clicks: @parentClickCounter</div>
         </div>
         <br /><br />
-        <div>Using the public <b>FocusAsync</b> method, the button can receive focus programmatically:</div>
+        <div>
+            Using the public <b>FocusAsync</b> method, the button can receive focus programmatically:
+        </div>
         <br />
         <div class="example-content">
             <BitButton @ref="focusButtonRef" Variant="BitVariant.Outline">Focus target</BitButton>
@@ -452,8 +566,13 @@
     </DemoExample>
 
     <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
-        <div>The <b>Size</b> parameter sets a preset size (Small, Medium, or Large) that adjusts the button's typography and padding, letting you establish a clear visual hierarchy between actions.</div>
-        <div>Using the <b>Size</b> parameter and its value of type <BitLink Href="#size-enum">BitSize</BitLink> enum:</div>
+        <div>
+            The <b>Size</b> parameter sets a preset size (Small, Medium, or Large) that adjusts the button's typography
+            and padding, letting you establish a clear visual hierarchy between actions.
+        </div>
+        <div>
+            Using the <b>Size</b> parameter and its value of type <BitLink Href="#size-enum">BitSize</BitLink> enum:
+        </div>
         <br />
         <div><b>Small</b>:</div><br />
         <BitButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" />
@@ -464,19 +583,25 @@
 
         <BitButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" />
         <BitButton IsLoading Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" />
-        <br/><br/>
+        <br /><br />
         <BitButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
-        <BitButton IsLoading Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
+        <BitButton IsLoading Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill
+        </BitButton>
 
         <BitButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
-        <BitButton IsLoading Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
+        <BitButton IsLoading Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline
+        </BitButton>
 
         <BitButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-        <BitButton IsLoading Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-        <br /><br/>
-        <BitButton Size="BitSize.Small" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
-        <BitButton Size="BitSize.Small" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
-        <BitButton Size="BitSize.Small" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
+        <BitButton IsLoading Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text
+        </BitButton>
+        <br /><br />
+        <BitButton Size="BitSize.Small" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Fill">Fill</BitButton>
+        <BitButton Size="BitSize.Small" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Outline">Outline</BitButton>
+        <BitButton Size="BitSize.Small" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Text">Text</BitButton>
 
         <br /><br /><br />
 
@@ -489,19 +614,25 @@
 
         <BitButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" />
         <BitButton IsLoading Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" />
-        <br /><br/>
+        <br /><br />
         <BitButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
-        <BitButton IsLoading Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
+        <BitButton IsLoading Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill
+        </BitButton>
 
         <BitButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
-        <BitButton IsLoading Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
+        <BitButton IsLoading Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline
+        </BitButton>
 
         <BitButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-        <BitButton IsLoading Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-        <br /><br/>
-        <BitButton Size="BitSize.Medium" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
-        <BitButton Size="BitSize.Medium" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
-        <BitButton Size="BitSize.Medium" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
+        <BitButton IsLoading Size="BitSize.Medium" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text
+        </BitButton>
+        <br /><br />
+        <BitButton Size="BitSize.Medium" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Fill">Fill</BitButton>
+        <BitButton Size="BitSize.Medium" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Outline">Outline</BitButton>
+        <BitButton Size="BitSize.Medium" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Text">Text</BitButton>
 
         <br /><br /><br />
 
@@ -511,49 +642,62 @@
 
         <BitButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" />
         <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" />
-            
+
         <BitButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" />
         <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" />
-        <br /><br/>
+        <br /><br />
         <BitButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
-        <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
+        <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill
+        </BitButton>
 
         <BitButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
-        <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
-            
+        <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline
+        </BitButton>
+
         <BitButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-        <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
-        <br /><br/>
-        <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Fill</BitButton>
-        <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline">Outline</BitButton>
-        <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
+        <BitButton IsLoading Size="BitSize.Large" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text
+        </BitButton>
+        <br /><br />
+        <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Fill">Fill</BitButton>
+        <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Outline">Outline</BitButton>
+        <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2"
+                   Variant="BitVariant.Text">Text</BitButton>
     </DemoExample>
 
     <DemoExample Title="FullWidth" RazorCode="@example17RazorCode" Id="example17">
-        <div>The <b>FullWidth</b> parameter expands the button to occupy 100% of its container's width, which is handy for forms and mobile layouts.</div>
+        <div>
+            The <b>FullWidth</b> parameter expands the button to occupy 100% of its container's width, which is handy
+            for forms and mobile layouts.
+        </div>
         <br />
         <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
     </DemoExample>
 
     <DemoExample Title="FixedColor" RazorCode="@example18RazorCode" Id="example18">
-        <div>The <b>FixedColor</b> flag keeps the button's foreground (content) color fixed through its hover and focus states, instead of shifting it as usual. This is useful when the button's color must stay constant against a specific background.</div>
+        <div>
+            The <b>FixedColor</b> flag keeps the button's foreground (content) color fixed through its hover and focus
+            states, instead of shifting it as usual. This is useful when the button's color must stay constant against a
+            specific background.
+        </div>
         <br />
-        <BitButton FixedColor IconOnly
-                   Size="BitSize.Large"
-                   Variant="BitVariant.Outline"
-                   IconName="@BitIconName.Emoji2"
+        <BitButton FixedColor IconOnly Size="BitSize.Large" Variant="BitVariant.Outline" IconName="@BitIconName.Emoji2"
                    Color="BitColor.TertiaryBackground" />
 
-        <BitButton FixedColor IconOnly
-                   Size="BitSize.Large"
-                   Variant="BitVariant.Text"
-                   IconName="@BitIconName.Emoji2"
+        <BitButton FixedColor IconOnly Size="BitSize.Large" Variant="BitVariant.Text" IconName="@BitIconName.Emoji2"
                    Color="BitColor.TertiaryBackground" />
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
-        <div>The <b>Color</b> parameter applies a semantic color (Primary is the default) so the button communicates the nature of its action, such as Success, Warning, or Error. Each color works across all three variants, and the palette also includes background, foreground, and border color sets.</div>
-        <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
+        <div>
+            The <b>Color</b> parameter applies a semantic color (Primary is the default) so the button communicates the
+            nature of its action, such as Success, Warning, or Error. Each color works across all three variants, and
+            the palette also includes background, foreground, and border color sets.
+        </div>
+        <div>
+            Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:
+        </div>
         <br />
         <div>
             <BitButton Color="BitColor.Primary">Primary</BitButton>
@@ -602,146 +746,418 @@
             <BitButton Color="BitColor.Error" Variant="BitVariant.Outline">Error</BitButton>
             <BitButton Color="BitColor.Error" Variant="BitVariant.Text">Error</BitButton>
         </div>
-        <br /><br />
+        <br />
         <div style="background:var(--bit-clr-fg-sec);padding:1rem">
             <div>
-                <BitButton Color="BitColor.PrimaryBackground">PrimaryBackground</BitButton>
-                <BitButton Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline">PrimaryBackground</BitButton>
-                <BitButton Color="BitColor.PrimaryBackground" Variant="BitVariant.Text">PrimaryBackground</BitButton>
+                <BitButton Color="BitColor.PrimaryBackground">
+                    PrimaryBackground
+                </BitButton>
+                <BitButton Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline">
+                    PrimaryBackground
+                </BitButton>
+                <BitButton Color="BitColor.PrimaryBackground" Variant="BitVariant.Text">
+                    PrimaryBackground
+                </BitButton>
             </div>
             <br />
             <div>
-                <BitButton Color="BitColor.SecondaryBackground">SecondaryBackground</BitButton>
-                <BitButton Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline">SecondaryBackground</BitButton>
-                <BitButton Color="BitColor.SecondaryBackground" Variant="BitVariant.Text">SecondaryBackground</BitButton>
+                <BitButton Color="BitColor.SecondaryBackground">
+                    SecondaryBackground
+                </BitButton>
+                <BitButton Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline">
+                    SecondaryBackground
+                </BitButton>
+                <BitButton Color="BitColor.SecondaryBackground" Variant="BitVariant.Text">
+                    SecondaryBackground
+                </BitButton>
             </div>
             <br />
             <div>
-                <BitButton Color="BitColor.TertiaryBackground">TertiaryBackground</BitButton>
-                <BitButton Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline">TertiaryBackground</BitButton>
-                <BitButton Color="BitColor.TertiaryBackground" Variant="BitVariant.Text">TertiaryBackground</BitButton>
+                <BitButton Color="BitColor.TertiaryBackground">
+                    TertiaryBackground
+                </BitButton>
+                <BitButton Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline">
+                    TertiaryBackground
+                </BitButton>
+                <BitButton Color="BitColor.TertiaryBackground" Variant="BitVariant.Text">
+                    TertiaryBackground
+                </BitButton>
             </div>
         </div>
         <br />
-        <div style="padding:1rem">
+        <div>
+            <BitButton Color="BitColor.PrimaryForeground">
+                PrimaryForeground
+            </BitButton>
+            <BitButton Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline">
+                PrimaryForeground
+            </BitButton>
+            <BitButton Color="BitColor.PrimaryForeground" Variant="BitVariant.Text">
+                PrimaryForeground
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton Color="BitColor.SecondaryForeground">
+                SecondaryForeground
+            </BitButton>
+            <BitButton Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline">
+                SecondaryForeground
+            </BitButton>
+            <BitButton Color="BitColor.SecondaryForeground" Variant="BitVariant.Text">
+                SecondaryForeground
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton Color="BitColor.TertiaryForeground">
+                TertiaryForeground
+            </BitButton>
+            <BitButton Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline">
+                TertiaryForeground
+            </BitButton>
+            <BitButton Color="BitColor.TertiaryForeground" Variant="BitVariant.Text">
+                TertiaryForeground
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton Color="BitColor.PrimaryBorder">
+                PrimaryBorder
+            </BitButton>
+            <BitButton Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline">
+                PrimaryBorder
+            </BitButton>
+            <BitButton Color="BitColor.PrimaryBorder" Variant="BitVariant.Text">
+                PrimaryBorder
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton Color="BitColor.SecondaryBorder">
+                SecondaryBorder
+            </BitButton>
+            <BitButton Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline">
+                SecondaryBorder
+            </BitButton>
+            <BitButton Color="BitColor.SecondaryBorder" Variant="BitVariant.Text">
+                SecondaryBorder
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton Color="BitColor.TertiaryBorder">
+                TertiaryBorder
+            </BitButton>
+            <BitButton Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline">
+                TertiaryBorder
+            </BitButton>
+            <BitButton Color="BitColor.TertiaryBorder" Variant="BitVariant.Text">
+                TertiaryBorder
+            </BitButton>
+        </div>
+        <br /><br /><br />
+
+        <div><b>Disabled</b>:</div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill">
+                Primary
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline">
+                Primary
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text">
+                Primary
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Secondary">
+                Secondary
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Secondary">
+                Secondary
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Secondary">
+                Secondary
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Tertiary">
+                Tertiary
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Tertiary">
+                Tertiary
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Tertiary">
+                Tertiary
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Info">
+                Info
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Info">
+                Info
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Info">
+                Info
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Success">
+                Success
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Success">
+                Success
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Success">
+                Success
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Warning">
+                Warning
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Warning">
+                Warning
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Warning">
+                Warning
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.SevereWarning">
+                SevereWarning
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.SevereWarning">
+                SevereWarning
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.SevereWarning">
+                SevereWarning
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Error">
+                Error
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Error">
+                Error
+            </BitButton>
+            <BitButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Error">
+                Error
+            </BitButton>
+        </div>
+        <br />
+        <div style="background:var(--bit-clr-fg-sec);padding:1rem">
             <div>
-                <BitButton Color="BitColor.PrimaryForeground">PrimaryForeground</BitButton>
-                <BitButton Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline">PrimaryForeground</BitButton>
-                <BitButton Color="BitColor.PrimaryForeground" Variant="BitVariant.Text">PrimaryForeground</BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.PrimaryBackground">
+                    PrimaryBackground
+                </BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline">
+                    PrimaryBackground
+                </BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Text">
+                    PrimaryBackground
+                </BitButton>
             </div>
             <br />
             <div>
-                <BitButton Color="BitColor.SecondaryForeground">SecondaryForeground</BitButton>
-                <BitButton Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline">SecondaryForeground</BitButton>
-                <BitButton Color="BitColor.SecondaryForeground" Variant="BitVariant.Text">SecondaryForeground</BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.SecondaryBackground">
+                    SecondaryBackground
+                </BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline">
+                    SecondaryBackground
+                </BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Text">
+                    SecondaryBackground
+                </BitButton>
             </div>
             <br />
             <div>
-                <BitButton Color="BitColor.TertiaryForeground">TertiaryForeground</BitButton>
-                <BitButton Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline">TertiaryForeground</BitButton>
-                <BitButton Color="BitColor.TertiaryForeground" Variant="BitVariant.Text">TertiaryForeground</BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.TertiaryBackground">
+                    TertiaryBackground
+                </BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline">
+                    TertiaryBackground
+                </BitButton>
+                <BitButton IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Text">
+                    TertiaryBackground
+                </BitButton>
             </div>
         </div>
         <br />
-        <div style="padding:1rem">
-            <div>
-                <BitButton Color="BitColor.PrimaryBorder">PrimaryBorder</BitButton>
-                <BitButton Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline">PrimaryBorder</BitButton>
-                <BitButton Color="BitColor.PrimaryBorder" Variant="BitVariant.Text">PrimaryBorder</BitButton>
-            </div>
-            <br />
-            <div>
-                <BitButton Color="BitColor.SecondaryBorder">SecondaryBorder</BitButton>
-                <BitButton Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline">SecondaryBorder</BitButton>
-                <BitButton Color="BitColor.SecondaryBorder" Variant="BitVariant.Text">SecondaryBorder</BitButton>
-            </div>
-            <br />
-            <div>
-                <BitButton Color="BitColor.TertiaryBorder">TertiaryBorder</BitButton>
-                <BitButton Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline">TertiaryBorder</BitButton>
-                <BitButton Color="BitColor.TertiaryBorder" Variant="BitVariant.Text">TertiaryBorder</BitButton>
-            </div>
+        <div>
+            <BitButton IsEnabled="false" Color="BitColor.PrimaryForeground">
+                PrimaryForeground
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline">
+                PrimaryForeground
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Text">
+                PrimaryForeground
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Color="BitColor.SecondaryForeground">
+                SecondaryForeground
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline">
+                SecondaryForeground
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Text">
+                SecondaryForeground
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Color="BitColor.TertiaryForeground">
+                TertiaryForeground
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline">
+                TertiaryForeground
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Text">
+                TertiaryForeground
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Color="BitColor.PrimaryBorder">
+                PrimaryBorder
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline">
+                PrimaryBorder
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Text">
+                PrimaryBorder
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Color="BitColor.SecondaryBorder">
+                SecondaryBorder
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline">
+                SecondaryBorder
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Text">
+                SecondaryBorder
+            </BitButton>
+        </div>
+        <br />
+        <div>
+            <BitButton IsEnabled="false" Color="BitColor.TertiaryBorder">
+                TertiaryBorder
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline">
+                TertiaryBorder
+            </BitButton>
+            <BitButton IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Text">
+                TertiaryBorder
+            </BitButton>
         </div>
     </DemoExample>
 
     <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
-        <div>Beyond the built-in Fluent icons, the <b>Icon</b> parameter renders icons from external libraries such as FontAwesome and Bootstrap Icons. Pass their CSS classes directly, or use the <b>BitIconInfo</b> helpers (<b>Css</b>, <b>Fa</b>, <b>Bi</b>) to build them.</div>
-        <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
+        <div>
+            Beyond the built-in Fluent icons, the <b>Icon</b> parameter renders icons from external libraries such as
+            FontAwesome and Bootstrap Icons. Pass their CSS classes directly, or use the <b>BitIconInfo</b> helpers
+            (<b>Css</b>, <b>Fa</b>, <b>Bi</b>) to build them.
+        </div>
+        <div>
+            See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.
+        </div>
 
         <br />
         <br />
-        
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-        
+
         <div>FontAwesome:</div>
         <br />
         <BitButton Icon="@("fa-solid fa-house")" Variant="BitVariant.Fill">
             House (Icon="@@("fa-solid fa-house")")
         </BitButton>
-        
+
         <br />
         <br />
-        
+
         <BitButton Icon="@BitIconInfo.Css("fa-solid fa-heart")" Variant="BitVariant.Outline" Color="BitColor.Secondary">
             Heart (Icon="@@BitIconInfo.Css("fa-solid fa-heart")")
         </BitButton>
-        
+
         <br />
         <br />
-        
+
         <BitButton Icon="@BitIconInfo.Fa("brands github")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
             GitHub (Icon="@@BitIconInfo.Fa("brands github")")
         </BitButton>
-        
+
         <br />
         <br />
-        
+
         <BitButton Icon="@BitIconInfo.Fa("solid rocket")" Variant="BitVariant.Fill" Color="BitColor.Error">
             Rocket (Icon="@@BitIconInfo.Fa("solid rocket")")
         </BitButton>
-        
+
         <br /><br /><br /><br />
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
         <div>Bootstrap:</div>
         <br />
         <BitButton Icon="@("bi bi-house-fill")" Variant="BitVariant.Fill">
             House (Icon="@@("bi bi-house-fill")")
         </BitButton>
-        
+
         <br />
         <br />
-        
+
         <BitButton Icon="@BitIconInfo.Css("bi bi-heart-fill")" Variant="BitVariant.Outline" Color="BitColor.Secondary">
             Heart (Icon="@@BitIconInfo.Css("bi bi-heart-fill")")
         </BitButton>
-        
+
         <br />
         <br />
-        
+
         <BitButton Icon="@BitIconInfo.Bi("github")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
             GitHub (Icon="@@BitIconInfo.Bi("github")")
         </BitButton>
-        
+
         <br />
         <br />
-        
+
         <BitButton Icon="@BitIconInfo.Bi("gear-fill")" Variant="BitVariant.Fill" Color="BitColor.Error">
             Gear (Icon="@@BitIconInfo.Bi("gear-fill")")
         </BitButton>
     </DemoExample>
 
     <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
-        <div>Beyond the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and <b>Classes</b> parameters target the button's individual parts (root, icon, primary and secondary sections, loading container, spinner, and loading label) so you can restyle each piece precisely.</div>
-        <div>Using the <b>Styles</b> and <b>Classes</b> parameters and their value of <BitLink Href="#button-class-styles">BitButtonClassStyles</BitLink> class:</div>
+        <div>
+            Beyond the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and <b>Classes</b> parameters target the
+            button's individual parts (root, icon, primary and secondary sections, loading container, spinner, and
+            loading label) so you can restyle each piece precisely.
+        </div>
+        <div>
+            Using the <b>Styles</b> and <b>Classes</b> parameters and their value of <BitLink
+            Href="#button-class-styles">BitButtonClassStyles</BitLink> class:
+        </div>
         <br /><br />
         <div>Component's Style & Class:</div>
         <br />
         <div class="example-content">
             <BitButton Style="background-color: transparent; border-color: blueviolet; color: blueviolet;"
-                       SecondaryText="this is the secondary text"
-                       Variant="BitVariant.Outline">
+                       SecondaryText="this is the secondary text" Variant="BitVariant.Outline">
                 Styled Button
             </BitButton>
 
@@ -753,29 +1169,32 @@
         <div><b>Styles</b> & <b>Classes</b>:</div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading="stylesIsLoading"
-                       LoadingLabel="Wait..."
-                       OnClick="LoadingStylesClick"
-                       Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff; min-width: 6rem;",
-                                             LoadingLabel = "color: tomato; font-weight: bold;",
-                                             Spinner = "border-color: tomato; border-top-color: goldenrod;" })">
+            <BitButton IsLoading="stylesIsLoading" LoadingLabel="Wait..." OnClick="LoadingStylesClick" Styles="@(new()
+                       {
+                           Root = "background-color: peachpuff; border-color: peachpuff; min-width: 6rem;",
+                           LoadingLabel = "color: tomato; font-weight: bold;",
+                           Spinner = "border-color: tomato; border-top-color: goldenrod;"
+                       })">
                 Click me
             </BitButton>
 
-            <BitButton IsLoading="classesIsLoading"
-                       LoadingLabel="Sending..."
-                       OnClick="LoadingClassesClick"
-                       Variant="BitVariant.Outline"
-                       Classes="@(new() { Root = "custom-root",
-                                              LoadingContainer = "custom-container",
-                                              Spinner = "custom-spinner" })">
+            <BitButton IsLoading="classesIsLoading" LoadingLabel="Sending..." OnClick="LoadingClassesClick"
+                       Variant="BitVariant.Outline" Classes="@(new()
+                       {
+                           Root = "custom-root",
+                           LoadingContainer = "custom-container",
+                           Spinner = "custom-spinner"
+                       })">
                 Click me
             </BitButton>
         </div>
     </DemoExample>
 
     <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
-        <div>Set the <b>Dir</b> parameter to <b>Rtl</b> to lay the button out for right-to-left languages; the icon, primary and secondary text, and loading indicator all mirror accordingly.</div>
+        <div>
+            Set the <b>Dir</b> parameter to <b>Rtl</b> to lay the button out for right-to-left languages; the icon,
+            primary and secondary text, and loading indicator all mirror accordingly.
+        </div>
         <br />
         <div class="example-content" dir="rtl">
             <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Fill">
@@ -790,13 +1209,16 @@
         </div>
         <br />
         <div class="example-content" dir="rtl">
-            <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Fill" SecondaryText="این متن ثانویه است">
+            <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Fill"
+                       SecondaryText="این متن ثانویه است">
                 دکمه با آیکن
             </BitButton>
-            <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Outline" SecondaryText="این متن ثانویه است">
+            <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Outline"
+                       SecondaryText="این متن ثانویه است">
                 دکمه با آیکن
             </BitButton>
-            <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Text" SecondaryText="این متن ثانویه است">
+            <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Text"
+                       SecondaryText="این متن ثانویه است">
                 دکمه با آیکن
             </BitButton>
         </div>

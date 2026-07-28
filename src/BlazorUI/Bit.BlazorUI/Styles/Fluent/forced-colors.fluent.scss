@@ -1,0 +1,83 @@
+// Windows High Contrast / forced-colors: preserve readability with system palette.
+//
+// Selector specificity is deliberate: a bare `:root` here is (0,1,0), which LOSES to the
+// (0,2,0) `:root[bit-theme="…"]` palette selectors whenever the document pins a preset - the
+// palette hexes would silently beat the system-palette remap. Tripling `:root` lifts this block
+// to (0,3,0) so it wins over any packaged (or similarly-specific app) palette block, while inline
+// theme overrides (an explicit runtime choice) still take precedence as inline style always does.
+// The `[bit-theme]` twin covers scoped-preset elements, whose OWN palette declarations would
+// otherwise beat these values arriving only by inheritance from :root.
+@media (forced-colors: active) {
+    :root:root:root,
+    :root:root:root [bit-theme] {
+        --bit-clr-fg-pri: CanvasText;
+        --bit-clr-fg-sec: CanvasText;
+        --bit-clr-fg-ter: CanvasText;
+        --bit-clr-bg-pri: Canvas;
+        --bit-clr-bg-sec: Canvas;
+        --bit-clr-bg-ter: Canvas;
+        --bit-clr-brd-pri: CanvasText;
+        --bit-clr-brd-sec: CanvasText;
+        --bit-clr-pri: LinkText;
+        --bit-clr-pri-hover: LinkText;
+        --bit-clr-pri-active: LinkText;
+        --bit-clr-pri-text: Canvas;
+        --bit-clr-err: CanvasText;
+        --bit-clr-suc: CanvasText;
+        --bit-clr-wrn: CanvasText;
+        --bit-shd-cal: none;
+        --bit-shd-sm: none;
+        --bit-shd-nm: none;
+        --bit-shd-md: none;
+        --bit-shd-lg: none;
+
+        // Focus must remain visible in High Contrast - use system Highlight color and a single solid ring.
+        --bit-clr-pri-focus: Highlight;
+        --bit-clr-sec-focus: Highlight;
+        --bit-clr-ter-focus: Highlight;
+        --bit-clr-inf-focus: Highlight;
+        --bit-clr-suc-focus: Highlight;
+        --bit-clr-wrn-focus: Highlight;
+        --bit-clr-swr-focus: Highlight;
+        --bit-clr-err-focus: Highlight;
+        --bit-clr-fg-pri-focus: Highlight;
+        --bit-clr-bg-pri-focus: Canvas;
+        --bit-clr-brd-pri-focus: Highlight;
+        --bit-clr-fg-sec-focus: Highlight;
+        --bit-clr-bg-sec-focus: Canvas;
+        --bit-clr-brd-sec-focus: Highlight;
+        --bit-clr-fg-ter-focus: Highlight;
+        --bit-clr-bg-ter-focus: Canvas;
+        --bit-clr-brd-ter-focus: Highlight;
+    }
+}
+
+// Stronger contrast preference (non-forced). This block is theme-agnostic (it applies to both
+// light and dark palettes), so it must not hardcode colors: it thickens borders and promotes the
+// subtlest border/text tier to the next-stronger tier via theme-relative aliases instead.
+// Use a concrete width value rather than self-referencing var(--bit-shp-brd-width, …) - a custom
+// property cannot reference its own current value (the cycle resolves to the fallback per
+// the CSS spec, which makes the intent unclear and brittle across engines).
+// Same specificity rationale as the forced-colors block above: the border-width and tier-promotion
+// remaps must out-specify the (0,2,0) shapes/colors palette selectors, and reach scoped-preset
+// elements whose own palette declarations would beat inherited values.
+@media (prefers-contrast: more) {
+    :root:root:root,
+    :root:root:root [bit-theme] {
+        //2px instead of the default 1px (0.0625rem)
+        --bit-shp-brd-width: 0.125rem;
+
+        //A stronger focus indicator for the elevated-contrast cohort: 3px instead of the default
+        //2px ring, offset a step further from the element. These flow through --bit-shd-focus-ring
+        //(which reads both tokens) to every focus-ring() call, so the whole library reacts. Focus
+        //visibility is unambiguously good to strengthen here - unlike disabled/muted colors, whose
+        //meaning depends on staying subdued - so it is safe to promote wholesale.
+        --bit-shp-focus-ring-width: 0.1875rem;
+        --bit-shp-focus-ring-offset: 0.1875rem;
+
+        //tertiary (subtle) separators and text step up to the secondary tier,
+        //which lifts the weakest contrast pairs without touching the theme's palette
+        --bit-clr-brd-ter: var(--bit-clr-brd-sec);
+        --bit-clr-fg-ter: var(--bit-clr-fg-sec);
+    }
+}

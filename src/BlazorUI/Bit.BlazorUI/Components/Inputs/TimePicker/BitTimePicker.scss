@@ -41,6 +41,20 @@
         .bit-tpc-icn {
             border-color: $clr-err;
         }
+
+        &.bit-tpc-und .bit-tpc-wrp {
+            // Underlined variant drops the icon border, so surface the error cue on the
+            // underline itself to keep the invalid state visible before focus.
+            border-bottom-color: $clr-err;
+        }
+
+        &.bit-tpc-foc:not(.bit-tpc-und) .bit-tpc-icn {
+            @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-tpc-und.bit-tpc-foc .bit-tpc-icn {
+            @include focus-underline-ring($clr-err-focus);
+        }
     }
 
     &.bit-rtl {
@@ -128,14 +142,9 @@
     }
 }
 
-.bit-tpc-foc {
-    .bit-tpc-icn::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+.bit-tpc-foc:not(.bit-tpc-und) {
+    .bit-tpc-icn {
+        @include focus-ring;
     }
 }
 
@@ -159,10 +168,8 @@
     }
 
     &.bit-tpc-foc {
-        .bit-tpc-icn::after {
-            border: none;
-            border-radius: 0;
-            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
+        .bit-tpc-icn {
+            @include focus-underline-ring;
         }
     }
 }
@@ -193,7 +200,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -281,9 +288,8 @@
     }
 
     &:focus {
+        @include focus-underline-ring;
         border: none;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
-        outline: none;
     }
 }
 
@@ -397,7 +403,7 @@
         animation-name: unset;
         transform: translateY(-100%);
         box-shadow: $box-shadow-callout;
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
 
         .bit-tpc-tdv {
             font-size: spacing(7);

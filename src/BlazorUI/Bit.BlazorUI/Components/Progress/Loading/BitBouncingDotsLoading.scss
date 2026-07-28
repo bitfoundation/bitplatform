@@ -16,19 +16,19 @@
     width: var(--bit-ldn-bnd-15);
     height: var(--bit-ldn-bnd-15);
     background: var(--bit-ldn-color);
-    animation: bit-ldn-bnd-anm 0.85s linear infinite;
+    animation: bit-ldn-bnd-anm calc(0.85s * var(--bit-ldn-mot-factor, 1)) linear infinite;
 }
 
 .bit-ldn-bnd-ch1 {
-    animation-delay: 0s;
+    animation-delay: calc(0s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-bnd-ch2 {
-    animation-delay: 0.15s;
+    animation-delay: calc(0.15s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-bnd-ch3 {
-    animation-delay: 0.3s;
+    animation-delay: calc(0.3s * var(--bit-ldn-mot-factor, 1));
 }
 
 @keyframes bit-ldn-bnd-anm {

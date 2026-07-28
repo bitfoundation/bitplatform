@@ -6,7 +6,7 @@
     align-items: center;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
-    animation: bit-ldn-rsq-anm1 2s linear infinite;
+    animation: bit-ldn-rsq-anm1 calc(2s * var(--bit-ldn-mot-factor, 1)) linear infinite;
 }
 
 .bit-ldn-rsq-chl {
@@ -15,7 +15,7 @@
     height: var(--bit-ldn-rsq-20);
     background: var(--bit-ldn-color);
     border-radius: var(--bit-ldn-rsq-4);
-    animation: bit-ldn-rsq-anm 1.5s cubic-bezier(0.17, 0.37, 0.43, 0.67) infinite;
+    animation: bit-ldn-rsq-anm calc(1.5s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0.17, 0.37, 0.43, 0.67) infinite;
 }
 
 .bit-ldn-rsq-ch1 {

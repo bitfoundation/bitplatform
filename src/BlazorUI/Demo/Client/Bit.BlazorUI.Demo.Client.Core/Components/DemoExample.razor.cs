@@ -13,6 +13,12 @@ public partial class DemoExample
 
     [Parameter] public bool PreventRenderForMcpClient { get; set; }
 
+    // The collapsed code panel stays rendered so it can animate shut, which would otherwise turn the
+    // page-wide highlight pass below into O(examples²) work. Highlighting only this example's own
+    // container keeps it linear. Falls back to null - and so to the whole document, exactly as
+    // before - for the rare DemoExample declared without an Id.
+    private string? _codeElementId => Id.HasValue() ? $"{Id}-code" : null;
+
     protected override async Task OnInitAsync()
     {
         showCode = RenderForMcpClient;
@@ -20,8 +26,12 @@ public partial class DemoExample
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeVoid("highlightSnippet");
+        await JSRuntime.InvokeVoid("highlightSnippet", _codeElementId);
     }
+
+
+
+    private void ToggleCode() => showCode = !showCode;
 
 
 
@@ -33,6 +43,8 @@ public partial class DemoExample
         return code;
     }
 
+    // Both copy buttons confirm by swapping their icon for a checkmark and growing into an inline
+    // "copied" label; the title doubles as the accessible name for the same confirmation.
     private bool isCodeCopied = false;
     private string codeIcon = BitIconName.Copy;
     private string copyCodeMessage = "Copy code";

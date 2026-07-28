@@ -484,7 +484,7 @@ internal static class BitPdfJpegDecoder
     // Precomputed 1-D IDCT basis. The naive separable IDCT above evaluated Math.Cos/Math.Sqrt
     // ~1000 times per 8x8 block, which dominated decode time. The transform is linear, so the
     // whole cosine matrix is baked once into Basis[f][x] = 0.5 * c(f) * cos((2x+1)*f*pi/16),
-    // c(0)=1/sqrt(2). Each 1-D pass then reduces to out[x] = sum_f in[f] * Basis[f][x] — a
+    // c(0)=1/sqrt(2). Each 1-D pass then reduces to out[x] = sum_f in[f] * Basis[f][x] - a
     // broadcast-multiply-accumulate over eight basis vectors with no trig per block. The vectors
     // are split into 4-wide low/high halves so the hot loop maps onto Vector128 (which is the
     // SIMD width hardware-accelerated under Blazor WASM, and also on x86/ARM).

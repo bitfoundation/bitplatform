@@ -30,7 +30,7 @@
     visibility: hidden;
     position: absolute;
     pointer-events: none;
-    transition: all 0.2s linear;
+    transition: all $mot-duration linear;
     --bit-ttp-arrow-spacing: #{spacing(1.25)};
 }
 

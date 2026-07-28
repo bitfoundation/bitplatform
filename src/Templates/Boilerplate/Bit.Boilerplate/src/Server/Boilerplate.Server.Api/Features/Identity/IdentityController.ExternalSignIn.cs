@@ -9,8 +9,12 @@ public partial class IdentityController
     [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IAuthenticationSchemeProvider authenticationSchemeProvider = default!;
 
+    /// <summary>
+    /// Deliberately not cached: the returned URL embeds the caller's origin, which GetWebAppUrl resolves from the X-Origin
+    /// header. That header is part of neither the output cache's vary rules nor a CDN's cache key, so a cached response would
+    /// hand one origin's sign-in URL to a caller coming from another, sending the resulting sign-in link to the wrong origin.
+    /// </summary>
     [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;

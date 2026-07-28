@@ -42,7 +42,7 @@
     position: absolute;
     pointer-events: auto;
     background-color: transparent;
-    transition: opacity 300ms ease 0s;
+    transition: opacity $mot-duration-long ease 0s;
 }
 
 .bit-dlg-ovl {
@@ -152,8 +152,7 @@
     border-width: spacing(0.2125);
     border-style: $shp-border-style;
     border-top-color: $clr-pri-dark;
-    animation: bit-dlg-spinner-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    animation: bit-dlg-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 .bit-dlg-cnb {

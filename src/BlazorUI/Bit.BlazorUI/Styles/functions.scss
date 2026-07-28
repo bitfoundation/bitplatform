@@ -1,5 +1,6 @@
 ﻿@use 'sass:math';
 @import "theme-variables.scss";
+@import "color-role-maps.scss";
 
 $html-font-size: 16px;
 
@@ -15,6 +16,93 @@ $html-font-size: 16px;
     @return #{calc(stripUnit($pxValue) / stripUnit($html-font-size))}rem;
 }
 
+/*
+ * spacing($value)
+ * --------------------------------------------------
+ * $spacing-scaling-factor is the base spacing unit (a CSS length, 0.5rem by default) and
+ * $layout-density-scale is a unitless multiplier for density presets (compact = < 1).
+ * The density token carries a fallback of 1 so themes that never set it keep the base rhythm.
+ */
 @function spacing($spacingValue) {
-    @return calc($spacing-scaling-factor * $spacingValue);
+    @return calc($spacing-scaling-factor * $layout-density-scale * $spacingValue);
+}
+
+/*
+ * translucent($color, $percent)
+ * --------------------------------------------------
+ * Applies alpha to ANY color expression - a var() token reference, currentcolor, a system color,
+ * or a literal - by mixing it with transparent in sRGB, which scales the alpha channel while
+ * leaving the color channels untouched (translucent(X, 20%) === rgba(X, 0.2)). This is how alpha
+ * is composited from theme tokens without maintaining per-alpha token variants or separate
+ * channel variables. $percent is the opacity kept.
+ *
+ * color-mix is Baseline (all evergreen engines since mid-2023). Where a legacy fallback matters,
+ * declare it on the preceding line so unsupporting engines keep it:
+ *     background-color: rgb(128 128 128 / 25%);
+ *     background-color: translucent(currentcolor, 20%);
+ */
+@function translucent($color, $percent) {
+    @return color-mix(in srgb, #{$color} #{$percent}, transparent);
+}
+
+/*
+ * focus-ring($color, $offset)
+ * --------------------------------------------------
+ * Renders a consistent, theme-aware focus indicator across components.
+ *
+ * Behavior:
+ *   - Uses a two-layer box-shadow: an inner ring matching the page background
+ *     (separator) and an outer colored ring (visible indicator). This satisfies
+ *     WCAG 2.4.11 (Focus Not Obscured) and 2.4.13 (Focus Appearance).
+ *   - Width is driven by --bit-shp-focus-ring-width and offset by --bit-shp-focus-ring-offset,
+ *     both globally themable.
+ *   - Color defaults to --bit-clr-pri-focus and accepts any role token (e.g. $clr-err-focus)
+ *     so invalid/success/etc. variants can opt into matching focus colors.
+ *   - In Windows High Contrast / forced-colors mode box-shadows are stripped, so a real
+ *     outline in the system Highlight color is rendered instead (matching focus-underline-ring).
+ *
+ * Usage:
+ *   .my-component {
+ *       &:focus-visible { @include focus-ring; }
+ *       &.bit-inv:focus-visible { @include focus-ring($clr-err-focus); }
+ *   }
+ */
+@mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset) {
+    outline: none; // Replace native outline with the themed ring below.
+    --bit-focus-ring-color: #{$color};
+    --bit-focus-ring-offset: #{$offset};
+
+    // Inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss
+    // so focus indicators still render if a consumer-defined theme omits that token.
+    box-shadow: var(--bit-shd-focus-ring,
+        0 0 0 var(--bit-focus-ring-offset, #{$offset}) #{$clr-bg-pri},
+        0 0 0 calc(var(--bit-focus-ring-offset, #{$offset}) + #{$shp-focus-ring-width}) var(--bit-focus-ring-color, #{$color}));
+
+    // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
+    // focused element with no visible indicator. Restore a real outline so focus stays perceivable.
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+
+        // Read the offset through the same custom property the box-shadow uses so a runtime
+        // override of --bit-focus-ring-offset stays in sync in High Contrast mode too.
+        outline-offset: var(--bit-focus-ring-offset, #{$offset});
+    }
+}
+
+/*
+ * focus-underline-ring($color)
+ * --------------------------------------------------
+ * Renders a focus indicator as a single bottom rule, used by "underlined"
+ * input variants (TextField/SearchBox/DatePicker .bit-*-und) where a full ring
+ * conflicts with the visual language of the component.
+ */
+@mixin focus-underline-ring($color: $clr-pri-focus) {
+    outline: none;
+    box-shadow: inset 0 calc(-1 * #{$shp-focus-ring-width}) 0 0 #{$color};
+
+    // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
+    // focused input with no visible indicator. Restore a real outline so focus stays perceivable.
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+    }
 }

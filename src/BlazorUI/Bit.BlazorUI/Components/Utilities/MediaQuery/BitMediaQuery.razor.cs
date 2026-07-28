@@ -72,41 +72,42 @@ public partial class BitMediaQuery : BitComponentBase
 
         if (IsDisposed) return;
 
-        var query = Query ?? GetQuery(ScreenQuery);
+        // A custom Query takes precedence; otherwise defer to the predefined ScreenQuery, whose
+        // media query is built on the JS side from the live --bit-bp-* theme breakpoints so a
+        // customized BitTheme.Layout.Breakpoints is honored (rather than baking fixed px here).
+        // A blank Query is treated as absent so a bound-but-empty value still lets ScreenQuery win.
+        var customQuery = Query.HasValue() ? Query : null;
+        var screenQuery = customQuery is null ? ScreenQuery?.ToString() : null;
+        var effectiveKey = customQuery ?? screenQuery;
 
-        if (query.HasValue() && query != _query)
+        if (effectiveKey.HasValue())
         {
-            _query = query;
-            await _js.BitMediaQuerySetup(_Id, _query, _dotnetObj);
+            // For a predefined ScreenQuery the actual media-query expression is resolved on the JS
+            // side from the live --bit-bp-* theme breakpoints, so it can change while the enum name
+            // stays the same (e.g. after new breakpoints are applied). Re-invoke setup on every
+            // render in that case and let the JS side reuse the existing listener when the resolved
+            // expression is unchanged; a custom Query is verbatim, so the key comparison suffices.
+            if (effectiveKey != _query || screenQuery is not null)
+            {
+                _query = effectiveKey;
+                try
+                {
+                    await _js.BitMediaQuerySetup(_Id, customQuery, screenQuery, _dotnetObj);
+                }
+                catch (JSDisconnectedException) { } // circuit gone; nothing to set up
+            }
         }
-    }
-
-
-
-    private static string GetQuery(BitScreenQuery? query)
-    {
-        return query switch
+        else if (_query is not null)
         {
-            BitScreenQuery.Xs => "(max-width: 600px)",
-            BitScreenQuery.Sm => "(min-width: 601px) and (max-width: 960px)",
-            BitScreenQuery.Md => "(min-width: 961px) and (max-width: 1280px)",
-            BitScreenQuery.Lg => "(min-width: 1281px) and (max-width: 1920px)",
-            BitScreenQuery.Xl => "(min-width: 1921px) and (max-width: 2560px)",
-            BitScreenQuery.Xxl => "(min-width: 2561px)",
-
-            BitScreenQuery.LtSm => "(max-width: 600px)",
-            BitScreenQuery.LtMd => "(max-width: 960px)",
-            BitScreenQuery.LtLg => "(max-width: 1280px)",
-            BitScreenQuery.LtXl => "(max-width: 1920px)",
-            BitScreenQuery.LtXxl => "(max-width: 2560px)",
-
-            BitScreenQuery.GtXs => "(min-width: 601px)",
-            BitScreenQuery.GtSm => "(min-width: 961px)",
-            BitScreenQuery.GtMd => "(min-width: 1281px)",
-            BitScreenQuery.GtLg => "(min-width: 1921px)",
-            BitScreenQuery.GtXl => "(min-width: 2561px)",
-            _ => string.Empty
-        };
+            // Neither a Query nor a ScreenQuery resolves anymore: tear down the previous listener
+            // and reset so a later (re)assignment sets up cleanly.
+            _query = null;
+            try
+            {
+                await _js.BitMediaQueryDispose(_Id);
+            }
+            catch (JSDisconnectedException) { } // circuit gone; nothing to tear down
+        }
     }
 
 

@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages
 
 <PageOutlet Url=""
@@ -25,6 +25,33 @@
         </div>
     </section>
 
+    <section class="homepage-section ai-section">
+        <div class="homepage-section-content">
+            <div class="ai-section-info">
+                <BitText Element="h2" Typography="BitTypography.H3" Gutter>Built for the AI-assisted workflow</BitText>
+                <BitText Typography="BitTypography.Body1" Gutter Style="max-width: 700px">
+                    Connect your AI coding agent (GitHub Copilot, Cursor, Claude, Windsurf, and more) to the official
+                    bit BlazorUI MCP server, and it will discover components, pull accurate usage examples,
+                    and follow the library's best practices automatically.
+                </BitText>
+                <BitButton Href="/getting-started#ai-mcp" Variant="BitVariant.Outline"
+                           IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+                    Set up AI integration
+                </BitButton>
+            </div>
+            <div class="ai-section-code">
+                <CodeBox Language="json">{
+  "mcpServers": {
+    "bitBlazorUI": {
+      "type": "http",
+      "url": "https://blazorui.bitplatform.dev/mcp"
+    }
+  }
+}</CodeBox>
+            </div>
+        </div>
+    </section>
+
     <section class="homepage-section component-list-section">
         <div class="homepage-section-content">
             <ComponentsSection />
@@ -33,16 +60,25 @@
 
     <section class="homepage-section contribution-section">
         <div class="homepage-section-content">
-            <BitText Element="h2" Typography="BitTypography.H3" Gutter>Open Source contribution</BitText>
+            <BitText Element="h2" Typography="BitTypography.H3" Gutter>Start building with bit BlazorUI</BitText>
             <BitText Typography="BitTypography.Body1" Gutter Style="max-width: 700px">
-                Backed by a professional dedicated development team and an active community,
-                you are well supported to work out all challenges. Since all open source components are on GitHub,
-                you can follow the production flow of the components. Feel free to report bugs, fork the repo, and submit pull request.
+                Free and open source, backed by a professional dedicated development team and an active community.
+                All components live on GitHub, so you can follow their production flow,
+                report bugs, fork the repo, and submit pull requests.
             </BitText>
-            <BitStack Horizontal>
-                <BitButton IconUrl="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/github-blue-icon.svg"
+            <BitStack Horizontal Wrap Gap="1rem">
+                <BitButton Href="/getting-started" Size="BitSize.Large"
+                           IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+                    Get started
+                </BitButton>
+                @* The octocat is a masked span rather than an IconUrl image so it inherits the button's
+                   text color, which keeps it on the accent (and readable on the hover fill) instead of
+                   staying the one blue a colored asset would bake in. *@
+                <BitButton Size="BitSize.Large"
+                           Class="github-button"
+                           Variant="BitVariant.Outline"
                            Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
-                    GitHub
+                    <span class="github-mark" aria-hidden="true"></span>GitHub
                 </BitButton>
                 <BitSpacer />
                 <GitHubEditButton GitHubUrl="Home/HomePage.razor" />

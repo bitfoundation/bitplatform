@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -9,7 +9,6 @@
         <BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(InvariantGlobalization)' == 'false'">true</BlazorWebAssemblyLoadAllGlobalizationData>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-        <WasmEnableSIMD Condition="'$(Environment)' != 'Development'">true</WasmEnableSIMD>
         <!--/+:msbuild-conditional:noEmit -->
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
@@ -72,18 +71,28 @@
         <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
     </PropertyGroup>
 
+    <!--
+        Blazor WebAssembly diagnostics https://learn.microsoft.com/en-us/aspnet/core/blazor/performance/webassembly-event-pipe-diagnostics
+
+        Put the followings inside Boilerplate.Client.Web/wwwroot/Boilerplate.Client.Web.lib.module.js
+        export function afterWebAssemblyStarted(options, extensions) {  
+            globalThis.getDotnetRuntime(0).collectCpuSamples({durationSeconds: 10});
+            // Or un-comment the following line to collect metrics instead of CPU samples
+            // globalThis.getDotnetRuntime(0).collectMetrics({durationSeconds: 10}); 
+        }
+        
+        Or run this command in the browser console to collect GC dump:
+        globalThis.getDotnetRuntime(0).collectGcDump();
+
+        Convert nettrace file to json using dotnet-trace convert your-file-name.nettrace -f Chromium
+    -->
     <!-- 
-        <PropertyGroup>
-        
-            Blazor WebAssembly diagnostics
-            https://learn.microsoft.com/en-us/aspnet/core/blazor/performance/webassembly-event-pipe-diagnostics
-        
+        <PropertyGroup>        
             <EnableDiagnostics>true</EnableDiagnostics>
             <MetricsSupport>true</MetricsSupport>
             <EventSourceSupport>true</EventSourceSupport>
             <WasmDebugLevel>0</WasmDebugLevel>
             <WasmPerformanceInstrumentation>all</WasmPerformanceInstrumentation>
-            
         </PropertyGroup>
     -->
 

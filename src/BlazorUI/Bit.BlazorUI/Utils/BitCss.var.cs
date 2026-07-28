@@ -12,6 +12,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-pri-dark";
                 public const string Light = "--bit-clr-pri-light";
                 public const string Text = "--bit-clr-pri-text";
+                public const string Disabled = "--bit-clr-pri-dis";
+                public const string DisabledText = "--bit-clr-pri-dis-text";
+                public const string Focus = "--bit-clr-pri-focus";
 
                 public static class Hover
                 {
@@ -34,6 +37,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-sec-dark";
                 public const string Light = "--bit-clr-sec-light";
                 public const string Text = "--bit-clr-sec-text";
+                public const string Disabled = "--bit-clr-sec-dis";
+                public const string DisabledText = "--bit-clr-sec-dis-text";
+                public const string Focus = "--bit-clr-sec-focus";
 
                 public static class Hover
                 {
@@ -56,6 +62,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-ter-dark";
                 public const string Light = "--bit-clr-ter-light";
                 public const string Text = "--bit-clr-ter-text";
+                public const string Disabled = "--bit-clr-ter-dis";
+                public const string DisabledText = "--bit-clr-ter-dis-text";
+                public const string Focus = "--bit-clr-ter-focus";
 
                 public static class Hover
                 {
@@ -78,6 +87,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-inf-dark";
                 public const string Light = "--bit-clr-inf-light";
                 public const string Text = "--bit-clr-inf-text";
+                public const string Disabled = "--bit-clr-inf-dis";
+                public const string DisabledText = "--bit-clr-inf-dis-text";
+                public const string Focus = "--bit-clr-inf-focus";
 
                 public static class Hover
                 {
@@ -100,6 +112,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-suc-dark";
                 public const string Light = "--bit-clr-suc-light";
                 public const string Text = "--bit-clr-suc-text";
+                public const string Disabled = "--bit-clr-suc-dis";
+                public const string DisabledText = "--bit-clr-suc-dis-text";
+                public const string Focus = "--bit-clr-suc-focus";
 
                 public static class Hover
                 {
@@ -122,6 +137,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-wrn-dark";
                 public const string Light = "--bit-clr-wrn-light";
                 public const string Text = "--bit-clr-wrn-text";
+                public const string Disabled = "--bit-clr-wrn-dis";
+                public const string DisabledText = "--bit-clr-wrn-dis-text";
+                public const string Focus = "--bit-clr-wrn-focus";
 
                 public static class Hover
                 {
@@ -144,6 +162,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-swr-dark";
                 public const string Light = "--bit-clr-swr-light";
                 public const string Text = "--bit-clr-swr-text";
+                public const string Disabled = "--bit-clr-swr-dis";
+                public const string DisabledText = "--bit-clr-swr-dis-text";
+                public const string Focus = "--bit-clr-swr-focus";
 
                 public static class Hover
                 {
@@ -166,6 +187,9 @@ public static partial class BitCss
                 public const string Dark = "--bit-clr-err-dark";
                 public const string Light = "--bit-clr-err-light";
                 public const string Text = "--bit-clr-err-text";
+                public const string Disabled = "--bit-clr-err-dis";
+                public const string DisabledText = "--bit-clr-err-dis-text";
+                public const string Focus = "--bit-clr-err-focus";
 
                 public static class Hover
                 {
@@ -189,6 +213,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-fg-pri";
                     public const string Dark = "--bit-clr-fg-pri-dark";
                     public const string Light = "--bit-clr-fg-pri-light";
+                    public const string Disabled = "--bit-clr-fg-pri-dis";
+                    public const string DisabledText = "--bit-clr-fg-pri-dis-text";
+                    public const string Focus = "--bit-clr-fg-pri-focus";
 
                     public static class Hover
                     {
@@ -210,6 +237,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-fg-sec";
                     public const string Dark = "--bit-clr-fg-sec-dark";
                     public const string Light = "--bit-clr-fg-sec-light";
+                    public const string Disabled = "--bit-clr-fg-sec-dis";
+                    public const string DisabledText = "--bit-clr-fg-sec-dis-text";
+                    public const string Focus = "--bit-clr-fg-sec-focus";
 
                     public static class Hover
                     {
@@ -231,6 +261,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-fg-ter";
                     public const string Dark = "--bit-clr-fg-ter-dark";
                     public const string Light = "--bit-clr-fg-ter-light";
+                    public const string Disabled = "--bit-clr-fg-ter-dis";
+                    public const string DisabledText = "--bit-clr-fg-ter-dis-text";
+                    public const string Focus = "--bit-clr-fg-ter-focus";
 
                     public static class Hover
                     {
@@ -257,6 +290,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-bg-pri";
                     public const string Dark = "--bit-clr-bg-pri-dark";
                     public const string Light = "--bit-clr-bg-pri-light";
+                    public const string Disabled = "--bit-clr-bg-pri-dis";
+                    public const string DisabledText = "--bit-clr-bg-pri-dis-text";
+                    public const string Focus = "--bit-clr-bg-pri-focus";
 
                     public static class Hover
                     {
@@ -278,6 +314,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-bg-sec";
                     public const string Dark = "--bit-clr-bg-sec-dark";
                     public const string Light = "--bit-clr-bg-sec-light";
+                    public const string Disabled = "--bit-clr-bg-sec-dis";
+                    public const string DisabledText = "--bit-clr-bg-sec-dis-text";
+                    public const string Focus = "--bit-clr-bg-sec-focus";
 
                     public static class Hover
                     {
@@ -299,6 +338,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-bg-ter";
                     public const string Dark = "--bit-clr-bg-ter-dark";
                     public const string Light = "--bit-clr-bg-ter-light";
+                    public const string Disabled = "--bit-clr-bg-ter-dis";
+                    public const string DisabledText = "--bit-clr-bg-ter-dis-text";
+                    public const string Focus = "--bit-clr-bg-ter-focus";
 
                     public static class Hover
                     {
@@ -326,6 +368,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-brd-pri";
                     public const string Dark = "--bit-clr-brd-pri-dark";
                     public const string Light = "--bit-clr-brd-pri-light";
+                    public const string Disabled = "--bit-clr-brd-pri-dis";
+                    public const string DisabledText = "--bit-clr-brd-pri-dis-text";
+                    public const string Focus = "--bit-clr-brd-pri-focus";
 
                     public static class Hover
                     {
@@ -347,6 +392,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-brd-sec";
                     public const string Dark = "--bit-clr-brd-sec-dark";
                     public const string Light = "--bit-clr-brd-sec-light";
+                    public const string Disabled = "--bit-clr-brd-sec-dis";
+                    public const string DisabledText = "--bit-clr-brd-sec-dis-text";
+                    public const string Focus = "--bit-clr-brd-sec-focus";
 
                     public static class Hover
                     {
@@ -368,6 +416,9 @@ public static partial class BitCss
                     public const string Main = "--bit-clr-brd-ter";
                     public const string Dark = "--bit-clr-brd-ter-dark";
                     public const string Light = "--bit-clr-brd-ter-light";
+                    public const string Disabled = "--bit-clr-brd-ter-dis";
+                    public const string DisabledText = "--bit-clr-brd-ter-dis-text";
+                    public const string Focus = "--bit-clr-brd-ter-focus";
 
                     public static class Hover
                     {
@@ -455,6 +506,8 @@ public static partial class BitCss
             public const string S22 = "--bit-shd-22";
             public const string S23 = "--bit-shd-23";
             public const string S24 = "--bit-shd-24";
+
+            public const string FocusRing = "--bit-shd-focus-ring";
         }
 
         public static class ZIndex
@@ -471,11 +524,52 @@ public static partial class BitCss
             public const string BorderRadius = "--bit-shp-brd-radius";
             public const string BorderWidth = "--bit-shp-brd-width";
             public const string BorderStyle = "--bit-shp-brd-style";
+            public const string FocusRingWidth = "--bit-shp-focus-ring-width";
+            public const string FocusRingOffset = "--bit-shp-focus-ring-offset";
         }
 
         public static class Spacing
         {
             public const string ScalingFactor = "--bit-spa-scaling-factor";
+        }
+
+        public static class Motion
+        {
+            public const string Duration = "--bit-mot-duration";
+            public const string DurationShort = "--bit-mot-duration-short";
+            public const string DurationLong = "--bit-mot-duration-long";
+            public const string Easing = "--bit-mot-easing";
+            public const string DurationSpinner = "--bit-mot-duration-spinner";
+            public const string EasingSpinner = "--bit-mot-easing-spinner";
+            public const string LoopFactor = "--bit-mot-loop-factor";
+        }
+
+        public static class Layout
+        {
+            public const string DensityScale = "--bit-layout-density-scale";
+
+            public static class Breakpoints
+            {
+                public const string Xs = "--bit-bp-xs";
+                public const string Sm = "--bit-bp-sm";
+                public const string Md = "--bit-bp-md";
+                public const string Lg = "--bit-bp-lg";
+                public const string Xl = "--bit-bp-xl";
+                public const string Xxl = "--bit-bp-xxl";
+            }
+        }
+
+        public static class Semantic
+        {
+            public const string SurfacePage = "--bit-sem-surface-page";
+            public const string SurfaceElevated = "--bit-sem-surface-elevated";
+            public const string SurfaceMuted = "--bit-sem-surface-muted";
+            public const string TextPrimary = "--bit-sem-text-primary";
+            public const string TextSecondary = "--bit-sem-text-secondary";
+            public const string BorderDefault = "--bit-sem-border-default";
+            public const string AccentPrimary = "--bit-sem-accent-primary";
+            public const string FocusRing = "--bit-sem-focus-ring";
+            public const string FocusColor = "--bit-sem-focus-color";
         }
 
         public static class Typography
