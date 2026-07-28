@@ -1548,7 +1548,7 @@ public partial class BitDropdownDemo
                 },
                 new()
                 {
-                    Name = "Equals",
+                    Name = "ExactMatch",
                     Description = "An item matches when its text is equal to the search text.",
                     Value = "3",
                 }

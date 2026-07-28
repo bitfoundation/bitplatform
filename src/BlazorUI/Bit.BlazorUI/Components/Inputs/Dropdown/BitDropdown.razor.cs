@@ -1740,14 +1740,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private void OnSetIsOpen()
     {
-        _ = ClearSearchBox();
+        // The hook of a [CallOnSet] parameter is synchronous, so the work is fired and forgotten.
+        // Wrapped in a local async method (instead of separate discarded tasks) so the steps run in
+        // order rather than racing over _searchText, and so a throwing one surfaces through Blazor's
+        // normal async error handling via the renderer dispatcher instead of on an unobserved task.
+        _ = InvokeAsync(async () =>
+        {
+            await ClearSearchBox();
 
-        // The combo input doubles as the search input, so a text that was typed but never committed
-        // to a selection must not survive the callout, otherwise the trigger keeps showing a filter
-        // term instead of the current selection the next time the dropdown is opened.
-        _ = ClearComboBoxInput();
+            // The combo input doubles as the search input, so a text that was typed but never committed
+            // to a selection must not survive the callout, otherwise the trigger keeps showing a filter
+            // term instead of the current selection the next time the dropdown is opened.
+            await ClearComboBoxInput();
 
-        _ = IsOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync();
+            await (IsOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
+        });
     }
 
     private async ValueTask FocusOnSearchBox()
@@ -1804,7 +1811,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             BitDropdownSearchMode.StartsWith => text.StartsWith(search, StringComparison.OrdinalIgnoreCase),
             BitDropdownSearchMode.EndsWith => text.EndsWith(search, StringComparison.OrdinalIgnoreCase),
-            BitDropdownSearchMode.Equals => text.Equals(search, StringComparison.OrdinalIgnoreCase),
+            BitDropdownSearchMode.ExactMatch => text.Equals(search, StringComparison.OrdinalIgnoreCase),
             _ => text.Contains(search, StringComparison.OrdinalIgnoreCase)
         };
     }
@@ -1823,7 +1830,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             BitDropdownSearchMode.StartsWith => text.StartsWith(search, StringComparison.OrdinalIgnoreCase) ? 0 : -1,
             BitDropdownSearchMode.EndsWith => text.EndsWith(search, StringComparison.OrdinalIgnoreCase) ? text.Length - search.Length : -1,
-            BitDropdownSearchMode.Equals => text.Equals(search, StringComparison.OrdinalIgnoreCase) ? 0 : -1,
+            BitDropdownSearchMode.ExactMatch => text.Equals(search, StringComparison.OrdinalIgnoreCase) ? 0 : -1,
             _ => text.IndexOf(search, StringComparison.OrdinalIgnoreCase)
         };
     }

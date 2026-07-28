@@ -463,14 +463,16 @@
         <div id="@_footerId">@CalloutFooterTemplate</div>
     }
 
-    @if (HasSearchText && IsLoading is false)
-    {
-        @* A search silently changes the length of a list a screen reader user cannot see, so the new
-           result count is announced. Only rendered while searching, to stay quiet otherwise. *@
-        <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
+    @* A search silently changes the length of a list a screen reader user cannot see, so the new
+       result count is announced. The container is always rendered because a live region has to be in
+       the accessibility tree before its text changes for the change to be announced; only the text
+       comes and goes, so the region stays quiet while there is nothing to announce. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
+        @if (HasSearchText && IsLoading is false)
+        {
             @GetSearchResultsText()
-        </div>
-    }
+        }
+    </div>
 
 </div>
 

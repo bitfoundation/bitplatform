@@ -624,7 +624,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
     ValueSetter = (Product item, string value) => item.Value = value,
-    TextSetter = (string? text, Product item) => item.Text = text
+    TextSetter = (string text, Product item) => item.Text = text
 };";
 
     private readonly string example10RazorCode = @"
@@ -1151,7 +1151,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
     ValueSetter = (Product item, string value) => item.Value = value,
-    TextSetter = (string? text, Product item) => item.Text = text
+    TextSetter = (string text, Product item) => item.Text = text
 };";
 
     private readonly string example15RazorCode = @"
@@ -1220,7 +1220,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
     ValueSetter = (Product item, string value) => item.Value = value,
-    TextSetter = (string? text, Product item) => item.Text = text
+    TextSetter = (string text, Product item) => item.Text = text
 };";
 
     private readonly string example16RazorCode = @"
@@ -1340,7 +1340,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
     ValueSetter = (Product item, string value) => item.Value = value,
-    TextSetter = (string? text, Product item) => item.Text = text
+    TextSetter = (string text, Product item) => item.Text = text
 };";
 
     private readonly string example17RazorCode = @"
@@ -1429,7 +1429,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
     ValueSetter = (Product item, string value) => item.Value = value,
-    TextSetter = (string? text, Product item) => item.Text = text
+    TextSetter = (string text, Product item) => item.Text = text
 };";
 
     private readonly string example18RazorCode = @"

@@ -20,5 +20,5 @@ public enum BitDropdownSearchMode
     /// <summary>
     /// An item matches when its text is equal to the search text.
     /// </summary>
-    Equals
+    ExactMatch
 }

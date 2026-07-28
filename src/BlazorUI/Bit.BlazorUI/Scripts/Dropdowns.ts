@@ -2,6 +2,12 @@ namespace BitBlazorUI {
     export class Dropdowns {
         private static _handlers = new Map<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }[]>();
 
+        // The focus of a jump mode in virtualize mode is applied after an await, so a second key press
+        // arriving in the meantime would have two invocations scrolling and focusing over each other.
+        // Each call stamps its callout with a token and gives up if a newer call has replaced it.
+        // Keyed by the element so the entry disappears with the callout instead of having to be cleaned up.
+        private static _focusGenerations = new WeakMap<HTMLElement, number>();
+
         // The number of animation frames to wait for the items revealed by a programmatic scroll in
         // virtualize mode to be rendered, before giving up and using whatever is rendered by then.
         private static readonly VIRTUALIZE_RENDER_FRAMES = 20;
@@ -88,6 +94,9 @@ namespace BitBlazorUI {
 
             const scroller = callout.querySelector('.bit-drp-scn') as HTMLElement | null;
 
+            const generation = (Dropdowns._focusGenerations.get(callout) ?? 0) + 1;
+            Dropdowns._focusGenerations.set(callout, generation);
+
             let items = Dropdowns._getItems(callout);
             if (items.length === 0) return;
 
@@ -97,6 +106,11 @@ namespace BitBlazorUI {
             // beyond it means scrolling first and continuing with the items rendered afterwards.
             if (virtualize && Dropdowns._isScrollable(scroller)) {
                 const scrolled = await Dropdowns._scrollFor(callout, scroller!, mode, items);
+
+                // A newer key press took over while the scroll was being rendered, so this one is
+                // working from an outdated window and must not move the focus back to it.
+                if (Dropdowns._focusGenerations.get(callout) !== generation) return;
+
                 if (scrolled) {
                     items = scrolled.items;
                     current = scrolled.items.indexOf(document.activeElement as HTMLElement);
