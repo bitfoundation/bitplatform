@@ -39,6 +39,7 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Bit.BlazorUI" />
+        <Using Include="Bit.BlazorUI.Legacy" />
         <Using Include="Bit.BlazorUI.Demo.Shared" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />

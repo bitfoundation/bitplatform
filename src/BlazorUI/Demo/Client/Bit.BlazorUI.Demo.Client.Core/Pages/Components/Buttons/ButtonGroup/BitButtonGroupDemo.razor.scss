@@ -1,8 +1,15 @@
-﻿::deep {
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
     .example-content {
         gap: 0.5rem;
         display: flex;
         flex-flow: column;
+
+        &.row {
+            flex-flow: row;
+            flex-wrap: wrap;
+        }
     }
 
     // Constrains the group so the overflow examples actually have something to overflow,
@@ -12,7 +19,7 @@
         max-width: 30rem;
         overflow: hidden;
         resize: horizontal;
-        border: 1px dashed var(--bit-clr-brd-sec);
+        border: 1px dashed $bit-color-border-secondary;
     }
 
     .custom-template {

@@ -31,8 +31,19 @@
             }
 
             &:focus {
-                &::after {
-                    border-color: $clr-err;
+                @include focus-ring($clr-err-focus);
+            }
+        }
+
+        &.bit-drp-nbd {
+            .bit-drp-wrp {
+                &:focus {
+                    outline: none;
+                    box-shadow: none;
+                }
+
+                &:focus-visible {
+                    @include focus-underline-ring($clr-err-focus);
                 }
             }
         }
@@ -54,12 +65,9 @@
             &:focus {
                 color: $clr-fg-dis;
                 border-color: $clr-brd-dis;
-
-                &::after {
-                    width: 0;
-                    height: 0;
-                    border: none;
-                }
+                // Suppress the focus ring while disabled, including the forced-colors outline.
+                outline: none;
+                box-shadow: none;
             }
         }
 
@@ -105,9 +113,16 @@
         }
 
         &:focus {
-            &::after {
-                border: none;
-            }
+            // Suppress the global focus ring on the no-border variant; the underline-ring
+            // below still applies for keyboard focus via :focus-visible.
+            outline: none;
+            box-shadow: none;
+        }
+
+        &:focus-visible {
+            // No-border variant: keep the no-border look but use an inset underline-style
+            // ring as a keyboard-only, high-contrast focus cue (WCAG 2.4.7 / 2.4.13).
+            @include focus-underline-ring(var(--bit-drp-clr-focus));
         }
     }
 }
@@ -170,14 +185,7 @@
             color: $clr-fg-pri;
         }
 
-        &::after {
-            content: "";
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-radius: $shp-border-radius;
-            border: spacing(0.25) $shp-border-style var(--bit-drp-clr);
-        }
+        @include focus-ring(var(--bit-drp-clr-focus));
     }
 }
 
@@ -375,10 +383,10 @@
     height: spacing(2.5);
     box-sizing: border-box;
     justify-content: center;
-    transition-duration: 200ms;
+    transition-duration: $mot-duration;
     border-radius: spacing(0.25);
     transition-property: background, border, border-color;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+    transition-timing-function: $mot-easing;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     .bit-drp-chm {
@@ -386,7 +394,7 @@
         width: 100%;
         height: 100%;
         display: flex;
-        transition: 0.1s;
+        transition: $mot-duration-short;
         align-items: center;
         justify-content: center;
         font-size: spacing(1.375);
@@ -507,7 +515,7 @@
     flex-direction: column;
     justify-content: center;
     color: var(--bit-drp-clr);
-    transition: width 0.167s ease 0s;
+    transition: width $mot-duration ease 0s;
 
     i {
         opacity: 1;
@@ -516,7 +524,7 @@
         height: unset;
         display: inline-block;
         color: var(--bit-drp-clr);
-        transition: opacity 0.167s ease 0s;
+        transition: opacity $mot-duration ease 0s;
     }
 }
 
@@ -637,7 +645,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
     background-color: $clr-bg-pri;
@@ -783,7 +791,7 @@
         transform: translateX(100%);
         box-shadow: $box-shadow-callout;
         padding: spacing(3) spacing(2.5);
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
 
         .bit-drp-rlc {
             display: flex;
@@ -805,100 +813,117 @@
     --bit-drp-clr: #{$clr-pri};
     --bit-drp-clr-hover: #{$clr-pri-hover};
     --bit-drp-clr-text: #{$clr-pri-text};
+    --bit-drp-clr-focus: #{$clr-pri-focus};
 }
 
 .bit-drp-sec {
     --bit-drp-clr: #{$clr-sec};
     --bit-drp-clr-hover: #{$clr-sec-hover};
     --bit-drp-clr-text: #{$clr-sec-text};
+    --bit-drp-clr-focus: #{$clr-sec-focus};
 }
 
 .bit-drp-ter {
     --bit-drp-clr: #{$clr-ter};
     --bit-drp-clr-hover: #{$clr-ter-hover};
     --bit-drp-clr-text: #{$clr-ter-text};
+    --bit-drp-clr-focus: #{$clr-ter-focus};
 }
 
 .bit-drp-inf {
     --bit-drp-clr: #{$clr-inf};
     --bit-drp-clr-hover: #{$clr-inf-hover};
     --bit-drp-clr-text: #{$clr-inf-text};
+    --bit-drp-clr-focus: #{$clr-inf-focus};
 }
 
 .bit-drp-suc {
     --bit-drp-clr: #{$clr-suc};
     --bit-drp-clr-hover: #{$clr-suc-hover};
     --bit-drp-clr-text: #{$clr-suc-text};
+    --bit-drp-clr-focus: #{$clr-suc-focus};
 }
 
 .bit-drp-wrn {
     --bit-drp-clr: #{$clr-wrn};
     --bit-drp-clr-hover: #{$clr-wrn-hover};
     --bit-drp-clr-text: #{$clr-wrn-text};
+    --bit-drp-clr-focus: #{$clr-wrn-focus};
 }
 
 .bit-drp-swr {
     --bit-drp-clr: #{$clr-swr};
     --bit-drp-clr-hover: #{$clr-swr-hover};
     --bit-drp-clr-text: #{$clr-swr-text};
+    --bit-drp-clr-focus: #{$clr-swr-focus};
 }
 
 .bit-drp-err {
     --bit-drp-clr: #{$clr-err};
     --bit-drp-clr-hover: #{$clr-err-hover};
     --bit-drp-clr-text: #{$clr-err-text};
+    --bit-drp-clr-focus: #{$clr-err-focus};
 }
 
 .bit-drp-pbg {
     --bit-drp-clr: #{$clr-bg-pri};
     --bit-drp-clr-hover: #{$clr-bg-pri-hover};
     --bit-drp-clr-text: #{$clr-fg-pri};
+    --bit-drp-clr-focus: #{$clr-bg-pri-focus};
 }
 
 .bit-drp-sbg {
     --bit-drp-clr: #{$clr-bg-sec};
     --bit-drp-clr-hover: #{$clr-bg-sec-hover};
     --bit-drp-clr-text: #{$clr-fg-sec};
+    --bit-drp-clr-focus: #{$clr-bg-sec-focus};
 }
 
 .bit-drp-tbg {
     --bit-drp-clr: #{$clr-bg-ter};
     --bit-drp-clr-hover: #{$clr-bg-ter-hover};
     --bit-drp-clr-text: #{$clr-fg-ter};
+    --bit-drp-clr-focus: #{$clr-bg-ter-focus};
 }
 
 .bit-drp-pfg {
     --bit-drp-clr: #{$clr-fg-pri};
     --bit-drp-clr-hover: #{$clr-fg-pri-hover};
     --bit-drp-clr-text: #{$clr-bg-pri};
+    --bit-drp-clr-focus: #{$clr-fg-pri-focus};
 }
 
 .bit-drp-sfg {
     --bit-drp-clr: #{$clr-fg-sec};
     --bit-drp-clr-hover: #{$clr-fg-sec-hover};
     --bit-drp-clr-text: #{$clr-bg-sec};
+    --bit-drp-clr-focus: #{$clr-fg-sec-focus};
 }
 
 .bit-drp-tfg {
     --bit-drp-clr: #{$clr-fg-ter};
     --bit-drp-clr-hover: #{$clr-fg-ter-hover};
     --bit-drp-clr-text: #{$clr-bg-ter};
+    --bit-drp-clr-focus: #{$clr-fg-ter-focus};
 }
 
 .bit-drp-pbr {
     --bit-drp-clr: #{$clr-brd-pri};
     --bit-drp-clr-hover: #{$clr-brd-pri-hover};
     --bit-drp-clr-text: #{$clr-fg-pri};
+    --bit-drp-clr-focus: #{$clr-brd-pri-focus};
 }
 
 .bit-drp-sbr {
     --bit-drp-clr: #{$clr-brd-sec};
     --bit-drp-clr-hover: #{$clr-brd-sec-hover};
     --bit-drp-clr-text: #{$clr-fg-sec};
+    --bit-drp-clr-focus: #{$clr-brd-sec-focus};
 }
 
 .bit-drp-tbr {
     --bit-drp-clr: #{$clr-brd-ter};
     --bit-drp-clr-hover: #{$clr-brd-ter-hover};
     --bit-drp-clr-text: #{$clr-fg-ter};
+    --bit-drp-clr-focus: #{$clr-brd-ter-focus};
 }

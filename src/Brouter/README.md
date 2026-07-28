@@ -590,6 +590,10 @@ animations out of the box (`o.ViewTransitionDefaultAnimations`, enabled by defau
   bypass it with `o.ViewTransitionRespectReducedMotion = false` - think twice, though: for
   motion-sensitive users `reduce` is a genuine request.
 
+Only actual navigations animate - the **initial load never does**. This matters with prerendering:
+the prerendered HTML is already on screen when the router becomes interactive, and animating the
+first (identical) interactive render would show an annoying double render of the same page.
+
 The defaults live in the CSS layer `bit-brouter`, so **any unlayered `::view-transition-*` rule in
 your own CSS overrides them automatically** - customize without specificity fights, or set
 `o.ViewTransitionDefaultAnimations = false` to opt out entirely. The current direction is exposed as

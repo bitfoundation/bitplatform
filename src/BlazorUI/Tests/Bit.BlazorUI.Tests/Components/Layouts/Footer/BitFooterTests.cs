@@ -164,6 +164,24 @@ public class BitFooterTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectForceAnimation(bool forceAnimation)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.ForceAnimation, forceAnimation);
+        });
+
+        var cssClass = forceAnimation ? " bit-fam" : string.Empty;
+        component.MarkupMatches($@"
+<footer class=""bit-ftr{cssClass}"" id:ignore>
+    <div class=""bit-ftr-gut"">
+    </div>
+</footer>");
+    }
+
+    [TestMethod]
     public void BitFooterShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitFooterHtmlAttributesTest>();

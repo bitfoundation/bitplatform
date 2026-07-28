@@ -43,7 +43,7 @@
     justify-content: center;
     border-radius: $shp-border-radius;
     border: $shp-border-width $shp-border-style transparent;
-    transition: background-color 0.12s, color 0.12s, border-color 0.12s;
+    transition: background-color $mot-duration-short, color $mot-duration-short, border-color $mot-duration-short;
 
     svg {
         width: spacing(2.25);

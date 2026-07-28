@@ -5,7 +5,7 @@
     display: inline-block;
 
     &.bit-dis {
-        --bit-bdg-cnt-clr-txt: #{$clr-fg-dis};
+        --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-dis-text);
         --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr-bg-dis);
         --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr-brd-dis);
     }
@@ -292,8 +292,8 @@
 
 
 .bit-bdg-fil {
-    --bit-bdg-clr-bg-dis: #{$clr-bg-dis};
-    --bit-bdg-clr-brd-dis: #{$clr-brd-dis};
+    --bit-bdg-clr-bg-dis: var(--bit-bdg-clr-dis);
+    --bit-bdg-clr-brd-dis: var(--bit-bdg-clr-dis);
     --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr);
     --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt);
@@ -301,7 +301,8 @@
 
 .bit-bdg-otl {
     --bit-bdg-cnt-clr-bg: transparent;
-    --bit-bdg-clr-brd-dis: #{$clr-brd-dis};
+    --bit-bdg-clr-bg-dis: transparent;
+    --bit-bdg-clr-brd-dis: var(--bit-bdg-clr-dis);
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
     --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
 }
@@ -309,49 +310,20 @@
 .bit-bdg-txt {
     --bit-bdg-cnt-clr-bg: transparent;
     --bit-bdg-cnt-clr-brd: transparent;
+    --bit-bdg-clr-bg-dis: transparent;
     --bit-bdg-clr-brd-dis: transparent;
     --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
 }
 
 
-.bit-bdg-pri {
-    --bit-bdg-clr: #{$clr-pri};
-    --bit-bdg-clr-txt: #{$clr-pri-text};
-}
-
-.bit-bdg-sec {
-    --bit-bdg-clr: #{$clr-sec};
-    --bit-bdg-clr-txt: #{$clr-sec-text};
-}
-
-.bit-bdg-ter {
-    --bit-bdg-clr: #{$clr-ter};
-    --bit-bdg-clr-txt: #{$clr-ter-text};
-}
-
-.bit-bdg-inf {
-    --bit-bdg-clr: #{$clr-inf};
-    --bit-bdg-clr-txt: #{$clr-inf-text};
-}
-
-.bit-bdg-suc {
-    --bit-bdg-clr: #{$clr-suc};
-    --bit-bdg-clr-txt: #{$clr-suc-text};
-}
-
-.bit-bdg-wrn {
-    --bit-bdg-clr: #{$clr-wrn};
-    --bit-bdg-clr-txt: #{$clr-wrn-text};
-}
-
-.bit-bdg-swr {
-    --bit-bdg-clr: #{$clr-swr};
-    --bit-bdg-clr-txt: #{$clr-swr-text};
-}
-
-.bit-bdg-err {
-    --bit-bdg-clr: #{$clr-err};
-    --bit-bdg-clr-txt: #{$clr-err-text};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-bdg-#{$role} {
+        --bit-bdg-clr: #{role($tokens, main)};
+        --bit-bdg-clr-txt: #{role($tokens, on)};
+        --bit-bdg-clr-dis: #{role($tokens, dis)};
+        --bit-bdg-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 

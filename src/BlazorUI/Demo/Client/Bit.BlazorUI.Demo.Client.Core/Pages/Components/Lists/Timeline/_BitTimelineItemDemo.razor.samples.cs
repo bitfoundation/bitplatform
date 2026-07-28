@@ -175,7 +175,42 @@ private List<BitTimelineItem> templateItems =
 
 <BitTimeline Horizontal Color=""BitColor.Error"" Items=""iconItems"" />
 <BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />";
+<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+
+<div><b>Disabled</b>:</div>
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline IsEnabled=""false"" Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />";
     private readonly string example8CsharpCode = @"
 private List<BitTimelineItem> iconItems =
 [

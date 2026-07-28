@@ -14,7 +14,7 @@
     margin: var(--bit-ldn-dur-8);
     width: var(--bit-ldn-dur-64);
     height: var(--bit-ldn-dur-64);
-    animation: bit-ldn-dur-anm 1.2s linear infinite;
+    animation: bit-ldn-dur-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) linear infinite;
     border: var(--bit-ldn-dur-6) solid var(--bit-ldn-color);
     border-color: var(--bit-ldn-color) transparent var(--bit-ldn-color) transparent;
 }

@@ -1,3 +1,5 @@
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+
 .bit-qkg {
     width: 100%;
     --bit-qkg-col-gap: 1rem;
@@ -34,8 +36,8 @@
     border: 1px solid;
     position: absolute;
     inset-inline-start: 0;
-    border-color: var(--bit-clr-brd-pri);
-    background-color: var(--bit-clr-bg-sec);
+    border-color: $clr-brd-pri;
+    background-color: $clr-bg-sec;
 }
 
 .bit-qkg-cob {
@@ -65,8 +67,8 @@
         inset-block-end: 5px;
         inset-block-start: 5px;
         inset-inline-start: 0.5rem;
-        border-color: var(--bit-clr-brd-pri);
-        border-inline-start: 1px solid var(--bit-clr-brd-pri);
+        border-color: $clr-brd-pri;
+        border-inline-start: 1px solid $clr-brd-pri;
     }
 }
 

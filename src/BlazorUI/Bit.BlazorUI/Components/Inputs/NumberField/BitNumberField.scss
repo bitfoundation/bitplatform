@@ -52,10 +52,8 @@
             border-color: $clr-err;
         }
 
-        &.bit-nfl-fcs {
-            .bit-nfl-cnt::after {
-                border-color: $clr-err;
-            }
+        &.bit-nfl-fcs .bit-nfl-cnt {
+            @include focus-ring($clr-err-focus);
         }
     }
 
@@ -259,13 +257,8 @@
 }
 
 .bit-nfl-fcs {
-    .bit-nfl-cnt::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+    .bit-nfl-cnt {
+        @include focus-ring;
     }
 }
 

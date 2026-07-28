@@ -70,7 +70,7 @@
         // WASM there is only one thread), so a render pass on every scroll frame
         // freezes the scroll itself. Instead, while the user is actively scrolling,
         // allow at most one pass every 300ms, plus one trailing pass shortly after
-        // scrolling settles — placeholders stay smooth mid-fling and fill in the
+        // scrolling settles - placeholders stay smooth mid-fling and fill in the
         // moment the user slows down (the behavior of native pdf viewers).
         private static throttleRender(container: HTMLElement, dotnetRef: any) {
             const c = container as any;
@@ -102,7 +102,7 @@
             const hi = rect.bottom + buffer;
 
             // Pages actually on screen are requested before buffer pages (which are
-            // ordered by distance from the viewport) — pages render one at a time on
+            // ordered by distance from the viewport) - pages render one at a time on
             // the .NET side, so this ordering is what the user perceives as speed.
             const visible: number[] = [];
             const buffered: { n: number, d: number }[] = [];
@@ -157,7 +157,7 @@
                     if (best) {
                         const n = parseInt((best as Element).getAttribute("data-page") || "", 10);
                         // Only cross the interop boundary when the focused page actually
-                        // changed — the observer fires on every threshold crossing while
+                        // changed - the observer fires on every threshold crossing while
                         // scrolling, and each call would otherwise run .NET on the UI thread.
                         if (!Number.isNaN(n) && (container as any).__bitPdvLastPage !== n) {
                             (container as any).__bitPdvLastPage = n;
@@ -777,8 +777,8 @@
             const style = document.createElement("style");
             style.id = "bit-pdv-search-style";
             style.textContent =
-                "::highlight(bit-pdv-search){background:var(--bit-clr-wrn,#ffe066);color:var(--bit-clr-wrn-text,#000)}" +
-                "::highlight(bit-pdv-search-current){background:var(--bit-clr-swr,#ff8f00);color:var(--bit-clr-swr-text,#000)}";
+                "::highlight(bit-pdv-search){background:var(--bit-clr-wrn,#EDAE12);color:var(--bit-clr-wrn-text,#141414)}" +
+                "::highlight(bit-pdv-search-current){background:var(--bit-clr-swr,#CE4207);color:var(--bit-clr-swr-text,#FFFFFF)}";
             document.head.appendChild(style);
         }
 

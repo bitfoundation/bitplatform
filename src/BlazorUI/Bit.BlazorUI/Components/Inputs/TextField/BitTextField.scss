@@ -69,13 +69,13 @@
         }
 
         &.bit-tfl-fcs {
-            .bit-tfl-fgp::after {
-                border-color: $clr-err;
+            &:not(.bit-tfl-und) .bit-tfl-fgp {
+                @include focus-ring($clr-err-focus);
             }
 
             &.bit-tfl-und {
-                .bit-tfl-wrp::after {
-                    border-color: $clr-err;
+                .bit-tfl-wrp {
+                    @include focus-underline-ring($clr-err-focus);
                 }
             }
         }
@@ -196,7 +196,7 @@
     font-family: $tg-font-family;
     background-color: transparent;
     border-radius: 0 spacing(0.125) spacing(0.125) 0;
-    min-height: calc(var(--bit-spa-scaling-factor) * 3.75);
+    min-height: spacing(3.75);
 
     i {
         width: unset;
@@ -313,26 +313,15 @@
         color: var(--bit-tfl-clr);
     }
 
-    .bit-tfl-fgp::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style var(--bit-tfl-clr);
+    // The underlined variant is excluded so it gets only the bottom-rule treatment below - applying
+    // the ring mixin and negating its box-shadow would still leave its forced-colors outline behind.
+    &:not(.bit-tfl-und) .bit-tfl-fgp {
+        @include focus-ring(var(--bit-tfl-clr-focus));
     }
 
     &.bit-tfl-und {
-        .bit-tfl-fgp::after {
-            border: none;
-        }
-
-        .bit-tfl-wrp::after {
-            content: "";
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-bottom: spacing(0.25) $shp-border-style var(--bit-tfl-clr);
+        .bit-tfl-wrp {
+            @include focus-underline-ring(var(--bit-tfl-clr-focus));
         }
     }
 }
@@ -427,70 +416,87 @@
 
 .bit-tfl-pri {
     --bit-tfl-clr: #{$clr-pri};
+    --bit-tfl-clr-focus: #{$clr-pri-focus};
 }
 
 .bit-tfl-sec {
     --bit-tfl-clr: #{$clr-sec};
+    --bit-tfl-clr-focus: #{$clr-sec-focus};
 }
 
 .bit-tfl-ter {
     --bit-tfl-clr: #{$clr-ter};
+    --bit-tfl-clr-focus: #{$clr-ter-focus};
 }
 
 .bit-tfl-inf {
     --bit-tfl-clr: #{$clr-inf};
+    --bit-tfl-clr-focus: #{$clr-inf-focus};
 }
 
 .bit-tfl-suc {
     --bit-tfl-clr: #{$clr-suc};
+    --bit-tfl-clr-focus: #{$clr-suc-focus};
 }
 
 .bit-tfl-wrn {
     --bit-tfl-clr: #{$clr-wrn};
+    --bit-tfl-clr-focus: #{$clr-wrn-focus};
 }
 
 .bit-tfl-swr {
     --bit-tfl-clr: #{$clr-swr};
+    --bit-tfl-clr-focus: #{$clr-swr-focus};
 }
 
 .bit-tfl-err {
     --bit-tfl-clr: #{$clr-err};
+    --bit-tfl-clr-focus: #{$clr-err-focus};
 }
 
 .bit-tfl-pbg {
     --bit-tfl-clr: #{$clr-bg-pri};
+    --bit-tfl-clr-focus: #{$clr-bg-pri-focus};
 }
 
 .bit-tfl-sbg {
     --bit-tfl-clr: #{$clr-bg-sec};
+    --bit-tfl-clr-focus: #{$clr-bg-sec-focus};
 }
 
 .bit-tfl-tbg {
     --bit-tfl-clr: #{$clr-bg-ter};
+    --bit-tfl-clr-focus: #{$clr-bg-ter-focus};
 }
 
 .bit-tfl-pfg {
     --bit-tfl-clr: #{$clr-fg-pri};
+    --bit-tfl-clr-focus: #{$clr-fg-pri-focus};
 }
 
 .bit-tfl-sfg {
     --bit-tfl-clr: #{$clr-fg-sec};
+    --bit-tfl-clr-focus: #{$clr-fg-sec-focus};
 }
 
 .bit-tfl-tfg {
     --bit-tfl-clr: #{$clr-fg-ter};
+    --bit-tfl-clr-focus: #{$clr-fg-ter-focus};
 }
 
 .bit-tfl-pbr {
     --bit-tfl-clr: #{$clr-brd-pri};
+    --bit-tfl-clr-focus: #{$clr-brd-pri-focus};
 }
 
 .bit-tfl-sbr {
     --bit-tfl-clr: #{$clr-brd-sec};
+    --bit-tfl-clr-focus: #{$clr-brd-sec-focus};
 }
 
 .bit-tfl-tbr {
     --bit-tfl-clr: #{$clr-brd-ter};
+    --bit-tfl-clr-focus: #{$clr-brd-ter-focus};
 }
 
 

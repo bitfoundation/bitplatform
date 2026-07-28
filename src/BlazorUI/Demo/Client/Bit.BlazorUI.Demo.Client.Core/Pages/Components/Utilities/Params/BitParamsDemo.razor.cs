@@ -70,6 +70,13 @@ public partial class BitParamsDemo
                 },
                 new()
                 {
+                    Name = "ForceAnimation",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets a value indicating whether the component's animations play at their full duration even when reduced motion is requested.",
+                },
+                new()
+                {
                     Name = "HtmlAttributes",
                     Type = "Dictionary<string, object>?",
                     DefaultValue = "null",

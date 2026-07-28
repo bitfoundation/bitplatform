@@ -55,7 +55,7 @@ public static partial class PageUrls
 
         foreach (var page in GetPages())
         {
-            builder.Append("- `").Append(page.Url).Append("` — ").AppendLine(page.Description);
+            builder.Append("- `").Append(page.Url).Append("` - ").AppendLine(page.Description);
         }
 
         return builder.ToString();

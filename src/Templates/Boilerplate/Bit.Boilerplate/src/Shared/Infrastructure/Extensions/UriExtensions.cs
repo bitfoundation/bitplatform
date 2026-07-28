@@ -47,14 +47,21 @@ public static partial class UriExtensions
 
             var culture = uri.GetCulture();
 
-            if (string.IsNullOrEmpty(culture) is false)
-            {
-                uri = new Uri(uri.ToString()
-                    .Replace($"{culture}/", string.Empty)
-                    .Replace(culture, string.Empty));
-            }
+            if (string.IsNullOrEmpty(culture))
+                return uri.ToString();
 
-            return uri.ToString();
+            // Only the leading path segment carries the culture. Replacing the culture everywhere in the url instead
+            // would strip its letters out of the rest of the path too, turning /en-US/product/en-US-shirt into
+            // /product/-shirt.
+            var segments = uri.AbsolutePath.Split('/'); // AbsolutePath always starts with '/', so segments[0] is empty.
+
+            if (segments.Length < 2 || string.Equals(segments[1], culture, StringComparison.OrdinalIgnoreCase) is false)
+                return uri.ToString(); // The culture came from somewhere other than the first segment.
+
+            return new UriBuilder(uri)
+            {
+                Path = string.Join('/', segments.Take(1).Concat(segments.Skip(2)))
+            }.Uri.ToString();
         }
 
         public string GetPath()

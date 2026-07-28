@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Legacy;
-namespace Bit.BlazorUI.Legacy.Demo.RichTextEditor;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.RichTextEditor;
 
 public partial class BitRichTextEditorLegacyDemo
 {

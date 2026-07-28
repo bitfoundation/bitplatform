@@ -44,6 +44,20 @@
         .bit-ctp-icn {
             border-color: $clr-err;
         }
+
+        &.bit-ctp-und .bit-ctp-wrp {
+            // Underlined variant drops the icon border, so surface the error cue on the
+            // underline itself to keep the invalid state visible before focus.
+            border-bottom-color: $clr-err;
+        }
+
+        &.bit-ctp-foc:not(.bit-ctp-und) .bit-ctp-icn {
+            @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-ctp-und.bit-ctp-foc .bit-ctp-icn {
+            @include focus-underline-ring($clr-err-focus);
+        }
     }
 }
 
@@ -121,14 +135,9 @@
     }
 }
 
-.bit-ctp-foc {
-    .bit-ctp-icn::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+.bit-ctp-foc:not(.bit-ctp-und) {
+    .bit-ctp-icn {
+        @include focus-ring;
     }
 }
 
@@ -152,10 +161,8 @@
     }
 
     &.bit-ctp-foc {
-        .bit-ctp-icn::after {
-            border: none;
-            border-radius: 0;
-            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
+        .bit-ctp-icn {
+            @include focus-underline-ring;
         }
     }
 }
@@ -186,7 +193,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -294,7 +301,7 @@
 }
 
 .bit-ctp-ani {
-    transition: transform 150ms cubic-bezier(0.4,0,0.2,1) 0ms,height 150ms cubic-bezier(0.4,0,0.2,1) 0ms;
+    transition: transform $mot-duration $mot-easing 0ms, height $mot-duration $mot-easing 0ms;
 }
 
 .bit-ctp-pth {
@@ -327,7 +334,7 @@
     align-items: center;
     display: inline-flex;
     justify-content: center;
-    transition-duration: 120ms;
+    transition-duration: $mot-duration-short;
     transition-property: color;
     bottom: calc(100% - spacing(4));
     color: $clr-fg-pri;
@@ -409,7 +416,7 @@
         animation-name: unset;
         transform: translateY(-100%);
         box-shadow: $box-shadow-callout;
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
 
         .bit-ctp-clk {
             margin: spacing(2) auto;

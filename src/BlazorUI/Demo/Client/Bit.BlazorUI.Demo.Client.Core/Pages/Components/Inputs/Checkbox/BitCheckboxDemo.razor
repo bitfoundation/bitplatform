@@ -6,7 +6,7 @@
             Description="A keyboard-accessible checkbox with indeterminate and three-state support, its own icon per state, label placement on any side, cancellable changes, and read-only and required modes." />
 
 <DemoPage Name="Checkbox"
-          Description="BitCheckbox turns a yes/no decision into a small clickable box with a label — check it to say yes, clear it to say no. It is backed by a real native checkbox input, so it is part of the tab order, toggles with Space, submits with forms and is announced correctly by screen readers. Beyond the two plain states it offers an indeterminate state for partially selected lists and an opt-in three-state cycle for questions whose honest third answer is no answer; each of the three states can render its own icon. The label can sit on any side of the box, changes can be cancelled before they land, and read-only and required modes plus form validation cover the form scenarios."
+          Description="BitCheckbox turns a yes/no decision into a small clickable box with a label - check it to say yes, clear it to say no. It is backed by a real native checkbox input, so it is part of the tab order, toggles with Space, submits with forms and is announced correctly by screen readers. Beyond the two plain states it offers an indeterminate state for partially selected lists and an opt-in three-state cycle for questions whose honest third answer is no answer; each of the three states can render its own icon. The label can sit on any side of the box, changes can be cancelled before they land, and read-only and required modes plus form validation cover the form scenarios."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
@@ -14,7 +14,7 @@
           GitHubDemoUrl="Inputs/Checkbox/BitCheckboxDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            A click anywhere on the BitCheckbox — the box or its label — toggles it. Left unbound like the first one
+            A click anywhere on the BitCheckbox - the box or its label - toggles it. Left unbound like the first one
             below, it keeps its own state with no binding or event handler involved, and <b>DefaultValue</b> only
             picks where that state starts. <b>Title</b> fills the native tooltip shown on hover. Disabling the
             BitCheckbox greys it out and takes it out of the interaction; the disabled state renders both checked
@@ -35,8 +35,8 @@
     <DemoExample Title="Icons" RazorCode="@example2RazorCode" Id="example2">
         <div>
             Each state of the BitCheckbox can render its own icon: <b>CheckIconName</b> replaces the check mark of the
-            checked state, <b>UncheckedIconName</b> puts an always-visible icon in the otherwise empty unchecked box —
-            which by default only previews the check mark on hover — and <b>IndeterminateIconName</b> replaces the
+            checked state, <b>UncheckedIconName</b> puts an always-visible icon in the otherwise empty unchecked box -
+            which by default only previews the check mark on hover - and <b>IndeterminateIconName</b> replaces the
             filled square of the indeterminate state. For icons from external libraries, the
             <BitLink Href="#example15">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
             these parameters.
@@ -53,7 +53,7 @@
 
     <DemoExample Title="Reversed" RazorCode="@example3RazorCode" Id="example3">
         <div>
-            <b>Reversed</b> swaps the two sides, putting the label before the box — the usual layout when the
+            <b>Reversed</b> swaps the two sides, putting the label before the box - the usual layout when the
             BitCheckbox sits at the end of a settings row. It is the single-flag shorthand of the more general
             <b>LabelPosition</b> parameter demonstrated in the next section.
         </div>
@@ -69,7 +69,7 @@
         <div>
             <b>LabelPosition</b> places the label on any of the four sides of the box: <b>End</b> is the default
             reading order, <b>Start</b> matches what <b>Reversed</b> does, and <b>Top</b> and <b>Bottom</b> stack the
-            label above or below — handy in dense toolbars and table headers. Wherever the label sits, it stays part
+            label above or below - handy in dense toolbars and table headers. Wherever the label sits, it stays part
             of the click target. It takes precedence over <b>Reversed</b> when both are set.
         </div>
         <br />
@@ -83,7 +83,7 @@
 
     <DemoExample Title="LabelTemplate" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            When a plain string is not enough — a formatted phrase, a tag, a link to the terms being agreed to —
+            When a plain string is not enough - a formatted phrase, a tag, a link to the terms being agreed to -
             <b>LabelTemplate</b> replaces the label with arbitrary markup while the box, the toggle behavior and the
             click target all stay intact.
         </div>
@@ -97,7 +97,7 @@
 
     <DemoExample Title="Indeterminate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <b>Indeterminate</b> renders the third visual state — a filled square meaning "partially" — which takes
+            <b>Indeterminate</b> renders the third visual state - a filled square meaning "partially" - which takes
             visual precedence over the checked state without touching the underlying <b>Value</b>. It is a
             display-only state: the first click clears it and toggles the value, and only code can set it again
             (unless <BitLink Href="#example7">ThreeState</BitLink> makes it part of the cycle), while
@@ -131,7 +131,7 @@
         <div>
             By default the indeterminate state is only reachable programmatically and the user can merely leave it.
             <b>ThreeState</b> makes it part of the interaction instead: each click cycles the BitCheckbox through
-            unchecked, checked and indeterminate, for answers that are genuinely three-valued — yes, no, and no answer.
+            unchecked, checked and indeterminate, for answers that are genuinely three-valued - yes, no, and no answer.
         </div>
         <br />
         <BitCheckbox Label="Three-state checkbox" ThreeState
@@ -146,7 +146,7 @@
             Both <b>Value</b> and <b>Indeterminate</b> come in the usual binding shapes. Passed one-way, the parameter
             dictates the state: the BitCheckbox renders whatever the expression says and clicks cannot move it away
             from a fixed value. Bound two-way with <b>@@bind-Value</b> or <b>@@bind-Indeterminate</b>, changes flow in
-            both directions — clicks update the field, and updating the field from elsewhere (the toggle buttons
+            both directions - clicks update the field, and updating the field from elsewhere (the toggle buttons
             below) updates the BitCheckbox.
         </div>
         <br /><br />
@@ -181,7 +181,7 @@
         <div>
             Three callbacks fire in a fixed order around a click: <b>OnClick</b> first, while the state is still the
             old one; then <b>OnChanging</b>, carrying the state the BitCheckbox is about to move to; and finally
-            <b>OnChange</b>, once the new state is committed. The checkbox below has all three wired to a log —
+            <b>OnChange</b>, once the new state is committed. The checkbox below has all three wired to a log -
             click it and watch the order:
         </div><br />
         <BitCheckbox Label="Click me"
@@ -194,7 +194,7 @@
         <div>
             <b>OnChanging</b> is the veto point: setting <b>Cancel</b> on its arguments leaves the BitCheckbox where
             it was, so a change can be refused instead of silently reverted afterwards. It is awaited, so it can take
-            its time — asking for confirmation, or checking with the server before letting the state through.
+            its time - asking for confirmation, or checking with the server before letting the state through.
         </div><br />
         <BitCheckbox Label="Allow the change" @bind-Value="allowChange" />
         <br />
@@ -203,7 +203,7 @@
         <div>Cancelled attempts: @cancelledCounter</div>
         <br /><br /><br />
         <div>
-            A BitCheckbox inside a clickable container fires that container's handler too — twice, in fact, since the
+            A BitCheckbox inside a clickable container fires that container's handler too - twice, in fact, since the
             label click and the click it forwards to the input both bubble. <b>StopPropagation</b> keeps the clicks
             to itself. Both checkboxes below sit in the same clickable box:
         </div><br />
@@ -220,7 +220,7 @@
     <DemoExample Title="Read-only & Required" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>ReadOnly</b> keeps the BitCheckbox focusable and lets screen readers announce it, but clicking or
-            pressing Space no longer changes it — unlike disabling, which takes it out of the interaction entirely.
+            pressing Space no longer changes it - unlike disabling, which takes it out of the interaction entirely.
             The value can still change programmatically:
         </div><br />
         <div class="example-box">
@@ -238,7 +238,7 @@
     <DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             Inside an <b>EditForm</b>, the BitCheckbox takes part in validation like any other input: bind it to a
-            model property, let data annotations state the rule — here, that the terms must be agreed to — and a
+            model property, let data annotations state the rule - here, that the terms must be agreed to - and a
             failed submit shows the message. While invalid, the BitCheckbox also switches to its error styling and
             renders <b>aria-invalid</b>, so the failure is visible and announced right at the control.
         </div>
@@ -268,7 +268,7 @@
         <div>
             <b>ChildContent</b> goes one step beyond <b>LabelTemplate</b> and replaces the box and the label together:
             whatever markup you put inside the BitCheckbox becomes its face, while the clicking, the binding and the
-            keyboard behavior keep working underneath. The content is on its own to reflect the state — here by
+            keyboard behavior keep working underneath. The content is on its own to reflect the state - here by
             deriving the icon from the bound values.
         </div>
         <br />
@@ -290,8 +290,8 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
-            The BitCheckbox is backed by a real, focusable checkbox input: Tab moves the focus to it — drawing a
-            focus ring around the box — Space toggles it, and screen readers announce it as a checkbox, reading the
+            The BitCheckbox is backed by a real, focusable checkbox input: Tab moves the focus to it - drawing a
+            focus ring around the box - Space toggles it, and screen readers announce it as a checkbox, reading the
             indeterminate state as mixed. <b>AutoFocus</b> puts the initial focus on it when the page renders.
         </div><br />
         <BitCheckbox Label="Focus me with Tab, toggle me with Space" />
@@ -321,7 +321,7 @@
         </div>
         <br /><br /><br />
         <div>
-            In a list that only shows a fragment of a larger set — a virtualized or paged list — <b>AriaSetSize</b>
+            In a list that only shows a fragment of a larger set - a virtualized or paged list - <b>AriaSetSize</b>
             and <b>AriaPositionInSet</b> tell assistive technologies the real size of the set and where each
             checkbox sits in it:
         </div><br />
@@ -334,8 +334,8 @@
     <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Color</b> picks the theme color the checked box and the indeterminate square fill with, with
-            <b>Primary</b> as the default. The semantic colors — <b>Success</b>, <b>Warning</b>, <b>Error</b> and
-            friends — tie the BitCheckbox to what agreeing to it means, while the <b>Background</b>, <b>Foreground</b>
+            <b>Primary</b> as the default. The semantic colors - <b>Success</b>, <b>Warning</b>, <b>Error</b> and
+            friends - tie the BitCheckbox to what agreeing to it means, while the <b>Background</b>, <b>Foreground</b>
             and <b>Border</b> families keep it legible on non-default surfaces like the inverted panel below.
             Each color is shown in all three states.
         </div>
@@ -409,44 +409,146 @@
                 </div>
             </div>
             <br />
-            <div style="padding:1rem">
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" />
+                <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Indeterminate />
+                <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" />
+                <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Indeterminate />
+                <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" />
+                <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Indeterminate />
+                <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" />
+                <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Indeterminate />
+                <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" />
+                <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Indeterminate />
+                <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" />
+                <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Indeterminate />
+                <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Value />
+            </div>
+            <br /><br /><br />
+            <div><b>Disabled</b>:</div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.Primary" Label="Primary" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Primary" Label="Primary" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Primary" Label="Primary" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.Secondary" Label="Secondary" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Secondary" Label="Secondary" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Secondary" Label="Secondary" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.Tertiary" Label="Tertiary" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Tertiary" Label="Tertiary" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Tertiary" Label="Tertiary" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.Info" Label="Info" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Info" Label="Info" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Info" Label="Info" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.Success" Label="Success" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Success" Label="Success" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Success" Label="Success" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.Warning" Label="Warning" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Warning" Label="Warning" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Warning" Label="Warning" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.SevereWarning" Label="SevereWarning" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.SevereWarning" Label="SevereWarning" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.SevereWarning" Label="SevereWarning" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.Error" Label="Error" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Error" Label="Error" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.Error" Label="Error" Value />
+            </div>
+            <br /><br />
+            <div style="background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem">
                 <div class="example-box">
-                    <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" />
-                    <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Indeterminate />
-                    <BitCheckbox Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Value />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBackground" Label="PrimaryBackground" />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Indeterminate />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Value />
                 </div>
                 <br />
                 <div class="example-box">
-                    <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" />
-                    <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Indeterminate />
-                    <BitCheckbox Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Value />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBackground" Label="SecondaryBackground" />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Indeterminate />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Value />
                 </div>
                 <br />
                 <div class="example-box">
-                    <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" />
-                    <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Indeterminate />
-                    <BitCheckbox Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Value />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBackground" Label="TertiaryBackground" />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Indeterminate />
+                    <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Value />
                 </div>
             </div>
             <br />
-            <div style="padding:1rem">
-                <div class="example-box">
-                    <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" />
-                    <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Indeterminate />
-                    <BitCheckbox Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Value />
-                </div>
-                <br />
-                <div class="example-box">
-                    <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" />
-                    <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Indeterminate />
-                    <BitCheckbox Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Value />
-                </div>
-                <br />
-                <div class="example-box">
-                    <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" />
-                    <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Indeterminate />
-                    <BitCheckbox Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Value />
-                </div>
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryForeground" Label="PrimaryForeground" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryForeground" Label="SecondaryForeground" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryForeground" Label="TertiaryForeground" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBorder" Label="PrimaryBorder" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBorder" Label="SecondaryBorder" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Value />
+            </div>
+            <br />
+            <div class="example-box">
+                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBorder" Label="TertiaryBorder" />
+                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Indeterminate />
+                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Value />
             </div>
         </div>
     </DemoExample>
@@ -454,7 +556,7 @@
     <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>
             The per-state icons are not limited to the built-in icon font: <b>CheckIcon</b>, <b>UncheckedIcon</b> and
-            <b>IndeterminateIcon</b> take a <b>BitIconInfo</b> — or a raw CSS class string — that can point at any
+            <b>IndeterminateIcon</b> take a <b>BitIconInfo</b> - or a raw CSS class string - that can point at any
             icon library whose stylesheet is loaded, like FontAwesome or Bootstrap Icons below. Use
             <b>BitIconInfo.Fa()</b>, <b>BitIconInfo.Bi()</b> or <b>BitIconInfo.Css()</b> to build one.
         </div>
@@ -522,8 +624,8 @@
     <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, which inline styles and a single class cover well.
-            For anything deeper, <b>Styles</b> and <b>Classes</b> reach the individual parts — box, icon, label,
-            container — and their <b>Checked</b> and <b>Indeterminate</b> entries apply only while the BitCheckbox is
+            For anything deeper, <b>Styles</b> and <b>Classes</b> reach the individual parts - box, icon, label,
+            container - and their <b>Checked</b> and <b>Indeterminate</b> entries apply only while the BitCheckbox is
             in that state, which is how the examples below restyle the checked look without touching the unchecked one.
         </div>
         <br /><br />

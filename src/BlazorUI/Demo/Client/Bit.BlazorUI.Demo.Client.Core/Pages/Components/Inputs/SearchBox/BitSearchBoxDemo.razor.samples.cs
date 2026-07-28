@@ -238,8 +238,112 @@ public class ValidationSearchBoxModel
 private ValidationSearchBoxModel validationBoxModel = new();";
 
     private readonly string example12RazorCode = @"
-<BitSearchBox Placeholder=""Search"" />
-<BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" />";
+<BitSearchBox Placeholder=""Primary"" ShowSearchButton Color=""BitColor.Primary"" />
+<BitSearchBox Placeholder=""Primary"" ShowSearchButton Color=""BitColor.Primary"" Underlined />
+
+<BitSearchBox Placeholder=""Secondary"" ShowSearchButton Color=""BitColor.Secondary"" />
+<BitSearchBox Placeholder=""Secondary"" ShowSearchButton Color=""BitColor.Secondary"" Underlined />
+
+<BitSearchBox Placeholder=""Tertiary"" ShowSearchButton Color=""BitColor.Tertiary"" />
+<BitSearchBox Placeholder=""Tertiary"" ShowSearchButton Color=""BitColor.Tertiary"" Underlined />
+
+<BitSearchBox Placeholder=""Info"" ShowSearchButton Color=""BitColor.Info"" />
+<BitSearchBox Placeholder=""Info"" ShowSearchButton Color=""BitColor.Info"" Underlined />
+
+<BitSearchBox Placeholder=""Success"" ShowSearchButton Color=""BitColor.Success"" />
+<BitSearchBox Placeholder=""Success"" ShowSearchButton Color=""BitColor.Success"" Underlined />
+
+<BitSearchBox Placeholder=""Warning"" ShowSearchButton Color=""BitColor.Warning"" />
+<BitSearchBox Placeholder=""Warning"" ShowSearchButton Color=""BitColor.Warning"" Underlined />
+
+<BitSearchBox Placeholder=""SevereWarning"" ShowSearchButton Color=""BitColor.SevereWarning"" />
+<BitSearchBox Placeholder=""SevereWarning"" ShowSearchButton Color=""BitColor.SevereWarning"" Underlined />
+
+<BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" />
+<BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" Underlined />
+
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" />
+    <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" Underlined />
+
+    <BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" />
+    <BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" Underlined />
+
+    <BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" />
+    <BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" Underlined />
+</div>
+
+<BitSearchBox Placeholder=""PrimaryForeground"" ShowSearchButton Color=""BitColor.PrimaryForeground"" />
+<BitSearchBox Placeholder=""PrimaryForeground"" ShowSearchButton Color=""BitColor.PrimaryForeground"" Underlined />
+
+<BitSearchBox Placeholder=""SecondaryForeground"" ShowSearchButton Color=""BitColor.SecondaryForeground"" />
+<BitSearchBox Placeholder=""SecondaryForeground"" ShowSearchButton Color=""BitColor.SecondaryForeground"" Underlined />
+
+<BitSearchBox Placeholder=""TertiaryForeground"" ShowSearchButton Color=""BitColor.TertiaryForeground"" />
+<BitSearchBox Placeholder=""TertiaryForeground"" ShowSearchButton Color=""BitColor.TertiaryForeground"" Underlined />
+
+<BitSearchBox Placeholder=""PrimaryBorder"" ShowSearchButton Color=""BitColor.PrimaryBorder"" />
+<BitSearchBox Placeholder=""PrimaryBorder"" ShowSearchButton Color=""BitColor.PrimaryBorder"" Underlined />
+
+<BitSearchBox Placeholder=""SecondaryBorder"" ShowSearchButton Color=""BitColor.SecondaryBorder"" />
+<BitSearchBox Placeholder=""SecondaryBorder"" ShowSearchButton Color=""BitColor.SecondaryBorder"" Underlined />
+
+<BitSearchBox Placeholder=""TertiaryBorder"" ShowSearchButton Color=""BitColor.TertiaryBorder"" />
+<BitSearchBox Placeholder=""TertiaryBorder"" ShowSearchButton Color=""BitColor.TertiaryBorder"" Underlined />
+
+
+<BitSearchBox Placeholder=""Primary"" ShowSearchButton Color=""BitColor.Primary"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""Primary"" ShowSearchButton Color=""BitColor.Primary"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""Secondary"" ShowSearchButton Color=""BitColor.Secondary"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""Secondary"" ShowSearchButton Color=""BitColor.Secondary"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""Tertiary"" ShowSearchButton Color=""BitColor.Tertiary"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""Tertiary"" ShowSearchButton Color=""BitColor.Tertiary"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""Info"" ShowSearchButton Color=""BitColor.Info"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""Info"" ShowSearchButton Color=""BitColor.Info"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""Success"" ShowSearchButton Color=""BitColor.Success"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""Success"" ShowSearchButton Color=""BitColor.Success"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""Warning"" ShowSearchButton Color=""BitColor.Warning"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""Warning"" ShowSearchButton Color=""BitColor.Warning"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""SevereWarning"" ShowSearchButton Color=""BitColor.SevereWarning"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""SevereWarning"" ShowSearchButton Color=""BitColor.SevereWarning"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""Error"" ShowSearchButton Color=""BitColor.Error"" IsEnabled=""false"" Underlined />
+
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" />
+    <BitSearchBox Placeholder=""PrimaryBackground"" ShowSearchButton Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Underlined />
+
+    <BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" />
+    <BitSearchBox Placeholder=""SecondaryBackground"" ShowSearchButton Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" Underlined />
+
+    <BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" />
+    <BitSearchBox Placeholder=""TertiaryBackground"" ShowSearchButton Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" Underlined />
+</div>
+
+<BitSearchBox Placeholder=""PrimaryForeground"" ShowSearchButton Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""PrimaryForeground"" ShowSearchButton Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""SecondaryForeground"" ShowSearchButton Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""SecondaryForeground"" ShowSearchButton Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""TertiaryForeground"" ShowSearchButton Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""TertiaryForeground"" ShowSearchButton Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""PrimaryBorder"" ShowSearchButton Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""PrimaryBorder"" ShowSearchButton Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""SecondaryBorder"" ShowSearchButton Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""SecondaryBorder"" ShowSearchButton Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" Underlined />
+
+<BitSearchBox Placeholder=""TertiaryBorder"" ShowSearchButton Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" />
+<BitSearchBox Placeholder=""TertiaryBorder"" ShowSearchButton Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Underlined />";
 
     private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

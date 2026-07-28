@@ -106,7 +106,31 @@ starting point. The possibilities are endless, and the journey begins now.
 
 <BitLink Color=""BitColor.PrimaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBorder Color Link</BitLink>
 <BitLink Color=""BitColor.SecondaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBorder Color Link</BitLink>
-<BitLink Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder Color Link</BitLink>";
+<BitLink Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder Color Link</BitLink>
+
+
+<BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Primary (default)</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.Tertiary"" Href=""https://github.com/bitfoundation/bitplatform"">Tertiary</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.Info"" Href=""https://github.com/bitfoundation/bitplatform"">Info</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.Success"" Href=""https://github.com/bitfoundation/bitplatform"">Success</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.SevereWarning"" Href=""https://github.com/bitfoundation/bitplatform"">SevereWarning</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
+
+<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
+    <BitLink IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground</BitLink>
+    <BitLink IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground</BitLink>
+    <BitLink IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground</BitLink>
+</div>
+
+<BitLink IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryForeground</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryForeground</BitLink>
+
+<BitLink IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBorder</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBorder</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder</BitLink>";
 
     private readonly string example10RazorCode = @"
 <style>

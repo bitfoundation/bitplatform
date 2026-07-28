@@ -54,7 +54,7 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
                     LogScopeData = logScopeData.ToDictionary()
                 }, options: new()
                 {
-                    Size = 1,
+                    Size = responseContent.Length,
                     AbsoluteExpirationRelativeToNow = maxAge
                 });
             }

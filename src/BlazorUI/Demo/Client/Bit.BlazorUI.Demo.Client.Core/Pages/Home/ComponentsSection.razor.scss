@@ -63,10 +63,10 @@
     }
 
     ::deep .featured {
-        color: #132f4c;
-        padding: 0 rem2(2px);
-        border-radius: rem2(2px);
+        padding: 0 rem2(4px);
         margin: rem2(3px) rem2(8px);
-        background-color: #fcd077;
+        color: $bit-color-warning-text;
+        background-color: $bit-color-warning;
+        border-radius: $bit-shape-border-radius;
     }
 }

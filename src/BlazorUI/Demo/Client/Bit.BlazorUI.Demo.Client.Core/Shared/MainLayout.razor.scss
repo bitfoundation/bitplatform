@@ -13,61 +13,65 @@
 ::deep {
     .page-container {
         width: 100%;
-        padding: 2rem;
         margin: 0 auto;
-        max-width: rem2(1200px);
+        max-width: var(--demo-content-width);
+        padding: rem2(40px) rem2(32px) rem2(64px);
 
         @include md {
-            padding: 1.5rem;
+            padding: rem2(32px) rem2(24px) rem2(48px);
         }
 
         @include sm {
-            padding: 1rem;
+            padding: rem2(24px) rem2(16px) rem2(40px);
         }
     }
 
+    // The chrome sections are BitCards (full-width, primary background, secondary border, no
+    // shadow); only the rhythm of the page - padding, spacing between cards and the muted body
+    // color - stays here.
     .page-section {
-        width: 100%;
-        padding: rem2(28px);
-        position: relative;
-        box-sizing: border-box;
-        border-radius: rem2(2px);
-        margin-bottom: rem2(28px);
-        box-shadow: $bit-box-shadow-callout;
+        padding: rem2(32px);
+        margin-bottom: rem2(24px);
         color: $bit-color-foreground-secondary;
-        background-color: $bit-color-background-primary;
+
+        @include sm {
+            padding: rem2(20px);
+        }
 
         &:last-child {
             margin-bottom: 0;
         }
     }
 
+    // Every top-level page opens the same way: a header row (a BitStack on the component pages,
+    // a plain element on the prose pages where the title is its only child), then a lead
+    // paragraph. Text sizes and colors come from BitText's own parameters, never from here.
+    .page-header {
+        overflow-wrap: anywhere;
+        margin-bottom: rem2(20px);
+    }
+
+    // The lead is prose, not one more boxed section: after the H1 the reader should hit a
+    // sentence, not another frame.
+    .page-lead {
+        margin-bottom: rem2(40px);
+    }
+
+    // Heading plus its BitSeparator, so the eye can find the boundary between Usage, API and
+    // Feedback while scrolling a long page instead of relying on whitespace alone.
+    .section-heading {
+        overflow-wrap: anywhere;
+        margin-bottom: rem2(24px);
+    }
+
     .subclass-title,
     .subenum-title,
-    .subtitle,
     .title {
         overflow-wrap: anywhere;
     }
 
     .title {
         margin-bottom: rem2(50px);
-    }
-
-    .subtitle {
-        margin-bottom: rem2(35px);
-        color: $bit-color-foreground-primary;
-    }
-
-    .section-title {
-        bottom: rem2(8px);
-        position: absolute;
-        margin-right: rem2(175px);
-        color: $bit-color-foreground-primary;
-
-        @include lt-lg {
-            overflow-wrap: anywhere;
-            margin-right: rem2(90px);
-        }
     }
 
     .example-desc {
@@ -80,44 +84,51 @@
         display: flex;
         overflow: auto;
         direction: ltr;
-        border-top: none;
         flex-flow: column;
         position: relative;
-        min-height: rem2(70px);
+        line-height: 1.6;
+        font-size: rem2(13px);
+        // Just enough to keep an empty output pane from collapsing to a hairline. It used to be
+        // 70px, which left a single-line command floating in the middle of its own box.
+        min-height: rem2(44px);
         max-height: rem2(464px);
         box-sizing: border-box;
         align-items: flex-start;
         justify-content: flex-start;
-        padding: 24px 80px 24px 24px;
-        border: rem2(1px) solid $bit-color-border-primary;
-        font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+        font-family: var(--demo-font-mono);
+        padding: rem2(16px) rem2(56px) rem2(16px) rem2(16px);
+        background-color: $bit-color-background-secondary;
+        border: rem2(1px) solid $bit-color-border-secondary;
 
         &::-webkit-scrollbar {
             width: rem2(8px);
         }
 
+        &::-webkit-scrollbar:horizontal {
+            height: rem2(8px);
+        }
+
+        &::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
         &::-webkit-scrollbar-thumb {
             border-radius: rem2(8px);
-            border: rem2(4px) solid #c8c6c4;
+            background-color: $bit-color-border-primary;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background-color: $bit-color-foreground-tertiary;
         }
 
         &::-webkit-scrollbar-button {
             display: none;
         }
-
-        &::-webkit-scrollbar-thumb:hover {
-            border-radius: rem2(8px);
-            border: rem2(4px) solid $bit-color-primary;
-        }
-
-        &::-webkit-scrollbar:horizontal {
-            height: rem2(8);
-        }
     }
 
     code {
-        line-height: 1.5;
-        font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+        line-height: 1.6;
+        font-family: var(--demo-font-mono);
 
         span {
             font-family: inherit;
