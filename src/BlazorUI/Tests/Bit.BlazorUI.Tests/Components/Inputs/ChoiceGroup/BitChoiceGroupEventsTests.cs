@@ -121,14 +121,18 @@ public class BitChoiceGroupEventsTests : BunitTestContext
     [TestMethod]
     public void BitChoiceGroupShouldAutoFocusTheCheckedItem()
     {
-        RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        var items = GetItems();
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Items, items);
             parameters.Add(p => p.DefaultValue, "B");
             parameters.Add(p => p.AutoFocus, true);
         });
 
+        // "B" is the checked item, so the focus has to land on it and not on the first one.
         Assert.AreEqual(1, FocusInvocationCount());
+        Assert.AreEqual(component.FindAll(".bit-chg-icn input")[items.FindIndex(i => i.Value == "B")].GetAttribute("blazor:elementreference"), FocusedElementId());
     }
 
     [TestMethod]

@@ -132,6 +132,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <see cref="BitLabelPosition.End"/>, which renders the circle first and the content after it.
     /// Items rendered as image or icon tiles lay their own content out and ignore this parameter.
     /// </summary>
+    /// <remarks>
+    /// Replaces the removed Reversed parameter, which only offered the two horizontal positions.
+    /// Migrate an existing <c>Reversed="true"</c> (in either layout) to
+    /// <c>LabelPosition="BitLabelPosition.Start"</c>; <c>Reversed="false"</c> was the default and needs
+    /// no replacement. A binding of the form <c>Reversed="@flag"</c> becomes
+    /// <c>LabelPosition="@(flag ? BitLabelPosition.Start : BitLabelPosition.End)"</c>.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitLabelPosition? LabelPosition { get; set; }
 
@@ -462,7 +469,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (AutoFocus && _autoFocusDone is false && IsEnabled && ReadOnly is false && GetIsEnabled(item))
         {
             _autoFocusDone = true;
-            await InputElement.FocusAsync();
+
+            try
+            {
+                await InputElement.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to focus
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
         }
     }
 
