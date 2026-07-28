@@ -516,12 +516,22 @@ public class BitFileInputTests : BunitTestContext
     [TestMethod]
     public async Task BitFileInputRemoveFileShouldClearAllFilesWhenNullProvided()
     {
-        var component = RenderComponent<BitFileInput>();
+        Context.JSInterop.Setup<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", _ => true)
+                         .SetResult([new() { Name = "file1.txt", Size = 10, FileId = "1" },
+                                     new() { Name = "file2.txt", Size = 20, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
 
         var instance = component.Instance;
 
-        // RemoveFile with null should not throw
-        await instance.RemoveFile(null);
+        Assert.HasCount(2, instance.Files);
+
+        await component.InvokeAsync(() => instance.RemoveFile(null));
 
         Assert.IsEmpty(instance.Files);
     }

@@ -214,6 +214,8 @@
     height: 1px;
     overflow: hidden;
     position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-fin-pri {
