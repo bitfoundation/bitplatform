@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createPageContext } from './harness.js';
+import { createPageContext, waitFor } from './harness.js';
 
 const SPLASH = { 'data-bit-bswup-config': 'true' };
 
@@ -80,7 +80,7 @@ describe('MutationObserver lifetime', () => {
         // clampLongTimers lets the 60s OBSERVE_TIMEOUT fire at the harness's ~5ms clamp.
         const ctx = progressPage({ clampLongTimers: true });
         expect(observing(ctx)).toBe(true); // still waiting
-        await new Promise(r => setTimeout(r, 20));
+        await waitFor(() => !observing(ctx), 'the observer to disconnect on timeout');
         expect(observing(ctx)).toBe(false);
     });
 });
@@ -235,7 +235,8 @@ describe('update ready', () => {
         // Not shown synchronously - the fallback timer is still pending.
         expect(ctx.elements['bit-bswup-reload'].style.display).not.toBe('inline');
         // clampLongTimers fires the 10s AUTO_RELOAD_FALLBACK_MS at the harness's ~5ms clamp.
-        await new Promise(r => setTimeout(r, 25));
+        await waitFor(() => ctx.elements['bit-bswup-reload'].style.display === 'inline',
+            'the fallback timer to reveal the reload button');
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
     });
 });

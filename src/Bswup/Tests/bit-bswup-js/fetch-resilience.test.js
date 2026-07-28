@@ -25,6 +25,12 @@ function boot({ config = {}, assets = [{ url: 'app.js', hash: 'h1' }], fetchHand
 
 const NETWORK_DOWN = async () => { throw new TypeError('Failed to fetch'); };
 
+// The asset cache bucket every test here boots into: `bit-bswup:<scope-path> - <version>` with
+// the harness's root scope and the 'v1' manifest version set in boot(). Named once so a change
+// to the cache-key format is a one-line update rather than a sweep through the file.
+const ASSET_CACHE = 'bit-bswup:/ - v1';
+const openAssetCache = sw => sw.caches.open(ASSET_CACHE);
+
 describe('requests Bswup does not manage', () => {
     it('ignores non-GET requests instead of proxying them', async () => {
         const sw = boot();
@@ -73,7 +79,7 @@ describe('the managed path never rejects', () => {
 
     it('serves a stale cached copy when the network is down', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/app.js`, { ok: true, status: 200, body: 'stale', clone: () => ({}) });
 
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
@@ -86,7 +92,7 @@ describe('the managed path never rejects', () => {
     // the same URL is the only thing left that can keep the app alive.
     it('serves a previous-hash copy when the network is down', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [{ url: 'app.js', hash: 'sha256-new' }], fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/app.js.sha256-old`, { ok: true, status: 200, body: 'previous-version', clone: () => ({}) });
 
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
@@ -96,7 +102,7 @@ describe('the managed path never rejects', () => {
 
     it('never serves a sibling file (app.js.map / app.js.br) as the stale fallback', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [{ url: 'app.js', hash: 'sha256-new' }], fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/app.js.map`, { ok: true, status: 200, body: 'a source map', clone: () => ({}) });
         await cache.put(`${ORIGIN}/app.js.br`, { ok: true, status: 200, body: 'brotli bytes', clone: () => ({}) });
         await cache.put(`${ORIGIN}/app.js.map.sha256-x`, { ok: true, status: 200, body: 'hashed map', clone: () => ({}) });
@@ -163,7 +169,7 @@ describe('the managed path never rejects', () => {
 
     it('serves from cache without touching the network', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/app.js.h1`, { ok: true, status: 200, body: 'cached', clone: () => ({}) });
 
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
@@ -173,7 +179,7 @@ describe('the managed path never rejects', () => {
 
     it('falls back to cache in active mode when the network is down', async () => {
         const sw = boot({ config: { isPassive: false }, assets: [managed], fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/app.js`, { ok: true, status: 200, body: 'stale', clone: () => ({}) });
 
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
@@ -185,7 +191,7 @@ describe('the managed path never rejects', () => {
     // regex semantics that matter (any query tolerated, caseInsensitiveUrl folding) must hold.
     it('matches an asset URL regardless of its query string (Map lookup is query-tolerant)', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/app.js.h1`, { ok: true, status: 200, body: 'cached', clone: () => ({}) });
 
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js?asp-append-version=abc123` });
@@ -195,7 +201,7 @@ describe('the managed path never rejects', () => {
 
     it('matches case-insensitively when caseInsensitiveUrl is set', async () => {
         const sw = boot({ config: { isPassive: true, caseInsensitiveUrl: true }, assets: [managed], fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/app.js.h1`, { ok: true, status: 200, body: 'cached', clone: () => ({}) });
 
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/APP.JS` });
@@ -219,7 +225,7 @@ describe('range requests', () => {
 
     async function bootCached() {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN, configure: includeMp4 });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/clip.mp4.h1`, fullBody());
         return sw;
     }
@@ -269,7 +275,7 @@ describe('range requests', () => {
 
         // The Cache API itself also rejects 206 puts, so an empty cache alone cannot prove
         // the worker's own guard exists - assert the put was never even attempted.
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         let putAttempts = 0;
         const originalPut = cache.put.bind(cache);
         cache.put = async (...args) => { putAttempts++; return originalPut(...args); };
@@ -277,7 +283,7 @@ describe('range requests', () => {
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-3' } });
         expect(response.status).toBe(206); // the server's partial passes through untouched
         expect(putAttempts).toBe(0);
-        expect(sw.caches.snapshot()['bit-bswup:/ - v1'] || []).toHaveLength(0);
+        expect(sw.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
     });
 
     it('sends a ranged passive-mode fetch with the page\'s own request so the server can answer 206', async () => {
@@ -302,7 +308,7 @@ describe('range requests', () => {
     // bytes (corrupt). Fall back to the full response rather than emit a mislabeled 206.
     it('falls back to the full response when the cached body declares a content encoding', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN, configure: includeMp4 });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/clip.mp4.h1`, new FakeResponse(TEXT, { status: 200, headers: new Headers({ 'content-encoding': 'br', 'content-type': 'video/mp4' }) }));
 
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
@@ -313,7 +319,7 @@ describe('range requests', () => {
     // 'identity' is the no-op encoding and must still slice normally.
     it('still slices when the content encoding is identity', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN, configure: includeMp4 });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/clip.mp4.h1`, new FakeResponse(TEXT, { status: 200, headers: new Headers({ 'content-encoding': 'identity' }) }));
 
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
@@ -356,7 +362,7 @@ describe('active-mode lazy heal respects integrity', () => {
 
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
         expect(response.type).toBe('error'); // failed, not served
-        expect(sw.caches.snapshot()['bit-bswup:/ - v1'] || []).toHaveLength(0);
+        expect(sw.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
     });
 
     // A ranged heal keeps the page's own request: a 206 can't be SRI-verified and Safari needs
@@ -386,7 +392,7 @@ describe('offline navigation (SPA default document)', () => {
 
     async function bootOffline(configure) {
         const sw = boot({ config: { isPassive: true }, assets, fetchHandler: NETWORK_DOWN, configure });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/index.html.idx`, { ok: true, status: 200, body: 'the app shell', clone: () => ({}) });
         await cache.put(`${ORIGIN}/manifest.json.mf`, { ok: true, status: 200, body: '{"name":"app"}', clone: () => ({}) });
         return sw;
@@ -453,7 +459,7 @@ describe('offline navigation (SPA default document)', () => {
         expect(seen.some(u => u.includes('/counter'))).toBe(false); // the route URL is never fetched
 
         // And what landed under the shell's key is the shell, not the route's HTML.
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         const cached = await cache.match(`${ORIGIN}/index.html.idx`);
         expect(cached && cached.body).toBe('the real shell');
     });
@@ -470,7 +476,7 @@ describe('redirected shell responses are cleaned for navigations', () => {
 
     it('rebuilds a cached redirected shell served to a deep-link navigation', async () => {
         const sw = boot({ config: { isPassive: true }, assets, fetchHandler: NETWORK_DOWN });
-        const cache = await sw.caches.open('bit-bswup:/ - v1');
+        const cache = await openAssetCache(sw);
         await cache.put(`${ORIGIN}/index.html.idx`, new FakeResponse('the app shell', { status: 200, redirected: true }));
 
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter/42`, mode: 'navigate' });
@@ -527,7 +533,7 @@ describe('active mode lazily heals the cache', () => {
         const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
         expect(handled).toBe(true);
         expect(response.body).toBe('from-network');
-        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/app.js.h1`);
+        expect(sw.caches.snapshot()[ASSET_CACHE]).toContain(`${ORIGIN}/app.js.h1`);
 
         // The healed entry now serves offline: the second request never touches the network.
         const again = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
@@ -544,7 +550,7 @@ describe('active mode lazily heals the cache', () => {
 
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js` });
         expect(response.status).toBe(404); // passed through to the page untouched
-        expect(sw.caches.snapshot()['bit-bswup:/ - v1'] || []).toHaveLength(0);
+        expect(sw.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
     });
 
     // A cross-origin externalAssets host without CORS headers rejects the worker's cors-mode
@@ -565,6 +571,6 @@ describe('active mode lazily heals the cache', () => {
         const { handled, response } = await sw.fetchEvent({ url: CDN, mode: 'no-cors' });
         expect(handled).toBe(true);
         expect(response.body).toBe('opaque-bytes');
-        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(CDN);
+        expect(sw.caches.snapshot()[ASSET_CACHE]).toContain(CDN);
     });
 });

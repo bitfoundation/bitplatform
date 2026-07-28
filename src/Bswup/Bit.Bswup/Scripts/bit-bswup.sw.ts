@@ -50,9 +50,7 @@ interface BitBswupGlobals {
 // compilation the interface for the *other* lib (WorkerGlobalScope under DOM, Window under
 // WebWorker) is simply a harmless, unused standalone declaration.
 interface WorkerGlobalScope extends BitBswupGlobals { }
-interface Window extends BitBswupGlobals {
-    // importScripts: any
- }
+interface Window extends BitBswupGlobals { }
 
 // Minimal shape of the ExtendableEvent / FetchEvent surface we use. Declared locally so the
 // install/activate/fetch handlers can call waitUntil()/respondWith() without DOM lib types.
@@ -84,6 +82,14 @@ try {
 } catch (err) {
     diag('*** importScripts failed:', ASSETS_URL, err);
 }
+
+// State for sendError's non-fatal console cap (see the sendError implementation below for what
+// it does). Declared HERE, ahead of the manifest validation, rather than beside sendError:
+// sendError is a hoisted function declaration and the validation below calls it during module
+// evaluation, so `let`/`const` bindings placed next to it would still be in their temporal dead
+// zone at that moment - a ReferenceError waiting on the first non-fatal error reported early.
+const MAX_NONFATAL_CONSOLE_ERRORS = 10;
+let nonFatalConsoleErrors = 0;
 
 const MANIFEST_ERRORS = validateAssetsManifest(self.assetsManifest);
 // When the manifest is missing/malformed the service worker must not proceed to enumerate
@@ -1403,7 +1409,17 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // hasIntegrity - not isIntegrity - so a CORS-shaped TypeError can never sneak
                 // an integrity-checked asset into the unverified path.
                 if (!hasIntegrity && isCrossOrigin) {
-                    response = await tryFetch(createNewAssetRequest(asset, true));
+                    // createNewAssetRequest can throw on a pathological composed URL (as the
+                    // guarded call sites elsewhere assume). Letting it escape from inside this
+                    // catch block would reject addCache without ever running sendError/doReport,
+                    // so the page would see neither an error nor the progress tick. Swallow it
+                    // and leave `response` undefined: the block below then classifies and
+                    // reports the ORIGINAL fetch failure, which is the meaningful one.
+                    try {
+                        response = await tryFetch(createNewAssetRequest(asset, true));
+                    } catch (noCorsErr) {
+                        diag('*** addCache - no-cors fallback request build failed:', noCorsErr, asset.reqUrl);
+                    }
                 }
 
                 if (!response) {
@@ -1823,9 +1839,8 @@ function sendMessage(message: any) {
 // dropping while 200 assets are still downloading - otherwise floods the console with hundreds
 // of identical errors that bury the one line explaining what happened. Every failure is still
 // reported to the page (handlers may count or display them) and to diag; fatal errors are
-// always logged.
-const MAX_NONFATAL_CONSOLE_ERRORS = 10;
-let nonFatalConsoleErrors = 0;
+// always logged. (MAX_NONFATAL_CONSOLE_ERRORS / nonFatalConsoleErrors are declared near the
+// top of this file, not here - see the note beside them.)
 
 function sendError(data: { reason: string; message: string; fatal?: boolean;[key: string]: any }) {
     diag('*** error:', data);

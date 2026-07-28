@@ -132,6 +132,15 @@
                         data.reload().then(() => {
                             appEl.style.display = 'block';
                             bswupEl.style.display = 'none';
+                        }).catch(() => {
+                            // Same recovery the built-in progress UI performs: a rejected
+                            // reload leaves the splash up with a manual retry wired back to
+                            // data.reload, instead of freezing on "starting Blazor..." with
+                            // no way forward.
+                            descriptionLabel.textContent = 'Starting failed, click the button to retry.';
+                            bswupEl.style.display = 'block';
+                            reloadButton.style.display = 'block';
+                            reloadButton.onclick = data.reload;
                         });
                     } else {
                         descriptionLabel.textContent = 'Downloading finished, ready to reload.';

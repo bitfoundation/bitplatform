@@ -42,6 +42,22 @@ export function readBundle(name) {
     return fs.readFileSync(file, 'utf8');
 }
 
+/**
+ * Polls until `predicate()` returns true. Used where the code under test is driven by a real
+ * (harness-clamped) timer rather than a promise the test can await: a fixed sleep has to guess
+ * a duration that is simultaneously long enough not to flake on a loaded CI machine and short
+ * enough not to pad the suite, and it never gets both. Polling returns on the first tick after
+ * the timer fires and only spends the full `timeout` when the behavior is genuinely broken -
+ * where it then fails with a clear message instead of a bare assertion mismatch.
+ */
+export async function waitFor(predicate, message = 'condition', timeout = 2000) {
+    const deadline = Date.now() + timeout;
+    while (!predicate()) {
+        if (Date.now() >= deadline) throw new Error(`waitFor timed out after ${timeout}ms waiting for: ${message}`);
+        await new Promise(r => setTimeout(r, 1));
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Minimal Request/Response/CacheStorage
 // ---------------------------------------------------------------------------
