@@ -763,11 +763,6 @@ public class BitFileInputTests : BunitTestContext
         Assert.HasCount(2, instance.Files);
     }
 
-    private void SetupFiles(BitFileInputInfo[] files)
-    {
-        Context.JSInterop.Setup<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", _ => true).SetResult(files);
-    }
-
     [TestMethod]
     public void BitFileInputShouldRenderLabelTemplateWhenProvided()
     {
@@ -1025,5 +1020,10 @@ public class BitFileInputTests : BunitTestContext
         {
             Assert.Contains(expectedStyle, style);
         }
+    }
+
+    private void SetupFiles(BitFileInputInfo[] files)
+    {
+        Context.JSInterop.Setup<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", _ => true).SetResult(files);
     }
 }

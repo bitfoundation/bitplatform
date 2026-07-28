@@ -663,7 +663,7 @@ public partial class BitFileInputDemo
     private string? ValidateImageDimensions(BitFileInputInfo file)
     {
         // dropped and pasted files bypass the accept filter, so non-image files reach the validator as well.
-        if (file.ContentType.StartsWith("image/") is false) return null;
+        if (file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) is false) return null;
 
         if (file.Width is null || file.Height is null) return "This image could not be decoded";
 

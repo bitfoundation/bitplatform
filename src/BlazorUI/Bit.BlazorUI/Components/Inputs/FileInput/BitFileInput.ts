@@ -127,6 +127,13 @@ namespace BitBlazorUI {
                 removeDragState(false);
             }
 
+            // a drag that ends without a matching dragleave (cancelled with Escape, released outside the
+            // window, or dropped on something else) would otherwise leave the counter above zero and
+            // the drag classes and inline style stuck on the drop zone.
+            function onDragCancel() {
+                removeDragState(true);
+            }
+
             function setFiles(files: File[] | FileList) {
                 const list = Array.from(files as ArrayLike<File>);
                 if (list.length === 0) return;
@@ -184,6 +191,11 @@ namespace BitBlazorUI {
             dropZoneElement.addEventListener("dragleave", onDragLeave);
             dropZoneElement.addEventListener("drop", onDrop);
             dropZoneElement.addEventListener('paste', onPaste);
+            dropZoneElement.addEventListener('dragend', onDragCancel);
+            // the window listener only cleans the state up, it never prevents the default,
+            // so a drop landing anywhere else on the page keeps behaving as it did.
+            window.addEventListener('dragend', onDragCancel);
+            window.addEventListener('drop', onDragCancel);
 
             return {
                 update: (newAllowDrop: boolean, newAllowPaste: boolean, newExpandDirectories: boolean) => {
@@ -201,6 +213,9 @@ namespace BitBlazorUI {
                     dropZoneElement.removeEventListener('dragleave', onDragLeave);
                     dropZoneElement.removeEventListener("drop", onDrop);
                     dropZoneElement.removeEventListener('paste', onPaste);
+                    dropZoneElement.removeEventListener('dragend', onDragCancel);
+                    window.removeEventListener('dragend', onDragCancel);
+                    window.removeEventListener('drop', onDragCancel);
                 }
             }
 

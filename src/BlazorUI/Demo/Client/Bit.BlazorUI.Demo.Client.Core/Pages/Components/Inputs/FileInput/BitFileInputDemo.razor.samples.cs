@@ -232,6 +232,11 @@ private void AddEventLog(string log)
         cursor: pointer;
     }
 
+    .browse-file:hover {
+        border-color: #0072CE;
+        background-color: #f8f9fa;
+    }
+
     .browse-file-header {
         display: flex;
         flex-direction: column;
@@ -293,6 +298,11 @@ private void AddEventLog(string log)
         font-size: 24px;
     }
 
+    .file-info-name {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
     .file-info-data {
         width: 275px;
     }
@@ -310,6 +320,10 @@ private void AddEventLog(string log)
 
     .file-info-btns .remove-ico {
         color: #F9423A;
+    }
+
+    .file-info-btns .remove-ico:hover {
+        color: #d32f2f;
     }
 
     .file-info-e-msg {
