@@ -223,6 +223,7 @@
     cursor: pointer;
     gap: spacing(0.75);
     align-items: center;
+
     // Matches the radius the tile layout sets below, so the focus ring (a box-shadow, which follows the
     // border radius) is rounded on a plain item too instead of only on a tile.
     border-radius: $shp-border-radius;
