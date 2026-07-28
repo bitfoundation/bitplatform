@@ -1,3 +1,5 @@
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+
 /* ============================================================
    BitDataGrid - styles
    Theming is driven entirely by the Bit BlazorUI theme system
@@ -9,12 +11,12 @@
 .bit-dtg {
     --bit-dtg-cell-pad: 8px 10px;
 
-    font-family: var(--bit-tpg-font-family);
+    font-family: $tg-font-family;
     font-size: 14px;
     line-height: 1.4;
-    color: var(--bit-clr-fg-pri);
-    background: var(--bit-clr-bg-pri);
-    border-radius: var(--bit-shp-brd-radius);
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+    border-radius: $shp-border-radius;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -28,7 +30,7 @@
 }
 
 .bit-dtg.bit-dtg-bordered {
-    border: 1px solid var(--bit-clr-brd-ter);
+    border: 1px solid $clr-brd-ter;
 }
 
 /* ---------------------------------------------------------- Toolbar */
@@ -38,7 +40,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px;
-    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    border-bottom: 1px solid $clr-brd-ter;
     flex-wrap: wrap;
 }
 
@@ -55,8 +57,8 @@
     flex-wrap: wrap;
     gap: 12px;
     padding: 10px;
-    border-bottom: 1px solid var(--bit-clr-brd-ter);
-    background: var(--bit-clr-bg-sec);
+    border-bottom: 1px solid $clr-brd-ter;
+    background: $clr-bg-sec;
 }
 
 .bit-dtg-chooser-item {
@@ -87,7 +89,7 @@
     display: grid;
     grid-template-columns: var(--bit-dtg-template);
     align-items: stretch;
-    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    border-bottom: 1px solid $clr-brd-ter;
 }
 
 .bit-dtg-header {
@@ -98,11 +100,11 @@
 
 .bit-dtg-header-row,
 .bit-dtg-filter-row {
-    background: var(--bit-clr-bg-sec);
+    background: $clr-bg-sec;
 }
 
 .bit-dtg-filter-row {
-    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    border-bottom: 1px solid $clr-brd-ter;
 }
 
 .bit-dtg-hcell {
@@ -112,7 +114,7 @@
     padding: var(--bit-dtg-cell-pad);
     font-weight: 600;
     position: relative;
-    background: var(--bit-clr-bg-sec);
+    background: $clr-bg-sec;
     border-inline-end: 1px solid transparent;
     user-select: none;
     overflow: hidden;
@@ -125,12 +127,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    background: var(--bit-clr-bg-pri);
+    background: $clr-bg-pri;
 }
 
 .bit-dtg-bordered .bit-dtg-cell,
 .bit-dtg-bordered .bit-dtg-hcell {
-    border-inline-end: 1px solid var(--bit-clr-brd-ter);
+    border-inline-end: 1px solid $clr-brd-ter;
 }
 
 .bit-dtg-center {
@@ -145,26 +147,26 @@
 
 /* Striping & hover */
 .bit-dtg-striped .bit-dtg-body .bit-dtg-row:nth-child(even) .bit-dtg-cell {
-    background: var(--bit-clr-bg-sec);
+    background: $clr-bg-sec;
 }
 
 .bit-dtg-hoverable .bit-dtg-body .bit-dtg-row:hover .bit-dtg-cell {
-    background: var(--bit-clr-bg-pri-hover);
+    background: $clr-bg-pri-hover;
 }
 
 /* Selection & editing must win over both striping and hover (in every row position) */
 .bit-dtg-row.bit-dtg-selected .bit-dtg-cell,
 .bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-selected:nth-child(even) .bit-dtg-cell,
 .bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-selected:hover .bit-dtg-cell {
-    color: var(--bit-clr-pri-text);
-    background: var(--bit-clr-pri);
+    color: $clr-pri-text;
+    background: $clr-pri;
 }
 
 .bit-dtg-row.bit-dtg-editing .bit-dtg-cell,
 .bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-editing:nth-child(even) .bit-dtg-cell,
 .bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-editing:hover .bit-dtg-cell {
-    color: var(--bit-clr-fg-pri);
-    background: var(--bit-clr-wrn-light);
+    color: $clr-fg-pri;
+    background: $clr-wrn-light;
 }
 
 /* Sticky / frozen columns */
@@ -219,13 +221,13 @@ button.bit-dtg-htext {
 
 .bit-dtg-sort-icon {
     font-size: 10px;
-    color: var(--bit-clr-pri);
+    color: $clr-pri;
 }
 
 .bit-dtg-sort-priority {
     font-size: 9px;
-    background: var(--bit-clr-pri);
-    color: var(--bit-clr-pri-text);
+    background: $clr-pri;
+    color: $clr-pri-text;
     border-radius: 8px;
     padding: 0 4px;
     line-height: 14px;
@@ -248,7 +250,7 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-resizer:hover {
-    background: var(--bit-clr-pri);
+    background: $clr-pri;
     opacity: .5;
 }
 
@@ -262,7 +264,7 @@ button.bit-dtg-htext {
 
 /* ---------------------------------------------------------- Group rows */
 .bit-dtg-group-row {
-    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    border-bottom: 1px solid $clr-brd-ter;
 }
 
 .bit-dtg-group-cell {
@@ -271,34 +273,34 @@ button.bit-dtg-htext {
     align-items: center;
     gap: 10px;
     padding: var(--bit-dtg-cell-pad);
-    background: var(--bit-clr-bg-ter);
+    background: $clr-bg-ter;
 }
 
 .bit-dtg-group-count {
-    color: var(--bit-clr-fg-sec);
+    color: $clr-fg-sec;
 }
 
 .bit-dtg-group-agg {
-    color: var(--bit-clr-fg-sec);
+    color: $clr-fg-sec;
     font-size: 12px;
 }
 
 /* Nested groups: subtle indentation shading applied at every level so deeper groups
    keep the hierarchy cue (the level value drives indentation elsewhere). */
 .bit-dtg-group-row .bit-dtg-group-cell {
-    border-inline-start: 3px solid var(--bit-clr-pri);
+    border-inline-start: 3px solid $clr-pri;
 }
 
 /* ----------------------------------------------- Grouped column headers */
 .bit-dtg-group-header-row {
-    background: var(--bit-clr-bg-sec);
-    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    background: $clr-bg-sec;
+    border-bottom: 1px solid $clr-brd-ter;
 }
 
 .bit-dtg-group-header {
     font-weight: 700;
-    background: var(--bit-clr-bg-sec);
-    border-inline-end: 1px solid var(--bit-clr-brd-ter);
+    background: $clr-bg-sec;
+    border-inline-end: 1px solid $clr-brd-ter;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -322,7 +324,7 @@ button.bit-dtg-htext {
     border: none;
     padding: 0;
     cursor: grab;
-    color: var(--bit-clr-fg-sec);
+    color: $clr-fg-sec;
     user-select: none;
 }
 
@@ -336,12 +338,12 @@ button.bit-dtg-htext {
 
 /* ---------------------------------------------------------- Detail rows */
 .bit-dtg-detail-row {
-    border-bottom: 1px solid var(--bit-clr-brd-ter);
+    border-bottom: 1px solid $clr-brd-ter;
 }
 
 .bit-dtg-detail-content {
     padding: 12px 16px;
-    background: var(--bit-clr-bg-sec);
+    background: $clr-bg-sec;
 }
 
 /* ---------------------------------------------------------- Tree view */
@@ -366,13 +368,13 @@ button.bit-dtg-htext {
 /* The focus ring is driven solely by real DOM :focus so exactly one cell can
    ever be outlined (state and DOM focus are kept in sync via @key + FocusAsync). */
 .bit-dtg-cell[tabindex]:focus {
-    outline: 2px solid var(--bit-clr-pri);
+    outline: 2px solid $clr-pri;
     outline-offset: -2px;
     z-index: 1;
 }
 
 .bit-dtg-cell[tabindex]:focus-visible {
-    outline: 2px solid var(--bit-clr-pri);
+    outline: 2px solid $clr-pri;
     outline-offset: -2px;
     z-index: 1;
 }
@@ -383,7 +385,7 @@ button.bit-dtg-htext {
    cell stays clearly visible even while selected. */
 .bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus,
 .bit-dtg-row.bit-dtg-selected .bit-dtg-cell[tabindex]:focus-visible {
-    outline-color: var(--bit-clr-pri-text);
+    outline-color: $clr-pri-text;
 }
 
 /* ---------------------------------------------------------- Footer */
@@ -394,9 +396,9 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-footer-row .bit-dtg-cell {
-    background: var(--bit-clr-bg-sec);
+    background: $clr-bg-sec;
     font-weight: 600;
-    border-top: 2px solid var(--bit-clr-brd-ter);
+    border-top: 2px solid $clr-brd-ter;
 }
 
 /* ---------------------------------------------------------- Empty / loading */
@@ -404,23 +406,18 @@ button.bit-dtg-htext {
 .bit-dtg-loading {
     padding: 32px;
     text-align: center;
-    color: var(--bit-clr-fg-sec);
+    color: $clr-fg-sec;
 }
 
 .bit-dtg-spinner {
     display: inline-block;
     width: 14px;
     height: 14px;
-    border: 2px solid var(--bit-clr-fg-sec);
+    border: 2px solid $clr-fg-sec;
     border-top-color: transparent;
     border-radius: 50%;
     vertical-align: middle;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .bit-dtg-spinner {
-        animation: bit-dtg-spin .7s linear infinite;
-    }
+    animation: bit-dtg-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 @keyframes bit-dtg-spin {
@@ -441,15 +438,19 @@ button.bit-dtg-htext {
     height: 10px;
     border-radius: 6px;
     background: linear-gradient(90deg,
-            var(--bit-clr-brd-ter) 25%,
-            var(--bit-clr-bg-sec) 37%,
-            var(--bit-clr-brd-ter) 63%);
+            $clr-brd-ter 25%,
+            $clr-bg-sec 37%,
+            $clr-brd-ter 63%);
     background-size: 400% 100%;
-}
+    animation: bit-dtg-shimmer 1.2s ease-in-out infinite;
 
-@media (prefers-reduced-motion: no-preference) {
-    .bit-dtg-skeleton {
-        animation: bit-dtg-shimmer 1.2s ease-in-out infinite;
+    // Unlike the spinner this is a placeholder rather than the progress signal, so reduced motion
+    // stops it outright the way BitTextShimmer does, leaving the static gradient. The .bit-fam
+    // opt-out is matched on an ancestor too, since the grid renders no .bit-fam of its own.
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation: none;
+        }
     }
 }
 
@@ -466,7 +467,7 @@ button.bit-dtg-htext {
 .bit-dtg-infinite-end {
     padding: 14px;
     text-align: center;
-    color: var(--bit-clr-fg-sec);
+    color: $clr-fg-sec;
     font-size: 13px;
 }
 
@@ -475,10 +476,10 @@ button.bit-dtg-htext {
 .bit-dtg-filter-input {
     width: 100%;
     padding: 4px 6px;
-    border: 1px solid var(--bit-clr-brd-ter);
+    border: 1px solid $clr-brd-ter;
     border-radius: 4px;
-    background: var(--bit-clr-bg-pri);
-    color: var(--bit-clr-fg-pri);
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
     font: inherit;
 }
 
@@ -494,7 +495,7 @@ button.bit-dtg-htext {
     background: none;
     appearance: auto;
     -webkit-appearance: checkbox;
-    accent-color: var(--bit-clr-pri);
+    accent-color: $clr-pri;
     cursor: pointer;
 }
 
@@ -512,7 +513,7 @@ button.bit-dtg-htext {
 
 /* Highlights the row/header cell a touch drag would drop onto. */
 .bit-dtg-drop-target {
-    outline: 2px dashed var(--bit-clr-pri);
+    outline: 2px dashed $clr-pri;
     outline-offset: -2px;
 }
 
@@ -531,8 +532,8 @@ button.bit-dtg-htext {
 
 /* Inline-edit validation: flag the invalid editor and show its message underneath. */
 .bit-dtg-editor[aria-invalid="true"] {
-    border-color: var(--bit-clr-err);
-    outline-color: var(--bit-clr-err);
+    border-color: $clr-err;
+    outline-color: $clr-err;
 }
 
 .bit-dtg-editor-error {
@@ -540,7 +541,7 @@ button.bit-dtg-htext {
     margin-top: 2px;
     font-size: 11px;
     line-height: 1.2;
-    color: var(--bit-clr-err);
+    color: $clr-err;
 }
 
 /* Lays out the operator dropdown and the filter input side by side. */
@@ -556,10 +557,10 @@ button.bit-dtg-htext {
     max-width: 40%;
     margin-inline-end: 4px;
     padding: 4px 2px;
-    border: 1px solid var(--bit-clr-brd-ter);
+    border: 1px solid $clr-brd-ter;
     border-radius: 4px;
-    background: var(--bit-clr-bg-pri);
-    color: var(--bit-clr-fg-pri);
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
     font-size: 11px;
     font-weight: 400;
 }
@@ -570,10 +571,10 @@ button.bit-dtg-htext {
     align-items: center;
     gap: 4px;
     padding: 5px 10px;
-    border: 1px solid var(--bit-clr-brd-ter);
+    border: 1px solid $clr-brd-ter;
     border-radius: 6px;
-    background: var(--bit-clr-bg-pri);
-    color: var(--bit-clr-fg-pri);
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
     font: inherit;
     cursor: pointer;
     text-decoration: none;
@@ -581,7 +582,7 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-btn:hover:not(:disabled) {
-    background: var(--bit-clr-bg-pri-hover);
+    background: $clr-bg-pri-hover;
 }
 
 .bit-dtg-btn:disabled {
@@ -590,21 +591,21 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-btn-primary {
-    background: var(--bit-clr-pri);
-    border-color: var(--bit-clr-pri);
-    color: var(--bit-clr-pri-text);
+    background: $clr-pri;
+    border-color: $clr-pri;
+    color: $clr-pri-text;
 }
 
 /* Win over the generic .bit-dtg-btn:hover rule so primary buttons keep their primary treatment on hover */
 .bit-dtg-btn-primary:hover:not(:disabled) {
-    background: var(--bit-clr-pri-hover);
-    border-color: var(--bit-clr-pri-hover);
-    color: var(--bit-clr-pri-text);
+    background: $clr-pri-hover;
+    border-color: $clr-pri-hover;
+    color: $clr-pri-text;
 }
 
 .bit-dtg-btn-danger {
-    color: var(--bit-clr-err);
-    border-color: var(--bit-clr-err);
+    color: $clr-err;
+    border-color: $clr-err;
 }
 
 .bit-dtg-cell-command {
@@ -614,7 +615,7 @@ button.bit-dtg-htext {
 .bit-dtg-icon-btn {
     background: none;
     border: none;
-    color: var(--bit-clr-fg-pri);
+    color: $clr-fg-pri;
     cursor: pointer;
     font-size: 13px;
     padding: 2px 4px;
@@ -622,11 +623,11 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-icon-btn:hover {
-    background: var(--bit-clr-bg-pri-hover);
+    background: $clr-bg-pri-hover;
 }
 
 .bit-dtg-group-btn.bit-dtg-active {
-    color: var(--bit-clr-pri);
+    color: $clr-pri;
 }
 
 /* ---------------------------------------------------------- Pager */
@@ -636,7 +637,7 @@ button.bit-dtg-htext {
     align-items: center;
     gap: 8px;
     padding: 8px;
-    border-top: 1px solid var(--bit-clr-brd-ter);
+    border-top: 1px solid $clr-brd-ter;
     flex-wrap: wrap;
 }
 
@@ -644,7 +645,7 @@ button.bit-dtg-htext {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: var(--bit-clr-fg-sec);
+    color: $clr-fg-sec;
 }
 
 .bit-dtg-pager-buttons {
@@ -659,9 +660,9 @@ button.bit-dtg-htext {
 
 .bit-dtg-page-size {
     padding: 4px 6px;
-    border: 1px solid var(--bit-clr-brd-ter);
+    border: 1px solid $clr-brd-ter;
     border-radius: 6px;
-    background: var(--bit-clr-bg-pri);
-    color: var(--bit-clr-fg-pri);
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
     font: inherit;
 }

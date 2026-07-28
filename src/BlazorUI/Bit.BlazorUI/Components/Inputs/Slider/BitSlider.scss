@@ -15,11 +15,25 @@ $BgHover: $clr-pri-light;
         background: none;
 
         &:focus {
-            outline: none;
+            outline: none; // The visible focus indicator lives on the thumb pseudo-element below.
         }
     }
-    /**/
-    /*webkit*/
+    /* webkit focus styles */
+    // The focus-ring mixin handles the themed two-layer shadow plus the forced-colors
+    // Highlight outline fallback; the thumb pseudo-elements take it directly.
+    input:focus-visible::-webkit-slider-thumb,
+    input:focus::-webkit-slider-thumb {
+        border-color: $clr-pri-focus;
+        @include focus-ring;
+    }
+
+    input:focus-visible::-moz-range-thumb,
+    input:focus::-moz-range-thumb {
+        border-color: $clr-pri-focus;
+        @include focus-ring;
+    }
+
+    /* webkit thumb */
     input::-webkit-slider-thumb {
         width: spacing(2);
         height: spacing(2);
@@ -43,8 +57,7 @@ $BgHover: $clr-pri-light;
     input::-webkit-slider-runnable-track {
         background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
     }
-    /**/
-    /*mozilla*/
+    /* mozilla */
     input::-moz-range-thumb {
         width: spacing(2);
         height: spacing(2);
@@ -67,8 +80,7 @@ $BgHover: $clr-pri-light;
     input::-moz-range-track {
         background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
     }
-    /**/
-    /*ms*/
+    /* ms */
     input::-ms-fill-upper {
         background: transparent;
         border-color: transparent;

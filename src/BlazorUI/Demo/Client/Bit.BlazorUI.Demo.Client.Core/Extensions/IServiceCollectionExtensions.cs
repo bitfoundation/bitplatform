@@ -16,6 +16,12 @@ public static class IServiceCollectionExtensions
 
         services.TryAddSessioned<IPubSubService, PubSubService>();
 
+        // Scoped rather than sessioned: it holds the BitThemeManager / BitThemeNotifications the
+        // library registers per scope, and a scope already spans the whole visit everywhere this app
+        // runs. That is the lifetime the accent needs - the swatches read it back to mark the active
+        // one, so it has to outlive the home page itself.
+        services.TryAddScoped<AppAccentColorService>();
+
         services.TryAddTransient<RequestHeadersDelegationHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();

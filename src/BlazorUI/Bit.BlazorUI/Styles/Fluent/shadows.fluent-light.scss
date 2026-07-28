@@ -1,7 +1,11 @@
+// Scoped-preset twins: see the note in colors.fluent-light.scss.
 :root,
 :root[bit-theme="light"],
+:root [bit-theme="light"],
 :root[bit-theme="fluent"],
-:root[bit-theme="fluent-light"] {
+:root [bit-theme="fluent"],
+:root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"] {
     // shadows-callout
     --bit-shd-cal: 0px 0px 5px 0px rgba(0, 0, 0, 0.2), 0px 0px 2px 0px rgba(0, 0, 0, 0.1);
     --bit-shd-cal2: 0px 0px 7px 0px rgba(0, 0, 0, 0.35), 0px 0px 3px 0px rgba(0, 0, 0, 0.2);

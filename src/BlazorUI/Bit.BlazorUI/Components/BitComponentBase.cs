@@ -85,6 +85,23 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the component's animations play at their full duration
+    /// even when reduced motion is requested.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// By default every animation driven by the motion theme variables collapses to a near-zero duration
+    /// when the operating system or the browser reports 'prefers-reduced-motion: reduce', which makes the
+    /// component appear to change state instantly.
+    /// <br />
+    /// Setting this to true restores the full durations for this component and its content. Since reduced
+    /// motion is an accessibility preference, only opt out of it where the animation carries meaning that
+    /// is lost without it.
+    /// </remarks>
+    [Parameter] public bool ForceAnimation { get; set; }
+
+    /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
     /// <br />
     /// <strong>This parameter should not be assigned directly.</strong>
@@ -192,6 +209,14 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(ForceAnimation):
+                    _assignedParameters.Add(nameof(ForceAnimation));
+                    var forceAnimation = (bool)parameter.Value;
+                    if (ForceAnimation != forceAnimation) ClassBuilder.Reset();
+                    ForceAnimation = forceAnimation;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(Id):
                     _assignedParameters.Add(nameof(Id));
                     Id = (string?)parameter.Value;
@@ -260,7 +285,8 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         ClassBuilder
               .Register(() => RootElementClass)
               .Register(() => IsEnabled ? string.Empty : "bit-dis")
-              .Register(() => Dir == BitDir.Rtl ? "bit-rtl" : string.Empty);
+              .Register(() => Dir == BitDir.Rtl ? "bit-rtl" : string.Empty)
+              .Register(() => ForceAnimation ? "bit-fam" : string.Empty);
 
         ClassBuilder.Register(() => Class);
 

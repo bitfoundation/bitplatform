@@ -94,7 +94,7 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all $mot-duration-short ease;
     white-space: nowrap;
     line-height: 1.817;
 }
@@ -174,7 +174,7 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all $mot-duration-short ease;
 }
 
 .bit-bfc-view-tab:hover {
@@ -194,7 +194,7 @@
     min-height: 0;
     overflow: hidden;
     position: relative;
-    animation: bit-bfc-fade-in 0.2s ease;
+    animation: bit-bfc-fade-in $mot-duration ease;
 }
 
 @keyframes bit-bfc-fade-in {
@@ -248,7 +248,7 @@
     min-width: 0;
     position: relative;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
     overflow: clip;
     overflow-clip-margin: 4px;
 }
@@ -332,7 +332,7 @@
     cursor: grab;
     overflow: hidden;
     border: 1px solid transparent;
-    transition: filter 0.1s;
+    transition: filter $mot-duration-short;
     user-select: none;
 }
 
@@ -507,7 +507,7 @@
     overflow: hidden;
     border: 1px solid transparent;
     user-select: none;
-    transition: box-shadow 0.15s, filter 0.1s;
+    transition: box-shadow $mot-duration-short, filter $mot-duration-short;
 }
 
 .bit-bfc-event-block:hover {
@@ -562,7 +562,7 @@
         0 0 0 5px var(--bit-bfc-resize-glow),
         0 12px 28px rgba(15, 23, 42, 0.18),
         var(--bit-bfc-shadow);
-    transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+    transition: box-shadow $mot-duration ease, filter $mot-duration ease, border-color $mot-duration ease;
 }
 
 .bit-bfc-event-block-title {
@@ -588,7 +588,7 @@
     z-index: 3;
     touch-action: none;
     border-radius: 4px;
-    transition: background 0.15s ease, box-shadow 0.15s ease;
+    transition: background $mot-duration-short ease, box-shadow $mot-duration-short ease;
 }
 
 .bit-bfc-resize-handle::after {
@@ -601,7 +601,7 @@
     border-radius: 999px;
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
-    transition: opacity 0.15s ease, width 0.15s ease, box-shadow 0.15s ease;
+    transition: opacity $mot-duration-short ease, width $mot-duration-short ease, box-shadow $mot-duration-short ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
@@ -932,7 +932,7 @@
     font-size: 14px;
     margin-bottom: 8px;
     cursor: pointer;
-    transition: color 0.15s;
+    transition: color $mot-duration-short;
 }
 
 .bit-bfc-year-month-title:hover {
@@ -1056,7 +1056,7 @@
     gap: 12px;
     padding: 10px 16px;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
 }
 
 .bit-bfc-agenda-item:hover {
@@ -1120,7 +1120,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: bit-bfc-fade-in 0.15s ease;
+    animation: bit-bfc-fade-in $mot-duration-short ease;
 }
 
 .bit-bfc-dialog {
@@ -1131,7 +1131,7 @@
     max-width: 480px;
     max-height: 90vh;
     overflow-y: auto;
-    animation: bit-bfc-slide-up 0.2s ease;
+    animation: bit-bfc-slide-up $mot-duration ease;
 }
 
 @keyframes bit-bfc-slide-up {
@@ -1188,7 +1188,7 @@
     color: var(--bit-bfc-text-muted);
     cursor: pointer;
     flex-shrink: 0;
-    transition: background 0.1s, color 0.1s;
+    transition: background $mot-duration-short, color $mot-duration-short;
 }
 
 .bit-bfc-dialog-close-btn:hover {
@@ -1395,7 +1395,7 @@
     border-radius: 50%;
     border: 2px solid transparent;
     cursor: pointer;
-    transition: transform 0.1s, border-color 0.1s;
+    transition: transform $mot-duration-short, border-color $mot-duration-short;
     background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
 }
 
@@ -1460,7 +1460,7 @@
     border-radius: 50%;
     width: 16px;
     height: 16px;
-    transition: background 0.1s, color 0.1s;
+    transition: background $mot-duration-short, color $mot-duration-short;
 }
 
 .bit-bfc-attendee-chip-remove:hover {
@@ -1555,7 +1555,7 @@
     min-width: 240px;
     z-index: 50;
     padding: 6px;
-    animation: bit-bfc-slide-up 0.15s ease;
+    animation: bit-bfc-slide-up $mot-duration-short ease;
 }
 
 .bit-bfc-dropdown-label {
@@ -1576,7 +1576,7 @@
     border-radius: 4px;
     font-size: 13px;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
     background: transparent;
 }
 
@@ -1600,7 +1600,7 @@
     height: 100%;
     border-radius: 10px;
     background: var(--bit-bfc-border);
-    transition: background 0.2s;
+    transition: background $mot-duration;
 }
 
 .bit-bfc-toggle.checked .bit-bfc-toggle-track {
@@ -1615,7 +1615,7 @@
     height: 16px;
     border-radius: 50%;
     background: #fff;
-    transition: transform 0.2s;
+    transition: transform $mot-duration;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -1670,7 +1670,7 @@
     min-width: 200px;
     z-index: 50;
     padding: 4px;
-    animation: bit-bfc-slide-up 0.15s ease;
+    animation: bit-bfc-slide-up $mot-duration-short ease;
 }
 
 .bit-bfc-user-option {
@@ -1681,7 +1681,7 @@
     border-radius: 4px;
     font-size: 13px;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
 }
 
 .bit-bfc-user-option:hover {
@@ -1734,7 +1734,7 @@
     border-radius: 50%;
     font-size: 12px;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
     background: transparent;
 }
 
@@ -1792,7 +1792,7 @@
     font: inherit;
     text-align: start;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
 }
 
 .bit-bfc-happening-event:hover {
@@ -1840,7 +1840,7 @@
     border-radius: var(--bit-bfc-radius);
     box-shadow: var(--bit-bfc-shadow-lg);
     font-size: 13px;
-    animation: bit-bfc-slide-up 0.2s ease;
+    animation: bit-bfc-slide-up $mot-duration ease;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1920,7 +1920,7 @@
 
 /* ===== Droppable area hover states ===== */
 .bit-bfc-droppable {
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
 }
 
 .bit-bfc-droppable.drag-over {
@@ -1949,7 +1949,7 @@
 /* ===== Cell "add event" hover hint ===== */
 .bit-bfc-hour-row {
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
 }
 
 .bit-bfc-hour-row:hover {
@@ -1958,7 +1958,7 @@
 
 .bit-bfc-cell-add-hint {
     opacity: 0;
-    transition: opacity 0.15s;
+    transition: opacity $mot-duration-short;
     pointer-events: none;
     display: flex;
     align-items: center;
@@ -2209,7 +2209,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all $mot-duration-short ease;
 }
 
 .bit-bfc-mode-tab:hover {
@@ -2416,7 +2416,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     box-sizing: border-box;
     border-inline-end: 1px solid var(--bit-bfc-border);
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background $mot-duration-short;
 }
 
 .bit-bfc-tl-cell:hover {
@@ -2467,7 +2467,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     justify-content: center;
     gap: 2px;
     line-height: 1.2;
-    transition: filter 0.1s, box-shadow 0.15s;
+    transition: filter $mot-duration-short, box-shadow $mot-duration-short;
 }
 
 .bit-bfc-timeline-event:hover {
@@ -2491,7 +2491,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     z-index: 3;
     touch-action: none;
     border-radius: 3px;
-    transition: background 0.15s ease, box-shadow 0.15s ease;
+    transition: background $mot-duration-short ease, box-shadow $mot-duration-short ease;
 }
 
 .bit-bfc-resize-handle-h::after {
@@ -2504,7 +2504,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     border-radius: 999px;
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
-    transition: opacity 0.15s ease, height 0.15s ease, box-shadow 0.15s ease;
+    transition: opacity $mot-duration-short ease, height $mot-duration-short ease, box-shadow $mot-duration-short ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
@@ -2544,7 +2544,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
         0 0 0 5px var(--bit-bfc-resize-glow),
         0 12px 28px rgba(15, 23, 42, 0.18),
         var(--bit-bfc-shadow);
-    transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+    transition: box-shadow $mot-duration ease, filter $mot-duration ease, border-color $mot-duration ease;
 }
 
 .bit-bfc-timeline-event-resizing .bit-bfc-resize-handle-start {

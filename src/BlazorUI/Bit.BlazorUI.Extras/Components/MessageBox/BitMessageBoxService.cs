@@ -26,7 +26,7 @@ public class BitMessageBoxService(BitProModalService? proModalService = null, Bi
     /// <list type="number">
     /// <item>the <see cref="BitProModalService"/> when its <see cref="BitProModalContainer"/> is mounted (preferred when both are);</item>
     /// <item>otherwise the <see cref="BitModalService"/> when its <see cref="BitModalContainer"/> is mounted;</item>
-    /// <item>otherwise the only registered service — or, when both are registered but neither container is mounted, the
+    /// <item>otherwise the only registered service - or, when both are registered but neither container is mounted, the
     /// preferred <see cref="BitProModalService"/> (a misconfiguration that renders nothing regardless: mount a container).</item>
     /// </list>
     /// Container availability reflects live state and is reliable at the moment of a user-triggered show, since the

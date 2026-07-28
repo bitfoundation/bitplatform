@@ -20,22 +20,22 @@
 
 .bit-ldn-elp-ch1 {
     left: var(--bit-ldn-elp-8);
-    animation: bit-ldn-elp-anm1 0.6s infinite;
+    animation: bit-ldn-elp-anm1 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
 }
 
 .bit-ldn-elp-ch2 {
     left: var(--bit-ldn-elp-8);
-    animation: bit-ldn-elp-anm2 0.6s infinite;
+    animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
 }
 
 .bit-ldn-elp-ch3 {
     left: var(--bit-ldn-elp-32);
-    animation: bit-ldn-elp-anm2 0.6s infinite;
+    animation: bit-ldn-elp-anm2 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
 }
 
 .bit-ldn-elp-ch4 {
     left: var(--bit-ldn-elp-56);
-    animation: bit-ldn-elp-anm3 0.6s infinite;
+    animation: bit-ldn-elp-anm3 calc(0.6s * var(--bit-ldn-mot-factor, 1)) infinite;
 }
 
 @keyframes bit-ldn-elp-anm1 {

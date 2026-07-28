@@ -69,7 +69,7 @@ namespace BitBlazorUI {
 
             const result = Callouts.position(component, callout, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
-                setCalloutWidth, fixedCalloutWidth, maxWindowWidth);
+                setCalloutWidth, fixedCalloutWidth, maxWindowWidth, true);
 
             return result;
         }
@@ -104,6 +104,7 @@ namespace BitBlazorUI {
             setCalloutWidth: boolean,
             fixedCalloutWidth: boolean,
             maxWindowWidth: number,
+            isEntering: boolean,
         ) {
             const windowWidth = window.innerWidth;
 
@@ -209,11 +210,16 @@ namespace BitBlazorUI {
             left = (left < visibleLeft) ? visibleLeft : left;
             callout.style.left = (left - fixedRect.left) + 'px';
 
+            // Which side of the component the callout ended up on, so the entry animation can slide it
+            // out of the component instead of always dropping it down from above.
+            let placedAbove = false;
+
             if (dropDirection == BitDropDirection.TopAndBottom) {
                 if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
                     callout.style.top = (componentY + componentHeight + 1 - fixedRect.top) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
+                    placedAbove = true;
                     callout.style.bottom = (fixedRect.bottom - (componentY - 1)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
@@ -222,6 +228,7 @@ namespace BitBlazorUI {
                     callout.style.top = (componentY + componentHeight + 1 - fixedRect.top) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if (distanceToTop >= calloutHeight) {
+                    placedAbove = true;
                     callout.style.bottom = (fixedRect.bottom - (componentY - 1)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if ((isRtl ? distanceToLeft : distanceToRight) >= calloutWidth) {
@@ -240,7 +247,24 @@ namespace BitBlazorUI {
                 }
             }
 
+            if (isEntering) {
+                Callouts.playEntryAnimation(callout, placedAbove);
+            }
+
             return (calloutWidth + calloutLeft) > document.body.offsetWidth;
+        }
+
+        // Which side the callout lands on is only known after the measuring above, and by then the
+        // browser has already resolved the callout to its open state. So the entry is (re)started
+        // from here: the from-state class is applied with transitions suppressed, forced into effect
+        // with a reflow, and then dropped, which transitions the callout to its open state - sliding
+        // down out of the component when it sits below it, and up when it sits above it.
+        // Components opt in by styling `.bit-cal-ent`; for the ones that don't this is a no-op.
+        private static playEntryAnimation(callout: HTMLElement, placedAbove: boolean) {
+            callout.setAttribute('data-bit-cal-pos', placedAbove ? 'above' : 'below');
+            callout.classList.add('bit-cal-ent');
+            void callout.offsetHeight;
+            callout.classList.remove('bit-cal-ent');
         }
 
         // Measures the layout viewport's edges in getBoundingClientRect() space by stretching a
@@ -273,9 +297,10 @@ namespace BitBlazorUI {
             const callout = document.getElementById(params.calloutId);
             if (component == null || callout == null) return;
 
+            // Not an entry: replaying the open animation on every viewport change would be a flicker.
             Callouts.position(component, callout, params.responsiveMode, params.dropDirection, params.isRtl,
                 params.scrollContainerId, params.scrollOffset, params.headerId, params.footerId,
-                params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth);
+                params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth, false);
         }
 
         public static reset() {
@@ -314,6 +339,14 @@ namespace BitBlazorUI {
             wrapper.setAttribute('data-bit-callout-wrapper', calloutId);
             for (const scope of scopes) {
                 wrapper.setAttribute(scope, '');
+            }
+
+            // ForceAnimation works by re-pointing inherited custom properties on the subtree carrying
+            // `bit-fam`, so relocating the callout to the body drops it back to the reduced-motion
+            // durations even though its original ancestors opted in. The wrapper is `display: contents`
+            // and therefore still inherits into the callout, so carrying the class over restores it.
+            if (parent?.closest('.bit-fam')) {
+                wrapper.classList.add('bit-fam');
             }
 
             Callouts._calloutOriginalParents.set(calloutId, {

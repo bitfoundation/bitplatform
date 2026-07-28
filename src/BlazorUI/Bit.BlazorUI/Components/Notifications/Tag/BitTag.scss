@@ -18,7 +18,6 @@
     &.bit-dis {
         cursor: default;
         user-select: none;
-        color: $clr-fg-dis;
         pointer-events: none;
     }
 }
@@ -45,8 +44,9 @@
     background-color: var(--bit-tag-clr);
 
     &.bit-dis {
-        border-color: $clr-brd-dis;
-        background-color: $clr-bg-dis;
+        color: var(--bit-tag-clr-dis-text);
+        border-color: var(--bit-tag-clr-dis);
+        background-color: var(--bit-tag-clr-dis);
     }
 }
 
@@ -56,7 +56,8 @@
     background-color: transparent;
 
     &.bit-dis {
-        border-color: $clr-brd-dis;
+        color: var(--bit-tag-clr-dis-text);
+        border-color: var(--bit-tag-clr-dis);
         background-color: transparent;
     }
 }
@@ -67,94 +68,20 @@
     background-color: transparent;
 
     &.bit-dis {
+        color: var(--bit-tag-clr-dis-text);
         border-color: transparent;
         background-color: transparent;
     }
 }
 
-.bit-tag-pri {
-    --bit-tag-clr: #{$clr-pri};
-    --bit-tag-clr-txt: #{$clr-pri-text};
-}
-
-.bit-tag-sec {
-    --bit-tag-clr: #{$clr-sec};
-    --bit-tag-clr-txt: #{$clr-sec-text};
-}
-
-.bit-tag-ter {
-    --bit-tag-clr: #{$clr-ter};
-    --bit-tag-clr-txt: #{$clr-ter-text};
-}
-
-.bit-tag-inf {
-    --bit-tag-clr: #{$clr-inf};
-    --bit-tag-clr-txt: #{$clr-inf-text};
-}
-
-.bit-tag-suc {
-    --bit-tag-clr: #{$clr-suc};
-    --bit-tag-clr-txt: #{$clr-suc-text};
-}
-
-.bit-tag-wrn {
-    --bit-tag-clr: #{$clr-wrn};
-    --bit-tag-clr-txt: #{$clr-wrn-text};
-}
-
-.bit-tag-swr {
-    --bit-tag-clr: #{$clr-swr};
-    --bit-tag-clr-txt: #{$clr-swr-text};
-}
-
-.bit-tag-err {
-    --bit-tag-clr: #{$clr-err};
-    --bit-tag-clr-txt: #{$clr-err-text};
-}
-
-.bit-tag-pbg {
-    --bit-tag-clr: #{$clr-bg-pri};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-}
-
-.bit-tag-sbg {
-    --bit-tag-clr: #{$clr-bg-sec};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-}
-
-.bit-tag-tbg {
-    --bit-tag-clr: #{$clr-bg-ter};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-}
-
-.bit-tag-pfg {
-    --bit-tag-clr: #{$clr-fg-pri};
-    --bit-tag-clr-txt: #{$clr-bg-pri};
-}
-
-.bit-tag-sfg {
-    --bit-tag-clr: #{$clr-fg-sec};
-    --bit-tag-clr-txt: #{$clr-bg-pri};
-}
-
-.bit-tag-tfg {
-    --bit-tag-clr: #{$clr-fg-ter};
-    --bit-tag-clr-txt: #{$clr-bg-pri};
-}
-
-.bit-tag-pbr {
-    --bit-tag-clr: #{$clr-brd-pri};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-}
-
-.bit-tag-sbr {
-    --bit-tag-clr: #{$clr-brd-sec};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
-}
-
-.bit-tag-tbr {
-    --bit-tag-clr: #{$clr-brd-ter};
-    --bit-tag-clr-txt: #{$clr-fg-pri};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tag-#{$role} {
+        --bit-tag-clr: #{role($tokens, main)};
+        --bit-tag-clr-txt: #{role($tokens, on)};
+        --bit-tag-clr-dis: #{role($tokens, dis)};
+        --bit-tag-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 

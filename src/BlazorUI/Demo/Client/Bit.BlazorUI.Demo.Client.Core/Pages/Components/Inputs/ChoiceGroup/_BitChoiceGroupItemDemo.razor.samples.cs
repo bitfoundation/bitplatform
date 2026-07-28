@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 
 public partial class _BitChoiceGroupItemDemo
 {
@@ -696,7 +696,128 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
                 Label=""TertiaryBorder"" 
                 Horizontal
                 Items=""basicItems""
-                DefaultValue=""basicItems[1].Value"" />";
+                DefaultValue=""basicItems[1].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.Primary""
+                Label=""Primary""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.Secondary""
+                Label=""Secondary""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.Tertiary""
+                Label=""Tertiary""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.Info""
+                Label=""Info""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.Success""
+                Label=""Success""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.Warning""
+                Label=""Warning""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.SevereWarning""
+                Label=""SevereWarning""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.Error""
+                Label=""Error""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.PrimaryBackground""
+                    Label=""PrimaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[0].Value"" />
+
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.SecondaryBackground""
+                    Label=""SecondaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[0].Value"" />
+
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.TertiaryBackground""
+                    Label=""TertiaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[0].Value"" />
+</div>
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.PrimaryForeground""
+                Label=""PrimaryForeground""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.SecondaryForeground""
+                Label=""SecondaryForeground""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.TertiaryForeground""
+                Label=""TertiaryForeground""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.PrimaryBorder""
+                Label=""PrimaryBorder""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.SecondaryBorder""
+                Label=""SecondaryBorder""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />
+
+<BitChoiceGroup IsEnabled=""false""
+                Color=""BitColor.TertiaryBorder""
+                Label=""TertiaryBorder""
+                Horizontal
+                Items=""basicItems""
+                DefaultValue=""basicItems[0].Value"" />";
     private readonly string example20CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [

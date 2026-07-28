@@ -67,6 +67,10 @@
             background-color: $clr-bg-pri-hover;
         }
     }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-brc-itm,
@@ -88,6 +92,10 @@
             background-color: $clr-bg-pri-hover;
         }
     }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-brc-rvi {
@@ -104,7 +112,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -146,6 +154,11 @@
     line-height: spacing(2.5);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
+    border-radius: $shp-border-radius;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-brc-ofi {

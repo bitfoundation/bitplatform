@@ -8,8 +8,8 @@
     font-size: var(--bit-pgn-font-size);
     --bit-pgn-ico-transform-end: scaleX(1);
     --bit-pgn-ico-transform-start: scaleX(-1);
-    --bit-pgn-clr-dis: #{$clr-bg-dis};
-    --bit-pgn-clr-txt-dis: #{$clr-fg-dis};
+    --bit-pgn-clr-dis: var(--bit-pgn-clr-dis-bg, #{$clr-bg-dis});
+    --bit-pgn-clr-txt-dis: var(--bit-pgn-clr-dis-text, #{$clr-fg-dis});
     --bit-pgn-clr-btn-txt-hover: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-bg-hover: var(--bit-pgn-clr-hover);
     --bit-pgn-clr-btn-brd-hover: var(--bit-pgn-clr-hover);
@@ -34,8 +34,8 @@
 
     &.bit-dis {
         cursor: default;
-        color: $clr-fg-dis;
         pointer-events: none;
+        color: var(--bit-pgn-clr-txt-dis);
     }
 }
 
@@ -88,9 +88,13 @@
         background-color: var(--bit-pgn-clr-btn-bg-active);
     }
 
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-pgn-clr-fcs, #{$clr-pri-focus}));
+    }
+
     &[disabled] {
         cursor: default;
-        color: $clr-fg-dis;
         pointer-events: none;
         color: var(--bit-pgn-clr-btn-txt-dis);
         border-color: var(--bit-pgn-clr-btn-brd-dis);
@@ -119,6 +123,18 @@
 }
 
 
+// forced-colors: the selected page is conveyed by fill colors that High Contrast strips; repaint
+// it with the system selection colors so it stays distinguishable from the other page buttons.
+@media (forced-colors: active) {
+    // Double class matches the specificity of the selected-state hover/active rules above so this
+    // wins the cascade in High Contrast mode (media queries add no specificity of their own).
+    .bit-pgn-btn.bit-pgn-sel {
+        color: HighlightText;
+        border-color: Highlight;
+        background-color: Highlight;
+    }
+}
+
 .bit-pgn-fil {
     --bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-bg: var(--bit-pgn-clr);
@@ -143,84 +159,20 @@
     --bit-pgn-clr-btn-brd-dis: transparent;
 }
 
-.bit-pgn-pri {
-    --bit-pgn-clr-txt: #{$clr-pri-text};
-    --bit-pgn-clr: #{$clr-pri};
-    --bit-pgn-clr-hover: #{$clr-pri-hover};
-    --bit-pgn-clr-active: #{$clr-pri-active};
-    --bit-pgn-clr-sel: #{$clr-pri-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-pri-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-pri-dark-active};
-}
-
-.bit-pgn-sec {
-    --bit-pgn-clr-txt: #{$clr-sec-text};
-    --bit-pgn-clr: #{$clr-sec};
-    --bit-pgn-clr-hover: #{$clr-sec-hover};
-    --bit-pgn-clr-active: #{$clr-sec-active};
-    --bit-pgn-clr-sel: #{$clr-sec-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-sec-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-sec-dark-active};
-}
-
-.bit-pgn-ter {
-    --bit-pgn-clr-txt: #{$clr-ter-text};
-    --bit-pgn-clr: #{$clr-ter};
-    --bit-pgn-clr-hover: #{$clr-ter-hover};
-    --bit-pgn-clr-active: #{$clr-ter-active};
-    --bit-pgn-clr-sel: #{$clr-ter-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-ter-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-ter-dark-active};
-}
-
-.bit-pgn-inf {
-    --bit-pgn-clr-txt: #{$clr-inf-text};
-    --bit-pgn-clr: #{$clr-inf};
-    --bit-pgn-clr-hover: #{$clr-inf-hover};
-    --bit-pgn-clr-active: #{$clr-inf-active};
-    --bit-pgn-clr-sel: #{$clr-inf-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-inf-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-inf-dark-active};
-}
-
-.bit-pgn-suc {
-    --bit-pgn-clr-txt: #{$clr-suc-text};
-    --bit-pgn-clr: #{$clr-suc};
-    --bit-pgn-clr-hover: #{$clr-suc-hover};
-    --bit-pgn-clr-active: #{$clr-suc-active};
-    --bit-pgn-clr-sel: #{$clr-suc-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-suc-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-suc-dark-active};
-}
-
-.bit-pgn-wrn {
-    --bit-pgn-clr-txt: #{$clr-wrn-text};
-    --bit-pgn-clr: #{$clr-wrn};
-    --bit-pgn-clr-hover: #{$clr-wrn-hover};
-    --bit-pgn-clr-active: #{$clr-wrn-active};
-    --bit-pgn-clr-sel: #{$clr-wrn-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-wrn-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-wrn-dark-active};
-}
-
-.bit-pgn-swr {
-    --bit-pgn-clr-txt: #{$clr-swr-text};
-    --bit-pgn-clr: #{$clr-swr};
-    --bit-pgn-clr-hover: #{$clr-swr-hover};
-    --bit-pgn-clr-active: #{$clr-swr-active};
-    --bit-pgn-clr-sel: #{$clr-swr-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-swr-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-swr-dark-active};
-}
-
-.bit-pgn-err {
-    --bit-pgn-clr-txt: #{$clr-err-text};
-    --bit-pgn-clr: #{$clr-err};
-    --bit-pgn-clr-hover: #{$clr-err-hover};
-    --bit-pgn-clr-active: #{$clr-err-active};
-    --bit-pgn-clr-sel: #{$clr-err-dark};
-    --bit-pgn-clr-sel-hover: #{$clr-err-dark-hover};
-    --bit-pgn-clr-sel-active: #{$clr-err-dark-active};
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-semantic-color-roles {
+    .bit-pgn-#{$role} {
+        --bit-pgn-clr-fcs: #{role($tokens, focus)};
+        --bit-pgn-clr-txt: #{role($tokens, on)};
+        --bit-pgn-clr: #{role($tokens, main)};
+        --bit-pgn-clr-hover: #{role($tokens, hover)};
+        --bit-pgn-clr-active: #{role($tokens, active)};
+        --bit-pgn-clr-sel: #{role($tokens, dark)};
+        --bit-pgn-clr-sel-hover: #{role($tokens, dark-hover)};
+        --bit-pgn-clr-sel-active: #{role($tokens, dark-active)};
+        --bit-pgn-clr-dis-bg: #{role($tokens, dis)};
+        --bit-pgn-clr-dis-text: #{role($tokens, dis-text)};
+    }
 }
 
 

@@ -29,7 +29,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     /// <summary>
     /// Keeps the rendered order of the items in sync with the markup order of the options even when
-    /// existing options are only reordered (not added or removed) — for example when the options are
+    /// existing options are only reordered (not added or removed) - for example when the options are
     /// produced by a keyed loop whose source collection gets re-sorted. This is achieved by reading the
     /// DOM order of the options after each render, so it adds a JS interop call per render and is opt-in.
     /// It only affects the options API (ChildContent/Options); the items API already follows the order

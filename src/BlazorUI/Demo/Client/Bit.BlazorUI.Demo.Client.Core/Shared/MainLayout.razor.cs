@@ -13,6 +13,7 @@ public partial class MainLayout : IDisposable
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
     [AutoInject] private NavigationManager _navigationManager = default!;
     [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
+    [AutoInject] private AppAccentColorService _accentColorService = default!;
 
 
 
@@ -24,6 +25,27 @@ public partial class MainLayout : IDisposable
             _navigationManager.LocationChanged += OnLocationChanged;
 
             base.OnInitialized();
+        }
+        catch (Exception exp)
+        {
+            _exceptionHandler.Handle(exp);
+        }
+    }
+
+    // The accent is restored from the layout rather than from the home page so a refresh that lands
+    // anywhere in the docs comes back with the visitor's color, and so the home page finds it already
+    // applied when they navigate back. localStorage is unreachable until the client is live, hence
+    // the wait for the first render.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await _accentColorService.InitializeAsync();
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
         }
         catch (Exception exp)
         {

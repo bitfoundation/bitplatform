@@ -12,7 +12,14 @@
                          Items="NavItems"
                          Style="width:222px"
                          SearchBoxPlaceholder="Search component"
-                         SearchBoxStyles="@(new() { Root = "padding-inline:8px" })" />
+                         SearchBoxStyles="@(new() { Root = "padding-inline:8px" })">
+                <Footer>
+                    @* The small-screen half of the header's switcher: at the widths where the header
+                       hides it, this drawer is already where navigation lives, so it is where the
+                       accent belongs too. It hides itself again once the header has room. *@
+                    <AccentColorSwitcher Placement="AccentColorSwitcherPlacement.NavPanel" />
+                </Footer>
+            </BitNavPanel>
         </NavPanel>
         <Main>
             <div class="site-content">

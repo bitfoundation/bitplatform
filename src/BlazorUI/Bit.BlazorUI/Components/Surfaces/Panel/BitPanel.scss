@@ -27,7 +27,7 @@
     z-index: $zindex-callout;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;
-    transition: transform 200ms ease-out, opacity 100ms ease-in;
+    transition: transform $mot-duration ease-out, opacity $mot-duration-short ease-in;
 }
 
 .bit-pnl-start {

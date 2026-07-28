@@ -77,9 +77,12 @@ public static class WebApplicationBuilderExtensions
                 .WithRegisteredDistributedCache()
                 .WithRegisteredDistributedLocker()
                 //#endif
-                .WithDefaultEntryOptions(options => options.Size = 1)
-                // Auto-clone cached objects to avoid further issues after scaling out and switching to distributed caching.
-                .WithOptions(options => options.DefaultEntryOptions.EnableAutoClone = true)
+                .WithDefaultEntryOptions(options => options.Size = AppMemoryCache.EstimatedEntrySizeInBytes)
+                // Auto-clone hands out a copy instead of the cached instance, so code that mutates what it reads from the cache
+                // breaks here the same way it would once you scale out and values start coming back deserialized from L2.
+                // It costs a serialize/deserialize per read though (including every output cache hit, since FusionOutputCacheStore
+                // shares these options), so it stays on in development to surface those bugs and off everywhere else.
+                .WithOptions(options => options.DefaultEntryOptions.EnableAutoClone = builder.Environment.IsDevelopment())
                 .WithSerializer(new FusionCacheSystemTextJsonSerializer())
                 .WithCacheKeyPrefix("Boilerplate:Cache:");
 

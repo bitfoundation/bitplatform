@@ -35,6 +35,29 @@ public sealed class BitThemeMapperContractTests
     }
 
     [TestMethod]
+    public void MapperEmittedTokensAreConsumedByShippedStyles()
+    {
+        var stylesDir = Path.Combine(AppContext.BaseDirectory, "theme-styles");
+        Assert.IsTrue(Directory.Exists(stylesDir), $"Missing {stylesDir}; ensure the library Styles folder is copied to output.");
+
+        var scss = string.Join("\n", Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories).Select(File.ReadAllText));
+
+        var theme = new BitTheme();
+        FillAllStringProperties(theme, []);
+
+        var mapped = BitThemeUtilities.ToCssVariables(theme);
+
+        // A token that the mapper emits but no shipped stylesheet declares or consumes is dead:
+        // setting it from BitTheme silently changes nothing. The boundary lookahead keeps a token
+        // from being satisfied by a longer sibling (e.g. -duration by -duration-short).
+        var dead = mapped.Keys
+            .Where(key => !Regex.IsMatch(scss, Regex.Escape(key) + "(?![a-z0-9-])"))
+            .ToArray();
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), dead, $"Mapper emits dead tokens: {string.Join(", ", dead)}");
+    }
+
+    [TestMethod]
     public void BitThemeSerializationRoundtripPreservesPrimaryColor()
     {
         var original = new BitTheme();
@@ -90,6 +113,56 @@ public sealed class BitThemeMapperContractTests
         var merged = BitThemeUtilities.Merge(child, parent);
         Assert.AreEqual("#222222", merged.Color.Primary.Main);
         Assert.AreEqual("#333333", merged.Color.Primary.MainHover);
+    }
+
+    [DataTestMethod]
+    [DataRow("red; background:url(https://evil.example/x)", DisplayName = "semicolon injects a declaration")]
+    [DataRow("red/* comment-out trailing */", DisplayName = "comment marker")]
+    [DataRow("red} body{display:none", DisplayName = "block delimiters")]
+    [DataRow("red<script", DisplayName = "html metacharacter")]
+    [DataRow("\\65 vil", DisplayName = "css escape sequence")]
+    [DataRow("red\n;color:blue", DisplayName = "newline")]
+    [DataRow("a\"b", DisplayName = "unbalanced double quote swallows siblings")]
+    [DataRow("a'b", DisplayName = "unbalanced single quote swallows siblings")]
+    public void ToCssVariablesDropsInjectionProneTokenValues(string maliciousValue)
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = maliciousValue;
+
+        var mapped = BitThemeUtilities.ToCssVariables(theme);
+
+        Assert.IsFalse(mapped.ContainsKey("--bit-clr-pri"),
+            $"Injection-prone token value '{maliciousValue}' must be dropped, not emitted.");
+    }
+
+    [DataTestMethod]
+    [DataRow("#ABCDEF", DisplayName = "hex color")]
+    [DataRow("rgba(0, 0, 0, .5)", DisplayName = "rgba with commas")]
+    [DataRow("hsl(210 50% 40%)", DisplayName = "hsl")]
+    public void ToCssVariablesPreservesLegitimateColorValues(string value)
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = value;
+
+        var mapped = BitThemeUtilities.ToCssVariables(theme);
+
+        Assert.IsTrue(mapped.TryGetValue("--bit-clr-pri", out var emitted) && emitted == value,
+            $"Legitimate color value '{value}' must be preserved.");
+    }
+
+    [TestMethod]
+    public void ToCssVariablesPreservesLegitimateCompositeValues()
+    {
+        var theme = new BitTheme();
+        theme.Typography.FontFamily = "\"Segoe UI\", Arial, sans-serif";
+        theme.BoxShadow.Sm = "0 1px 2px rgba(0, 0, 0, .1), 0 2px 4px rgba(0, 0, 0, .2)";
+        theme.Motion.EasingStandard = "cubic-bezier(0.4, 0, 0.2, 1)";
+
+        var mapped = BitThemeUtilities.ToCssVariables(theme);
+
+        Assert.AreEqual("\"Segoe UI\", Arial, sans-serif", mapped["--bit-tpg-font-family"]);
+        Assert.AreEqual("0 1px 2px rgba(0, 0, 0, .1), 0 2px 4px rgba(0, 0, 0, .2)", mapped["--bit-shd-sm"]);
+        Assert.AreEqual("cubic-bezier(0.4, 0, 0.2, 1)", mapped["--bit-mot-easing"]);
     }
 
     private static void FillAllStringProperties(object? obj, HashSet<object> visited)

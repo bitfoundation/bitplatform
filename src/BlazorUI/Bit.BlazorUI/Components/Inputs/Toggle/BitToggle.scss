@@ -48,6 +48,10 @@
     &.bit-inv {
         .bit-tgl-btn {
             border-color: $clr-err;
+
+            &:focus-visible {
+                @include focus-ring($clr-err-focus);
+            }
         }
 
         .bit-tgl-stx {
@@ -116,9 +120,13 @@
     font-size: spacing(2.5);
     background: $clr-bg-pri;
     padding: 0 spacing(0.375);
-    transition: all 0.1s ease 0s;
+    transition: all $mot-duration-short ease 0s;
     border-radius: spacing(1.25);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -137,7 +145,7 @@
     width: spacing(1.5);
     height: spacing(1.5);
     box-sizing: border-box;
-    transition: all 0.1s ease 0s;
+    transition: all $mot-duration-short ease 0s;
     background-color: $clr-fg-sec;
     border: spacing(0.75) $shp-border-style transparent;
 }
@@ -183,5 +191,40 @@
 
     .bit-tgl-lbl {
         text-align: end;
+    }
+}
+
+// Windows High Contrast / forced-colors: author backgrounds are stripped to Canvas, which would
+// leave the thumb invisible and the on/off tracks identical. Repaint with system colors so the
+// checked state reads as a Highlight-filled track (matching native toggles); GrayText when disabled.
+@media (forced-colors: active) {
+    .bit-tgl-btn {
+        border-color: ButtonText;
+    }
+
+    .bit-tgl-sta {
+        background-color: ButtonText;
+    }
+
+    .bit-tgl-chk {
+        .bit-tgl-btn {
+            background: Highlight;
+            border-color: Highlight;
+        }
+
+        .bit-tgl-sta {
+            background-color: HighlightText;
+        }
+    }
+
+    .bit-dis {
+        .bit-tgl-btn {
+            background: Canvas;
+            border-color: GrayText;
+        }
+
+        .bit-tgl-sta {
+            background-color: GrayText;
+        }
     }
 }

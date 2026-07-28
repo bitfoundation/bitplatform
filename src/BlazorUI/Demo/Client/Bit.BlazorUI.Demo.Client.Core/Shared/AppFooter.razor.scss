@@ -10,6 +10,14 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     background-color: $bit-color-background-primary;
+
+    // Matches the header's ring; see the note there for why it is not declared globally.
+    a:focus-visible,
+    button:focus-visible {
+        outline: rem2(2px) solid $bit-color-primary;
+        outline-offset: rem2(2px);
+        border-radius: $bit-shape-border-radius;
+    }
 }
 
 section {
@@ -53,21 +61,6 @@ a {
     text-decoration: none;
 }
 
-.links-container {
-    gap: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-}
-
-.column {
-    height: 100%;
-    display: flex;
-    align-items: flex-start;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-}
-
 .bit-logo {
     width: rem2(32px);
     height: rem2(27px);
@@ -75,7 +68,13 @@ a {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url('images/bit-logo.svg');
+    background-image: url('images/bit-logo-light.svg');
+}
+
+:root[bit-theme$='dark'] {
+    .bit-logo {
+        background-image: url('images/bit-logo-dark.svg');
+    }
 }
 
 .go-to-top {
@@ -91,11 +90,9 @@ a {
     }
 }
 
-.address-info {
-    display: flex;
-    gap: rem2(3px);
-    flex-flow: column nowrap;
-
+// The link columns, the address block and the social row are BitStacks; their leftovers live in
+// ::deep because a stack's root div does not carry this file's scope attribute.
+::deep .address-info {
     @include sm {
         margin-bottom: rem2(30px);
     }
@@ -135,12 +132,7 @@ a {
     margin-top: rem2(16px);
 }
 
-.social-link-group {
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-    justify-content: center;
-
+::deep .social-link-group {
     @include sm {
         margin-bottom: rem2(8px);
     }

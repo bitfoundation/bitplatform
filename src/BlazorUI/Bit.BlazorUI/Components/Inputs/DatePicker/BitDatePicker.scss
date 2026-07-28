@@ -50,6 +50,20 @@
         .bit-dtp-icn {
             border-color: $clr-err;
         }
+
+        &.bit-dtp-und .bit-dtp-wrp {
+            // Underlined variant drops the icon border, so surface the error cue on the
+            // underline itself to keep the invalid state visible before focus.
+            border-bottom-color: $clr-err;
+        }
+
+        &.bit-dtp-foc:not(.bit-dtp-und) .bit-dtp-icn {
+            @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-dtp-und.bit-dtp-foc .bit-dtp-icn {
+            @include focus-underline-ring($clr-err-focus);
+        }
     }
 
     &.bit-rtl {
@@ -162,14 +176,9 @@
     }
 }
 
-.bit-dtp-foc {
-    .bit-dtp-icn::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+.bit-dtp-foc:not(.bit-dtp-und) {
+    .bit-dtp-icn {
+        @include focus-ring;
     }
 }
 
@@ -182,7 +191,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-fill-mode: both;
-    animation-duration: 0.367s;
+    animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
@@ -261,7 +270,9 @@
     font-size: spacing(1.5);
     line-height: spacing(3.5);
     animation-fill-mode: both;
-    animation-duration: 0.267s;
+    // A step shorter than the calendar's own entry above, so the days still resolve inside the
+    // container rather than with it.
+    animation-duration: $mot-duration;
     animation-name: bit-fade-show;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
@@ -655,9 +666,8 @@
     }
 
     &:focus {
+        @include focus-underline-ring;
         border: none;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
-        outline: none;
     }
 
     &:disabled {
@@ -722,10 +732,8 @@
     }
 
     &.bit-dtp-foc {
-        .bit-dtp-icn::after {
-            border: none;
-            border-radius: 0;
-            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
+        .bit-dtp-icn {
+            @include focus-underline-ring;
         }
     }
 }
@@ -769,7 +777,7 @@
         animation-name: unset;
         transform: translateY(-100%);
         box-shadow: $box-shadow-callout;
-        transition: transform 200ms ease-out, opacity 100ms linear;
+        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
 
         .bit-dtp-dwp,
         .bit-dtp-mwp,

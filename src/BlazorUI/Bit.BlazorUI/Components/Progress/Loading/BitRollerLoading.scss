@@ -10,7 +10,7 @@
 
 .bit-ldn-rol-chl {
     transform-origin: var(--bit-ldn-rol-40) var(--bit-ldn-rol-40);
-    animation: bit-ldn-rol-anm 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    animation: bit-ldn-rol-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 .bit-ldn-rol-chl::after {
@@ -25,7 +25,7 @@
 }
 
 .bit-ldn-rol-ch1 {
-    animation-delay: -0.036s;
+    animation-delay: calc(-0.036s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch1::after {
@@ -34,7 +34,7 @@
 }
 
 .bit-ldn-rol-ch2 {
-    animation-delay: -0.072s;
+    animation-delay: calc(-0.072s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch2::after {
@@ -43,7 +43,7 @@
 }
 
 .bit-ldn-rol-ch3 {
-    animation-delay: -0.108s;
+    animation-delay: calc(-0.108s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch3::after {
@@ -52,7 +52,7 @@
 }
 
 .bit-ldn-rol-ch4 {
-    animation-delay: -0.144s;
+    animation-delay: calc(-0.144s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch4::after {
@@ -61,7 +61,7 @@
 }
 
 .bit-ldn-rol-ch5 {
-    animation-delay: -0.18s;
+    animation-delay: calc(-0.18s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch5::after {
@@ -70,7 +70,7 @@
 }
 
 .bit-ldn-rol-ch6 {
-    animation-delay: -0.216s;
+    animation-delay: calc(-0.216s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch6::after {
@@ -79,7 +79,7 @@
 }
 
 .bit-ldn-rol-ch7 {
-    animation-delay: -0.252s;
+    animation-delay: calc(-0.252s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch7::after {
@@ -88,7 +88,7 @@
 }
 
 .bit-ldn-rol-ch8 {
-    animation-delay: -0.288s;
+    animation-delay: calc(-0.288s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-rol-ch8::after {

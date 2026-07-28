@@ -24,12 +24,17 @@
 
 <section class="page-container">
     <BitParams Parameters="_cascadingParams">
-        <BitText Element="h1" Typography="BitTypography.H1" Gutter>bit BlazorUI</BitText>
-        <BitText Element="p" Typography="BitTypography.H5" Gutter Color="BitColor.SecondaryForeground">
-            Production-ready and Fluent-inspired components for Blazor that stay native, flexible,
-            and fast across all interactive Blazor modes (WASM, Server, Hybrid, and pre-rendering).
-        </BitText>
-        <br />
+        <header class="page-header">
+            <BitText Element="h1" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">bit BlazorUI</BitText>
+        </header>
+
+        <div class="page-lead">
+            <BitText Element="p" Typography="BitTypography.H6" Color="BitColor.SecondaryForeground">
+                Production-ready and Fluent-inspired components for Blazor that stay native, flexible,
+                and fast across all interactive Blazor modes (WASM, Server, Hybrid, and pre-rendering).
+            </BitText>
+        </div>
+
         <BitStack Horizontal Gap="1rem" Wrap>
             <BitButton IconPosition="BitIconPosition.End"
                        Size="BitSize.Large"

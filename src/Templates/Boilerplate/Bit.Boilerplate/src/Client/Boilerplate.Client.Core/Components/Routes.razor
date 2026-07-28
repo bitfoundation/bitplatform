@@ -6,7 +6,7 @@
             <AppRouter AppAssembly="@GetType().Assembly"
                        AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">
                 @*#if (brouter == true)*@
-                <ChildContent>
+                <Routes>
                     @*#if (module == "Admin")*@
                     @* Keep-alive: pages that host a BitDataGrid whose add/edit lives on a separate page
                        (e.g. ProductsPage -> AddOrEditProductPage) keep their grid state - current page,
@@ -16,7 +16,7 @@
                     <Broute KeepAlive Path="@PageUrls.Products" Component="@typeof(Boilerplate.Client.Core.Components.Pages.Products.ProductsPage)" />
                     <Broute KeepAlive Path="@("{culture?}" + PageUrls.Products)" Component="@typeof(Boilerplate.Client.Core.Components.Pages.Products.ProductsPage)" />
                     @*#endif*@
-                </ChildContent>
+                </Routes>
                 @*#endif*@
                 <Found Context="routeData">
                     <AppRouteDataPublisher RouteData="@routeData" />

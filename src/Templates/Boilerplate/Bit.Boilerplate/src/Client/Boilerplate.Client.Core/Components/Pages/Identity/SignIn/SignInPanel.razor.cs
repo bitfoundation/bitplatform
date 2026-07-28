@@ -91,6 +91,8 @@ public partial class SignInPanel
 
         webAuthnAssertion = null;
 
+        isNewUser = false;
+
         isOtpSent = false;
         model.Otp = null;
 

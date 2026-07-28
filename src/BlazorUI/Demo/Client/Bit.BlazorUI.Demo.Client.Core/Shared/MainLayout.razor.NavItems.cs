@@ -159,7 +159,6 @@ public partial class MainLayout
                 new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
-                new() { Text = "QuickGrid", Url = "/components/quickgrid", AdditionalUrls = ["/components/quick-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag" },
                 new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler" },
@@ -185,7 +184,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "ChartLegacy", Url = "/components/legacy/chart" },
-                new() { Text = "DataGridLegacy", Url = "/components/legacy/datagrid" },
+                new() { Text = "DataGridLegacy", Url = "/components/legacy/datagrid", AdditionalUrls = ["/components/quickgrid", "/components/quick-grid"] },
                 new() { Text = "MarkdownEditorLegacy", Url = "/components/legacy/markdowneditor" },
                 new() { Text = "MarkdownViewerLegacy", Url = "/components/legacy/markdownviewer" },
                 new() { Text = "PdfReaderLegacy", Url = "/components/legacy/pdfreader" },
