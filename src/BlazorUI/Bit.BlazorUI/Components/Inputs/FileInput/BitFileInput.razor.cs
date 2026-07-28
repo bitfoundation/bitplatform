@@ -321,6 +321,8 @@ public partial class BitFileInput : BitComponentBase
     /// </summary>
     public async Task Reset()
     {
+        if (IsDisposed) return;
+
         _files.Clear();
 
         await _js.BitFileInputReset(UniqueId, _inputRef);

@@ -49,7 +49,8 @@ namespace BitBlazorUI {
                     }));
             }
 
-            return files;
+            // the File itself is only of use on this side, so it is left out of the interop payload.
+            return files.map(({ file, ...info }) => info);
         }
 
         public static setupDragDrop(

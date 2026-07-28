@@ -72,9 +72,11 @@
                          role="listitem" style="@Styles?.FileItem" class="bit-fin-itm @GetFileElClass(file.IsValid) @Classes?.FileItem">
                         @if (ShowPreview && file.PreviewUrl is not null)
                         {
-                            @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself *@
+                            @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
+                               the alt is empty on purpose: the thumbnail is decorative and its name is already
+                               right next to it, so announcing it again would just repeat the same text. *@
                             <img src="@file.PreviewUrl"
-                                 alt="@file.Name"
+                                 alt=""
                                  draggable="false"
                                  decoding="async"
                                  style="@Styles?.Preview"
