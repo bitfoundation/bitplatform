@@ -384,17 +384,32 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     }
 
     /// <summary>
-    /// A role manager may only grant feature claims they themselves possess, so they cannot escalate privileges by
-    /// assigning a feature they lack - for example granting a <see cref="AppFeatures.System"/> feature, or (under
-    /// multi-tenant) the global-admin-only Tenants_Write_Global feature, to a role and thereby gaining those capabilities.
-    /// Non-feature claims (e.g. <see cref="AppClaimTypes.MAX_PRIVILEGED_SESSIONS"/>) are not restricted here.
+    /// The only claim types the role management UI (RolesPage) ever sets: a feature, or the max number of privileged
+    /// sessions. There is no reason to accept anything else, so this is an allow-list rather than a block-list.
+    /// Accepting an arbitrary claim type would be dangerous: role claims are copied verbatim into the access token
+    /// (AppUserClaimsPrincipalFactory.GenerateClaims), so a caller could set ClaimType = ClaimTypes.Role,
+    /// ClaimValue = "g-admin" on a role and be granted every feature at token-read time
+    /// (See AppJwtSecureDataFormat.Unprotect) - a full privilege escalation.
+    /// </summary>
+    private static readonly string[] grantableClaimTypes = [AppClaimTypes.FEATURES, AppClaimTypes.MAX_PRIVILEGED_SESSIONS];
+
+    /// <summary>
+    /// A role manager may only grant the claim types in <see cref="grantableClaimTypes"/>, and may only grant feature
+    /// claims they themselves possess - so they cannot escalate privileges by assigning a feature they lack, for example
+    /// a <see cref="AppFeatures.System"/> feature or (under multi-tenant) the global-admin-only Tenants_Manage_Global.
     /// </summary>
     private void EnsureCallerCanGrantClaims(IEnumerable<ClaimDto> claims)
     {
         foreach (var claim in claims)
         {
+            if (grantableClaimTypes.Contains(claim.ClaimType) is false)
+                throw new UnauthorizedException().WithData("Reason", $"The claim type '{claim.ClaimType}' cannot be granted to a role.");
+
             if (claim.ClaimType is AppClaimTypes.FEATURES && User.HasFeature(claim.ClaimValue!) is false)
                 throw new UnauthorizedException().WithData("Reason", $"Caller does not have the feature claim '{claim.ClaimValue}' and cannot grant it to a role.");
+
+            if (claim.ClaimType is AppClaimTypes.MAX_PRIVILEGED_SESSIONS && int.TryParse(claim.ClaimValue, CultureInfo.InvariantCulture, out _) is false)
+                throw new BadRequestException().WithData("Reason", $"The claim '{AppClaimTypes.MAX_PRIVILEGED_SESSIONS}' must be a number.");
         }
     }
 }

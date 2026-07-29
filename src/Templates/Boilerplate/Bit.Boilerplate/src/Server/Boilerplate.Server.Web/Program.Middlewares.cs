@@ -210,7 +210,8 @@ public static partial class Program
 
                         var qs = AppQueryStringCollection.Parse(httpContext.Request.QueryString.Value ?? string.Empty);
                         qs.Remove("try_refreshing_token");
-                        var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString(qs.ToString()));
+                        var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path,
+                                                                QueryString.Create(qs.Select(kv => KeyValuePair.Create(kv.Key, kv.Value?.ToString()))));
                         httpContext.Response.Redirect($"{PageUrls.NotAuthorized}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");
                     }
                     else if (httpContext.Response.StatusCode is 404 &&

@@ -51,7 +51,10 @@ public static partial class UriExtensions
                 return null;
 
             if (AppQueryStringCollection.Parse(uri.Query).TryGetValue("culture", out var culture))
-                return culture?.ToString();
+            {
+                if (CultureInfoManager.GetCultureInfo(culture?.ToString()) is { } cultureInfo)
+                    return cultureInfo.Name;
+            }
 
             foreach (var segment in uri.Segments.Take(2))
             {

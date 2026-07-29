@@ -73,6 +73,8 @@ public partial class CultureInfoManager
     /// </summary>
     private static CultureInfo CustomizeCultureInfoForFaCulture(CultureInfo cultureInfo)
     {
+        Get_CalendarField(cultureInfo) = new PersianCalendar();
+
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
@@ -84,8 +86,6 @@ public partial class CultureInfoManager
         [
             "ی", "د", "س", "چ", "پ", "ج", "ش"
         ];
-
-        Get_CalendarField(cultureInfo) = new PersianCalendar();
 
         return cultureInfo;
     }
