@@ -55,6 +55,26 @@ public class BitChoiceGroupStateTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitChoiceGroupShouldReflectInPlaceMutationOfAnItemsProperty()
+    {
+        var items = GetItems();
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("Item B", component.FindAll(".bit-chg-icn")[1].TextContent.Trim());
+
+        items[1].Text = "Item B (updated)";
+
+        component.Render(parameters => parameters.Add(p => p.Items, items));
+
+        Assert.AreEqual(3, component.FindAll(".bit-chg-icn").Count);
+        Assert.AreEqual("Item B (updated)", component.FindAll(".bit-chg-icn")[1].TextContent.Trim());
+    }
+
+    [TestMethod]
     public void BitChoiceGroupShouldUpdateIsSelectedWhenTheValueChangesFromOutside()
     {
         var items = GetItems();

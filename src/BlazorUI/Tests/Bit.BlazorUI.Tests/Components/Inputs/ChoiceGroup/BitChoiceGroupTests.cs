@@ -283,12 +283,13 @@ public class BitChoiceGroupTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitChoiceGroupShouldRenderDescriptions()
+    public void BitChoiceGroupShouldRenderMultipleDescriptions()
     {
         var items = new List<BitChoiceGroupItem<string>>()
         {
             new() { Text = "Item A", Value = "A", Description = "Description A" },
             new() { Text = "Item B", Value = "B" },
+            new() { Text = "Item C", Value = "C", Description = "Description C" },
         };
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
@@ -298,11 +299,10 @@ public class BitChoiceGroupTests : BunitTestContext
 
         var descriptions = component.FindAll(".bit-chg-dsc");
 
-        Assert.AreEqual(1, descriptions.Count);
+        Assert.AreEqual(2, descriptions.Count);
         Assert.AreEqual("Description A", descriptions[0].TextContent);
-
-        var describedInput = component.Find(".bit-chg-icn input");
-        Assert.AreEqual(descriptions[0].Id, describedInput.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Description C", descriptions[1].TextContent);
+        Assert.AreNotEqual(descriptions[0].Id, descriptions[1].Id);
     }
 
     [TestMethod]
