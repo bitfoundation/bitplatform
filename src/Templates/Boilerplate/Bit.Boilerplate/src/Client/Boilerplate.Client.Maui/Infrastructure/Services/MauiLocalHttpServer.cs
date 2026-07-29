@@ -94,14 +94,14 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/api/GetWebAuthnCredentialOptions", HttpVerbs.Get, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.GetWebAuthnCredentialOptions is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService.GetWebAuthnCredentialOptions), "application/json", Encoding.UTF8);
             }))
             .WithModule(new ActionModule("/api/WebAuthnCredential", HttpVerbs.Post, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.GetWebAuthnCredentialTcs is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 try
@@ -124,14 +124,14 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/api/GetCreateWebAuthnCredentialOptions", HttpVerbs.Get, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.CreateWebAuthnCredentialOptions is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService.CreateWebAuthnCredentialOptions), "application/json", Encoding.UTF8);
             }))
             .WithModule(new ActionModule("/api/CreateWebAuthnCredential", HttpVerbs.Post, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.CreateWebAuthnCredentialTcs is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 try
@@ -220,7 +220,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
     /// A POST with no custom headers is a CORS "simple request" - no preflight, so CORS never applies - and any
     /// page the user has open could otherwise drive these endpoints once it guessed the loopback port.
     /// </summary>
-    private bool IsAuthorized(IHttpContext ctx)
+    private bool EnsureIsAuthorized(IHttpContext ctx)
     {
         if (string.Equals(ctx.Request.QueryString["token"], SessionToken, StringComparison.Ordinal))
             return true;

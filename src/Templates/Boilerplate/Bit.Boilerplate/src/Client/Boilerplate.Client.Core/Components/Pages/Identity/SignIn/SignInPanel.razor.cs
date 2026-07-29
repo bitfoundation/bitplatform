@@ -215,9 +215,6 @@ public partial class SignInPanel
             pubSubUnsubscribe?.Invoke();
             pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
-                // Check out SignInModalService for more details.
-                // Only RELATIVE urls are accepted: this payload arrives from the local HTTP server, so an absolute
-                // url would let a caller drive this panel with its own sign-in parameters.
                 var uri = uriString?.ToString();
                 if (Uri.IsAppRelativeUrl(uri) is false) return;
 
@@ -235,8 +232,6 @@ public partial class SignInPanel
                 }
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
-                // return-url is navigated to on a successful sign-in (GetReturnUrl), so it gets the same treatment
-                // independently - it rides INSIDE the url above and is not covered by the check on it.
                 var returnUrlValue = GetValue(returnUrl);
                 ReturnUrlQueryString = Uri.IsAppRelativeUrl(returnUrlValue) ? returnUrlValue : PageUrls.Home;
                 queryParams.TryGetValue("userName", out var userName);

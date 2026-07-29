@@ -52,7 +52,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
             result.AppendLine($"Subscription exists: {(subscription is not null).ToString().ToLowerInvariant()}");
 
             if (subscription?.UserSessionId is not null && subscription.UserSessionId != callerUserSessionId)
-                throw new ResourceNotFoundException(); // Someone else's device.
+                throw new ResourceNotFoundException().WithData("Reason", "The push notification subscription belongs to another user session.");
 
             await pushNotificationService.RequestPush(new()
             {
@@ -74,7 +74,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (connectionOwnerUserSessionId is not null && connectionOwnerUserSessionId != callerUserSessionId)
-                throw new ResourceNotFoundException(); // Someone else's connection.
+                throw new ResourceNotFoundException().WithData("Reason", "The SignalR connection belongs to another user session.");
 
             var success = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", new Dictionary<string, string?> { { "pageUrl", PageUrls.Terms }, { "action", "testAction" } }, cancellationToken);
             if (success is false) // Client would return false if it's unable to show the message with custom action.

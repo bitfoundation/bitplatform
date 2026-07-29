@@ -70,14 +70,14 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/api/GetWebAuthnCredentialOptions", HttpVerbs.Get, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.GetWebAuthnCredentialOptions is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService.GetWebAuthnCredentialOptions), "application/json", Encoding.UTF8);
             }))
             .WithModule(new ActionModule("/api/WebAuthnCredential", HttpVerbs.Post, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.GetWebAuthnCredentialTcs is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 try
@@ -102,14 +102,14 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/api/GetCreateWebAuthnCredentialOptions", HttpVerbs.Get, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.CreateWebAuthnCredentialOptions is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService.CreateWebAuthnCredentialOptions), "application/json", Encoding.UTF8);
             }))
             .WithModule(new ActionModule("/api/CreateWebAuthnCredential", HttpVerbs.Post, async ctx =>
             {
-                if (IsAuthorized(ctx) is false) return;
+                if (EnsureIsAuthorized(ctx) is false) return;
                 if (WebAuthnService?.CreateWebAuthnCredentialTcs is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
 
                 try
@@ -196,7 +196,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
     /// The WebAuthn endpoints must carry the per-process token that only the app itself puts in the interop URL.
     /// See the MAUI server for the full rationale.
     /// </summary>
-    private bool IsAuthorized(IHttpContext ctx)
+    private bool EnsureIsAuthorized(IHttpContext ctx)
     {
         if (string.Equals(ctx.Request.QueryString["token"], SessionToken, StringComparison.Ordinal))
             return true;

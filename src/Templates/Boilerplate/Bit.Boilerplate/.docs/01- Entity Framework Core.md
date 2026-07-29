@@ -450,12 +450,7 @@ dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --outpu
 `SyncService` uses `CommunityToolkit.DataSync` to synchronize data between the client-side offline database and the server database.
 Conventions:
 
-- Entity must inherit from a **concrete** Datasync base that manages `Version` — `RepositoryControlledEntityTableData`
-  is the lowest-risk choice, since it carries `[UpdatedByRepository]` and needs no provider-specific configuration.
-  Do **not** use the abstract `BaseEntityTableData` directly: it declares `byte[] Version` with no
-  `[UpdatedByRepository]` and no `[Timestamp]`, so `EntityTableRepository` silently never fills it and offline
-  conflicts are lost as a last-write-wins overwrite. Example:
-  [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs)
+- Entity must inherit from `RepositoryControlledEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs)
 - DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Features/Todo/TodoItemDto.cs`](/src/Shared/Features/Todo/TodoItemDto.cs)
 - TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
 - Repository: a class implementing `IRepository<TDto>` that *wraps* an `EntityTableRepository<TEntity>` and maps at
