@@ -113,7 +113,7 @@
                     bswupEl.style.display = 'block';
                     return console.log('downloading assets started:', data?.version);
 
-                case BswupMessage.downloadProgress:
+                case BswupMessage.downloadProgress: {
                     // Built with textContent (not innerHTML) so asset names can never be
                     // parsed as markup - the same hardening as the bundled progress script.
                     const li = document.createElement('li');
@@ -125,8 +125,9 @@
                     progressBar.style.width = `${percent}%`;
                     percentLabel.textContent = `${percent} %`;
                     return console.log('asset downloaded:', data);
+                }
 
-                case BswupMessage.downloadFinished:
+                case BswupMessage.downloadFinished: {
                     if (data.firstInstall) {
                         descriptionLabel.textContent = 'Downloading finished, starting Blazor...';
                         // Same recovery the built-in progress UI performs: a reload that fails
@@ -156,6 +157,7 @@
                         reloadButton.onclick = data.reload;
                     }
                     return console.log('downloading assets finished.');
+                }
 
                 case BswupMessage.updateReady:
                     reloadButton.style.display = 'block';

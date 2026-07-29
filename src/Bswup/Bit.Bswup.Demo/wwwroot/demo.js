@@ -143,9 +143,19 @@
         } catch (err) { /* CacheStorage unavailable (e.g. some private modes) */ }
     }
 
-    function checkForUpdate() {
+    async function checkForUpdate() {
         record('(playground)', 'BitBswup.checkForUpdate() called');
-        if (window.BitBswup && BitBswup.checkForUpdate) BitBswup.checkForUpdate();
+        if (window.BitBswup && BitBswup.checkForUpdate) {
+            try {
+                await BitBswup.checkForUpdate();
+            } catch (err) {
+                // The registration-aware implementation reports failures through the
+                // UPDATE_CHECK_FAILED event (logged above by bswupDemoHandler), but the
+                // pre-registration fallback rejects directly when reg.update() fails
+                // (e.g. offline) - record it instead of an unhandled rejection.
+                record('(playground)', `BitBswup.checkForUpdate() rejected: ${err}`);
+            }
+        }
     }
 
     async function skipWaiting() {

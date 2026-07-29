@@ -322,11 +322,13 @@
                         // unwire it so the only actionable control is the (conditional) Retry.
                         hideReloadButton();
 
-                        // The error supersedes any in-flight progress. Hide the bar and the
-                        // percentage so a stale partial value (e.g. "47%") isn't left sitting
-                        // next to the failure message.
+                        // The error supersedes any in-flight progress. Hide the bar, the
+                        // percentage and the ShowAssets download list so a stale partial value
+                        // (e.g. "47%", half a list of assets) isn't left sitting next to the
+                        // failure message.
                         if (progressEl && progressEl.parentElement) progressEl.parentElement.style.display = 'none';
                         if (percentEl) percentEl.style.display = 'none';
+                        if (assetsEl) assetsEl.style.display = 'none';
 
                         if (errorEl) {
                             errorEl.style.display = 'block';
