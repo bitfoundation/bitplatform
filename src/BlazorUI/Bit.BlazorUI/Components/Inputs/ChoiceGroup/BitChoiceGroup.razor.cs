@@ -30,7 +30,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     /// <summary>
     /// Determines if the ChoiceGroup is auto focused on first render, focusing its checked item, or its first
-    /// enabled item when nothing is checked. Nothing is focused when the target item is disabled.
+    /// enabled item when nothing is checked. Nothing is focused when the ChoiceGroup is read-only or the
+    /// target item is disabled.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
 
