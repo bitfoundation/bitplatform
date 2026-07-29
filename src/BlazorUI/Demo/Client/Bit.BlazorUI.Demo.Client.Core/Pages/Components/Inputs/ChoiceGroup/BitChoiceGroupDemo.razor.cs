@@ -542,7 +542,7 @@ public partial class BitChoiceGroupDemo
                    Name = "Title",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The title attribute (the native tooltip) of the BitChoiceGroup item. Supplementary text only: use AriaLabel or Description for content that has to reach every user.",
+                   Description = "The title attribute (the native tooltip) of the BitChoiceGroup item. Supplementary text only: content that has to reach every user belongs in Text (or a template) or in Description, both of which are visible and exposed to assistive technology. AriaLabel is not an alternative: it only replaces the accessible name for assistive technology and is never visible.",
                },
                new()
                {
@@ -692,7 +692,7 @@ public partial class BitChoiceGroupDemo
                    Name = "Title",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The title attribute (the native tooltip) of the BitChoiceGroup option. Supplementary text only: use AriaLabel or Description for content that has to reach every user.",
+                   Description = "The title attribute (the native tooltip) of the BitChoiceGroup option. Supplementary text only: content that has to reach every user belongs in Text (or a template) or in Description, both of which are visible and exposed to assistive technology. AriaLabel is not an alternative: it only replaces the accessible name for assistive technology and is never visible.",
                },
                new()
                {

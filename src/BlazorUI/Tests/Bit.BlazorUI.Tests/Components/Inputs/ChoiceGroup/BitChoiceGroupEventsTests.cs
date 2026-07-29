@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using Bunit;
-using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
@@ -12,6 +10,11 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
 [TestClass]
 public class BitChoiceGroupEventsTests : BunitTestContext
 {
+    // The identifier behind ElementReference.FocusAsync, which is what bUnit's VerifyFocusAsyncInvoke
+    // asserts against. Spelled out here because the "not focused" case has no invocation to verify and
+    // so has to go through VerifyNotInvoke, which takes the identifier rather than the focus helper.
+    private const string FocusAsyncIdentifier = "Blazor._internal.domWrapper.focus";
+
     private static List<BitChoiceGroupItem<string>> GetItems() =>
     [
         new() { Text = "Item A", Value = "A" },
@@ -131,8 +134,8 @@ public class BitChoiceGroupEventsTests : BunitTestContext
         });
 
         // "B" is the checked item, so the focus has to land on it and not on the first one.
-        Assert.AreEqual(1, FocusInvocationCount());
-        Assert.AreEqual(component.FindAll(".bit-chg-icn input")[items.FindIndex(i => i.Value == "B")].GetAttribute("blazor:elementreference"), FocusedElementId());
+        var invocation = Context.JSInterop.VerifyFocusAsyncInvoke();
+        invocation.Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-chg-icn input")[items.FindIndex(i => i.Value == "B")]);
     }
 
     [TestMethod]
@@ -149,8 +152,8 @@ public class BitChoiceGroupEventsTests : BunitTestContext
 
         // Tabbing into the group skips the disabled first radio, so the focus target has to skip it too,
         // otherwise the auto focus lands on a disabled input and silently does nothing.
-        Assert.AreEqual(1, FocusInvocationCount());
-        Assert.AreEqual(component.FindAll(".bit-chg-icn input")[1].GetAttribute("blazor:elementreference"), FocusedElementId());
+        var invocation = Context.JSInterop.VerifyFocusAsyncInvoke();
+        invocation.Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-chg-icn input")[1]);
     }
 
     [TestMethod]
@@ -163,21 +166,6 @@ public class BitChoiceGroupEventsTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, true);
         });
 
-        Assert.AreEqual(0, FocusInvocationCount());
-    }
-
-    private int FocusInvocationCount()
-    {
-        return Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", System.StringComparison.OrdinalIgnoreCase));
-    }
-
-    // The id of the element the focus interop was called with, so a test can assert which input was focused
-    // and not only that something was. It matches the blazor:elementreference attribute bUnit renders on the
-    // elements captured with @ref.
-    private string FocusedElementId()
-    {
-        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier.Contains("focus", System.StringComparison.OrdinalIgnoreCase));
-
-        return ((ElementReference)invocation.Arguments[0]!).Id;
+        Context.JSInterop.VerifyNotInvoke(FocusAsyncIdentifier);
     }
 }

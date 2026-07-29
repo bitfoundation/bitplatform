@@ -92,7 +92,10 @@ public class BitChoiceGroupItem<TValue>
 
     /// <summary>
     /// The title attribute (the native tooltip) of the BitChoiceGroup item. This is supplementary text only:
-    /// use <see cref="AriaLabel"/> or <see cref="Description"/> for content that has to reach every user.
+    /// content that has to reach every user belongs in <see cref="Text"/> (or a template) or in
+    /// <see cref="Description"/>, both of which are visible and exposed to assistive technology.
+    /// <see cref="AriaLabel"/> is not an alternative: it only replaces the accessible name for assistive
+    /// technology and is never visible.
     /// </summary>
     public string? Title { get; set; }
 
