@@ -210,8 +210,16 @@ public static partial class Program
 
                         var qs = AppQueryStringCollection.Parse(httpContext.Request.QueryString.Value ?? string.Empty);
                         qs.Remove("try_refreshing_token");
-                        var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString(qs.ToString()));
-                        httpContext.Response.Redirect($"{PageUrls.NotAuthorized}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");
+                        var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path,
+                                                                QueryString.Create(qs.Select(kv => KeyValuePair.Create(kv.Key, kv.Value?.ToString()))));
+                        // return-url has to be encoded as a single value: interpolating it raw would let its inner '&'
+                        // separators split into extra outer parameters and truncate the url SignIn navigates back to.
+                        var redirectQuery = QueryString.Create(new KeyValuePair<string, string?>[]
+                        {
+                            new("return-url", returnUrl),
+                            new("isForbidden", is403 ? "true" : "false")
+                        });
+                        httpContext.Response.Redirect($"{PageUrls.NotAuthorized}{redirectQuery}");
                     }
                     else if (httpContext.Response.StatusCode is 404 &&
                         httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)

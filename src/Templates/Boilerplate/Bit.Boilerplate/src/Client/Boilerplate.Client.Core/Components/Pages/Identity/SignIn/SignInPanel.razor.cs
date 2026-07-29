@@ -222,13 +222,11 @@ public partial class SignInPanel
                 if (queryIndex < 0) return; // No query string means nothing to apply; `uri[-1..]` would throw.
                 var queryParams = AppQueryStringCollection.Parse(uri[queryIndex..]);
 
-                string? GetValue(object? value)
+                static string? GetValue(object? value)
                 {
                     var valueAsString = value?.ToString();
 
-                    if (string.IsNullOrEmpty(valueAsString)) return null;
-
-                    return Uri.UnescapeDataString(valueAsString);
+                    return string.IsNullOrEmpty(valueAsString) ? null : valueAsString;
                 }
 
                 queryParams.TryGetValue("return-url", out var returnUrl);

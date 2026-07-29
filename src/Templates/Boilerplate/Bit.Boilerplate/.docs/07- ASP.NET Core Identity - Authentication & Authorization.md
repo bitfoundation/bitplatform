@@ -263,20 +263,23 @@ The project defines **authorization policies** that can be used throughout the a
 Policies are defined in [`ISharedServiceCollectionExtensions.cs`](/src/Shared/Infrastructure/Extensions/ISharedServiceCollectionExtensions.cs):
 
 ```csharp
-public static void ConfigureAuthorizationCore(this IServiceCollection services)
+public void ConfigureAuthorizationCore() // an extension member on IServiceCollection
 {
+    services.AddSingleton<IAuthorizationHandler, FeatureRequirementHandler>();
+
     services.AddAuthorizationCore(options =>
     {
         // Built-in policies
-        options.AddPolicy(AuthPolicies.TFA_ENABLED, 
-            x => x.RequireClaim("amr", "mfa"));
-        options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, 
+        options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS,
             x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
-        options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, 
-            x => x.AddRequirements(new ElevatedAccessRequirement())); // Handled by ElevatedAccessRequirementHandler using the injected TimeProvider.
+        options.AddPolicy(AuthPolicies.ELEVATED_ACCESS,
+            x => x.RequireAssertion(ctx => ctx.User.GetElevatedSessionExpiresOn() > TimeProvider.GetUtcNow()));
+        // multitenant only:
+        options.AddPolicy(AuthPolicies.TENANT_SELECTED,
+            x => x.RequireAssertion(ctx => ctx.User.GetTenantId() is not null));
 
         // Feature-based policies (automatically generated based on `AppFeatures`)
-        foreach (var feat in AppFeatures.GetAll())
+        foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
         {
             options.AddPolicy(feat.Value, policy => 
                 policy.AddRequirements(new AppFeatureRequirement(
@@ -291,14 +294,7 @@ public static void ConfigureAuthorizationCore(this IServiceCollection services)
 
 Defined in [`AuthPolicies.cs`](/src/Shared/Infrastructure/Services/AuthPolicies.cs):
 
-**1. TFA_ENABLED**
-```csharp
-public const string TFA_ENABLED = nameof(TFA_ENABLED);
-```
-- Requires the user to have **two-factor authentication enabled**
-- Useful for pages that require enhanced security
-
-**2. PRIVILEGED_ACCESS**
+**1. PRIVILEGED_ACCESS**
 ```csharp
 /// <summary>
 /// Having this policy/claim in access token means the user is allowed to view pages that require privileged access.
@@ -317,7 +313,7 @@ public const string PRIVILEGED_ACCESS = nameof(PRIVILEGED_ACCESS);
 - Applied to high-value pages like Dashboard, Products, Categories
 - Users can manage sessions from the Settings page
 
-**3. ELEVATED_ACCESS**
+**2. ELEVATED_ACCESS**
 ```csharp
 /// <summary>
 /// Enables the user to execute potentially harmful operations, like account removal.
@@ -330,6 +326,13 @@ public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
 - Used for dangerous actions like **account deletion**
 - Activated by entering a 6-digit code or during initial sign-in with 2FA enabled
 - **Time-limited** elevation (expires after a short period)
+
+**3. TENANT_SELECTED** *(multitenant only)*
+```csharp
+public const string TENANT_SELECTED = nameof(TENANT_SELECTED);
+```
+- Requires the access token to carry a `AppClaimTypes.TENANT_ID` claim, i.e. the user has selected a tenant
+- Protects tenant-data endpoints; all shipped tenant-data controllers already apply it
 
 #### Privileged Session Logic
 
