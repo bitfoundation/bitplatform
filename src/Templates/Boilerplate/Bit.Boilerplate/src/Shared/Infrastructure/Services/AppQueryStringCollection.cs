@@ -10,8 +10,8 @@ namespace System;
 /// </summary>
 public class AppQueryStringCollection() : Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 {
-    /// <returns>The encoded query string <b>without</b> a leading '?', or null when empty - so it can be handed
-    /// straight to <c>QueryString.Create</c>, which requires the '?' that this method does not emit.</returns>
+    /// <returns>The encoded query string <b>without</b> a leading '?', or null when empty; callers compose the url
+    /// themselves and prepend the '?' (see <c>UriExtensions.GetUrlWithoutQueryParameter</c>).</returns>
     public override string? ToString()
     {
         if (Count == 0)
