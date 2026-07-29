@@ -70,6 +70,9 @@ describe('errorTolerance', () => {
         });
         expect(sw.self.errorTolerance).toBe('lax');
         await expect(sw.fire('install')).resolves.not.toThrow();
+        // The per-asset error dispatch is not awaited by the install promise (sendError goes
+        // through clients.matchAll()), so drain it rather than leave it floating past the test.
+        await sw.settle();
     });
 
     it('reports a non-fatal error under lax so the UI does not show install-failed', async () => {

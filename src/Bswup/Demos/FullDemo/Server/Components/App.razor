@@ -39,8 +39,11 @@
             sw="service-worker.js"
             handler="bitBswupHandler"></script>
 
-    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
+    @* The component renders first so its data-bit-bswup-* configuration is already in the
+       document when the script initializes. Rendered after the script it still works - the
+       script's MutationObserver picks up a late element - but that is the fallback path. *@
     <DemoBswupProgressBar />
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
 </body>
 
 </html>
