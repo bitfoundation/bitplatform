@@ -96,7 +96,7 @@ public partial class SignUpPage
                 // Only RELATIVE urls are followed: this payload arrives from the local HTTP server, so an absolute
                 // url here would be an open redirect out of the app.
                 var url = uriString?.ToString();
-                if (string.IsNullOrEmpty(url) || Uri.IsWellFormedUriString(url, UriKind.Relative) is false) return;
+                if (Uri.IsAppRelativeUrl(url) is false) return;
 
                 NavigationManager.NavigateTo(url, replace: true);
             });

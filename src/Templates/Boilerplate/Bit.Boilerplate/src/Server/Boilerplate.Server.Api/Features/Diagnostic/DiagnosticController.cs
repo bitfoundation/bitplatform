@@ -39,6 +39,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         // belongs to nobody is the caller's own and passes; an identifier that belongs to a UserSession may only
         // be acted on by that same session.
         var isAuthenticated = User.IsAuthenticated();
+        var callerUserSessionId = isAuthenticated ? User.GetSessionId() : (Guid?)null;
 
         result.AppendLine($"IsAuthenticated: {isAuthenticated.ToString().ToLowerInvariant()}");
 
@@ -50,7 +51,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
 
             result.AppendLine($"Subscription exists: {(subscription is not null).ToString().ToLowerInvariant()}");
 
-            if (subscription?.UserSessionId is not null && subscription.UserSessionId != User.GetSessionId())
+            if (subscription?.UserSessionId is not null && subscription.UserSessionId != callerUserSessionId)
                 throw new ResourceNotFoundException(); // Someone else's device.
 
             await pushNotificationService.RequestPush(new()
@@ -72,7 +73,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
                 .Select(us => (Guid?)us.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (connectionOwnerUserSessionId is not null && connectionOwnerUserSessionId != User.GetSessionId())
+            if (connectionOwnerUserSessionId is not null && connectionOwnerUserSessionId != callerUserSessionId)
                 throw new ResourceNotFoundException(); // Someone else's connection.
 
             var success = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", new Dictionary<string, string?> { { "pageUrl", PageUrls.Terms }, { "action", "testAction" } }, cancellationToken);

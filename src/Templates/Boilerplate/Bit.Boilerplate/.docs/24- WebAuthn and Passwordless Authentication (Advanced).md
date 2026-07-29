@@ -216,8 +216,9 @@ When a user signs in with passwordless authentication:
    - User then signs in with the code
 
 **6. Server Verifies Assertion** (`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.WebAuthn.cs`)
-   - Retrieves the cached CredentialCreateOptions by USER ID (`WebAuthn_Options_{userId}`). Only the sign-in
-     side keys its cache by challenge (`IdentityController.WebAuthn.cs`).
+   - Retrieves the cached `AssertionOptions` by CHALLENGE (`WebAuthn_AssertionOptions_{base64url(challenge)}`),
+     taken from the client-supplied `clientDataJson`. The registration side is the one that keys its cache by
+     user id (`UserController.WebAuthn.cs`).
    - Finds credential in database by credential ID
    - Validates assertion using Fido2NetLib:
      - Verifies signature with stored public key

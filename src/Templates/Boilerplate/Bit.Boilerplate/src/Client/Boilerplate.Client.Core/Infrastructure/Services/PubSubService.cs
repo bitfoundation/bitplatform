@@ -34,7 +34,6 @@ public partial class PubSubService
                 }
             }
 
-            weakHandlers.RemoveAll(wh => wh.IsAlive is false);
         }
 
         if (delivered is false && persistent)
@@ -100,11 +99,6 @@ public partial class PubSubService
             method = handler.Method;
             targetInfo = $"{(handler.Target?.GetType().FullName ?? "static")}'s {method.Name}";
         }
-
-        /// <summary>
-        /// False once the subscriber instance has been garbage collected, so the entry can be pruned.
-        /// </summary>
-        public bool IsAlive => isStatic || target?.IsAlive is true;
 
         /// <summary>
         /// Invokes the stored handler if it is still alive.

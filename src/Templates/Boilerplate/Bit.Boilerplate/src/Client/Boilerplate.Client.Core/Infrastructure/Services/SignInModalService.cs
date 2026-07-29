@@ -51,7 +51,19 @@ public partial class SignInModalService : IAsyncDisposable
             OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => currentTcs.TrySetResult(false))
         };
 
-        modalReference = currentModalReference = await modalService.Show<SignInModal>(signInParameters, modalParameters);
+        currentModalReference = await modalService.Show<SignInModal>(signInParameters, modalParameters);
+
+        // Show() yields, so a second SignIn() - or a navigation - can complete currentTcs while this await is
+        // pending. When that happens this call's modal is already obsolete: close it instead of publishing it as
+        // the current one, which would leave the newer modal orphaned behind a stale field.
+        if (currentTcs.Task.IsCompleted)
+        {
+            currentModalReference.Close();
+        }
+        else
+        {
+            modalReference = currentModalReference;
+        }
 
         return await currentTcs.Task;
     }

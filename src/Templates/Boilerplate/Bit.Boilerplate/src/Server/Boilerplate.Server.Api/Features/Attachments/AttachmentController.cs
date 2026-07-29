@@ -303,32 +303,30 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         }
 
         //  ---------------------------------------------------------------------------------------------
-        //  PHASE 2 - everything validated; now mutate. Old blobs are deleted by the PATH STORED ON THE ROW,
-        //  not by recomputing the key: the *Original key embeds the uploaded file's extension, so a
-        //  png -> jpg re-upload used to compute a different key, leaving the old blob referenced by no row
-        //  and outside every deletion path the app offers.
+        //  PHASE 2 - everything validated; now mutate.
+        //
+        //  A re-upload does NOT delete and re-insert the rows. Attachment's key is composite - { Id, Kind }
+        //  (AttachmentConfiguration) - and GetFilePath is deterministic over exactly those two values, so a
+        //  re-upload produces rows whose keys AND Path are byte-identical to the existing ones. Removing and
+        //  re-adding them in one SaveChangesAsync would also throw: EF cannot track a second instance with a
+        //  key it already tracks, even when the tracked one is marked Deleted.
+        //
+        //  For the same reason there is no stale blob to clean up: the new key IS the old key, so the writes
+        //  below overwrite in place.
         //  ---------------------------------------------------------------------------------------------
-        var staleAttachments = await DbContext.Attachments.Where(att => att.Id == attachmentId).ToArrayAsync(cancellationToken);
+        var existingKinds = await DbContext.Attachments
+            .Where(att => att.Id == attachmentId)
+            .Select(att => att.Kind)
+            .ToArrayAsync(cancellationToken);
 
-        var executionStrategy = DbContext.Database.CreateExecutionStrategy();
-        await executionStrategy.ExecuteAsync(async () =>
+        var newAttachments = preparedUploads.Select(u => u.Attachment)
+                                            .Where(att => existingKinds.Contains(att.Kind) is false)
+                                            .ToArray();
+
+        if (newAttachments.Length > 0)
         {
-            await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
-
-            DbContext.Attachments.RemoveRange(staleAttachments);
-            await DbContext.Attachments.AddRangeAsync(preparedUploads.Select(u => u.Attachment), cancellationToken);
+            await DbContext.Attachments.AddRangeAsync(newAttachments, cancellationToken);
             await DbContext.SaveChangesAsync(cancellationToken);
-
-            await transaction.CommitAsync(cancellationToken);
-        });
-
-        foreach (var stalePath in staleAttachments.Select(att => att.Path)
-                                                  .Except(preparedUploads.Select(u => u.Attachment.Path)))
-        {
-            if (await blobStorage.ObjectExists(stalePath, cancellationToken))
-            {
-                await blobStorage.DeleteObject(stalePath, cancellationToken);
-            }
         }
 
         foreach (var (attachment, resizedBytes) in preparedUploads)

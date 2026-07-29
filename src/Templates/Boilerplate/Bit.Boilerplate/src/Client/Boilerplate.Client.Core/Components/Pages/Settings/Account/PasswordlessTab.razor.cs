@@ -93,15 +93,15 @@ public partial class PasswordlessTab
             return;
         }
 
+        // Proof of possession. A failed assertion does not return a value here - fido2.MakeAssertionAsync
+        // throws on the server - so reaching the next line means verification passed. The server also consumes
+        // the challenge at this point, so this assertion cannot be replayed for sign-in.
+        await identityController
+            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+            .VerifyWebAuthAssertion(assertion, CurrentCancellationToken);
+
         try
         {
-            // Proof of possession. A failed assertion does not return a value here - fido2.MakeAssertionAsync
-            // throws on the server - so reaching the next line means verification passed. The server also consumes
-            // the challenge at this point, so this assertion cannot be replayed for sign-in.
-            await identityController
-                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-                .VerifyWebAuthAssertion(assertion, CurrentCancellationToken);
-
             await userController
                 .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
                 .DeleteWebAuthnCredential(assertion, CurrentCancellationToken);

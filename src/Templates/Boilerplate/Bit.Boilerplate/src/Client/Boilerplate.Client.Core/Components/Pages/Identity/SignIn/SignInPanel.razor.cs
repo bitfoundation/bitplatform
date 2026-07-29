@@ -219,7 +219,7 @@ public partial class SignInPanel
                 // Only RELATIVE urls are accepted: this payload arrives from the local HTTP server, so an absolute
                 // url would let a caller drive this panel with its own sign-in parameters.
                 var uri = uriString?.ToString();
-                if (string.IsNullOrEmpty(uri) || Uri.IsWellFormedUriString(uri, UriKind.Relative) is false) return;
+                if (Uri.IsAppRelativeUrl(uri) is false) return;
 
                 var queryIndex = uri.IndexOf('?');
                 if (queryIndex < 0) return; // No query string means nothing to apply; `uri[-1..]` would throw.
@@ -238,7 +238,7 @@ public partial class SignInPanel
                 // return-url is navigated to on a successful sign-in (GetReturnUrl), so it gets the same treatment
                 // independently - it rides INSIDE the url above and is not covered by the check on it.
                 var returnUrlValue = GetValue(returnUrl);
-                ReturnUrlQueryString = Uri.IsWellFormedUriString(returnUrlValue, UriKind.Relative) ? returnUrlValue : PageUrls.Home;
+                ReturnUrlQueryString = Uri.IsAppRelativeUrl(returnUrlValue) ? returnUrlValue : PageUrls.Home;
                 queryParams.TryGetValue("userName", out var userName);
                 UserNameQueryString = GetValue(userName);
                 queryParams.TryGetValue("email", out var email);

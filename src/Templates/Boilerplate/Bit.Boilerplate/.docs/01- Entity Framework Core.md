@@ -459,10 +459,14 @@ Conventions:
 - DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Features/Todo/TodoItemDto.cs`](/src/Shared/Features/Todo/TodoItemDto.cs)
 - TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
 - Repository: a class implementing `IRepository<TDto>` that *wraps* an `EntityTableRepository<TEntity>` and maps at
-  the boundary. **This wrapper is where per-user scoping must be applied** to `ReadAsync` / `ReplaceAsync` /
-  `DeleteAsync`, because `TableController`'s by-id verbs go straight to the repository and never consult
-  `AsQueryableAsync`. Example:
+  the boundary. Example:
   [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
+
+> **Scoping caveat.** `TableController`'s by-id verbs (`ReadAsync` / `ReplaceAsync` / `DeleteAsync`) go straight to
+> the repository and never consult `AsQueryableAsync`, which is the only method that filters on `UserId`. The
+> shipped `TodoItemTableRepository` deliberately does **not** add a per-user check there: at sync time a device may
+> be pushing operations queued while it was in another user's hands. If your app has no such requirement, add the
+> ownership check in the wrapper — that is the only place it can live.
 
 ### Additional Resources
 

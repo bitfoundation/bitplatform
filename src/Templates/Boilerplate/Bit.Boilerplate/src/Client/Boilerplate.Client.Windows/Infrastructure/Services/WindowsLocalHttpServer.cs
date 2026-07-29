@@ -205,8 +205,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
         return false;
     }
 
-    private static bool IsRelativeUrl(string? url)
-        => string.IsNullOrEmpty(url) is false && Uri.IsWellFormedUriString(url, UriKind.Relative);
+    private static bool IsRelativeUrl(string? url) => Uri.IsAppRelativeUrl(url);
 
     public async ValueTask DisposeAsync()
     {
