@@ -6,72 +6,138 @@
 
 @if (Item.Status != BitFileUploadStatus.Removed)
 {
-    <div class="bit-upl-itm @GetFileElClass(Item.Status)">
+    <div role="listitem"
+         style="@FileUpload.Styles?.FileItem"
+         class="bit-upl-itm @GetFileElClass(Item.Status) @FileUpload.Classes?.FileItem">
+        @if (FileUpload.ShowPreview && Item.PreviewUrl is not null)
+        {
+            @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
+               the alt is empty on purpose: the thumbnail is decorative and its name is already
+               right next to it, so announcing it again would just repeat the same text. *@
+            <img src="@Item.PreviewUrl"
+                 alt=""
+                 draggable="false"
+                 decoding="async"
+                 style="@FileUpload.Styles?.Preview"
+                 class="bit-upl-prv @FileUpload.Classes?.Preview" />
+        }
         <div class="bit-upl-fic">
             <div title="@Item.Name" class="bit-upl-fnc">
-                <div class="bit-upl-fn">@Item.Name</div>
+                <div style="@FileUpload.Styles?.FileName" class="bit-upl-fn @FileUpload.Classes?.FileName">@Item.Name</div>
             </div>
             <div class="bit-upl-fsc">
-                <span class="bit-upl-fs">
-                    @($"{GetFileUploadSize(Item)}/{FileSizeHumanizer.Humanize(Item.Size)}")
+                <span style="@FileUpload.Styles?.FileSize" class="bit-upl-fs @FileUpload.Classes?.FileSize">
+                    @($"{FormatSize(GetFileUploadSize(Item))}/{FormatSize(Item.Size)}")
                 </span>
-                <span class="bit-upl-pct">
-                    @fileUploadPercent%
-                </span>
+                @* a file that was never going to be sent has no progress to report, and a "0%" next to
+                   the reason it was turned away only reads as something that failed halfway. *@
+                @if (Item.Status != BitFileUploadStatus.NotAllowed)
+                {
+                    <span style="@FileUpload.Styles?.Percentage" class="bit-upl-pct @FileUpload.Classes?.Percentage">
+                        @fileUploadPercent%
+                    </span>
+                }
             </div>
             @if (Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
             {
-                <div class="bit-upl-pbc">
+                <div style="@FileUpload.Styles?.ProgressBarContainer" class="bit-upl-pbc @FileUpload.Classes?.ProgressBarContainer">
                     <div role="progressbar"
-                         class="bit-upl-pbr"
-                         style="width:@fileUploadPercent%;"
+                         style="width:@fileUploadPercent%;@FileUpload.Styles?.ProgressBar"
+                         class="bit-upl-pgb @FileUpload.Classes?.ProgressBar"
+                         aria-label="@Item.Name"
                          aria-valuemin="0"
                          aria-valuemax="100"
-                         aria-valuenow="@fileUploadPercent"></div>
+                         aria-valuenow="@fileUploadPercent"
+                         aria-valuetext="@($"{fileUploadPercent}%")"></div>
                 </div>
             }
             else
             {
-                <div class="bit-upl-us">@GetUploadMessage(Item)</div>
+                <div style="@FileUpload.Styles?.StatusMessage" class="bit-upl-us @FileUpload.Classes?.StatusMessage">
+                    @FileUpload.GetStatusMessage(Item)
+                </div>
             }
         </div>
-        @if (Item.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused)
+        @* a file already waiting in the concurrency queue is on its way, so it offers no button to start
+           it a second time - pressing it would do nothing but suggest that nothing is happening. *@
+        @if (Item.IsQueued is false &&
+             Item.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused or BitFileUploadStatus.Failed or BitFileUploadStatus.Canceled)
         {
-            var uploadIcon = BitIconInfo.From(FileUpload.UploadIcon, FileUpload.UploadIconName ?? "Play");
-            <div class="bit-upl-usi" @onclick="() => FileUpload.Upload(Item)">
-                <i title="upload" class="@uploadIcon!.GetCssClasses()" aria-hidden="true" />
-            </div>
+            @* a file that already ran and did not make it is retried rather than started, so it says so:
+               a distinct icon and wording, falling back to the upload ones when none are configured. *@
+            var isRetry = Item.Status is BitFileUploadStatus.Failed or BitFileUploadStatus.Canceled;
+            var uploadIcon = isRetry
+                                ? BitIconInfo.From(FileUpload.RetryIcon ?? FileUpload.UploadIcon,
+                                                   FileUpload.RetryIconName ?? FileUpload.UploadIconName ?? "Refresh")
+                                : BitIconInfo.From(FileUpload.UploadIcon, FileUpload.UploadIconName ?? "Play");
+            var uploadTitle = isRetry
+                                ? (FileUpload.RetryButtonTitle ?? FileUpload.UploadButtonTitle ?? "Retry")
+                                : (FileUpload.UploadButtonTitle ?? "Upload");
+            <button @onclick="() => FileUpload.Upload(Item)"
+                    type="button"
+                    title="@uploadTitle"
+                    disabled="@(FileUpload.IsEnabled is false)"
+                    aria-label="@($"{uploadTitle} {Item.Name}")"
+                    style="@FileUpload.Styles?.UploadButton"
+                    class="bit-upl-usi @FileUpload.Classes?.UploadButton">
+                <i style="@FileUpload.Styles?.UploadIcon" class="@uploadIcon!.GetCssClasses() @FileUpload.Classes?.UploadIcon" aria-hidden="true" />
+            </button>
         }
 
         @if (Item.Status == BitFileUploadStatus.InProgress)
         {
             var pauseIcon = BitIconInfo.From(FileUpload.PauseIcon, FileUpload.PauseIconName ?? "Pause");
-            <div class="bit-upl-usi" @onclick="() => FileUpload.PauseUpload(Item)">
-                <i title="pause" class="@pauseIcon!.GetCssClasses()" aria-hidden="true" />
-            </div>
+            var pauseTitle = FileUpload.PauseButtonTitle ?? "Pause";
+            <button @onclick="() => FileUpload.PauseUpload(Item)"
+                    type="button"
+                    title="@pauseTitle"
+                    disabled="@(FileUpload.IsEnabled is false)"
+                    aria-label="@($"{pauseTitle} {Item.Name}")"
+                    style="@FileUpload.Styles?.PauseButton"
+                    class="bit-upl-usi @FileUpload.Classes?.PauseButton">
+                <i style="@FileUpload.Styles?.PauseIcon" class="@pauseIcon!.GetCssClasses() @FileUpload.Classes?.PauseIcon" aria-hidden="true" />
+            </button>
         }
 
-        @if (Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
+        @* a file waiting in the concurrency queue can be called off before its turn ever comes,
+           which is the only way out of a queue that a long batch would otherwise walk through. *@
+        @if (Item.IsQueued || Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
         {
             var cancelIcon = BitIconInfo.From(FileUpload.CancelIcon, FileUpload.CancelIconName ?? "Cancel");
-            <div class="bit-upl-usi" @onclick="() => FileUpload.CancelUpload(Item)">
-                <i title="cancel" class="@cancelIcon!.GetCssClasses()" aria-hidden="true" />
-            </div>
+            var cancelTitle = FileUpload.CancelButtonTitle ?? "Cancel";
+            <button @onclick="() => FileUpload.CancelUpload(Item)"
+                    type="button"
+                    title="@cancelTitle"
+                    disabled="@(FileUpload.IsEnabled is false)"
+                    aria-label="@($"{cancelTitle} {Item.Name}")"
+                    style="@FileUpload.Styles?.CancelButton"
+                    class="bit-upl-usi @FileUpload.Classes?.CancelButton">
+                <i style="@FileUpload.Styles?.CancelIcon" class="@cancelIcon!.GetCssClasses() @FileUpload.Classes?.CancelIcon" aria-hidden="true" />
+            </button>
         }
         else if (FileUpload.ShowRemoveButton)
         {
-            @if (FileUpload.IsRemoving)
+            @if (Item.IsRemoving)
             {
-                <div class="bit-upl-ldg">
+                @* the spinner carries no text of its own, and the live region of the component already
+                   announces the outcome of the removal, so it is left out of the accessibility tree. *@
+                <div class="bit-upl-ldg" aria-hidden="true">
                     <div class="bit-upl-spn"></div>
                 </div>
             }
             else
             {
                 var removeIcon = BitIconInfo.From(FileUpload.RemoveIcon, FileUpload.RemoveIconName ?? "Delete");
-                <div class="bit-upl-usi" @onclick="() => FileUpload.RemoveFile(Item)">
-                    <i title="remove" class="@removeIcon!.GetCssClasses()" aria-hidden="true" />
-                </div>
+                var removeTitle = FileUpload.RemoveButtonTitle ?? "Remove";
+                <button @onclick="() => FileUpload.RemoveFile(Item)"
+                        type="button"
+                        title="@removeTitle"
+                        disabled="@(FileUpload.IsEnabled is false)"
+                        aria-label="@($"{removeTitle} {Item.Name}")"
+                        style="@FileUpload.Styles?.RemoveButton"
+                        class="bit-upl-usi @FileUpload.Classes?.RemoveButton">
+                    <i style="@FileUpload.Styles?.RemoveIcon" class="@removeIcon!.GetCssClasses() @FileUpload.Classes?.RemoveIcon" aria-hidden="true" />
+                </button>
             }
         }
     </div>

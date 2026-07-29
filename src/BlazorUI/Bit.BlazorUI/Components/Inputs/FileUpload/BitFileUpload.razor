@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="@RootElement" @attributes="HtmlAttributes"
@@ -11,46 +11,71 @@
     {
         @LabelTemplate
     }
-    else if (Label.HasValue())
+    else if (HideLabel is false && Label.HasValue())
     {
         <button @onclick="Browse"
                 type="button"
-                class="bit-upl-lbl">
+                id="@_buttonId"
+                disabled="@(IsEnabled is false)"
+                aria-label="@AriaLabel"
+                aria-describedby="@(_HasDescription ? _descriptionId : null)"
+                style="@Styles?.Label"
+                class="bit-upl-lbl @Classes?.Label">
             @Label
         </button>
     }
 
-    <input @ref="_inputRef" 
+    @if (_HasDescription)
+    {
+        <div id="@_descriptionId" style="@Styles?.Description" class="bit-upl-dsc @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
+    <input @ref="_inputRef"
            @onchange="HandleOnChange"
            type="file"
            id="@InputId"
            class="bit-upl-fi"
+           capture="@Capture"
            multiple="@Multiple"
+           webkitdirectory="@Directory"
            disabled="@(IsEnabled is false)"
-           aria-labelledby="@(Label.HasValue() ? Label : null)"
-           accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
+           aria-label="@AriaLabel"
+           aria-labelledby="@(AriaLabel is null && LabelTemplate is null && HideLabel is false && Label.HasValue() ? _buttonId : null)"
+           aria-describedby="@(_HasDescription ? _descriptionId : null)"
+           accept="@GetAcceptValue()" />
 
-    @if (Files is not null)
+    @* a list whose every file has been removed renders nothing at all, so the list element itself goes
+       away with them rather than staying behind as an empty landmark in the accessibility tree. *@
+    @if (HideFileView is false && Files.Any(f => f.Status != BitFileUploadStatus.Removed))
     {
-        <div class="bit-upl-fl">
-            @for (var i = 0; i < Files.Count; i++)
+        <div role="list" style="@Styles?.FileList" class="bit-upl-fl @Classes?.FileList">
+            @* a removed file is not part of the list anymore, so it is left out of it here rather than
+               leaving an empty listitem behind for a custom template that renders nothing for it. *@
+            @foreach (var file in Files.Where(f => f.Status != BitFileUploadStatus.Removed))
             {
-                var index = i;
-                var file = Files[index];
-                file.Index = index;
-
-                if (HideFileView is false)
+                if (FileViewTemplate is not null)
                 {
-                    if (FileViewTemplate is not null)
-                    {
+                    @* the custom template is wrapped so that every child of the list keeps carrying a listitem role *@
+                    <div @key="file.FileId" role="listitem">
                         @FileViewTemplate(file)
-                    }
-                    else
-                    {
-                        <_BitFileUploadItem FileUpload="this" Item="file" />
-                    }
+                    </div>
+                }
+                else
+                {
+                    <_BitFileUploadItem @key="file.FileId" FileUpload="this" Item="file" />
                 }
             }
         </div>
     }
+
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-upl-lvr">@_announcement</div>
 </div>
