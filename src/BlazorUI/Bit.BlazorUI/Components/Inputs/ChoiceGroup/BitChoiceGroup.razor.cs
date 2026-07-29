@@ -451,7 +451,15 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     // while the id has to be a valid, unique IDREF for the label's "for" and for aria-describedby.
     internal string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetItemIndex(item)}";
 
-    private int GetItemIndex(TItem item) => _items.FindIndex(i => ReferenceEquals(i, item));
+    // A custom item type is not guaranteed to carry the Index property the stamping writes to (the write
+    // silently no-ops without it), so only the two built-in types can trust the stamped value; a custom
+    // item falls back to its position in the collection, which is always available.
+    private int GetItemIndex(TItem item) => item switch
+    {
+        BitChoiceGroupItem<TValue> choiceGroupItem => choiceGroupItem.Index,
+        BitChoiceGroupOption<TValue> choiceGroupOption => choiceGroupOption.Index,
+        _ => _items.FindIndex(i => ReferenceEquals(i, item)),
+    };
 
     // Keeps the InputElement of the base class pointing at the input the Tab key would land on: the input
     // of the checked item, or the first enabled one when nothing is checked (the browser skips a disabled
@@ -466,7 +474,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         InputElement = inputElement;
 
-        if (AutoFocus && _autoFocusDone is false && IsEnabled && ReadOnly is false && GetIsEnabled(item))
+        if (AutoFocus && _autoFocusDone is false && ReadOnly is false && GetIsItemEnabled(item))
         {
             _autoFocusDone = true;
 
@@ -494,14 +502,14 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     internal async Task HandleClick(TItem item)
     {
-        if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
+        if (ReadOnly || GetIsItemEnabled(item) is false) return;
 
         await OnClick.InvokeAsync(item);
     }
 
     internal void HandleChange(TItem item)
     {
-        if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
+        if (ReadOnly || GetIsItemEnabled(item) is false) return;
 
         CurrentValue = GetValue(item);
 

@@ -93,9 +93,17 @@ public sealed class BitComponentCssVariablesContractTests
         }
         finally
         {
-            if (File.Exists(tempPath))
+            // A failing cleanup must not escape either: it would replace the caller's Assert.Fail
+            // guidance with a filesystem exception, and a leftover temp file is not worth that.
+            try
             {
-                File.Delete(tempPath);
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
             }
         }
     }

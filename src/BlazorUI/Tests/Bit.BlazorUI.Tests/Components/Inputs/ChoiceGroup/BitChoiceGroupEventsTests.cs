@@ -10,11 +10,6 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
 [TestClass]
 public class BitChoiceGroupEventsTests : BunitTestContext
 {
-    // The identifier behind ElementReference.FocusAsync, which is what bUnit's VerifyFocusAsyncInvoke
-    // asserts against. Spelled out here because the "not focused" case has no invocation to verify and
-    // so has to go through VerifyNotInvoke, which takes the identifier rather than the focus helper.
-    private const string FocusAsyncIdentifier = "Blazor._internal.domWrapper.focus";
-
     private static List<BitChoiceGroupItem<string>> GetItems() =>
     [
         new() { Text = "Item A", Value = "A" },
@@ -166,6 +161,8 @@ public class BitChoiceGroupEventsTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, true);
         });
 
-        Context.JSInterop.VerifyNotInvoke(FocusAsyncIdentifier);
+        // Rendering the group performs no JS interop of its own, so an empty invocation list is the
+        // focus-identifier-agnostic way of asserting that nothing (focus included) was invoked.
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count);
     }
 }

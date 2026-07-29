@@ -141,7 +141,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitChoiceGroupLabel = component.Find(".bit-chg label");
+        var bitChoiceGroupLabel = component.Find($"#{component.Find(".bit-chg").GetAttribute("aria-labelledby")}");
         Assert.IsTrue(bitChoiceGroupLabel.InnerHtml.Contains(label));
     }
 
@@ -156,7 +156,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelContent);
         });
 
-        var bitChoiceGroupLabelContent = component.Find(".bit-chg label").ChildNodes;
+        var bitChoiceGroupLabelContent = component.Find($"#{component.Find(".bit-chg").GetAttribute("aria-labelledby")}").ChildNodes;
         bitChoiceGroupLabelContent.MarkupMatches(labelContent);
     }
 

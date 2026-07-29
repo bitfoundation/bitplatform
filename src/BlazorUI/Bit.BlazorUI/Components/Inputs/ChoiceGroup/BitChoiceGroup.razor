@@ -22,9 +22,11 @@
 
     @if (HasLabel)
     {
-        <label id="@_labelId"
-               style="@Styles?.LabelContainer"
-               class="@Classes?.LabelContainer">
+        @* Not a label element: with no single input to point a "for" at, a label here would label
+           nothing; the group is named through aria-labelledby referencing this id instead. *@
+        <div id="@_labelId"
+             style="@Styles?.LabelContainer"
+             class="@Classes?.LabelContainer">
             @if (LabelTemplate is not null)
             {
                 @LabelTemplate
@@ -33,7 +35,7 @@
             {
                 <span style="@Styles?.Label" class="bit-chg-lbl @Classes?.Label">@Label</span>
             }
-        </label>
+        </div>
     }
 
     @if (HasDescription)
