@@ -1,9 +1,9 @@
 // bit version: 10.5.0
 
-// In development, always fetch from the network and do not enable offline support.
-// This is because caching would make development more difficult (changes would not
-// be reflected on the first load after each change).
-//self.addEventListener('fetch', () => { });
+// Development service worker of the FullDemo. Unlike the standard Blazor template - whose
+// dev worker is a no-op so caching never hides source changes - this demo runs the full
+// Bswup engine even in development (see the importScripts at the bottom), so the complete
+// first-install / update experience is exercised on plain F5, matching the other demos.
 
 self.assetsInclude = [];
 // The client's scoped-css bundle is in this app's asset manifest but is never served: in a

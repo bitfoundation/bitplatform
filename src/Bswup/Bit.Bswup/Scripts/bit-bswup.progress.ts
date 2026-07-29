@@ -341,10 +341,13 @@
                                 // Some failures are deterministic - a plain reload re-fetches the
                                 // same broken bytes and fails identically. A manifest that won't
                                 // parse or an SRI/integrity mismatch needs a redeploy (or fixed
-                                // CDN/proxy), not a retry. For those, hide the retry button so we
-                                // don't invite a pointless reload loop; keep it for transient
-                                // failures (network/fetch/cache) where reloading can genuinely help.
-                                const nonRetriableReasons = ['manifest', 'integrity', 'install-incomplete'];
+                                // CDN/proxy), not a retry; 'install-infra' means CacheStorage
+                                // itself is unusable (storage pressure, a broken private mode), so
+                                // a reload runs into the same wall. For those, hide the retry
+                                // button so we don't invite a pointless reload loop; keep it for
+                                // transient failures (network/fetch/cache) where reloading can
+                                // genuinely help.
+                                const nonRetriableReasons = ['manifest', 'integrity', 'install-incomplete', 'install-infra'];
                                 // 'install-aborted' is deliberately absent: a strict abort is
                                 // usually triggered by a transient asset failure, and a reload
                                 // genuinely can succeed on the next attempt.
@@ -397,16 +400,16 @@
     // 'self') and runs regardless of how the host page is rendered. Calling start() manually
     // is still supported - the data-bit-bswup-initialized guard keeps the two from clashing.
     function autoStart() {
-        const el = document.getElementById('bit-bswup');
-        if (!el || el.getAttribute('data-bit-bswup-config') !== 'true') return;
-        if (el.getAttribute('data-bit-bswup-initialized') === 'true') return;
+        const configEl = document.getElementById('bit-bswup');
+        if (!configEl || configEl.getAttribute('data-bit-bswup-config') !== 'true') return;
+        if (configEl.getAttribute('data-bit-bswup-initialized') === 'true') return;
 
         const bool = (name: string, fallback: boolean) => {
-            const value = el.getAttribute(name);
+            const value = configEl.getAttribute(name);
             return value == null ? fallback : value === 'true';
         };
 
-        const handlerAttr = el.getAttribute('data-bit-bswup-handler');
+        const handlerAttr = configEl.getAttribute('data-bit-bswup-handler');
 
         start(
             // The fallback only applies to hand-written config markup that omits the
@@ -415,7 +418,7 @@
             bool('data-bit-bswup-auto-reload', false),
             bool('data-bit-bswup-show-logs', false),
             bool('data-bit-bswup-show-assets', false),
-            el.getAttribute('data-bit-bswup-app-container') || '#app',
+            configEl.getAttribute('data-bit-bswup-app-container') || '#app',
             bool('data-bit-bswup-hide-app', false),
             bool('data-bit-bswup-auto-hide', false),
             handlerAttr || undefined
@@ -467,31 +470,31 @@
         };
 
         observer = new MutationObserver(() => {
-            const el = document.getElementById('bit-bswup');
+            const configEl = document.getElementById('bit-bswup');
 
             // Not rendered yet - this is the one case where we keep waiting.
-            if (!el) return;
+            if (!configEl) return;
 
-            if (el.getAttribute('data-bit-bswup-initialized') === 'true') return stopObserving();
+            if (configEl.getAttribute('data-bit-bswup-initialized') === 'true') return stopObserving();
 
             // An #bit-bswup that carries no config attributes is markup we don't own - a
             // hand-written splash driven by an explicit BitBswupProgress.start(...) call.
             // autoStart() declines it by design and always will, so there is nothing left to
             // watch for; staying attached would just burn a callback on every DOM mutation.
-            if (el.getAttribute('data-bit-bswup-config') !== 'true') return stopObserving();
+            if (configEl.getAttribute('data-bit-bswup-config') !== 'true') return stopObserving();
 
             autoStart();
 
             // Stop once initialization took hold. If start() threw, the flag is still unset and
             // we stay attached so the next mutation can retry.
-            if (el.getAttribute('data-bit-bswup-initialized') === 'true') stopObserving();
+            if (configEl.getAttribute('data-bit-bswup-initialized') === 'true') stopObserving();
         });
 
         const startObserving = () => {
             // autoStart() may have already succeeded on the DOMContentLoaded/immediate path, in
             // which case there is nothing to observe for in the first place.
-            const el = document.getElementById('bit-bswup');
-            if (el && el.getAttribute('data-bit-bswup-initialized') === 'true') return stopObserving();
+            const configEl = document.getElementById('bit-bswup');
+            if (configEl && configEl.getAttribute('data-bit-bswup-initialized') === 'true') return stopObserving();
 
             observer?.observe(document.documentElement, { childList: true, subtree: true });
             timeoutId = setTimeout(stopObserving, OBSERVE_TIMEOUT);

@@ -21,7 +21,7 @@
     <div class="playground-grid">
         <section class="playground-card">
             <h3>Service worker status</h3>
-            <dl class="status-list">
+            <dl class="status-list" aria-live="polite">
                 <div><dt>Service worker</dt><dd id="pg-sw-supported">…</dd></div>
                 <div><dt>This page</dt><dd id="pg-sw-controller">…</dd></div>
                 <div><dt>Scope</dt><dd id="pg-sw-scope">…</dd></div>
@@ -76,7 +76,9 @@
         built-in progress UI via the <code>Handler</code>/<code>data-bit-bswup-handler</code> option
         (newest first, capped at 200 entries).
     </p>
-    <ul id="bswup-demo-events" class="event-log"></ul>
+    @* aria-live pairs with demo.js rendering incrementally: new entries are prepended rather
+       than the list being rebuilt, so screen readers announce only what is new. *@
+    <ul id="bswup-demo-events" class="event-log" aria-live="polite"></ul>
 </div>
 
 <div class="pager">

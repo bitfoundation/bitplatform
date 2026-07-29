@@ -5,6 +5,10 @@
 
     const MAX_EVENTS = 200;
     const events = [];
+    // Total events ever recorded. renderEvents keys off this, not events.length: once the
+    // log reaches MAX_EVENTS its length stays pinned at the cap, and a length-based guard
+    // would treat every later event as "nothing changed" and freeze the UI.
+    let revision = 0;
 
     // ---------------------------------------------------------------- event log
 
@@ -17,6 +21,7 @@
     function record(type, detail) {
         events.unshift({ time: new Date(), type: type, detail: detail });
         if (events.length > MAX_EVENTS) events.length = MAX_EVENTS;
+        revision++;
         renderEvents();
     }
 
@@ -45,36 +50,50 @@
         }
     }
 
+    function renderEvent(evt) {
+        const li = document.createElement('li');
+        const time = document.createElement('span');
+        time.className = 'event-time';
+        time.textContent = evt.time.toLocaleTimeString();
+        const type = document.createElement('b');
+        type.className = 'event-type';
+        type.textContent = evt.type;
+        const detail = document.createElement('span');
+        detail.className = 'event-detail';
+        detail.textContent = evt.detail;
+        li.append(time, type, detail);
+        return li;
+    }
+
     function renderEvents() {
         const el = document.getElementById('bswup-demo-events');
         if (!el) return;
-        // Guard for the MutationObserver below: re-render only when the log actually grew,
-        // otherwise our own DOM writes would re-trigger the observer forever.
-        if (el.dataset.rendered === String(events.length)) return;
-        el.dataset.rendered = String(events.length);
+        // Guard for the MutationObserver below: re-render only when something new was
+        // recorded, otherwise our own DOM writes would re-trigger the observer forever.
+        // A missing dataset.rendered means a fresh element (Blazor replaced the subtree)
+        // that still needs a full render even when the revision itself is unchanged.
+        if (el.dataset.rendered === String(revision)) return;
+        const prior = el.dataset.rendered === undefined ? -1 : Number(el.dataset.rendered);
+        el.dataset.rendered = String(revision);
 
-        el.textContent = '';
         if (events.length === 0) {
+            el.textContent = '';
             const empty = document.createElement('li');
             empty.className = 'event-empty';
             empty.textContent = 'No events yet - Bswup raises events on install, update checks, downloads, and activation.';
             el.append(empty);
             return;
         }
-        for (const evt of events) {
-            const li = document.createElement('li');
-            const time = document.createElement('span');
-            time.className = 'event-time';
-            time.textContent = evt.time.toLocaleTimeString();
-            const type = document.createElement('b');
-            type.className = 'event-type';
-            type.textContent = evt.type;
-            const detail = document.createElement('span');
-            detail.className = 'event-detail';
-            detail.textContent = evt.detail;
-            li.append(time, type, detail);
-            el.append(li);
-        }
+
+        // Prepend only the entries recorded since this element was last rendered (they are
+        // the head of `events` - newest first). The list is an aria-live region, and a full
+        // clear-and-rebuild would make screen readers re-announce the entire log on every
+        // event; prepending keeps the announcement to just what is new. A fresh element or
+        // a gap wider than the cap falls back to rendering everything.
+        const fresh = prior < 0 || revision - prior >= events.length ? events.length : revision - prior;
+        if (fresh === events.length) el.textContent = '';
+        for (let i = fresh - 1; i >= 0; i--) el.prepend(renderEvent(events[i]));
+        while (el.children.length > MAX_EVENTS) el.lastElementChild.remove();
     }
 
     // ---------------------------------------------------------------- playground

@@ -129,18 +129,26 @@
                 case BswupMessage.downloadFinished:
                     if (data.firstInstall) {
                         descriptionLabel.textContent = 'Downloading finished, starting Blazor...';
-                        data.reload().then(() => {
-                            appEl.style.display = 'block';
-                            bswupEl.style.display = 'none';
-                        }).catch(() => {
-                            // Same recovery the built-in progress UI performs: a rejected
-                            // reload leaves the splash up with a manual retry wired back to
-                            // data.reload, instead of freezing on "starting Blazor..." with
-                            // no way forward.
+                        // Same recovery the built-in progress UI performs: a reload that fails
+                        // leaves the splash up with a manual retry wired back to data.reload,
+                        // instead of freezing on "starting Blazor..." with no way forward. The
+                        // timer covers the stall case the .catch cannot: reload() never settles
+                        // when the activation handshake goes missing, so a grace period is the
+                        // only signal left (see autoReloadWithFallback in bit-bswup.progress.ts).
+                        const showRetry = () => {
                             descriptionLabel.textContent = 'Starting failed, click the button to retry.';
                             bswupEl.style.display = 'block';
                             reloadButton.style.display = 'block';
                             reloadButton.onclick = data.reload;
+                        };
+                        const fallbackTimer = setTimeout(showRetry, 10000);
+                        data.reload().then(() => {
+                            clearTimeout(fallbackTimer);
+                            appEl.style.display = 'block';
+                            bswupEl.style.display = 'none';
+                        }).catch(() => {
+                            clearTimeout(fallbackTimer);
+                            showRetry();
                         });
                     } else {
                         descriptionLabel.textContent = 'Downloading finished, ready to reload.';

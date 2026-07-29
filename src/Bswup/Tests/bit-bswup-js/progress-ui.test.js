@@ -165,9 +165,11 @@ describe('error handling', () => {
     });
 
     it('hides Retry for deterministic failures that a reload cannot fix', () => {
-        const ctx = progressPage({ elements: fullSplash });
-        ctx.window.bitBswupHandler('ERROR', { reason: 'manifest', message: 'malformed', fatal: true });
-        expect(ctx.elements['bit-bswup-error-retry'].style.display).toBe('none');
+        for (const reason of ['manifest', 'integrity', 'install-incomplete', 'install-infra']) {
+            const ctx = progressPage({ elements: fullSplash });
+            ctx.window.bitBswupHandler('ERROR', { reason, message: 'not retriable', fatal: true });
+            expect(ctx.elements['bit-bswup-error-retry'].style.display).toBe('none');
+        }
     });
 
     it('offers Retry for a transient failure', () => {
