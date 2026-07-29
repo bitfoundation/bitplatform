@@ -1135,6 +1135,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwortlose Anmeldung erfolgreich deaktiviert</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>Ihr Passkey konnte nicht überprüft werden und wurde daher nicht entfernt. Bitte versuchen Sie es erneut.</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>Dieser Passkey existiert nicht mehr auf dem Server; er wurde von diesem Gerät entfernt.</value>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>Löschen</value>
   </data>

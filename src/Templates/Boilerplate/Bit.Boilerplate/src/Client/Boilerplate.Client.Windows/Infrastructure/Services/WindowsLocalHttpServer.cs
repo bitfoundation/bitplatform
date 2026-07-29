@@ -23,6 +23,8 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
     public string Origin => $"http://localhost:{port}";
 
+    public string SessionToken { get; } = Guid.NewGuid().ToString("N");
+
     public int EnsureStarted()
     {
         if (localHttpServer?.State is WebServerState.Listening or WebServerState.Loading)
@@ -32,10 +34,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         port = GetAvailableTcpPort();
 
-        var staticFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.*", SearchOption.AllDirectories)
-            .Union(Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories))
-            .Distinct()
-            .ToArray();
+        var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
 
         async Task GoBackToApp()
         {
@@ -48,9 +47,14 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
             .WithMode(HttpListenerMode.Microsoft))
-            .WithCors()
             .WithModule(new ActionModule("/api/ExternalSignInCallback", HttpVerbs.Post, async ctx =>
             {
+                if (IsRelativeUrl(ctx.Request.QueryString["urlToOpen"]) is false)
+                {
+                    ctx.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return;
+                }
+
                 try
                 {
                     await Application.OpenForms[0]!.InvokeAsync(async (_) =>
@@ -66,13 +70,30 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/api/GetWebAuthnCredentialOptions", HttpVerbs.Get, async ctx =>
             {
-                await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService!.GetWebAuthnCredentialOptions!), "application/json", Encoding.UTF8);
+                if (EnsureIsAuthorized(ctx) is false) return;
+                if (WebAuthnService?.GetWebAuthnCredentialOptions is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
+
+                await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService.GetWebAuthnCredentialOptions), "application/json", Encoding.UTF8);
             }))
             .WithModule(new ActionModule("/api/WebAuthnCredential", HttpVerbs.Post, async ctx =>
             {
+                if (EnsureIsAuthorized(ctx) is false) return;
+                if (WebAuthnService?.GetWebAuthnCredentialTcs is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
+
                 try
                 {
-                    WebAuthnService!.GetWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
+                    // The `error` branch mirrors the MAUI server: without it a JavaScript-side WebAuthn failure had
+                    // no way to reach the app on Windows. TrySetResult so a replayed POST is a no-op rather than an
+                    // InvalidOperationException.
+                    var error = ctx.Request.QueryString["error"];
+                    if (string.IsNullOrEmpty(error) is false)
+                    {
+                        WebAuthnService.GetWebAuthnCredentialTcs.TrySetException(new UnknownException(error));
+                    }
+                    else
+                    {
+                        WebAuthnService.GetWebAuthnCredentialTcs.TrySetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
+                    }
                 }
                 finally
                 {
@@ -81,13 +102,27 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/api/GetCreateWebAuthnCredentialOptions", HttpVerbs.Get, async ctx =>
             {
-                await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService!.CreateWebAuthnCredentialOptions!), "application/json", Encoding.UTF8);
+                if (EnsureIsAuthorized(ctx) is false) return;
+                if (WebAuthnService?.CreateWebAuthnCredentialOptions is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
+
+                await ctx.SendStringAsync(JsonSerializer.Serialize(WebAuthnService.CreateWebAuthnCredentialOptions), "application/json", Encoding.UTF8);
             }))
             .WithModule(new ActionModule("/api/CreateWebAuthnCredential", HttpVerbs.Post, async ctx =>
             {
+                if (EnsureIsAuthorized(ctx) is false) return;
+                if (WebAuthnService?.CreateWebAuthnCredentialTcs is null) { ctx.Response.StatusCode = (int)HttpStatusCode.Conflict; return; }
+
                 try
                 {
-                    WebAuthnService!.CreateWebAuthnCredentialTcs!.SetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
+                    var error = ctx.Request.QueryString["error"];
+                    if (string.IsNullOrEmpty(error) is false)
+                    {
+                        WebAuthnService.CreateWebAuthnCredentialTcs.TrySetException(new UnknownException(error));
+                    }
+                    else
+                    {
+                        WebAuthnService.CreateWebAuthnCredentialTcs.TrySetResult(JsonSerializer.Deserialize<JsonElement>(await ctx.GetRequestBodyAsStringAsync())!);
+                    }
                 }
                 finally
                 {
@@ -96,12 +131,14 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             }))
             .WithModule(new ActionModule("/api/LogError", HttpVerbs.Post, async ctx =>
             {
+                // No token: this has to be reachable from the external-sign-in page too, which has none.
                 var exception = new UnknownException(await ctx.GetRequestBodyAsStringAsync());
 
-                var handled = WebAuthnService?.GetWebAuthnCredentialTcs?.TrySetException(exception) ??
-                    WebAuthnService?.CreateWebAuthnCredentialTcs?.TrySetException(exception);
+                // Both sources are offered the exception - see the MAUI server for why `??` was wrong here.
+                var getHandled = WebAuthnService?.GetWebAuthnCredentialTcs?.TrySetException(exception) is true;
+                var createHandled = WebAuthnService?.CreateWebAuthnCredentialTcs?.TrySetException(exception) is true;
 
-                if (handled is not true)
+                if (getHandled is false && createHandled is false)
                 {
                     exceptionHandler.Handle(exception, displayKind: ExceptionDisplayKind.NonInterrupting);
                 }
@@ -128,9 +165,9 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     }
                     return;
                 }
-                ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(staticFile!));
+                ctx.Response.ContentType = ctx.GetMimeType(Path.GetExtension(staticFile));
                 ctx.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store";
-                await using var stream = File.OpenRead(staticFile!);
+                await using var stream = File.OpenRead(staticFile);
                 await stream.CopyToAsync(ctx.Response.OutputStream, ctx.CancellationToken);
             });
 
@@ -154,6 +191,21 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         return port;
     }
+
+    /// <summary>
+    /// The WebAuthn endpoints must carry the per-process token that only the app itself puts in the interop URL.
+    /// See the MAUI server for the full rationale.
+    /// </summary>
+    private bool EnsureIsAuthorized(IHttpContext ctx)
+    {
+        if (string.Equals(ctx.Request.QueryString["token"], SessionToken, StringComparison.Ordinal))
+            return true;
+
+        ctx.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+        return false;
+    }
+
+    private static bool IsRelativeUrl(string? url) => Uri.IsAppRelativeUrl(url);
 
     public async ValueTask DisposeAsync()
     {

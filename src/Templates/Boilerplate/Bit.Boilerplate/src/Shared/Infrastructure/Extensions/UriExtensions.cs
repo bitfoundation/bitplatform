@@ -1,7 +1,31 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace System;
 
 public static partial class UriExtensions
 {
+    extension(Uri)
+    {
+        /// <summary>
+        /// True only for an app-rooted relative url such as <c>/sign-in?otp=123</c>.
+        /// <br/>
+        /// <see cref="Uri.IsWellFormedUriString"/> with <see cref="UriKind.Relative"/> is NOT enough on its own:
+        /// a network-path reference like <c>//attacker.com/path</c> is a well-formed RELATIVE reference, and both
+        /// browsers and <c>NavigationManager.NavigateTo</c> resolve it to <c>https://attacker.com/path</c>.
+        /// Browsers treat <c>/\host</c> the same way, so the second character is rejected too.
+        /// <br/>
+        /// Use this wherever a url arrives from outside the app and is then navigated to - the Blazor Hybrid local
+        /// HTTP server's external-sign-in callback and the sign-in / sign-up pages that consume it.
+        /// </summary>
+        public static bool IsAppRelativeUrl([NotNullWhen(true)] string? url)
+        {
+            return string.IsNullOrEmpty(url) is false
+                   && url.StartsWith('/')
+                   && (url.Length is 1 || url[1] is not ('/' or '\\'))
+                   && Uri.IsWellFormedUriString(url, UriKind.Relative);
+        }
+    }
+
     extension(Uri uri)
     {
         public string GetUrlWithoutQueryParameter(string key)

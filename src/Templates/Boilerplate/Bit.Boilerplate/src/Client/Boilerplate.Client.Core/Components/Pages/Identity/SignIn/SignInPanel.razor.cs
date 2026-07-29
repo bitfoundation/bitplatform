@@ -215,9 +215,11 @@ public partial class SignInPanel
             pubSubUnsubscribe?.Invoke();
             pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
-                // Check out SignInModalService for more details
-                var uri = uriString!.ToString();
-                var queryIndex = uri!.IndexOf('?');
+                var uri = uriString?.ToString();
+                if (Uri.IsAppRelativeUrl(uri) is false) return;
+
+                var queryIndex = uri.IndexOf('?');
+                if (queryIndex < 0) return; // No query string means nothing to apply; `uri[-1..]` would throw.
                 var queryParams = AppQueryStringCollection.Parse(uri[queryIndex..]);
 
                 string? GetValue(object? value)
@@ -230,7 +232,8 @@ public partial class SignInPanel
                 }
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
-                ReturnUrlQueryString = GetValue(returnUrl ?? PageUrls.Home);
+                var returnUrlValue = GetValue(returnUrl);
+                ReturnUrlQueryString = Uri.IsAppRelativeUrl(returnUrlValue) ? returnUrlValue : PageUrls.Home;
                 queryParams.TryGetValue("userName", out var userName);
                 UserNameQueryString = GetValue(userName);
                 queryParams.TryGetValue("email", out var email);

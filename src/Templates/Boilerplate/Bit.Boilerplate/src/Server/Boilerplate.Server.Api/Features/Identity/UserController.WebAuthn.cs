@@ -19,7 +19,9 @@ public partial class UserController
         var user = await userManager.FindByIdAsync(userId.ToString())
                     ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
-        var existingCredentials = DbContext.WebAuthnCredential.Where(c => c.UserId == userId);
+        var existingCredentials = await DbContext.WebAuthnCredential.Where(c => c.UserId == userId)
+                                                                    .Select(c => new { c.Id, c.Transports })
+                                                                    .ToArrayAsync(cancellationToken);
         var existingKeys = existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports));
         var fidoUser = new Fido2User
         {
@@ -46,6 +48,10 @@ public partial class UserController
         var options = fido2.RequestNewCredential(new RequestNewCredentialParams
         {
             User = fidoUser,
+            // Deliberately EMPTY. A user is expected to enrol a passkey on several devices, and existingKeys holds
+            // the credentials from ALL of them - passing it would make the authenticator answer InvalidStateError
+            // whenever this device already holds one, permanently blocking re-enrolment for anyone whose local
+            // flag was cleared (reinstall, cleared storage) while the server row survived.
             ExcludeCredentials = [], //[.. existingKeys],
             AuthenticatorSelection = authenticatorSelection,
             AttestationPreference = AttestationConveyancePreference.None,
@@ -110,11 +116,9 @@ public partial class UserController
     public async Task DeleteWebAuthnCredential(AuthenticatorAssertionRawResponse assertionResponse, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
 
         var affectedRows = await DbContext.WebAuthnCredential
-            .Where(webAuthCred => webAuthCred.Id == assertionResponse.RawId)
+            .Where(webAuthCred => webAuthCred.Id == assertionResponse.RawId && webAuthCred.UserId == userId)
             .ExecuteDeleteAsync(cancellationToken);
 
         if (affectedRows == 0)

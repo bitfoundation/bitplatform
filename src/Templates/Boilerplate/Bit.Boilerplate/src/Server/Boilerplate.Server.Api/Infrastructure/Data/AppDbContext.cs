@@ -281,7 +281,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#if (offlineDb == true)
             if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
-                continue; // No concurrency check for client side offline database sync entities
+                // Datasync entities (BaseEntityTableData) manage their own byte[] Version through the toolkit's
+                // repository; the loop below only ever matches a long Version, so there is nothing to apply here.
+                continue;
             //#endif
 
             foreach (var property in entityType.GetProperties()
@@ -305,7 +307,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#if (offlineDb == true)
             if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
-                continue; // No concurrency check for client side offline database sync entities
+                // Datasync entities (BaseEntityTableData) manage their own byte[] Version through the toolkit's
+                // repository; the loop below only ever matches a long Version, so there is nothing to apply here.
+                continue;
             //#endif
 
             foreach (var property in entityType.GetProperties()

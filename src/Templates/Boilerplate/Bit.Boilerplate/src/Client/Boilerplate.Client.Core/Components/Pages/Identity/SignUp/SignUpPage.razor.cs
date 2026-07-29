@@ -93,7 +93,10 @@ public partial class SignUpPage
             pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
                 // External sign-in creates a new user automatically, so we only need to navigate to the sign-in page to automatically sign-in the user by provided OTP.
-                NavigationManager.NavigateTo(uriString!.ToString()!, replace: true);
+                var url = uriString?.ToString();
+                if (Uri.IsAppRelativeUrl(url) is false) return;
+
+                NavigationManager.NavigateTo(url, replace: true);
             });
 
             var port = localHttpServer.EnsureStarted();

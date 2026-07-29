@@ -8,15 +8,15 @@ namespace Boilerplate.Server.Api.Features.Todo;
 
 public partial class TodoItem
 //#if (offlineDb == true)
-    : BaseEntityTableData
+    : RepositoryControlledEntityTableData
 //#endif
 {
     //#if (offlineDb != true)
     //#if (IsInsideProjectTemplate == true)
     /*
     //#endif
-    public new string Id { get; set; }
-    public new DateTimeOffset? UpdatedAt { get; set; }
+    public string Id { get; set; } = default!;
+    public DateTimeOffset? UpdatedAt { get; set; }
     //#if (IsInsideProjectTemplate == true)
     */
     //#endif

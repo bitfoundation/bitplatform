@@ -3,10 +3,10 @@ using Boilerplate.Shared.Features.Todo;
 
 namespace Boilerplate.Server.Api.Features.Todo;
 
-//#if (offlineDb == true)
-// The following controller is not required when using the offline database.
-// The controller that works with the offline database is implemented in TodoItemTableController.cs
-//#endif
+// This controller is the plain REST surface over TodoItems. It is NOT emitted when offlineDb == true
+// (see .template.config/template.json), because the offline database syncs through
+// TodoItemTableController.cs instead, and a second non-Datasync-aware CRUD surface over the same table
+// would disagree with the sync contract (hard delete vs. tombstone, and no Deleted filter on reads).
 
 [ApiVersion(1)]
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
@@ -65,7 +65,9 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpPut]
     public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken)
+        var userId = User.GetUserId();
+
+        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id && t.UserId == userId, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
         dto.Patch(entityToUpdate);
@@ -78,12 +80,15 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpDelete("{id}")]
     public async Task Delete(string id, CancellationToken cancellationToken)
     {
-        DbContext.TodoItems.Remove(new() { Id = id });
+        var userId = User.GetUserId();
 
-        var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
-
-        if (affectedRows < 1)
+        // The UserId term is what scopes the delete to the caller; one round trip, same shape as CategoryController.Delete.
+        if (await DbContext.TodoItems
+            .Where(t => t.Id == id && t.UserId == userId)
+            .ExecuteDeleteAsync(cancellationToken) == 0)
+        {
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+        }
     }
 }
 
