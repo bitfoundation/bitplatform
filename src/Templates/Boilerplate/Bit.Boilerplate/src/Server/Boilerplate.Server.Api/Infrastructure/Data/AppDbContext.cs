@@ -281,7 +281,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#if (offlineDb == true)
             if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
-                continue; // No concurrency check for client side offline database sync entities
+                // Datasync entities carry their own yte[] Version concurrency token, managed by the toolkit's
+                // repository (see TodoItem's RepositoryControlledEntityTableData base). The loop below only ever
+                // matched long Version, so this skip is about NOT layering the app's own long-based scheme on
+                // top - it is not, and never was, disabling a check that would otherwise have run here.
+                continue;
             //#endif
 
             foreach (var property in entityType.GetProperties()
@@ -305,7 +309,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#if (offlineDb == true)
             if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
-                continue; // No concurrency check for client side offline database sync entities
+                // Datasync entities carry their own yte[] Version concurrency token, managed by the toolkit's
+                // repository (see TodoItem's RepositoryControlledEntityTableData base). The loop below only ever
+                // matched long Version, so this skip is about NOT layering the app's own long-based scheme on
+                // top - it is not, and never was, disabling a check that would otherwise have run here.
+                continue;
             //#endif
 
             foreach (var property in entityType.GetProperties()

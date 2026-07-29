@@ -5,7 +5,7 @@ using Boilerplate.Server.Api.Features.Identity.Models;
 namespace Boilerplate.Server.Api.Features.Identity;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class IdentityMapper

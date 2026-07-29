@@ -47,7 +47,7 @@ jobs:
         env:
           WebAppRender.BlazorMode: 'BlazorWebAssembly'
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
-#if (notifications == true)
+#if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 

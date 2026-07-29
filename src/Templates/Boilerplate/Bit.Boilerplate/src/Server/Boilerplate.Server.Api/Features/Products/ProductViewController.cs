@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Features.Products;
 [ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class ProductViewController : AppControllerBase, IProductViewController
 {
-    [HttpGet, EnableQuery, AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
+    [HttpGet, EnableQuery(PageSize = 20), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public IQueryable<ProductDto> Get()
     {
         return DbContext.Products.Project();
@@ -25,7 +25,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
 
 
     // This method needs to be implemented based on the logic required in each business.
-    [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
+    [EnableQuery(PageSize = 20), HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public IQueryable<ProductDto> GetSimilar(int id)
     {
         var similarProducts = Get()
@@ -35,7 +35,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
         return similarProducts;
     }
 
-    [EnableQuery, HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
+    [EnableQuery(PageSize = 20), HttpGet("{id}"), AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public async Task<IQueryable<ProductDto>> GetSiblings(int id, CancellationToken cancellationToken)
     {
         var categoryId = await DbContext.Products

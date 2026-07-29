@@ -5,7 +5,7 @@ using Boilerplate.Shared.Features.Products;
 namespace Boilerplate.Server.Api.Features.Products;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class ProductsMapper
@@ -22,9 +22,11 @@ public static partial class ProductsMapper
 
     //#if(module == "Admin")
     [MapperIgnoreSource(nameof(Product.ShortId))]
+    [MapperIgnoreTarget(nameof(Product.HasPrimaryImage)), MapperIgnoreTarget(nameof(Product.PrimaryImageAltText))]
     public static partial Product Map(this ProductDto source);
 
     [MapperIgnoreSource(nameof(Product.ShortId))]
+    [MapperIgnoreTarget(nameof(Product.HasPrimaryImage)), MapperIgnoreTarget(nameof(Product.PrimaryImageAltText))]
     public static partial void Patch(this ProductDto source, Product destination);
     //#endif
 }

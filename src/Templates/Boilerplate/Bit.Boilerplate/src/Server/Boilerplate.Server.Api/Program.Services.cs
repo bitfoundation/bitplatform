@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
+using ImageMagick;
 //#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -77,6 +78,8 @@ public static partial class Program
 
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
+
+        ConfigureImageMagickResourceLimits();
 
         services.AddScoped<IdentityEmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
@@ -249,7 +252,7 @@ public static partial class Program
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
-            .AddOData(options => options.EnableQueryFeatures())
+            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 100))
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
             {
@@ -489,6 +492,8 @@ public static partial class Program
 
         });
 
+        // ServerDomain (the WebAuthn RP ID) is resolved PER REQUEST from GetWebAppUrl(), which honours a
+        // caller-supplied origin. See ".docs/24 - Security note" for what that means for Blazor Hybrid passkeys.
         services.AddScoped(sp =>
         {
             var webAppUrl = sp.GetRequiredService<IHttpContextAccessor>()
@@ -848,5 +853,27 @@ public static partial class Program
         }
 
         return builder;
+    }
+
+    /// <summary>
+    /// Configures global ImageMagick resource limits to prevent denial-of-service (DoS) attacks from untrusted image uploads.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ImageMagick defaults to machine-derived resource caps (e.g., using physical RAM, 2x memory map, 4x memory area, and unlimited disk space).
+    /// Malicious or unusually large uploads (e.g., a small 6MB PNG declaring 30,000x30,000 pixel dimensions) can force Magick.NET to 
+    /// allocate gigabytes of pixel data in memory or exhaust temporary disk space.
+    /// </para>
+    /// <para>
+    /// Because Magick.NET-Q16 allocates 2 bytes per channel, explicit bounds are applied to width, height, area, memory, and disk usage.
+    /// </para>
+    /// </remarks>
+    private static void ConfigureImageMagickResourceLimits()
+    {
+        ResourceLimits.Memory = 256 * 1024 * 1024;    // 256 MB pixel cache before spilling
+        ResourceLimits.Disk = 1024 * 1024 * 1024;     // 1 GB, instead of MagickResourceInfinity
+        ResourceLimits.Width = 16384;
+        ResourceLimits.Height = 16384;
+        ResourceLimits.Area = 16384 * 16384;
     }
 }

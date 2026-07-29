@@ -21,14 +21,23 @@ public partial class PubSubService
 
     public void Publish(string message, object? payload = null, bool persistent = false)
     {
+        var delivered = false;
+
         if (handlers.TryGetValue(message, out var weakHandlers))
         {
             foreach (var weakHandler in weakHandlers.ToArray())
             {
-                weakHandler.Invoke(payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                if (weakHandler.Invoke(payload) is Task handlerTask)
+                {
+                    delivered = true;
+                    handlerTask.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                }
             }
+
+            weakHandlers.RemoveAll(wh => wh.IsAlive is false);
         }
-        else if (persistent)
+
+        if (delivered is false && persistent)
         {
             persistentMessages.Add((message, payload));
         }
@@ -91,6 +100,11 @@ public partial class PubSubService
             method = handler.Method;
             targetInfo = $"{(handler.Target?.GetType().FullName ?? "static")}'s {method.Name}";
         }
+
+        /// <summary>
+        /// False once the subscriber instance has been garbage collected, so the entry can be pruned.
+        /// </summary>
+        public bool IsAlive => isStatic || target?.IsAlive is true;
 
         /// <summary>
         /// Invokes the stored handler if it is still alive.

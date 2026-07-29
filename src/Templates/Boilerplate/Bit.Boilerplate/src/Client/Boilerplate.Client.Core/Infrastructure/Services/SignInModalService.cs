@@ -26,25 +26,34 @@ public partial class SignInModalService : IAsyncDisposable
 
     public async Task<bool> SignIn(string? returnUrl = null)
     {
-        signInModalTcs?.TrySetCanceled();
-        signInModalTcs = new();
+        modalReference?.Close();
+        signInModalTcs?.TrySetResult(false);
+
+        // The callbacks close over LOCALS, not the fields. When they read the fields, a stale modal's close button
+        // completed whichever TaskCompletionSource the newest SignIn() call had installed - returning false to a
+        // caller nobody cancelled, closing the wrong dialog, and then throwing InvalidOperationException out of a
+        // Blazor click handler on the second click (which tears down the circuit in Blazor Server).
+        var currentTcs = new TaskCompletionSource<bool>();
+        BitProModalReference? currentModalReference = null;
+
+        signInModalTcs = currentTcs;
 
         Dictionary<string, object> signInParameters = new()
         {
             { nameof(SignInModal.ReturnUrl), returnUrl ?? navigationManager.GetRelativePath() },
-            { nameof(SignInModal.OnClose), () => { signInModalTcs.SetResult(false); modalReference?.Close(); } },
-            { nameof(SignInModal.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } },
+            { nameof(SignInModal.OnClose), () => { currentTcs.TrySetResult(false); currentModalReference?.Close(); } },
+            { nameof(SignInModal.OnSuccess), () => { currentTcs.TrySetResult(true); currentModalReference?.Close(); } },
         };
         var modalParameters = new BitProModalParameters()
         {
             Draggable = true,
             DragElementSelector = ".header-stack",
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => signInModalTcs.SetResult(false))
+            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => currentTcs.TrySetResult(false))
         };
 
-        modalReference = await modalService.Show<SignInModal>(signInParameters, modalParameters);
+        modalReference = currentModalReference = await modalService.Show<SignInModal>(signInParameters, modalParameters);
 
-        return await signInModalTcs.Task;
+        return await currentTcs.Task;
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)

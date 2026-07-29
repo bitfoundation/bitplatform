@@ -24,6 +24,7 @@ public partial class IdentityController
             var existingCredentials = await DbContext.WebAuthnCredential.Where(c => request.UserIds.Contains(c.UserId))
                                                                         .OrderByDescending(c => c.RegDate)
                                                                         .Select(c => new { c.Id, c.Transports })
+                                                                        .Take(20)
                                                                         .ToArrayAsync(cancellationToken);
             existingKeys.AddRange(existingCredentials.Select(c => new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PublicKey, c.Id, c.Transports)));
         }
@@ -58,7 +59,9 @@ public partial class IdentityController
     [HttpPost]
     public async Task<VerifyAssertionResult> VerifyWebAuthAssertion(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
-        var (verifyResult, _, _) = await Verify(clientResponse, cancellationToken);
+        var (verifyResult, _, assertionOptionsCacheKey) = await Verify(clientResponse, cancellationToken);
+
+        await cache.RemoveAsync(assertionOptionsCacheKey, token: cancellationToken);
 
         return verifyResult;
     }

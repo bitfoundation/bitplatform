@@ -508,13 +508,15 @@
                         "src/Shared/Features/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Features/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
-                        "src/Client/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg"
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/backgrounds/empty-todo-list-bg.svg"
                     ]
                 },
                 {
                     "condition": "(offlineDb == true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
+                        "src/Shared/Features/Todo/ITodoItemController.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs"
                     ]
                 },
                 {
@@ -542,7 +544,7 @@
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
-                        "src/Tests/Infrastructure/Configuration/AppConfigurationBuilderTests.cs",
+                        "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
@@ -574,12 +576,6 @@
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs"
-                    ]
-                },
-                {
-                    "condition": "(advancedTests != true || notification != true || signalR != true)",
-                    "exclude": [
-                        "src/Tests/Features/PushNotification/PushNotificationUITests.cs"
                     ]
                 },
                 {
@@ -644,8 +640,6 @@
                 {
                     "condition": "(appInsights != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiAppInsightsTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsAppInsightsTelemetryInitializer.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs"
                     ]
                 },
@@ -666,8 +660,7 @@
                 {
                     "condition": "(api == Integrated)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/appsettings*.json",
-                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
+                        "src/Server/Boilerplate.Server.Web/appsettings*.json"
                     ]
                 },
                 {

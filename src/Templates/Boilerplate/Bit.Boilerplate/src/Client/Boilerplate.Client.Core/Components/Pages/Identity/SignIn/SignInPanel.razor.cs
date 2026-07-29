@@ -215,9 +215,14 @@ public partial class SignInPanel
             pubSubUnsubscribe?.Invoke();
             pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
-                // Check out SignInModalService for more details
-                var uri = uriString!.ToString();
-                var queryIndex = uri!.IndexOf('?');
+                // Check out SignInModalService for more details.
+                // Only RELATIVE urls are accepted: this payload arrives from the local HTTP server, so an absolute
+                // url would let a caller drive this panel with its own sign-in parameters.
+                var uri = uriString?.ToString();
+                if (string.IsNullOrEmpty(uri) || Uri.IsWellFormedUriString(uri, UriKind.Relative) is false) return;
+
+                var queryIndex = uri.IndexOf('?');
+                if (queryIndex < 0) return; // No query string means nothing to apply; `uri[-1..]` would throw.
                 var queryParams = AppQueryStringCollection.Parse(uri[queryIndex..]);
 
                 string? GetValue(object? value)
@@ -230,7 +235,10 @@ public partial class SignInPanel
                 }
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
-                ReturnUrlQueryString = GetValue(returnUrl ?? PageUrls.Home);
+                // return-url is navigated to on a successful sign-in (GetReturnUrl), so it gets the same treatment
+                // independently - it rides INSIDE the url above and is not covered by the check on it.
+                var returnUrlValue = GetValue(returnUrl);
+                ReturnUrlQueryString = Uri.IsWellFormedUriString(returnUrlValue, UriKind.Relative) ? returnUrlValue : PageUrls.Home;
                 queryParams.TryGetValue("userName", out var userName);
                 UserNameQueryString = GetValue(userName);
                 queryParams.TryGetValue("email", out var email);

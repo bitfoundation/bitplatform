@@ -5,7 +5,7 @@ using Boilerplate.Shared.Features.Chatbot;
 namespace Boilerplate.Server.Api.Features.Chatbot;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class ChatbotMapper
