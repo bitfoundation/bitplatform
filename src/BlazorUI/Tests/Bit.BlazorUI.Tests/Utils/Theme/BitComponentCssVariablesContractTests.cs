@@ -88,7 +88,7 @@ public sealed class BitComponentCssVariablesContractTests
             File.WriteAllText(tempPath, content);
             File.Move(tempPath, inventoryPath, overwrite: true);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
         }
         finally
