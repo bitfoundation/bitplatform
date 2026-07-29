@@ -14,19 +14,38 @@ internal static class BitFileInputJsRuntimeExtensions
     internal static ValueTask<BitFileInputInfo[]> BitFileInputSetup(this IJSRuntime jsRuntime,
                                                                     string id,
                                                                     ElementReference element,
-                                                                    bool append)
+                                                                    bool append,
+                                                                    bool showPreview,
+                                                                    bool readImageDimensions)
     {
-        return jsRuntime.Invoke<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup", id, element, append);
+        return jsRuntime.Invoke<BitFileInputInfo[]>("BitBlazorUI.FileInput.setup",
+                                                    id, element, append, showPreview, readImageDimensions);
     }
 
     /// <summary>
-    /// Sets up drag-and-drop and paste event handlers on the drop zone element to forward files to the input element.
+    /// Sets up drag-and-drop and paste event handlers on the drop zone element to forward files to the input element,
+    /// toggling the provided CSS class and inline style on the drop zone while files are being dragged over it.
     /// </summary>
     internal static ValueTask<IJSObjectReference> BitFileInputSetupDragDrop(this IJSRuntime jsRuntime,
                                                                             ElementReference dragDropZoneElement,
-                                                                            ElementReference inputFileElement)
+                                                                            ElementReference inputFileElement,
+                                                                            string dragClass,
+                                                                            string? dragStyle,
+                                                                            bool allowDrop,
+                                                                            bool allowPaste,
+                                                                            bool expandDirectories)
     {
-        return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileInput.setupDragDrop", dragDropZoneElement, inputFileElement);
+        return jsRuntime.Invoke<IJSObjectReference>("BitBlazorUI.FileInput.setupDragDrop",
+                                                    dragDropZoneElement, inputFileElement, dragClass, dragStyle,
+                                                    allowDrop, allowPaste, expandDirectories);
+    }
+
+    /// <summary>
+    /// Removes the stored reference of a specific file from the JavaScript side and revokes its preview object URL.
+    /// </summary>
+    internal static ValueTask BitFileInputRemoveFile(this IJSRuntime jsRuntime, string id, string fileId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.FileInput.removeFile", id, fileId);
     }
 
     /// <summary>
