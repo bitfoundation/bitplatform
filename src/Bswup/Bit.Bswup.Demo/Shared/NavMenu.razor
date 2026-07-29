@@ -1,5 +1,7 @@
-﻿@* Clicking any link also closes the mobile sidebar; on desktop the class toggle is a no-op. *@
-<nav class="docs-nav" onclick="BswupDemo.closeSidebar()">
+﻿@* Clicking any link also closes the mobile sidebar; on desktop the class toggle is a no-op.
+   Wired via data-demo-action (see the delegated listener in demo.js) - no inline onclick,
+   so the site works under a strict Content-Security-Policy. *@
+<nav class="docs-nav" data-demo-action="close-sidebar">
     <div class="nav-section">Overview</div>
     <NavLink href="" Match="NavLinkMatch.All">Introduction</NavLink>
     <NavLink href="getting-started">Getting Started</NavLink>

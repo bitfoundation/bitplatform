@@ -227,6 +227,31 @@
         }).observe(document.documentElement, { childList: true, subtree: true });
     }
 
+    // ---------------------------------------------------------------- CSP-safe wiring
+
+    // The markup wires its controls through data-demo-action attributes and this single
+    // delegated listener instead of inline onclick="..." attributes: inline handlers require
+    // script-src 'unsafe-inline' (or per-page hashes), and this docs site keeps itself
+    // compatible with the same strict Content-Security-Policy that Bswup's own scripts are
+    // designed for. Delegation on document also survives Blazor re-renders replacing the
+    // elements, with no per-element wiring to redo.
+    const actions = {
+        'copy-code': copyCode,
+        'toggle-theme': toggleTheme,
+        'toggle-sidebar': toggleSidebar,
+        'close-sidebar': closeSidebar,
+        'refresh-status': refreshStatus,
+        'check-for-update': checkForUpdate,
+        'skip-waiting': skipWaiting,
+        'persist-storage': persistStorage,
+        'force-refresh': forceRefresh
+    };
+    document.addEventListener('click', function (e) {
+        const trigger = e.target instanceof Element ? e.target.closest('[data-demo-action]') : null;
+        const action = trigger && actions[trigger.getAttribute('data-demo-action')];
+        if (action) action(trigger);
+    });
+
     window.BswupDemo = {
         toggleTheme: toggleTheme,
         toggleSidebar: toggleSidebar,

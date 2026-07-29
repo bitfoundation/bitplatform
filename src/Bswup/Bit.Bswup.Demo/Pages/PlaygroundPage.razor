@@ -30,7 +30,7 @@
                 <div><dt>Storage</dt><dd id="pg-storage-persisted">…</dd></div>
             </dl>
             <div class="actions">
-                <button type="button" class="button-secondary" onclick="BswupDemo.refreshStatus()">Refresh status</button>
+                <button type="button" class="button-secondary" data-demo-action="refresh-status">Refresh status</button>
             </div>
         </section>
 
@@ -51,8 +51,8 @@
                 activates a staged update immediately.
             </p>
             <div class="actions">
-                <button type="button" class="button-primary" onclick="BswupDemo.checkForUpdate()">Check for update</button>
-                <button type="button" class="button-secondary" onclick="BswupDemo.skipWaiting()">Skip waiting</button>
+                <button type="button" class="button-primary" data-demo-action="check-for-update">Check for update</button>
+                <button type="button" class="button-secondary" data-demo-action="skip-waiting">Skip waiting</button>
             </div>
         </section>
 
@@ -64,8 +64,8 @@
                 unregisters its worker, and reloads - the last-resort client reset.
             </p>
             <div class="actions">
-                <button type="button" class="button-secondary" onclick="BswupDemo.persistStorage()">Persist storage</button>
-                <button type="button" class="button-secondary button-danger" onclick="BswupDemo.forceRefresh()">Force refresh</button>
+                <button type="button" class="button-secondary" data-demo-action="persist-storage">Persist storage</button>
+                <button type="button" class="button-secondary button-danger" data-demo-action="force-refresh">Force refresh</button>
             </div>
         </section>
     </div>

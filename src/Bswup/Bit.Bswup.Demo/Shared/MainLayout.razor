@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 <header class="docs-header">
-    <button type="button" class="icon-button menu-button" aria-label="Toggle navigation" onclick="BswupDemo.toggleSidebar()">☰</button>
+    <button type="button" class="icon-button menu-button" aria-label="Toggle navigation" data-demo-action="toggle-sidebar">☰</button>
     <a class="brand" href="/">
         <img src="icon-512.png" alt="bit platform logo" />
         <span><span class="brand-product">bit</span> Bswup</span>
@@ -10,7 +10,7 @@
     <div class="header-spacer"></div>
     <a class="header-link" href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener">NuGet</a>
     <a class="header-link" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">GitHub</a>
-    <button type="button" class="icon-button" aria-label="Toggle dark mode" onclick="BswupDemo.toggleTheme()">
+    <button type="button" class="icon-button" aria-label="Toggle dark mode" data-demo-action="toggle-theme">
         <span class="theme-icon-light">🌙</span>
         <span class="theme-icon-dark">☀️</span>
     </button>
@@ -19,7 +19,7 @@
 <aside class="docs-sidebar">
     <NavMenu />
 </aside>
-<div class="docs-sidebar-backdrop" onclick="BswupDemo.closeSidebar()"></div>
+<div class="docs-sidebar-backdrop" data-demo-action="close-sidebar"></div>
 
 <main class="docs-main">
     <article class="docs-content">
