@@ -58,18 +58,6 @@
         <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <!-- Component SCSS tree + the checked-in inventory for the per-component CSS variable
-             contract test (BitComponentCssVariablesContractTests): the per-component custom-property
-             names are documented public API and must not drift from the sources without an update.
-             The inventory lives next to that test rather than in the library project because it is a
-             test baseline, not a shipped asset - it was never packed into the NuGet package. -->
-        <None Include="..\..\Bit.BlazorUI\Components\**\*.scss" Link="component-styles\%(RecursiveDir)%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Remove="Utils\Theme\component-css-variables.md" />
-        <None Include="Utils\Theme\component-css-variables.md" Link="component-css-variables.md">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 
 </Project>

@@ -1,8 +1,8 @@
 # Component CSS variables
 
 <!-- GENERATED FILE - do not edit by hand. Regenerated and verified by
-     BitComponentCssVariablesContractTests; on an intentional change, run that test and copy
-     the component-css-variables.generated.md it writes next to the test binaries over this file. -->
+     BitComponentCssVariablesContractTests; on an intentional change, run that test once - it
+     rewrites this file in place - then review the diff and commit it. -->
 
 Every bit BlazorUI component exposes its themable knobs as `--bit-<cmp>-*` CSS custom
 properties, assigned on the component root by its role/variant classes and consumed by its

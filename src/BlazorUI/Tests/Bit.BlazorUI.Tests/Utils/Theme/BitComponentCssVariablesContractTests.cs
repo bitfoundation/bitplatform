@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,8 +13,8 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 /// Pins the per-component CSS variable vocabulary (<c>--bit-&lt;cmp&gt;-*</c>) as stable public
 /// API. The checked-in inventory (<c>component-css-variables.md</c>, next to this test) is regenerated
 /// here from the component SCSS sources and compared verbatim: adding, renaming, or removing a
-/// component variable fails this test until the inventory is deliberately updated - which is the
-/// documented signal that the override surface changed for consumers.
+/// component variable fails this test once and rewrites the inventory in place - reviewing and
+/// committing that diff is the documented signal that the override surface changed for consumers.
 /// </summary>
 [TestClass]
 public sealed class BitComponentCssVariablesContractTests
@@ -25,27 +26,22 @@ public sealed class BitComponentCssVariablesContractTests
     [TestMethod]
     public void CheckedInInventoryMatchesTheComponentStyles()
     {
-        var stylesDir = Path.Combine(AppContext.BaseDirectory, "component-styles");
-        Assert.IsTrue(Directory.Exists(stylesDir), $"Missing {stylesDir}; ensure the library Components SCSS tree is copied to output.");
+        var generated = GenerateInventory(GetComponentStylesDirectory());
 
-        var generated = GenerateInventory(stylesDir);
-
-        var inventoryPath = Path.Combine(AppContext.BaseDirectory, "component-css-variables.md");
-        Assert.IsTrue(File.Exists(inventoryPath), $"Missing {inventoryPath}; ensure component-css-variables.md is copied to output.");
+        var inventoryPath = Path.Combine(GetTestSourceDirectory(), "component-css-variables.md");
+        Assert.IsTrue(File.Exists(inventoryPath), $"Missing {inventoryPath}.");
 
         var checkedIn = Normalize(File.ReadAllText(inventoryPath));
 
         if (!string.Equals(checkedIn, generated, StringComparison.Ordinal))
         {
-            var dumpPath = Path.Combine(AppContext.BaseDirectory, "component-css-variables.generated.md");
-            File.WriteAllText(dumpPath, generated);
+            RefreshInventory(inventoryPath, generated);
 
             Assert.Fail(
-                "The component CSS variable inventory has drifted from the SCSS sources. These names are " +
-                "documented public API: if the change is intentional, refresh the inventory by copying the " +
-                "regenerated file over src/BlazorUI/Tests/Bit.BlazorUI.Tests/Utils/Theme/component-css-variables.md " +
-                $"(written to: {dumpPath}) " +
-                "and note the change in the release notes; otherwise revert the SCSS rename.");
+                "The component CSS variable inventory had drifted from the SCSS sources and has been " +
+                $"refreshed in place ({inventoryPath}). These names are documented public API: if the " +
+                "change is intentional, review the diff, commit it and note the change in the release " +
+                "notes; otherwise revert the SCSS rename.");
         }
     }
 
@@ -54,20 +50,54 @@ public sealed class BitComponentCssVariablesContractTests
     {
         // A component redeclaring a global token (e.g. --bit-clr-pri) would silently re-scope
         // theming for its subtree. The component tier must stay disjoint from the theme tier.
-        var stylesDir = Path.Combine(AppContext.BaseDirectory, "component-styles");
-        Assert.IsTrue(Directory.Exists(stylesDir), $"Missing {stylesDir}.");
-
         var theme = new BitTheme();
         BitThemeTestGraph.FillStringLeavesWithSentinels(theme);
         var globalTokens = BitThemeUtilities.ToCssVariables(theme).Keys.ToHashSet(StringComparer.Ordinal);
 
-        var offenders = CollectDeclarations(stylesDir)
+        var offenders = CollectDeclarations(GetComponentStylesDirectory())
             .SelectMany(kv => kv.Value.Where(globalTokens.Contains).Select(v => $"{kv.Key}: {v}"))
             .OrderBy(o => o, StringComparer.Ordinal)
             .ToArray();
 
         CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
             $"Component styles redeclare global theme tokens: {string.Join(", ", offenders)}");
+    }
+
+    private static string GetTestSourceDirectory([CallerFilePath] string thisFile = "")
+    {
+        var dir = Path.GetDirectoryName(thisFile);
+        Assert.IsTrue(dir is not null && Directory.Exists(dir),
+            $"The test source directory ({dir}) is not available; this contract test must run from a source checkout.");
+        return dir!;
+    }
+
+    private static string GetComponentStylesDirectory()
+    {
+        var dir = Path.GetFullPath(Path.Combine(GetTestSourceDirectory(), "..", "..", "..", "..", "Bit.BlazorUI", "Components"));
+        Assert.IsTrue(Directory.Exists(dir), $"Missing {dir}.");
+        return dir;
+    }
+
+    private static void RefreshInventory(string inventoryPath, string content)
+    {
+        // The three target frameworks run this test concurrently over the same checkout; write via a
+        // unique temp file and treat losing the race to a sibling (writing identical content) as success.
+        var tempPath = $"{inventoryPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.WriteAllText(tempPath, content);
+            File.Move(tempPath, inventoryPath, overwrite: true);
+        }
+        catch (IOException)
+        {
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
     }
 
     private static SortedDictionary<string, SortedSet<string>> CollectDeclarations(string stylesDir)
@@ -100,8 +130,8 @@ public sealed class BitComponentCssVariablesContractTests
         var builder = new StringBuilder();
         builder.Append("# Component CSS variables\n\n");
         builder.Append("<!-- GENERATED FILE - do not edit by hand. Regenerated and verified by\n");
-        builder.Append("     BitComponentCssVariablesContractTests; on an intentional change, run that test and copy\n");
-        builder.Append("     the component-css-variables.generated.md it writes next to the test binaries over this file. -->\n\n");
+        builder.Append("     BitComponentCssVariablesContractTests; on an intentional change, run that test once - it\n");
+        builder.Append("     rewrites this file in place - then review the diff and commit it. -->\n\n");
         builder.Append("Every bit BlazorUI component exposes its themable knobs as `--bit-<cmp>-*` CSS custom\n");
         builder.Append("properties, assigned on the component root by its role/variant classes and consumed by its\n");
         builder.Append("internal selectors. They are **stable public API**: override them from app CSS\n");
