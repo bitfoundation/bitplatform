@@ -8,7 +8,7 @@ self.assetsInclude = [];
 self.assetsExclude = [/^Bit\.Bswup\.FullDemo\.Client\.styles\.css$/, /weather\.json$/];
 self.defaultUrl = "/";
 self.prohibitedUrls = [];
-// self.assetsUrl is deliberately NOT set: since v-10-5-0 it defaults to a relative
+// self.assetsUrl is deliberately NOT set: since v-10-6-0 it defaults to a relative
 // 'service-worker-assets.js', resolved next to this service-worker file - which keeps
 // sub-path-mounted apps working. Set it explicitly only when the file lives elsewhere.
 self.externalAssets = [

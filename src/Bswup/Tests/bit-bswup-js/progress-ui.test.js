@@ -180,7 +180,7 @@ describe('error handling', () => {
 });
 
 describe('update ready', () => {
-    // CHANGED in v-10-5-0: an unprompted reload discards the user's in-page state, so updates
+    // CHANGED in v-10-6-0: an unprompted reload discards the user's in-page state, so updates
     // now default to the prompt-then-reload pattern; auto-reload is opt-in.
     it('defaults to the manual reload button, not an automatic reload', () => {
         const ctx = progressPage({ elements: fullSplash }); // no auto-reload attribute anywhere

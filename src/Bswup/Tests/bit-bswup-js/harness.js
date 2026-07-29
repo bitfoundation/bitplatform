@@ -280,7 +280,7 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
         },
         /**
          * Let background work finish. The install promise now covers the whole cache build in
-         * both tolerance modes (lax awaits it under waitUntil since v-10-5-0), but message
+         * both tolerance modes (lax awaits it under waitUntil since v-10-6-0), but message
          * delivery still goes through clients.matchAll() and lands a microtask later, and the
          * lazy-fill/waitUntil work in fetch events remains genuinely backgrounded. Also drains
          * the (clamped) retry backoff timers.

@@ -414,7 +414,7 @@
         start(
             // The fallback only applies to hand-written config markup that omits the
             // attribute (the Razor component always renders it); it must track the
-            // component's AutoReload default - false since v-10-5-0, see BswupProgress.razor.
+            // component's AutoReload default - false since v-10-6-0, see BswupProgress.razor.
             bool('data-bit-bswup-auto-reload', false),
             bool('data-bit-bswup-show-logs', false),
             bool('data-bit-bswup-show-assets', false),

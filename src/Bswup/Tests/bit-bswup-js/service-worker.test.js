@@ -1442,7 +1442,7 @@ describe('cache identity is scoped per registration', () => {
     it('cleanup reclaims own previous and legacy buckets but never a sibling scope', async () => {
         const sw = bootScoped();
         await sw.caches.open('bit-bswup:/app/ - v1');   // this app's previous version
-        await sw.caches.open('bit-bswup - v1');          // legacy scope-less (pre v-10-5-0)
+        await sw.caches.open('bit-bswup - v1');          // legacy scope-less (pre v-10-6-0)
         await sw.caches.open('bit-bswup:/other/ - v1');  // a sibling app's live bucket
 
         let waited;

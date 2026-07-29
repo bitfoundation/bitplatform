@@ -47,7 +47,7 @@ describe('BswupMessage', () => {
         const ctx = page();
         ctx.load('bit-bswup.js');
         const m = ctx.window.BswupMessage;
-        // Present since before v-10-5-0 - removing any of these breaks consumer switch statements.
+        // Present since before v-10-6-0 - removing any of these breaks consumer switch statements.
         expect(m.downloadStarted).toBe('DOWNLOAD_STARTED');
         expect(m.downloadProgress).toBe('DOWNLOAD_PROGRESS');
         expect(m.downloadFinished).toBe('DOWNLOAD_FINISHED');

@@ -52,11 +52,15 @@ interface BitBswupGlobals {
 interface WorkerGlobalScope extends BitBswupGlobals { }
 interface Window extends BitBswupGlobals { }
 
-// Minimal shape of the ExtendableEvent / FetchEvent surface we use. Declared locally so the
-// install/activate/fetch handlers can call waitUntil()/respondWith() without DOM lib types.
-interface Event {
+// Minimal shape of the ExtendableEvent / FetchEvent surface we use, so the
+// install/activate/fetch/message handlers can call waitUntil()/respondWith() and read
+// request without DOM lib types. A dedicated interface rather than an augmentation of the
+// global Event: this file is compiled together with bit-bswup.sw-cleanup.ts
+// (tsconfig.sw.json), and augmenting Event would silently type every event over there too.
+interface BswupExtendableEvent extends Event {
     waitUntil: any
     respondWith: any
+    request: any
 }
 
 diagGroup('bit-bswup');
@@ -64,7 +68,7 @@ diagGroup('bit-bswup');
 // Resolved by importScripts against the worker's own location - the directory containing the
 // app's service-worker.js, which is also where Blazor publishes service-worker-assets.js - so
 // the relative default works for root-mounted apps and apps mounted on a sub-path
-// (https://host/myapp/) alike. Versions before v-10-5-0 defaulted to the root-absolute
+// (https://host/myapp/) alike. Versions before v-10-6-0 defaulted to the root-absolute
 // '/service-worker-assets.js', which pointed a sub-path app at the wrong path and failed its
 // install with a 'manifest' error unless assetsUrl was set explicitly - even though the page
 // script goes out of its way (the scope-fallback retry) to keep sub-path apps working.
@@ -131,7 +135,7 @@ const CACHE_VERSION = (typeof self.cacheVersion === 'string' && self.cacheVersio
 
 // Cache names are qualified with this registration's scope path so that sibling Bswup apps
 // mounted under different scopes on the SAME origin get disjoint cache namespaces.
-// CacheStorage is origin-global, and the pre v-10-5-0 name (`bit-bswup - <version>`) carried
+// CacheStorage is origin-global, and the pre v-10-6-0 name (`bit-bswup - <version>`) carried
 // no scope: every app's deleteOldCaches() saw a sibling's bucket as "a stale version of
 // mine" and deleted it, so two Bswup apps on one origin perpetually evicted each other's
 // offline caches on every update. The scope path is the natural qualifier - it is exactly
@@ -234,14 +238,14 @@ diag('MAX_RETRIES:', MAX_RETRIES, 'RETRY_DELAY:', RETRY_DELAY);
 // event with waitUntil() so the browser keeps the worker alive until our async work
 // settles; fetch uses respondWith() to take over the response; message handles the
 // page<->worker commands (SKIP_WAITING, CLAIM_CLIENTS, BLAZOR_STARTED, CLEAN_UP).
-self.addEventListener('install', (e) => e.waitUntil(handleInstall(e)));
-self.addEventListener('activate', (e) => e.waitUntil(handleActivate(e)));
+self.addEventListener('install', (e: BswupExtendableEvent) => e.waitUntil(handleInstall(e)));
+self.addEventListener('activate', (e: BswupExtendableEvent) => e.waitUntil(handleActivate(e)));
 // handleFetch decides *synchronously* whether to call respondWith, so requests Bswup does not
 // manage stay on the browser's own network path (see the comment on handleFetch).
 self.addEventListener('fetch', handleFetch);
 self.addEventListener('message', handleMessage);
 
-async function handleInstall(e: any) {
+async function handleInstall(e: BswupExtendableEvent) {
     diag('installing version:', VERSION);
 
     // Diagnostics-only storage telemetry: quota pressure is the root cause behind most
@@ -298,7 +302,7 @@ async function handleInstall(e: any) {
         // Lax: asset failures never fail the install - createAssetsCache resolves even when
         // assets were skipped (they lazy-fill in handleFetch) - but the download itself must
         // still run under the install event's lifetime (handleInstall IS the waitUntil
-        // promise, so awaiting here extends it). Versions before v-10-5-0 fired the cache build
+        // promise, so awaiting here extends it). Versions before v-10-6-0 fired the cache build
         // unawaited so the install settled immediately, which had two nasty consequences:
         //   - Nothing kept the worker alive. Browsers terminate an event-idle service worker
         //     after ~30s (fetches/timers the worker itself starts do not extend its
@@ -343,7 +347,7 @@ function reportUnreportedInstallFailure(err: any) {
     });
 }
 
-async function handleActivate(e: any) {
+async function handleActivate(e: BswupExtendableEvent) {
     diag('activate version:', VERSION);
 
     sendMessage({ type: 'activate', data: { version: VERSION, isPassive: self.isPassive } });
@@ -529,14 +533,14 @@ diagGroupEnd();
 // for anything we do not manage we simply return without calling respondWith - leaving the
 // browser to do exactly what it would have done with no service worker installed. Only the
 // managed path calls respondWith, and it is handed serveAsset(), which never rejects.
-function handleFetch(e: any) {
+function handleFetch(e: BswupExtendableEvent) {
     const req = e.request as Request;
 
     if (PROHIBITED_URLS.some(pattern => pattern.test(req.url))) {
         diagFetch('+++ handleFetch ended - prohibited:', e, req);
 
         // 403 Forbidden: the request was understood and is being refused. Versions before
-        // v-10-5-0 answered 405 Method Not Allowed, which is wrong on both counts - it says the
+        // v-10-6-0 answered 405 Method Not Allowed, which is wrong on both counts - it says the
         // *method* is unsupported for this resource (the URL is blocked here regardless of
         // method) and RFC 9110 requires a 405 to carry an Allow header listing the permitted
         // methods, which there is no meaningful value for. Code that detects a Bswup-blocked
@@ -960,7 +964,7 @@ async function tryCacheMatch(cache: any, url: string) {
 
 // Handles commands posted from the page (bit-bswup.ts). Each branch corresponds to a string
 // command in the page<->worker protocol; non-matching JSON messages are ignored.
-function handleMessage(e: MessageEvent<string>) {
+function handleMessage(e: MessageEvent<string> & BswupExtendableEvent) {
     diag('handleMessage:', e);
 
     // Trust model: a service worker can only receive postMessage from clients on its own
@@ -1794,7 +1798,7 @@ function urlToRegExp(url: string) {
 // true }) returns every same-origin window client, including pages of unrelated apps mounted
 // under other scopes on the same host - and only clients under this scope can be controlled
 // by this worker or depend on its caches. When the scope is unavailable (self.registration
-// missing in an exotic runtime) fall back to no filtering, which is the pre v-10-5-0 behavior.
+// missing in an exotic runtime) fall back to no filtering, which is the pre v-10-6-0 behavior.
 // The cleanup worker (bit-bswup.sw-cleanup.ts) applies the same filter for the same reason.
 async function matchScopeClients() {
     const scope = self.registration && self.registration.scope;
