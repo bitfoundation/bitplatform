@@ -281,10 +281,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#if (offlineDb == true)
             if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
-                // Datasync entities carry their own yte[] Version concurrency token, managed by the toolkit's
-                // repository (see TodoItem's RepositoryControlledEntityTableData base). The loop below only ever
-                // matched long Version, so this skip is about NOT layering the app's own long-based scheme on
-                // top - it is not, and never was, disabling a check that would otherwise have run here.
+                // Datasync entities (BaseEntityTableData) manage their own byte[] Version through the toolkit's
+                // repository; the loop below only ever matches a long Version, so there is nothing to apply here.
                 continue;
             //#endif
 
@@ -309,10 +307,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#if (offlineDb == true)
             if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
-                // Datasync entities carry their own yte[] Version concurrency token, managed by the toolkit's
-                // repository (see TodoItem's RepositoryControlledEntityTableData base). The loop below only ever
-                // matched long Version, so this skip is about NOT layering the app's own long-based scheme on
-                // top - it is not, and never was, disabling a check that would otherwise have run here.
+                // Datasync entities (BaseEntityTableData) manage their own byte[] Version through the toolkit's
+                // repository; the loop below only ever matches a long Version, so there is nothing to apply here.
                 continue;
             //#endif
 

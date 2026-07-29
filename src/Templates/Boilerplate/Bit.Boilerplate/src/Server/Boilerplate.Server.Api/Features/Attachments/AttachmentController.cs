@@ -235,7 +235,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
             // Process-wide ImageMagick ResourceLimits are configured at startup (Program.Services.cs), so what a
             // decode of an untrusted upload can cost is bounded, and anything Magick.NET cannot decode throws here.
-            using MagickImage sourceImage = new(file.OpenReadStream());
+            // OpenReadStream hands out a NEW stream per call and MagickImage does not take ownership of it.
+            using var sourceStream = file.OpenReadStream();
+            using MagickImage sourceImage = new(sourceStream);
 
             if (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height)
                 return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
@@ -337,7 +339,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             }
             else
             {
-                await blobStorage.SetObject(attachment.Path, file.OpenReadStream(), cancellationToken: cancellationToken);
+                using var originalStream = file.OpenReadStream();
+                await blobStorage.SetObject(attachment.Path, originalStream, cancellationToken: cancellationToken);
             }
         }
 

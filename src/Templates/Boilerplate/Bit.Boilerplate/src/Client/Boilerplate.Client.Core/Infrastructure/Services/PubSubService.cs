@@ -19,7 +19,28 @@ public partial class PubSubService
 
     [AutoInject] private readonly IServiceProvider serviceProvider = default!;
 
+    /// <summary>
+    /// Serializes "queue a persistent message" against "register a handler and drain the queue". Without it the
+    /// two can interleave so that Publish finds no handler, Subscribe drains an empty queue, and Publish then
+    /// enqueues a message the handler that just arrived will never be given.
+    /// </summary>
+    private readonly Lock persistentMessagesLock = new();
+
     public void Publish(string message, object? payload = null, bool persistent = false)
+    {
+        if (TryDeliver(message, payload) || persistent is false) return;
+
+        lock (persistentMessagesLock)
+        {
+            // Re-attempt under the lock: a Subscribe that completed while we were deciding has a live handler
+            // now. Nothing was delivered above, so this cannot deliver twice.
+            if (TryDeliver(message, payload)) return;
+
+            persistentMessages.Add((message, payload));
+        }
+    }
+
+    private bool TryDeliver(string message, object? payload)
     {
         var delivered = false;
 
@@ -33,41 +54,41 @@ public partial class PubSubService
                     handlerTask.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
                 }
             }
-
         }
 
-        if (delivered is false && persistent)
-        {
-            persistentMessages.Add((message, payload));
-        }
+        return delivered;
     }
 
     public Action Subscribe(string message, Func<object?, Task> handler)
     {
         var weakHandler = new WeakHandler(handler);
         var weakHandlers = handlers.GetOrAdd(message, _ => []);
-        weakHandlers.Add(weakHandler);
 
-        // If persistent messages exist for this message, publish them immediately.
-        // A ConcurrentBag can't remove a specific item (TryTake removes an arbitrary one), so we drain it
-        // once: matching messages are dispatched and dropped, the rest are put back.
-        if (persistentMessages.IsEmpty is false)
+        lock (persistentMessagesLock)
         {
-            var retained = new List<(string message, object? payload)>();
-            while (persistentMessages.TryTake(out var pending))
+            weakHandlers.Add(weakHandler);
+
+            // If persistent messages exist for this message, publish them immediately.
+            // A ConcurrentBag can't remove a specific item (TryTake removes an arbitrary one), so we drain it
+            // once: matching messages are dispatched and dropped, the rest are put back.
+            if (persistentMessages.IsEmpty is false)
             {
-                if (pending.message == message)
+                var retained = new List<(string message, object? payload)>();
+                while (persistentMessages.TryTake(out var pending))
                 {
-                    weakHandler.Invoke(pending.payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                    if (pending.message == message)
+                    {
+                        weakHandler.Invoke(pending.payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
+                    }
+                    else
+                    {
+                        retained.Add(pending);
+                    }
                 }
-                else
+                foreach (var pending in retained)
                 {
-                    retained.Add(pending);
+                    persistentMessages.Add(pending);
                 }
-            }
-            foreach (var pending in retained)
-            {
-                persistentMessages.Add(pending);
             }
         }
 
