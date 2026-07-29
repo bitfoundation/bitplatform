@@ -377,6 +377,7 @@ function createElement(tag) {
         tagName: tag,
         _attrs: {},
         children: [],
+        parentElement: null,
         textContent: '',
         // Real nodes report isConnected; the progress script's element cache re-resolves
         // replaced (disconnected) nodes, so the fake must model the transition (see
@@ -389,8 +390,12 @@ function createElement(tag) {
         },
         getAttribute(n) { return n in this._attrs ? this._attrs[n] : null; },
         setAttribute(n, v) { this._attrs[n] = String(v); },
-        append(...nodes) { this.children.push(...nodes); },
-        prepend(...nodes) { this.children.unshift(...nodes); },
+        // parentElement is modelled because the progress script hides the bar through its
+        // wrapper rather than on the bar itself. Like the real API these accept plain strings
+        // (a browser wraps them in a Text node), which have no parent link to set.
+        append(...nodes) { this.children.push(...nodes); this._adopt(nodes); },
+        prepend(...nodes) { this.children.unshift(...nodes); this._adopt(nodes); },
+        _adopt(nodes) { for (const n of nodes) if (n && typeof n === 'object') n.parentElement = this; },
     };
     return el;
 }

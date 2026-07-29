@@ -90,7 +90,6 @@ describe('download progress rendering', () => {
         const ctx = progressPage({ elements: fullSplash });
         ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 42.4, index: 3, asset: { url: 'a.js', hash: 'h' } });
 
-        expect(ctx.elements['bit-bswup-progress-bar'].style.display).not.toBe('none');
         expect(ctx.elements['bit-bswup-progress-bar'].style.width).toBe('42%');
         expect(ctx.elements['bit-bswup-progress-bar'].getAttribute('aria-valuenow')).toBe('42');
         expect(ctx.elements['bit-bswup-percent'].textContent).toBe('42%');
@@ -141,6 +140,22 @@ describe('error handling', () => {
         expect(ctx.elements['bit-bswup-error-message'].textContent).toContain('install aborted');
         // A failed install must not leave a button offering to activate it.
         expect(ctx.elements['bit-bswup-reload'].style.display).toBe('none');
+    });
+
+    // A stale partial value ("47%", half a list of assets) left sitting next to the failure
+    // message reads as an install still in flight. The bar is hidden through its wrapper -
+    // the <div class="bit-bswup-progress"> the markup nests it in - not on the bar itself.
+    it('hides the stale progress bar, percentage and asset list beside the failure', () => {
+        const ctx = progressPage({ elements: { ...fullSplash, 'bit-bswup-assets': {} } });
+        const barWrapper = ctx.window.document.createElement('div');
+        barWrapper.append(ctx.elements['bit-bswup-progress-bar']);
+
+        ctx.window.bitBswupHandler('DOWNLOAD_PROGRESS', { percent: 47, index: 1, asset: { url: 'a.js', hash: 'h' } });
+        ctx.window.bitBswupHandler('ERROR', { reason: 'fetch', message: 'download failed', fatal: true });
+
+        expect(barWrapper.style.display).toBe('none');
+        expect(ctx.elements['bit-bswup-percent'].style.display).toBe('none');
+        expect(ctx.elements['bit-bswup-assets'].style.display).toBe('none');
     });
 
     it('clears the download splash instead of hijacking a running app when an update fails', () => {
