@@ -150,7 +150,7 @@ public class BitChoiceGroupItemContentTests : BunitTestContext
     {
         var items = new List<BitChoiceGroupItem<string>>
         {
-            new() { Text = "A", Value = "A" },
+            new() { Text = "A", Value = "A", Suffix = string.Empty },
             new() { Text = "B", Value = "B", Suffix = "$10" },
         };
 

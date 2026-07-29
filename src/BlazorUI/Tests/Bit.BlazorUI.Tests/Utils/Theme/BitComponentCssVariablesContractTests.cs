@@ -35,11 +35,14 @@ public sealed class BitComponentCssVariablesContractTests
 
         if (!string.Equals(checkedIn, generated, StringComparison.Ordinal))
         {
-            RefreshInventory(inventoryPath, generated);
+            var refreshed = RefreshInventory(inventoryPath, generated);
 
             Assert.Fail(
-                "The component CSS variable inventory had drifted from the SCSS sources and has been " +
-                $"refreshed in place ({inventoryPath}). These names are documented public API: if the " +
+                "The component CSS variable inventory had drifted from the SCSS sources" +
+                (refreshed
+                    ? $" and has been refreshed in place ({inventoryPath})."
+                    : $", and refreshing it in place ({inventoryPath}) failed; rerun this test with write access to regenerate it.") +
+                " These names are documented public API: if the " +
                 "change is intentional, review the diff, commit it and note the change in the release " +
                 "notes; otherwise revert the SCSS rename.");
         }
@@ -78,7 +81,7 @@ public sealed class BitComponentCssVariablesContractTests
         return dir;
     }
 
-    private static void RefreshInventory(string inventoryPath, string content)
+    private static bool RefreshInventory(string inventoryPath, string content)
     {
         // The three target frameworks run this test concurrently over the same checkout; write via a
         // unique temp file and treat losing the race to a sibling (writing identical content) as success.
@@ -87,9 +90,21 @@ public sealed class BitComponentCssVariablesContractTests
         {
             File.WriteAllText(tempPath, content);
             File.Move(tempPath, inventoryPath, overwrite: true);
+            return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            // The file being up to date is what counts as refreshed, whoever wrote it: after losing the
+            // race the sibling has already written this exact content, while on e.g. a read-only checkout
+            // the stale content is still there and the failure has to be reported as such.
+            try
+            {
+                return string.Equals(Normalize(File.ReadAllText(inventoryPath)), content, StringComparison.Ordinal);
+            }
+            catch (Exception readEx) when (readEx is IOException or UnauthorizedAccessException)
+            {
+                return false;
+            }
         }
         finally
         {
