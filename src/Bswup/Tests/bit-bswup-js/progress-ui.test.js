@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createPageContext, waitFor } from './harness.js';
+import { createPageContext, waitFor, fakeWorker } from './harness.js';
 
 const SPLASH = { 'data-bit-bswup-config': 'true' };
 
@@ -374,21 +374,6 @@ describe('splash subtree replaced after initialization', () => {
 // hiding the splash. Every piece is tested elsewhere in isolation; a regression in the seam
 // between the two bundles would pass all of those and still ship a broken first install.
 describe('end-to-end first install through the built-in handler', () => {
-    function fakeWorker(state) {
-        const listeners = [];
-        return {
-            state,
-            posted: [],
-            postMessage(message) { this.posted.push(message); },
-            addEventListener(type, fn) { if (type === 'statechange') listeners.push(fn); },
-            removeEventListener(type, fn) {
-                const index = listeners.indexOf(fn);
-                if (index !== -1) listeners.splice(index, 1);
-            },
-            fireStateChange() { listeners.slice().forEach(fn => fn({ currentTarget: this })); },
-        };
-    }
-
     it('progress -> reload() -> CLAIM_CLIENTS -> CLIENTS_CLAIMED -> Blazor started, splash hidden', async () => {
         const installing = fakeWorker('installing');
         const registration = { active: null, waiting: null, installing, addEventListener() { }, update: async () => { } };

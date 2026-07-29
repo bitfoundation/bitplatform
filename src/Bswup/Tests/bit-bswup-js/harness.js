@@ -554,3 +554,23 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
     if (!sandbox.navigator) api.setServiceWorker();
     return api;
 }
+
+/** A fake ServiceWorker whose lifecycle the test drives by hand (via fireStateChange). */
+export function fakeWorker(state) {
+    const listeners = [];
+    return {
+        state,
+        posted: [],
+        postMessage(message) { this.posted.push(message); },
+        addEventListener(type, fn) { if (type === 'statechange') listeners.push(fn); },
+        removeEventListener(type, fn) {
+            const index = listeners.indexOf(fn);
+            if (index !== -1) listeners.splice(index, 1);
+        },
+        // Snapshot before dispatch: whenStaged/whenActive remove themselves mid-iteration.
+        fireStateChange() { listeners.slice().forEach(fn => fn({ currentTarget: this })); },
+    };
+}
+
+/** The 100% progress message the service worker sends just before its install promise resolves. */
+export const progress100 = JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } });

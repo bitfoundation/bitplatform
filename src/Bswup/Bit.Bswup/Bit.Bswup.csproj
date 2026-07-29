@@ -87,10 +87,26 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
+    <!-- Records the configuration of the last build in a file whose timestamp only advances when
+         the configuration actually changes (WriteOnlyWhenDifferent). BuildJavaScript lists it as
+         an Input, which is what makes its incrementality configuration-aware: without it, a
+         single-TFM (-f) Debug build right after a Release build would see the wwwroot outputs as
+         newer than the .ts sources and skip tsc, silently keeping the Release-MINIFIED bundles
+         (cross-targeting builds are immune - BuildBswupAssetsOnCrossTargeting deletes the outputs
+         first). The path is TFM- and config-independent (obj\) on purpose: the parallel inner
+         per-TFM builds all see content that already matches and never rewrite the file, so its
+         timestamp stays put and they skip tsc instead of racing it. -->
+    <Target Name="RecordBswupBuildConfiguration">
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <WriteLinesToFile File="$(BaseIntermediateOutputPath)bit-bswup.last-configuration" Lines="$(Configuration)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    </Target>
+
     <!-- Compiles the TypeScript bundles. Incremental on the .ts/tsconfig inputs vs the emitted
-         wwwroot .js outputs, so a no-op when nothing changed. This always emits the unminified
-         bundles; Release minification is handled separately by MinifyAssets. -->
-    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts;Scripts/bit-bswup.sw-cleanup.ts;tsconfig.json;tsconfig.sw.json;package.json;package-lock.json" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js;wwwroot/bit-bswup.sw-cleanup.js">
+         wwwroot .js outputs, so a no-op when nothing changed - except after a configuration
+         switch, which the last-configuration input forces through (see
+         RecordBswupBuildConfiguration). This always emits the unminified bundles; Release
+         minification is handled separately by MinifyAssets. -->
+    <Target Name="BuildJavaScript" DependsOnTargets="RecordBswupBuildConfiguration" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts;Scripts/bit-bswup.sw-cleanup.ts;tsconfig.json;tsconfig.sw.json;package.json;package-lock.json;$(BaseIntermediateOutputPath)bit-bswup.last-configuration" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js;wwwroot/bit-bswup.sw-cleanup.js">
         <!-- Page scripts (DOM lib) and service-worker scripts (WebWorker lib) are compiled by
              separate tsconfigs because the DOM and WebWorker type libraries cannot coexist in
              one compilation. Both emit into wwwroot. -->

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createPageContext, ORIGIN, waitFor } from './harness.js';
+import { createPageContext, ORIGIN, waitFor, fakeWorker, progress100 } from './harness.js';
 
 /** A page with the bswup + blazor script tags in place, before bit-bswup.js is loaded. */
 function page(options = {}, { swOptions, blazor = true } = {}) {
@@ -260,30 +260,11 @@ describe('bypass routing', () => {
     });
 });
 
-// A fake ServiceWorker whose lifecycle the test drives by hand.
-function fakeWorker(state) {
-    const listeners = [];
-    return {
-        state,
-        posted: [],
-        postMessage(message) { this.posted.push(message); },
-        addEventListener(type, fn) { if (type === 'statechange') listeners.push(fn); },
-        removeEventListener(type, fn) {
-            const index = listeners.indexOf(fn);
-            if (index !== -1) listeners.splice(index, 1);
-        },
-        // Snapshot before dispatch: whenStaged/whenActive remove themselves mid-iteration.
-        fireStateChange() { listeners.slice().forEach(fn => fn({ currentTarget: this })); },
-    };
-}
-
 // The 100% progress message is sent just before the SW's install promise resolves, so when a
 // handler calls reload() the new worker can still be 'installing'. reload() must wait for the
 // state each flow needs instead of racing the lifecycle (the old code picked between a seamless
 // claim, a SKIP_WAITING reload, and a hard reload depending on which instant the message landed).
 describe('reload determinism', () => {
-    const progress100 = JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } });
-
     it('first install: waits for activation, then claims - no reload on any path', async () => {
         const installing = fakeWorker('installing');
         const registration = { active: null, waiting: null, installing, addEventListener() { }, update: async () => { } };
@@ -762,8 +743,6 @@ describe('persistent storage', () => {
 // at the OLD worker - wiping the freshly staged cache), and a sibling tab's update claim
 // skipped the mandatory reload, running old app code against new-version caches.
 describe('updates after a completed first install', () => {
-    const progress100 = JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } });
-
     function firstInstallPage() {
         const regListeners = {};
         const registration = {
@@ -865,8 +844,6 @@ describe('updates after a completed first install', () => {
 // the CLAIM_CLIENTS handshake never ran and a first install sat behind the splash until the
 // stall watchdog fired a minute later.
 describe('no progress handler registered', () => {
-    const progress100 = JSON.stringify({ type: 'progress', data: { percent: 100, index: 1, asset: { url: 'a.js' } } });
-
     it('completes a first install by driving reload() itself', async () => {
         const installing = fakeWorker('installing');
         const registration = { active: null, waiting: null, installing, addEventListener() { }, update: async () => { } };
