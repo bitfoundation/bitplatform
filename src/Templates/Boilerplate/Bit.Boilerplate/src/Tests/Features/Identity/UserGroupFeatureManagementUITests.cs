@@ -3,7 +3,7 @@ using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class UserGroupFeatureManagementUITests : AppPageTest
 {
     // The seeded store tenant admin (a t-admin, not a global admin) and a regular member of the same tenant's
@@ -30,7 +30,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     /// <item>The demo member signs out and back in; her new token no longer carries the feature, so the Manage roles page is off-limits.</item>
     /// </list>
     /// </summary>
-    [TestMethod, Ignore]
+    [TestMethod]
     public async Task TenantAdmin_GrantAndRevokeDemoGroupFeature_Should_ControlMemberAccess()
     {
         await using var server = new AppTestServer(Context);

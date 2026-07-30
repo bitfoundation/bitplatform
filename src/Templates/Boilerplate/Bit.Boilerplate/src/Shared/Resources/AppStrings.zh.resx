@@ -1431,6 +1431,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>租户名称 '{0}' 已被占用。</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>租户名称 '{0}' 为保留名称，无法使用。</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>未找到租户。</value>
   </data>

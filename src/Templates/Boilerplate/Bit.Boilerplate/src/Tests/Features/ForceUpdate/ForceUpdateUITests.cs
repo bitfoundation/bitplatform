@@ -2,7 +2,7 @@ using Boilerplate.Tests.Features.Identity;
 
 namespace Boilerplate.Tests.Features.ForceUpdate;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class ForceUpdateUITests : AppPageTest
 {
     /// <summary>

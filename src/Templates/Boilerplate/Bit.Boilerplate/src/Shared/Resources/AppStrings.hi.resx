@@ -1431,6 +1431,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>टेनेंट नाम '{0}' पहले से उपयोग में है।</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>टेनेंट नाम '{0}' आरक्षित है और इसका उपयोग नहीं किया जा सकता।</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>टेनेंट नहीं मिला।</value>
   </data>

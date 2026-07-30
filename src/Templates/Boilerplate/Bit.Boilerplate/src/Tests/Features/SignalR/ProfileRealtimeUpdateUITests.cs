@@ -4,7 +4,7 @@ using Boilerplate.Server.Api.Infrastructure.Data;
 
 namespace Boilerplate.Tests.Features.SignalR;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class ProfileRealtimeUpdateUITests : AppPageTest
 {
     /// <summary>

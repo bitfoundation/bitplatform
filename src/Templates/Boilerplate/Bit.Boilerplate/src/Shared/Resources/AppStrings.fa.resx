@@ -1431,6 +1431,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>نام مستأجر '{0}' تکراری است.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>نام مستأجر '{0}' رزرو شده است و قابل استفاده نیست.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>مستأجر مورد نظر پیدا نشد.</value>
   </data>

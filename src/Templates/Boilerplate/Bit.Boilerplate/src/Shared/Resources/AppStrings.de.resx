@@ -1431,6 +1431,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>Der Mandantenname '{0}' ist bereits vergeben.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>Der Mandantenname '{0}' ist reserviert und kann nicht verwendet werden.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Mandant konnte nicht gefunden werden.</value>
   </data>

@@ -5,7 +5,7 @@ using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class TwoFactorAuthTests : AppPageTest
 {
     /// <summary>

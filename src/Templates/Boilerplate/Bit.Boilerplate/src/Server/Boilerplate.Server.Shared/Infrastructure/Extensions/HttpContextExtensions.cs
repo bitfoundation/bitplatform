@@ -9,7 +9,7 @@ public static class HttpContextExtensions
     {
         public AppResponseCacheAttribute? GetResponseCacheAttribute()
         {
-            var att = context.GetEndpoint()?.Metadata.OfType<AppResponseCacheAttribute>().FirstOrDefault();
+            var att = context.GetEndpoint()?.Metadata.OfType<AppResponseCacheAttribute>().LastOrDefault();
 
             if (att?.MaxAge == -1 && att?.SharedMaxAge == -1)
                 throw new InvalidOperationException("Invalid configuration: Both MaxAge and SharedMaxAge are unset. At least one of them must be specified in the ResponseCache attribute.");

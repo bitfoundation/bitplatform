@@ -1,5 +1,8 @@
 namespace Boilerplate.Tests.Infrastructure;
 
+// Every UI test drives a real browser, so running them concurrently starves weak CI runners and shows up as Playwright timeouts.
+// MSTest runs non-parallelizable tests serially after the parallel ones, so the rest of the suite still uses all of the assembly's workers.
+[DoNotParallelize]
 public class AppPageTest : PageTest
 {
     [TestInitialize]
@@ -19,7 +22,16 @@ public class AppPageTest : PageTest
         await context.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={serverAddress}' ]; }};");
     }
 
-    public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
+    /// <summary>
+    /// Video recording costs CPU on every test, which is exactly what makes tests flaky on constrained CI runners.
+    /// <c>TestRunCount</c> is 1 on the first attempt and increments per retry, so the first attempt runs without a video
+    /// and only the retries of an already failing test are recorded - a failure still ends up with a video to look at.
+    /// </summary>
+    public override BrowserNewContextOptions ContextOptions()
+    {
+        var options = base.ContextOptions();
+        return TestContext.TestRunCount > 1 ? options.EnableVideoRecording(TestContext) : options;
+    }
 
     [TestCleanup]
     public virtual async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);

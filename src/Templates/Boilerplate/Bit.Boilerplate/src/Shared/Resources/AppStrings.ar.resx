@@ -1431,6 +1431,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>اسم المستأجر '{0}' مستخدم بالفعل.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>اسم المستأجر '{0}' محجوز ولا يمكن استخدامه.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>لم يتم العثور على المستأجر.</value>
   </data>
