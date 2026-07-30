@@ -30,7 +30,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     /// <item>The demo member signs out and back in; her new token no longer carries the feature, so the Manage roles page is off-limits.</item>
     /// </list>
     /// </summary>
-    [TestMethod, Ignore]
+    [TestMethod]
     public async Task TenantAdmin_GrantAndRevokeDemoGroupFeature_Should_ControlMemberAccess()
     {
         await using var server = new AppTestServer(Context);
