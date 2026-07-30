@@ -46,7 +46,7 @@ jobs:
 
   test-boilerplate-postgres:
     name: Create project from template with PostgreSQL and test it
-    runs-on: ubuntu-24.04-4core
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
@@ -155,7 +155,7 @@ jobs:
 
   test-boilerplate-mssql:
     name: Create project from template with SQL Server and test it
-    runs-on: ubuntu-24.04-4core
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
