@@ -11,6 +11,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private PubSubService pubSubService;
     [AutoInject] private ClientExceptionHandlerBase exceptionHandler;
+    [AutoInject] private ClientMauiSettings clientMauiSettings;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider;
 
     public MauiWebAuthnService? WebAuthnService { get; set; }
 
@@ -31,6 +33,8 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         localHttpServer?.Dispose();
 
         port = GetAvailableTcpPort();
+
+        var webAppOrigin = clientMauiSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress();
 
         var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
 
@@ -65,6 +69,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
             .WithMode(AppPlatform.IsWindows ? HttpListenerMode.Microsoft : HttpListenerMode.EmbedIO))
+            .WithCors("/api", webAppOrigin.GetLeftPart(UriPartial.Authority), "content-type", "get,post")
             .WithModule(new ActionModule("/api/ExternalSignInCallback", HttpVerbs.Post, async ctx =>
             {
                 // This endpoint cannot carry the session token - the value arrives via a redirect the identity

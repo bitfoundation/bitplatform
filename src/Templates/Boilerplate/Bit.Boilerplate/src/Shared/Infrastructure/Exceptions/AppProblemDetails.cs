@@ -64,9 +64,11 @@ public partial class AppProblemDetails
     [JsonExtensionData]
     public Dictionary<string, object?> Extensions { get; set; } = new(StringComparer.Ordinal);
 
-    public string? Key { get; set; } // Gets filled by Extensions property.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Key { get; set; }
 
-    public ErrorResourcePayload? Payload { get; set; } = new(); // Gets filled by Extensions property.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ErrorResourcePayload? Payload { get; set; }
 
 
     public static implicit operator Exception(AppProblemDetails problemDetails)

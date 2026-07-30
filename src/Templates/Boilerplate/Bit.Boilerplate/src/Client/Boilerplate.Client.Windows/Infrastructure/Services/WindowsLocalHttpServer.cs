@@ -34,6 +34,8 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         port = GetAvailableTcpPort();
 
+        var webAppOrigin = clientWindowsSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress();
+
         var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
 
         async Task GoBackToApp()
@@ -47,6 +49,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
             .WithMode(HttpListenerMode.Microsoft))
+            .WithCors("/api", webAppOrigin.GetLeftPart(UriPartial.Authority), "content-type", "get,post")
             .WithModule(new ActionModule("/api/ExternalSignInCallback", HttpVerbs.Post, async ctx =>
             {
                 if (IsRelativeUrl(ctx.Request.QueryString["urlToOpen"]) is false)
@@ -157,7 +160,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     // In production, as all files are deployed to a single folder, we rely on the default file provider.
                     if (AppEnvironment.IsDevelopment())
                     {
-                        ctx.Redirect(new Uri(clientWindowsSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress(), requestFilePath).ToString());
+                        ctx.Redirect(new Uri(webAppOrigin, requestFilePath).ToString());
                     }
                     else
                     {
