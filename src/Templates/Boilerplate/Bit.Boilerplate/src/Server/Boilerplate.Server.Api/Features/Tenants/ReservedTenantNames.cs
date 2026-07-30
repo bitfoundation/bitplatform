@@ -38,11 +38,11 @@ public static class ReservedTenantNames
             if (string.IsNullOrWhiteSpace(host))
                 continue;
 
-            // Compare against the first label only: that is the single segment TenantProvider reads
-            // (`host.Split('.') is { Length: > 2 }` then `IdsByName[hostSegments[0]]`).
-            var firstLabel = host.Split('.', 2)[0];
-
-            if (string.Equals(name, firstLabel, StringComparison.OrdinalIgnoreCase))
+            // Mirror TenantProvider exactly: it only resolves a tenant from the sub domain when the host has
+            // more than two labels (`host.Split('.') is { Length: > 2 }` then `IdsByName[hostSegments[0]]`),
+            // so an apex host such as example.com reserves nothing.
+            if (host.Split('.') is { Length: > 2 } labels
+                && string.Equals(name, labels[0], StringComparison.OrdinalIgnoreCase))
                 return true;
         }
 
