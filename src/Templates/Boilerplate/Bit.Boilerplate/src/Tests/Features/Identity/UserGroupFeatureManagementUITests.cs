@@ -3,7 +3,7 @@ using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class UserGroupFeatureManagementUITests : AppPageTest
 {
     // The seeded store tenant admin (a t-admin, not a global admin) and a regular member of the same tenant's

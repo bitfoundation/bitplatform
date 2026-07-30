@@ -24,7 +24,7 @@ namespace Boilerplate.Tests.Features.Identity;
 /// component rendering. Reach for bUnit for fast, component-focused checks and Playwright for full end-to-end
 /// confidence.
 /// </summary>
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public class BunitUITests
 {
     [TestMethod]

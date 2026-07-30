@@ -2,7 +2,7 @@ using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class PrivilegedSessionTests : AppPageTest
 {
     /// <summary>

@@ -3,8 +3,6 @@ namespace Boilerplate.Tests.Infrastructure;
 // Every UI test drives a real browser, so running them concurrently starves weak CI runners and shows up as Playwright timeouts.
 // MSTest runs non-parallelizable tests serially after the parallel ones, so the rest of the suite still uses all of the assembly's workers.
 [DoNotParallelize]
-// Browser tests are inherently timing sensitive, so give each one a couple of extra attempts before failing the run.
-[Retry(2)]
 public class AppPageTest : PageTest
 {
     [TestInitialize]

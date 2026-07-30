@@ -2,7 +2,7 @@ using Boilerplate.Tests.Infrastructure.Components;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class WebAuthnPasswordlessUITests : AppPageTest
 {
     /// <summary>
