@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
+using Boilerplate.Server.Shared;
 using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
@@ -23,6 +24,7 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
     [AutoInject] private IFusionCache fusionCache = default!;
+    [AutoInject] private ServerSharedSettings serverSharedSettings = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<TenantDto> Get()
@@ -98,6 +100,10 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
 
         // The custom domain is matched against the request host (case-insensitive), so it's stored as a lowercase host; a blank one becomes null.
         tenant.Domain = string.IsNullOrWhiteSpace(tenant.Domain) ? null : tenant.Domain.Trim().ToLowerInvariant();
+
+        if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
+            && ReservedTenantNames.IsReserved(tenant.Name, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
+            throw new ResourceValidationException((nameof(TenantDto.Name), [Localizer[nameof(AppStrings.ReservedTenantName), tenant.Name!]]));
 
         if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
             && await DbContext.Tenants.AnyAsync(t => t.Id != tenant.Id && t.Name == tenant.Name, cancellationToken))

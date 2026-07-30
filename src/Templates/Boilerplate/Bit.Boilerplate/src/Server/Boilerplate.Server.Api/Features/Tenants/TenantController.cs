@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using Boilerplate.Server.Shared;
 using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Shared.Features.Identity.Dtos;
@@ -22,6 +23,7 @@ public partial class TenantController : AppControllerBase, ITenantController
     [AutoInject] private IFusionCache fusionCache = default!;
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private IdentityEmailService emailService = default!;
+    [AutoInject] private ServerSharedSettings serverSharedSettings = default!;
 
     [HttpGet]
     public async Task<TenantDto?> GetCurrentTenant(CancellationToken cancellationToken)
@@ -203,6 +205,10 @@ public partial class TenantController : AppControllerBase, ITenantController
         // SECURITY: this endpoint is self-service (tenant admins), and a custom domain wins over the sub domain during resolution.
         // Enforcing uniqueness alone is NOT enough for production - verify domain ownership and add it to TrustedOrigins first.
         tenant.Domain = string.IsNullOrWhiteSpace(tenant.Domain) ? null : tenant.Domain.Trim().ToLowerInvariant();
+
+        if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
+            && ReservedTenantNames.IsReserved(tenant.Name, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
+            throw new ResourceValidationException((nameof(TenantDto.Name), [Localizer[nameof(AppStrings.ReservedTenantName), tenant.Name!]]));
 
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
         if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)

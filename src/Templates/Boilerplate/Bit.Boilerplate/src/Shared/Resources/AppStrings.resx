@@ -1431,6 +1431,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>The tenant name '{0}' is already taken.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>The tenant name '{0}' is reserved and cannot be used.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Tenant could not be found.</value>
   </data>

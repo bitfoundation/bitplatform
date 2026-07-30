@@ -42,7 +42,6 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
   AllowTrailingCommas = true,
   PropertyNameCaseInsensitive = true,
   GenerationMode = JsonSourceGenerationMode.Default,
-  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 
 )]

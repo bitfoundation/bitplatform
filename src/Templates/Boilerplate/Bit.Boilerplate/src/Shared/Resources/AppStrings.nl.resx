@@ -1431,6 +1431,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>De tenantnaam '{0}' is al in gebruik.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>De tenantnaam '{0}' is gereserveerd en kan niet worden gebruikt.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Tenant kon niet worden gevonden.</value>
   </data>

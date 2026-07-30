@@ -1431,6 +1431,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>El nombre de inquilino '{0}' ya está en uso.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>El nombre de inquilino '{0}' está reservado y no se puede utilizar.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>No se pudo encontrar el inquilino.</value>
   </data>

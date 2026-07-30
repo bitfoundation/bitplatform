@@ -1431,6 +1431,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>Le nom de locataire '{0}' est déjà utilisé.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>Le nom de locataire '{0}' est réservé et ne peut pas être utilisé.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Locataire introuvable.</value>
   </data>
