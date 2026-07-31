@@ -223,8 +223,11 @@ Had the tag mirrored the full URL, every language and every tracking-parameter v
 stale until it expired on its own - and the purging code would have had to enumerate cultures and query strings it has
 no way of knowing about.
 
-A cache-tag must be printable ASCII without spaces, and the header is a comma separated list, so `CreateCacheTag`
-percent-encodes those two characters and lowercases the path (tags are case-insensitive). If a path is longer than the
+A cache-tag must be printable ASCII without spaces, and the header is a comma separated list. `CreateCacheTag` runs the
+path through `Uri` to percent-encode anything that qualifies (a non-ASCII route such as `/محصول/5` included), encodes
+the comma `Uri` leaves alone, and lowercases the result - tags are case-insensitive. That canonicalization is
+idempotent, which is what lets the same method serve both sides: the policy hands it an already escaped
+`Uri.AbsolutePath`, while a caller of `PurgeCache` hands it a path typed out by hand. If a path is longer than the
 1,024 character limit Cloudflare accepts in a purge call, edge caching is switched off for that request instead - an
 edge entry that could never be purged is worse than no edge entry at all.
 

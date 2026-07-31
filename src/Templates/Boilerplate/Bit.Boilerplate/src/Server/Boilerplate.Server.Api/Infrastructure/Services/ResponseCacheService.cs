@@ -23,6 +23,7 @@ public partial class ResponseCacheService
     [AutoInject] private IOutputCacheStore outputCacheStore = default!;
     //#if (cloudflare == true)
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
+    [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     //#else
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     //#endif
@@ -82,9 +83,42 @@ public partial class ResponseCacheService
                 request.Headers.Add("Authorization", $"Bearer {apiToken}");
                 request.Content = JsonContent.Create(new { tags = tagsChunk });
                 using var response = await httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
+
+                // The status code alone does not say whether the purge happened: Cloudflare reports that in the body's
+                // `success` flag and gives the reason in `errors`. A purge that quietly did nothing is the worst
+                // outcome here, since the stale page then sits on the edge until it expires on its own.
+                if (response.IsSuccessStatusCode is false)
+                    throw new InvalidOperationException($"Cloudflare cache purge of zone '{zoneId}' failed with {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+
+                var result = await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<CloudflarePurgeResponse>());
+
+                if (result?.Success is not true)
+                {
+                    var errors = result?.Errors?.Select(err => $"{err.Code}: {err.Message}") ?? [];
+                    throw new InvalidOperationException($"Cloudflare cache purge of zone '{zoneId}' was rejected. {string.Join(" | ", errors)}".Trim());
+                }
             }
         }
     }
     //#endif
 }
+
+//#if (cloudflare == true)
+/// <summary>
+/// The envelope every Cloudflare API v4 response is wrapped in.
+/// https://developers.cloudflare.com/api/resources/cache/methods/purge/
+/// </summary>
+public class CloudflarePurgeResponse
+{
+    public bool Success { get; set; }
+
+    public CloudflareResponseInfo[]? Errors { get; set; }
+}
+
+public class CloudflareResponseInfo
+{
+    public int Code { get; set; }
+
+    public string? Message { get; set; }
+}
+//#endif

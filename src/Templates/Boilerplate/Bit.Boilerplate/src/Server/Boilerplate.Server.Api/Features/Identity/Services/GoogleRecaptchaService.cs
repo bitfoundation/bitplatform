@@ -18,7 +18,7 @@ public partial class GoogleRecaptchaService
             { "response", googleRecaptchaResponse }
         });
 
-        var response = await httpClient.PostAsync("api/siteverify", payload, cancellationToken);
+        using var response = await httpClient.PostAsync("api/siteverify", payload, cancellationToken);
 
         if (response.IsSuccessStatusCode is false)
             return false;

@@ -26,14 +26,19 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
     /// <summary>
     /// The tag both the ASP.NET Core output cache entry and the CDN edge entry are stored under, so that a single
     /// <c>ResponseCacheService.PurgeCache("/product/5")</c> invalidates both.
-    /// A cache-tag may hold printable ASCII only and is written to the header as part of a comma separated list, so
-    /// the two characters a URL path can legally carry but a tag cannot are percent encoded here. The same encoding
-    /// is applied on the purge side, so the two always agree.
     /// </summary>
     public static string CreateCacheTag(string relativePath)
     {
-        return relativePath.ToLowerInvariant().Replace(",", "%2c").Replace(" ", "%20");
+        var path = new Uri(CacheTagBaseUri, relativePath).AbsolutePath;
+
+        return path.ToLowerInvariant().Replace(",", "%2c");
     }
+
+    /// <summary>
+    /// Only there to let <see cref="CreateCacheTag"/> canonicalize a relative path through <see cref="Uri"/>; the host
+    /// is never part of a tag.
+    /// </summary>
+    private static readonly Uri CacheTagBaseUri = new("http://localhost");
 
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.

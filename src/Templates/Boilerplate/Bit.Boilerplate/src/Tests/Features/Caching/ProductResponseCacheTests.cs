@@ -239,6 +239,12 @@ public partial class ProductResponseCacheTests
         Assert.IsTrue(faResponse.Headers.TryGetValues(AppResponseCachePolicy.CacheTagHeaderName, out var faCacheTag));
         Assert.AreEqual(tag, string.Concat(faCacheTag!),
             "The culture a response was produced in must not be part of the tag it is purged by.");
+
+        // A non-ASCII route reaches CreateCacheTag escaped when the policy reads it out of Uri.AbsolutePath, but raw
+        // when a caller of PurgeCache types it out. Tags are matched literally, so the two forms have to converge -
+        // otherwise such a page would be tagged with bytes Cloudflare rejects and could never be purged.
+        Assert.AreEqual(AppResponseCachePolicy.CreateCacheTag("/%D9%85%D8%AD%D8%B5%D9%88%D9%84/5"),
+                        AppResponseCachePolicy.CreateCacheTag("/محصول/5"));
     }
 
     /// <summary>
