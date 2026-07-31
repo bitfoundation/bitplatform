@@ -59,7 +59,7 @@ public partial class IdentityController
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Sms,{user.OtpRequestedOn?.ToUniversalTime()}"));
+        var (token, _) = await GenerateAutomaticSignInLink(user, returnUrl: null, originalAuthenticationMethod: "Sms");
 
         await SignIn(new() { PhoneNumber = request.PhoneNumber, Otp = token }, cancellationToken);
     }

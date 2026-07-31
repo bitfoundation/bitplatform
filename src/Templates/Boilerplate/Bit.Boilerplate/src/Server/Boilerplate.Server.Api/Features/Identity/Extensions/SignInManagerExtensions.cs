@@ -29,7 +29,7 @@ public static partial class SignInManagerExtensions
             var appSettings = signInManager.Context.RequestServices.GetRequiredService<ServerApiSettings>();
             var timeProvider = signInManager.Context.RequestServices.GetRequiredService<TimeProvider>();
 
-            var expired = (timeProvider.GetUtcNow() - user.OtpRequestedOn) > appSettings.Identity.OtpTokenLifetime;
+            var expired = user.OtpRequestedOn is null || (timeProvider.GetUtcNow() - user.OtpRequestedOn.Value) > appSettings.Identity.OtpTokenLifetime;
 
             if (expired)
                 throw new BadRequestException(nameof(AppStrings.ExpiredToken));

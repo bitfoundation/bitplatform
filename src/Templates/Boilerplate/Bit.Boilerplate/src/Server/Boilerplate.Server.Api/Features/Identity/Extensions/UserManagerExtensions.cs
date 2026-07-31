@@ -45,6 +45,12 @@ public static partial class UserManagerExtensions
 
         public async Task<User> CreateUserWithDemoRole(IdentityRequestDto request, string? password = null)
         {
+            // Auto-provisioning needs an identifier the confirmation can be delivered to. A userName-only request
+            // would otherwise commit a row that can never be confirmed or contacted, while permanently taking that
+            // user name - which also blocks the later auto-create for whoever owns that email or phone number.
+            if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
+                throw new ResourceNotFoundException(nameof(AppStrings.UserNotFound));
+
             return await userManager.CreateUserWithDemoRole(new User
             {
                 Email = request.Email,
