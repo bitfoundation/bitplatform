@@ -5,6 +5,7 @@ using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Server.Api.Features.Products;
 using Boilerplate.Server.Api.Infrastructure.Data;
 using Boilerplate.Server.Api.Infrastructure.Services;
+using Boilerplate.Server.Shared.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Caching;
@@ -24,14 +25,16 @@ public partial class ProductResponseCacheTests
     /// product's <c>UserAgnostic</c> API response and its pre-rendered public page really are stored in ASP.NET Core's
     /// output cache, that a write through the app reaches them, and that a change made behind the app's back does not.
     /// <list type="number">
-    /// <item>A product is inserted straight into the database for the default fallback tenant, then read twice: once as
-    /// the signed-in tenant-user through <c>ProductViewController.Get</c> (which is <c>UserAgnostic</c>, so it is cached
-    /// even for an authenticated caller, keyed by her tenant - See <c>AppResponseCachePolicy</c>), and once anonymously
-    /// as the pre-rendered <c>/product/{shortId}</c> page. Both responses are now in the output cache.</item>
+    /// <item>A product is inserted straight into the database for the default fallback tenant, then read as the
+    /// signed-in tenant-user through <c>ProductViewController.Get</c> (which is <c>UserAgnostic</c>, so it is cached
+    /// even for an authenticated caller, keyed by her tenant - See <c>AppResponseCachePolicy</c>), and anonymously as
+    /// the pre-rendered <c>/product/{shortId}</c> page - the latter under both culture prefixes and with a query string,
+    /// each of which lands in the output cache as an entry of its own. All of them are now in the output cache.</item>
     /// <item>The tenant-admin - the member holding <c>ProductCatalog_Manage</c> for that tenant - edits the description
-    /// through the real <c>ProductController.Update</c> endpoint, which purges the product right after saving. Both
-    /// readers immediately see the new description, which proves the tags <c>AppResponseCachePolicy</c> writes match the
-    /// paths <c>ResponseCacheService.PurgeProductCache</c> evicts.</item>
+    /// through the real <c>ProductController.Update</c> endpoint, which purges the product right after saving. Every
+    /// reader immediately sees the new description, which proves the tags <c>AppResponseCachePolicy</c> writes match the
+    /// paths <c>ResponseCacheService.PurgeProductCache</c> evicts - and, since that purge only ever names the bare path,
+    /// that the culture and query string an entry was cached under are no part of its tag.</item>
     /// <item>The product is then deleted straight from the database, bypassing the app and therefore the purge. Both
     /// readers keep seeing the deleted product, which is the definitive proof that their responses are being served from
     /// the output cache rather than re-read from the database.</item>
@@ -83,9 +86,24 @@ public partial class ProductResponseCacheTests
         // actually returned.
         using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
 
-        var pageHtml = await GetProductPage(visitorHttpClient, productShortId, assertOutputCachingIsActive: true);
-        Assert.Contains(productName, pageHtml);
-        Assert.Contains(originalDescription, pageHtml);
+        // The same page, requested four ways. Each of them gets its own output cache entry - the path is part of the
+        // key, the entry varies by culture, and QueryKeys = "*" gives every query string its own entry - yet they all
+        // carry the one tag AppResponseCachePolicy derives from the bare, culture-less path. So the single purge that
+        // the admin's edit triggers in step 2 has to clear all four at once.
+        string[] pageUrls =
+        [
+            $"{PageUrls.Product}/{productShortId}",
+            $"/en-US{PageUrls.Product}/{productShortId}",
+            $"/fa-IR{PageUrls.Product}/{productShortId}",
+            $"{PageUrls.Product}/{productShortId}?utm_source={marker}"
+        ];
+
+        foreach (var pageUrl in pageUrls)
+        {
+            var html = await GetProductPage(visitorHttpClient, pageUrl, assertOutputCachingIsActive: true);
+            Assert.Contains(productName, html, $"'{pageUrl}' should render the product.");
+            Assert.Contains(originalDescription, html, $"'{pageUrl}' should render the product.");
+        }
 
         // ---- Step 2: the tenant-admin edits the description through the real write endpoint ----
 
@@ -110,14 +128,19 @@ public partial class ProductResponseCacheTests
             Assert.AreEqual(updatedDescription, updated.DescriptionText);
         }
 
-        // Both readers see the new description straight away, so the tags AppResponseCachePolicy writes for these two
-        // requests really are the ones ResponseCacheService.PurgeProductCache evicts.
+        // Both readers see the new description straight away, so the tags AppResponseCachePolicy writes for these
+        // requests really are the ones ResponseCacheService.PurgeProductCache evicts. For the page that also means the
+        // one purge reached every culture and every query string variant of it, none of which the purging code knows
+        // anything about - it only ever names the bare path "/product/{shortId}".
         var seenAfterPurge = await tenantUserProductView.Get(productShortId, TestContext.CancellationToken);
         Assert.AreEqual(updatedDescription, seenAfterPurge.DescriptionText);
 
-        pageHtml = await GetProductPage(visitorHttpClient, productShortId);
-        Assert.Contains(updatedDescription, pageHtml);
-        Assert.DoesNotContain(originalDescription, pageHtml);
+        foreach (var pageUrl in pageUrls)
+        {
+            var html = await GetProductPage(visitorHttpClient, pageUrl);
+            Assert.Contains(updatedDescription, html, $"'{pageUrl}' should have been purged by the product's update.");
+            Assert.DoesNotContain(originalDescription, html, $"'{pageUrl}' should have been purged by the product's update.");
+        }
 
         // ---- Step 3: the product is deleted behind the app's back, so nothing purges its cache ----
 
@@ -136,9 +159,12 @@ public partial class ProductResponseCacheTests
         Assert.AreEqual(productName, seenAfterDelete.Name);
         Assert.AreEqual(updatedDescription, seenAfterDelete.DescriptionText);
 
-        pageHtml = await GetProductPage(visitorHttpClient, productShortId);
-        Assert.Contains(productName, pageHtml);
-        Assert.Contains(updatedDescription, pageHtml);
+        foreach (var pageUrl in pageUrls)
+        {
+            var html = await GetProductPage(visitorHttpClient, pageUrl);
+            Assert.Contains(productName, html, $"'{pageUrl}' should still be served from the cache.");
+            Assert.Contains(updatedDescription, html, $"'{pageUrl}' should still be served from the cache.");
+        }
 
         // ---- Step 4: purging makes the deletion visible, which rules out anything but the cache in step 3 ----
 
@@ -152,8 +178,67 @@ public partial class ProductResponseCacheTests
         await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(
             () => tenantUserProductView.Get(productShortId, TestContext.CancellationToken));
 
-        pageHtml = await GetProductPage(visitorHttpClient, productShortId);
-        Assert.DoesNotContain(productName, pageHtml);
+        foreach (var pageUrl in pageUrls)
+        {
+            var html = await GetProductPage(visitorHttpClient, pageUrl);
+            Assert.DoesNotContain(productName, html, $"'{pageUrl}' should have been purged.");
+        }
+    }
+
+    /// <summary>
+    /// Proves that an edge cacheable response carries the <c>Cache-Tag</c> header the CDN edge entry is later purged by,
+    /// and that the tag is exactly the one <c>ResponseCacheService.PurgeProductCache</c> sends to Cloudflare.
+    /// The requests deliberately differ in query string, casing and culture: the edge keeps a separate entry per full
+    /// URL, so a tag that mirrored any of those would leave the other variants stranded on the edge until they expired
+    /// on their own - which is the whole reason the purge is by tag rather than by URL.
+    /// </summary>
+    [TestMethod]
+    public async Task EdgeCaching_Should_TagResponses_WithThePathTheyArePurgedBy()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestConfigurations: configuration =>
+            {
+                configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
+            }).Start(TestContext.CancellationToken);
+
+        var marker = Guid.NewGuid().ToString("N");
+        var (_, productShortId) = await CreateProduct(server, $"tagged-product-{marker}", $"description-{marker}");
+
+        // A bare HttpClient keeps the client-side message handlers out of the way, so the headers asserted below are
+        // the ones the server actually wrote.
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+
+        var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
+        using var response = await visitorHttpClient.GetAsync($"{requestPath}?utm_source=test", TestContext.CancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        // Edge:-1 would mean the response was never meant for the edge, making the rest of this test meaningless.
+        Assert.IsTrue(response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse));
+        Assert.DoesNotContain("Edge:-1", string.Concat(appCacheResponse!),
+            "Edge caching should be active for this anonymous, UserAgnostic API response.");
+
+        Assert.IsTrue(response.Headers.TryGetValues(AppResponseCachePolicy.CacheTagHeaderName, out var cacheTag),
+            "An edge cacheable response must tell the CDN which tag to store it under, otherwise it could never be purged.");
+
+        var tag = string.Concat(cacheTag!);
+        Assert.AreEqual($"/api/v1/productview/get/{productShortId}", tag);
+        Assert.AreEqual(AppResponseCachePolicy.CreateCacheTag(requestPath), tag,
+            "The tag on the response must be the one ResponseCacheService purges the path by.");
+
+        // The very same read in Persian. An API takes its culture from Accept-Language rather than from a path segment,
+        // so this is where the culture could leak into the tag on this endpoint; the page equivalent - /fa-IR/product/5
+        // and /en-US/product/5 collapsing onto one tag - is covered by the output cache test above.
+        using var faRequest = new HttpRequestMessage(HttpMethod.Get, requestPath);
+        faRequest.Headers.AcceptLanguage.Add(new("fa-IR"));
+        using var faResponse = await visitorHttpClient.SendAsync(faRequest, TestContext.CancellationToken);
+        faResponse.EnsureSuccessStatusCode();
+
+        Assert.IsTrue(faResponse.Headers.TryGetValues(AppResponseCachePolicy.CacheTagHeaderName, out var faCacheTag));
+        Assert.AreEqual(tag, string.Concat(faCacheTag!),
+            "The culture a response was produced in must not be part of the tag it is purged by.");
     }
 
     /// <summary>
@@ -244,9 +329,9 @@ public partial class ProductResponseCacheTests
     /// asserted is the exact HTML the server produced (or replayed from the output cache), with no client-side
     /// re-rendering on top of it.
     /// </summary>
-    private async Task<string> GetProductPage(HttpClient httpClient, int productShortId, bool assertOutputCachingIsActive = false)
+    private async Task<string> GetProductPage(HttpClient httpClient, string pageUrl, bool assertOutputCachingIsActive = false)
     {
-        using var response = await httpClient.GetAsync($"{PageUrls.Product}/{productShortId}", TestContext.CancellationToken);
+        using var response = await httpClient.GetAsync(pageUrl, TestContext.CancellationToken);
 
         if (assertOutputCachingIsActive)
         {
@@ -254,7 +339,7 @@ public partial class ProductResponseCacheTests
             // reached the output cache, making the rest of this test meaningless.
             Assert.IsTrue(response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse));
             Assert.DoesNotContain("Output:-1", string.Concat(appCacheResponse!),
-                "Output caching should be active for the pre-rendered product page.");
+                $"Output caching should be active for the pre-rendered product page at '{pageUrl}'.");
         }
 
         return await response.Content.ReadAsStringAsync(TestContext.CancellationToken);

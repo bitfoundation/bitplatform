@@ -12,10 +12,16 @@ public partial class GoogleRecaptchaService
     {
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse)) return false;
 
-        var url = $"api/siteverify?secret={AppSettings.GoogleRecaptchaSecretKey}&response={googleRecaptchaResponse}";
-        var response = await httpClient.PostAsync(url, null, cancellationToken);
+        using var payload = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "secret", AppSettings.GoogleRecaptchaSecretKey! },
+            { "response", googleRecaptchaResponse }
+        });
 
-        response.EnsureSuccessStatusCode();
+        var response = await httpClient.PostAsync("api/siteverify", payload, cancellationToken);
+
+        if (response.IsSuccessStatusCode is false)
+            return false;
 
         var result = await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<GoogleRecaptchaVerificationResponse>(), cancellationToken);
 

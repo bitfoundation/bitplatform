@@ -13,6 +13,29 @@ namespace Boilerplate.Server.Shared.Infrastructure.Services;
 public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings settings) : IOutputCachePolicy
 {
     /// <summary>
+    /// The header a CDN reads the cache-tags of a response from. Cloudflare associates them with the cached object
+    /// and strips the header before the response reaches the visitor.
+    /// </summary>
+    public const string CacheTagHeaderName = "Cache-Tag";
+
+    /// <summary>
+    /// CDN rejects a longer cache-tag in a purge call.
+    /// </summary>
+    private const int MaxCacheTagLength = 1024;
+
+    /// <summary>
+    /// The tag both the ASP.NET Core output cache entry and the CDN edge entry are stored under, so that a single
+    /// <c>ResponseCacheService.PurgeCache("/product/5")</c> invalidates both.
+    /// A cache-tag may hold printable ASCII only and is written to the header as part of a comma separated list, so
+    /// the two characters a URL path can legally carry but a tag cannot are percent encoded here. The same encoding
+    /// is applied on the purge side, so the two always agree.
+    /// </summary>
+    public static string CreateCacheTag(string relativePath)
+    {
+        return relativePath.ToLowerInvariant().Replace(",", "%2c").Replace(" ", "%20");
+    }
+
+    /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
     /// At that point the cache middleware can still be enabled or disabled for the request.
     /// </summary>
@@ -48,10 +71,13 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         }
         //#endif
 
-        // Path only, without the query string: ResponseCacheService.PurgeCache is always called with bare paths ("/product/5"),
-        // while QueryKeys = "*" gives every query string variant its own entry. Tagging those with their full PathAndQuery would
-        // leave /product/5?utm_source=x unpurgeable for the rest of its lifetime.
-        var requestPath = new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath.ToLowerInvariant();
+        // The bare path, with neither the culture nor the query string in it, because ResponseCacheService.PurgeCache is
+        // always called with bare paths ("/product/5") while the dimensions above each give a request its own entry:
+        // QueryKeys = "*" splits by query string, VaryByValues["Culture"] splits by culture, and /fa-IR/product/5 is a
+        // different path from /en-US/product/5 to begin with. Tagging an entry with any of that would leave
+        // /product/5?utm_source=x - or the whole Persian half of the site - unpurgeable for the rest of its lifetime.
+        // One tag for all of them means one purge clears every variant of the page, which is the point.
+        var cacheTag = CreateCacheTag(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath);
 
         var sharedMaxAge = responseCacheAtt.SharedMaxAge == -1 ? responseCacheAtt.MaxAge : responseCacheAtt.SharedMaxAge;
 
@@ -94,6 +120,15 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             outputCacheTtl = -1;
         }
 
+        if (cacheTag.Length > MaxCacheTagLength)
+        {
+            // The tag is what ResponseCacheService purges the edge entry by, and a tag this long cannot be passed to
+            // the purge API, so the entry would stay on the edge until it expired on its own. An edge entry that can
+            // never be invalidated is worse than no edge entry at all. The output cache is not affected: it holds the
+            // whole tag and is purged in process.
+            edgeCacheTtl = -1;
+        }
+
         // Edge - Client Cache
         if (clientCacheTtl != -1 || edgeCacheTtl != -1)
         {
@@ -110,6 +145,14 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             // zone. Without that rule the edge keeps a single variant per URL and hands it to callers of every origin.
             context.HttpContext.Response.Headers.Append(HeaderNames.Vary, "Origin, X-Origin");
 
+            if (edgeCacheTtl > 0)
+            {
+                // What ResponseCacheService.PurgeCache purges the edge entry by. Unlike a purge by URL, a purge by tag
+                // reaches every query string variant the URL was cached under and every hostname of the zone in a
+                // single API call, which also keeps the purge within the rate limit of Cloudflare's free plan.
+                context.HttpContext.Response.Headers[CacheTagHeaderName] = cacheTag;
+            }
+
             context.HttpContext.Response.OnStarting(static state =>
             {
                 var response = (HttpResponse)state;
@@ -117,6 +160,9 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
                 if (IsResponseCacheable(response) is false)
                 {
                     response.GetTypedHeaders().CacheControl = new() { NoStore = true, Private = true };
+                    // Nothing is going to be cached under it, and a CDN that does not consume the header would
+                    // otherwise pass it on to the visitor.
+                    response.Headers.Remove(CacheTagHeaderName);
                 }
 
                 return Task.CompletedTask;
@@ -126,7 +172,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         // ASP.NET Core Output Cache
         if (outputCacheTtl > 0)
         {
-            context.Tags.Add(requestPath);
+            context.Tags.Add(cacheTag);
             context.AllowCacheLookup = true;
             context.AllowCacheStorage = true;
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);

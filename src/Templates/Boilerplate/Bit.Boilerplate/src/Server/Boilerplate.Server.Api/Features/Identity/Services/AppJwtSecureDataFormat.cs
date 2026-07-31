@@ -13,6 +13,7 @@ public partial class AppJwtSecureDataFormat
     : ISecureDataFormat<AuthenticationTicket>
 {
     private readonly string tokenType;
+    private readonly string audience;
     private readonly RsaSecurityKey privateKey;
     private readonly TimeProvider timeProvider;
     private readonly ServerApiSettings appSettings;
@@ -31,6 +32,11 @@ public partial class AppJwtSecureDataFormat
         this.appSettings = appSettings;
         this.timeProvider = timeProvider;
 
+        // The two token classes are otherwise indistinguishable - same key, same issuer, same claim shape - so each
+        // gets its own audience and validates only its own. Without that, a refresh token would authenticate ordinary
+        // api calls for its full 14 day lifetime, and an access token replayed at Refresh would mint a new session.
+        audience = tokenType is "AccessToken" ? appSettings.Identity.Audience : $"{appSettings.Identity.Audience}:{tokenType}";
+
         privateKey = AppCertificateService.GetPrivateSecurityKey(configuration);
 
         validationParameters = new()
@@ -46,7 +52,7 @@ public partial class AppJwtSecureDataFormat
             ValidateLifetime = tokenType is "AccessToken", /* IdentityController.Refresh will validate expiry itself while refreshing the token */
 
             ValidateAudience = true,
-            ValidAudience = appSettings.Identity.Audience,
+            ValidAudience = audience,
 
             ValidateIssuer = true,
             ValidIssuer = appSettings.Identity.Issuer,
@@ -72,7 +78,7 @@ public partial class AppJwtSecureDataFormat
             var validJwt = (JwtSecurityToken)validToken;
             var properties = new AuthenticationProperties() { ExpiresUtc = validJwt.ValidTo };
 
-            var identity = new ClaimsIdentity(principal.Identity, principal.Claims, IdentityConstants.BearerScheme, ClaimTypes.NameIdentifier, ClaimTypes.Role);
+            var identity = new ClaimsIdentity(principal.Identity, null, IdentityConstants.BearerScheme, ClaimTypes.NameIdentifier, ClaimTypes.Role);
 
             if (principal.IsInRole(AppRoles.GlobalAdmin))
             {
@@ -120,7 +126,7 @@ public partial class AppJwtSecureDataFormat
             .CreateJwtSecurityToken(new SecurityTokenDescriptor
             {
                 Issuer = appSettings.Identity.Issuer,
-                Audience = appSettings.Identity.Audience,
+                Audience = audience,
                 IssuedAt = timeProvider.GetUtcNow().UtcDateTime,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256Signature),

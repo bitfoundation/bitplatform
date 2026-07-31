@@ -187,17 +187,15 @@ public class CloudflareOptions
 {
     public string? ApiToken { get; set; }
 
-    public string? ZoneId { get; set; }
-
     /// <summary>
-    /// The <see cref="ResponseCacheService"/> clears the cache for the current domain by default.
-    /// If multiple Cloudflare-hosted domains point to your origin backend, you will need to
-    /// purge the cache for each of them individually.
+    /// The zones whose edge cache <see cref="ResponseCacheService"/> purges.
+    /// A purge by cache-tag covers every hostname of a zone, so a single entry is enough unless the app is served
+    /// from domains that belong to different Cloudflare zones (e.g. myapp.com and myapp.uk).
     /// </summary>
-    public Uri[] AdditionalDomains { get; set; } = [];
+    public string[] ZoneIds { get; set; } = [];
 
     public bool Configured => string.IsNullOrEmpty(ApiToken) is false &&
-        string.IsNullOrEmpty(ZoneId) is false;
+        ZoneIds.Length > 0;
 }
 //#endif
 

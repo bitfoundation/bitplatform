@@ -1458,6 +1458,9 @@
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>डोमेन '{0}' पहले से उपयोग में है।</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>डोमेन '{0}' आरक्षित है और इसका उपयोग नहीं किया जा सकता।</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>आपने अभी तक कोई टेनेंट नहीं चुना है। शुरू करने के लिए अपने किसी टेनेंट पर स्विच करें या एक नया टेनेंट बनाएं।</value>
   </data>

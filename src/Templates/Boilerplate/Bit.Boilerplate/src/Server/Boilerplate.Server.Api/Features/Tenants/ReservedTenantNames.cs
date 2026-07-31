@@ -48,4 +48,53 @@ public static class ReservedTenantNames
 
         return false;
     }
+
+    /// <summary>
+    /// True when <paramref name="domain"/> may not be used as a tenant's custom domain, because it is a host the
+    /// deployment itself answers on, or sits underneath one.
+    /// </summary>
+    public static bool IsReservedDomain(string? domain, params string?[] deploymentHosts)
+    {
+        if (string.IsNullOrWhiteSpace(domain))
+            return false; // A blank custom domain simply means "resolve me by sub domain".
+
+        domain = domain.Trim();
+
+        foreach (var zone in deploymentHosts.SelectMany(GetReservedZones))
+        {
+            if (string.Equals(domain, zone, StringComparison.OrdinalIgnoreCase)
+                || domain.EndsWith($".{zone}", StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// The zones a deployment host reserves. The host itself, plus its parent when it carries a sub domain label,
+    /// because the request this is validated against may well arrive on a tenant's own sub domain
+    /// (<c>acme.myapp.com</c>) - taking that host at face value would leave <c>myapp.com</c> and every sibling
+    /// tenant's host claimable. A <c>*</c> wildcard from a TrustedOrigins entry reserves its whole zone.
+    /// </summary>
+    private static IEnumerable<string> GetReservedZones(string? deploymentHost)
+    {
+        if (string.IsNullOrWhiteSpace(deploymentHost))
+            yield break;
+
+        var host = deploymentHost.Trim().TrimEnd('.');
+
+        if (host.StartsWith("*.", StringComparison.Ordinal))
+        {
+            yield return host[2..];
+            yield break;
+        }
+
+        if (host.Contains('*'))
+            yield break; // A mid-label wildcard (tenant-*.myapp.com) describes no single zone.
+
+        yield return host;
+
+        if (host.Split('.') is { Length: > 2 } labels)
+            yield return string.Join('.', labels[1..]);
+    }
 }

@@ -370,16 +370,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 
+            await DbContext.SaveChangesAsync(cancellationToken);
+
             return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
         }
         catch (UnauthorizedException) when (userSession is not null)
         {
             DbContext.UserSessions.Remove(userSession);
-            throw;
-        }
-        finally
-        {
             await DbContext.SaveChangesAsync(cancellationToken);
+            throw;
         }
     }
 

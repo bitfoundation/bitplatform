@@ -1458,6 +1458,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>The domain '{0}' is already taken.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>The domain '{0}' is reserved and cannot be used.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>You haven't selected a tenant yet. Switch to one of your tenants or create a new one to get started.</value>
   </data>
