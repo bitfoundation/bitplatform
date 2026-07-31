@@ -47,11 +47,17 @@ public class ConfirmPageTwoFactorTests
 
         var cut = ctx.Render<CascadingAuthenticationState>(parameters => parameters.AddChildContent<ConfirmPage>());
 
+        // Wait for the navigation, not for the confirmation: EmailConfirmed is written server-side while ConfirmEmail
+        // is still running, so it goes true before the response is even sent - reading the storage on that signal
+        // would race StoreTokens and pass whether or not it overwrote anything. ConfirmPage navigates only after
+        // StoreTokens has completed, so that is the signal that the client is done.
+        var homeUri = navigationManager.ToAbsoluteUri(PageUrls.Home).ToString();
+        cut.WaitForAssertion(() => Assert.AreEqual(homeUri, navigationManager.Uri,
+            "ConfirmPage navigates once it has handled the response; without that this assertion would race it."),
+            timeout: TimeSpan.FromSeconds(30));
+
         // The confirmation itself must still happen - the second factor is only in the way of the convenience sign-in.
-        await cut.WaitForAssertionAsync(async () =>
-        {
-            Assert.IsTrue(await IsEmailConfirmed(server, email), "The e-mail must still be confirmed.");
-        }, timeout: TimeSpan.FromSeconds(30));
+        Assert.IsTrue(await IsEmailConfirmed(server, email), "The e-mail must still be confirmed.");
 
         Assert.AreEqual(ExistingSessionMarker, await storageService.GetItem("access_token"),
             "A two-factor challenge carries no tokens, and storing it would overwrite what this browser already had.");
