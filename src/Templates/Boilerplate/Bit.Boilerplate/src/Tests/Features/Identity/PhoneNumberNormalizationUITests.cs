@@ -68,7 +68,7 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
         // proves the number was normalized (not merely passed through).
         var e164 = new Regex(@"^\+[1-9]\d{6,14}$");
 
-        foreach (var attempt in attempts)
+        foreach (var (Typed, Normalized) in attempts)
         {
             // Each request starts from a fresh Sign in page. A hard reload is the simplest way back to the phone form:
             // the OTP panel is treated as a modal, but its NavigationLock only intercepts internal Blazor navigation
@@ -82,17 +82,17 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
             // Type the de-normalized number into the BitPhoneInput's number box (its <input type="tel"> carries the
             // placeholder) and ask for the code. Send OTP stays disabled until the debounced value commits, so
             // Playwright's actionability wait covers the 500ms debounce.
-            await Page.GetByPlaceholder(AppStrings.PhoneNumberPlaceholder).FillAsync(attempt.Typed);
+            await Page.GetByPlaceholder(AppStrings.PhoneNumberPlaceholder).FillAsync(Typed);
             await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SendOtpButtonText }).ClickAsync();
 
             // The server registers the new account, texts the confirmation code (captured synchronously by the fake) and
             // answers "not confirmed", which reveals the OTP panel - a reliable signal that SendSms has already run.
             await Page.Locator(".bit-otp-inp").First.WaitForAsync();
 
-            var sms = await WaitForSmsTo(attempt.Normalized, TestContext.CancellationToken);
+            var sms = await WaitForSmsTo(Normalized, TestContext.CancellationToken);
 
-            Assert.AreEqual(attempt.Normalized, sms.PhoneNumber,
-                $"The server should have normalized '{attempt.Typed}' to E.164 before calling SendSms.");
+            Assert.AreEqual(Normalized, sms.PhoneNumber,
+                $"The server should have normalized '{Typed}' to E.164 before calling SendSms.");
             Assert.MatchesRegex(e164, sms.PhoneNumber,
                 "SendSms must receive a canonical E.164 number (leading '+', digits only, no formatting).");
         }
@@ -146,8 +146,8 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
 /// is exactly what the server normalized - which is the behavior under test. Registered per-test via
 /// <c>configureTestServices</c> (RemoveAll&lt;PhoneService&gt; then AddScoped&lt;PhoneService, CapturingPhoneService&gt;).
 /// </summary>
-public partial class CapturingPhoneService(ServerApiSettings appSettings, IBackgroundJobClient backgroundJobClient, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, ILogger<PhoneService> phoneLogger, PhoneNumberUtil phoneNumberUtil) :
-    PhoneService(appSettings, backgroundJobClient, hostEnvironment, httpContextAccessor, phoneLogger, phoneNumberUtil)
+public partial class CapturingPhoneService(ServerApiSettings appSettings, IBackgroundJobClient backgroundJobClient, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, IStringLocalizer<AppStrings> localizer, ILogger<PhoneService> phoneLogger, PhoneNumberUtil phoneNumberUtil) :
+    PhoneService(appSettings, backgroundJobClient, hostEnvironment, httpContextAccessor, localizer, phoneLogger, phoneNumberUtil)
 {
     /// <summary>
     /// Every SendSms call as (message body, phone number). Static because DI owns the resolved instance's lifetime, so a

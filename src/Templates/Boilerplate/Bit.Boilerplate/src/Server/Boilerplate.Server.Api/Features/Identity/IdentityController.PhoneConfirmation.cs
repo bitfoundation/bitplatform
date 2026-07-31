@@ -30,7 +30,8 @@ public partial class IdentityController
         var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("PhoneNumber", request.PhoneNumber);
 
-        var expired = (TimeProvider.GetUtcNow() - user.PhoneNumberTokenRequestedOn) > AppSettings.Identity.PhoneNumberTokenLifetime;
+        var expired = user.PhoneNumberTokenRequestedOn is null ||
+                      (TimeProvider.GetUtcNow() - user.PhoneNumberTokenRequestedOn.Value) > AppSettings.Identity.PhoneNumberTokenLifetime;
 
         if (expired)
             throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("UserId", user.Id);

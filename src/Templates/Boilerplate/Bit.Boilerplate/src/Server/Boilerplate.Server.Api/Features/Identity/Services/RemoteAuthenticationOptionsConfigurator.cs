@@ -10,15 +10,25 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
 /// <summary>
-/// Configures External Identity Providers BackchannelHttpHandler to use Microsoft.Extensions.HttpClient Factory
+/// Routes every external identity provider's backchannel through Microsoft.Extensions.Http's client factory, so the
+/// named-client configuration (See ConfigureHttpClientFactoryForExternalIdentityProviders) and everything
+/// ConfigureHttpClientDefaults applies - resilience, service discovery, the SocketsHttpHandler settings - reach it.
+/// <para>
+/// OpenIdConnect and Apple are configured through <see cref="IConfigureNamedOptions{TOptions}"/> rather than
+/// <see cref="IPostConfigureOptions{TOptions}"/> on purpose. Their own framework post-configure builds a
+/// ConfigurationManager around whatever <c>Backchannel</c> it finds and keeps that instance for the process lifetime,
+/// so it has to already be the factory's client by then; assigning it afterwards leaves the discovery-document and
+/// JWKS fetches on a bare HttpClient while only the token/userinfo calls get the configured one. The OAuth-family
+/// handlers capture nothing, so they stay on post-configure.
+/// </para>
 /// </summary>
 public class RemoteAuthenticationOptionsConfigurator(IHttpClientFactory httpClientFactory)
-    : IPostConfigureOptions<OpenIdConnectOptions>,
+    : IConfigureNamedOptions<OpenIdConnectOptions>,
+        IConfigureNamedOptions<AppleAuthenticationOptions>,
         IPostConfigureOptions<GitHubAuthenticationOptions>,
         IPostConfigureOptions<TwitterOptions>,
         IPostConfigureOptions<FacebookOptions>,
         IPostConfigureOptions<MicrosoftIdentityOptions>,
-        IPostConfigureOptions<AppleAuthenticationOptions>,
         IPostConfigureOptions<GoogleOptions>
 {
     public void PostConfigure(string? name, RemoteAuthenticationOptions options)
@@ -26,9 +36,24 @@ public class RemoteAuthenticationOptionsConfigurator(IHttpClientFactory httpClie
         options.Backchannel = httpClientFactory.CreateClient(name!);
     }
 
-    public void PostConfigure(string? name, OpenIdConnectOptions options)
+    public void Configure(string? name, OpenIdConnectOptions options)
     {
         PostConfigure(name, (RemoteAuthenticationOptions)options);
+    }
+
+    public void Configure(OpenIdConnectOptions options)
+    {
+        Configure(Options.DefaultName, options);
+    }
+
+    public void Configure(string? name, AppleAuthenticationOptions options)
+    {
+        PostConfigure(name, (RemoteAuthenticationOptions)options);
+    }
+
+    public void Configure(AppleAuthenticationOptions options)
+    {
+        Configure(Options.DefaultName, options);
     }
 
     public void PostConfigure(string? name, GitHubAuthenticationOptions options)
@@ -47,11 +72,6 @@ public class RemoteAuthenticationOptionsConfigurator(IHttpClientFactory httpClie
     }
 
     public void PostConfigure(string? name, MicrosoftIdentityOptions options)
-    {
-        PostConfigure(name, (RemoteAuthenticationOptions)options);
-    }
-
-    public void PostConfigure(string? name, AppleAuthenticationOptions options)
     {
         PostConfigure(name, (RemoteAuthenticationOptions)options);
     }
@@ -96,6 +116,9 @@ public static class RemoteAuthenticationOptionsExtensions
 
             });
 
+            // Program.Services.cs also registers a "Keycloak" client (with its BaseAddress, which
+            // AppUserClaimsPrincipalFactory's relative POST depends on). AddHttpClient accumulates rather than
+            // replaces, so both configure actions run; this one exists so the scheme always has a named client.
             services.AddHttpClient("Keycloak", httpClient =>
             {
 
@@ -109,11 +132,14 @@ public static class RemoteAuthenticationOptionsExtensions
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<GoogleOptions>, RemoteAuthenticationOptionsConfigurator>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, RemoteAuthenticationOptionsConfigurator>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<FacebookOptions>, RemoteAuthenticationOptionsConfigurator>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIdConnectOptions>, RemoteAuthenticationOptionsConfigurator>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<MicrosoftIdentityOptions>, RemoteAuthenticationOptionsConfigurator>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<AppleAuthenticationOptions>, RemoteAuthenticationOptionsConfigurator>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<GitHubAuthenticationOptions>, RemoteAuthenticationOptionsConfigurator>());
 
+            // Configure, not PostConfigure - see the note on RemoteAuthenticationOptionsConfigurator. The framework's
+            // own post-configure for these two captures Backchannel into a ConfigurationManager it keeps forever, so
+            // ours has to run first or the metadata/JWKS channel never sees the factory's client.
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenIdConnectOptions>, RemoteAuthenticationOptionsConfigurator>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AppleAuthenticationOptions>, RemoteAuthenticationOptionsConfigurator>());
         }
     }
 }

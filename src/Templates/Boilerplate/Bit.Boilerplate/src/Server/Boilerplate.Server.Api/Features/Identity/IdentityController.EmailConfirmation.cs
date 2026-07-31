@@ -28,7 +28,8 @@ public partial class IdentityController
         var user = await userManager.FindByEmailAsync(request.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Email", request.Email);
 
-        var expired = (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn) > AppSettings.Identity.EmailTokenLifetime;
+        var expired = user.EmailTokenRequestedOn is null ||
+                      (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn.Value) > AppSettings.Identity.EmailTokenLifetime;
 
         if (expired)
             throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("UserId", user.Id);
@@ -39,7 +40,7 @@ public partial class IdentityController
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (TimeProvider.GetUtcNow() - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", tryAgainIn);
         }
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"), request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{user.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"), request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -66,7 +67,10 @@ public partial class IdentityController
 
     private async Task SendConfirmEmailToken(User user, string? returnUrl, CancellationToken cancellationToken)
     {
-        returnUrl ??= PageUrls.Home;
+        if (Uri.IsAppRelativeUrl(returnUrl, requireLeadingSlash: false) is false)
+        {
+            returnUrl = PageUrls.Home;
+        }
 
         var resendDelay = (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
 
