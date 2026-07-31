@@ -57,6 +57,8 @@ public partial class IdentityController
                 user = await userManager.FindUser(new() { Email = email, PhoneNumber = phoneNumber });
             }
 
+            var isNewUser = user is null;
+
             if (user is null)
             {
                 var name = info.Principal.FindFirstValue("preferred_username") ?? info.Principal.FindFirstValue(ClaimTypes.Name) ?? info.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? info.Principal.FindFirstValue("name");
@@ -99,7 +101,17 @@ public partial class IdentityController
                 var addLoginResult = await userManager.AddLoginAsync(user, info);
 
                 if (addLoginResult.Succeeded is false)
+                {
+                    if (isNewUser)
+                    {
+                        // Only this request could reach that row: a provider asserting neither an email nor a phone
+                        // number leaves the identifier fallback above nothing to match it by, so without the login it
+                        // would be unreachable forever and every retry would add another one.
+                        await userManager.DeleteAsync(user);
+                    }
+
                     throw new ResourceValidationException(addLoginResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
+                }
             }
 
             // Confirmation is only as good as the provider's own verification of the identifier

@@ -236,7 +236,7 @@ public partial class SignInPanel
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
                 var returnUrlValue = GetValue(returnUrl);
-                ReturnUrlQueryString = Uri.IsAppRelativeUrl(returnUrlValue) ? returnUrlValue : PageUrls.Home;
+                ReturnUrlQueryString = Uri.IsAppRelativeUrl(returnUrlValue, requireLeadingSlash: false) ? returnUrlValue : PageUrls.Home;
                 queryParams.TryGetValue("userName", out var userName);
                 UserNameQueryString = GetValue(userName);
                 queryParams.TryGetValue("email", out var email);
