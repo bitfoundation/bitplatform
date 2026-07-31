@@ -52,9 +52,9 @@ public class BunitUITests
         // user is the seeded default account.
         var authenticationStateProvider = ctx.Services.GetRequiredService<AuthenticationStateProvider>();
 
-        cut.WaitForAssertion(() =>
+        await cut.WaitForAssertionAsync(async () =>
         {
-            var user = authenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult().User;
+            var user = (await authenticationStateProvider.GetAuthenticationStateAsync()).User;
             Assert.IsTrue(user.IsAuthenticated());
             Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user.GetUserId());
         }, timeout: TimeSpan.FromSeconds(30));

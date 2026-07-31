@@ -9,6 +9,7 @@ public partial class NotAuthorizedPage
     [SupplyParameterFromQuery(Name = "return-url"), Parameter]
     public string? ReturnUrl { get; set; }
 
+    private string GetSafeReturnUrl() => Uri.IsAppRelativeUrl(ReturnUrl, requireLeadingSlash: false) ? ReturnUrl : PageUrls.Home;
 
     [AutoInject] private SignInModalService signInModalService = default!;
 
@@ -28,9 +29,10 @@ public partial class NotAuthorizedPage
                 var accessToken = await AuthManager.RefreshToken(requestedBy: nameof(NotAuthorizedPage));
                 if (string.IsNullOrEmpty(accessToken) is false && ReturnUrl is not null && ReturnUrl.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is false)
                 {
+                    var returnUrl = GetSafeReturnUrl();
                     // To prevent infinities redirect loop, let's append try_refreshing_token=false to the url, so we only redirect in case no try_refreshing_token=false is present
-                    var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
-                    NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false", replace: true);
+                    var @char = returnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
+                    NavigationManager.NavigateTo($"{returnUrl}{@char}try_refreshing_token=false", replace: true);
                 }
             }
 
@@ -48,7 +50,7 @@ public partial class NotAuthorizedPage
     private async Task SignIn()
     {
         await AuthManager.SignOut(CurrentCancellationToken);
-        var returnUrl = ReturnUrl ?? NavigationManager.GetRelativePath();
+        var returnUrl = ReturnUrl is null ? NavigationManager.GetRelativePath() : GetSafeReturnUrl();
         await signInModalService.SignIn(returnUrl);
 
         // Alternatively, you can redirect the user to the sign-in page.

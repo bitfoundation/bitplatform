@@ -11,8 +11,9 @@ public partial class IdentityController
 
     /// <summary>
     /// Deliberately not cached: the returned URL embeds the caller's origin, which GetWebAppUrl resolves from the X-Origin
-    /// header. That header is part of neither the output cache's vary rules nor a CDN's cache key, so a cached response would
-    /// hand one origin's sign-in URL to a caller coming from another, sending the resulting sign-in link to the wrong origin.
+    /// header. The output cache does vary by that header (See AppResponseCachePolicy.CacheRequestAsync), but a CDN edge
+    /// does not unless it is configured to, so a shared-cached response would hand one origin's sign-in URL to a caller
+    /// coming from another, sending the resulting sign-in link to the wrong origin.
     /// </summary>
     [HttpGet]
     public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
@@ -38,6 +39,9 @@ public partial class IdentityController
         string? signInPageUri;
         ExternalLoginInfo? info = null;
 
+        if (localHttpPort is not null and (< 1 or > 65535))
+            throw new BadRequestException().WithData("localHttpPort", localHttpPort);
+
         try
         {
             info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException().WithData("Reason", "External login info is missing.");
@@ -45,6 +49,8 @@ public partial class IdentityController
             var phoneNumber = phoneService.NormalizePhoneNumber(info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value);
 
             var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
+            var isLinked = user is not null;
 
             if (user is null && (string.IsNullOrEmpty(email) is false || string.IsNullOrEmpty(phoneNumber) is false))
             {
@@ -86,8 +92,14 @@ public partial class IdentityController
                     // Therefore, we assign a role to these users by default.
                     await userManager.CreateUserWithDemoRole(user);
                 }
+            }
 
-                await userManager.AddLoginAsync(user, info);
+            if (isLinked is false)
+            {
+                var addLoginResult = await userManager.AddLoginAsync(user, info);
+
+                if (addLoginResult.Succeeded is false)
+                    throw new ResourceValidationException(addLoginResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
             }
 
             // Confirmation is only as good as the provider's own verification of the identifier
@@ -130,7 +142,11 @@ public partial class IdentityController
         }
         catch (Exception exp)
         {
-            serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", info?.Principal?.GetDisplayName() } });
+            var principalName = info?.Principal?.FindFirstValue("preferred_username")
+                                ?? info?.Principal?.GetEmail()
+                                ?? info?.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", principalName } });
             signInPageUri = $"{PageUrls.SignIn}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
         finally

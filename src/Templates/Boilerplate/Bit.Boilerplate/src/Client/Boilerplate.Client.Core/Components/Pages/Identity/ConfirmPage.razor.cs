@@ -31,6 +31,8 @@ public partial class ConfirmPage
     [Parameter, SupplyParameterFromQuery(Name = "phoneToken")]
     public string? PhoneTokenQueryString { get; set; }
 
+    private string GetSafeReturnUrl() => Uri.IsAppRelativeUrl(ReturnUrlQueryString, requireLeadingSlash: false) ? ReturnUrlQueryString : PageUrls.Home;
+
 
     protected override async Task OnInitAsync()
     {
@@ -84,9 +86,18 @@ public partial class ConfirmPage
                 Token = emailModel.Token
             }, CurrentCancellationToken);
 
+            if (signInResponse.RequiresTwoFactor)
+            {
+                // The e-mail is confirmed, but the automatic sign-in needs a second factor this page cannot collect
+                // (ConfirmEmailRequestDto carries no code). Storing the response would overwrite the caller's tokens
+                // with nulls, so show the "confirmed, now sign in" panel instead.
+                isEmailConfirmed = true;
+                return;
+            }
+
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
+            NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
             isEmailConfirmed = true;
         });
@@ -98,7 +109,7 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email, ReturnUrl = ReturnUrlQueryString }, CurrentCancellationToken);
+            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email, ReturnUrl = GetSafeReturnUrl() }, CurrentCancellationToken);
         });
     }
 
@@ -114,9 +125,16 @@ public partial class ConfirmPage
                 PhoneNumber = phoneModel.PhoneNumber
             }, CurrentCancellationToken);
 
+            if (signInResponse.RequiresTwoFactor)
+            {
+                // See the note in ConfirmEmail above.
+                isPhoneConfirmed = true;
+                return;
+            }
+
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
+            NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
             isPhoneConfirmed = true;
         });

@@ -68,7 +68,7 @@
                                                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                                         <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
                                                         <BitSpacer />
-                                                        <BitLink Href="@($"{PageUrls.ForgotPassword}?return-url={Uri.EscapeDataString(GetReturnUrl())}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+                                                        <BitLink Href="@($"{PageUrls.ForgotPassword}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
                                                     </BitStack>
                                                 </LabelTemplate>
                                             </BitTextField>
@@ -138,7 +138,7 @@
                                 {
                                     <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
                                         @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
-                                        <BitLink Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(GetReturnUrl())}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                                        <BitLink Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
                                     </BitText>
                                 }
                             </BitStack>

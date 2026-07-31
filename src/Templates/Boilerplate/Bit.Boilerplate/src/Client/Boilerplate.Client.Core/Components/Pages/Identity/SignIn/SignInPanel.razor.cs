@@ -18,7 +18,12 @@ public partial class SignInPanel
     private SignInPanelType internalSignInPanelType;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
-    private string GetReturnUrl() => ReturnUrl ?? ReturnUrlQueryString ?? PageUrls.Home;
+    private string GetSafeReturnUrl()
+    {
+        var returnUrl = ReturnUrl ?? ReturnUrlQueryString;
+
+        return Uri.IsAppRelativeUrl(returnUrl, requireLeadingSlash: false) ? returnUrl : PageUrls.Home;
+    }
 
     [Parameter]
     public string? ReturnUrl { get; set; }
@@ -143,7 +148,7 @@ public partial class SignInPanel
 
                 if (isNewUser is false)
                 {
-                    model.ReturnUrl = GetReturnUrl();
+                    model.ReturnUrl = GetSafeReturnUrl();
 
                     requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
@@ -187,7 +192,7 @@ public partial class SignInPanel
                 }
                 else
                 {
-                    NavigationManager.NavigateTo(GetReturnUrl(), replace: true);
+                    NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
                 }
             }
         }
@@ -248,7 +253,7 @@ public partial class SignInPanel
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetExternalSignInUri(provider, GetReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetExternalSignInUri(provider, GetSafeReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
 
             await externalNavigationService.NavigateTo(redirectUrl);
         }
@@ -324,7 +329,7 @@ public partial class SignInPanel
 
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
 
-            await identityController.SendOtp(request, GetReturnUrl(), CurrentCancellationToken);
+            await identityController.SendOtp(request, GetSafeReturnUrl(), CurrentCancellationToken);
 
             isOtpSent = true;
         }
