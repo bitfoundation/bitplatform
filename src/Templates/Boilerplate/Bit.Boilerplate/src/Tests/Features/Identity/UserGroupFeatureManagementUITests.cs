@@ -147,8 +147,19 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         await page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Roles).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
+        // Everything is scoped to the user-groups card. The page's own side menu is a nav too, and a long group list can
+        // end up underneath it - which shows up as Playwright reporting that the menu "intercepts pointer events".
+        var userGroupsCard = page.Locator(".roles-card");
+
+        // Searching narrows the list to this run's group, so the click target is unambiguous and sits at the top of the card.
+        await userGroupsCard.GetByPlaceholder(AppStrings.SearchRolesPlaceholder).FillAsync(userGroupName);
+
+        // The search box is debounced, so the list is briefly still the unfiltered one. Wait for a group that is always
+        // there (demo) to drop out before clicking, rather than racing the re-render.
+        await Expect(userGroupsCard.GetByText(AppRoles.Demo, new() { Exact = true })).ToBeHiddenAsync();
+
         // Select this run's user-group, then open the Features tab where each feature has an add/remove toggle.
-        await page.GetByText(userGroupName, new() { Exact = true }).ClickAsync();
+        await userGroupsCard.GetByText(userGroupName, new() { Exact = true }).ClickAsync();
         await page.GetByText(AppStrings.Features, new() { Exact = true }).ClickAsync();
 
         // The toggle button sits right after the feature's label in the same row. Its glyph reflects the current state:
