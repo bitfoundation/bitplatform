@@ -54,6 +54,12 @@ public partial class ServerApiSettings : ServerSharedSettings
 
     public SupportedAppVersionsOptions? SupportedAppVersions { get; set; }
 
+    /// <summary>
+    /// The root ConnectionStrings section. Bound so <see cref="Validate"/> can reject the shared development
+    /// defaults shipped in appsettings.json outside of Development.
+    /// </summary>
+    public Dictionary<string, string?>? ConnectionStrings { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
@@ -83,6 +89,11 @@ public partial class ServerApiSettings : ServerSharedSettings
 
         if (AppEnvironment.IsDevelopment() is false)
         {
+            if (ConnectionStrings?.GetValueOrDefault("smtp") is "Endpoint=smtp://smtp.ethereal.email:587;UserName=madisen7@ethereal.email;Password=QYcYfjBXjqxMAZfZya")
+            {
+                throw new InvalidOperationException("The smtp connection string is not set. Please set it in the server's appsettings.json file.");
+            }
+
             //#if (captcha == "reCaptcha")
             if (GoogleRecaptchaSecretKey is "6LdMKr4pAAAAANvngWNam_nlHzEDJ2t6SfV6L_DS")
             {
@@ -91,7 +102,7 @@ public partial class ServerApiSettings : ServerSharedSettings
             //#endif
 
             //#if (notification == true)
-            if (AdsPushVapid?.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid?.Subject is "mailto:test@bitplatform.dev")
+            if (AdsPushVapid?.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid?.Subject is "mailto:you@example.com")
             {
                 throw new InvalidOperationException("The AdsPushVapid's PrivateKey and Subject are not set. Please set them in the server's appsettings.json file.");
             }
@@ -176,17 +187,15 @@ public class CloudflareOptions
 {
     public string? ApiToken { get; set; }
 
-    public string? ZoneId { get; set; }
-
     /// <summary>
-    /// The <see cref="ResponseCacheService"/> clears the cache for the current domain by default.
-    /// If multiple Cloudflare-hosted domains point to your origin backend, you will need to
-    /// purge the cache for each of them individually.
+    /// The zones whose edge cache <see cref="ResponseCacheService"/> purges.
+    /// A purge by cache-tag covers every hostname of a zone, so a single entry is enough unless the app is served
+    /// from domains that belong to different Cloudflare zones (e.g. myapp.com and myapp.uk).
     /// </summary>
-    public Uri[] AdditionalDomains { get; set; } = [];
+    public string[] ZoneIds { get; set; } = [];
 
     public bool Configured => string.IsNullOrEmpty(ApiToken) is false &&
-        string.IsNullOrEmpty(ZoneId) is false;
+        ZoneIds.Length > 0;
 }
 //#endif
 

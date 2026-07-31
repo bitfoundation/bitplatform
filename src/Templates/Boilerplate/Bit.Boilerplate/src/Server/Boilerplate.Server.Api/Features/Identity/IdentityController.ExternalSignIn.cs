@@ -90,6 +90,7 @@ public partial class IdentityController
                 await userManager.AddLoginAsync(user, info);
             }
 
+            // Confirmation is only as good as the provider's own verification of the identifier
             if (string.IsNullOrEmpty(email) is false && string.Equals(email, user.Email, StringComparison.OrdinalIgnoreCase) && await userManager.IsEmailConfirmedAsync(user) is false)
             {
                 await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);

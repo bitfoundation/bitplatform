@@ -41,7 +41,13 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         var canManageAllTenants = User.HasFeature(AppFeatures.Management.Tenants_Manage_Global);
 
         return roleManager.Roles
-                          .WhereIf(canManageAllTenants is false, r => r.TenantId == currentTenantId) // Non Global admins may only see the roles of the current tenant.
+                          // Non Global admins may only see the roles of the current tenant.
+                          .WhereIf(canManageAllTenants is false, r => r.TenantId == currentTenantId)
+                          // A global admin sees every tenant's roles only while NO tenant is selected; once one is, the
+                          // list narrows to that tenant's roles plus the global ones (g-admin), which is the same
+                          // scoping UserClaimsService applies when it builds a token. Otherwise the page grows by one
+                          // t-admin (and one demo, ...) per tenant and stops being usable.
+                          .WhereIf(canManageAllTenants && currentTenantId is not null, r => r.TenantId == null || r.TenantId == currentTenantId)
                           .Project();
         //#endif
         //#if (IsInsideProjectTemplate == true)

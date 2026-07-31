@@ -1458,6 +1458,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Die Domain '{0}' ist bereits vergeben.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Die Domain '{0}' ist reserviert und kann nicht verwendet werden.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Sie haben noch keinen Mandanten ausgewählt. Wechseln Sie zu einem Ihrer Mandanten oder erstellen Sie einen neuen, um loszulegen.</value>
   </data>

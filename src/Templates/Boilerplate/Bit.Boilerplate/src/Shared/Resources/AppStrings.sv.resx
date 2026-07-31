@@ -1458,6 +1458,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Domänen '{0}' är redan upptagen.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Domänen '{0}' är reserverad och kan inte användas.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Du har inte valt någon tenant ännu. Byt till en av dina tenants eller skapa en ny för att komma igång.</value>
   </data>

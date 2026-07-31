@@ -1458,6 +1458,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Het domein '{0}' is al in gebruik.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Het domein '{0}' is gereserveerd en kan niet worden gebruikt.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Je hebt nog geen tenant geselecteerd. Wissel naar een van je tenants of maak een nieuwe aan om te beginnen.</value>
   </data>

@@ -18,6 +18,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 //#if (captcha == "reCaptcha")
 [JsonSerializable(typeof(GoogleRecaptchaVerificationResponse))]
 //#endif
+//#if (cloudflare == true)
+[JsonSerializable(typeof(CloudflarePurgeResponse))]
+//#endif
 [JsonSerializable(typeof(AuthenticatorResponse))]
 public partial class ServerJsonContext : JsonSerializerContext
 {

@@ -1458,6 +1458,9 @@
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>域名 '{0}' 已被占用。</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>域名 '{0}' 为保留域名，无法使用。</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>您尚未选择任何租户。切换到您的某个租户，或创建一个新租户即可开始。</value>
   </data>

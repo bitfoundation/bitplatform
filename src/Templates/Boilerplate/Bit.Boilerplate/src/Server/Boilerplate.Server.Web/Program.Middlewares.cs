@@ -99,11 +99,13 @@ public static partial class Program
 
             //#if (api == "Integrated")
             app.UseCors();
-            app.UseRateLimiter();
             app.UseMiddleware<ForceUpdateMiddleware>();
             //#endif
 
             app.UseAuthentication();
+            //#if (api == "Integrated")
+            app.UseRateLimiter(); // After UseAuthentication, so rate limit partitions can use HttpContext.User.
+            //#endif
             app.UseAuthorization();
 
             app.UseOutputCache();

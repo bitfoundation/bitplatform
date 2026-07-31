@@ -1458,6 +1458,9 @@
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>دامنه '{0}' تکراری است.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>دامنه '{0}' رزرو شده است و قابل استفاده نیست.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>شما هنوز مستأجری را انتخاب نکرده‌اید. به یکی از مستأجران خود تغییر دهید یا مستأجر جدیدی ایجاد کنید تا شروع کنید.</value>
   </data>

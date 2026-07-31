@@ -1458,6 +1458,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Le domaine '{0}' est déjà utilisé.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Le domaine '{0}' est réservé et ne peut pas être utilisé.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Vous n'avez pas encore sélectionné de locataire. Passez à l'un de vos locataires ou créez-en un nouveau pour commencer.</value>
   </data>

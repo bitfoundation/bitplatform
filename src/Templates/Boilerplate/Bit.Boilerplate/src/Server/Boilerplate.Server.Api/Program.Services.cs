@@ -830,7 +830,7 @@ public static partial class Program
         {
             var cloudflareApiToken = appSettings.Cloudflare.ApiToken;
             healthChecksBuilder.AddUrlGroup(
-                new Uri($"https://api.cloudflare.com/client/v4/zones/{appSettings.Cloudflare.ZoneId}"),
+                appSettings.Cloudflare.ZoneIds.Select(zoneId => new Uri($"https://api.cloudflare.com/client/v4/zones/{zoneId}")),
                 name: "cloudflare",
                 tags: [],
                 configureClient: (_, client) =>

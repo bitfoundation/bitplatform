@@ -111,6 +111,11 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
 
         if (tenant.Domain is not null
             && (entry.State is EntityState.Added || entry.Property(t => t.Domain).IsModified)
+            && ReservedTenantNames.IsReservedDomain(tenant.Domain, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
+            throw new ResourceValidationException((nameof(TenantDto.Domain), [Localizer[nameof(AppStrings.ReservedTenantDomain), tenant.Domain]]));
+
+        if (tenant.Domain is not null
+            && (entry.State is EntityState.Added || entry.Property(t => t.Domain).IsModified)
             && await DbContext.Tenants.AnyAsync(t => t.Id != tenant.Id && t.Domain == tenant.Domain, cancellationToken))
             throw new ResourceValidationException((nameof(TenantDto.Domain), [Localizer[nameof(AppStrings.DuplicateTenantDomain), tenant.Domain]]));
     }
