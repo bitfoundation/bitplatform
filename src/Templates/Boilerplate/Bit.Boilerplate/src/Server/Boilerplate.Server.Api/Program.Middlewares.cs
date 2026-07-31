@@ -42,11 +42,11 @@ public static partial class Program
         app.UseStaticFiles();
 
         app.UseCors();
-        app.UseRateLimiter();
 
         app.UseMiddleware<ForceUpdateMiddleware>();
 
         app.UseAuthentication();
+        app.UseRateLimiter(); // After UseAuthentication, so rate limit partitions can use HttpContext.User.
         app.UseAuthorization();
 
         app.UseOutputCache();
