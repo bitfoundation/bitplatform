@@ -2,6 +2,7 @@ using Microsoft.Identity.Web;
 using AspNet.Security.OAuth.Apple;
 using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using Microsoft.AspNetCore.Authentication.Facebook;
@@ -128,6 +129,22 @@ public static class RemoteAuthenticationOptionsExtensions
             {
 
             });
+
+            // AddServiceDefaults gives every client a standard resilience pipeline, and its retry does not distinguish
+            // safe methods from unsafe ones. On this channel the POST is the authorization-code redemption, and an
+            // authorization code is single use - so a token endpoint that is merely slow makes the app send the same
+            // code again, which the provider records as code reuse. Scoping it here rather than turning retry off in
+            // AddServiceDefaults keeps every other client (Cloudflare purge, storage, SMS) retrying POSTs as before.
+            // The pipeline has to be removed and re-added: a second AddStandardResilienceHandler nests INSIDE the
+            // inherited one, so the outer pipeline would still replay the code.
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+            foreach (var provider in (string[])["GitHub", "Apple", "Google", "Twitter", "Facebook", "Keycloak", "AzureAD"])
+            {
+                services.AddHttpClient(provider)
+                    .RemoveAllResilienceHandlers()
+                    .AddStandardResilienceHandler(options => options.Retry.DisableForUnsafeHttpMethods());
+            }
+#pragma warning restore EXTEXP0001
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<GoogleOptions>, RemoteAuthenticationOptionsConfigurator>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, RemoteAuthenticationOptionsConfigurator>());

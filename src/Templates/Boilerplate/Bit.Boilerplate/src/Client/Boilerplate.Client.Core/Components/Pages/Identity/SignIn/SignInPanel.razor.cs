@@ -156,26 +156,11 @@ public partial class SignInPanel
                 else
                 {
                     // Check out SignInModalService for more details
-                    if (string.IsNullOrEmpty(model.Email) is false)
-                    {
-                        var signInResponse = await identityController.ConfirmEmail(new()
-                        {
-                            Token = model.Otp,
-                            Email = model.Email
-                        }, CurrentCancellationToken);
+                    var signInResponse = string.IsNullOrEmpty(model.Email) is false
+                        ? await identityController.ConfirmEmail(new() { Token = model.Otp, Email = model.Email }, CurrentCancellationToken)
+                        : await identityController.ConfirmPhone(new() { Token = model.Otp, PhoneNumber = model.PhoneNumber }, CurrentCancellationToken);
 
-                        await AuthManager.StoreTokens(signInResponse, true);
-                    }
-                    else
-                    {
-                        var signInResponse = await identityController.ConfirmPhone(new()
-                        {
-                            Token = model.Otp,
-                            PhoneNumber = model.PhoneNumber
-                        }, CurrentCancellationToken);
-
-                        await AuthManager.StoreTokens(signInResponse, true);
-                    }
+                    await AuthManager.StoreTokens(signInResponse, true);
                 }
 
                 if (requiresTwoFactor is false)

@@ -663,7 +663,6 @@ public static partial class Program
         var env = builder.Environment;
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
-        var identityOptions = appSettings.Identity;
 
         services.AddIdentity<User, Features.Identity.Models.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
