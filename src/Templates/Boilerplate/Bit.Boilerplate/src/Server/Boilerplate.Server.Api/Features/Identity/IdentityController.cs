@@ -314,12 +314,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 throw new UnauthorizedException().WithData("Reason", "Refresh token is expired.");
 
             // Refresh token rotation detection: If the refresh token is used more than once, then it means the token has been compromised, so we should reject the request.
-            // The 30s tolerance only absorbs the gap between RenewedOn being written here and the replacement token
-            // being stamped by AppJwtSecureDataFormat.Protect afterwards. It does NOT cover a lost rotation response:
-            // that client keeps the superseded token and is signed out on its next refresh.
+            // The first tolerance absorbs the gap between RenewedOn being written here and the replacement token being
+            // stamped by AppJwtSecureDataFormat.Protect afterwards. The second one covers a lost rotation response:
+            // that client still holds the superseded token, and RetryDelegatingHandler re-sends the request within
+            // seconds, so a rotation that just happened is not yet treated as reuse.
             long issuedAtClaimValue = refreshTicket.Principal.GetClaimValue<long>("iat");
-            long difference = Math.Abs(issuedAtClaimValue - (userSession.RenewedOn ?? userSession.StartedOn));
-            if (difference > 30)
+            long lastRotatedOn = userSession.RenewedOn ?? userSession.StartedOn;
+            long difference = Math.Abs(issuedAtClaimValue - lastRotatedOn);
+            if (difference > 30 && (TimeProvider.GetUtcNow().ToUnixTimeSeconds() - lastRotatedOn) > 10)
                 throw new UnauthorizedException().WithData("Reason", "Refresh token rotation detected.");
 
             var user = userSession.User!;

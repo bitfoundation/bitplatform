@@ -115,24 +115,17 @@ public partial class RefreshTokenRotationTests
     }
 
     /// <summary>
-    /// <b>Currently failing by design - requires a schema change.</b>
-    /// <para>
     /// The lost-rotation-response case. The server rotates successfully and mints a replacement token, but the response
     /// never reaches the client (dropped connection, HTTP timeout). <c>AuthManager.StoreTokens</c> only runs on success,
     /// so the client still holds the SUPERSEDED token, and <c>RetryDelegatingHandler</c> re-sends the identical request
-    /// moments later. That retry must succeed - the client did nothing wrong and there is no theft here.
-    /// </para>
+    /// moments later. That retry has to succeed - the client did nothing wrong and no token was leaked.
     /// <para>
-    /// It cannot pass today, and not because the tolerance is too small: the 30 seconds is compared against
-    /// <c>|iat - RenewedOn|</c>, which for a superseded token is a whole refresh interval (5 minutes), never the retry
-    /// delay. No value of that constant separates "the client retried 3 seconds later" from "someone replayed an old
-    /// token", because the server keeps only ONE rotation timestamp. Fixing it needs the previous one as well - e.g.
-    /// <c>UserSession.PreviousRenewedOn</c> - so the check can accept the immediately-preceding token briefly after a
-    /// rotation while still rejecting anything older. Widening it with an elapsed-time window instead would accept ANY
-    /// previously-valid token for that session during the 30 seconds after every rotation.
+    /// What makes it work is the second half of the rotation check: a rotation that happened seconds ago is not yet
+    /// treated as reuse. Comparing the two tokens' issue times alone could never cover this, because for a superseded
+    /// token that gap is a whole refresh interval (5 minutes here), never the retry delay.
     /// </para>
     /// </summary>
-    [TestMethod, Ignore("Needs UserSession.PreviousRenewedOn (and a migration); see the remarks above.")]
+    [TestMethod]
     public async Task LostRotationResponse_Should_LetTheClientRetryWithTheSupersededToken()
     {
         var (server, scope, timeProvider) = await StartServerAndSignIn();
@@ -156,17 +149,17 @@ public partial class RefreshTokenRotationTests
     }
 
     /// <summary>
-    /// <b>Currently failing by design - requires the same schema change.</b>
+    /// <b>Currently failing by design - needs a schema change.</b>
     /// <para>
-    /// The other side of keeping a single rotation timestamp. When two rotations happen less than 30 seconds apart -
+    /// The consequence of keeping a single rotation timestamp. When two rotations happen less than 30 seconds apart -
     /// which the app does to itself, since <c>AuthManager.SwitchTenant</c> and <c>TryEnterElevatedAccessMode</c> each
     /// force an extra refresh right after a routine one - the oldest token's <c>iat</c> is still within the tolerance of
-    /// the newest <c>RenewedOn</c>. So rotation detection silently skips a generation and a token that was superseded
-    /// twice is still accepted.
+    /// the newest <c>RenewedOn</c>. So a token that was superseded twice is still accepted.
     /// </para>
     /// <para>
-    /// Comparing <c>iat</c> against the current and previous rotation stamps closes this at the same time as the
-    /// lost-response case above.
+    /// Closing it means recording which rotation minted the presented token rather than only when the last rotation
+    /// happened - e.g. a <c>UserSession.PreviousRenewedOn</c> alongside <c>RenewedOn</c>, so <c>iat</c> can be matched
+    /// against the current and the immediately preceding stamp instead of against a time window.
     /// </para>
     /// </summary>
     [TestMethod, Ignore("Needs UserSession.PreviousRenewedOn (and a migration); see the remarks above.")]
