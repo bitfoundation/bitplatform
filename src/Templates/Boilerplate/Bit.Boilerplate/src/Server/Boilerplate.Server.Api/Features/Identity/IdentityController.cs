@@ -336,7 +336,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 if (await userManager.IsLockedOutAsync(user))
                     throw UserLockedOutException(user);
 
-                var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"), request.ElevatedAccessToken)
+                var elevatedAccessTokenExpired = user.ElevatedAccessTokenRequestedOn is null ||
+                                                 (TimeProvider.GetUtcNow() - user.ElevatedAccessTokenRequestedOn.Value) > AppSettings.Identity.BearerTokenExpiration;
+
+                if (elevatedAccessTokenExpired && user.TwoFactorEnabled is false)
+                    throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("UserId", user.Id);
+
+                var tokenIsValid = (elevatedAccessTokenExpired is false
+                        && await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn!.Value.ToUniversalTime()}"), request.ElevatedAccessToken))
                     || await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.ElevatedAccessToken);
                 if (tokenIsValid is false)
                 {

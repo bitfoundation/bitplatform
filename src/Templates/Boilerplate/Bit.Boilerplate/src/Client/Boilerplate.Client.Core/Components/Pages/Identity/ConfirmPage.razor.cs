@@ -86,15 +86,6 @@ public partial class ConfirmPage
                 Token = emailModel.Token
             }, CurrentCancellationToken);
 
-            if (signInResponse.RequiresTwoFactor)
-            {
-                // The e-mail is confirmed, but the automatic sign-in needs a second factor this page cannot collect
-                // (ConfirmEmailRequestDto carries no code). Storing the response would overwrite the caller's tokens
-                // with nulls, so show the "confirmed, now sign in" panel instead.
-                isEmailConfirmed = true;
-                return;
-            }
-
             await AuthManager.StoreTokens(signInResponse, true);
 
             NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
@@ -124,13 +115,6 @@ public partial class ConfirmPage
                 Token = phoneModel.Token,
                 PhoneNumber = phoneModel.PhoneNumber
             }, CurrentCancellationToken);
-
-            if (signInResponse.RequiresTwoFactor)
-            {
-                // See the note in ConfirmEmail above.
-                isPhoneConfirmed = true;
-                return;
-            }
 
             await AuthManager.StoreTokens(signInResponse, true);
 

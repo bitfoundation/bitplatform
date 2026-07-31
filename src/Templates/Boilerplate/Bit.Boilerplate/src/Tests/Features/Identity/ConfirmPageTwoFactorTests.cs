@@ -11,15 +11,15 @@ using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>
-/// Confirming an identifier ends with an automatic sign-in, and that sign-in answers
-/// <c>{ requiresTwoFactor: true }</c> - HTTP 200, with <b>null</b> tokens and no session row - whenever the account has
-/// two-factor enabled. <c>ConfirmEmailRequestDto</c> carries no second-factor code, so the flow cannot be completed
-/// from this page at all; the only correct behaviour is to confirm and stop.
+/// Confirming an identifier ends with an automatic sign-in, and that sign-in answers a two-factor challenge - HTTP 200
+/// with <b>no</b> tokens - whenever the account has two-factor enabled. Not being signed in there is fine and expected;
+/// the user simply signs in again. What must not happen is that empty response being <b>stored</b>.
 /// <para>
-/// Storing that response instead is the failure this pins, and it is worse than it looks: on the Web client the null
-/// crosses JS interop and <c>Storage.setItem</c> coerces it, so <c>access_token</c> becomes the literal string
-/// <c>"null"</c>, which is non-empty enough to pass the token provider's guard and then throws while being parsed - an
-/// interrupting error dialog on every auth-state evaluation until the tokens are cleared, on top of the sign-out.
+/// That is why <c>AuthManager.StoreTokens</c> ignores a response without an access token, and it is worse than a plain
+/// sign-out: on the Web client the null crosses JS interop and <c>Storage.setItem</c> coerces it, so
+/// <c>access_token</c> becomes the literal string <c>"null"</c> - non-empty enough to pass the token provider's guard
+/// and then throwing while being parsed, which surfaces as an interrupting error dialog on every auth-state
+/// evaluation until the tokens are cleared.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("UITest")]
@@ -47,18 +47,20 @@ public class ConfirmPageTwoFactorTests
 
         var cut = ctx.Render<CascadingAuthenticationState>(parameters => parameters.AddChildContent<ConfirmPage>());
 
-        // The confirmation itself must still happen - this is not "reject the request", it is "do not pretend it
-        // signed you in".
-        await cut.WaitForAssertionAsync(async () =>
-        {
-            Assert.IsTrue(await IsEmailConfirmed(server, email), "The e-mail must still be confirmed.");
-        }, timeout: TimeSpan.FromSeconds(30));
+        // Wait for the navigation, not for the confirmation: EmailConfirmed is written server-side while ConfirmEmail
+        // is still running, so it goes true before the response is even sent - reading the storage on that signal
+        // would race StoreTokens and pass whether or not it overwrote anything. ConfirmPage navigates only after
+        // StoreTokens has completed, so that is the signal that the client is done.
+        var homeUri = navigationManager.ToAbsoluteUri(PageUrls.Home).ToString();
+        cut.WaitForAssertion(() => Assert.AreEqual(homeUri, navigationManager.Uri,
+            "ConfirmPage navigates once it has handled the response; without that this assertion would race it."),
+            timeout: TimeSpan.FromSeconds(30));
+
+        // The confirmation itself must still happen - the second factor is only in the way of the convenience sign-in.
+        Assert.IsTrue(await IsEmailConfirmed(server, email), "The e-mail must still be confirmed.");
 
         Assert.AreEqual(ExistingSessionMarker, await storageService.GetItem("access_token"),
-            "A requiresTwoFactor response carries null tokens; storing it would overwrite the caller's live session.");
-
-        Assert.AreEqual(navigationManager.ToAbsoluteUri(confirmUrl).ToString(), navigationManager.Uri,
-            "Without tokens the user is not signed in, so the page must not navigate away as if it had succeeded.");
+            "A two-factor challenge carries no tokens, and storing it would overwrite what this browser already had.");
     }
 
     /// <summary>
