@@ -6,11 +6,14 @@ using Boilerplate.Server.Api.Features.Identity.Models;
 using Microsoft.AspNetCore.SignalR;
 //#endif
 
+using Microsoft.AspNetCore.RateLimiting;
+using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
+
 namespace Boilerplate.Server.Api.Features.Identity;
 
 public partial class IdentityController
 {
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);

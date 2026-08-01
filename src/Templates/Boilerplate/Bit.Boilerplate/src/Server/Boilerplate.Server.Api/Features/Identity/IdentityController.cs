@@ -4,7 +4,9 @@ using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Server.Api.Features.Identity.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -45,7 +47,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
     /// These comments will also be used in swagger/scalar docs and ui.
     /// </summary>
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -89,7 +91,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
     }
 
-    [HttpPost, Produces<SignInResponseDto>()]
+    [HttpPost, Produces<SignInResponseDto>(), EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -423,7 +425,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// For either otp or magic link
     /// </summary>
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -483,7 +485,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await Task.WhenAll(sendMessagesTasks);
     }
 
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SendTwoFactorToken(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);

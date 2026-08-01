@@ -2,7 +2,9 @@
 using Humanizer;
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Features.Identity.Models;
+using Microsoft.AspNetCore.RateLimiting;
 using Boilerplate.Server.Api.Features.Identity.Services;
+using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
@@ -10,7 +12,7 @@ public partial class IdentityController
 {
     [AutoInject] private IdentityEmailService emailService = default!;
 
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email!)
