@@ -1,4 +1,4 @@
-using System.Net;
+using Boilerplate.Shared.Features.Identity;
 
 namespace Boilerplate.Tests.Features.RateLimiting;
 
@@ -12,19 +12,21 @@ namespace Boilerplate.Tests.Features.RateLimiting;
 /// pipeline read as though they did.
 /// </para>
 /// <para>
-/// This test pins both halves of the fix, because each can regress on its own and neither is visible from a
-/// build: the policy exists AND at least one endpoint opts into it (first method), and the policy is <b>named</b>
-/// rather than global, so it does not throttle the rest of the app - the Blazor circuit negotiate, the health
-/// probes and the Hangfire dashboard all sit behind the same <c>UseRateLimiter</c> call (second method).
+/// Both halves of the fix are pinned, because each can regress on its own and neither is visible from a build:
+/// the policy exists AND an endpoint opts into it (first method), and it is <b>named</b> rather than global, so
+/// it does not throttle the rest of the app - the Blazor circuit negotiate, the health probes and the Hangfire
+/// dashboard all sit behind the same <c>UseRateLimiter</c> call (second method).
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
 public class IdentityRateLimitTests
 {
+    private const int BurstSize = 40; // AppRateLimitPolicies.IDENTITY permits 30 per minute.
+
     /// <summary>
-    /// <c>AppRateLimitPolicies.IDENTITY</c> permits 30 requests per minute per partition, and every request here
-    /// shares the loopback partition, so the burst must be cut off before it completes. The e-mail address is a
-    /// fresh Guid that no account owns: <c>SendConfirmEmailToken</c> answers 400 <c>UserNotFound</c> for it and
+    /// Driven through the app's own typed controller proxy, so the rejection arrives as the
+    /// <see cref="TooManyRequestsException"/> a real client would handle rather than as a bare status code.
+    /// The e-mail is a fresh Guid that no account owns: the endpoint answers <c>UserNotFound</c> for it and
     /// writes nothing, so this test cannot leave state behind in the shared development database.
     /// </summary>
     [TestMethod]
@@ -34,23 +36,37 @@ public class IdentityRateLimitTests
 
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        var statusCodes = await SendBurst(httpClient, "api/v1/Identity/SendConfirmEmailToken",
-            $$"""{"email":"{{Guid.NewGuid()}}@example.com"}""", count: 40);
+        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
 
-        // Control: the endpoint really is reachable and really is answering, so a missing 429 below would mean
-        // "not throttled", not "never got there".
-        Assert.IsTrue(statusCodes.Contains(HttpStatusCode.BadRequest),
-            $"Expected the endpoint's own 400 UserNotFound among the responses. Got: {Describe(statusCodes)}");
+        var served = 0;
 
-        Assert.IsTrue(statusCodes.Contains(HttpStatusCode.TooManyRequests),
-            $"A 40-request burst against a rate-limited anonymous endpoint must be throttled. Got: {Describe(statusCodes)}");
+        for (var i = 0; i < BurstSize; i++)
+        {
+            try
+            {
+                await identityController.SendConfirmEmailToken(new() { Email = $"{Guid.NewGuid()}@example.com" }, TestContext.CancellationToken);
+            }
+            catch (TooManyRequestsException)
+            {
+                // Control: the endpoint really answered before it started refusing, so this is throttling
+                // rather than the request never getting there.
+                Assert.IsGreaterThan(0, served, "The endpoint must serve some requests before throttling starts.");
+                return;
+            }
+            catch (BadRequestException)
+            {
+                served++; // UserNotFound - the endpoint's own answer for an unknown e-mail.
+            }
+        }
+
+        Assert.Fail($"A burst of {BurstSize} requests against a rate-limited anonymous endpoint was never throttled ({served} served).");
     }
 
     /// <summary>
-    /// The same burst against an endpoint that does NOT opt in must never be throttled. This is what distinguishes
-    /// the named policy that shipped from the global limiter the finding explicitly argued against - a global
+    /// The same burst against an endpoint that does NOT opt in must never be throttled. This is what
+    /// distinguishes the named policy that shipped from the global limiter the finding argued against - a global
     /// limiter would make this method fail.
     /// </summary>
     [TestMethod]
@@ -60,38 +76,20 @@ public class IdentityRateLimitTests
 
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        var statusCodes = await SendBurst(httpClient, ".well-known/jwks", content: null, count: 40);
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        Assert.IsTrue(statusCodes.Contains(HttpStatusCode.OK),
-            $"Control: the un-opted-in endpoint must answer at all. Got: {Describe(statusCodes)}");
-
-        Assert.IsFalse(statusCodes.Contains(HttpStatusCode.TooManyRequests),
-            $"The rate limit must stay scoped to the endpoints that opt in, otherwise health probes and the Blazor "
-            + $"circuit share a bucket with it. Got: {Describe(statusCodes)}");
-    }
-
-    private async Task<HttpStatusCode[]> SendBurst(HttpClient httpClient, string route, string? content, int count)
-    {
-        List<HttpStatusCode> statusCodes = [];
-
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < BurstSize; i++)
         {
-            using var body = content is null ? null : new StringContent(content, System.Text.Encoding.UTF8, "application/json");
+            // ExceptionDelegatingHandler turns a 429 into TooManyRequestsException, so simply completing the
+            // loop is the assertion. Any throw fails the test with its own message.
+            using var response = await httpClient.GetAsync(".well-known/jwks", TestContext.CancellationToken);
 
-            using var response = content is null
-                ? await httpClient.GetAsync(route, TestContext.CancellationToken)
-                : await httpClient.PostAsync(route, body, TestContext.CancellationToken);
-
-            statusCodes.Add(response.StatusCode);
+            Assert.IsTrue(response.IsSuccessStatusCode,
+                $"Control: the un-opted-in endpoint must answer at all. Got {(int)response.StatusCode} on request {i + 1}.");
         }
-
-        return [.. statusCodes];
     }
-
-    private static string Describe(HttpStatusCode[] statusCodes)
-        => string.Join(", ", statusCodes.GroupBy(statusCode => statusCode).Select(group => $"{(int)group.Key} x{group.Count()}"));
 
     public TestContext TestContext { get; set; } = default!;
 }

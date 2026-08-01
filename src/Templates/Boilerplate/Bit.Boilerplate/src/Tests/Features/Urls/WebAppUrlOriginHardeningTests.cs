@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Boilerplate.Tests.Features.Urls;
 
 /// <summary>
@@ -19,42 +17,70 @@ namespace Boilerplate.Tests.Features.Urls;
 /// happened while the controller was being <b>constructed</b> - before model binding, before any action body, and
 /// on <c>[AllowAnonymous]</c> endpoints (established as BP-155).
 /// </para>
-/// <para>
-/// A blank <c>?origin=</c> now correctly means "no origin supplied" rather than "bad origin", so it must succeed
-/// as far as the endpoint's own model validation - which is what the first row asserts.
-/// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
 public class WebAppUrlOriginHardeningTests
 {
     /// <summary>
-    /// Every row is a value an anonymous caller can put on the query string. The endpoint is an anonymous POST
-    /// whose real answer for an empty body is a 400 model-validation failure, so the assertion is that the origin
-    /// value did not turn that 400 into a server fault. The last row is the control: with no origin at all the
-    /// request must already be a 400, which proves the request really reaches the pipeline rather than the
-    /// assertion holding vacuously.
+    /// Every row is a value an anonymous caller can put on the query string. The request goes through the app's
+    /// own <see cref="HttpClient"/> (resolved from a request scope), so <c>ExceptionDelegatingHandler</c> turns
+    /// the response back into the typed exception a real client would see - which is what makes the assertion
+    /// meaningful: a <see cref="KnownException"/> is the endpoint answering, an <see cref="UnknownException"/> is
+    /// a server fault.
     /// </summary>
     [TestMethod]
     [DataRow("?origin=", DisplayName = "present but empty -> treated as 'no origin supplied'")]
     [DataRow("?origin=%20", DisplayName = "whitespace -> treated as 'no origin supplied'")]
     [DataRow("?origin=notaurl", DisplayName = "not absolute -> the documented 400, not a 500")]
-    [DataRow("", DisplayName = "CONTROL: no origin at all -> the endpoint's real 400")]
+    [DataRow("?origin=/relative", DisplayName = "relative -> the documented 400, not a 500")]
+    [DataRow("", DisplayName = "CONTROL: no origin at all -> the endpoint's own validation error")]
     public async Task AMalformedOriginQueryValue_Should_NotFaultTheRequest(string queryString)
     {
         await using var server = new AppTestServer();
 
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        using var content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        using var response = await httpClient.PostAsync($"api/v1/Identity/SignIn{queryString}", content, TestContext.CancellationToken);
+        using var content = JsonContent.Create(new { }, options: scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>());
 
-        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        // The body is empty on purpose: the endpoint's real answer is a validation failure, so anything other
+        // than a KnownException means the origin value - not the body - decided the outcome.
+        var exception = await Assert.ThrowsAsync<Exception>(async ()
+            => await httpClient.PostAsync($"api/v1/Identity/SignIn{queryString}", content, TestContext.CancellationToken));
 
-        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode,
-            $"A caller-supplied origin must produce the documented 400, never a server fault. Body: {body}");
+        Assert.IsNotInstanceOfType<UnknownException>(exception,
+            $"A caller-supplied origin must never turn into a server fault. Got: {exception}");
+
+        Assert.IsInstanceOfType<KnownException>(exception,
+            $"Expected the endpoint's own error. Got: {exception}");
+    }
+
+    /// <summary>
+    /// The other half of the fix: an origin that IS a well-formed absolute URI but is not trusted must still be
+    /// refused, and it must say so. Without this, "never 500" could be satisfied by accepting everything.
+    /// </summary>
+    [TestMethod]
+    public async Task AnUntrustedButWellFormedOrigin_Should_StillBeRefusedByName()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        using var content = JsonContent.Create(new { }, options: scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>());
+
+        var exception = await Assert.ThrowsAsync<Exception>(async ()
+            => await httpClient.PostAsync("api/v1/Identity/SignIn?origin=https://evil.example", content, TestContext.CancellationToken));
+
+        Assert.IsNotInstanceOfType<UnknownException>(exception, $"An untrusted origin is a 400, not a fault. Got: {exception}");
+
+        Assert.Contains("Invalid origin", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     public TestContext TestContext { get; set; } = default!;
