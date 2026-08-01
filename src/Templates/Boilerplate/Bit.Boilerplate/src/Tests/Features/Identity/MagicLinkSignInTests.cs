@@ -33,7 +33,7 @@ public partial class MagicLinkSignInTests : AppPageTest
         // Filling the last digit signs her in and lands on the home page.
         await Expect(Page).ToHaveURLAsync(serverAddress.ToString());
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
+        await Expect(Page.GetByRole(AriaRole.Link, new() { Name = AppStrings.SignIn, Exact = true })).ToBeHiddenAsync();
     }
 
     /// <summary>
@@ -61,6 +61,6 @@ public partial class MagicLinkSignInTests : AppPageTest
 
         await Expect(Page).ToHaveURLAsync(serverAddress.ToString());
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
+        await Expect(Page.GetByRole(AriaRole.Link, new() { Name = AppStrings.SignIn, Exact = true })).ToBeHiddenAsync();
     }
 }

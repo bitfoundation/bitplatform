@@ -168,6 +168,8 @@ public partial class TenantController : AppControllerBase, ITenantController
         // any role. AssignDemoRole is idempotent, so calling it for both is safe (See UserManagerExtensions.AssignDemoRole).
         await userManager.AssignDemoRole(user.Id, tenantId);
 
+        var webAppUrl = HttpContext.Request.GetWebAppUrl();
+
         await DbContext.TenantUsers.AddAsync(new()
         {
             TenantId = tenantId,
@@ -179,7 +181,6 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         var inviterDisplayName = User.GetDisplayName();
         var tenantTitle = tenant.Title ?? tenant.Name!;
-        var webAppUrl = HttpContext.Request.GetWebAppUrl();
 
         List<Task> sendMessagesTasks = [];
 

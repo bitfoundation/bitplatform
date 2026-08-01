@@ -94,7 +94,12 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
         }]);
         //#endif
 
-        builder.HasUniqueIndexOnNullable(b => b.Email);
+        // Indexed on the NORMALIZED column, because that is the one every lookup uses (UserStore.FindByEmailAsync
+        // queries NormalizedEmail with SingleOrDefaultAsync, and the base EmailIndex is NOT unique). A unique index on
+        // the raw Email column would let `victim@x.com` and `Victim@x.com` both be inserted under a case-sensitive
+        // collation - SQLite's and PostgreSQL's default - after which every FindByEmailAsync for that address throws
+        // "Sequence contains more than one element" for good.
+        builder.HasUniqueIndexOnNullable(b => b.NormalizedEmail);
 
         builder.HasUniqueIndexOnNullable(b => b.PhoneNumber);
     }
