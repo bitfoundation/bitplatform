@@ -1337,6 +1337,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Je kunt deze SuperAdmin-gebruiker niet verwijderen</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>U kunt de sessies van deze SuperAdmin-gebruiker niet intrekken</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Je kunt je huidige sessie niet verwijderen</value>
   </data>

@@ -1337,6 +1337,9 @@
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة مستخدم SuperAdmin هذا</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إنهاء جلسات هذا المستخدم المسؤول</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة جلساتك الحالية</value>
   </data>

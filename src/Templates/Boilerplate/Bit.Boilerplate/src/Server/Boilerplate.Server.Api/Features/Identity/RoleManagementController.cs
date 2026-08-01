@@ -186,12 +186,15 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         EnsureCallerCanGrantClaims(claims);
 
         // A role may hold at most one row of a single valued claim type, which is what lets every reader (and the roles
-        // page) treat it as a single value. Adding a second one with a different value has to be rejected rather than
-        // silently accepted - the unique index on (RoleId, ClaimType, ClaimValue) only stops an identical duplicate.
-        foreach (var claim in claims.Where(c => singleValuedClaimTypes.Contains(c.ClaimType)))
+        // page) treat it as a single value. Two rows have to be rejected rather than silently accepted - the unique
+        // index on (RoleId, ClaimType, ClaimValue) only stops an identical duplicate, not two different values.
+        // Both sources have to be checked: what the role already holds, AND what this one request carries twice.
+        EnsureSingleValuedClaimsAreNotRepeated(claims);
+
+        foreach (var claimType in SingleValuedClaimTypesIn(claims))
         {
-            if (await DbContext.RoleClaims.AnyAsync(rc => rc.RoleId == role.Id && rc.ClaimType == claim.ClaimType, cancellationToken))
-                throw new BadRequestException().WithData("Reason", $"The role already has a '{claim.ClaimType}' claim. Use UpdateClaims to change its value.");
+            if (await DbContext.RoleClaims.AnyAsync(rc => rc.RoleId == role.Id && rc.ClaimType == claimType, cancellationToken))
+                throw new BadRequestException().WithData("Reason", $"The role already has a '{claimType}' claim. Use UpdateClaims to change its value.");
         }
 
         foreach (var claim in claims)
@@ -213,6 +216,18 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         EnsureCallerCanGrantClaims(claims);
 
+        EnsureSingleValuedClaimsAreNotRepeated(claims);
+
+        foreach (var claim in claims)
+        {
+            await DbContext.RoleClaims.AddAsync(new()
+            {
+                RoleId = role.Id,
+                ClaimType = claim.ClaimType,
+                ClaimValue = claim.ClaimValue
+            }, cancellationToken);
+        }
+
         await DbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
             await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -231,16 +246,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                         .Where(rc => rc.RoleId == role.Id && rc.ClaimType == claim.ClaimType && rc.ClaimValue == claim.ClaimValue)
                         .ExecuteDeleteAsync(cancellationToken);
                 }
-
-                await DbContext.RoleClaims.AddAsync(new()
-                {
-                    RoleId = role.Id,
-                    ClaimType = claim.ClaimType,
-                    ClaimValue = claim.ClaimValue
-                }, cancellationToken);
             }
 
-            await DbContext.SaveChangesAsync(cancellationToken);
+            await DbContext.SaveChangesAsync(cancellationToken); // Saves Added role claims above.
 
             await transaction.CommitAsync(cancellationToken);
         });
@@ -444,6 +452,24 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     /// (type, value). <see cref="AppClaimTypes.FEATURES"/> is deliberately absent: a role holds one row per feature.
     /// </summary>
     private static readonly string[] singleValuedClaimTypes = [AppClaimTypes.MAX_PRIVILEGED_SESSIONS];
+
+    private static IEnumerable<string?> SingleValuedClaimTypesIn(List<ClaimDto> claims)
+    {
+        return claims.Where(c => singleValuedClaimTypes.Contains(c.ClaimType)).Select(c => c.ClaimType).Distinct();
+    }
+
+    /// <summary>
+    /// A role holds a single value for these claim types, so one request may not carry the same type twice - otherwise
+    /// which of the two values ends up stored is decided by the order they happen to appear in.
+    /// </summary>
+    private static void EnsureSingleValuedClaimsAreNotRepeated(List<ClaimDto> claims)
+    {
+        foreach (var claimType in SingleValuedClaimTypesIn(claims))
+        {
+            if (claims.Count(c => c.ClaimType == claimType) > 1)
+                throw new BadRequestException().WithData("Reason", $"'{claimType}' may only be sent once - a role holds a single value for it.");
+        }
+    }
 
     /// <summary>
     /// A role manager may only grant the claim types in <see cref="grantableClaimTypes"/>, and may only grant feature

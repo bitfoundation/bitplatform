@@ -95,6 +95,8 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         if (User.GetUserId() == userId)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveItselfErrorMessage)]);
 
+        await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken);
+
         //#if (multitenant == true)
         await EnsureUserIsInCurrentTenant(userId, cancellationToken);
 
@@ -106,14 +108,6 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             return;
         }
         //#endif
-
-        var user = await GetUserById(userId, cancellationToken);
-
-        if (await userManager.IsInRoleAsync(user, AppRoles.GlobalAdmin))
-        {
-            if (User.IsInRole(AppRoles.GlobalAdmin) is false)
-                throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
-        }
 
         //#if (signalR == true)
         var userSessionConnectionIds = await DbContext.UserSessions.Where(us => us.UserId == userId && us.SignalRConnectionId != null)
@@ -128,7 +122,9 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
 
             await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
 
-            await userManager.DeleteAsync(user);
+            // Re-read inside the delegate, same reason as UserController.Delete: on a retry the instance from the failed
+            // attempt is still tracked and already marked Deleted.
+            await userManager.DeleteAsync(await GetUserById(userId, cancellationToken));
 
             await transaction.CommitAsync(cancellationToken);
         });
@@ -237,7 +233,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
             return;
 
         if (await DbContext.UserRoles.AnyAsync(ur => ur.UserId == targetUserId && ur.Role!.Name == AppRoles.GlobalAdmin, cancellationToken))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRevokeSuperAdminSessionsErrorMessage)]);
     }
 
     private async Task<User> GetUserById(Guid id, CancellationToken cancellationToken)

@@ -1337,6 +1337,9 @@
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>आप इस SuperAdmin उपयोगकर्ता को हटा नहीं सकते</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>आप इस SuperAdmin उपयोगकर्ता के सत्र रद्द नहीं कर सकते</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>आप अपना वर्तमान सत्र हटा नहीं सकते</value>
   </data>

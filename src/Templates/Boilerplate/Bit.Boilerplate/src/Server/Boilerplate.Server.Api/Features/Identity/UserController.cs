@@ -230,7 +230,7 @@ public partial class UserController : AppControllerBase, IUserController
         var tryAgainIn = AppSettings.Identity.EmailTokenLifetime - (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn);
 
         if (tryAgainIn > TimeSpan.Zero)
-            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn);
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn.Value);
 
         user.EmailTokenRequestedOn = TimeProvider.GetUtcNow();
         var result = await userManager.UpdateAsync(user);
@@ -304,7 +304,7 @@ public partial class UserController : AppControllerBase, IUserController
         var tryAgainIn = AppSettings.Identity.PhoneNumberTokenLifetime - (TimeProvider.GetUtcNow() - user.PhoneNumberTokenRequestedOn);
 
         if (tryAgainIn > TimeSpan.Zero)
-            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn);
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn.Value);
 
         user.PhoneNumberTokenRequestedOn = TimeProvider.GetUtcNow();
         var result = await userManager.UpdateAsync(user);
@@ -370,7 +370,12 @@ public partial class UserController : AppControllerBase, IUserController
 
             await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
 
-            var result = await userManager.DeleteAsync(user);
+            // Re-read inside the delegate: on a retry the instance from the failed attempt is still tracked, already
+            // marked Deleted and carrying the concurrency stamp it was loaded with, so deleting it again would either
+            // fault or run against a stale stamp.
+            var userToDelete = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
+
+            var result = await userManager.DeleteAsync(userToDelete);
 
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
@@ -497,7 +502,7 @@ public partial class UserController : AppControllerBase, IUserController
         var tryAgainIn = AppSettings.Identity.BearerTokenExpiration - (TimeProvider.GetUtcNow() - user!.ElevatedAccessTokenRequestedOn);
 
         if (tryAgainIn > TimeSpan.Zero)
-            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn);
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn.Value);
 
         user.ElevatedAccessTokenRequestedOn = TimeProvider.GetUtcNow();
         var result = await userManager.UpdateAsync(user);
@@ -675,7 +680,7 @@ public partial class UserController : AppControllerBase, IUserController
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Strict,
-            Secure = hostEnvironment.IsDevelopment() is false,
+            Secure = hostEnvironment.IsDevelopment() is false || Request.IsHttps,
             Path = "/",
             Domain = HttpContext.Request.GetWebAppUrl().Host,
             IsEssential = true

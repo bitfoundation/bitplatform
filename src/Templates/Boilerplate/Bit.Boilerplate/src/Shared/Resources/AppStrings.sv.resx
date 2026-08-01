@@ -1337,6 +1337,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort denna SuperAdmin-användare</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Du kan inte återkalla sessionerna för den här SuperAdmin-användaren</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort din nuvarande session</value>
   </data>

@@ -1337,6 +1337,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>You can't remove this SuperAdmin user</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>You can't revoke the sessions of this SuperAdmin user</value>
+  </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove your current session</value>
   </data>

@@ -1337,6 +1337,9 @@
     <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمی‌توانید نشست‌های این کاربر مدیر ارشد را باطل کنید</value>
+  </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید نشست جاری خود را حذف کنید</value>
   </data>
