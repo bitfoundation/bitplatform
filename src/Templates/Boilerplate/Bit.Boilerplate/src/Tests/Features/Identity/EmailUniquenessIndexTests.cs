@@ -45,13 +45,13 @@ public class EmailUniquenessIndexTests
             .Select(index => index.Properties.Select(p => p.Name).ToArray())
             .ToArray();
 
-        Assert.IsTrue(
-            uniqueIndexedColumnSets.Any(columns => columns is [nameof(User.NormalizedEmail)]),
+        Assert.Contains(
+            columns => columns is [nameof(User.NormalizedEmail)], uniqueIndexedColumnSets,
             "There must be a unique index on NormalizedEmail - the column UserStore.FindByEmailAsync queries with " +
             $"SingleOrDefaultAsync. Unique indexes found: [{string.Join(" | ", uniqueIndexedColumnSets.Select(c => string.Join(", ", c)))}].");
 
-        Assert.IsFalse(
-            uniqueIndexedColumnSets.Any(columns => columns is [nameof(User.Email)]),
+        Assert.DoesNotContain(
+            columns => columns is [nameof(User.Email)], uniqueIndexedColumnSets,
             "A unique index on the RAW Email column is not a substitute: under a case-sensitive collation it accepts " +
             "two rows that share one NormalizedEmail, and every later lookup for that address then throws.");
 

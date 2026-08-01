@@ -35,7 +35,7 @@ public class RoleAdministrationGuardTests
         var globalAdminRoleId = await ReadRoleId(server, AppRoles.GlobalAdmin);
 
         var assignmentsBefore = await CountRoleAssignments(server, globalAdminRoleId);
-        Assert.IsTrue(assignmentsBefore > 0, "This test just granted itself the role, so there is at least one assignment.");
+        Assert.IsGreaterThan(0, assignmentsBefore, "This test just granted itself the role, so there is at least one assignment.");
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => roleManagementController.RemoveAllUsersFromRole(globalAdminRoleId, TestContext.CancellationToken),
@@ -85,7 +85,7 @@ public class RoleAdministrationGuardTests
 
         var values = await ReadClaimValues(server, roleId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
 
-        Assert.AreEqual(1, values.Length,
+        Assert.HasCount(1, values,
             $"A single-valued claim must end up as exactly one row; found [{string.Join(", ", values)}]. Two rows mean the " +
             "reader's Max() keeps the old value, so the cap can only ever be raised.");
         Assert.AreEqual("2", values[0], "The stored value must be the one the administrator just saved.");

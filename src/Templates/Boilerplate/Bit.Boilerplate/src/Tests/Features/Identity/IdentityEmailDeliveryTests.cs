@@ -67,7 +67,7 @@ public class IdentityEmailDeliveryTests
 
         var store = server.WebApp.Services.GetRequiredService<EmailCaptureStore>();
 
-        Assert.IsFalse(store.Captured.Any(e => e.IsTo(email) && e.Kind is CapturedEmailKind.ResetPassword),
+        Assert.DoesNotContain(e => e.IsTo(email) && e.Kind is CapturedEmailKind.ResetPassword, store.Captured,
             "The request was refused, so no reset-password e-mail may have gone out.");
 
         // The property worth protecting: the refused request left no trace on the account. Read off the row rather
@@ -144,7 +144,7 @@ public class IdentityEmailDeliveryTests
             .Where(key => localizer[key, marker].Value.Contains(marker, StringComparison.Ordinal))
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
+        Assert.IsEmpty(offenders,
             $"These subject lines still put the live code outside the encrypted body: {string.Join(", ", offenders)}.");
     }
 
