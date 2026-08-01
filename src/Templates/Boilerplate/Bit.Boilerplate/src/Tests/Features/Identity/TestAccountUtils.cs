@@ -92,7 +92,7 @@ public static class TestAccountUtils
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 
         var tenants = await userController.GetTenants(cancellationToken);
-        Assert.IsTrue(tenants.Count > 0, "A global admin should see every active tenant, and the template seeds one.");
+        Assert.IsNotEmpty(tenants, "A global admin should see every active tenant, and the template seeds one.");
 
         Assert.IsTrue(await scope.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(tenants[0].Id, cancellationToken),
             "Switching into the seeded tenant should succeed for a global admin.");

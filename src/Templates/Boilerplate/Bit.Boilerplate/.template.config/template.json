@@ -564,7 +564,17 @@
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
                         "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
-                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        "src/Tests/Features/Identity/TokenClassSeparationTests.cs",
+                        "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
+                        "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
+                        "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
+                        "src/Tests/Features/ErrorHandling/ProblemDetailsWireContractTests.cs",
+                        "src/Tests/Features/ForceUpdate/ForceUpdateHeaderHardeningTests.cs",
+                        "src/Tests/Features/Json/JsonOptionsContractTests.cs",
+                        "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
+                        "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
+                        "src/Tests/Features/Tenants/ReservedTenantNameTests.cs"
                     ]
                 },
                 {
@@ -694,6 +704,7 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs"
                     ]
                 },
