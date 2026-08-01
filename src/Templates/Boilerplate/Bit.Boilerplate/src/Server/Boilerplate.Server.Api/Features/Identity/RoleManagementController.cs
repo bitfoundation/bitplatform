@@ -185,6 +185,15 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         EnsureCallerCanGrantClaims(claims);
 
+        // A role may hold at most one row of a single valued claim type, which is what lets every reader (and the roles
+        // page) treat it as a single value. Adding a second one with a different value has to be rejected rather than
+        // silently accepted - the unique index on (RoleId, ClaimType, ClaimValue) only stops an identical duplicate.
+        foreach (var claim in claims.Where(c => singleValuedClaimTypes.Contains(c.ClaimType)))
+        {
+            if (await DbContext.RoleClaims.AnyAsync(rc => rc.RoleId == role.Id && rc.ClaimType == claim.ClaimType, cancellationToken))
+                throw new BadRequestException().WithData("Reason", $"The role already has a '{claim.ClaimType}' claim. Use UpdateClaims to change its value.");
+        }
+
         foreach (var claim in claims)
         {
             var result = await roleManager.AddClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
@@ -204,18 +213,37 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         EnsureCallerCanGrantClaims(claims);
 
-        foreach (var claim in claims)
+        await DbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
-            var result = await roleManager.RemoveClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
+            await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            if (result.Succeeded is false)
-                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+            foreach (var claim in claims)
+            {
+                if (singleValuedClaimTypes.Contains(claim.ClaimType))
+                {
+                    await DbContext.RoleClaims
+                        .Where(rc => rc.RoleId == role.Id && rc.ClaimType == claim.ClaimType)
+                        .ExecuteDeleteAsync(cancellationToken);
+                }
+                else
+                {
+                    await DbContext.RoleClaims
+                        .Where(rc => rc.RoleId == role.Id && rc.ClaimType == claim.ClaimType && rc.ClaimValue == claim.ClaimValue)
+                        .ExecuteDeleteAsync(cancellationToken);
+                }
 
-            result = await roleManager.AddClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
+                await DbContext.RoleClaims.AddAsync(new()
+                {
+                    RoleId = role.Id,
+                    ClaimType = claim.ClaimType,
+                    ClaimValue = claim.ClaimValue
+                }, cancellationToken);
+            }
 
-            if (result.Succeeded is false)
-                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-        }
+            await DbContext.SaveChangesAsync(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+        });
     }
 
     [HttpPost("{roleId}")]
@@ -318,7 +346,19 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var role = await GetRoleById(roleId, cancellationToken);
 
-        await DbContext.UserRoles.Where(ur => ur.RoleId == roleId).ExecuteDeleteAsync(cancellationToken);
+        // Emptying any other role - including demo and t-admin - is a legitimate bulk operation. g-admin is not: this
+        // deletes every assignment at once, so it always removes the LAST global admin, which is exactly what
+        // ToggleUserRole refuses to do one row at a time. Afterwards nobody can grant g-admin back either, because
+        // doing so itself requires being a global admin - so the deployment is locked out with no in-app way back.
+        if (role.Name == AppRoles.GlobalAdmin)
+        {
+            if (User.IsInRole(AppRoles.GlobalAdmin) is false)
+                throw new UnauthorizedException();
+
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantUnassignAllSuperAdminsErrorMessage)]);
+        }
+
+        await DbContext.UserRoles.Where(ur => ur.RoleId == role.Id).ExecuteDeleteAsync(cancellationToken);
     }
 
     //#if (notification == true || signalR == true)
@@ -400,6 +440,12 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     private static readonly string[] grantableClaimTypes = [AppClaimTypes.FEATURES, AppClaimTypes.MAX_PRIVILEGED_SESSIONS];
 
     /// <summary>
+    /// Claim types a role may hold at most one of, so <see cref="UpdateClaims"/> replaces them by type rather than by
+    /// (type, value). <see cref="AppClaimTypes.FEATURES"/> is deliberately absent: a role holds one row per feature.
+    /// </summary>
+    private static readonly string[] singleValuedClaimTypes = [AppClaimTypes.MAX_PRIVILEGED_SESSIONS];
+
+    /// <summary>
     /// A role manager may only grant the claim types in <see cref="grantableClaimTypes"/>, and may only grant feature
     /// claims they themselves possess - so they cannot escalate privileges by assigning a feature they lack, for example
     /// a <see cref="AppFeatures.System"/> feature or (under multi-tenant) the global-admin-only Tenants_Manage_Global.
@@ -414,8 +460,21 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             if (claim.ClaimType is AppClaimTypes.FEATURES && User.HasFeature(claim.ClaimValue!) is false)
                 throw new UnauthorizedException().WithData("Reason", $"Caller does not have the feature claim '{claim.ClaimValue}' and cannot grant it to a role.");
 
-            if (claim.ClaimType is AppClaimTypes.MAX_PRIVILEGED_SESSIONS && int.TryParse(claim.ClaimValue, CultureInfo.InvariantCulture, out _) is false)
-                throw new BadRequestException().WithData("Reason", $"The claim '{AppClaimTypes.MAX_PRIVILEGED_SESSIONS}' must be a number.");
+            if (claim.ClaimType is AppClaimTypes.MAX_PRIVILEGED_SESSIONS)
+            {
+                if (int.TryParse(claim.ClaimValue, CultureInfo.InvariantCulture, out var maxPrivilegedSessions) is false)
+                    throw new BadRequestException().WithData("Reason", $"The claim '{AppClaimTypes.MAX_PRIVILEGED_SESSIONS}' must be a number.");
+
+                var callerMaxPrivilegedSessions = User.GetClaimValue<int?>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS) ?? AppSettings.Identity.MaxPrivilegedSessionsCount;
+
+                if (maxPrivilegedSessions is not AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS && maxPrivilegedSessions < 1)
+                    throw new BadRequestException().WithData("Reason", $"The claim '{AppClaimTypes.MAX_PRIVILEGED_SESSIONS}' must be a positive number or {AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS} (unlimited).");
+
+                if (callerMaxPrivilegedSessions is not AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS &&
+                    (maxPrivilegedSessions is AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS || maxPrivilegedSessions > callerMaxPrivilegedSessions))
+                    throw new UnauthorizedException().WithData("Reason", $"Caller cannot grant a '{AppClaimTypes.MAX_PRIVILEGED_SESSIONS}' value higher than their own.");
+            }
         }
     }
 }
+

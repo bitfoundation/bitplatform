@@ -53,6 +53,10 @@ public partial class ChangeEmailTab
     {
         if (isWaiting || sendModel.Email == Email) return;
 
+        // Proving the NEW address (the code sent below) is only half of it - the server also requires the user to prove
+        // she still holds the CURRENT one, by quoting a code sent to it. That is what elevated access is.
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
         isWaiting = true;
 
         try
@@ -87,6 +91,8 @@ public partial class ChangeEmailTab
 
             CurrentUser!.Email = changeModel.Email;
             PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, CurrentUser);
+
+            SnackBarService.Warning(Localizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
 
             showConfirmation = false;
             isEmailUnavailable = true;

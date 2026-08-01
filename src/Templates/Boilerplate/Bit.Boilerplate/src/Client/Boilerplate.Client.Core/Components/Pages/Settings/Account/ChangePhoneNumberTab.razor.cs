@@ -53,6 +53,10 @@ public partial class ChangePhoneNumberTab
     {
         if (isWaiting || sendModel.PhoneNumber == PhoneNumber) return;
 
+        // Proving the NEW number (the code sent below) is only half of it - the server also requires the user to prove
+        // she still holds the CURRENT identifiers, by quoting a code sent to them. That is what elevated access is.
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
         isWaiting = true;
 
         try

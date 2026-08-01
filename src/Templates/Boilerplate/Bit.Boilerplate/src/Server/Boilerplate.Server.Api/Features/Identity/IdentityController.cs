@@ -265,11 +265,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var maxPrivilegedSessionsCount = maxPrivilegedSessionsClaimValues.Max() ?? AppSettings.Identity.MaxPrivilegedSessionsCount;
 
-        var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v == -1) || maxPrivilegedSessionsCount is -1;
+        var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v is AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS)
+            || maxPrivilegedSessionsCount is AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS;
 
         if (hasUnlimitedPrivilegedSessions)
         {
-            maxPrivilegedSessionsCount = -1;
+            maxPrivilegedSessionsCount = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS;
         }
 
         var isPrivileged = hasUnlimitedPrivilegedSessions ||

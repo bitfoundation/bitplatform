@@ -146,7 +146,7 @@ Apply them like any other policy, and stack them freely - **all** attributes mus
 
 ```razor
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-@attribute [Authorize(Policy = AppFeatures.Management.ManageUsers)]
+@attribute [Authorize(Policy = AppFeatures.Management.Users_Manage)]
 ```
 
 ### Claims the server owns
@@ -155,9 +155,14 @@ Apply them like any other policy, and stack them freely - **all** attributes mus
 itself: the session id, privileged-session flag and cap, elevation deadline, the granted feature list, the
 authentication method, and (under multi-tenancy) the current tenant.
 
-These are **per-session state, not data**. Never insert them into the `UserClaims` / `RoleClaims` tables and never
-accept them from an external provider - the server recomputes them on every sign-in, and a stored copy would
-either be ignored or, worse, believed.
+Most of them are **per-session state, not data**: the session id, the privileged-session flag, the elevation
+deadline and the current tenant are recomputed on every sign-in, so never insert them into the `UserClaims` /
+`RoleClaims` tables and never accept them from an external provider - a stored copy would either be ignored or,
+worse, believed.
+
+The privileged-session **cap** is the exception, and it is deliberate: it is a per-role default, so it *is* stored
+as a role claim (the seeded `g-admin` and `t-admin` rows carry `-1`, meaning unlimited) and read back when the token
+is built. Role managers may set it through the roles page.
 
 Admin feature claims are a special case: rather than being stored, they are re-derived while the token is read -
 `g-admin` gets every feature, `t-admin` gets the tenant-scoped subset. So changing what an admin can do is a code

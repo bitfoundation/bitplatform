@@ -47,14 +47,28 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         var usersQuery = DbContext.Users.AsQueryable();
 
         //#if (multitenant == true)
-        if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
-        {
-            var tenantId = User.GetTenantId();
-            usersQuery = usersQuery.Where(u => u.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null));
-        }
-        //#endif
+        var currentTenantId = User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) ? null : User.GetTenantId();
 
+        if (currentTenantId is not null)
+        {
+            usersQuery = usersQuery.Where(u => u.Tenants.Any(tu => tu.TenantId == currentTenantId && tu.AcceptedOn != null));
+        }
+
+        // The session predicate has to be tenant scoped too, otherwise a tenant admin's "online users" count includes
+        // members of their tenant who are currently active only in a DIFFERENT tenant - a wrong number and a cross-tenant
+        // presence signal. GetUserSessions applies the same rule.
+        return await usersQuery.CountAsync(u => u.Sessions.Any(us => (currentTenantId == null || us.TenantId == currentTenantId) &&
+                                                                     (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (multitenant != true)
         return await usersQuery.CountAsync(u => u.Sessions.Any(us => (now - (us.RenewedOn ?? us.StartedOn)) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds), cancellationToken);
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
     }
 
     [HttpGet("{userId}"), EnableQuery]
@@ -65,9 +79,9 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
-            // Non Global admins may only see the sessions that are created in (signed into) the current tenant.
             var tenantId = User.GetTenantId();
-            query = query.Where(us => us.TenantId == tenantId);
+            query = query.Where(us => us.TenantId == tenantId &&
+                                      us.User!.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null));
         }
         //#endif
 
@@ -137,6 +151,8 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         var entityToDelete = await DbContext.UserSessions.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
+        await EnsureCallerCanRevokeSessionsOf(entityToDelete.UserId, cancellationToken);
+
         //#if (multitenant == true)
         await EnsureUserIsInCurrentTenant(entityToDelete.UserId, cancellationToken);
 
@@ -161,6 +177,8 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task RevokeAllUserSessions(Guid userId, CancellationToken cancellationToken)
     {
+        await EnsureCallerCanRevokeSessionsOf(userId, cancellationToken);
+
         //#if (multitenant == true)
         await EnsureUserIsInCurrentTenant(userId, cancellationToken);
         //#endif
@@ -194,6 +212,33 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         //#endif
     }
 
+
+    /// <summary>
+    /// Only a global admin may act on another global admin - the rule <see cref="Delete"/> already applies, extended to
+    /// the session revocation endpoints.
+    /// <para>
+    /// <see cref="AppFeatures.Management.Users_Manage"/> is delegable: a global admin can grant it to any user-group, so
+    /// its holder is normally NOT a global admin herself. Revoking a session deletes the <see cref="UserSession"/> row,
+    /// which kills both the access and the refresh token bound to it. So without this check a delegated user manager
+    /// could call <see cref="RevokeAllUserSessions"/> against the global admin in a loop: every time he signs in he is
+    /// thrown out again within a second, and he can never complete the several requests it takes to reach the roles page
+    /// and revoke that delegation. The one account able to undo the attack is exactly the one being denied service.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// There is exactly one g-admin role, and it cannot go away: <c>RoleManagementController.Create</c> and
+    /// <c>Update</c> both refuse <see cref="AppRoles.IsBuiltInRole"/> names, so no second one can be created and no
+    /// other role can be renamed to it, and <c>Delete</c> refuses to remove it. Hence the single membership query -
+    /// there is no "which g-admin role" question to answer and no missing-role case to handle.
+    /// </remarks>
+    private async Task EnsureCallerCanRevokeSessionsOf(Guid targetUserId, CancellationToken cancellationToken)
+    {
+        if (User.IsInRole(AppRoles.GlobalAdmin))
+            return;
+
+        if (await DbContext.UserRoles.AnyAsync(ur => ur.UserId == targetUserId && ur.Role!.Name == AppRoles.GlobalAdmin, cancellationToken))
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserCantRemoveSuperAdminErrorMessage)]);
+    }
 
     private async Task<User> GetUserById(Guid id, CancellationToken cancellationToken)
     {
@@ -266,3 +311,4 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
     }
     //#endif
 }
+
