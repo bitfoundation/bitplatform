@@ -48,6 +48,10 @@ public partial class TwoFactorSection
 
     private async Task DisableTwoFactorAuth()
     {
+        // Anything that weakens the second factor needs elevated access on the server (See UserController.TwoFactorAuth);
+        // enabling does not, because it already requires a valid code from the authenticator.
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
         var request = new TwoFactorAuthRequestDto { Enable = false };
         var response = await SendTwoFactorAuthRequest(request);
 
@@ -62,6 +66,9 @@ public partial class TwoFactorSection
 
     private async Task GenerateRecoveryCode()
     {
+        // Same elevated-access rule as DisableTwoFactorAuth.
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
         var request = new TwoFactorAuthRequestDto { ResetRecoveryCodes = true };
         var response = await SendTwoFactorAuthRequest(request);
 
@@ -70,6 +77,9 @@ public partial class TwoFactorSection
 
     private async Task ResetAuthenticatorKey()
     {
+        // Same elevated-access rule as DisableTwoFactorAuth - resetting the shared key also turns 2fa off.
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
+
         var request = new TwoFactorAuthRequestDto { ResetSharedKey = true };
         var response = await SendTwoFactorAuthRequest(request);
 

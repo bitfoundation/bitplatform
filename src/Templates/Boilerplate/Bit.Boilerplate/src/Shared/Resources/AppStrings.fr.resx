@@ -1337,6 +1337,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer cet utilisateur SuperAdmin</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Vous ne pouvez pas révoquer les sessions de cet utilisateur SuperAdmin</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer votre session actuelle</value>
   </data>

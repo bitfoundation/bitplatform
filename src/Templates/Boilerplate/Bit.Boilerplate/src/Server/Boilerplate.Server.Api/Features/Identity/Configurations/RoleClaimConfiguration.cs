@@ -7,7 +7,9 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
 {
     public void Configure(EntityTypeBuilder<RoleClaim> builder)
     {
-        builder.HasIndex(roleClaim => new { roleClaim.RoleId, roleClaim.ClaimType, roleClaim.ClaimValue });
+        builder.HasIndex(roleClaim => new { roleClaim.RoleId, roleClaim.ClaimType, roleClaim.ClaimValue }).IsUnique();
+
+        var unlimitedPrivilegedSessions = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture);
 
         var id = 1;
 
@@ -17,7 +19,7 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         {
             Id = id++,
             ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = "-1",
+            ClaimValue = unlimitedPrivilegedSessions,
             RoleId = globalAdminRoleId
         });
 
@@ -28,7 +30,7 @@ public partial class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim
         {
             Id = id++,
             ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = "-1",
+            ClaimValue = unlimitedPrivilegedSessions,
             RoleId = tenantAdminRoleId
         });
         //#endif

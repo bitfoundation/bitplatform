@@ -1337,6 +1337,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>No puedes eliminar este usuario SuperAdmin</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>No puedes revocar las sesiones de este usuario SuperAdmin</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu sesión actual</value>
   </data>

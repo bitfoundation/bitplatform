@@ -19,8 +19,6 @@ public static partial class IdentityMapper
 
     [MapProperty(nameof(@User.ConcurrencyStamp), nameof(@UserDto.Version))]
     public static partial UserDto Map(this User source);
-    public static partial User Map(this UserDto source);
-    public static partial void Patch(this UserDto source, User destination);
     public static partial void Patch(this EditUserRequestDto source, User destination);
     public static partial IQueryable<UserDto> Project(this IQueryable<User> query);
 

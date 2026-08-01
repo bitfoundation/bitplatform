@@ -65,7 +65,7 @@ public partial class TenantController : AppControllerBase, ITenantController
         {
             RoleId = tenantAdminRole.Id,
             ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = "-1"
+            ClaimValue = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture)
         }, cancellationToken);
 
         await DbContext.UserRoles.AddAsync(new() { UserId = userId, RoleId = tenantAdminRole.Id, TenantId = tenantToAdd.Id }, cancellationToken);

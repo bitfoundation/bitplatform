@@ -33,7 +33,7 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private IUserStore<User> userStore = default!;
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
-    [AutoInject] private SignInManager<User> signInManager = default;
+    [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
 
     //#if (notification == true)
@@ -79,19 +79,10 @@ public partial class UserController : AppControllerBase, IUserController
 
         await signInManager.SignOutAsync();
 
-        var appPlatformType = Enum.Parse<AppPlatformType>(HttpContext.Request.Headers["X-App-Platform"].Single()!);
-        if (appPlatformType is not AppPlatformType.Web)
+        if (IsWebPlatformRequest() is false)
             return;
 
-        HttpContext.Response.Cookies.Delete("access_token", new()
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
-            Secure = hostEnvironment.IsDevelopment() is false,
-            Path = "/",
-            Domain = HttpContext.Request.GetWebAppUrl().Host,
-            IsEssential = true
-        });
+        HttpContext.Response.Cookies.Delete("access_token", BuildAccessTokenCookieOptions());
     }
 
     [HttpPost("{id}"), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
@@ -140,23 +131,16 @@ public partial class UserController : AppControllerBase, IUserController
         // But during SignIn/Refresh calls, the cookie can't be set because the access_token value is not available yet.
         // UpdateSession is a good place to set the access token cookie for web clients.
 
-        var appPlatformType = Enum.Parse<AppPlatformType>(HttpContext.Request.Headers["X-App-Platform"].Single()!);
-        if (appPlatformType is not AppPlatformType.Web)
+        if (IsWebPlatformRequest() is false)
             return;
 
         var accessToken = HttpContext.GetAccessToken() ?? throw new InvalidOperationException("Access token not found.");
         DateTimeOffset expirationTime = DateTimeOffset.FromUnixTimeSeconds(User.GetClaimValue<long>("exp"));
 
-        Response.Cookies.Append("access_token", accessToken, new CookieOptions
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
-            Secure = hostEnvironment.IsDevelopment() is false,
-            Path = "/",
-            Expires = expirationTime,
-            Domain = HttpContext.Request.GetWebAppUrl().Host,
-            IsEssential = true
-        });
+        var cookieOptions = BuildAccessTokenCookieOptions();
+        cookieOptions.Expires = expirationTime;
+
+        Response.Cookies.Append("access_token", accessToken, cookieOptions);
     }
 
     [HttpPut]
@@ -209,7 +193,22 @@ public partial class UserController : AppControllerBase, IUserController
         }
     }
 
-    [HttpPost]
+    /// <summary>
+    /// Changing an account identifier (user name, e-mail, phone) takes TWO proofs, and this policy is the first of them:
+    /// <list type="number">
+    /// <item><b>That you still hold the current account.</b> <see cref="AuthPolicies.ELEVATED_ACCESS"/> is only granted
+    /// after the user quotes back a 6-digit code that <see cref="SendElevatedAccessToken"/> sent to the identifiers the
+    /// account ALREADY has (its confirmed e-mail / phone). Someone holding only a stolen access token cannot produce it.</item>
+    /// <item><b>That you hold the new identifier.</b> <see cref="SendChangeEmailToken"/> /
+    /// <see cref="SendChangePhoneNumberToken"/> then send a second code to the NEW address, and
+    /// <see cref="ChangeEmail"/> / <see cref="ChangePhoneNumber"/> only apply the change once it comes back.</item>
+    /// </list>
+    /// Without the first proof the second one is worthless: the attacker picks the new address himself, so his own inbox
+    /// is the only thing he has to control - and afterwards every recovery path (password reset, magic-link sign-in, OTP)
+    /// points at him. Note the policy sits on the <c>Send*</c> half, so following the e-mailed link to finish the change
+    /// does not prompt for a second code. <c>ChangeUserName</c> has no second proof at all, which is why it needs this one.
+    /// </summary>
+    [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
@@ -218,15 +217,20 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 
-    [HttpPost]
+    /// <inheritdoc cref="ChangeUserName"/>
+    [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var resendDelay = (TimeProvider.GetUtcNow() - user!.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
+        await EnsureIdentifierIsAvailable(new() { Email = request.Email }, user!.Id, cancellationToken);
 
-        if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", resendDelay);
+        // How long is still left before another token may be requested. Positive while the caller has to wait, which is
+        // what "TryAgainIn" means everywhere else (the lockout exceptions attach the same key as a positive duration).
+        var tryAgainIn = AppSettings.Identity.EmailTokenLifetime - (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn);
+
+        if (tryAgainIn > TimeSpan.Zero)
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn.Value);
 
         user.EmailTokenRequestedOn = TimeProvider.GetUtcNow();
         var result = await userManager.UpdateAsync(user);
@@ -250,7 +254,8 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var expired = (TimeProvider.GetUtcNow() - user!.EmailTokenRequestedOn) > AppSettings.Identity.EmailTokenLifetime;
+        var expired = user!.EmailTokenRequestedOn is null ||
+                      (TimeProvider.GetUtcNow() - user.EmailTokenRequestedOn.Value) > AppSettings.Identity.EmailTokenLifetime;
 
         if (expired)
             throw new BadRequestException(nameof(AppStrings.ExpiredToken));
@@ -264,7 +269,15 @@ public partial class UserController : AppControllerBase, IUserController
         if (tokenIsValid is false)
             throw new BadRequestException(nameof(AppStrings.InvalidToken));
 
+        await EnsureIdentifierIsAvailable(new() { Email = request.Email }, user.Id, cancellationToken);
+
         await userEmailStore.SetEmailAsync(user, request.Email, cancellationToken);
+        // The token proved the caller controls the new address, so it is confirmed - and the security stamp has to rotate,
+        // otherwise changing the account's recovery address leaves every other session alive. UserManager.ChangeEmailAsync
+        // does both; the raw store call this endpoint uses (so it can keep the app's own token scheme) does neither.
+        await ((IUserEmailStore<User>)userStore).SetEmailConfirmedAsync(user, true, cancellationToken);
+        await userManager.UpdateSecurityStampAsync(user);
+
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)
@@ -278,16 +291,20 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
-    [HttpPost]
+    /// <inheritdoc cref="ChangeUserName"/>
+    [HttpPost, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var resendDelay = (TimeProvider.GetUtcNow() - user!.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenLifetime;
+        await EnsureIdentifierIsAvailable(new() { PhoneNumber = request.PhoneNumber }, user!.Id, cancellationToken);
 
-        if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", resendDelay);
+        // Positive while the caller still has to wait, same as SendChangeEmailToken.
+        var tryAgainIn = AppSettings.Identity.PhoneNumberTokenLifetime - (TimeProvider.GetUtcNow() - user.PhoneNumberTokenRequestedOn);
+
+        if (tryAgainIn > TimeSpan.Zero)
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn.Value);
 
         user.PhoneNumberTokenRequestedOn = TimeProvider.GetUtcNow();
         var result = await userManager.UpdateAsync(user);
@@ -309,12 +326,15 @@ public partial class UserController : AppControllerBase, IUserController
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var expired = (TimeProvider.GetUtcNow() - user!.PhoneNumberTokenRequestedOn) > AppSettings.Identity.PhoneNumberTokenLifetime;
+        var expired = user!.PhoneNumberTokenRequestedOn is null ||
+                      (TimeProvider.GetUtcNow() - user.PhoneNumberTokenRequestedOn.Value) > AppSettings.Identity.PhoneNumberTokenLifetime;
 
         if (expired)
             throw new BadRequestException(nameof(AppStrings.ExpiredToken));
 
-        var result = await userManager.ChangePhoneNumberAsync(user!, request.PhoneNumber!, request.Token!);
+        await EnsureIdentifierIsAvailable(new() { PhoneNumber = request.PhoneNumber }, user.Id, cancellationToken);
+
+        var result = await userManager.ChangePhoneNumberAsync(user, request.PhoneNumber!, request.Token!);
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
@@ -337,22 +357,46 @@ public partial class UserController : AppControllerBase, IUserController
 
         var currentSessionId = User.GetSessionId();
 
-        foreach (var userSession in await GetUserSessions().ToArrayAsync(cancellationToken))
+        //#if (signalR == true)
+        var userSessionConnectionIds = await DbContext.UserSessions
+            .Where(us => us.UserId == userId && us.Id != currentSessionId && us.SignalRConnectionId != null)
+            .Select(us => us.SignalRConnectionId!)
+            .ToArrayAsync(cancellationToken);
+        //#endif
+
+        await DbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
-            if (userSession.Id == currentSessionId)
-            {
-                await SignOut(cancellationToken);
-            }
-            else
-            {
-                await RevokeSession(userSession.Id, cancellationToken);
-            }
+            await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+
+            // Re-read inside the delegate: on a retry the instance from the failed attempt is still tracked, already
+            // marked Deleted and carrying the concurrency stamp it was loaded with, so deleting it again would either
+            // fault or run against a stale stamp.
+            var userToDelete = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
+
+            var result = await userManager.DeleteAsync(userToDelete);
+
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+
+            await transaction.CommitAsync(cancellationToken);
+        });
+
+        await signInManager.SignOutAsync();
+
+        //#if (signalR == true)
+        // Check out AppHub's comments for more info.
+        foreach (var connectionId in userSessionConnectionIds)
+        {
+            await appHubContext.Clients.Client(connectionId).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
         }
+        //#endif
 
-        var result = await userManager.DeleteAsync(user);
+        if (IsWebPlatformRequest() is false)
+            return;
 
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+        HttpContext.Response.Cookies.Delete("access_token", BuildAccessTokenCookieOptions());
     }
 
 #pragma warning disable ASP0018
@@ -362,6 +406,17 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException().WithData("Reason", "User not found.");
+
+        // The empty request is a READ - the settings page calls it on every visit to fetch the shared key, the QR code and
+        // the recovery-code count - so the endpoint itself can't carry [Authorize(ELEVATED_ACCESS)] without prompting for a
+        // code every time the tab is opened. Everything that WEAKENS the second factor is gated here instead. Enabling is
+        // excluded because it already requires a valid TOTP code, which is stronger proof than elevation.
+        var weakensTwoFactor = request.Enable is false || request.ResetSharedKey || request.ResetRecoveryCodes;
+
+        var elevatedSessionExpiresOn = User.GetElevatedSessionExpiresOn();
+
+        if (weakensTwoFactor && (elevatedSessionExpiresOn is null || elevatedSessionExpiresOn.Value <= TimeProvider.GetUtcNow()))
+            throw new ForbiddenException().WithData("Reason", "Changing two factor authentication settings requires elevated access.");
 
         if (request.Enable is true)
         {
@@ -442,11 +497,12 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var resendDelay = (TimeProvider.GetUtcNow() - user!.ElevatedAccessTokenRequestedOn) - AppSettings.Identity.BearerTokenExpiration;
-        // Elevated access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
+        // Elevated access token claim gets added to access token upon refresh token request call, so their lifetime would be the same.
+        // Positive while the caller still has to wait, same as SendChangeEmailToken.
+        var tryAgainIn = AppSettings.Identity.BearerTokenExpiration - (TimeProvider.GetUtcNow() - user!.ElevatedAccessTokenRequestedOn);
 
-        if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", resendDelay);
+        if (tryAgainIn > TimeSpan.Zero)
+            throw new TooManyRequestsException(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay), tryAgainIn.Value.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn.Value);
 
         user.ElevatedAccessTokenRequestedOn = TimeProvider.GetUtcNow();
         var result = await userManager.UpdateAsync(user);
@@ -600,6 +656,49 @@ public partial class UserController : AppControllerBase, IUserController
         });
     }
     //#endif
+
+    /// <summary>
+    /// A missing, duplicated or unrecognised X-App-Platform header means "not a web client", not a server fault.
+    /// Every shipped client always sends it (See RequestHeadersDelegatingHandler), but an API consumer need not, and
+    /// Enum.Parse(Headers[...].Single()) turned that into a 500 logged at Critical - after the endpoint had already
+    /// committed its write. ApiServerExceptionHandler reads the same header defensively.
+    /// </summary>
+    private bool IsWebPlatformRequest()
+    {
+        return HttpContext.Request.Headers.TryGetValue("X-App-Platform", out var values)
+            && Enum.TryParse<AppPlatformType>(values.FirstOrDefault(), ignoreCase: true, out var appPlatformType)
+            && appPlatformType is AppPlatformType.Web;
+    }
+
+    /// <summary>
+    /// The access token cookie's attributes have to be byte-identical between Append and Delete, otherwise the browser
+    /// keeps the old cookie. Built in one place so they cannot drift.
+    /// </summary>
+    private CookieOptions BuildAccessTokenCookieOptions()
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Strict,
+            Secure = hostEnvironment.IsDevelopment() is false || Request.IsHttps,
+            Path = "/",
+            Domain = HttpContext.Request.GetWebAppUrl().Host,
+            IsEssential = true
+        };
+    }
+
+    /// <summary>
+    /// UserConfiguration puts unique indexes on Email and PhoneNumber, but IdentityOptions.User.RequireUniqueEmail
+    /// defaults to false and UserValidator never checks a phone number at all - so without this the write reaches the
+    /// database and comes back as a raw DbUpdateException, i.e. a 500 logged at Critical for something the user can fix.
+    /// </summary>
+    private async Task EnsureIdentifierIsAvailable(IdentityRequestDto identifier, Guid currentUserId, CancellationToken cancellationToken)
+    {
+        var owner = await userManager.FindUser(identifier);
+
+        if (owner is not null && owner.Id != currentUserId)
+            throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]);
+    }
 
     private static string FormatKey(string unformattedKey)
     {
