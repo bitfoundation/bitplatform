@@ -544,6 +544,8 @@
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
                         "src/Tests/Features/Identity/AccountSelfServiceSecurityTests.cs",
+                        "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
+                        "src/Tests/Features/Identity/EmailUniquenessIndexTests.cs",
                         "src/Tests/Features/Identity/TestAccountUtils.cs",
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",

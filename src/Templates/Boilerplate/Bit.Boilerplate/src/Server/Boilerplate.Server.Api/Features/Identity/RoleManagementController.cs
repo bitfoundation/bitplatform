@@ -197,6 +197,17 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
                 throw new BadRequestException().WithData("Reason", $"The role already has a '{claimType}' claim. Use UpdateClaims to change its value.");
         }
 
+        var duplicatePairInRequest = claims.GroupBy(c => (c.ClaimType, c.ClaimValue)).FirstOrDefault(g => g.Count() > 1);
+
+        if (duplicatePairInRequest is not null)
+            throw new BadRequestException().WithData("Reason", $"The claim '{duplicatePairInRequest.Key.ClaimType}' with value '{duplicatePairInRequest.Key.ClaimValue}' is listed more than once.");
+
+        foreach (var claim in claims)
+        {
+            if (await DbContext.RoleClaims.AnyAsync(rc => rc.RoleId == role.Id && rc.ClaimType == claim.ClaimType && rc.ClaimValue == claim.ClaimValue, cancellationToken))
+                throw new BadRequestException().WithData("Reason", $"The role already has the claim '{claim.ClaimType}' with value '{claim.ClaimValue}'.");
+        }
+
         foreach (var claim in claims)
         {
             var result = await roleManager.AddClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));

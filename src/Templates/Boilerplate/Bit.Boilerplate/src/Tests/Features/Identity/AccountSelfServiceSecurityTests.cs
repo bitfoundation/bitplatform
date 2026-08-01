@@ -110,6 +110,39 @@ public class AccountSelfServiceSecurityTests
     }
 
     /// <summary>
+    /// Deleting the account is the most destructive self-service operation there is - it wipes every
+    /// <c>UserSession</c> and the user row inside one transaction, and it cannot be undone. Its only protection is the
+    /// single <see cref="AuthPolicies.ELEVATED_ACCESS"/> attribute on the endpoint.
+    /// <para>
+    /// The one test that used to touch it drove the already-elevated happy path and asserted the ABSENCE of an
+    /// elevated-access e-mail, which holds just as well with the attribute deleted - so removing the gate would not
+    /// have turned anything red. This asserts the gate itself, the same way the two lesser self-service endpoints
+    /// above already do.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public async Task DeleteAccount_WithoutElevatedAccess_Should_BeRejected()
+    {
+        await using var server = await StartServer();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+
+        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+
+        await Assert.ThrowsExactlyAsync<ForbiddenException>(
+            () => userController.Delete(TestContext.CancellationToken),
+            "Without elevated access, an access token stolen for five minutes is enough to destroy the account.");
+
+        // Deliberately not asserted by re-running the delete: the row still being there is the whole property, and
+        // reading it costs nothing.
+        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
+        var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        Assert.IsTrue(await dbContext.Set<User>().AnyAsync(u => u.Id == userId, TestContext.CancellationToken),
+            "The refused request must not have deleted anything.");
+    }
+
+    /// <summary>
     /// Moving onto an address another account already holds. <c>IdentityOptions.User.RequireUniqueEmail</c> is left at
     /// its framework default of <c>false</c> and <c>UserValidator</c> never checks a phone number under any setting, so
     /// nothing above the database rejects this - it used to reach the filtered unique index in <c>UserConfiguration</c>
