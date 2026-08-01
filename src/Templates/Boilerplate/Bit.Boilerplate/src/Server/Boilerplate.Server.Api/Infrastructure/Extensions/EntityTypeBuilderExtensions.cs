@@ -37,7 +37,7 @@ public static class EntityTypeBuilderExtensions
             var columnName = GetMemberName(filterColumn ?? property);
             //#if (database == "PostgreSQL")
             index.HasFilter($"\"{columnName}\" IS NOT NULL");
-            //#elseif (database != "PostgreSQL" && database != "MySql")
+            //#elseif (database != "PostgreSQL")
             index.HasFilter($"[{columnName}] IS NOT NULL");
             //#endif
             //#endif
