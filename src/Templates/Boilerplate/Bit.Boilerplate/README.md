@@ -83,14 +83,8 @@ pre-confirmed accounts whose password is **`123456`**:
 <!--#endif-->
 
 These credentials, their password hash and their primary keys are all part of the public bit platform template,
-so **anyone** can sign in as a global administrator on a deployment that still carries them. Nothing gates the
-seed on the environment: `HasData` rows are baked into whatever migration you generate and are applied wherever
-that migration runs.
+so **anyone** can sign in as a global administrator on a deployment that still carries them.
 
-**Before you apply your first migration to anything that is not a developer machine**, delete these `HasData`
-blocks from `UserConfiguration.cs`, `UserRoleConfiguration.cs` and `RoleClaimConfiguration.cs` — or, if you want
-to keep the accounts, change their passwords and remove the `g-admin` `UserRole` row. The test project's
-`src/Tests/TestData.cs` is the only other place that depends on them.
 
 ## Documentation
 

@@ -119,13 +119,15 @@ public class IdentityEmailDeliveryTests
     [TestMethod, Ignore("BP-154 is open: whether the code belongs in the subject line is a product decision. " +
         "Without the attribute it fails with 'These subject lines still put the live code outside the encrypted body: " +
         "OtpEmailSubject, TfaTokenEmailSubject, ResetPasswordEmailSubject, ElevatedAccessTokenEmailSubject, ConfirmationEmailSubject'.")]
-    public void IdentityEmailSubjects_Should_NotCarryTheToken()
+    public async Task IdentityEmailSubjects_Should_NotCarryTheToken()
     {
         // The subject is built by IdentityEmailService as emailLocalizer[EmailStrings.XxxSubject, token], so a subject
         // that formats a placeholder is a subject that carries the credential. Asserted against the resource itself
         // because the test double replaces IdentityEmailService before any subject is ever composed.
-        var localizer = new AppTestServer().Build(s => s.AddIntegrationApiOnlyTestsServices())
-            .WebApp.Services.GetRequiredService<IStringLocalizer<EmailStrings>>();
+        await using var server = new AppTestServer();
+        server.Build(s => s.AddIntegrationApiOnlyTestsServices());
+
+        var localizer = server.WebApp.Services.GetRequiredService<IStringLocalizer<EmailStrings>>();
 
         string[] tokenBearingSubjects =
         [
