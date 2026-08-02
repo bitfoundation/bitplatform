@@ -1,7 +1,8 @@
-// This file talks *about* template conditionals, so it quotes `//#if (...)` inside doc comments and regexes. With
-// conditional processing left on, the template engine reads those quotes as real directives and truncates the file
-// out of every generated project. Nothing here is conditional, so processing is turned off for the whole file.
 //-:cnd:noEmit
+// Conditional processing is off for this whole file, and the marker above has to stay on the very first line.
+// This file documents the template's own conditional directives, so its doc comments and regexes quote them
+// verbatim. With processing on, the engine reads those quotes as real directives and swallows the rest of the
+// file, which then ships truncated (and uncompilable) in every generated project. Nothing here is conditional.
 
 namespace Boilerplate.Tests.Features.TemplateConfig;
 
