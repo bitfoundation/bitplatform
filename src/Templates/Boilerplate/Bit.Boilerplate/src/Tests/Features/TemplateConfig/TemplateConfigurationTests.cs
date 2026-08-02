@@ -1,3 +1,8 @@
+// This file talks *about* template conditionals, so it quotes `//#if (...)` inside doc comments and regexes. With
+// conditional processing left on, the template engine reads those quotes as real directives and truncates the file
+// out of every generated project. Nothing here is conditional, so processing is turned off for the whole file.
+//-:cnd:noEmit
+
 namespace Boilerplate.Tests.Features.TemplateConfig;
 
 /// <summary>
