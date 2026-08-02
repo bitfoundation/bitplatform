@@ -1,4 +1,5 @@
 using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.MinimalApiSample;
 
 namespace Boilerplate.Tests.Features.RateLimiting;
 
@@ -67,7 +68,8 @@ public class IdentityRateLimitTests
     /// <summary>
     /// The same burst against an endpoint that does NOT opt in must never be throttled. This is what
     /// distinguishes the named policy that shipped from the global limiter the finding argued against - a global
-    /// limiter would make this method fail.
+    /// limiter would make this method fail. Completing the loop IS the assertion: a 429 would surface as
+    /// <see cref="TooManyRequestsException"/> and fail the test on its own.
     /// </summary>
     [TestMethod]
     public async Task AnEndpointThatDoesNotOptIn_Should_NotBeRateLimited()
@@ -78,16 +80,14 @@ public class IdentityRateLimitTests
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var minimalApiSampleController = scope.ServiceProvider.GetRequiredService<IMinimalApiSampleController>();
 
         for (var i = 0; i < BurstSize; i++)
         {
-            // ExceptionDelegatingHandler turns a 429 into TooManyRequestsException, so simply completing the
-            // loop is the assertion. Any throw fails the test with its own message.
-            using var response = await httpClient.GetAsync(".well-known/jwks", TestContext.CancellationToken);
+            var result = await minimalApiSampleController.MinimalApiSample($"burst-{i}", queryStringParameter: null, TestContext.CancellationToken);
 
-            Assert.IsTrue(response.IsSuccessStatusCode,
-                $"Control: the un-opted-in endpoint must answer at all. Got {(int)response.StatusCode} on request {i + 1}.");
+            Assert.AreEqual($"burst-{i}", result.GetProperty("routeParameter").GetString(),
+                $"Control: the un-opted-in endpoint must keep answering. Failed on request {i + 1}.");
         }
     }
 

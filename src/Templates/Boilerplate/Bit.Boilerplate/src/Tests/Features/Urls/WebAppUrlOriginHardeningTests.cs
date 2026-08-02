@@ -1,3 +1,5 @@
+using Boilerplate.Shared.Features.Identity;
+
 namespace Boilerplate.Tests.Features.Urls;
 
 /// <summary>
@@ -22,19 +24,19 @@ namespace Boilerplate.Tests.Features.Urls;
 public class WebAppUrlOriginHardeningTests
 {
     /// <summary>
-    /// Every row is a value an anonymous caller can put on the query string. The request goes through the app's
-    /// own <see cref="HttpClient"/> (resolved from a request scope), so <c>ExceptionDelegatingHandler</c> turns
-    /// the response back into the typed exception a real client would see - which is what makes the assertion
-    /// meaningful: a <see cref="KnownException"/> is the endpoint answering, an <see cref="UnknownException"/> is
-    /// a server fault.
+    /// Each row is a value an anonymous caller can put on the query string, sent through the app's own typed
+    /// controller proxy so the response comes back as the exception a real client would see: a
+    /// <see cref="KnownException"/> is the endpoint answering, an <see cref="UnknownException"/> is a server
+    /// fault. The request body is empty on purpose - the endpoint's real answer is a validation failure, so
+    /// anything else means the origin decided the outcome. <c>null</c> is the control: no origin at all.
     /// </summary>
     [TestMethod]
-    [DataRow("?origin=", DisplayName = "present but empty -> treated as 'no origin supplied'")]
-    [DataRow("?origin=%20", DisplayName = "whitespace -> treated as 'no origin supplied'")]
-    [DataRow("?origin=notaurl", DisplayName = "not absolute -> the documented 400, not a 500")]
-    [DataRow("?origin=/relative", DisplayName = "relative -> the documented 400, not a 500")]
-    [DataRow("", DisplayName = "CONTROL: no origin at all -> the endpoint's own validation error")]
-    public async Task AMalformedOriginQueryValue_Should_NotFaultTheRequest(string queryString)
+    [DataRow("", DisplayName = "present but empty -> treated as 'no origin supplied'")]
+    [DataRow(" ", DisplayName = "whitespace -> treated as 'no origin supplied'")]
+    [DataRow("notaurl", DisplayName = "not absolute -> the documented 400, not a 500")]
+    [DataRow("/relative", DisplayName = "relative -> the documented 400, not a 500")]
+    [DataRow(null, DisplayName = "CONTROL: no origin at all -> the endpoint's own validation error")]
+    public async Task AMalformedOriginQueryValue_Should_NotFaultTheRequest(string? origin)
     {
         await using var server = new AppTestServer();
 
@@ -42,14 +44,11 @@ public class WebAppUrlOriginHardeningTests
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+            .WithQueryIf(origin is not null, "origin", origin);
 
-        using var content = JsonContent.Create(new { }, options: scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>());
-
-        // The body is empty on purpose: the endpoint's real answer is a validation failure, so anything other
-        // than a KnownException means the origin value - not the body - decided the outcome.
         var exception = await Assert.ThrowsAsync<Exception>(async ()
-            => await httpClient.PostAsync($"api/v1/Identity/SignIn{queryString}", content, TestContext.CancellationToken));
+            => await identityController.SignIn(new(), TestContext.CancellationToken));
 
         Assert.IsNotInstanceOfType<UnknownException>(exception,
             $"A caller-supplied origin must never turn into a server fault. Got: {exception}");
@@ -60,7 +59,7 @@ public class WebAppUrlOriginHardeningTests
 
     /// <summary>
     /// The other half of the fix: an origin that IS a well-formed absolute URI but is not trusted must still be
-    /// refused, and it must say so. Without this, "never 500" could be satisfied by accepting everything.
+    /// refused, and must say so. Without this, "never faults" could be satisfied by accepting everything.
     /// </summary>
     [TestMethod]
     public async Task AnUntrustedButWellFormedOrigin_Should_StillBeRefusedByName()
@@ -71,12 +70,11 @@ public class WebAppUrlOriginHardeningTests
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
-
-        using var content = JsonContent.Create(new { }, options: scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>());
+        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+            .WithQuery("origin", "https://evil.example");
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()
-            => await httpClient.PostAsync("api/v1/Identity/SignIn?origin=https://evil.example", content, TestContext.CancellationToken));
+            => await identityController.SignIn(new(), TestContext.CancellationToken));
 
         Assert.IsNotInstanceOfType<UnknownException>(exception, $"An untrusted origin is a 400, not a fault. Got: {exception}");
 

@@ -20,6 +20,12 @@ namespace Boilerplate.Tests.Features.ForceUpdate;
 /// The middleware's job is to force an update, not to validate headers, so every read now fails <b>open</b>:
 /// a caller that cannot state a usable version and platform is not a client the check applies to.
 /// </para>
+/// <para>
+/// <b>Why a bare <see cref="HttpClient"/> here</b>, unlike the other integration tests: the app's own
+/// <c>RequestHeadersDelegatingHandler</c> <i>adds</i> <c>X-App-Version</c> and <c>X-App-Platform</c> to every
+/// internal request, so the DI-resolved client cannot express "send exactly this header" - the value under test
+/// would arrive joined with the real one. These two headers are the input, so they have to be the only ones.
+/// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
 public class ForceUpdateHeaderHardeningTests
@@ -27,8 +33,8 @@ public class ForceUpdateHeaderHardeningTests
     /// <summary>
     /// Each row is a header combination an anonymous caller can send. The endpoint is an ordinary anonymous GET
     /// whose real answer is 404, and that 404 is the assertion: the client version headers must not change it
-    /// into a server fault. The last row is the control - a perfectly well-formed pair must reach the same 404,
-    /// so a green result cannot come from the middleware rejecting everything.
+    /// into a server fault. The last row is the control - a well-formed pair must reach the same 404, so a green
+    /// result cannot come from the middleware simply rejecting everything.
     /// </summary>
     [TestMethod]
     [DataRow("1.0.0", null, DisplayName = "X-App-Platform missing - used to be Single() on an empty StringValues")]
@@ -38,42 +44,25 @@ public class ForceUpdateHeaderHardeningTests
     [DataRow("not-a-version", "Web", DisplayName = "unparsable version - used to be Version.Parse")]
     [DataRow("1.0.0, 2.0.0", "Web", DisplayName = "repeated X-App-Version, which Kestrel joins into one comma-separated value")]
     [DataRow("", "Web", DisplayName = "empty version")]
-    [DataRow("1.0.0", "web", DisplayName = "CONTROL: a valid pair, lower-cased - must be accepted and reach the same 404")]
+    [DataRow("1.0.0", "web", DisplayName = "CONTROL: a valid pair, lower-cased - accepted and reaches the same 404")]
     public async Task AMalformedClientVersionHeader_Should_NotFaultTheRequest(string appVersion, string? appPlatform)
     {
         await using var server = new AppTestServer();
 
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        using var response = await SendAttachmentRequest(server, appVersion, appPlatform);
 
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/Attachment/GetAttachment/{Guid.NewGuid()}/UserProfileImageSmall");
-
-        // Replace rather than add: the app's own RequestHeadersDelegatingHandler already sets both headers.
-        request.Headers.Remove("X-App-Version");
-        request.Headers.Remove("X-App-Platform");
-        request.Headers.TryAddWithoutValidation("X-App-Version", appVersion);
-        if (appPlatform is not null)
-        {
-            request.Headers.TryAddWithoutValidation("X-App-Platform", appPlatform);
-        }
-
-        var exception = await Assert.ThrowsAsync<Exception>(async ()
-            => await httpClient.SendAsync(request, TestContext.CancellationToken));
-
-        Assert.IsNotInstanceOfType<UnknownException>(exception,
-            $"A header the caller controls must not turn the real 404 into a server fault. Got: {exception}");
-
-        Assert.IsInstanceOfType<ResourceNotFoundException>(exception,
-            $"Expected the endpoint's own 404. Got: {exception}");
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode,
+            $"A header the caller controls must not turn the real 404 into a server fault. Body: {body}");
     }
 
     /// <summary>
-    /// The check itself must still work: a client below the configured minimum is refused with
-    /// <see cref="ClientNotSupportedException"/>. Without this, "never faults" could be satisfied by a middleware
-    /// that does nothing at all - which is exactly what a too-eager fail-open would produce.
+    /// The check itself must still work: a client below the configured minimum is refused. Without this, "never
+    /// faults" would also be satisfied by a middleware that does nothing at all - which is exactly what a
+    /// too-eager fail-open produces.
     /// </summary>
     [TestMethod]
     public async Task AClientBelowTheMinimumVersion_Should_StillBeRefused()
@@ -81,23 +70,32 @@ public class ForceUpdateHeaderHardeningTests
         await using var server = new AppTestServer();
 
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices(),
-            configureTestConfigurations: configuration =>
-            {
-                configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "9.9.9";
-            }).Start(TestContext.CancellationToken);
+            configureTestConfigurations: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "9.9.9")
+            .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        using var response = await SendAttachmentRequest(server, appVersion: "1.0.0", appPlatform: nameof(AppPlatformType.Web));
 
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode, $"An out-of-date client must be refused. Body: {body}");
+
+        Assert.Contains(nameof(ClientNotSupportedException), body, StringComparison.Ordinal);
+    }
+
+    private async Task<HttpResponseMessage> SendAttachmentRequest(AppTestServer server, string appVersion, string? appPlatform)
+    {
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
 
         using var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/Attachment/GetAttachment/{Guid.NewGuid()}/UserProfileImageSmall");
-        request.Headers.Remove("X-App-Version");
-        request.Headers.Remove("X-App-Platform");
-        request.Headers.TryAddWithoutValidation("X-App-Version", "1.0.0");
-        request.Headers.TryAddWithoutValidation("X-App-Platform", nameof(AppPlatformType.Web));
 
-        await Assert.ThrowsAsync<ClientNotSupportedException>(async ()
-            => await httpClient.SendAsync(request, TestContext.CancellationToken));
+        request.Headers.TryAddWithoutValidation("X-App-Version", appVersion);
+
+        if (appPlatform is not null)
+        {
+            request.Headers.TryAddWithoutValidation("X-App-Platform", appPlatform);
+        }
+
+        return await httpClient.SendAsync(request, TestContext.CancellationToken);
     }
 
     public TestContext TestContext { get; set; } = default!;
