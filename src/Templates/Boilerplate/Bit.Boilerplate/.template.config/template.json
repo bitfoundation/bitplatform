@@ -607,6 +607,12 @@
                     ]
                 },
                 {
+                    "condition": "(cloudflare != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs"
+                    ]
+                },
+                {
                     "condition": "(signalR != true)",
                     "exclude": [
                         "src/Shared/Features/Chatbot/**",
