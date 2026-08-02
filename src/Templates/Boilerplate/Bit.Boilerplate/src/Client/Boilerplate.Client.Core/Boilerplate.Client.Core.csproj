@@ -19,6 +19,9 @@
         <PackageReference Include="Bit.BlazorUI.Assets" />
         <!--/+:msbuild-conditional:noEmit -->
         <Using Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
+        <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore" />
+        <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Boilerplate.Client.Core.Infrastructure.Data" />
         <PackageReference Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
@@ -33,20 +36,26 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" />
 
+        <Using Include="System.Reflection" />
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
+        <Using Include="System.Runtime.CompilerServices" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Microsoft.Extensions.Logging" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Microsoft.AspNetCore.Components.Routing" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
         <Using Include="Bit.Butil" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="Boilerplate.Shared" />
+        <Using Include="Boilerplate.Shared.Features.Identity" />
+        <Using Include="Boilerplate.Shared.Features.Identity.Dtos" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Common" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers" />
     </ItemGroup>
 
     <ItemGroup>

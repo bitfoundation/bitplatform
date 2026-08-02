@@ -14,26 +14,38 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Using Include="System.Text" />
         <Using Include="Microsoft.Extensions.Options" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="Microsoft.AspNetCore.Authentication" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.Data" />
+        <Using Include="Boilerplate.Server.Api.Infrastructure.Services" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.Controllers" />
+        <Using Include="Boilerplate.Server.Api.Infrastructure.RequestPipeline" />
+        <Using Include="Boilerplate.Server.Api.Features.Identity.Models" />
+        <Using Include="Boilerplate.Server.Api.Features.Identity.Services" />
         <Using Include="Boilerplate.Server.Api.Features.Identity.Resources" />
         <Using Include="Boilerplate.Server.Api.Features.Identity.Components" />
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <Using Include="Hangfire" />
+        <Using Include="Humanizer" />
         <Using Include="Asp.Versioning" />
+        <Using Include="Riok.Mapperly.Abstractions" />
         <Using Include="Boilerplate.Shared.Infrastructure" />
         <Using Include="Boilerplate.Shared.Infrastructure.Attributes" />
+        <Using Include="Boilerplate.Shared.Features.Identity" />
+        <Using Include="Boilerplate.Shared.Features.Identity.Dtos" />
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />
         <Using Include="Microsoft.AspNetCore.Mvc" />
         <Using Include="ZiggyCreatures.Caching.Fusion" />
         <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR" />
         <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Features.Chatbot" />
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Infrastructure.SignalR" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,10 +1,8 @@
 //+:cnd:noEmit
-using System.Text;
 using System.Threading.Channels;
 using Boilerplate.Shared;
 using Microsoft.Agents.AI;
 using Boilerplate.Shared.Features.Chatbot;
-using Boilerplate.Server.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;

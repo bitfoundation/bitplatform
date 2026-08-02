@@ -6,7 +6,6 @@ using ImageMagick;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Boilerplate.Shared.Features.Chatbot;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
@@ -21,7 +20,6 @@ using Microsoft.OpenApi;
 using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Twilio;
@@ -43,20 +41,15 @@ using AdsPush.Abstraction;
 //#if (filesStorage == "AzureBlobStorage")
 using Azure.Storage.Blobs;
 //#endif
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Server.Api.Features.Identity.Services;
 using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
 //#endif
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Server.Api.Features.Statistics;
 using Boilerplate.Shared.Infrastructure.Resources;
-using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
-using Boilerplate.Server.Api.Infrastructure.Services;
 //#if (module == "Sales" || module == "Admin")
 using Boilerplate.Server.Api.Features.Products;
 //#endif

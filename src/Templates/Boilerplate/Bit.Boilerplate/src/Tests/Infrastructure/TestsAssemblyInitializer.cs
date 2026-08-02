@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Microsoft.EntityFrameworkCore;
 //#if (aspire == true)
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
@@ -9,9 +8,6 @@ using Aspire.Hosting.ApplicationModel;
 //#if (database  == 'Sqlite')
 using Microsoft.Data.Sqlite;
 //#endif
-using Microsoft.Extensions.Hosting;
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
 
 namespace Boilerplate.Tests.Infrastructure;
 

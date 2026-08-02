@@ -122,12 +122,16 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         
+        <Using Include="Microsoft.Extensions.Logging" />
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
+        <!--/+:msbuild-conditional:noEmit -->
+        <Using Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
+        <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <ItemGroup>

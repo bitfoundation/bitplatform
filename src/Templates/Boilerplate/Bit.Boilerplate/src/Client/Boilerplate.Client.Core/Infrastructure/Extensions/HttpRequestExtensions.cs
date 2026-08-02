@@ -1,6 +1,3 @@
-using System.Reflection;
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
-
 namespace System.Net.Http;
 
 public static class HttpRequestExtensions

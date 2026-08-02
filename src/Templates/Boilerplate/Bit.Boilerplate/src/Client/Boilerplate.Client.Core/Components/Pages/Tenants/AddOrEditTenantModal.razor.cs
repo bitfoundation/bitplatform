@@ -1,7 +1,6 @@
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Pages.Tenants;
 

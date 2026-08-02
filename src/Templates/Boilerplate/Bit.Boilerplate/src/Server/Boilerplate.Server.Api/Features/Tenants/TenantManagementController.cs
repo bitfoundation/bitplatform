@@ -1,10 +1,5 @@
 //+:cnd:noEmit
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 using Boilerplate.Server.Shared;
-using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 using ZiggyCreatures.Caching.Fusion;

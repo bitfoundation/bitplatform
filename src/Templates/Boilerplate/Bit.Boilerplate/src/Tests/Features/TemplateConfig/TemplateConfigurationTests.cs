@@ -1,4 +1,8 @@
-using System.Text.RegularExpressions;
+//-:cnd:noEmit
+// Conditional processing is off for this whole file, and the marker above has to stay on the very first line.
+// This file documents the template's own conditional directives, so its doc comments and regexes quote them
+// verbatim. With processing on, the engine reads those quotes as real directives and swallows the rest of the
+// file, which then ships truncated (and uncompilable) in every generated project. Nothing here is conditional.
 
 namespace Boilerplate.Tests.Features.TemplateConfig;
 

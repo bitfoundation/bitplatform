@@ -1,11 +1,4 @@
 //+:cnd:noEmit
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
-using Boilerplate.Tests.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Tests.Features.Identity;
 

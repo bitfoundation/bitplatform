@@ -1,7 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 

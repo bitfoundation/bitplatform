@@ -1,21 +1,10 @@
 //+:cnd:noEmit
-using System.Text;
 using System.Text.Encodings.Web;
 using QRCoder;
-using Humanizer;
 using Microsoft.AspNetCore.Cors;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Services;
-using Boilerplate.Server.Api.Features.Identity.Services;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
-//#endif
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;

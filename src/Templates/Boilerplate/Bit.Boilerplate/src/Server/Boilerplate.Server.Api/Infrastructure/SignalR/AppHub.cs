@@ -1,9 +1,7 @@
 //+:cnd:noEmit
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Identity;
-using Boilerplate.Server.Api.Features.Identity.Models;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 

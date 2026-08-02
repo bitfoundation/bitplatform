@@ -1,4 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Json;

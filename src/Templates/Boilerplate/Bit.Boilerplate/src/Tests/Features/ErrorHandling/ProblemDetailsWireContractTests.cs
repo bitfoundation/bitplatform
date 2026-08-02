@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text;
 
 namespace Boilerplate.Tests.Features.ErrorHandling;

@@ -1,12 +1,6 @@
 using Bunit;
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
-using Boilerplate.Tests.Infrastructure.Services;
-using Boilerplate.Server.Api.Features.Identity.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Boilerplate.Client.Core.Components.Pages.Identity;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Features.Identity;
 

@@ -1,9 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
-using Boilerplate.Client.Core.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Features.Identity;
 

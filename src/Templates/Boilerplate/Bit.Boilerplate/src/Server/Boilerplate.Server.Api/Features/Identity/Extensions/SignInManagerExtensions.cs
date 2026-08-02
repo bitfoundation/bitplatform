@@ -1,7 +1,6 @@
 //+:cnd:noEmit
 using System.Reflection;
 using Boilerplate.Server.Api;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Microsoft.AspNetCore.Identity;
 

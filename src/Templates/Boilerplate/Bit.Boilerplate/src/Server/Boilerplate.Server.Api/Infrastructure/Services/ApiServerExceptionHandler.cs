@@ -2,7 +2,6 @@
 using System.Net;
 using Polly.CircuitBreaker;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
 using System.Data.Common;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;

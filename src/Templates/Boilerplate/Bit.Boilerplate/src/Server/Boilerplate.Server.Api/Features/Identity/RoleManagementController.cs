@@ -1,11 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Shared.Features.Identity;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif

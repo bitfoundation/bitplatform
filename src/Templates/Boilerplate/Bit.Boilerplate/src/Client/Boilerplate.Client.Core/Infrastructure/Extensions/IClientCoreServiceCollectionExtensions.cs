@@ -1,8 +1,4 @@
 //+:cnd:noEmit
-//#if (offlineDb == true)
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Client.Core.Infrastructure.Data;
-//#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
@@ -10,9 +6,7 @@ using BlazorApplicationInsights.Interfaces;
 using Boilerplate.Client.Core;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 //#if (signalR == true)
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
 //#endif
 

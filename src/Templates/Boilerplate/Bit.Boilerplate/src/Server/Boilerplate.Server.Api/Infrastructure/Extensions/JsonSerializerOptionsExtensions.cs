@@ -1,6 +1,4 @@
 using FluentEmail.Core;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace System.Text.Json;
 

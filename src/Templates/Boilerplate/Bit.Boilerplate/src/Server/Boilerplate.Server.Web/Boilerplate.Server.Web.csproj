@@ -13,6 +13,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Bit.BlazorES2019" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />

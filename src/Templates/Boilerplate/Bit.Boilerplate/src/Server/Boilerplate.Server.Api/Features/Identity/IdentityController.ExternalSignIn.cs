@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Infrastructure.Services;
-using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 

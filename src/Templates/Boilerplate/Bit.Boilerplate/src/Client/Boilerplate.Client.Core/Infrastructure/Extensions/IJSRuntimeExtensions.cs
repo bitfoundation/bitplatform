@@ -1,7 +1,4 @@
 //+:cnd:noEmit
-using System.Reflection;
-//#if (notification == true)
-//#endif
 
 namespace Microsoft.JSInterop;
 

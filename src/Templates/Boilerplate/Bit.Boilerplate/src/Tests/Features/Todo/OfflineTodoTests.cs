@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
-
 namespace Boilerplate.Tests.Features.Todo;
 
 [TestClass, TestCategory("UITest"), Retry(2)]

@@ -1,6 +1,4 @@
 using System.Web;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Identity;
 

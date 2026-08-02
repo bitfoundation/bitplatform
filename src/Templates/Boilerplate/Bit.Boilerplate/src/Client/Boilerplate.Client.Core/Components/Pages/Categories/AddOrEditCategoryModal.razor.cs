@@ -1,6 +1,5 @@
 using Boilerplate.Shared.Features.Categories;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;
 

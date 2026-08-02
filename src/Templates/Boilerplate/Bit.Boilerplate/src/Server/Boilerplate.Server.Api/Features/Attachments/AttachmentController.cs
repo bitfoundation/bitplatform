@@ -2,14 +2,8 @@
 using ImageMagick;
 using FluentStorage.Storage;
 using System.Diagnostics.Metrics;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 using Boilerplate.Server.Api.Features.Identity;
-using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Shared.Features.Attachments;
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.Attachments;
 

@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Server.Api.Features.Identity.Configurations;
 

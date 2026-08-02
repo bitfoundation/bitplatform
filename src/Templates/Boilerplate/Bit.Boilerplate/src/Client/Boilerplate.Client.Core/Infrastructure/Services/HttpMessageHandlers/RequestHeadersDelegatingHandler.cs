@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;

@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignUp;
 
