@@ -1,10 +1,4 @@
-using System.Net;
 using System.Net.Http.Json;
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Tests.Infrastructure.Services;
-using Boilerplate.Server.Api.Infrastructure.Data;
-using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Server.Api.Features.Identity.Resources;
 
 namespace Boilerplate.Tests.Features.Identity;

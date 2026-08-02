@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Features.Identity.Models;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 //#endif

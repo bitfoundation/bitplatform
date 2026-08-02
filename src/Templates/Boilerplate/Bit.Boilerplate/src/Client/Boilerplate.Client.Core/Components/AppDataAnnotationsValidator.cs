@@ -1,8 +1,5 @@
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components;
 

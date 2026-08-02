@@ -1,4 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.MinimalApiSample;
 
 namespace Boilerplate.Tests.Features.RateLimiting;

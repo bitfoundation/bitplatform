@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Boilerplate.Tests.Features.Diagnostics;
 
 [TestClass, TestCategory("IntegrationTest")]

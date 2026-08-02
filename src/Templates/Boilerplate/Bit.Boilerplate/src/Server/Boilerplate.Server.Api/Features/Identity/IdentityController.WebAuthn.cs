@@ -2,8 +2,6 @@
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using System.Buffers.Text;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 

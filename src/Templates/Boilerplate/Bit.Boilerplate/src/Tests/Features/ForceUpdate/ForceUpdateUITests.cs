@@ -1,5 +1,3 @@
-using Boilerplate.Tests.Features.Identity;
-
 namespace Boilerplate.Tests.Features.ForceUpdate;
 
 [TestClass, TestCategory("UITest"), Retry(2)]

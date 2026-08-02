@@ -1,12 +1,9 @@
 //+:cnd:noEmit
-using Microsoft.EntityFrameworkCore;
 using Boilerplate.Shared.Features.Products;
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Server.Api.Features.Products;
-using Boilerplate.Server.Api.Infrastructure.Data;
 using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Shared.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Caching;
 

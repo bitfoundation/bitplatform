@@ -1,9 +1,4 @@
 //+:cnd:noEmit
-using System.Text;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 using Boilerplate.Shared.Features.Diagnostic;
 //#if (signalR == true || notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;

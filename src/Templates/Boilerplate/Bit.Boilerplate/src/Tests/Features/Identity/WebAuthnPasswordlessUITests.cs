@@ -1,5 +1,3 @@
-using Boilerplate.Tests.Infrastructure.Components;
-
 namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("UITest"), Retry(2)]

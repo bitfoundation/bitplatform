@@ -2,8 +2,6 @@
 
 using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
-using Boilerplate.Server.Api.Infrastructure.Services;
-using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 namespace Boilerplate.Server.Api;
 

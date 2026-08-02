@@ -1,6 +1,3 @@
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Tests.Infrastructure.Services;
-
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>

@@ -1,7 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Tenants;
 

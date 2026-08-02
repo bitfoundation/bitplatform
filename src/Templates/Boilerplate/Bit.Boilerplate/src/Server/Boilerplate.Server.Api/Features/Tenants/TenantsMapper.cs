@@ -1,4 +1,3 @@
-using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 
 namespace Boilerplate.Server.Api.Features.Tenants;

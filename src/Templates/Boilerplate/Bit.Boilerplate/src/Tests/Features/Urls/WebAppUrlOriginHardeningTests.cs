@@ -1,5 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-
 namespace Boilerplate.Tests.Features.Urls;
 
 /// <summary>

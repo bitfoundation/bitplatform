@@ -1,9 +1,6 @@
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Time.Testing;
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Client.Core.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Features.Mcp;
 

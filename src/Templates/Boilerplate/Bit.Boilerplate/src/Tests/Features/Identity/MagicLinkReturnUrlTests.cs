@@ -1,7 +1,3 @@
-using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Server.Api.Infrastructure.Data;
-
 namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("UITest"), Retry(2)]

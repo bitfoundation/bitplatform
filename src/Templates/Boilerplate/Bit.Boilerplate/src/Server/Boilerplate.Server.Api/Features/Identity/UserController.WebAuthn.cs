@@ -1,8 +1,6 @@
 //+:cnd:noEmit
-using System.Text;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 

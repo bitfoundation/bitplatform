@@ -1,10 +1,6 @@
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using System.Buffers.Text;
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Tests.Features.Identity;
 

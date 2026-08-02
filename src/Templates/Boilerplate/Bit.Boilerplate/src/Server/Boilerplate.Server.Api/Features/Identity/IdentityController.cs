@@ -1,16 +1,6 @@
 //+:cnd:noEmit
-using Humanizer;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Server.Api.Features.Identity.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif

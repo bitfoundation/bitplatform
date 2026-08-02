@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
-
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>

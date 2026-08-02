@@ -1,5 +1,3 @@
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
-
 namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("UITest"), Retry(2)]

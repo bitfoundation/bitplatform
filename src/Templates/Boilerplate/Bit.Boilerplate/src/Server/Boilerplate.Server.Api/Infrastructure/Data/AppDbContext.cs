@@ -9,9 +9,7 @@ using Boilerplate.Server.Api.Features.Todo;
 //#if (multitenant == true)
 using System.Reflection;
 using Boilerplate.Server.Api.Features.Tenants;
-using Boilerplate.Server.Api.Features.Identity.Services;
 //#endif
-using Boilerplate.Server.Api.Features.Identity.Models;
 //#if (database == "PostgreSQL" || database == "SqlServer")
 using Boilerplate.Server.Api.Infrastructure.Data.Configurations;
 //#endif

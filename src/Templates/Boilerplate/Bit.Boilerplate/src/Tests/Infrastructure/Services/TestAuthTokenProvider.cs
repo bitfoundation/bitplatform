@@ -1,5 +1,3 @@
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
-
 namespace Boilerplate.Tests.Services;
 
 public partial class TestAuthTokenProvider : IAuthTokenProvider

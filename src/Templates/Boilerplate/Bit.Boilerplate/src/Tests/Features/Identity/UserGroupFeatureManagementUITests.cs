@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Tests.Infrastructure.Services;
-using Boilerplate.Server.Api.Infrastructure.Data;
 using Boilerplate.Server.Api.Features.Tenants;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Tests.Features.Identity;
 

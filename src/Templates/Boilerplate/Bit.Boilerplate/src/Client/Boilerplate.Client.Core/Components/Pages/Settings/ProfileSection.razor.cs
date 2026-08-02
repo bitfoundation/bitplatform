@@ -1,7 +1,5 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Attachments;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 

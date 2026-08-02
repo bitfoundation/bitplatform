@@ -1,8 +1,4 @@
 //+:cnd:noEmit
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 using Boilerplate.Shared.Features.Categories;
 
 namespace Boilerplate.Server.Api.Features.Categories;

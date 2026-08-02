@@ -2,9 +2,7 @@
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif
-using System.Text;
 using Boilerplate.Server.Shared;
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api;
 
