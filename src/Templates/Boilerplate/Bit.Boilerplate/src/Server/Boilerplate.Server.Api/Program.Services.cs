@@ -230,7 +230,22 @@ public static partial class Program
                     .AllowCredentials();
             });
         });
-        services.AddRateLimiter();
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddPolicy(AppRateLimitPolicies.IDENTITY, context =>
+                System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: context.User.IsAuthenticated()
+                        ? $"user:{context.User.GetUserId()}"
+                        : $"ip:{context.Connection.RemoteIpAddress}",
+                    factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 30,
+                        Window = TimeSpan.FromMinutes(1)
+                    }));
+        });
 
         services.AddSingleton(sp =>
         {
@@ -399,14 +414,15 @@ public static partial class Program
                 var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
                 var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
 
-                operation.Parameters = [new OpenApiParameter()
+                operation.Parameters ??= [];
+                operation.Parameters.Add(new OpenApiParameter()
                 {
                     In = ParameterLocation.Header,
                     Name = HeaderNames.Authorization,
                     Example = "Bearer XXX.YYY...",
                     Description = "Get your JWT token by signin-in through Identity/SignIn endpoint",
                     Required = isAuthorizedAction
-                }];
+                });
 
                 if (isODataEnabledAction)
                 {
@@ -435,12 +451,12 @@ public static partial class Program
         fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
             var smtpConnectionString = configuration.GetRequiredConnectionString("smtp")!;
-            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "localhost"));
+            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"));
             var host = endpoint.Host;
             var port = endpoint.Port is -1 ? 25 : endpoint.Port;
             var userName = GetConnectionStringValue(smtpConnectionString, "UserName", string.Empty);
             var password = GetConnectionStringValue(smtpConnectionString, "Password", string.Empty);
-            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false") is not "false";
+            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false").Equals("false", StringComparison.OrdinalIgnoreCase) is false;
 
             SmtpClient smtpClient = new(host, port)
             {
@@ -799,13 +815,22 @@ public static partial class Program
         services.ConfigureHttpClientFactoryForExternalIdentityProviders();
     }
 
+    /// <summary>
+    /// Reads a single `key=value` entry out of a `;`-separated connection string.
+    /// Trimming and the case-insensitive comparison are required, not cosmetic: connection strings are commonly
+    /// written with a space after the separator, and a plain ordinal StartsWith on an untrimmed segment makes
+    /// every key after the first invisible - which silently drops SMTP credentials rather than failing loudly.
+    /// Only the FIRST '=' is consumed, so values containing '=' (e.g. base64 padding) survive intact.
+    /// </summary>
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)
     {
+        var prefix = $"{key}=";
         var parts = connectionString.Split(';');
         foreach (var part in parts)
         {
-            if (part.StartsWith($"{key}="))
-                return part[$"{key}=".Length..];
+            var trimmedPart = part.Trim();
+            if (trimmedPart.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return trimmedPart[prefix.Length..];
         }
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
     }

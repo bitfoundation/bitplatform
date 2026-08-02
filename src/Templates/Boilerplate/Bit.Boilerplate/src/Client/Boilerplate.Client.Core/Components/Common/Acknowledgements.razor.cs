@@ -88,7 +88,6 @@ public partial class Acknowledgements
         new("libphonenumber-csharp", "https://twcclegg.github.io/libphonenumber-csharp", "https://github.com/twcclegg/libphonenumber-csharp", "Apache-2.0"),
         new("FluentEmail", "https://github.com/lukencode/FluentEmail", "https://github.com/lukencode/FluentEmail", "MIT"),
         new("FluentStorage", "https://github.com/robinrodricks/FluentStorage", "https://github.com/robinrodricks/FluentStorage", "MIT"),
-        new("NWebsec", "https://www.nwebsec.com", "https://github.com/NWebsec/NWebsec", "BSD-3-Clause"),
         new("DistributedLock", "https://github.com/madelson/DistributedLock", "https://github.com/madelson/DistributedLock", "MIT"),
         new("Velopack", "https://velopack.io", "https://github.com/velopack/velopack", "MIT"),
         new("Meziantou.Framework", "https://github.com/meziantou/Meziantou.Framework", "https://github.com/meziantou/Meziantou.Framework", "MIT"),

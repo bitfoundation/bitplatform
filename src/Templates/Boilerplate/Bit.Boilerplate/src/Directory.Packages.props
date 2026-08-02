@@ -40,7 +40,6 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.90" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
         <PackageVersion Include="MSTest" Version="4.3.2" />
-        <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.17.0-beta.1" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.17.0-beta.1" />
         <PackageVersion Include="OpenTelemetry.Resources.Azure" Version="1.17.0-beta.1" />

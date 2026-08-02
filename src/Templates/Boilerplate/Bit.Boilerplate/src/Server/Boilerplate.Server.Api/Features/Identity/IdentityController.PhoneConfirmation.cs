@@ -2,7 +2,9 @@
 using Humanizer;
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Features.Identity.Models;
+using Microsoft.AspNetCore.RateLimiting;
 using Boilerplate.Server.Api.Infrastructure.Services;
+using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
@@ -10,7 +12,7 @@ public partial class IdentityController
 {
     [AutoInject] private PhoneService phoneService = default!;
 
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);

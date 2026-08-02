@@ -31,6 +31,7 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
 
                 // There's no benefit in retrying known exceptions, for example when the Category's name is expected
                 // to be unique, retrying won't help.
+                // KnownException also includes TooManyRequestsException: Trying to retry a request that was throttled is not going to help, the server will still throttle the request.
                 if (exp is KnownException and not TransientException)
                     throw;
 
