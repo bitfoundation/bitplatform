@@ -723,6 +723,22 @@ if (!BitBswup.initialized) {
                     // discriminator so later install cycles are treated as real updates.
                     hasActiveWorker = true;
                     const source = e.source;
+
+                    // Announce the completed claim handshake BEFORE starting Blazor. This is
+                    // the moment a still-pending first-install reload() stops meaning "the
+                    // CLAIM_CLIENTS handshake may have been lost" (where re-invoking reload()
+                    // is a genuine retry) and starts meaning "Blazor is booting" (where there
+                    // is nothing to retry - only to wait). Handlers can't read that transition
+                    // off the reload() promise, which deliberately resolves only once the
+                    // start settles: the built-in progress UI uses this message to cancel its
+                    // stalled-reload fallback timer, which otherwise surfaced a spurious
+                    // "update ready" button (and screen-reader announcement) whenever
+                    // Blazor.start() - a full runtime download in passive mode - outlasted
+                    // the timer on a slow connection. This message is NOT the SW 'activate'
+                    // broadcast: activation happens even when the claim reply is then lost,
+                    // so only this end-to-end signal is proof the handshake finished.
+                    handle(BswupMessage.firstInstallClaimed);
+
                     const startPromise = startBlazor(true);
 
                     const onStarted = () => {
@@ -918,8 +934,8 @@ if (!BitBswup.initialized) {
             //
             // Overlapping calls share one in-flight check (the public API is documented as
             // safe to call as often as you like): the check is reg.update() followed by a
-            // yield and an installing/waiting inspection, so two interleaved runs could each
-            // read the registration mid-way through the other's update and announce a
+            // grace wait and an installing/waiting inspection, so two interleaved runs could
+            // each read the registration mid-way through the other's update and announce a
             // spurious updateNotFound - or double-announce the same outcome. Joining the
             // in-flight promise gives every concurrent caller the same single check/report.
             let updateCheckInFlight: Promise<void> | undefined;
@@ -943,20 +959,21 @@ if (!BitBswup.initialized) {
                 try {
                     await registration.update();
 
-                    // reg.update() resolves once the server has responded and the byte-compare
-                    // is done, but the browser does not necessarily set reg.installing (nor fire
-                    // 'updatefound') synchronously on the same microtask. Reading it immediately
-                    // can therefore report "no update" even while an install is about to start,
-                    // producing a spurious updateNotFound that races the updatefound event. Yield
-                    // a macrotask first so a freshly-found worker has a chance to surface.
-                    await new Promise(resolve => setTimeout(resolve, 0));
-
                     // A new worker installing/waiting means an update was found; the existing
-                    // 'updatefound' listener already drives updateFound/stateChanged/updateReady.
-                    // Nothing installing or waiting means we're already on the latest version,
-                    // which is exactly the "finished, found nothing" case the page can't infer
-                    // on its own - so announce it explicitly.
-                    if (!registration.installing && !registration.waiting) {
+                    // 'updatefound' listener already drives updateFound/stateChanged/updateReady,
+                    // so there is nothing more to say here. Empty slots are NOT yet proof of
+                    // "no update", though: reg.update() resolves once the server has responded
+                    // and the byte-compare is done, but the browser queues setting
+                    // reg.installing (and firing 'updatefound') as a separate task - so reading
+                    // the slots immediately, or after the single setTimeout(0) yield used
+                    // before, could still announce a spurious updateNotFound while an install
+                    // was about to start (misleading any "you're up to date" UI built on it).
+                    // Wait for whichever comes first: the registration's own 'updatefound' (an
+                    // update IS coming - stay silent), or a short grace deadline with the slots
+                    // still empty (genuinely up to date - announce it). The deadline only ever
+                    // delays the negative report; a found update is reported by the install
+                    // pipeline the moment it fires.
+                    if (!registration.installing && !registration.waiting && !(await updateSurfaced())) {
                         info('no update found.');
                         handle(BswupMessage.updateNotFound);
                     }
@@ -970,6 +987,31 @@ if (!BitBswup.initialized) {
                     // that care can react.
                     handle(BswupMessage.updateCheckFailed, { reason: 'update', message: String((err && (err as any).message) || err), reload });
                 }
+            }
+
+            // Grace period runUpdateCheck allows a freshly-found worker to surface after
+            // reg.update() resolves (see there). Generous next to the single queued task
+            // engines actually need, and it only ever delays the "up to date" announcement -
+            // never the reporting of a found update.
+            const UPDATE_FOUND_GRACE_MS = 300;
+
+            // Resolves true as soon as the registration surfaces a new worker: 'updatefound'
+            // firing, or - belt and braces for an event that ran before our listener attached -
+            // the installing/waiting slot being filled when the deadline re-checks. Resolves
+            // false when the grace deadline passes with nothing there. The temporary listener
+            // is removed on settle either way; removeEventListener is optional-chained because
+            // exotic registration doubles may not implement it.
+            function updateSurfaced(): Promise<boolean> {
+                return new Promise((resolve) => {
+                    const settle = (found: boolean) => {
+                        clearTimeout(timer);
+                        registration.removeEventListener?.('updatefound', onUpdateFound);
+                        resolve(found);
+                    };
+                    const onUpdateFound = () => settle(true);
+                    const timer = setTimeout(() => settle(!!(registration.installing || registration.waiting)), UPDATE_FOUND_GRACE_MS);
+                    registration.addEventListener('updatefound', onUpdateFound);
+                });
             }
 
             // ============================================================
@@ -1322,6 +1364,13 @@ var BswupMessage: any = BswupMessage || {
     downloadProgress: 'DOWNLOAD_PROGRESS',
     downloadFinished: 'DOWNLOAD_FINISHED',
     activate: 'ACTIVATE',
+    // Raised when the first-install CLIENTS_CLAIMED handshake completes end-to-end, just
+    // before Blazor is started. Distinct from downloadFinished (whose reload() initiates the
+    // handshake) and from activate (the SW activates even when the claim reply is lost):
+    // after this message a pending reload() promise means "the app is booting", not "the
+    // handshake stalled". Consumed by the built-in progress UI to cancel its stalled-reload
+    // fallback; update flows never raise it.
+    firstInstallClaimed: 'FIRST_INSTALL_CLAIMED',
     updateReady: 'UPDATE_READY',
     updateFound: 'UPDATE_FOUND',
     updateNotFound: 'UPDATE_NOT_FOUND',

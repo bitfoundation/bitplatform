@@ -1158,6 +1158,73 @@ describe('service worker scripts are never precached', () => {
 
         expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/service-worker.js.h`);
     });
+
+    // The hardcoded list only covers the default name, but the page script lets an app
+    // register any filename via its `sw` attribute - the exclusion must track the RUNNING
+    // worker's own URL (self.location), in every manifest spelling that resolves to it.
+    it('excludes a custom-named worker script, derived from self.location', async () => {
+        const sw = boot({
+            assets: [
+                { url: 'index.html', hash: 'idx' },
+                { url: 'my-worker.js', hash: 'h1' },
+                { url: '/my-worker.js', hash: 'h2' },
+                { url: `${ORIGIN}/my-worker.js`, hash: 'h3' },
+            ],
+            configure: c => { c.self.location = { origin: ORIGIN, href: `${ORIGIN}/my-worker.js` }; },
+        });
+        await install(sw);
+
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toEqual([`${ORIGIN}/index.html.idx`]);
+    });
+
+    // A same-named file in a subfolder is a DIFFERENT file (manifest entries resolve against
+    // the worker's own directory) and must keep being precached.
+    it('does not exclude a same-named script in a subfolder', async () => {
+        const sw = boot({
+            assets: [{ url: 'index.html', hash: 'idx' }, { url: 'js/my-worker.js', hash: 'h1' }],
+            configure: c => { c.self.location = { origin: ORIGIN, href: `${ORIGIN}/my-worker.js` }; },
+        });
+        await install(sw);
+
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/js/my-worker.js.h1`);
+    });
+});
+
+// /\.wasm/, /\.pdb/ and /\.html/ were historically unanchored, so any URL merely CONTAINING
+// the extension was swept into the precache. The anchored forms must keep the one legitimate
+// loose match: the .br/.gz compressed variants Blazor publishes, which the
+// decompress-in-browser loadBootResource pattern fetches directly and therefore needs offline.
+describe('default include anchoring', () => {
+    it('still precaches compressed variants of wasm/pdb/html assets', async () => {
+        const sw = boot({
+            assets: [
+                { url: 'index.html', hash: 'idx' },
+                { url: '_framework/dotnet.native.wasm.br', hash: 'h1' },
+                { url: '_framework/app.pdb.gz', hash: 'h2' },
+                { url: 'offline.html.br', hash: 'h3' },
+            ],
+        });
+        await install(sw);
+
+        const cached = sw.caches.snapshot()['bit-bswup:/ - v1'];
+        expect(cached).toContain(`${ORIGIN}/_framework/dotnet.native.wasm.br.h1`);
+        expect(cached).toContain(`${ORIGIN}/_framework/app.pdb.gz.h2`);
+        expect(cached).toContain(`${ORIGIN}/offline.html.br.h3`);
+    });
+
+    it('no longer sweeps in URLs that merely contain the extension', async () => {
+        const sw = boot({
+            assets: [
+                { url: 'index.html', hash: 'idx' },
+                { url: 'x.htmlsomething', hash: 'h1' },
+                { url: 'data.wasmfile', hash: 'h2' },
+                { url: 'notes.pdbx', hash: 'h3' },
+            ],
+        });
+        await install(sw);
+
+        expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toEqual([`${ORIGIN}/index.html.idx`]);
+    });
 });
 
 describe('passive mode', () => {

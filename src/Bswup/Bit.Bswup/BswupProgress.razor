@@ -64,7 +64,9 @@
                      aria-valuenow="0"
                      style="width: 0%"></div>
             </div>
-            <p id="bit-bswup-percent">0 %</p>
+            @* "0%" with no space - the script writes `${percent}%`, and a differently
+               formatted initial value would visibly reformat on the first progress tick. *@
+            <p id="bit-bswup-percent">0%</p>
             <ul id="bit-bswup-assets" style="display: @(ShowAssets ? "block" : "none");"></ul>
             <div id="bit-bswup-error" class="bit-bswup-error" style="display: none;" role="alert">
                 <p class="bit-bswup-error-title">Update failed to install</p>

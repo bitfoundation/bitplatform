@@ -76,10 +76,12 @@
         // display:none, which removes it from the accessibility tree entirely - its
         // appearance is never announced on its own - so the always-present visually-hidden
         // role="status" region carries the announcement for screen readers.
-        function showReloadButton(reload: any, display: string) {
+        function showReloadButton(reload: any) {
             const reloadButton = el('bit-bswup-reload');
             const reloadStatusEl = el('bit-bswup-reload-status');
-            reloadButton && (reloadButton.style.display = display);
+            // Always 'block': the button is position:fixed (which blockifies inline anyway),
+            // so a per-call-site display mode was pure inconsistency between event paths.
+            reloadButton && (reloadButton.style.display = 'block');
             reloadButton && (reloadButton.onclick = reload);
             reloadStatusEl && (reloadStatusEl.textContent = 'A new version is ready to install.');
         }
@@ -97,6 +99,19 @@
         // manual reload button is surfaced as a fallback.
         const AUTO_RELOAD_FALLBACK_MS = 10000;
 
+        // Fallback timers currently armed by autoReloadWithFallback. Tracked so the
+        // firstInstallClaimed message can cancel them: once the CLAIM_CLIENTS handshake has
+        // completed end-to-end, a still-pending first-install reload() means "Blazor is
+        // booting" - and Blazor.start() (a full runtime download in passive mode) can easily
+        // outlast the grace period on a slow connection, which used to surface a spurious
+        // "update ready" button and screen-reader announcement mid-boot. The timers exist for
+        // the OTHER case - the handshake itself stalling (CLAIM_CLIENTS or its reply lost),
+        // where the button's re-invocation of reload() is a genuine retry - and that case
+        // never raises firstInstallClaimed, so those timers still fire. Clearing ALL pending
+        // timers is safe: firstInstallClaimed only ever fires on a first install, where no
+        // update-path timer can be pending in the same page session.
+        const pendingFallbackTimers = new Set<ReturnType<typeof setTimeout>>();
+
         // Drives an auto-reload while guaranteeing the user is never left with neither a reload nor
         // a button. On the UPDATE path reload() intentionally NEVER settles - the page is about to
         // navigate away (see bit-bswup.ts) - so relying on reload() rejecting to detect a stall
@@ -108,13 +123,22 @@
         // (discarding the timer) or, on a first install, resolves reload() and clears it - then
         // onSettle runs so the caller can finalize (e.g. hide the splash).
         function autoReloadWithFallback(reload: any, onFallback: () => void, onSettle?: () => void) {
-            const timer = setTimeout(onFallback, AUTO_RELOAD_FALLBACK_MS);
+            const timer = setTimeout(() => {
+                pendingFallbackTimers.delete(timer);
+                onFallback();
+            }, AUTO_RELOAD_FALLBACK_MS);
+            pendingFallbackTimers.add(timer);
             // Promise.resolve tolerates a non-thenable reload() return too.
             Promise.resolve(typeof reload === 'function' ? reload() : undefined).then(() => {
+                pendingFallbackTimers.delete(timer);
                 clearTimeout(timer);
                 onSettle && onSettle();
             }).catch(() => {
+                pendingFallbackTimers.delete(timer);
                 clearTimeout(timer);
+                // Deliberately NOT suppressed by firstInstallClaimed having cleared the
+                // timer: a rejected reload() is a reported failure, not a slow boot, and the
+                // manual button is the recovery path either way.
                 onFallback();
             });
         }
@@ -246,7 +270,7 @@
                             // clean resolve (first install completing) hide the splash instead.
                             autoReloadWithFallback(data.reload, () => {
                                 bswupEl && (bswupEl.style.display = 'block');
-                                showReloadButton(data.reload, 'block');
+                                showReloadButton(data.reload);
                             }, () => {
                                 hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
                                 bswupEl && (bswupEl.style.display = 'none');
@@ -255,9 +279,20 @@
                             // The button lives OUTSIDE #bit-bswup (see BswupProgress.razor)
                             // precisely so this works without revealing the whole overlay
                             // over a running app.
-                            showReloadButton(data.reload, 'block');
+                            showReloadButton(data.reload);
                         }
                         return showLogs_ ? console.log('downloading assets finished.') : undefined;
+
+                    case BswupMessage.firstInstallClaimed:
+                        // The first-install claim handshake completed: from here on the
+                        // pending reload() promise tracks Blazor booting, which can
+                        // legitimately outlast the fallback grace period (see
+                        // pendingFallbackTimers). Cancel the stall fallback; the splash
+                        // still tears down via reload() resolving in downloadFinished's
+                        // onSettle once the boot finishes.
+                        pendingFallbackTimers.forEach(timer => clearTimeout(timer));
+                        pendingFallbackTimers.clear();
+                        return showLogs_ ? console.log('first install claimed - app is starting.') : undefined;
 
                     case BswupMessage.updateReady:
                         if (autoReload_) {
@@ -266,13 +301,13 @@
                             // so a silently-stalled skipWaiting would otherwise leave no prompt. No
                             // splash reveal here: an update runs behind a healthy app (the button
                             // lives outside #bit-bswup).
-                            autoReloadWithFallback(data.reload, () => showReloadButton(data.reload, 'inline'));
+                            autoReloadWithFallback(data.reload, () => showReloadButton(data.reload));
                         } else {
                             // Shown without touching #bit-bswup: when an update is already
                             // staged at page load no progress event ever revealed the overlay,
                             // and unhiding a button inside a display:none parent rendered
                             // nothing - the user was never told an update was ready.
-                            showReloadButton(data.reload, 'inline');
+                            showReloadButton(data.reload);
                         }
                         return showLogs_ ? console.log('new update is ready.') : undefined;
 

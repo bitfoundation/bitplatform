@@ -65,6 +65,7 @@ describe('BswupMessage', () => {
         expect(m.updateNotFound).toBe('UPDATE_NOT_FOUND');
         expect(m.updateCheckFailed).toBe('UPDATE_CHECK_FAILED');
         expect(m.error).toBe('ERROR');
+        expect(m.firstInstallClaimed).toBe('FIRST_INSTALL_CLAIMED');
     });
 });
 
@@ -1045,6 +1046,26 @@ describe('CLIENTS_CLAIMED handshake', () => {
         expect(sourcePosted).toEqual(['BLAZOR_STARTED']);
     });
 
+    // The claim signal must reach the handler AT claim time, before Blazor.start() settles:
+    // its whole job is to tell the progress UI "the handshake finished; the pending reload()
+    // now tracks a boot in flight" while that boot - a full runtime download in passive
+    // mode - is still running, so the stalled-reload fallback can stand down.
+    it('dispatches firstInstallClaimed to the handler at claim time, before start settles', async () => {
+        const ctx = page();
+        const seen = [];
+        ctx.window.bitBswupHandler = (message) => seen.push(message);
+        let finishBoot;
+        ctx.window.Blazor = { start: () => new Promise(r => { finishBoot = r; }) };
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message('CLIENTS_CLAIMED');
+        // Synchronous with the claim - the boot promise has not settled yet.
+        expect(seen).toContain('FIRST_INSTALL_CLAIMED');
+        finishBoot();
+        await ctx.settle();
+    });
+
     it('still replies BLAZOR_STARTED when Blazor.start() rejects', async () => {
         const ctx = page();
         ctx.window.Blazor = { start: async () => { throw new Error('boot failed'); } };
@@ -1100,6 +1121,44 @@ describe('checkForUpdate outcomes', () => {
         await ctx.settle();
 
         expect(seen.some(([message]) => message === 'UPDATE_NOT_FOUND')).toBe(false);
+    });
+
+    // reg.update() can resolve BEFORE the browser sets reg.installing / fires 'updatefound'
+    // (they are queued as a separate task), and the old single-macrotask yield still reported
+    // a spurious "no update" whenever it lost that race - misleading any "you're up to date"
+    // UI built on updateNotFound. The check must stay silent when the update surfaces within
+    // the grace window, whether via the updatefound listener or the deadline's slot re-check.
+    it('does not emit updateNotFound when updatefound fires only after update() resolves', async () => {
+        const regListeners = {};
+        const registration = {
+            active: fakeWorker('activated'), waiting: null, installing: null,
+            addEventListener: (t, fn) => { (regListeners[t] ||= []).push(fn); },
+            removeEventListener: (t, fn) => {
+                const list = regListeners[t] || [];
+                const index = list.indexOf(fn);
+                if (index !== -1) list.splice(index, 1);
+            },
+            update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration } });
+        const seen = [];
+        ctx.window.bitBswupHandler = (message, data) => seen.push([message, data]);
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        const pending = ctx.window.BitBswup.checkForUpdate();
+        await ctx.settle();
+        // The engine's late task: the slot fills and updatefound fires only now, after
+        // update() has long resolved.
+        registration.installing = fakeWorker('installing');
+        (regListeners.updatefound || []).slice().forEach(fn => fn({}));
+        await pending;
+        await letTimersFire();
+        await ctx.settle();
+
+        expect(seen.some(([message]) => message === 'UPDATE_NOT_FOUND')).toBe(false);
+        // The install pipeline owns the positive report: updateFound reached the handler.
+        expect(seen.some(([message]) => message === 'UPDATE_FOUND')).toBe(true);
     });
 
     it('emits the non-blocking updateCheckFailed - not the install-path error - on a failed check', async () => {

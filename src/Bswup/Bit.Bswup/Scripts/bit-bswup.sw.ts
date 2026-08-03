@@ -408,11 +408,44 @@ diag('USER_ASSETS_INCLUDE:', USER_ASSETS_INCLUDE);
 diag('USER_ASSETS_EXCLUDE:', USER_ASSETS_EXCLUDE);
 diag('EXTERNAL_ASSETS:', EXTERNAL_ASSETS);
 
-const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.wasm/, /\.pdb/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
+// Every pattern is anchored to the end of the URL. wasm/pdb/html additionally accept a
+// trailing .br/.gz: the compressed variants Blazor publishes alongside those files ship in
+// the manifest, and apps using the decompress-in-browser loadBootResource pattern fetch them
+// directly, so they must stay precachable - which is why these three were historically left
+// unanchored (matching the Microsoft template's /\.wasm/). But the unanchored forms also
+// swept in any URL merely CONTAINING the extension (x.htmlsomething, data.wasmfile),
+// silently bloating the precache; the explicit optional suffix keeps the legitimate matches
+// and nothing else. The other extensions stay plain-anchored, exactly as they always were -
+// widening them to compressed variants would be a behavior change, not a cleanup.
+const DEFAULT_ASSETS_INCLUDE = [/\.dll$/, /\.wasm(\.br|\.gz)?$/, /\.pdb(\.br|\.gz)?$/, /\.html(\.br|\.gz)?$/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/];
 // Service-worker scripts must not be precached: the browser fetches them through its own
 // update pipeline (updateViaCache: 'none'), never through this worker's fetch handler, so a
 // cached copy is dead weight at best. All shipped variants are excluded - the minified
 // bundles and the cleanup worker included - not just the exact files the old list named.
+
+// The RUNNING worker script is excluded by its actual URL, not only by the default
+// 'service-worker.js' name the static list below hardcodes: the page script lets an app
+// register any filename via its `sw` attribute, and a custom-named worker listed in the
+// manifest slipped straight into the precache. Derived from self.location so it tracks
+// whatever name/path the app chose. A manifest entry denotes this worker exactly when it
+// resolves to its URL (uniqueAssets resolves entries against self.location), which for a
+// worker at <origin><pathname> means one of three spellings: the bare filename (how the
+// manifest lists a file sitting next to it), the full pathname, or the origin-qualified
+// URL - the alternation matched here. The bare-name branch cannot over-match: a same-named
+// file in a subfolder appears in the manifest with its folder prefix and fails the anchored
+// match. Null when the location carries no filename (exotic runtime); the hardcoded default
+// below still covers the common name then.
+const SELF_SW_EXCLUDE = (() => {
+    try {
+        const loc = new URL(self.location.href);
+        const name = loc.pathname.slice(loc.pathname.lastIndexOf('/') + 1);
+        if (!name) return null;
+        return new RegExp(`^(${escapeRegExp(loc.origin)})?${escapeRegExp(loc.pathname)}$|^${escapeRegExp(name)}$`);
+    } catch {
+        return null;
+    }
+})();
+
 const DEFAULT_ASSETS_EXCLUDE = [
     /^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/,
     /^_content\/Bit\.Bswup\/bit-bswup\.sw\.min\.js$/,
@@ -420,6 +453,9 @@ const DEFAULT_ASSETS_EXCLUDE = [
     /^_content\/Bit\.Bswup\/bit-bswup\.sw-cleanup\.min\.js$/,
     /^service-worker\.js$/,
 ];
+// In the DEFAULT list deliberately, so ignoreDefaultExclude keeps opting out of it - exactly
+// as it always did for the hardcoded name.
+if (SELF_SW_EXCLUDE) DEFAULT_ASSETS_EXCLUDE.push(SELF_SW_EXCLUDE);
 
 const ASSETS_INCLUDE = (self.ignoreDefaultInclude ? [] : DEFAULT_ASSETS_INCLUDE).concat(USER_ASSETS_INCLUDE);
 const ASSETS_EXCLUDE = (self.ignoreDefaultExclude ? [] : DEFAULT_ASSETS_EXCLUDE).concat(USER_ASSETS_EXCLUDE);

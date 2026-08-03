@@ -204,7 +204,7 @@ describe('update ready', () => {
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => { reloaded++; return Promise.resolve(); } });
 
         expect(reloaded).toBe(0);
-        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
     });
 
     it('honors an explicit data-bit-bswup-auto-reload="true"', () => {
@@ -225,7 +225,7 @@ describe('update ready', () => {
         let reloaded = 0;
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => { reloaded++; return Promise.resolve(); } });
 
-        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
         ctx.elements['bit-bswup-reload'].onclick();
         expect(reloaded).toBe(1);
     });
@@ -236,7 +236,7 @@ describe('update ready', () => {
 
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.reject(new Error('nope')) });
         await ctx.settle();
-        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
     });
 
     // The update path's reload() NEVER settles (the page is about to navigate), so a silently
@@ -250,11 +250,62 @@ describe('update ready', () => {
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => new Promise(() => { }) }); // never settles
 
         // Not shown synchronously - the fallback timer is still pending.
-        expect(ctx.elements['bit-bswup-reload'].style.display).not.toBe('inline');
+        expect(ctx.elements['bit-bswup-reload'].style.display).not.toBe('block');
         // clampLongTimers fires the 10s AUTO_RELOAD_FALLBACK_MS at the harness's ~5ms clamp.
-        await waitFor(() => ctx.elements['bit-bswup-reload'].style.display === 'inline',
+        await waitFor(() => ctx.elements['bit-bswup-reload'].style.display === 'block',
             'the fallback timer to reveal the reload button');
-        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
+    });
+});
+
+// The first-install reload() promise resolves only once Blazor.start() fully settles, and in
+// passive mode that start downloads the whole runtime from the network - easily outlasting
+// the 10s fallback grace period on a slow connection. firstInstallClaimed is the signal that
+// the CLAIM_CLIENTS handshake finished and the pending reload() now tracks a boot in flight:
+// it must stand the fallback down (no spurious "update ready" button or screen-reader
+// announcement mid-boot), while a handshake that truly stalls - which never raises the
+// message - must still surface the button, whose re-invocation of reload() is a genuine retry.
+describe('first-install claim cancels the stalled-reload fallback', () => {
+    it('does not surface the reload button when the claim lands and boot is merely slow', async () => {
+        const ctx = progressPage({ elements: fullSplash, clampLongTimers: true });
+
+        let finishBoot;
+        ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: true, reload: () => new Promise(r => { finishBoot = r; }) });
+        ctx.window.bitBswupHandler('FIRST_INSTALL_CLAIMED');
+
+        // Give the (clamped) fallback timer ample time to fire were it still armed.
+        await new Promise(r => setTimeout(r, 30));
+        expect(ctx.elements['bit-bswup-reload'].style.display).not.toBe('block');
+        expect(ctx.elements['bit-bswup-reload-status'].textContent).toBe('');
+
+        // The splash still tears down when the boot completes.
+        finishBoot();
+        await ctx.settle();
+        expect(ctx.elements['bit-bswup'].style.display).toBe('none');
+    });
+
+    it('still surfaces the reload button when the claim never lands (stalled handshake)', async () => {
+        const ctx = progressPage({ elements: fullSplash, clampLongTimers: true });
+
+        ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: true, reload: () => new Promise(() => { }) });
+
+        await waitFor(() => ctx.elements['bit-bswup-reload'].style.display === 'block',
+            'the fallback timer to reveal the reload button');
+        expect(ctx.elements['bit-bswup-reload-status'].textContent).not.toBe('');
+    });
+
+    it('still surfaces the reload button when reload() rejects after the claim', async () => {
+        const ctx = progressPage({ elements: fullSplash, clampLongTimers: true });
+
+        let failBoot;
+        ctx.window.bitBswupHandler('DOWNLOAD_FINISHED', { firstInstall: true, reload: () => new Promise((_, reject) => { failBoot = reject; }) });
+        ctx.window.bitBswupHandler('FIRST_INSTALL_CLAIMED');
+
+        // A rejection is a reported failure, not a slow boot - the cancelled timer must not
+        // swallow the recovery path.
+        failBoot(new Error('boot failed'));
+        await ctx.settle();
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
     });
 });
 
@@ -334,7 +385,7 @@ describe('update-ready announcement', () => {
         const ctx = progressPage({ elements: fullSplash });
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.resolve() });
 
-        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
         expect(ctx.elements['bit-bswup-reload-status'].textContent).not.toBe('');
     });
 
@@ -379,7 +430,7 @@ describe('splash subtree replaced after initialization', () => {
 
         ctx.window.bitBswupHandler('UPDATE_READY', { reload: () => Promise.resolve() });
 
-        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('inline');
+        expect(ctx.elements['bit-bswup-reload'].style.display).toBe('block');
         expect(ctx.elements['bit-bswup-reload-status'].textContent).not.toBe('');
     });
 });
