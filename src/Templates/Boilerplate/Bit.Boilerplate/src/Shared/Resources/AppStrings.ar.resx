@@ -1364,6 +1364,9 @@
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>رابط الصفحة</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>يجب أن يكون عنوان الصفحة عنوانًا نسبيًا داخل التطبيق، مثل /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>غير مصرح لك</value>
   </data>

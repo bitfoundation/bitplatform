@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Microsoft.JSInterop;
 

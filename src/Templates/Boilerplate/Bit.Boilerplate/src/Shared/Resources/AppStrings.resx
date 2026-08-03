@@ -1364,6 +1364,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Page URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>The page URL must be a relative URL within the app, such as /products.</value>
+  </data>
     <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>You are not authorized</value>
   </data>

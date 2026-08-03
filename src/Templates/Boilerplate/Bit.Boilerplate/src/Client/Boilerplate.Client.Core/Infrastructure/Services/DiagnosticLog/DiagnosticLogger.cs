@@ -2,10 +2,16 @@ using Boilerplate.Shared.Features.Diagnostic;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
-public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger, IDisposable
+public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger
 {
     public static ConcurrentQueue<DiagnosticLogDto> Store { get; } = [];
 
+    /// <remarks>
+    /// An instance field is enough because <c>DiagnosticLoggerProvider</c> creates one logger per category and the
+    /// clients are single user per process. If <c>AddDiagnosticLogger()</c> is ever registered outside
+    /// <c>IsDevelopment()</c> on Server.Web, this must become an AsyncLocal: under Blazor Server one instance is
+    /// shared by every circuit, so the scope of one user would stamp another user's entries.
+    /// </remarks>
     private IDictionary<string, object?>? currentState;
 
     public string? Category { get; set; }
@@ -13,12 +19,18 @@ public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger, IDis
     public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
     {
-        if (state is IDictionary<string, object?> data)
-        {
-            currentState = data;
-        }
+        if (state is not IDictionary<string, object?> data)
+            return null;
 
-        return this;
+        var previousState = currentState;
+        currentState = data;
+
+        return new ScopeRestorer(this, previousState);
+    }
+
+    private sealed class ScopeRestorer(DiagnosticLogger logger, IDictionary<string, object?>? previousState) : IDisposable
+    {
+        public void Dispose() => logger.currentState = previousState;
     }
 
     public bool IsEnabled(LogLevel logLevel)
@@ -46,10 +58,5 @@ public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger, IDis
             ExceptionString = exception?.ToString(),
             State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString())
         });
-    }
-
-    public void Dispose()
-    {
-
     }
 }

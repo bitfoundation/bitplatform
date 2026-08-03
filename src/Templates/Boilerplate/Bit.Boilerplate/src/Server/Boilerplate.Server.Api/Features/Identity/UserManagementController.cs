@@ -123,10 +123,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         });
 
         //#if (signalR == true)
-        foreach (var id in userSessionConnectionIds)
-        {
-            await RevokeSession(id, cancellationToken);
-        }
+        await RevokeSessions(userSessionConnectionIds, cancellationToken);
         //#endif
     }
 
@@ -157,7 +154,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         //#if (signalR == true)
         if (entityToDelete.SignalRConnectionId is not null)
         {
-            await RevokeSession(entityToDelete.SignalRConnectionId, cancellationToken);
+            await RevokeSessions([entityToDelete.SignalRConnectionId], cancellationToken);
         }
         //#endif
     }
@@ -186,18 +183,15 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         //#endif
 
         //#if (signalR == true)
-        var userSessionConnectionIds = await sessionsToRevokeQuery.Where(us => us.SignalRConnectionId != null)
-                                                                  .Select(us => us.SignalRConnectionId!)
-                                                                  .ToListAsync(cancellationToken);
+        var userSessionConnectionIdsToRevoke = await sessionsToRevokeQuery.Where(us => us.SignalRConnectionId != null)
+                                                                          .Select(us => us.SignalRConnectionId!)
+                                                                          .ToListAsync(cancellationToken);
         //#endif
 
         await sessionsToRevokeQuery.ExecuteDeleteAsync(cancellationToken);
 
         //#if (signalR == true)
-        foreach (var id in userSessionConnectionIds)
-        {
-            await RevokeSession(id, cancellationToken);
-        }
+        await RevokeSessions(userSessionConnectionIdsToRevoke, cancellationToken);
         //#endif
     }
 
@@ -264,7 +258,7 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         var tenantId = User.GetTenantId();
 
         //#if (signalR == true)
-        var userSessionConnectionIds = await DbContext.UserSessions
+        var userSessionConnectionIdsInTenant = await DbContext.UserSessions
             .Where(us => us.UserId == userId && us.TenantId == tenantId && us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId!)
             .ToListAsync(cancellationToken);
@@ -283,19 +277,16 @@ public partial class UserManagementController : AppControllerBase, IUserManageme
         });
 
         //#if (signalR == true)
-        foreach (var connectionId in userSessionConnectionIds)
-        {
-            await RevokeSession(connectionId, cancellationToken);
-        }
+        await RevokeSessions(userSessionConnectionIdsInTenant, cancellationToken);
         //#endif
     }
     //#endif
 
     //#if (signalR == true)
-    private async Task RevokeSession(string connectionId, CancellationToken cancellationToken)
+    private async Task RevokeSessions(IReadOnlyList<string> signalRConnectionIds, CancellationToken cancellationToken)
     {
         // Check out AppHub's comments for more info.
-        await appHubContext.Clients.Client(connectionId)
+        await appHubContext.Clients.Clients(signalRConnectionIds)
             .Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
     }
     //#endif

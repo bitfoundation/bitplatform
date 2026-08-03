@@ -341,6 +341,11 @@ The server can send messages to different targets:
 2. **`Clients.Group("AuthenticatedClients")`**: All authenticated users (all their devices)
 3. **`Clients.User(userId)`**: All devices of a specific user (web, mobile, desktop)
 4. **`Clients.Client(connectionId)`**: A specific connection (one browser tab or app)
+5. **`Clients.Clients(connectionIds)`**: Several specific connections - for example every
+   `UserSession.SignalRConnectionId` of one user
+
+Note that `UserSession.SignalRConnectionId` holds the tab or app that connected **most recently** on that session,
+not all of them - read its comments before treating it as "notify this session".
 
 ---
 

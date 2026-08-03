@@ -2,6 +2,7 @@
 
 using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
+using Boilerplate.Server.Api.Features.Identity;
 
 namespace Boilerplate.Server.Api;
 
@@ -64,6 +65,8 @@ public static partial class Program
             Authorization = [new HangfireDashboardAuthorizationFilter()]
         });
 
+        app.ScheduleAppRecurringJobs();
+
         app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {
             RouteParameter = routeParameter,
@@ -82,6 +85,20 @@ public static partial class Program
            .CacheOutput("AppResponseCachePolicy");
     }
 
+
+    /// <summary>
+    /// Recurring hangfire jobs. AddOrUpdate is idempotent and keyed by job id, so re-running it on every start (and
+    /// on every replica) simply re-applies the current schedule.
+    /// </summary>
+    public static WebApplication ScheduleAppRecurringJobs(this WebApplication app)
+    {
+        app.Services.GetRequiredService<IRecurringJobManager>()
+           .AddOrUpdate<UserSessionsCleanupJobRunner>(UserSessionsCleanupJobRunner.RecurringJobId,
+                                                      runner => runner.CleanupExpiredSessions(CancellationToken.None),
+                                                      Cron.Daily);
+
+        return app;
+    }
 
     /// <summary>
     /// This allows other backends to retrieve the OpenID Connect configuration and the public key for validating JWT tokens issued by this server.

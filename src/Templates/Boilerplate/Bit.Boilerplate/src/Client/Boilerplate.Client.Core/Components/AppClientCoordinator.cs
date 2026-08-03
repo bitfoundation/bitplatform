@@ -57,7 +57,12 @@ public partial class AppClientCoordinator : AppComponentBase
                     var uriValue = uri?.ToString()!;
                     var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
                     var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
-                    NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
+                    var url = uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&');
+
+                    if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
+                        return;
+
+                    NavigationManager.NavigateTo(url, forceLoad, replace);
                 }));
                 //#if (signalR == true)
                 unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
@@ -245,6 +250,9 @@ public partial class AppClientCoordinator : AppComponentBase
         hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.NAVIGATE_TO, async (string url) =>
         {
+            if (Uri.IsAppRelativeUrl(url) is false)
+                return false;
+
             await InvokeAsync(async () =>
             {
                 NavigationManager.NavigateTo(url);

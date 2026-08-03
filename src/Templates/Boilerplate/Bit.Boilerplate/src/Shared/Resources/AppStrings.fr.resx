@@ -1364,6 +1364,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>URL de la page</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>L'URL de la page doit être une URL relative au sein de l'application, par exemple /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>Vous n'êtes pas autorisé</value>
   </data>

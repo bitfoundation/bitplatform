@@ -1,6 +1,8 @@
 using UIKit;
 using UserNotifications;
 
+using Boilerplate.Shared.Features.PushNotification;
+
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 
 public partial class iOSPushNotificationService : PushNotificationServiceBase

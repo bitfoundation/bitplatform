@@ -95,10 +95,12 @@ public partial class TenantController : AppControllerBase, ITenantController
         }, cancellationToken);
 
         //#if (signalR == true)
-        // Each new tenant gets the 3 default system prompts upon creation.
+        // Each new tenant gets the default system prompts upon creation.
         await DbContext.SystemPrompts.AddRangeAsync([
             new() { PromptKind = PromptKind.Support, Markdown = SystemPromptConfiguration.GetInitialSystemPromptMarkdown(), TenantId = tenantToAdd.Id },
+            //#if (module == "Sales" || module == "Admin")
             new() { PromptKind = PromptKind.AnalyzeProductImage, Markdown = SystemPromptConfiguration.GetAnalyzeProductImageSystemPromptMarkdown(), TenantId = tenantToAdd.Id },
+            //#endif
             new() { PromptKind = PromptKind.FollowUpSuggestion, Markdown = SystemPromptConfiguration.GetFollowUpSuggestionSystemPromptMarkdown(), TenantId = tenantToAdd.Id }
         ], cancellationToken);
         //#endif

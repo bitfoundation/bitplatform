@@ -268,6 +268,12 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
 
         foreach (var claim in claims)
         {
+            if (grantableClaimTypes.Contains(claim.ClaimType) is false || claim.ClaimValue is null)
+                throw new BadRequestException().WithData("Reason", $"'{claim.ClaimType}' is not a claim type this endpoint manages.");
+        }
+
+        foreach (var claim in claims)
+        {
             var result = await roleManager.RemoveClaimAsync(role, new(claim.ClaimType!, claim.ClaimValue!));
 
             if (result.Succeeded is false)
@@ -381,6 +387,12 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         // Ensure the target role exists and (for non global admins) belongs to the caller's tenant before broadcasting
         // to its users - otherwise a tenant admin could push an in-app notification to another tenant's users.
         var role = await GetRoleById(dto.RoleId, cancellationToken);
+
+        // The page url ends up in a push notification payload, and clicking that notification navigates the app
+        // (or opens a window) at it. An absolute url would take the user off origin, inside the app's own chrome
+        // and carrying the app's own name and icon, which is a phishing primitive - so keep it app relative.
+        if (dto.PageUrl is not null && Uri.IsAppRelativeUrl(dto.PageUrl) is false)
+            throw new BadRequestException(Localizer[nameof(AppStrings.InvalidPageUrl)]);
 
         //#if (signalR == true)
         var signalRConnectionIds = await DbContext.UserSessions.Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed &&

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using ImageMagick;
+using Boilerplate.Server.Api.Features.Identity;
 //#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -79,6 +80,7 @@ public static partial class Program
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
+        services.AddScoped<UserSessionsCleanupJobRunner>();
         //#if (signalR == true)
         // Add MCP server with chatbot tools
         services.AddMcpServer()
@@ -644,9 +646,11 @@ public static partial class Program
             return result;
         }
 
+        //#if (module == "Sales" || module == "Admin")
         builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
                     name: "AnalyzeProductImageAgent",
                     description: "Analyzes product images to ensure they meet catalog standards for car products"), lifetime: ServiceLifetime.Scoped);
+        //#endif
 
         builder.AddAIAgent("SupportAgent", (sp, _) =>
         {
@@ -659,10 +663,9 @@ public static partial class Program
 
         builder.AddAIAgent("FollowUpSuggestionsAgent", (sp, _) =>
         {
-            var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
             return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.FollowUpSuggestion, sp),
                     name: "FollowUpSuggestionsAgent",
-                    description: "Generates follow-up suggestions based on user interactions", tools: [.. aiFunctions]);
+                    description: "Generates follow-up suggestions based on user interactions");
         }, lifetime: ServiceLifetime.Scoped);
     }
     //#endif

@@ -1364,6 +1364,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>URL de la página</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>La URL de la página debe ser una URL relativa dentro de la aplicación, como /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>No estás autorizado</value>
   </data>
