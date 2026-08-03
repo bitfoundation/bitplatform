@@ -26,7 +26,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
                 Items=""basicItems""
                 DefaultValue=""@(""A"")"" />
 
-<BitChoiceGroup Label=""ChoiceGroup with Disabled Items""
+<BitChoiceGroup Label=""ChoiceGroup with Disabled Item""
                 Items=""disabledItems""
                 DefaultValue=""@(""A"")"" />";
     private readonly string example2CsharpCode = @"
@@ -652,23 +652,25 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
                 Items=""basicItems""
                 DefaultValue=""basicItems[1].Value"" />
 
-<BitChoiceGroup Color=""BitColor.PrimaryBackground"" 
-                Label=""PrimaryBackground"" 
-                Horizontal
-                Items=""basicItems""
-                DefaultValue=""basicItems[1].Value"" />
+<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
+    <BitChoiceGroup Color=""BitColor.PrimaryBackground""
+                    Label=""PrimaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[1].Value"" />
 
-<BitChoiceGroup Color=""BitColor.SecondaryBackground"" 
-                Label=""SecondaryBackground"" 
-                Horizontal
-                Items=""basicItems""
-                DefaultValue=""basicItems[1].Value"" />
+    <BitChoiceGroup Color=""BitColor.SecondaryBackground""
+                    Label=""SecondaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[1].Value"" />
 
-<BitChoiceGroup Color=""BitColor.TertiaryBackground"" 
-                Label=""TertiaryBackground"" 
-                Horizontal
-                Items=""basicItems""
-                DefaultValue=""basicItems[1].Value"" />
+    <BitChoiceGroup Color=""BitColor.TertiaryBackground""
+                    Label=""TertiaryBackground""
+                    Horizontal
+                    Items=""basicItems""
+                    DefaultValue=""basicItems[1].Value"" />
+</div>
 
 <BitChoiceGroup Color=""BitColor.PrimaryForeground"" 
                 Label=""PrimaryForeground"" 
@@ -1013,11 +1015,11 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems =
 <BitChoiceGroup Label=""ساده"" Items=""rtlItems"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />
 <BitChoiceGroup Label=""غیرفعال"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />";
     private readonly string example24CsharpCode = @"
-private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
-{
+private readonly List<BitChoiceGroupItem<string>> rtlItems =
+[
     new() { Text = ""بخش آ"", Value = ""A"" },
     new() { Text = ""بخش ب"", Value = ""B"" },
     new() { Text = ""بخش پ"", Value = ""C"" },
     new() { Text = ""بخش ت"", Value = ""D"" }
-};";
+];";
 }

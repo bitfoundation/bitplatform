@@ -140,6 +140,16 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
         await base.OnInitializedAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // The parameters of an option (IsEnabled, Value, ...) feed the parent's choice of which input
+        // carries the tab stop, and they are applied after the parent's own OnParametersSet has already
+        // run, so the memoized target has to be invalidated from here to be recomputed fresh after render.
+        Parent?.InvalidateInputTarget();
+    }
+
     // Renders the option's item in place, so the rendered order of the items always follows the
     // markup order of the options, even when an option is added or removed conditionally later on.
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -149,6 +159,7 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
         builder.OpenComponent<_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>>(0);
         builder.AddComponentParameter(1, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.ChoiceGroup), Parent);
         builder.AddComponentParameter(2, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.Item), this);
+        builder.AddComponentParameter(3, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.Index), Index);
         builder.CloseComponent();
     }
 

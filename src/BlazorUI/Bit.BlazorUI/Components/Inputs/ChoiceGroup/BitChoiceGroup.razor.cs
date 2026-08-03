@@ -13,6 +13,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private string _labelId = default!;
     private bool _optionsOrderDirty;
     private bool _defaultValueApplied;
+    private TItem? _inputTargetItem;
+    private bool _inputTargetDirty = true;
     private TValue? _appliedDefaultValue;
     private string _descriptionId = default!;
     private string _optionsContainerId = default!;
@@ -215,6 +217,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         SetIndexItems();
 
+        InvalidateInputTarget();
+
         StateHasChanged();
     }
 
@@ -244,6 +248,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         _items = ordered;
 
         SetIndexItems();
+
+        InvalidateInputTarget();
+
+        // The new indexes feed the generated input ids, which the options pass down as a parameter, so
+        // each one has to be pushed a re-render; the parent's own StateHasChanged does not reach an option
+        // whose parameters have not changed.
+        RefreshOptions();
 
         StateHasChanged();
     }
@@ -441,47 +452,47 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : null);
 
     // Same reasoning as the label: the description element is only rendered when there is a description to
-    // show, so the reference is only emitted then. This attribute sits after the HtmlAttributes splat in the
-    // markup, so it is what ends up rendered no matter what (a null even removes the splatted value); an
-    // aria-describedby the consumer splatted has to be carried over here to survive, and it wins.
+    // show, so its id only joins the reference then. This attribute sits after the HtmlAttributes splat in
+    // the markup, so it is what ends up rendered no matter what (a null even removes the splatted value);
+    // an aria-describedby the consumer splatted has to be carried over here to survive. It does not replace
+    // the description of the group: aria-describedby is a space separated list of IDREFs, so both are kept.
     internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
-    private string? GetAriaDescribedBy() =>
-        HtmlAttributes.TryGetValue("aria-describedby", out var describedBy)
-            ? describedBy?.ToString()
-            : HasDescription ? _descriptionId : null;
+    private string? GetAriaDescribedBy()
+    {
+        HtmlAttributes.TryGetValue("aria-describedby", out var splatted);
+        var splattedDescribedBy = splatted?.ToString();
+
+        if (HasDescription is false) return splattedDescribedBy;
+
+        return splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {_descriptionId}" : _descriptionId;
+    }
 
     // The index is used instead of the value, because a value is free-form (it can contain spaces or any
     // other character that is not valid in an id) and is not guaranteed to be unique among the items,
     // while the id has to be a valid, unique IDREF for the label's "for" and for aria-describedby.
-    internal string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetItemIndex(item)}";
-
-    // A custom item type is not guaranteed to carry the Index property the stamping writes to (the write
-    // silently no-ops without it), so only the two built-in types can trust the stamped value; a custom
-    // item falls back to its position in the collection, which is always available.
-    private int GetItemIndex(TItem item) => item switch
-    {
-        BitChoiceGroupItem<TValue> choiceGroupItem => choiceGroupItem.Index,
-        BitChoiceGroupOption<TValue> choiceGroupOption => choiceGroupOption.Index,
-        _ => _items.FindIndex(i => ReferenceEquals(i, item)),
-    };
+    // The index arrives as a render parameter of the item (the render position in the items mode, the
+    // stamped option index in the options mode) rather than being searched for here: a lookup by reference
+    // would cost O(n) per item per render and would collide when the same instance appears twice.
+    internal string? GetInputId(TItem item, int index) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{index}";
 
     // Keeps the InputElement of the base class pointing at the input the Tab key would land on: the input
     // of the checked item, or the first enabled one when nothing is checked (the browser skips a disabled
     // radio when tabbing into the group). Called by each item after render; also performs the one-time AutoFocus.
     internal async Task SetInputElement(TItem item, ElementReference inputElement)
     {
-        if (GetIsCheckedItem(item) is false)
-        {
-            if (_items.Any(GetIsCheckedItem)) return;
-            if (ReferenceEquals(GetTabTargetItem(), item) is false) return;
-        }
+        if (ReferenceEquals(item, GetInputTargetItem()) is false) return;
 
         InputElement = inputElement;
 
-        if (AutoFocus && _autoFocusDone is false && ReadOnly is false && GetIsItemEnabled(item))
+        if (AutoFocus && _autoFocusDone is false)
         {
+            // Latched on the attempt, not on the success: AutoFocus means "focused on first render", so a
+            // group that is read-only (or whose target item is disabled) at that moment must not steal the
+            // focus at some later render, when it happens to become interactive.
             _autoFocusDone = true;
+
+            if (ReadOnly || GetIsItemEnabled(item) is false) return;
 
             try
             {
@@ -493,7 +504,23 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
     }
 
-    private TItem? GetTabTargetItem() => _items.FirstOrDefault(GetIsItemEnabled) ?? _items.FirstOrDefault();
+    // Memoized so the per-item SetInputElement calls after a render cost O(1) instead of each one scanning
+    // the items again; anything that can move the tab stop (a parameters set, a change, an option
+    // registering, unregistering or reordering) invalidates it.
+    private TItem? GetInputTargetItem()
+    {
+        if (_inputTargetDirty)
+        {
+            _inputTargetDirty = false;
+            _inputTargetItem = _items.FirstOrDefault(GetIsCheckedItem)
+                            ?? _items.FirstOrDefault(GetIsItemEnabled)
+                            ?? _items.FirstOrDefault();
+        }
+
+        return _inputTargetItem;
+    }
+
+    internal void InvalidateInputTarget() => _inputTargetDirty = true;
 
     internal async Task HandleFocus(TItem item)
     {
@@ -1101,6 +1128,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     // parameters set and after every change, not only when an item is picked.
     private void UpdateIsSelected()
     {
+        InvalidateInputTarget();
+
         foreach (var item in _items)
         {
             SetIsSelected(item, GetIsCheckedItem(item));

@@ -252,7 +252,7 @@ public partial class BitChoiceGroupDemo
                 new()
                 {
                     Name= "Primary",
-                    Description="Info Primary general color.",
+                    Description="Primary general color.",
                     Value="0",
                 },
                 new()
@@ -396,19 +396,19 @@ public partial class BitChoiceGroupDemo
                 new()
                 {
                     Name= "Small",
-                    Description="The small size checkbox.",
+                    Description="The small size choice group.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "Medium",
-                    Description="The medium size checkbox.",
+                    Description="The medium size choice group.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Large",
-                    Description="The large size checkbox.",
+                    Description="The large size choice group.",
                     Value="2",
                 }
             ]
@@ -855,14 +855,14 @@ public partial class BitChoiceGroupDemo
                {
                    Name = "Index",
                    Type = "string",
-                   DefaultValue = "nameof(BitChoiceGroupItem<TValue>.Index))",
+                   DefaultValue = "nameof(BitChoiceGroupItem<TValue>.Index)",
                    Description = "The Index field name of the custom input class. This property's value is set by the component at render.",
                },
                new()
                {
                    Name = "IsSelected",
                    Type = "string",
-                   DefaultValue = "nameof(BitChoiceGroupItem<TValue>.IsSelected))",
+                   DefaultValue = "nameof(BitChoiceGroupItem<TValue>.IsSelected)",
                    Description = "The IsSelected field name of the custom input class. This property's value is assigned by the component.",
                }
             ]

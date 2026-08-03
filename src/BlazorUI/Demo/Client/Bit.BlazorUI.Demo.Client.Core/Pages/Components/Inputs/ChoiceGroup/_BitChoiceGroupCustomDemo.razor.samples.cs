@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 
 public partial class _BitChoiceGroupCustomDemo
 {
@@ -111,7 +111,7 @@ public class Order
     public string ItemValue { get; set; }
     public string ImageAddress { get; set; }
     public string ImageDescription { get; set; }
-    public Size? ImageSize { get; set; }
+    public BitImageSize? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
     public string? IconName { get; set; }
     public bool IsDisabled { get; set; }
@@ -208,7 +208,7 @@ public class Order
     public string ItemValue { get; set; }
     public string ImageAddress { get; set; }
     public string ImageDescription { get; set; }
-    public Size? ImageSize { get; set; }
+    public BitImageSize? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
     public string? IconName { get; set; }
     public bool IsDisabled { get; set; }
@@ -282,7 +282,7 @@ public class Order
     public string ItemValue { get; set; }
     public string ImageAddress { get; set; }
     public string ImageDescription { get; set; }
-    public Size? ImageSize { get; set; }
+    public BitImageSize? ImageSize { get; set; }
     public string SelectedImageAddress { get; set; }
     public string? IconName { get; set; }
     public bool IsDisabled { get; set; }
@@ -681,9 +681,9 @@ public class Order
 
 private readonly List<Order> prefixCustoms =
 [
-    new() { Name = ""Standard"", ItemValue = ""Standard"", Prefix = ""$0 — "" },
-    new() { Name = ""Express"", ItemValue = ""Express"", Prefix = ""$10 — "" },
-    new() { Name = ""Overnight"", ItemValue = ""Overnight"", Prefix = ""$25 — "" }
+    new() { Name = ""Standard"", ItemValue = ""Standard"", Prefix = ""$0 â€” "" },
+    new() { Name = ""Express"", ItemValue = ""Express"", Prefix = ""$10 â€” "" },
+    new() { Name = ""Overnight"", ItemValue = ""Overnight"", Prefix = ""$25 â€” "" }
 ];
 
 private readonly List<Order> suffixCustoms =
@@ -966,26 +966,28 @@ private readonly List<Order> basicCustoms =
                 DefaultValue=""basicCustoms[1].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Color=""BitColor.PrimaryBackground"" 
-                Label=""PrimaryBackground"" 
-                Horizontal
-                Items=""basicCustoms""
-                DefaultValue=""basicCustoms[1].ItemValue""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
+    <BitChoiceGroup Color=""BitColor.PrimaryBackground""
+                    Label=""PrimaryBackground""
+                    Horizontal
+                    Items=""basicCustoms""
+                    DefaultValue=""basicCustoms[1].ItemValue""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Color=""BitColor.SecondaryBackground"" 
-                Label=""SecondaryBackground"" 
-                Horizontal
-                Items=""basicCustoms""
-                DefaultValue=""basicCustoms[1].ItemValue""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+    <BitChoiceGroup Color=""BitColor.SecondaryBackground""
+                    Label=""SecondaryBackground""
+                    Horizontal
+                    Items=""basicCustoms""
+                    DefaultValue=""basicCustoms[1].ItemValue""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Color=""BitColor.TertiaryBackground"" 
-                Label=""TertiaryBackground"" 
-                Horizontal
-                Items=""basicCustoms""
-                DefaultValue=""basicCustoms[1].ItemValue""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+    <BitChoiceGroup Color=""BitColor.TertiaryBackground""
+                    Label=""TertiaryBackground""
+                    Horizontal
+                    Items=""basicCustoms""
+                    DefaultValue=""basicCustoms[1].ItemValue""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+</div>
 
 <BitChoiceGroup Color=""BitColor.PrimaryForeground"" 
                 Label=""PrimaryForeground"" 
@@ -1424,13 +1426,13 @@ private readonly List<Order> itemStyleClassCustoms =
 ];";
 
     private readonly string example24RazorCode = @"
-<BitChoiceGroup Label=""ساده""
+<BitChoiceGroup Label=""Ø³Ø§Ø¯Ù‡""
                 Dir=""BitDir.Rtl""
                 DefaultValue=""@(""A"")""
                 Items=""rtlCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""غیرفعال""
+<BitChoiceGroup Label=""ØºÛŒØ±ÙØ¹Ø§Ù„""
                 Dir=""BitDir.Rtl""
                 IsEnabled=""false""
                 DefaultValue=""@(""A"")""
@@ -1445,9 +1447,9 @@ public class Order
 
 private readonly List<Order> rtlCustoms =
 [
-    new() { Name = ""ویژه آ"", ItemValue = ""A"" },
-    new() { Name = ""ویژه ب"", ItemValue = ""B"" },
-    new() { Name = ""ویژه پ"", ItemValue = ""C"" },
-    new() { Name = ""ویژه ت"", ItemValue = ""D"" }
+    new() { Name = ""ÙˆÛŒÚ˜Ù‡ Ø¢"", ItemValue = ""A"" },
+    new() { Name = ""ÙˆÛŒÚ˜Ù‡ Ø¨"", ItemValue = ""B"" },
+    new() { Name = ""ÙˆÛŒÚ˜Ù‡ Ù¾"", ItemValue = ""C"" },
+    new() { Name = ""ÙˆÛŒÚ˜Ù‡ Øª"", ItemValue = ""D"" }
 ];";
 }

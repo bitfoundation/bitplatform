@@ -23,6 +23,14 @@
         text-shadow: dodgerblue 0 0 8px;
     }
 
+    // Kept in sync with the <style> block the LabelTemplate samples ship, so the rendered demo
+    // actually shows the styling the copyable code claims.
+    .custom-label {
+        color: red;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
     .custom-item {
         padding: 8px;
         border-radius: 20px;

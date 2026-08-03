@@ -345,7 +345,7 @@ private string? uncontrolledValue = ""A"";";
     </BitChoiceGroup>
     <ValidationMessage For=""@(() => validationModel.Value)"" />
     
-    <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
     private readonly string example9CsharpCode = @"
 public class ChoiceGroupValidationModel
@@ -617,26 +617,28 @@ private bool showAutoFocus;";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
             
+<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
     <BitChoiceGroup Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup>
-                
-<BitChoiceGroup Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup>
-                
-<BitChoiceGroup Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
-    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
-    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
-    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
-</BitChoiceGroup>
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+        <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+    </BitChoiceGroup>
+
+    <BitChoiceGroup Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+        <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+    </BitChoiceGroup>
+
+    <BitChoiceGroup Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+        <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+    </BitChoiceGroup>
+</div>
                 
 <BitChoiceGroup Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
@@ -680,7 +682,7 @@ private bool showAutoFocus;";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Label=""Primary (default)"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />

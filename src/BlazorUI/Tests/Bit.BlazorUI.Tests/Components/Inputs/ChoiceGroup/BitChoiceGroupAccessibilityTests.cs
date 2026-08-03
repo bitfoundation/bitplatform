@@ -296,8 +296,10 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitChoiceGroupShouldPreferAConsumerSuppliedAriaDescribedByOverTheGroupDescription()
+    public void BitChoiceGroupShouldMergeAConsumerSuppliedAriaDescribedByWithTheGroupDescription()
     {
+        // aria-describedby is a space separated list of IDREFs, so the consumer's reference must not
+        // silence the description of the group (or the other way around): both get announced.
         var component = Context.Render(builder =>
         {
             builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
@@ -307,7 +309,15 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        Assert.AreEqual("consumer-hint", component.Find(".bit-chg").GetAttribute("aria-describedby"));
+        var describedBy = component.Find(".bit-chg").GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(describedBy);
+
+        var ids = describedBy!.Split(' ');
+
+        Assert.AreEqual(2, ids.Length);
+        Assert.AreEqual("consumer-hint", ids[0]);
+        Assert.AreEqual("group description", component.Find($"#{ids[1]}").TextContent);
     }
 
     [TestMethod]
@@ -320,6 +330,31 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         });
 
         Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("aria-describedby") == "consumer-hint"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldMergeAConsumerSuppliedAriaDescribedByWithTheItemDescription()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["aria-describedby"] = "consumer-hint" });
+        });
+
+        var describedBy = component.Find(".bit-chg-icn input").GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(describedBy);
+
+        var ids = describedBy!.Split(' ');
+
+        Assert.AreEqual(2, ids.Length);
+        Assert.AreEqual("consumer-hint", ids[0]);
+        Assert.AreEqual("desc A", component.Find($"#{ids[1]}").TextContent);
     }
 
     [TestMethod]
