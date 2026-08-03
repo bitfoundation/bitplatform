@@ -47,7 +47,9 @@ public partial class AppChatbot
         string? signalRConnectionId,
         CancellationToken cancellationToken)
     {
-        chatMessages = [.. request.ChatMessagesHistory.Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))];
+        chatMessages = [.. request.ChatMessagesHistory
+            .Where(c => c.Successful && string.IsNullOrWhiteSpace(c.Content) is false)
+            .Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))];
 
         CultureInfo? culture = null;
         if (request.CultureId is not null && CultureInfoManager.InvariantGlobalization is false)
@@ -86,7 +88,6 @@ public partial class AppChatbot
         CancellationToken cancellationToken)
     {
         StringBuilder assistantResponse = new();
-        var streamCompleted = false;
         try
         {
             if (string.IsNullOrEmpty(variablesDefault))
@@ -129,7 +130,10 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            streamCompleted = true;
+            if (assistantResponse.Length > 0)
+            {
+                chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+            }
 
             await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS);
 
@@ -153,16 +157,6 @@ public partial class AppChatbot
         {
             exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
             await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
-        }
-        finally
-        {
-            if (assistantResponse.Length > 0)
-            {
-                // A cancelled or failed stream leaves a half finished answer. It is still kept, because the user has
-                // already seen it on screen and the next turn has to make sense against what is on screen - but it is
-                // marked, so the model does not read a truncated sentence as a complete previous answer of its own.
-                chatMessages.Add(new(ChatRole.Assistant, streamCompleted ? assistantResponse.ToString() : $"{assistantResponse} [interrupted]"));
-            }
         }
     }
 
