@@ -147,14 +147,14 @@
              the whole point of the tsc target and raising the browser floor only for published
              apps - Debug builds, being unminified, would still look fine. Keep BswupJsTarget in
              lockstep with the tsconfigs. -->
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Move SourceFiles="wwwroot/bit-bswup.min.js" DestinationFiles="wwwroot/bit-bswup.js" OverwriteReadOnlyFiles="true" />
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.progress.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.progress.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Move SourceFiles="wwwroot/bit-bswup.progress.min.js" DestinationFiles="wwwroot/bit-bswup.progress.js" OverwriteReadOnlyFiles="true" />
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.sw.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Move SourceFiles="wwwroot/bit-bswup.sw.min.js" DestinationFiles="wwwroot/bit-bswup.sw.js" OverwriteReadOnlyFiles="true" />
-        <Exec Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw-cleanup.js --minify --target=$(BswupJsTarget) --outfile=wwwroot/bit-bswup.sw-cleanup.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Move SourceFiles="wwwroot/bit-bswup.sw-cleanup.min.js" DestinationFiles="wwwroot/bit-bswup.sw-cleanup.js" OverwriteReadOnlyFiles="true" />
+        <!-- Batched over @(BswupBundle): the Exec runs once per bundle, the Move then renames
+             every .min.js over its unminified original in one task. Adding a bundle means
+             adding one ItemGroup entry (and its Inputs entry above). -->
+        <ItemGroup>
+            <BswupBundle Include="bit-bswup;bit-bswup.progress;bit-bswup.sw;bit-bswup.sw-cleanup" />
+        </ItemGroup>
+        <Exec Command="node_modules/.bin/esbuild wwwroot/%(BswupBundle.Identity).js --minify --target=$(BswupJsTarget) --outfile=wwwroot/%(BswupBundle.Identity).min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move SourceFiles="@(BswupBundle->'wwwroot/%(Identity).min.js')" DestinationFiles="@(BswupBundle->'wwwroot/%(Identity).js')" OverwriteReadOnlyFiles="true" />
         <!-- Touched last so the stamp is always newer than the (re-minified) bundles, keeping the
              target up to date until tsc next rewrites them. -->
         <Touch Files="$(BaseIntermediateOutputPath)$(Configuration)\bit-bswup.min.stamp" AlwaysCreate="true" />

@@ -421,6 +421,10 @@ if (!BitBswup.initialized) {
 
                     const installing = reg.installing;
                     if (!installing) return Promise.resolve(null);
+                    // 'redundant' is terminal: a worker already in it will never fire another
+                    // statechange, so subscribing below would leave this promise pending for
+                    // good. The listener tests the same condition - check it once up front.
+                    if (installing.state === 'redundant') return Promise.resolve(null);
 
                     return new Promise((resolve) => {
                         // Named + removed on settle: reload() can be invoked more than once
@@ -448,6 +452,8 @@ if (!BitBswup.initialized) {
 
                     const pending = reg.waiting || reg.installing;
                     if (!pending) return Promise.resolve(null);
+                    // Terminal state, same reasoning as whenStaged.
+                    if (pending.state === 'redundant') return Promise.resolve(null);
 
                     return new Promise((resolve) => {
                         // Removed on settle for the same reason as whenStaged's listener.
