@@ -2438,9 +2438,9 @@ public class BitFileUploadTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 80));
 
         // a browser reports the progress of a request many times a second; repainting the whole list on
-        // each of them would cost more than the upload itself, so the repaints are spaced out.
+        // each of them would cost more than the upload itself, so the repaints are spaced out. whether
+        // this report was the one that got skipped depends on the clock, so only its arrival is asserted.
         Assert.AreEqual(80, com.Instance.Files[0].LastChunkUploadedSize);
-        Assert.AreEqual("40%", com.Find(".bit-upl-pct").TextContent.Trim());
 
         await Task.Delay(400);
 

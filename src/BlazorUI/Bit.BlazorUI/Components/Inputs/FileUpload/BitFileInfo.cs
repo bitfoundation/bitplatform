@@ -4,6 +4,13 @@ namespace Bit.BlazorUI;
 
 public class BitFileInfo
 {
+    // the bounds of DateTimeOffset itself in unix milliseconds, which a browser can well report a
+    // timestamp outside of - a file whose modification time the file system never really had.
+    private const long MIN_UNIX_MILLISECONDS = -62135596800000;
+    private const long MAX_UNIX_MILLISECONDS = 253402300799999;
+
+
+
     /// <summary>
     /// The Content-Type of the selected file.
     /// </summary>
@@ -53,9 +60,12 @@ public class BitFileInfo
     [JsonPropertyName("height")] public int? Height { get; set; }
 
     /// <summary>
-    /// The last modified time of the file reported by the browser, as a DateTimeOffset.
+    /// The last modified time of the file reported by the browser, as a DateTimeOffset. A timestamp the
+    /// browser reports outside of the range of a DateTimeOffset is clamped to the closest end of it.
     /// </summary>
-    [JsonIgnore] public DateTimeOffset LastModifiedDate => DateTimeOffset.FromUnixTimeMilliseconds(LastModified);
+    [JsonIgnore]
+    public DateTimeOffset LastModifiedDate => DateTimeOffset.FromUnixTimeMilliseconds(
+        Math.Clamp(LastModified, MIN_UNIX_MILLISECONDS, MAX_UNIX_MILLISECONDS));
 
     /// <summary>
     /// The size of the last uploaded chunk of the file.

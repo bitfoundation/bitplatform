@@ -1354,7 +1354,13 @@ public partial class BitFileUpload : BitComponentBase
 
         if (_files.Any() is false) return;
 
-        UploadStatus = BitFileUploadStatus.Pending;
+        // a selection appended to a batch that is still uploading leaves the status of that batch alone:
+        // only a batch known to be running is ever reported as complete, so taking it back to pending here
+        // would keep the completion of the files already on the wire from ever being announced.
+        if (UploadStatus is not BitFileUploadStatus.InProgress)
+        {
+            UploadStatus = BitFileUploadStatus.Pending;
+        }
 
         // the built-in validations run right at selection time, so the user learns about a rejected file
         // immediately instead of at the moment the upload gets attempted.
@@ -1593,8 +1599,18 @@ public partial class BitFileUpload : BitComponentBase
         fileInfo.TransferStartOffset = fileInfo.TotalUploadedSize;
         fileInfo.IsRequestInFlight = true;
 
-        await _js.BitFileUploadUpload(UniqueId, from, to, fileInfo.Index, requestUrl, requestHeaders,
-                                      GetUploadFormFields(fileInfo));
+        try
+        {
+            await _js.BitFileUploadUpload(UniqueId, from, to, fileInfo.Index, requestUrl, requestHeaders,
+                                          GetUploadFormFields(fileInfo));
+        }
+        catch
+        {
+            // a request that never made it out of the interop call has no response coming back to declare
+            // the file free again, and a file left marked as busy would turn down every later retry.
+            fileInfo.IsRequestInFlight = false;
+            throw;
+        }
     }
 
     // the URL of a single request: an explicit one passed to Upload wins, then the providers get to mint
@@ -1778,7 +1794,8 @@ public partial class BitFileUpload : BitComponentBase
 
     private void UpdateChunkSize(int fileIndex)
     {
-        if (_files.Any() is false || AutoChunkSize is false || ChunkedUpload is false) return;
+        if (fileIndex < 0 || fileIndex >= _files.Count) return;
+        if (AutoChunkSize is false || ChunkedUpload is false) return;
 
         var file = _files[fileIndex];
 

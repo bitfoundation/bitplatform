@@ -63,7 +63,7 @@ namespace BitBlazorUI {
             from: number,
             to: number,
             index: number,
-            uploadUrl: string,
+            uploadUrl: string | null,
             headers: Record<string, string> = {},
             formFields: Record<string, string> = {}): void {
 
@@ -488,7 +488,7 @@ namespace BitBlazorUI {
             };
         }
 
-        upload(from: number, to: number, uploadUrl: string, headers: Record<string, string>, formFields: Record<string, string>): void {
+        upload(from: number, to: number, uploadUrl: string | null, headers: Record<string, string>, formFields: Record<string, string>): void {
             const file = this.file;
             if (file === null) return;
 
