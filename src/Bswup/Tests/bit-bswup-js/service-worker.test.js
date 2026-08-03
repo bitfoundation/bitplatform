@@ -1342,11 +1342,19 @@ describe('invalid manifest', () => {
         await expect(sw.fire('install')).rejects.toThrow();
     });
 
-    it('does not throw at module-evaluation time on a malformed manifest', () => {
+    // A present-but-malformed manifest must take the same path as a missing one: a bad shape is
+    // caught by validateAssetsManifest (here both the non-string version and the non-array
+    // assets), never by a crash mid-evaluation that would leave the page with no error at all.
+    it('does not throw at module-evaluation time on a malformed manifest', async () => {
         const sw = createServiceWorkerContext();
         sw.addClient();
         sw.self.assetsManifest = { version: 5, assets: 'not-an-array' };
         expect(() => sw.load()).not.toThrow();
+        await sw.settle();
+
+        const errors = sw.messagesOfType('error');
+        expect(errors.some(e => e.data.reason === 'manifest' && e.data.fatal === true)).toBe(true);
+        await expect(sw.fire('install')).rejects.toThrow();
     });
 });
 
