@@ -279,6 +279,50 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitChoiceGroupShouldKeepAConsumerSuppliedAriaDescribedBy()
+    {
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so supply
+        // them as raw component attributes (as real markup would) rather than via the builder, which
+        // rejects unmatched params on components without [Parameter(CaptureUnmatchedValues)].
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
+            builder.AddAttribute(1, "Items", GetItems());
+            builder.AddAttribute(2, "aria-describedby", "consumer-hint");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("consumer-hint", component.Find(".bit-chg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldPreferAConsumerSuppliedAriaDescribedByOverTheGroupDescription()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
+            builder.AddAttribute(1, "Items", GetItems());
+            builder.AddAttribute(2, "Description", "group description");
+            builder.AddAttribute(3, "aria-describedby", "consumer-hint");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("consumer-hint", component.Find(".bit-chg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldKeepAConsumerSuppliedAriaDescribedByOnTheInputs()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["aria-describedby"] = "consumer-hint" });
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("aria-describedby") == "consumer-hint"));
+    }
+
+    [TestMethod]
     public void BitChoiceGroupShouldRenderTheTitleOfEachItem()
     {
         var items = new List<BitChoiceGroupItem<string>>

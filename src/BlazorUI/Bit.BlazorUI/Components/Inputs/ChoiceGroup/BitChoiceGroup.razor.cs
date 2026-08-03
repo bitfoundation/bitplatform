@@ -441,11 +441,15 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : null);
 
     // Same reasoning as the label: the description element is only rendered when there is a description to
-    // show, so the reference is only emitted then. Left null otherwise, which lets an aria-describedby that
-    // the consumer splatted through HtmlAttributes survive instead of being overwritten with an empty value.
+    // show, so the reference is only emitted then. This attribute sits after the HtmlAttributes splat in the
+    // markup, so it is what ends up rendered no matter what (a null even removes the splatted value); an
+    // aria-describedby the consumer splatted has to be carried over here to survive, and it wins.
     internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
-    private string? GetAriaDescribedBy() => HasDescription ? _descriptionId : null;
+    private string? GetAriaDescribedBy() =>
+        HtmlAttributes.TryGetValue("aria-describedby", out var describedBy)
+            ? describedBy?.ToString()
+            : HasDescription ? _descriptionId : null;
 
     // The index is used instead of the value, because a value is free-form (it can contain spaces or any
     // other character that is not valid in an id) and is not guaranteed to be unique among the items,

@@ -18,6 +18,13 @@
                       && template is null
                       && ChoiceGroup.ItemTemplate is null
                       && ChoiceGroup.ItemLabelTemplate is null;
+
+    // The explicit attribute sits after the InputHtmlAttributes splat, so it is what ends up rendered no
+    // matter what (a null even removes the splatted value); an aria-describedby the consumer splatted has
+    // to be carried over here to survive, and it wins.
+    object? splattedDescribedBy = null;
+    ChoiceGroup.InputHtmlAttributes?.TryGetValue("aria-describedby", out splattedDescribedBy);
+    var ariaDescribedBy = splattedDescribedBy?.ToString() ?? (hasDescription ? descriptionId : null);
 }
 
 <div title="@ChoiceGroup.GetTitle(Item)"
@@ -42,7 +49,7 @@
            name="@ChoiceGroup.GetName()"
            required="@ChoiceGroup.Required"
            aria-label="@ChoiceGroup.GetAriaLabel(Item)"
-           aria-describedby="@(hasDescription ? descriptionId : null)"
+           aria-describedby="@ariaDescribedBy"
            value="@ChoiceGroup.GetValue(Item)?.ToString()"
            disabled="@(ChoiceGroup.GetIsItemEnabled(Item) is false)" />
 
