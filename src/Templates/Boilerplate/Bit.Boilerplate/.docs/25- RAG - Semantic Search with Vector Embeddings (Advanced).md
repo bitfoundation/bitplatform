@@ -87,23 +87,22 @@ This works because embeddings capture the **semantic meaning** across languages,
 
 The project supports multiple embedding model providers. You configure them in `appsettings.json` under the `AI` section in the `Boilerplate.Server.Api` project.
 
-### 3.1 LocalTextEmbeddingGenerationService (Default)
+### 3.1 What Ships
 
-**Location**: [`src/Server/Boilerplate.Server.Api/Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs) (lines 367-372)
+There is **no local, in-process embedding generator**. `Program.Services.cs` registers an
+`IEmbeddingGenerator<string, Embedding<float>>` only when you configure one, in this order:
 
-```csharp
-services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()
-    .AsEmbeddingGenerator())
-    .UseLogging()
-    .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
-```
+1. `AI:OpenAI:EmbeddingApiKey` is set → the OpenAI-compatible generator, against `AI:OpenAI:EmbeddingEndpoint`.
+2. Otherwise `AI:HuggingFace:EmbeddingEndpoint` is set → a Hugging Face Text Embeddings Inference endpoint. The shipped
+   default points at `http://localhost:7000`, which is the container the `AI:HuggingFace` comment in `appsettings.json`
+   tells you how to run - nothing is listening there until you start it.
 
-**Characteristics**:
-- Runs locally without external API calls
-- Generates 384-dimensional vectors
-- Uses a small model that runs on your server
-- **Not recommended for production** due to limited accuracy
-- Good for development and testing
+If neither is configured, no generator is registered at all, so anything that injects one fails to activate. Configure
+one **before** enabling embeddings.
+
+Note the vector column is declared as 384 dimensions, which matches a small local model such as `bge-small-en-v1.5`.
+`text-embedding-3-small` - the shipped `AI:OpenAI:EmbeddingModel` default - produces 1536, so change the column
+dimensions to match whichever model you actually use.
 
 ### 3.2 Production-Recommended Models
 
@@ -151,32 +150,23 @@ For production environments, you should use more accurate models:
 
 By default, embeddings are **disabled** in the project. To enable them:
 
-### Step 1: Open AppDbContext.cs
+### Step 1: Flip the switch
 
-**File Location**: [`src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs)
+Set `AppDbContext.IsEmbeddingEnabled` to `true`. That single flag decides whether `Product.Embedding` is a real vector
+column or is ignored by the model, and whether the search and the write path use vectors or fall back to a plain name
+match.
 
-**Current State**:
-```csharp
-// This requires SQL Server 2025+
-public static readonly bool IsEmbeddingEnabled = false;
-```
+### Step 2: Meet the database prerequisite
 
-### Step 2: Change to Enable Embeddings
+⚠️ Your database has to support vector search, and which one you need depends on the `database` you generated with:
 
-**Change to**:
-```csharp
-// This requires SQL Server 2025+
-public static readonly bool IsEmbeddingEnabled = true;
-```
+- **PostgreSQL**: the `pgvector` extension must be installed in the server. `AppDbContext.OnModelCreating` declares it
+  (`HasPostgresExtension("vector")`), but declaring is not installing - use an image that ships it, e.g.
+  `pgvector/pgvector:pg18`, which is what the Aspire AppHost already uses.
+- **SQL Server**: **SQL Server 2025+**, which is the first version with native vector search.
 
-### Step 3: Important Prerequisites
-
-⚠️ **CRITICAL REQUIREMENT**: Vector embeddings require **SQL Server 2025+** which includes native vector search support.
-
-If you're using an older version of SQL Server:
-- **Option 1**: Upgrade to SQL Server 2025+
-- **Option 2**: Switch to PostgreSQL with the `pgvector` extension
-- **Option 3**: Use a different database with vector support (e.g., Azure Cosmos DB, Qdrant, etc.)
+Neither Sqlite nor MySql has a vector type here, which is why this feature is only generated for the two databases
+above.
 
 ---
 

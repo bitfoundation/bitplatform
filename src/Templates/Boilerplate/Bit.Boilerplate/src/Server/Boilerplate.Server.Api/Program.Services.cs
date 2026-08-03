@@ -30,6 +30,7 @@ using FluentStorage;
 using FluentEmail.Core;
 using FluentStorage.Storage;
 using Hangfire.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 //#if (redis == true)
 using StackExchange.Redis;
 using Hangfire.Redis.StackExchange;
@@ -435,7 +436,8 @@ public static partial class Program
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
-            .ProtectKeysWithCertificate(AppCertificateService.GetAppCertificate(configuration));
+            .ProtectKeysWithCertificate(AppCertificateService.GetActiveAppCertificate(configuration))
+            .UnprotectKeysWithAnyCertificate(AppCertificateService.GetAllAppCertificates(configuration));
 
         AddIdentity(builder);
 
@@ -838,8 +840,12 @@ public static partial class Program
         var healthChecksBuilder = builder.AddDefaultHealthChecks()
             .AddDbContextCheck<AppDbContext>()
             .AddHangfire(setup => setup.MinimumAvailableServers = 1)
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages")
-            .AddCheck<TwilioHealthCheck>("sms");
+            // These two reach a remote dependency, so they are bounded and they report Degraded rather than Unhealthy.
+            // `/health` is the readiness contract (See MapAppHealthChecks), and Degraded keeps it at 200: an object
+            // storage hiccup or an SMS provider outage must not pull every otherwise healthy instance out of the load
+            // balancer rotation. The status is still visible in `/healthz`.
+            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5));
 
         //#if (cloudflare == true)
         // Cloudflare Cache Purge API

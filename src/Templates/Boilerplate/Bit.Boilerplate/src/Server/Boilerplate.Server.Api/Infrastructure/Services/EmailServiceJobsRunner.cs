@@ -40,7 +40,7 @@ public partial class EmailServiceJobsRunner
                 { "ToEmailAddress", toEmailAddress },
                 { "JobId", context.BackgroundJob.Id }
             });
-            if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
+            if (cancellationToken.IsCancellationRequested || exp is not KnownException)
                 throw; // To retry the job
         }
     }

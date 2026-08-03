@@ -47,6 +47,48 @@ openssl genrsa -out AppCertificate.key 3072
 openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/CN=AppCertificate" -sha256
 ```
 
+> **⚠ `AppCertificate.key` is a production secret. Do not commit the one you generate.**
+> The file ships with the template as a *development* default and is therefore tracked in git, so the commands above
+> overwrite a tracked file and `git add -A` will take your real key with it. Anyone who can read the repository can
+> then mint a valid token for any user - including the global administrator - offline, and decrypt the Data Protection
+> key ring; there is no key id, no revocation list and no server-side state that would stop them. Deliver the key out
+> of band instead (a CI/CD secret, Azure Key Vault, AWS Secrets Manager, the OS certificate store - see *Why PEM over
+> PFX* below), and keep it out of the repository, e.g. `git rm --cached AppCertificate.key` plus a `.gitignore` entry.
+
+## Rotating the Certificate
+
+The app trusts **more than one** certificate at a time, so a rotation does not sign anybody out:
+
+- `AppCertificate.crt` / `.key` is the **active** certificate - the only one that writes anything. New tokens are
+  signed with it and the Data Protection key ring is encrypted to it.
+- any `AppCertificate.{name}.crt` / `.key` pair sitting next to it is a **retired** certificate, which only ever
+  reads: it validates tokens and decrypts existing key ring entries, and never signs or encrypts anything new.
+
+Each certificate's thumbprint is its `kid`, in the JWT header and in the published JWKS alike, so a validator - this
+app, a sibling service, or anything reading `/.well-known/jwks` - picks the right key on its own.
+
+### The procedure
+
+```shell
+# 1. Retire the current certificate by renaming both files (any name you like).
+mv AppCertificate.crt AppCertificate.old.crt
+mv AppCertificate.key AppCertificate.old.key
+
+# 2. Generate the new pair under the active name (see "Generating Certificates" above).
+openssl genrsa -out AppCertificate.key 3072
+openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/CN=AppCertificate" -sha256
+```
+
+Deploy. From that moment new tokens are signed with the new key, tokens already in the wild keep validating against
+the retired one, and the existing Data Protection key ring is still readable.
+
+**Delete the retired pair once `Identity:RefreshTokenExpiration` has elapsed** (14 days by default). Until you do,
+the old private key can still mint tokens this app accepts - so if you are rotating *because the old key leaked*,
+skip the overlap entirely and delete the retired pair immediately, accepting the sign-out.
+
+> Both files are copied to the output directory by the `AppCertificate.*` glob in the csproj, so a retired pair needs
+> no project change. Every instance behind a load balancer must carry the same set.
+
 ## Why RSA 3072 + SHA-256?
 
 The application uses **RSA 3072** paired with **SHA-256** for the following reasons:
@@ -68,7 +110,7 @@ By default, the system uses **PEM files** (`.crt` and `.key`) instead of the bun
 - **Shared Hosting Compatibility:** PFX loading often fails in restricted shared hosting environments because it tries to interact with the OS Certificate Store or write to temporary system folders. PEM loading is **memory-only**, making it "infrastructure-agnostic."
 - **Simplicity:** PEM files are easier to manage in Linux-based containers and CI/CD pipelines.
 
-**Note:** While the current implementation uses **PEM files** for maximum compatibility with shared hosting, you can easily switch to other sources. By modifying a single line in `AppCertificateService.GetAppCertificate`, you can load the certificate from:
+**Note:** While the current implementation uses **PEM files** for maximum compatibility with shared hosting, you can easily switch to other sources. By modifying a single line in `AppCertificateService.LoadCertificate`, you can load the certificate from:
 - A password-protected **PFX** file.
 - **Azure Key Vault** or **AWS Secrets Manager**.
 - The local **OS Certificate Store**.
@@ -85,9 +127,11 @@ This architecture ensures that your security logic remains decoupled from your k
 
 The application exposes an OpenID Connect discovery endpoint at `/.well-known/openid-configuration`. This endpoint provides:
 
-- **JWKS (JSON Web Key Set)** - Contains the public key for token validation
-- **Issuer information** - Identifies the token issuer
-- **Supported algorithms** - Lists the signing algorithms used
+- **`jwks_uri`** - Points at `/.well-known/jwks`, which carries the public key for token validation
+- **`issuer`** - Identifies the token issuer
+
+The document is deliberately minimal - it carries no algorithm metadata, so pin the algorithm on the consuming side
+(`ValidAlgorithms`) rather than expecting to discover it.
 
 ### Why Expose This Endpoint?
 
@@ -106,6 +150,7 @@ Other .NET services can validate tokens issued by this API using the following c
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // The address of the host that serves the API
         options.Authority = "http://localhost:5030";
         options.RequireHttpsMetadata = builder.Environment.IsDevelopment() is false;
         options.TokenValidationParameters = new()
@@ -119,16 +164,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             ValidateAudience = true,
             ValidAudience = "Boilerplate",
-
-            ValidateIssuer = true,
-            ValidIssuer = "Boilerplate"
-        };
-
-        // OR
-
-        options.TokenValidationParameters = new()
-        {
-            ValidateAudience = false,
 
             ValidateIssuer = true,
             ValidIssuer = "Boilerplate"

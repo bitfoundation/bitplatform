@@ -74,8 +74,7 @@ public class JsonOptionsContractTests
         Assert.AreEqual("fa-IR", restored.GetValueOrDefault("Culture"),
             $"The key the app wrote must be the key the app reads back. Written json: {json}");
 
-        CollectionAssert.AreEquivalent(saved.Keys.ToArray(), restored.Keys.ToArray(),
-            $"No key may be rewritten on the way to disk. Written json: {json}");
+        Assert.AreSequenceEqual(saved.Keys.ToArray(), restored.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"No key may be rewritten on the way to disk. Written json: {json}");
     }
 
     /// <summary>

@@ -113,10 +113,8 @@ public class RoleAdministrationGuardTests
 
         var values = await ReadClaimValues(server, roleId, AppClaimTypes.FEATURES);
 
-        CollectionAssert.AreEquivalent(
-            new[] { AppFeatures.AdminPanel.Dashboard_View, AppFeatures.Todo.Todo_Manage_Self },
-            values,
-            "FEATURES is multi-valued, so updating one of a role's features must leave the others alone.");
+        Assert.AreSequenceEqual(
+            new[] { AppFeatures.AdminPanel.Dashboard_View, AppFeatures.Todo.Todo_Manage_Self }, values, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "FEATURES is multi-valued, so updating one of a role's features must leave the others alone.");
     }
 
 
