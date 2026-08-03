@@ -1294,7 +1294,7 @@ public partial class BitFileUploadDemo
 
     private BitFileUpload bitFileUploadWithBrowseFile = default!;
 
-    private bool FileUploadIsEmpty() => !bitFileUpload.Files?.Any(f => f.Status != BitFileUploadStatus.Removed) ?? true;
+    private bool FileUploadIsEmpty() => !bitFileUpload.Files.Any(f => f.Status != BitFileUploadStatus.Removed);
 
     private static string? ValidateEmptyFile(BitFileInfo file)
     {
@@ -1332,14 +1332,15 @@ public partial class BitFileUploadDemo
 
     private async Task HandleUploadOnClick()
     {
-        if (bitFileUpload.Files is null) return;
-
         await bitFileUpload.Upload();
     }
 
     private static int GetFileUploadPercent(BitFileInfo file)
     {
-        if (file.Size == 0 || file.TotalUploadedSize >= file.Size) return 100;
+        // an empty file has no byte whose progress could be measured, so it is either done or not started.
+        if (file.Size == 0) return file.Status is BitFileUploadStatus.Completed ? 100 : 0;
+
+        if (file.TotalUploadedSize >= file.Size) return 100;
 
         return (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
     }
@@ -1936,18 +1937,19 @@ private string RemoveUrl = ""/Remove"";
 
 private BitFileUpload bitFileUpload = default!;
 
-private bool FileUploadIsEmpty() => !bitFileUpload.Files?.Any(f => f.Status != BitFileUploadStatus.Removed) ?? true;
+private bool FileUploadIsEmpty() => !bitFileUpload.Files.Any(f => f.Status != BitFileUploadStatus.Removed);
 
 private async Task HandleUploadOnClick()
 {
-    if (bitFileUpload.Files is null) return;
-
     await bitFileUpload.Upload();
 }
 
 private static int GetFileUploadPercent(BitFileInfo file)
 {
-    if (file.Size == 0 || file.TotalUploadedSize >= file.Size) return 100;
+    // an empty file has no byte whose progress could be measured, so it is either done or not started.
+    if (file.Size == 0) return file.Status is BitFileUploadStatus.Completed ? 100 : 0;
+
+    if (file.TotalUploadedSize >= file.Size) return 100;
 
     return (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
 }

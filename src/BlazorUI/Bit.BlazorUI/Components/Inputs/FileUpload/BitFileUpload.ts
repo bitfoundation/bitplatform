@@ -224,9 +224,25 @@ namespace BitBlazorUI {
                     .catch(() => setFiles(fallback));
             }
 
+            // a paste is delivered to whatever holds the focus, and neither the drop zone - a plain div -
+            // nor the hidden file input can ever hold it, so the listener sits on the document and decides
+            // for itself whether the paste was meant for this component: the focus being somewhere inside
+            // it, or nothing on the page holding the focus at all. in that second case the paste belongs to
+            // no one in particular, so the first paste enabled upload on the page takes it and marks the
+            // event, otherwise a second one would end up with a copy of the same files.
             function onPaste(e: ClipboardEvent) {
                 if (!allowPaste || inputElement.disabled) return;
                 if (!e.clipboardData || e.clipboardData.files.length === 0) return;
+
+                const focused = document.activeElement;
+                const isFocusedHere = focused !== null && (focused === inputElement || dropZoneElement.contains(focused));
+
+                if (!isFocusedHere) {
+                    if (focused !== null && focused !== document.body) return;
+                    if ((e as any).bitPasteHandled) return;
+
+                    (e as any).bitPasteHandled = true;
+                }
 
                 setFiles(e.clipboardData.files);
             }
@@ -235,8 +251,8 @@ namespace BitBlazorUI {
             dropZoneElement.addEventListener("dragover", onDragOver);
             dropZoneElement.addEventListener("dragleave", onDragLeave);
             dropZoneElement.addEventListener("drop", onDrop);
-            dropZoneElement.addEventListener('paste', onPaste);
             dropZoneElement.addEventListener('dragend', onDragCancel);
+            document.addEventListener('paste', onPaste);
             // the window listener only cleans the state up, it never prevents the default,
             // so a drop landing anywhere else on the page keeps behaving as it did.
             window.addEventListener('dragend', onDragCancel);
@@ -280,8 +296,8 @@ namespace BitBlazorUI {
                     dropZoneElement.removeEventListener('dragover', onDragOver);
                     dropZoneElement.removeEventListener('dragleave', onDragLeave);
                     dropZoneElement.removeEventListener("drop", onDrop);
-                    dropZoneElement.removeEventListener('paste', onPaste);
                     dropZoneElement.removeEventListener('dragend', onDragCancel);
+                    document.removeEventListener('paste', onPaste);
                     window.removeEventListener('dragend', onDragCancel);
                     window.removeEventListener('drop', onDragCancel);
                 }

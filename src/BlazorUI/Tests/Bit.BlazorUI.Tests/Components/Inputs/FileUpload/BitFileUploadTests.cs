@@ -2674,7 +2674,9 @@ public class BitFileUploadTests : BunitTestContext
     {
         var handler = new FakeHttpMessageHandler(statusCode);
 
-        Context.Services.AddSingleton(new HttpClient(handler));
+        // registered through a factory rather than as a ready-made instance so that the container
+        // owns the client - and through it the handler - and disposes both with the test context.
+        Context.Services.AddSingleton(_ => new HttpClient(handler));
 
         return handler;
     }

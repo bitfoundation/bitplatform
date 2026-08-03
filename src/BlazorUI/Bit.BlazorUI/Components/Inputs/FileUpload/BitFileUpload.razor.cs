@@ -1661,9 +1661,9 @@ public partial class BitFileUpload : BitComponentBase
 
         if (ChunkedUpload is false) return fileHeaders;
 
-        var headers = fileHeaders is null
-                        ? []
-                        : new Dictionary<string, string>(fileHeaders);
+        Dictionary<string, string> headers = fileHeaders is null
+                                                ? []
+                                                : new(fileHeaders);
 
         // an empty file has no byte to describe a range over, so it only carries the size headers.
         if (fileInfo.Size > 0)
