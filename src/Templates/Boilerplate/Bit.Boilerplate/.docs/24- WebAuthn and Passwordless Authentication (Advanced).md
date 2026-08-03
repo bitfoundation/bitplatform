@@ -141,7 +141,8 @@ When a user wants to **enable passwordless authentication**, here's what happens
    ```
 
 **6. Server Validates and Stores** (`src/Server/Boilerplate.Server.Api/Features/Identity/UserController.WebAuthn.cs`)
-   - Retrieves cached options using challenge
+   - Retrieves the cached CredentialCreateOptions by USER ID (`WebAuthn_Options_{userId}`). Only the sign-in
+     side keys its cache by challenge (`IdentityController.WebAuthn.cs`).
    - Validates attestation response using Fido2NetLib
    - Verifies credential is unique
    - Creates `WebAuthnCredential` entity with:
@@ -215,13 +216,16 @@ When a user signs in with passwordless authentication:
    - User then signs in with the code
 
 **6. Server Verifies Assertion** (`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.WebAuthn.cs`)
-   - Retrieves cached options using challenge
+   - Retrieves the cached `AssertionOptions` by CHALLENGE (`WebAuthn_AssertionOptions_{base64url(challenge)}`),
+     taken from the client-supplied `clientDataJson`. The registration side is the one that keys its cache by
+     user id (`UserController.WebAuthn.cs`).
    - Finds credential in database by credential ID
    - Validates assertion using Fido2NetLib:
      - Verifies signature with stored public key
      - Checks signature counter (prevents replay attacks)
      - Validates user handle matches credential owner
-   - Updates signature counter in database
+   - Updates the signature counter in the database, but only on the FINAL step of the ceremony - i.e. when
+     two-factor is disabled, or when the repeat call carries the 2FA code
    - Generates automatic sign-in OTP (6-digit code)
    - Completes sign-in or sends 2FA token
 
@@ -320,13 +324,18 @@ public interface ILocalHttpServer : IAsyncDisposable
 ```csharp
 public interface IExternalNavigationService
 {
-    Task NavigateToAsync(string url);  // Opens URL in in-app browser
+    Task NavigateTo(string url);  // Opens URL in in-app browser
 }
 ```
 
 Platform implementations:
 - **MAUI**: Uses `SFSafariViewController` (iOS) and `CustomTabs` (Android)
-- **Windows**: Uses `WebView2` in a separate window
+- **Windows**: registers NO `IExternalNavigationService` of its own. It falls back to Client.Core's
+  `DefaultExternalNavigationService`, whose Blazor Hybrid branch calls
+  `navigationManager.NavigateTo(url, forceLoad: true)`. Because the target host (`localhost`) differs from the app
+  origin, BlazorWebView's default `UrlLoadingStrategy.OpenExternally` hands the URL to the machine's default
+  browser and the Blazor app is never unloaded - which is why `WindowsLocalHttpServer.GoBackToApp()` only needs to
+  `Activate()` the WinForms window.
 
 ### 4. web-interop-app.html
 
@@ -385,8 +394,7 @@ export class WebInteropApp {
 
 - `GetWebAuthnCredentialOptions()` - Generate credential creation options
 - `CreateWebAuthnCredential()` - Validate and store new credential
-- `DeleteWebAuthnCredential()` - Remove a specific credential
-- `DeleteAllWebAuthnCredentials()` - Remove all user's credentials
+- `DeleteWebAuthnCredential()` - Remove a specific credential (scoped to the calling user)
 
 **`IdentityController.WebAuthn.cs`** (`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.WebAuthn.cs`) - Authentication:
 
@@ -400,13 +408,25 @@ The project uses the **Fido2NetLib** library for server-side WebAuthn operations
 
 **Configuration** (`Program.Services.cs`):
 
+`AddFido2` is called with an EMPTY setup action; the real values come from a separate **scoped**
+`Fido2Configuration` registration, because the RP ID and origin are resolved per request from
+`Request.GetWebAppUrl()`. Editing the `AddFido2` lambda changes nothing:
+
 ```csharp
-services.AddFido2(options =>
+services.AddFido2(options => { });
+
+services.AddScoped(sp =>
 {
-    options.ServerName = "Boilerplate WebAuthn";
-    options.ServerDomain = new Uri(serverAddress).Host;
-    options.Origins = [serverAddress];
-    options.TimestampDriftTolerance = serverSettings.Identity.BearerTokenExpiration;
+    var webAppUrl = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetWebAppUrl();
+
+    return new Fido2Configuration
+    {
+        ServerDomain = webAppUrl.Host,
+        TimestampDriftTolerance = 1000,
+        ServerName = "Boilerplate WebAuthn",
+        Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
+        ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
+    };
 });
 ```
 

@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 //#if(module == "Sales")
 using Boilerplate.Shared.Features.Products;
 //#endif
-using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Microsoft.AspNetCore.Builder;
 

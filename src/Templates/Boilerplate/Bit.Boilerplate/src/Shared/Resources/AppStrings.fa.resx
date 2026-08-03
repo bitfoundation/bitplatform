@@ -1135,6 +1135,12 @@
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>ورود بی رمز با موفقیت غیرفعال شد</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>کلید عبور شما تأیید نشد، بنابراین حذف نشد. لطفاً دوباره تلاش کنید.</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>این کلید عبور دیگر روی سرور وجود ندارد؛ از این دستگاه حذف شد.</value>
+  </data>
     <data name="Clear" xml:space="preserve">
     <value>پاک کردن</value>
   </data>
@@ -1331,6 +1337,9 @@
     <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>شما نمی‌توانید نشست‌های این کاربر مدیر ارشد را باطل کنید</value>
+  </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید نشست جاری خود را حذف کنید</value>
   </data>
@@ -1425,6 +1434,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>نام مستأجر '{0}' تکراری است.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>نام مستأجر '{0}' رزرو شده است و قابل استفاده نیست.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>مستأجر مورد نظر پیدا نشد.</value>
   </data>
@@ -1448,6 +1460,9 @@
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>دامنه '{0}' تکراری است.</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>دامنه '{0}' رزرو شده است و قابل استفاده نیست.</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>شما هنوز مستأجری را انتخاب نکرده‌اید. به یکی از مستأجران خود تغییر دهید یا مستأجر جدیدی ایجاد کنید تا شروع کنید.</value>

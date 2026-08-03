@@ -1135,6 +1135,12 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Lösenordslös inloggning har inaktiverats</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>Din nyckel kunde inte verifieras och togs därför inte bort. Försök igen.</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>Den här nyckeln finns inte längre på servern; den har tagits bort från den här enheten.</value>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>Rensa</value>
   </data>
@@ -1331,6 +1337,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort denna SuperAdmin-användare</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Du kan inte återkalla sessionerna för den här SuperAdmin-användaren</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort din nuvarande session</value>
   </data>
@@ -1425,6 +1434,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>Tenantnamnet '{0}' är redan upptaget.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>Tenantnamnet '{0}' är reserverat och kan inte användas.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Tenanten kunde inte hittas.</value>
   </data>
@@ -1448,6 +1460,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Domänen '{0}' är redan upptagen.</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Domänen '{0}' är reserverad och kan inte användas.</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Du har inte valt någon tenant ännu. Byt till en av dina tenants eller skapa en ny för att komma igång.</value>

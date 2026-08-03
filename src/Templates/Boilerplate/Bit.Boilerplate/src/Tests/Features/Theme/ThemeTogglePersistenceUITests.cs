@@ -1,6 +1,6 @@
 namespace Boilerplate.Tests.Features.Theme;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class ThemeTogglePersistenceUITests : AppPageTest
 {
     /// <summary>

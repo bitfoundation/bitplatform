@@ -1,6 +1,3 @@
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR.Client;
-//#endif
 using System.Text.RegularExpressions;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;

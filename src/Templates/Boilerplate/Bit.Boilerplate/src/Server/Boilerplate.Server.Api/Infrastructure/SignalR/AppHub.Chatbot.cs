@@ -1,9 +1,7 @@
 //+:cnd:noEmit
 using System.Diagnostics.Metrics;
-using Microsoft.AspNetCore.SignalR;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Features.Chatbot;
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 

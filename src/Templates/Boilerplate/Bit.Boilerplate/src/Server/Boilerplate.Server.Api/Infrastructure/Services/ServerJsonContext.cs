@@ -1,7 +1,6 @@
 //+:cnd:noEmit
 using Fido2NetLib;
 using Boilerplate.Shared.Features.Statistics;
-using Boilerplate.Server.Api.Features.Identity.Services;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 
@@ -12,12 +11,14 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
   AllowTrailingCommas = true,
   PropertyNameCaseInsensitive = true,
   GenerationMode = JsonSourceGenerationMode.Default,
-  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 )]
 [JsonSerializable(typeof(NugetStatsDto))]
 //#if (captcha == "reCaptcha")
 [JsonSerializable(typeof(GoogleRecaptchaVerificationResponse))]
+//#endif
+//#if (cloudflare == true)
+[JsonSerializable(typeof(CloudflarePurgeResponse))]
 //#endif
 [JsonSerializable(typeof(AuthenticatorResponse))]
 public partial class ServerJsonContext : JsonSerializerContext

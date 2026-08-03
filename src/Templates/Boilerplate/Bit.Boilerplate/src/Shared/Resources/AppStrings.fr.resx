@@ -1135,6 +1135,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Connexion sans mot de passe désactivée avec succès</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>Votre clé d'accès n'a pas pu être vérifiée, elle n'a donc pas été supprimée. Veuillez réessayer.</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>Cette clé d'accès n'existe plus sur le serveur ; elle a été supprimée de cet appareil.</value>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>Effacer</value>
   </data>
@@ -1331,6 +1337,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer cet utilisateur SuperAdmin</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Vous ne pouvez pas révoquer les sessions de cet utilisateur SuperAdmin</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer votre session actuelle</value>
   </data>
@@ -1425,6 +1434,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>Le nom de locataire '{0}' est déjà utilisé.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>Le nom de locataire '{0}' est réservé et ne peut pas être utilisé.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Locataire introuvable.</value>
   </data>
@@ -1448,6 +1460,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Le domaine '{0}' est déjà utilisé.</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Le domaine '{0}' est réservé et ne peut pas être utilisé.</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Vous n'avez pas encore sélectionné de locataire. Passez à l'un de vos locataires ou créez-en un nouveau pour commencer.</value>

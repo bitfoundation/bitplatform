@@ -2,8 +2,6 @@
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using System.Buffers.Text;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
@@ -58,7 +56,9 @@ public partial class IdentityController
     [HttpPost]
     public async Task<VerifyAssertionResult> VerifyWebAuthAssertion(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
-        var (verifyResult, _, _) = await Verify(clientResponse, cancellationToken);
+        var (verifyResult, _, assertionOptionsCacheKey) = await Verify(clientResponse, cancellationToken);
+
+        await cache.RemoveAsync(assertionOptionsCacheKey, token: cancellationToken);
 
         return verifyResult;
     }

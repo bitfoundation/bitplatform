@@ -139,10 +139,10 @@ The `AppResponseCachePolicy` class (located in `/src/Server/Boilerplate.Server.S
 - **Development Mode Handling**: Disables client cache in development for easier debugging
 - **Request Type Detection**: Different behavior for Blazor pages vs API requests
 
-Note: **Multi-Language Limitation**: For non-invariant globalization, client and edge caching are disabled for pre-rendered Blazor pages.
-It's because it doesn't work with the free Tier of Cloudflare CDN and needs Enterprise plan that supports tag based purging with multiple dimensions (culture + URL).
-You can switch to AWS CloudFront or Azure Frontdoor which support this feature for lower/free plans.
-Output cache still works correctly for multi-language scenarios.
+Note: **Multi-Language Limitation**: For non-invariant globalization, client and edge caching are disabled for
+pre-rendered Blazor pages. Varying the edge cache on `Accept-Language` requires a custom cache key, which Cloudflare
+only offers on the Enterprise plan; AWS CloudFront allows it on any account (Azure Front Door does not - it drops the
+header when caching is on). Output cache is unaffected: it varies by culture itself.
 
 **Cache Duration Logic:**
 
@@ -193,14 +193,43 @@ public async ValueTask CacheRequestAsync(OutputCacheContext context, Cancellatio
         outputCacheTtl = -1;
     }
 
-    // The entry is tagged with the request path only, without the query string: purging is done by bare path
-    // ("/product/5"), while QueryKeys = "*" gives every query string variant its own entry. Tagging those with
-    // their full PathAndQuery would leave "/product/5?utm_source=x" unpurgeable for the rest of its lifetime.
-    context.Tags.Add(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath.ToLowerInvariant());
+    // The entry is tagged with the bare request path - no culture, no query string - because purging is done by bare
+    // path ("/product/5") while each of those dimensions gives a request its own entry.
+    var cacheTag = CreateCacheTag(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath);
+
+    context.Tags.Add(cacheTag);                                  // ASP.NET Core output cache
+    context.HttpContext.Response.Headers["Cache-Tag"] = cacheTag; // CDN edge cache, when edge caching is on
 
     // ... set cache headers and output cache policy
 }
 ```
+
+**The same tag on both shared layers:** the two purgeable layers are tagged identically, so one
+`PurgeCache("/product/5")` invalidates both. `Cache-Tag` is only emitted when the response is actually edge cacheable,
+and it is dropped again (along with `Cache-Control`) if the response turns out not to be cacheable. Cloudflare consumes
+the header and strips it before the response reaches the visitor.
+
+**One tag, every variant.** A single page is stored under several cache entries - the culture splits it (`/fa-IR/product/5`
+and `/en-US/product/5` are different paths, and the output cache additionally varies by `Culture`), and `QueryKeys = "*"`
+gives `?utm_source=x` an entry of its own. They all carry the *same* tag, because `GetUrlWithoutCulture()` drops the
+culture (both the `/fa-IR/` path segment and a `?culture=` parameter) and `AbsolutePath` drops the query string. That is
+what lets the purging code name nothing but the bare path:
+
+```csharp
+await responseCacheService.PurgeCache($"/product/{shortId}");   // clears fa-IR, en-US, ?utm_source=..., all of it
+```
+
+Had the tag mirrored the full URL, every language and every tracking-parameter variant of a page would have stayed
+stale until it expired on its own - and the purging code would have had to enumerate cultures and query strings it has
+no way of knowing about.
+
+A cache-tag must be printable ASCII without spaces, and the header is a comma separated list. `CreateCacheTag` runs the
+path through `Uri` to percent-encode anything that qualifies (a non-ASCII route such as `/محصول/5` included), encodes
+the comma `Uri` leaves alone, and lowercases the result - tags are case-insensitive. That canonicalization is
+idempotent, which is what lets the same method serve both sides: the policy hands it an already escaped
+`Uri.AbsolutePath`, while a caller of `PurgeCache` hands it a path typed out by hand. If a path is longer than the
+1,024 character limit Cloudflare accepts in a purge call, edge caching is switched off for that request instead - an
+edge entry that could never be purged is worse than no edge entry at all.
 
 **Responses that are never stored:** a response is kept out of every cache unless it is a `200 OK` that hands out no
 cookies (the culture cookie is exempt, since the cache varies by culture anyway). That keeps a 404 for a product created
@@ -261,14 +290,17 @@ public partial class ResponseCacheService
     /// </summary>
     public async Task PurgeCache(params string[] relativePaths)
     {
-        // Purge from ASP.NET Core output cache. Lowercased to match the tag the policy writes.
-        foreach (var relativePath in relativePaths)
+        // The tag both layers stored the entry under (See AppResponseCachePolicy).
+        var tags = relativePaths.Select(AppResponseCachePolicy.CreateCacheTag).Distinct().ToArray();
+
+        // Purge from ASP.NET Core output cache
+        foreach (var tag in tags)
         {
-            await outputCacheStore.EvictByTagAsync(relativePath.ToLowerInvariant(), default);
+            await outputCacheStore.EvictByTagAsync(tag, default);
         }
         
-        // Purge from Cloudflare CDN
-        await PurgeCloudflareCache(relativePaths);
+        // Purge from Cloudflare CDN, by the same tags
+        await PurgeCloudflareCache(tags);
     }
 
     /// <summary>
@@ -311,9 +343,25 @@ public async Task Delete(Guid id, string version, CancellationToken cancellation
 }
 ```
 
-**Important Note:** 
-- For successful cache purging, the request URL must **exactly match** the URL passed to `PurgeCache()`. 
-- Query strings and route parameters must match precisely.
+**Purging by cache-tag, not by URL:**
+
+Both purgeable layers are invalidated by **tag**, and the tag is the request **path** alone. On the CDN side that is
+Cloudflare's [purge by cache-tag](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/), which
+since 2025 is available on **every plan, including Free** - it used to be Enterprise-only, which is why this used to be
+a purge by URL. Purging by tag is strictly better here:
+
+| | Purge by URL (before) | Purge by tag (now) |
+|---|---|---|
+| Query string variants | only the exact URL, so `/product/5?utm_source=x` survived | all variants of the path, at once |
+| Culture variants | only the URL as written, so `/fa-IR/product/5` survived a purge of `/product/5` | all cultures of the path, at once |
+| Multiple hostnames | one URL per domain had to be listed and purged (`AdditionalDomains`) | every hostname of the zone, at once |
+| API calls per purge | one per (domain × path) batch | one per zone, up to 100 tags each |
+
+That last row matters on the Free plan, whose purge rate limit is **5 requests per minute per account**.
+
+**Important Note:**
+- The path passed to `PurgeCache()` must **exactly match** the request path (route parameters included); its query
+  string is irrelevant, since every query variant of that path is purged together.
 - This only purges **CDN edge cache** and **ASP.NET Core output cache** (the purgeable layers)
 - **Browser cache** and **Client In-Memory Cache** cannot be purged remotely (this is why `MaxAge` should be used cautiously)
 
@@ -516,13 +564,10 @@ This prevents accidentally serving User A's data to User B through shared caches
     "EnableCdnEdgeCaching": true  // CDN edge caching
   },
   "Cloudflare": {
-    "ZoneId": "your-cloudflare-zone-id",
     "ApiToken": "your-cloudflare-api-token",
-    "AdditionalDomains": [
-      "https://sales.bitplatform.ai",
-      "https://sales.bitplatform.com",
-      "https://sales.bitplatform.uk"
-    ]
+    // One zone covers all of its hostnames. List several only if your app is served from domains
+    // that belong to different Cloudflare zones (e.g. sales.bitplatform.com and sales.bitplatform.uk).
+    "ZoneIds": [ "your-cloudflare-zone-id" ]
   },
   // Shared/appsettings.json - shared by the server AND every client (WASM, MAUI, Windows)
   "MemoryCache": {
@@ -608,6 +653,7 @@ This shows the TTL (in seconds) for each cache layer. Use browser DevTools Netwo
 ```
 Cache-Control: public, max-age=300, s-maxage=3600
 Vary: Origin, X-Origin
+Cache-Tag: /product/5
 App-Cache-Response: Output:3600,Edge:3600,Client:300
 ```
 
@@ -616,27 +662,15 @@ Interpretation:
 - `s-maxage=3600`: CDN edge and output cache for 1 hour
 - `public`: Can be cached in shared caches (CDN)
 - `Vary`: the request headers a shared cache must include in its key
+- `Cache-Tag`: what the CDN edge entry can later be purged by. Only present when edge caching is on for the request,
+  and only visible when you hit the origin directly - Cloudflare strips it on the way to the visitor
 - `Output:-1` (or `Edge:-1` / `Client:-1`) means that layer was disabled for this request - by configuration, by the
   caller being authenticated on a non-`UserAgnostic` endpoint, or by the request being a pre-rendered Blazor page
 
 A response that turns out not to be cacheable (anything other than `200 OK`, or one that sets a cookie) is downgraded to
-`Cache-Control: no-store, private` on its way out, regardless of what `App-Cache-Response` announced earlier in the
-request.
+`Cache-Control: no-store, private` on its way out and loses its `Cache-Tag`, regardless of what `App-Cache-Response`
+announced earlier in the request.
 
----
-
-### Automated Test
-
-`src/Tests/Features/Caching/ProductResponseCacheTests.cs` exercises the whole loop end to end with
-`EnableOutputCaching` and `PrerenderEnabled` both on: it fills the output cache from two directions (the tenant-user
-calling the `UserAgnostic` product API, and an anonymous visitor loading the pre-rendered product page), has the
-tenant-admin edit the product through `ProductController.Update` and asserts both readers see the change immediately,
-then deletes the row straight from the database and asserts both readers keep being served the deleted product - the
-proof that the responses are coming from the cache and not the database.
-
-Note it needs `ProductController` (Admin module) and `ProductViewController` (Sales module) at the same time, and
-`module` is a single-choice template parameter, so it is excluded from generated projects and only runs against the
-template's own source tree.
 
 ---
 

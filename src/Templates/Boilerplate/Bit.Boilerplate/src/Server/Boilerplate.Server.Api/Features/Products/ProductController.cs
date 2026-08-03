@@ -1,11 +1,6 @@
 //+:cnd:noEmit
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 using Boilerplate.Shared.Features.Products;
 using Ganss.Xss;
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.Products;
 

@@ -2,7 +2,6 @@
 using System.Net;
 using Polly.CircuitBreaker;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
 using System.Data.Common;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
@@ -154,11 +153,11 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
         {
             Title = message,
             Status = statusCode,
+            Key = exceptionKey,
             Type = knownException?.GetType().FullName ?? typeof(UnknownException).FullName,
             Instance = instance,
             Extensions = new Dictionary<string, object?>()
             {
-                { "key", exceptionKey },
                 { "traceId", traceIdentifier }
             }
         };
@@ -173,7 +172,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
 
         if (exception is ResourceValidationException validationException)
         {
-            problemDetails.Extensions.Add("payload", validationException.Payload);
+            problemDetails.Payload = validationException.Payload;
         }
     }
 

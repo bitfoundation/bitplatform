@@ -1,9 +1,6 @@
 //+:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
-//#if (notification == true)
-using Plugin.LocalNotification;
-//#endif
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Maui.AppStores;

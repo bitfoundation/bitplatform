@@ -4,12 +4,9 @@ using System.ComponentModel;
 using Boilerplate.Server.Api.Features.Products;
 //#endif
 using ModelContextProtocol.Server;
-using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Shared;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Infrastructure.Services;
 using Microsoft.Agents.AI;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;

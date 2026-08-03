@@ -508,13 +508,15 @@
                         "src/Shared/Features/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Features/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
-                        "src/Client/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg"
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/backgrounds/empty-todo-list-bg.svg"
                     ]
                 },
                 {
                     "condition": "(offlineDb == true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
+                        "src/Shared/Features/Todo/ITodoItemController.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs"
                     ]
                 },
                 {
@@ -538,11 +540,20 @@
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
+                        "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
+                        "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
+                        "src/Tests/Features/Identity/OneTimeTokenTests.cs",
+                        "src/Tests/Features/Identity/AccountSelfServiceSecurityTests.cs",
+                        "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
+                        "src/Tests/Features/Identity/EmailUniquenessIndexTests.cs",
+                        "src/Tests/Features/Identity/TestAccountUtils.cs",
+                        "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
+                        "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
-                        "src/Tests/Infrastructure/Configuration/AppConfigurationBuilderTests.cs",
+                        "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
@@ -551,9 +562,24 @@
                         "src/Tests/Features/Culture/CultureSelectionUITests.cs",
                         "src/Tests/Features/Identity/PhoneNumberNormalizationUITests.cs",
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
+                        "src/Tests/Features/Identity/SigningKeyRotationTests.cs",
+                        "src/Tests/Features/Identity/OpenIdConfigurationIntegrationTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
-                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        "src/Tests/Features/Identity/TokenClassSeparationTests.cs",
+                        "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
+                        "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
+                        "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
+                        "src/Tests/Features/ErrorHandling/ProblemDetailsWireContractTests.cs",
+                        "src/Tests/Features/ForceUpdate/ForceUpdateHeaderHardeningTests.cs",
+                        "src/Tests/Features/Json/JsonOptionsContractTests.cs",
+                        "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
+                        "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
+                        "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
+                        "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
+                        "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
+                        "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs"
                     ]
                 },
                 {
@@ -570,6 +596,13 @@
                     ]
                 },
                 {
+                    // Tenant is the only `long Version` entity that exists without a module or signalR.
+                    "condition": "(advancedTests != true || multitenant != true)",
+                    "exclude": [
+                        "src/Tests/Features/Data/ConcurrencyTokenTests.cs"
+                    ]
+                },
+                {
                     "condition": "(advancedTests != true || signalR != true)",
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
@@ -577,15 +610,15 @@
                     ]
                 },
                 {
-                    "condition": "(advancedTests != true || notification != true || signalR != true)",
-                    "exclude": [
-                        "src/Tests/Features/PushNotification/PushNotificationUITests.cs"
-                    ]
-                },
-                {
                     "condition": "(filesStorage != S3)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Services/S3HttpClientFactory.cs"
+                    ]
+                },
+                {
+                    "condition": "(cloudflare != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs"
                     ]
                 },
                 {
@@ -605,6 +638,14 @@
                     "condition": "(database != PostgreSQL && database != SqlServer)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Features/Products/ProductEmbeddingService.cs",
+                        ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
+                    ]
+                },
+                {
+                    // Every file this walkthrough is about lives under Features/Products, which the module rules
+                    // below exclude when the module is neither Admin nor Sales.
+                    "condition": "(module != Admin && module != Sales)",
+                    "exclude": [
                         ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
                     ]
                 },
@@ -644,8 +685,6 @@
                 {
                     "condition": "(appInsights != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiAppInsightsTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsAppInsightsTelemetryInitializer.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs"
                     ]
                 },
@@ -666,8 +705,7 @@
                 {
                     "condition": "(api == Integrated)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/appsettings*.json",
-                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
+                        "src/Server/Boilerplate.Server.Web/appsettings*.json"
                     ]
                 },
                 {
@@ -692,6 +730,7 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs"
                     ]
                 },
@@ -714,3 +753,4 @@
         }
     ]
 }
+

@@ -1,5 +1,3 @@
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
-
 namespace Boilerplate.Client.Core.Components;
 
 public class Parameters

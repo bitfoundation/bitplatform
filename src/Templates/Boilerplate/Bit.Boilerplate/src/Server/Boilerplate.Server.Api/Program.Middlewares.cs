@@ -2,8 +2,6 @@
 
 using Scalar.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
-using Boilerplate.Server.Api.Infrastructure.Services;
-using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 namespace Boilerplate.Server.Api;
 
@@ -42,11 +40,11 @@ public static partial class Program
         app.UseStaticFiles();
 
         app.UseCors();
-        app.UseRateLimiter();
 
         app.UseMiddleware<ForceUpdateMiddleware>();
 
         app.UseAuthentication();
+        app.UseRateLimiter(); // After UseAuthentication, so rate limit partitions can use HttpContext.User.
         app.UseAuthorization();
 
         app.UseOutputCache();
@@ -91,9 +89,15 @@ public static partial class Program
     /// </summary>
     public static WebApplication MapOpenIdConfiguration(this WebApplication app)
     {
-        var publicKey = AppCertificateService.GetPublicSecurityKey(app.Configuration);
-        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(publicKey);
-        jwk.Use = "sig";
+        var jwks = AppCertificateService.GetPublicSecurityKeys(app.Configuration)
+            .Select(publicKey =>
+            {
+                var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(publicKey);
+                jwk.Use = "sig";
+                jwk.Alg = SecurityAlgorithms.RsaSha256;
+                return jwk;
+            })
+            .ToArray();
 
         app.MapGet("/.well-known/openid-configuration", (HttpRequest request) =>
         {
@@ -109,7 +113,7 @@ public static partial class Program
         {
             return new
             {
-                keys = new[] { jwk }
+                keys = jwks
             };
         });
 

@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Shared.Features.Identity;
 

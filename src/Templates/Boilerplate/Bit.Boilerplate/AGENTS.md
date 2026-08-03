@@ -75,7 +75,7 @@ Before implementing any changes, you **MUST** complete the following:
 -   **Run the project**: Run `dotnet watch` in Boilerplate.Server.Web project root directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
 <!--#endif-->
 -   **Run tests**: Run `dotnet test` in Boilerplate.Tests project root directory.
--   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose` in Boilerplate.Server.Api project root directory.
+-   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in Boilerplate.Server.Api project root directory.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory.
 
 ## 5. Coding Conventions & Best Practices

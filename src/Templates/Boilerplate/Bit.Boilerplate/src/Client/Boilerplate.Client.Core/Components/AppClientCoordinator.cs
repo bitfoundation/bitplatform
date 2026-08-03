@@ -2,13 +2,10 @@
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
 //#endif
-using Microsoft.AspNetCore.Components.Routing;
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components;

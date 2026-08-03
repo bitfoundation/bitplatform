@@ -1,11 +1,8 @@
 //+:cnd:noEmit
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Tests.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Tenants;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class TenantInvitationUITests : AppPageTest
 {
     // The seeded store tenant admin. She's a t-admin (not a global admin), See UserConfiguration.

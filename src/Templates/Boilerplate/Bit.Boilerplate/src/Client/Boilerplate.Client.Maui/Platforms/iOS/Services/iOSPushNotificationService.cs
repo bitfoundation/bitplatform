@@ -1,7 +1,5 @@
 using UIKit;
 using UserNotifications;
-using Plugin.LocalNotification;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 
