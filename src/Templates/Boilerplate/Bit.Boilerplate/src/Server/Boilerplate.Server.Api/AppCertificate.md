@@ -82,9 +82,20 @@ openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365
 Deploy. From that moment new tokens are signed with the new key, tokens already in the wild keep validating against
 the retired one, and the existing Data Protection key ring is still readable.
 
-**Delete the retired pair once `Identity:RefreshTokenExpiration` has elapsed** (14 days by default). Until you do,
-the old private key can still mint tokens this app accepts - so if you are rotating *because the old key leaked*,
-skip the overlap entirely and delete the retired pair immediately, accepting the sign-out.
+### When the retired pair can be deleted
+
+Two independent clocks have to run out, not one:
+
+1. **Tokens** - every access and refresh token signed by it must have expired, i.e. at least
+   `Identity:RefreshTokenExpiration` (14 days by default) after the rotation.
+2. **The Data Protection key ring** - every persisted key encrypted to it must be gone. This is the longer and less
+   obvious one: the ring keeps old keys around to decrypt payloads that are still in circulation, so deleting the
+   certificate early makes those rows permanently unreadable. Wait until no key protected by the retired certificate
+   remains in the `DataProtectionKeys` table, or re-encrypt the ring to the active certificate first.
+
+Until both have elapsed the old private key can still mint tokens this app accepts - so if you are rotating *because
+the old key leaked*, skip the overlap entirely, delete the retired pair immediately and accept the sign-out and the
+key-ring reset.
 
 > Both files are copied to the output directory by the `AppCertificate.*` glob in the csproj, so a retired pair needs
 > no project change. Every instance behind a load balancer must carry the same set.
@@ -130,8 +141,10 @@ The application exposes an OpenID Connect discovery endpoint at `/.well-known/op
 - **`jwks_uri`** - Points at `/.well-known/jwks`, which carries the public key for token validation
 - **`issuer`** - Identifies the token issuer
 
-The document is deliberately minimal - it carries no algorithm metadata, so pin the algorithm on the consuming side
-(`ValidAlgorithms`) rather than expecting to discover it.
+The discovery document itself is deliberately minimal - those two fields and nothing else. The JWKS carries one key
+per trusted certificate, each with its own `kid` (the certificate's thumbprint), `use: "sig"` and `alg: "RS256"`.
+Pin the algorithm on the consuming side anyway (`ValidAlgorithms`, as in the snippet below) rather than trusting the
+one the document advertises.
 
 ### Why Expose This Endpoint?
 
@@ -159,6 +172,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RequireSignedTokens = true,
 
             ValidateIssuerSigningKey = true,
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
 
             RequireExpirationTime = true,
 

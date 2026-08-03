@@ -100,9 +100,10 @@ There is **no local, in-process embedding generator**. `Program.Services.cs` reg
 If neither is configured, no generator is registered at all, so anything that injects one fails to activate. Configure
 one **before** enabling embeddings.
 
-Note the vector column is declared as 384 dimensions, which matches a small local model such as `bge-small-en-v1.5`.
-`text-embedding-3-small` - the shipped `AI:OpenAI:EmbeddingModel` default - produces 1536, so change the column
-dimensions to match whichever model you actually use.
+**The vector column's dimensions must match your model's output**, and the shipped `vector(384)` in
+`ProductConfiguration` does not match the shipped default model: `text-embedding-3-small`
+(`AI:OpenAI:EmbeddingModel`) produces **1536**. Change the column to match whichever model you configure - 384 suits a
+small Hugging Face model such as `bge-small-en-v1.5`, 1536 the OpenAI default - before creating the schema.
 
 ### 3.2 Production-Recommended Models
 
@@ -153,8 +154,19 @@ By default, embeddings are **disabled** in the project. To enable them:
 ### Step 1: Flip the switch
 
 Set `AppDbContext.IsEmbeddingEnabled` to `true`. That single flag decides whether `Product.Embedding` is a real vector
-column or is ignored by the model, and whether the search and the write path use vectors or fall back to a plain name
-match.
+column or is ignored by the model.
+
+**Mind what the flag does when it is `false`.** `ProductEmbeddingService` falls back to a plain name match - and skips
+generating embeddings on write - **only in Development**:
+
+```csharp
+if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
+```
+
+That is deliberate: a deployment that reached Staging or Production with the flag off, or with no embedding generator
+configured, is a misconfiguration and is meant to fail loudly rather than quietly serve degraded search results
+nobody notices. So outside Development, treat "embeddings enabled" and "an embedding generator configured" as
+prerequisites, not as options.
 
 ### Step 2: Meet the database prerequisite
 
@@ -201,7 +213,7 @@ else
 
 - **When enabled**: Creates a `vector(384)` column in the database
 - **When disabled**: Ignores the property (no database column created)
-- **Dimensions**: 384 matches the `LocalTextEmbeddingGenerationService` output (adjust for other models)
+- **Dimensions**: must match the output of the model you configured under `AI` - see section 3.1
 
 ### 5.3 ProductEmbeddingService
 
@@ -254,8 +266,10 @@ The `SearchProducts()` method performs semantic search:
 ```csharp
 public async Task<IQueryable<Product>> SearchProducts(string searchQuery, CancellationToken cancellationToken)
 {
-    if (AppDbContext.IsEmbeddingEnabled is false)
-        throw new InvalidOperationException("Embeddings are not enabled.");
+    // In Development only, fall back to a plain name match instead of a vector query.
+    if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
+        return dbContext.Products.Where(p => EF.Functions.Like(p.Name, searchQuery));
+
     
     // Generate embedding for the search query
     var embeddedSearchQuery = await embeddingGenerator.GenerateAsync(searchQuery, cancellationToken);

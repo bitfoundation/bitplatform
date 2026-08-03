@@ -563,6 +563,7 @@
                         "src/Tests/Features/Identity/PhoneNumberNormalizationUITests.cs",
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
                         "src/Tests/Features/Identity/SigningKeyRotationTests.cs",
+                        "src/Tests/Features/Identity/OpenIdConfigurationIntegrationTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
                         "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
