@@ -68,6 +68,21 @@
             height: 666px;
             text-align: left;
         }
+
+        /* The reload button is hidden with display:none, which drops it out of the
+           accessibility tree entirely, so its appearance is never announced. This
+           always-present live region carries the announcement instead. */
+        .bit-bswup-visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
+        }
     </style>
 </head>
 
@@ -77,13 +92,15 @@
             <p class="bit-bswup-title">Installing the app</p>
             <p id="bit-bswup-description">Downloading assets, please wait...</p>
             <div class="bit-bswup-progress">
-                <div id="bit-bswup-progress-bar" style="width: 0%"></div>
+                <div id="bit-bswup-progress-bar" role="progressbar" aria-label="Update download progress"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="width: 0%"></div>
             </div>
             <p id="bit-bswup-percent">0 %</p>
             <ul id="bit-bswup-assets"></ul>
         </div>
     </div>
     <button id="bit-bswup-reload">Update ready, Click to reload!</button>
+    <span id="bit-bswup-reload-status" role="status" class="bit-bswup-visually-hidden"></span>
 
     <div id="app">Loading...</div>
 
@@ -94,7 +111,16 @@
         const progressBar = document.getElementById('bit-bswup-progress-bar');
         const percentLabel = document.getElementById('bit-bswup-percent');
         const reloadButton = document.getElementById('bit-bswup-reload');
+        const reloadStatus = document.getElementById('bit-bswup-reload-status');
         const assetsUl = document.getElementById('bit-bswup-assets');
+
+        // Revealing a display:none button is silent for screen readers - it simply enters the
+        // accessibility tree - so the announcement rides on the live region instead.
+        function showReloadButton(reload, message) {
+            reloadButton.style.display = 'block';
+            reloadButton.onclick = reload;
+            reloadStatus.textContent = message;
+        }
 
         function bitBswupHandler(type, data) {
             switch (type) {
@@ -123,6 +149,7 @@
                     assetsUl.prepend(li);
                     const percent = Math.round(data.percent);
                     progressBar.style.width = `${percent}%`;
+                    progressBar.setAttribute('aria-valuenow', percent);
                     percentLabel.textContent = `${percent} %`;
                     return console.log('asset downloaded:', data);
                 }
@@ -139,8 +166,7 @@
                         const showRetry = () => {
                             descriptionLabel.textContent = 'Starting failed, click the button to retry.';
                             bswupEl.style.display = 'block';
-                            reloadButton.style.display = 'block';
-                            reloadButton.onclick = data.reload;
+                            showReloadButton(data.reload, 'Starting the app failed. A retry button is available.');
                         };
                         const fallbackTimer = setTimeout(showRetry, 10000);
                         data.reload().then(() => {
@@ -153,15 +179,13 @@
                         });
                     } else {
                         descriptionLabel.textContent = 'Downloading finished, ready to reload.';
-                        reloadButton.style.display = 'block';
-                        reloadButton.onclick = data.reload;
+                        showReloadButton(data.reload, 'A new version is ready to install.');
                     }
                     return console.log('downloading assets finished.');
                 }
 
                 case BswupMessage.updateReady:
-                    reloadButton.style.display = 'block';
-                    reloadButton.onclick = data.reload;
+                    showReloadButton(data.reload, 'A new version is ready to install.');
                     return console.log('new update ready.');
 
                 case BswupMessage.error:
