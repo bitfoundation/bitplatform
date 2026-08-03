@@ -31,6 +31,9 @@ public partial class UserSessionDto
     }
 
     //#if (signalR == true)
+    /// <summary>
+    /// The most recently connected tab or app of this session, not all of them. See <c>UserSession.SignalRConnectionId</c>.
+    /// </summary>
     public string? SignalRConnectionId { get; set; }
     //#endif
 

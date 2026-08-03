@@ -1,4 +1,5 @@
 using Bit.Butil;
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Client.Web.Infrastructure.Services;
 

@@ -1,3 +1,5 @@
+using Boilerplate.Shared.Features.PushNotification;
+
 namespace Boilerplate.Server.Api.Features.PushNotification;
 
 /// <summary>

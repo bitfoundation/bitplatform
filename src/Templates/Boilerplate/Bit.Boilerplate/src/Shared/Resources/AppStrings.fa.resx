@@ -1364,6 +1364,9 @@
     <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>نشانی صفحه</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>نشانی صفحه باید یک نشانی نسبی درون برنامه باشد، مانند /products.</value>
+  </data>
     <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>شما دسترسی ندارید</value>
   </data>

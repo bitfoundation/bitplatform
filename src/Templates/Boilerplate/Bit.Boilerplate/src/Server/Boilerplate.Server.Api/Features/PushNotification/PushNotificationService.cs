@@ -2,6 +2,8 @@
 using AdsPush.Vapid;
 using System.Linq.Expressions;
 
+using Boilerplate.Shared.Features.PushNotification;
+
 namespace Boilerplate.Server.Api.Features.PushNotification;
 
 public partial class PushNotificationService
@@ -21,13 +23,22 @@ public partial class PushNotificationService
         var subscription = await dbContext.PushNotificationSubscriptions
             .WhereIf(userSessionId is null, s => s.DeviceId == dto.DeviceId)
             .WhereIf(userSessionId is not null, s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId) // pushManager's subscription has been renewed.
-            .FirstOrDefaultAsync(cancellationToken) ??
+            .FirstOrDefaultAsync(cancellationToken);
 
-            (await dbContext.PushNotificationSubscriptions.AddAsync(new()
-            {
-                DeviceId = dto.DeviceId,
-                Platform = dto.Platform
-            }, cancellationToken)).Entity;
+        // The DeviceId is caller supplied and this endpoint is anonymous, so an unauthenticated caller must never be
+        // able to touch a row that belongs to somebody's session: that would repoint the app's own push sender and
+        // silently stop the victim's otp / two factor / reset password notifications.
+        // A signed out device is still fair game, because every sign out and revocation path deletes the UserSession
+        // row and the relation is mapped with DeleteBehavior.SetNull. Returning rather than inserting matters: the
+        // DeviceId is unique, and a second row would only be an unauthenticated way to grow the table.
+        if (userSessionId is null && subscription?.UserSessionId is not null)
+            return;
+
+        subscription ??= (await dbContext.PushNotificationSubscriptions.AddAsync(new()
+        {
+            DeviceId = dto.DeviceId,
+            Platform = dto.Platform
+        }, cancellationToken)).Entity;
 
         dto.Patch(subscription);
 

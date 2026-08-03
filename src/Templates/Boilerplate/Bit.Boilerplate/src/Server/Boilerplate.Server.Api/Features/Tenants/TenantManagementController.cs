@@ -81,11 +81,8 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
         await DbContext.UserSessions.Where(us => us.TenantId == tenantId).ExecuteDeleteAsync(cancellationToken);
 
         //#if (signalR == true)
-        foreach (var connectionId in userSessionConnectionIds)
-        {
-            // Check out AppHub's comments for more info.
-            await appHubContext.Clients.Client(connectionId).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
-        }
+        // Check out AppHub's comments for more info.
+        await appHubContext.Clients.Clients(userSessionConnectionIds).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
         //#endif
     }
 

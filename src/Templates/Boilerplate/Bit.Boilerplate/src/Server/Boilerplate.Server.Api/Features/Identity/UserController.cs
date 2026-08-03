@@ -376,10 +376,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         //#if (signalR == true)
         // Check out AppHub's comments for more info.
-        foreach (var connectionId in userSessionConnectionIds)
-        {
-            await appHubContext.Clients.Client(connectionId).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
-        }
+        await appHubContext.Clients.Clients(userSessionConnectionIds).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
         //#endif
 
         if (IsWebPlatformRequest() is false)
@@ -663,6 +660,12 @@ public partial class UserController : AppControllerBase, IUserController
     /// The access token cookie's attributes have to be byte-identical between Append and Delete, otherwise the browser
     /// keeps the old cookie. Built in one place so they cannot drift.
     /// </summary>
+    /// <remarks>
+    /// The Domain is the WEB APP's host, not the api's, and that is load bearing rather than incidental: this cookie
+    /// exists so <c>ServerSideAuthTokenProvider</c> can read the access token while PRE-RENDERING, and pre-rendering
+    /// runs on the web app. Under <c>api == Standalone</c> the two are different hosts, so a host-only cookie (no
+    /// Domain) would stay on the api and the web app would pre-render every page as anonymous.
+    /// </remarks>
     private CookieOptions BuildAccessTokenCookieOptions()
     {
         return new CookieOptions

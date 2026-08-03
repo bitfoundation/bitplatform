@@ -10,6 +10,7 @@ using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Features.Categories;
 //#endif
 //#if (notification == true)
+using Boilerplate.Shared.Features.PushNotification;
 //#endif
 //#if (signalR == true)
 using Boilerplate.Shared.Features.Chatbot;

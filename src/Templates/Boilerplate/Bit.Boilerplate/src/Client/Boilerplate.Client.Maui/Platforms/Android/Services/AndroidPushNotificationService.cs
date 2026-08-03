@@ -1,6 +1,8 @@
 using Firebase.Messaging;
 using static Android.Provider.Settings;
 
+using Boilerplate.Shared.Features.PushNotification;
+
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
 public partial class AndroidPushNotificationService : PushNotificationServiceBase

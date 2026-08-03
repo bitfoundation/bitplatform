@@ -1364,6 +1364,9 @@
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>页面 URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>页面 URL 必须是应用内的相对 URL，例如 /products。</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>您未获授权</value>
   </data>

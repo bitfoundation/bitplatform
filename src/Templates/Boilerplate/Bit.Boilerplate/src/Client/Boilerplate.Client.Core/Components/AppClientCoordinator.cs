@@ -54,10 +54,12 @@ public partial class AppClientCoordinator : AppComponentBase
             {
                 unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
                 {
-                    var uriValue = uri?.ToString()!;
-                    var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
-                    var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
-                    NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
+                    var (url, replace, forceLoad) = ParseNavigateToOptions(uri?.ToString()!);
+
+                    if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
+                        return;
+
+                    NavigationManager.NavigateTo(url, forceLoad, replace);
                 }));
                 //#if (signalR == true)
                 unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
@@ -109,6 +111,33 @@ public partial class AppClientCoordinator : AppComponentBase
                 await PropagateAuthState(firstRun: true, AuthenticationStateTask);
             });
         }
+    }
+
+    /// <summary>
+    /// Splits a NAVIGATE_TO payload into the url the app should go to plus the two control flags, which the server
+    /// (and the service worker) pass as ordinary query parameters. Only the exact <c>replace</c> and <c>forceLoad</c>
+    /// keys are consumed; every other parameter, including one that merely contains those words, is left alone.
+    /// </summary>
+    private static (string Url, bool Replace, bool ForceLoad) ParseNavigateToOptions(string uriValue)
+    {
+        var queryStartIndex = uriValue.IndexOf('?', StringComparison.Ordinal);
+
+        if (queryStartIndex is -1)
+            return (uriValue, false, false);
+
+        var parsedQuery = HttpUtility.ParseQueryString(uriValue[(queryStartIndex + 1)..]);
+
+        bool IsTrue(string key) => string.Equals(parsedQuery[key], "true", StringComparison.OrdinalIgnoreCase);
+
+        var replace = IsTrue("replace");
+        var forceLoad = IsTrue("forceLoad");
+
+        parsedQuery.Remove("replace");
+        parsedQuery.Remove("forceLoad");
+
+        var remainingQuery = parsedQuery.ToString();
+
+        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrEmpty(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
@@ -245,6 +274,9 @@ public partial class AppClientCoordinator : AppComponentBase
         hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.NAVIGATE_TO, async (string url) =>
         {
+            if (Uri.IsAppRelativeUrl(url) is false)
+                return false;
+
             await InvokeAsync(async () =>
             {
                 NavigationManager.NavigateTo(url);

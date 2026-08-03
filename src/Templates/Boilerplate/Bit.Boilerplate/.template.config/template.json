@@ -572,6 +572,8 @@
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
                         "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
                         "src/Tests/Features/ErrorHandling/ProblemDetailsWireContractTests.cs",
+                        "src/Tests/Features/ErrorHandling/ErrorWriterRobustnessTests.cs",
+                        "src/Tests/Features/ErrorHandling/ProblemDetailsConversionTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateHeaderHardeningTests.cs",
                         "src/Tests/Features/Json/JsonOptionsContractTests.cs",
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
@@ -606,7 +608,15 @@
                     "condition": "(advancedTests != true || signalR != true)",
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
-                        "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs"
+                        "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
+                        "src/Tests/Features/Chatbot/SystemPromptContractTests.cs"
+                    ]
+                },
+                {
+                    // The push notification feature, and therefore its dtos and entities, only exist under `notification`.
+                    "condition": "(advancedTests != true || notification != true)",
+                    "exclude": [
+                        "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs"
                     ]
                 },
                 {

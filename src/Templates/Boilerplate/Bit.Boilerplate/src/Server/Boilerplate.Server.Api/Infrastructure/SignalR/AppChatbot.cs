@@ -82,19 +82,21 @@ public partial class AppChatbot
     public async Task ProcessNewMessage(
         bool generateFollowUpSuggestions,
         string incomingMessage,
-        Uri? serverApiAddress,
         ClaimsPrincipal? user,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(variablesDefault))
-            throw new InvalidOperationException("Chat session must be started before processing messages. Call Start method first.");
-
-        supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
-
         StringBuilder assistantResponse = new();
+        var streamCompleted = false;
         try
         {
+            if (string.IsNullOrEmpty(variablesDefault))
+                throw new InvalidOperationException($"Chat session must be started before processing messages. Call {nameof(StartChat)} method first.");
+
+            supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
+
             chatMessages.Add(new(ChatRole.User, incomingMessage));
+
+            TrimChatHistory();
 
             var chatOptions = CreateChatOptions();
 
@@ -106,7 +108,7 @@ public partial class AppChatbot
             var variablesPrompt = @$"
 ### Variables:
 {variablesDefault}
-{{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}""}} 
+{{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}"",
 {{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}"",
 {{{{WebAppUrl}}}}: ""{(httpContextAccessor.HttpContext!.Request.GetWebAppUrl())}"",
 ";
@@ -117,14 +119,19 @@ public partial class AppChatbot
                 ], options: new ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
-                    break;
+                {
+                    await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+                    return;
+                }
 
                 var result = response.Text;
                 assistantResponse.Append(result);
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            await SendStringToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, cancellationToken);
+            streamCompleted = true;
+
+            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS);
 
             if (generateFollowUpSuggestions)
             {
@@ -138,16 +145,47 @@ public partial class AppChatbot
                 await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
             }
         }
+        catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
+        {
+            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+        }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
-            await SendStringToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR, cancellationToken);
+            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
         }
         finally
         {
-            chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+            if (assistantResponse.Length > 0)
+            {
+                // A cancelled or failed stream leaves a half finished answer. It is still kept, because the user has
+                // already seen it on screen and the next turn has to make sense against what is on screen - but it is
+                // marked, so the model does not read a truncated sentence as a complete previous answer of its own.
+                chatMessages.Add(new(ChatRole.Assistant, streamCompleted ? assistantResponse.ToString() : $"{assistantResponse} [interrupted]"));
+            }
         }
     }
+
+    /// <summary>
+    /// The conversation is resent in full on every message, so an unbounded history grows the prompt (and its
+    /// cost) without limit until the provider rejects it for exceeding the context window.
+    /// </summary>
+    private void TrimChatHistory()
+    {
+        const int maxChatMessages = 40;
+
+        if (chatMessages.Count > maxChatMessages)
+        {
+            chatMessages.RemoveRange(0, chatMessages.Count - maxChatMessages);
+        }
+    }
+
+    /// <summary>
+    /// Terminal markers must never be sent with the per-message token: the client advances its response counter
+    /// only when a marker arrives, and on an unbounded channel WriteAsync short-circuits on an already-cancelled
+    /// token without enqueuing anything - which is exactly the case a cancelled message is in.
+    /// </summary>
+    private Task SendTerminalMarkerToClient(string marker) => SendStringToClient(marker, CancellationToken.None);
 
     /// <summary>
     /// Create chat options with AI tools

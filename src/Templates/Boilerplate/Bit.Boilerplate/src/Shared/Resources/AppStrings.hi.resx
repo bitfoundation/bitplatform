@@ -1364,6 +1364,9 @@
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>पृष्ठ URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>पेज URL ऐप के भीतर एक सापेक्ष URL होना चाहिए, जैसे /products।</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>आप अधिकृत नहीं हैं</value>
   </data>

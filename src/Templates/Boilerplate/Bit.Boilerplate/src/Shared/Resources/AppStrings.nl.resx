@@ -1364,6 +1364,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Paginage-URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>De pagina-URL moet een relatieve URL binnen de app zijn, zoals /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>Je bent niet geautoriseerd</value>
   </data>

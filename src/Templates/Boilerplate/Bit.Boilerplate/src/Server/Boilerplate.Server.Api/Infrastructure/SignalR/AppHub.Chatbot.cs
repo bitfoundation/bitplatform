@@ -35,6 +35,10 @@ public partial class AppHub
     {
         try
         {
+            // Azure SignalR runs the hub on a persistent connection with no ambient ASP.NET Core request, so it
+            // never sets the IHttpContextAccessor AsyncLocal
+            serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = Context.GetHttpContext();
+
             await chatbotService.StartChat(request,
                 Context.ConnectionId,
                 cancellationToken);
@@ -61,14 +65,17 @@ public partial class AppHub
                     _ = chatbotService.ProcessNewMessage(
                         generateFollowUpSuggestions: true,
                         incomingMessage,
-                        request.ServerApiAddress,
                         Context.GetHttpContext()!.User,
                         messageSpecificCancellationTokenSrc.Token);
                 }
             }
             finally
             {
-                messageSpecificCancellationTokenSrc?.Dispose();
+                if (messageSpecificCancellationTokenSrc is not null)
+                {
+                    await messageSpecificCancellationTokenSrc.TryCancel();
+                    messageSpecificCancellationTokenSrc.Dispose();
+                }
                 chatbotService.Stop();
             }
         }
@@ -95,7 +102,7 @@ public partial class AppHub
         await using var scope = serviceProvider.CreateAsyncScope();
         var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<ApiServerExceptionHandler>();
         var problemDetails = serverExceptionHandler.Handle(exp);
-        if (problemDetails is null || serverExceptionHandler.IgnoreException(serverExceptionHandler.UnWrapException(exp)))
+        if (serverExceptionHandler.IgnoreException(serverExceptionHandler.UnWrapException(exp)))
             return;
         try
         {

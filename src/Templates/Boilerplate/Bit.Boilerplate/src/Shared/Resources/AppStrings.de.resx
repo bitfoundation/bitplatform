@@ -1364,6 +1364,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Seiten-URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>Die Seiten-URL muss eine relative URL innerhalb der App sein, z. B. /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>Sie sind nicht autorisiert</value>
   </data>

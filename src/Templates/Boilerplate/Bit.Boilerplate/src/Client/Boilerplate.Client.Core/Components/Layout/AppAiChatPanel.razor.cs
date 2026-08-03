@@ -167,8 +167,7 @@ public partial class AppAiChatPanel
                                                                              CultureId = CultureInfo.CurrentCulture.LCID,
                                                                              TimeZoneId = TimeZoneInfo.Local.Id,
                                                                              DeviceInfo = TelemetryContext.Platform,
-                                                                             ChatMessagesHistory = chatMessages,
-                                                                             ServerApiAddress = AbsoluteServerAddress.GetAddress()
+                                                                             ChatMessagesHistory = chatMessages
                                                                          },
                                                                          channel.Reader.ReadAllAsync(CurrentCancellationToken),
                                                                          cancellationToken: CurrentCancellationToken))
