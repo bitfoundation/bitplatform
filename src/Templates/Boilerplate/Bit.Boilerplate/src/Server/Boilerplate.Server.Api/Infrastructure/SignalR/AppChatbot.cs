@@ -86,10 +86,11 @@ public partial class AppChatbot
         CancellationToken cancellationToken)
     {
         StringBuilder assistantResponse = new();
+        var streamCompleted = false;
         try
         {
             if (string.IsNullOrEmpty(variablesDefault))
-                throw new InvalidOperationException("Chat session must be started before processing messages. Call Start method first.");
+                throw new InvalidOperationException($"Chat session must be started before processing messages. Call {nameof(StartChat)} method first.");
 
             supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
 
@@ -128,6 +129,8 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
+            streamCompleted = true;
+
             await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS);
 
             if (generateFollowUpSuggestions)
@@ -155,7 +158,10 @@ public partial class AppChatbot
         {
             if (assistantResponse.Length > 0)
             {
-                chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+                // A cancelled or failed stream leaves a half finished answer. It is still kept, because the user has
+                // already seen it on screen and the next turn has to make sense against what is on screen - but it is
+                // marked, so the model does not read a truncated sentence as a complete previous answer of its own.
+                chatMessages.Add(new(ChatRole.Assistant, streamCompleted ? assistantResponse.ToString() : $"{assistantResponse} [interrupted]"));
             }
         }
     }

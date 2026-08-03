@@ -96,7 +96,16 @@ public partial class AppProblemDetails
             // argument shape rather than the other way around.
             object? arg = exceptionType.GetConstructor([typeof(LocalizedString)]) is not null ? new LocalizedString(key, title) : title;
 
-            exp = Activator.CreateInstance(exceptionType, [arg]) as Exception ?? new UnknownException(title);
+            try
+            {
+                exp = Activator.CreateInstance(exceptionType, [arg]) as Exception ?? new UnknownException(title);
+            }
+            catch (Exception)
+            {
+                // The constructor itself can throw (Activator surfaces it as a TargetInvocationException), and this
+                // operator runs inside the client's own error handling - see the remarks above.
+                exp = new UnknownException(title);
+            }
         }
 
         // Assigned rather than left to the constructor: the (string) and the ResourceValidationException overloads

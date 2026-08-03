@@ -6,13 +6,7 @@ public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger
 {
     public static ConcurrentQueue<DiagnosticLogDto> Store { get; } = [];
 
-    /// <remarks>
-    /// An instance field is enough because <c>DiagnosticLoggerProvider</c> creates one logger per category and the
-    /// clients are single user per process. If <c>AddDiagnosticLogger()</c> is ever registered outside
-    /// <c>IsDevelopment()</c> on Server.Web, this must become an AsyncLocal: under Blazor Server one instance is
-    /// shared by every circuit, so the scope of one user would stamp another user's entries.
-    /// </remarks>
-    private IDictionary<string, object?>? currentState;
+    private readonly AsyncLocal<IDictionary<string, object?>?> currentState = new();
 
     public string? Category { get; set; }
 
@@ -22,15 +16,15 @@ public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger
         if (state is not IDictionary<string, object?> data)
             return null;
 
-        var previousState = currentState;
-        currentState = data;
+        var previousState = currentState.Value;
+        currentState.Value = data;
 
         return new ScopeRestorer(this, previousState);
     }
 
     private sealed class ScopeRestorer(DiagnosticLogger logger, IDictionary<string, object?>? previousState) : IDisposable
     {
-        public void Dispose() => logger.currentState = previousState;
+        public void Dispose() => logger.currentState.Value = previousState;
     }
 
     public bool IsEnabled(LogLevel logLevel)
@@ -56,7 +50,7 @@ public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger
             Message = message,
             Category = Category,
             ExceptionString = exception?.ToString(),
-            State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString())
+            State = currentState.Value?.ToDictionary(i => i.Key, i => i.Value?.ToString())
         });
     }
 }

@@ -174,9 +174,9 @@
                                                 @*#if (signalR == true)*@
                                                 <BitText>
                                                     SignalRConnectionId:
-                                                    <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
-                                                    @if (string.IsNullOrEmpty(session.SignalRConnectionId) is false)
+                                                    @if (string.IsNullOrWhiteSpace(session.SignalRConnectionId) is false)
                                                     {
+                                                        <BitTag Color="BitColor.SecondaryBackground" Size="BitSize.Large" Class="selectable">@session.SignalRConnectionId</BitTag>
                                                         <AuthorizeView Policy="@AppFeatures.System.Logs_View">
                                                             <BitButton IconOnly AutoLoading
                                                                        OnClick="WrapHandled(() => ReadUserSessionLogs(session.Id))"

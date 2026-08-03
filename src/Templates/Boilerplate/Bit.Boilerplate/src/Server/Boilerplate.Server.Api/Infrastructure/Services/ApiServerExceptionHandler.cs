@@ -3,7 +3,6 @@ using System.Net;
 using Polly.CircuitBreaker;
 using Microsoft.Net.Http.Headers;
 using System.Data.Common;
-using System.Text.Json.Serialization.Metadata;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 
