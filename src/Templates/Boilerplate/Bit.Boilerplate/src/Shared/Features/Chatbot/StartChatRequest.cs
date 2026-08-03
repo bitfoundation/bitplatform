@@ -27,7 +27,11 @@ public class AiChatMessage
     public AiChatMessageRole Role { get; set; }
     public string? Content { get; set; }
 
-    [JsonIgnore]
+    /// <summary>
+    /// False for an answer that was cancelled or failed mid-stream. The client keeps such a message on screen
+    /// (tagged as canceled), but the server drops it from the history it sends to the model, so a truncated
+    /// sentence is never replayed as a complete previous answer.
+    /// </summary>
     public bool Successful { get; set; } = true;
 }
 

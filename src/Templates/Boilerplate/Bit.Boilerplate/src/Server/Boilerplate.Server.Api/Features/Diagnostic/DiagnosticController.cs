@@ -26,6 +26,8 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
 
         result.AppendLine($"Client IP: {HttpContext.Connection.RemoteIpAddress}");
 
+        result.AppendLine($"IsFromCDN: {Request.IsFromCDN().ToString().ToLowerInvariant()}");
+
         result.AppendLine($"Trace => {Request.HttpContext.TraceIdentifier}");
 
         // This endpoint must serve anonymous callers: the diagnostic modal is reachable by anonymous visitors

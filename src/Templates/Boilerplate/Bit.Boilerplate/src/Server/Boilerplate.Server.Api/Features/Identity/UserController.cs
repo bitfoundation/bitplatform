@@ -661,10 +661,20 @@ public partial class UserController : AppControllerBase, IUserController
     /// keeps the old cookie. Built in one place so they cannot drift.
     /// </summary>
     /// <remarks>
-    /// The Domain is the WEB APP's host, not the api's, and that is load bearing rather than incidental: this cookie
-    /// exists so <c>ServerSideAuthTokenProvider</c> can read the access token while PRE-RENDERING, and pre-rendering
-    /// runs on the web app. Under <c>api == Standalone</c> the two are different hosts, so a host-only cookie (no
-    /// Domain) would stay on the api and the web app would pre-render every page as anonymous.
+    /// Why the access token is in a cookie at all: the client keeps it in storage and sends it as a Bearer header, but
+    /// PRE-RENDERING happens before any of that exists, so a cookie the browser attaches on its own is the only way
+    /// <c>ServerSideAuthTokenProvider</c> can tell who the user is on the first response.
+    /// <para>
+    /// That is also why the Domain is the WEB APP's host and not the api's - pre-rendering runs on the web app. Under
+    /// <c>api == Standalone</c> the two are different hosts, and a host-only cookie (no Domain) would stay on the api.
+    /// </para>
+    /// <para>
+    /// The constraint this puts on a deployment: the api host must domain-match the web app host, or the browser
+    /// DISCARDS the cookie (RFC 6265 5.3) and every page silently pre-renders as anonymous. Web <c>myapp.com</c> +
+    /// api <c>api.myapp.com</c> works; web <c>app.myapp.com</c> + api <c>app-api.myapp.com</c> does not, because those
+    /// two are siblings rather than parent and child. The accepted cost is that a cookie carrying a Domain also
+    /// reaches every OTHER subdomain of that host - there is no way to scope a cookie to two named hosts.
+    /// </para>
     /// </remarks>
     private CookieOptions BuildAccessTokenCookieOptions()
     {
