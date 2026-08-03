@@ -1342,7 +1342,9 @@ public partial class BitFileUploadDemo
 
         if (file.TotalUploadedSize >= file.Size) return 100;
 
-        return (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
+        // the progress events count the bytes of the whole request body, multipart overhead included,
+        // so the raw ratio can slightly overshoot and has to be capped.
+        return Math.Min(100, (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100));
     }
 
     private static string GetFileUploadSize(BitFileInfo file)
@@ -1951,7 +1953,9 @@ private static int GetFileUploadPercent(BitFileInfo file)
 
     if (file.TotalUploadedSize >= file.Size) return 100;
 
-    return (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
+    // the progress events count the bytes of the whole request body, multipart overhead included,
+    // so the raw ratio can slightly overshoot and has to be capped.
+    return Math.Min(100, (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100));
 }
 
 private static string GetFileUploadSize(BitFileInfo file)
