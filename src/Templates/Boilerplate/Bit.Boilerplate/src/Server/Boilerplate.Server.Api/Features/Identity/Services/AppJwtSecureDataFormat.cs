@@ -42,7 +42,7 @@ public partial class AppJwtSecureDataFormat
             ClockSkew = TimeSpan.Zero,
             RequireSignedTokens = true,
 
-            IssuerSigningKey = AppCertificateService.GetPublicSecurityKey(configuration),
+            IssuerSigningKeys = AppCertificateService.GetPublicSecurityKeys(configuration),
             ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
             ValidateIssuerSigningKey = env.IsDevelopment() is false,
 

@@ -13,6 +13,7 @@ using Boilerplate.Server.Api.Features.Tenants;
 //#if (database == "PostgreSQL" || database == "SqlServer")
 using Boilerplate.Server.Api.Infrastructure.Data.Configurations;
 //#endif
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
@@ -165,9 +166,23 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
         {
+            var versionProperty = entityEntry.Properties.FirstOrDefault(p => p.Metadata.Name == "Version");
+
+            if (versionProperty is null || entityEntry.CurrentValues["Version"] is not long currentVersion)
+                continue;
+
             // https://github.com/dotnet/efcore/issues/35443
-            if (entityEntry.Properties.Any(p => p.Metadata.Name == "Version") && entityEntry.CurrentValues["Version"] is long currentVersion)
-                entityEntry.OriginalValues["Version"] = currentVersion;
+            // The row is matched on the client supplied Version rather than on the value that was read from the
+            // database, so a PUT carrying a stale Version is rejected with a ConflictException.
+            entityEntry.OriginalValues["Version"] = currentVersion;
+
+            //#if (database == "Sqlite")
+            // SQL Server (rowversion) and PostgreSQL (xmin) move the stored value themselves. Where they do not,
+            // nothing else in the app ever writes Version, so the WHERE clause above would match forever and every
+            // concurrent edit would be accepted. Advance it here so the token actually changes.
+            if (entityEntry.State is EntityState.Modified && versionProperty.Metadata.ValueGenerated is ValueGenerated.Never)
+                entityEntry.CurrentValues["Version"] = currentVersion + 1;
+            //#endif
         }
     }
 
@@ -222,8 +237,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     private Guid CurrentTenantId => tenantProvider.GetCurrentTenantId();
 
     /// <summary>
-    /// While reads are protected by the following row level security global query filters,
-    /// INSERTs/Creates assign the TenantId explicitly from User.GetTenantId() (See CategoryController.Create as an example).
+    /// While reads are protected by the following row level security global query filters, INSERTs/Creates get their
+    /// TenantId stamped by <see cref="OnSavingChanges"/> when it is still default, resolved through TenantProvider.
+    /// A controller only assigns it explicitly when the row belongs to a tenant other than the current one
+    /// (See TenantController.Create as an example).
     /// </summary>
     private void ConfigureTenantAwareEntities(ModelBuilder modelBuilder)
     {

@@ -288,98 +288,23 @@ The project includes **health check endpoints** to monitor application health.
 
 ### Available Endpoints
 
-1. **`/health`** - All health checks must pass
-2. **`/alive`** - Only checks tagged with "live" must pass
-3. **`/healthz`** - Detailed health report (UI format)
+1. **`/health`** - readiness. Runs every registered check, and returns 503 only when one of them reports Unhealthy.
+2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
+3. **`/healthz`** - detailed health report (UI format). **Development only.**
 
-### Health Check Implementation
+`/health` and `/alive` are mapped in **every** environment and are **anonymous** - only `/healthz`, which is the one
+that reveals per-check details, is gated on Development. Adding health check endpoints to a non-development
+deployment has security implications (see <https://aka.ms/dotnet/aspire/healthchecks>): decide deliberately whether to
+expose `/health` publicly or to restrict it to your load balancer's network, because an anonymous caller can drive the
+work behind it. Responses are output-cached for 10 seconds, but that cache does not apply to a failing (non-200)
+response.
 
-From [`src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs):
+### Registered Checks
 
-```csharp
-public static WebApplication MapAppHealthChecks(this WebApplication app)
-{
-    // Adding health checks endpoints to applications in non-development environments has security implications.
-    // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
-    if (app.Environment.IsDevelopment())
-    {
-        var healthChecks = app.MapGroup("");
-
-        healthChecks.CacheOutput("HealthChecks");
-
-        // All health checks must pass for app to be considered ready
-        healthChecks.MapHealthChecks("/health");
-
-        // Only health checks tagged with "live" must pass
-        healthChecks.MapHealthChecks("/alive", new()
-        {
-            Predicate = static r => r.Tags.Contains("live")
-        });
-
-        // Detailed health report with UI
-        healthChecks.MapHealthChecks("/healthz", new HealthCheckOptions
-        {
-            Predicate = _ => true,
-            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-        });
-    }
-
-    return app;
-}
-```
-
-### Default Health Checks
-
-From [`src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs):
-
-```csharp
-public static IHealthChecksBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
-    where TBuilder : IHostApplicationBuilder
-{
-    return builder.Services.AddHealthChecks()
-        .AddDiskStorageHealthCheck(options => 
-            options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, 
-            minimumFreeMegabytes: 5 * 1024), 
-            tags: ["live"]);
-}
-```
-
-This checks that at least **5GB of free disk space** is available.
-
-### Custom Health Check Example
-
-The project includes a custom health check for storage in [`src/Server/Boilerplate.Server.Api/Infrastructure/Services/AppStorageHealthCheck.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/AppStorageHealthCheck.cs):
-
-```csharp
-/// <summary>
-/// Checks underlying S3, Azure blob storage, or local file system storage is healthy.
-/// </summary>
-public partial class AppStorageHealthCheck : IHealthCheck
-{
-    [AutoInject] private IBlobStorage blobStorage = default!;
-    [AutoInject] private ServerApiSettings settings = default!;
-
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            _ = await blobStorage.ExistsAsync(settings.UserProfileImagesDir, cancellationToken);
-
-            return HealthCheckResult.Healthy("Storage is healthy");
-        }
-        catch (Exception exp)
-        {
-            return HealthCheckResult.Unhealthy("Storage is unhealthy", exp);
-        }
-    }
-}
-```
-
-### Built-in Health Checks
-
-The project automatically configures health checks for all infrastructure components registered in the `AddServerApiProjectServices` method, including:
-- Database connectivity
-- Disk storage availability (minimum 5GB free)
-- Blob storage (S3, Azure Blob, or local file system)
+`AddDefaultHealthChecks` contributes the disk-space check (at least **5 GB** free), which is the only one tagged
+`"live"`. `AddServerApiHealthChecks` adds the database, Hangfire, the user-profile-images blob storage and - when SMS
+is configured - Twilio. The last two reach a remote dependency, so they carry a timeout and report **Degraded** rather
+than Unhealthy: a storage or SMS-provider outage must not take an otherwise healthy instance out of the load balancer.
+Anything you add that a request path genuinely depends on should report Unhealthy; anything external should not.
 
 ---

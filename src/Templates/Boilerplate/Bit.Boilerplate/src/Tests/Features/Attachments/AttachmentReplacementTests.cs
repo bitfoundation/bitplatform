@@ -91,8 +91,7 @@ public class AttachmentReplacementTests
 
             Assert.AreEqual(HttpStatusCode.BadRequest, rejected.StatusCode);
 
-            CollectionAssert.AreEqual(before, await Download(httpClient, userId),
-                "The refused upload must not have touched the stored blob.");
+            Assert.AreSequenceEqual(before, await Download(httpClient, userId), "The refused upload must not have touched the stored blob.");
 
             Assert.AreEqual(2, await CountAttachments(server, userId), "The refused upload must not have removed the existing rows.");
 

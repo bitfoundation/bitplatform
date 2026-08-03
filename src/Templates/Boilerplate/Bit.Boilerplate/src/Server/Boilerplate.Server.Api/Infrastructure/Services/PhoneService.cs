@@ -48,7 +48,7 @@ public partial class PhoneService
             LogSendSms(phoneLogger, messageText, phoneNumber);
         }
 
-        if (appSettings.Sms?.Configured is false) return;
+        if (appSettings.Sms?.Configured is not true) return;
 
         var from = appSettings.Sms!.FromPhoneNumber!;
 
