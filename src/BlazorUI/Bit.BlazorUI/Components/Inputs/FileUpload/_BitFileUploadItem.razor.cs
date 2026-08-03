@@ -24,9 +24,7 @@ public partial class _BitFileUploadItem : ComponentBase
     {
         // the progress events count the bytes of the whole request body, multipart overhead included, so the
         // running total can overshoot the file and has to be capped - "1.1 MB/1 MB" would read as a bug.
-        return file.TotalUploadedSize >= file.Size
-                    ? file.Size
-                    : Math.Min(file.Size, file.TotalUploadedSize + file.LastChunkUploadedSize);
+        return Math.Min(file.Size, file.TotalUploadedSize + file.LastChunkUploadedSize);
     }
 
     private string FormatSize(long size)

@@ -11,7 +11,7 @@
     {
         @LabelTemplate
     }
-    else if (HideLabel is false && Label.HasValue())
+    else if (_ShowLabelButton)
     {
         <button @onclick="Browse"
                 type="button"
@@ -49,7 +49,7 @@
            webkitdirectory="@Directory"
            disabled="@(IsEnabled is false)"
            aria-label="@AriaLabel"
-           aria-labelledby="@(AriaLabel is null && LabelTemplate is null && HideLabel is false && Label.HasValue() ? _buttonId : null)"
+           aria-labelledby="@(AriaLabel is null && _ShowLabelButton ? _buttonId : null)"
            aria-describedby="@(_HasDescription ? _descriptionId : null)"
            accept="@GetAcceptValue()" />
 

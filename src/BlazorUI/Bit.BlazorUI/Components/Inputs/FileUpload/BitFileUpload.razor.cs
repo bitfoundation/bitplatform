@@ -1824,6 +1824,10 @@ public partial class BitFileUpload : BitComponentBase
 
     private bool _HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
+    // the built-in browse button is what the label of the input turns into, so a template taking that label
+    // over, a hidden label or no label at all each leave the input without a button to be named after.
+    private bool _ShowLabelButton => LabelTemplate is null && HideLabel is false && Label.HasValue();
+
     private void Announce()
     {
         var text = GetAnnouncementText();
