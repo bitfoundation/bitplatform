@@ -104,7 +104,7 @@ APP CAPABILITIES SUMMARY (Scope for Suggestions):
 - Navigation & Discovery: Find, open, or navigate directly to specific app pages. The list of available pages (with their relative URLs and descriptions) is provided separately below under 'Available pages'; only suggest navigating to pages that appear in that list.
 - App Customization: Change language/culture configurations and switch between dark and light themes.
 " +
-//#if (module == 'Sales')
+        //#if (module == 'Sales')
         @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs
 " +
 //#endif
