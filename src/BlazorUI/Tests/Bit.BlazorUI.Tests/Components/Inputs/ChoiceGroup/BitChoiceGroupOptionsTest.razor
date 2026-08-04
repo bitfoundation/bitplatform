@@ -1,0 +1,45 @@
+@namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup
+
+@* A ChoiceGroup driven through the options API in controlled mode (a bound Value). *@
+
+<BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string"
+                IsEnabled="IsEnabled"
+                @bind-Value="_value">
+    <BitChoiceGroupOption Text="First" Value="@("first")" />
+    @if (ShowSecond)
+    {
+        <BitChoiceGroupOption Text="Second" Value="@("second")" />
+    }
+    <BitChoiceGroupOption Text="Third" Value="@("third")" />
+    <BitChoiceGroupOption Text="Fourth" Value="@("fourth")" IsEnabled="false" />
+</BitChoiceGroup>
+
+@code {
+    private string? _value;
+    private string? _lastValue;
+
+    [Parameter] public bool IsEnabled { get; set; } = true;
+
+    [Parameter] public bool ShowSecond { get; set; } = true;
+
+    /// <summary>
+    /// Pushes a value into the group from the outside, mimicking a model-driven assignment.
+    /// </summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>
+    /// The value the group has written back, so a test can assert what the binding produced.
+    /// </summary>
+    public string? SelectedValue => _value;
+
+    protected override void OnParametersSet()
+    {
+        if (Value != _lastValue)
+        {
+            _lastValue = Value;
+            _value = Value;
+        }
+
+        base.OnParametersSet();
+    }
+}

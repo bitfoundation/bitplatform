@@ -1,0 +1,25 @@
+@namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup
+
+@* A ChoiceGroup driven through the options API in uncontrolled mode: no bound Value, only a DefaultValue. *@
+
+<BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string"
+                DefaultValue="DefaultValue"
+                OnChange="(string? value) => SelectedValue = value">
+    <BitChoiceGroupOption Text="First" Value="@("first")" />
+    @if (ShowSecond)
+    {
+        <BitChoiceGroupOption Text="Second" Value="@("second")" />
+    }
+    <BitChoiceGroupOption Text="Third" Value="@("third")" />
+</BitChoiceGroup>
+
+@code {
+    [Parameter] public bool ShowSecond { get; set; } = true;
+
+    [Parameter] public string? DefaultValue { get; set; }
+
+    /// <summary>
+    /// The last value the group reported through its OnChange callback.
+    /// </summary>
+    public string? SelectedValue { get; private set; }
+}
