@@ -50,6 +50,20 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "ContinuousSpinDelay",
+            Type = "int",
+            DefaultValue = "400",
+            Description = "The delay in milliseconds before the value starts changing continuously while an increment/decrement button is held down.",
+        },
+        new()
+        {
+            Name = "ContinuousSpinInterval",
+            Type = "int",
+            DefaultValue = "75",
+            Description = "The interval in milliseconds between two consecutive value changes while an increment/decrement button is held down.",
+        },
+        new()
+        {
             Name = "DecrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -92,7 +106,7 @@ public partial class BitNumberFieldDemo
             Name = "HideInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the input is hidden.",
+            Description = "Hides the text input element while keeping the increment/decrement buttons functional, turning the component into a stepper-only control.",
         },
         new()
         {
@@ -156,21 +170,21 @@ public partial class BitNumberFieldDemo
             Name = "InvertMouseWheel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reverses the mouse wheel direction.",
+            Description = "Reverses the direction of the value change when the user spins the value using the mouse wheel (the wheel only changes the value while the Shift key is held down, to keep normal page scrolling intact).",
         },
         new()
         {
             Name = "IsInputReadOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the input is readonly.",
+            Description = "Makes only the text input part read-only, preventing typing, while the value can still be changed using the increment/decrement buttons, the arrow keys and the mouse wheel (unlike ReadOnly, which blocks all of them).",
         },
         new()
         {
             Name = "LabelPosition",
             Type = "BitLabelPosition",
             DefaultValue = "BitLabelPosition.Top",
-            Description = "The position of the label in regards to the spin button.",
+            Description = "The position of the label in regards to the field (Top by default).",
             LinkType = LinkType.Link,
             Href = "#labelPosition-enum",
         },
@@ -179,7 +193,7 @@ public partial class BitNumberFieldDemo
             Name = "Label",
             Type = "string",
             DefaultValue = "string.Empty",
-            Description = "Descriptive label for the number field, Label displayed above the number field and read by screen readers.",
+            Description = "Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.",
         },
         new()
         {
@@ -193,23 +207,30 @@ public partial class BitNumberFieldDemo
             Name = "Min",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Min value of the number field.",
+            Description = "The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning. It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.",
         },
         new()
         {
             Name = "Max",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Max value of the number field.",
+            Description = "The maximum value of the number field. Values above it get clamped to it, both when typed and when spinning. It is a string to support any numeric type of the field; an unparsable value falls back to the type's MaxValue.",
         },
         new()
         {
             Name = "Mode",
             Type = "BitSpinButtonMode?",
             DefaultValue = "null",
-            Description = "Determines how the spinning buttons should be rendered.",
+            Description = "Determines how the increment/decrement buttons render: Compact (stacked at the end of the input), Inline (side by side at the end) or Spread (one on each side). When null (default), no buttons render, while the value can still be changed using the arrow keys and the mouse wheel.",
             LinkType = LinkType.Link,
             Href = "#spinMode-enum",
+        },
+        new()
+        {
+            Name = "NoSelectOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the automatic select-all of the input's text when the field receives focus.",
         },
         new()
         {
@@ -223,7 +244,7 @@ public partial class BitNumberFieldDemo
             Name = "NumberFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The format of the number in the number field.",
+            Description = "The format of the number in the number field, using the standard or custom .NET numeric format strings (e.g. \"N0\", \"C0\" or \"000000\"). The formatting is applied whenever the value is committed, while the bound value stays a plain number. Value-scaling formats (like the percent \"P\" format) are not suitable, since the scaled display cannot be parsed back into the same value.",
         },
         new()
         {
@@ -235,7 +256,7 @@ public partial class BitNumberFieldDemo
         {
             Name = "OnClear",
             Type = "EventCallback",
-            Description = "Callback executed when the user clears the number field by either clicking 'X' or hitting escape.",
+            Description = "Callback executed when the user clears the number field by clicking the clear button.",
         },
         new()
         {
@@ -286,7 +307,7 @@ public partial class BitNumberFieldDemo
             Name = "Precision",
             Type = "int?",
             DefaultValue = "null",
-            Description = "How many decimal places the value should be rounded to.",
+            Description = "How many decimal places the value should be rounded to. When not provided, the precision is derived from the fractional digits of the Step parameter (if any); otherwise no rounding is applied. A negative value rounds to a power of ten (e.g. -2 rounds to the nearest hundred).",
         },
         new()
         {
@@ -322,17 +343,24 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "ClearButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Accessible label text for the clear button (for screen reader users), useful for localization.",
+        },
+        new()
+        {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to shows the clear button when the BitNumberField has value.",
+            Description = "Whether to show the clear button when the BitNumberField has a value, resetting the value to null with a single click (most useful with nullable value types).",
         },
         new()
         {
             Name = "Step",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Difference between two adjacent values of the number field.",
+            Description = "The difference between two adjacent values of the number field, applied when spinning the value using the increment/decrement buttons, the Up/Down arrow keys or the mouse wheel. A fractional step (e.g. \"0.01\") also implies the rounding precision of the field, unless an explicit Precision is provided. It is a string to support any numeric type of the field; an unparsable value falls back to 1.",
         },
         new()
         {
@@ -500,6 +528,48 @@ public partial class BitNumberFieldDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the number field's root element."
+                },
+                new()
+                {
+                    Name = "ClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's clear button."
+                },
+                new()
+                {
+                    Name = "ClearButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's clear button icon."
+                },
+                new()
+                {
+                    Name = "PrefixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's prefix container."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's prefix."
+                },
+                new()
+                {
+                    Name = "SuffixContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's suffix container."
+                },
+                new()
+                {
+                    Name = "Suffix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's suffix."
                 }
             ]
         }
@@ -588,12 +658,25 @@ public partial class BitNumberFieldDemo
     private int maxValue;
     private int minMaxValue;
 
+    private int stepValue;
+    private double fractionalStepValue;
+    private int stepMinMaxValue;
+    private int fastSpinValue;
+
     private double oneWayValue;
     private double twoWayValue;
+
+    private int? immediateValue;
+    private int? debounceValue;
+    private int? throttleValue;
+
+    private int readOnlyValue = 10;
+    private int inputReadOnlyValue = 10;
 
     private int onIncrementCounter;
     private int onDecrementCounter;
     private int onChangeCounter;
+    private int onClearCounter;
 
     private int? classesValue;
 
@@ -607,6 +690,12 @@ public partial class BitNumberFieldDemo
     private bool invertMouseWheel;
 
     private double precisionInputValue = 3.1415;
+    private double negativePrecisionInputValue;
+
+    private byte byteValue = 5;
+    private long longValue = 1_000_000_000_000;
+    private double doubleValue = 1.5;
+    private decimal decimalValue = 0.05m;
 
     private string SuccessMessage = string.Empty;
     private BitNumberFieldValidationModel validationModel = new();

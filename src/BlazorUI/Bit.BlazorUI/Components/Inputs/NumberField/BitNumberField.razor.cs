@@ -5,11 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// A NumberField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on.
+/// A NumberField (number input / spin button) allows entering values of any .NET numeric type, including their
+/// nullable variants. It supports min/max clamping, custom steps, rounding precision, .NET number formatting,
+/// increment/decrement buttons in several layouts, keyboard and mouse wheel interaction, non-Latin digit
+/// normalization and full form validation integration.
 /// </summary>
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
-    private int _precision;
+    private int? _precision;
     private bool _hasFocus;
     private string? _tempValue;
     private string? _displayValue;
@@ -30,13 +33,25 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
 
 
+    private static readonly Type[] _supportedTypes =
+    [
+        typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint),
+        typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)
+    ];
+
     public BitNumberField()
     {
-        BindConverter.TryConvertTo("1", CultureInfo.InvariantCulture, out _step!);
-        BindConverter.TryConvertTo("0", CultureInfo.InvariantCulture, out _zeroValue!);
-
         _typeOfValue = typeof(TValue);
         _typeOfValue = Nullable.GetUnderlyingType(_typeOfValue) ?? _typeOfValue;
+
+        if (Array.IndexOf(_supportedTypes, _typeOfValue) < 0)
+        {
+            throw new InvalidOperationException($"BitNumberField does not support the type '{typeof(TValue)}'. " +
+                                                 "The supported types are byte, sbyte, short, ushort, int, uint, long, ulong, float, double and decimal (including their nullable variants).");
+        }
+
+        BindConverter.TryConvertTo("1", CultureInfo.InvariantCulture, out _step!);
+        BindConverter.TryConvertTo("0", CultureInfo.InvariantCulture, out _zeroValue!);
 
         _min = GetTypeMinValue();
         _max = GetTypeMaxValue();
@@ -84,6 +99,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public BitNumberFieldClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the value starts changing continuously while an
+    /// increment/decrement button is held down.
+    /// </summary>
+    [Parameter] public int ContinuousSpinDelay { get; set; } = 400;
+
+    /// <summary>
+    /// The interval in milliseconds between two consecutive value changes while an
+    /// increment/decrement button is held down.
+    /// </summary>
+    [Parameter] public int ContinuousSpinInterval { get; set; } = 75;
+
+    /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
     [Parameter] public string? DecrementAriaLabel { get; set; }
@@ -127,7 +154,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
 
     /// <summary>
-    /// If true, the input is hidden.
+    /// Hides the text input element while keeping the increment/decrement buttons functional,
+    /// turning the component into a stepper-only control.
     /// </summary>
     [Parameter] public bool HideInput { get; set; }
 
@@ -189,23 +217,26 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? IncrementTitle { get; set; }
 
     /// <summary>
-    /// Reverses the mouse wheel direction.
+    /// Reverses the direction of the value change when the user spins the value using the mouse wheel
+    /// (the wheel only changes the value while the Shift key is held down, to keep normal page scrolling intact).
     /// </summary>
     [Parameter] public bool InvertMouseWheel { get; set; }
 
     /// <summary>
-    /// If true, the input is readonly.
+    /// Makes only the text input part read-only, preventing typing, while the value can still be
+    /// changed using the increment/decrement buttons, the arrow keys and the mouse wheel
+    /// (unlike ReadOnly, which blocks all of them).
     /// </summary>
     [Parameter] public bool IsInputReadOnly { get; set; }
 
     /// <summary>
-    /// The position of the label in regards to the spin button.
+    /// The position of the label in regards to the field (Top by default).
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitLabelPosition? LabelPosition { get; set; }
 
     /// <summary>
-    /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
+    /// Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? Label { get; set; }
@@ -216,23 +247,32 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Min value of the number field.
+    /// The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning.
+    /// It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetMin))]
     public string? Min { get; set; }
 
     /// <summary>
-    /// Max value of the number field.
+    /// The maximum value of the number field. Values above it get clamped to it, both when typed and when spinning.
+    /// It is a string to support any numeric type of the field; an unparsable value falls back to the type's MaxValue.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetMax))]
     public string? Max { get; set; }
 
     /// <summary>
-    /// Determines how the spinning buttons should be rendered.
+    /// Determines how the increment/decrement buttons render: Compact (stacked at the end of the input),
+    /// Inline (side by side at the end) or Spread (one on each side). When null (default), no buttons render,
+    /// while the value can still be changed using the arrow keys and the mouse wheel.
     /// </summary>
     [Parameter] public BitSpinButtonMode? Mode { get; set; }
+
+    /// <summary>
+    /// Disables the automatic select-all of the input's text when the field receives focus.
+    /// </summary>
+    [Parameter] public bool NoSelectOnFocus { get; set; }
 
     /// <summary>
     /// Normalizes non-Latin (e.g. Persian "۱۲۳" or Arabic "١٢٣") decimal digits to their Latin (0-9) equivalents before parsing.
@@ -244,7 +284,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public bool NormalizeDigits { get; set; }
 
     /// <summary>
-    /// The format of the number in the number field.
+    /// The format of the number in the number field, using the standard or custom .NET numeric format strings
+    /// (e.g. "N0", "C0" or "000000"). The formatting is applied whenever the value is committed, while the bound
+    /// value stays a plain number. Note that value-scaling formats (like the percent "P" format, which multiplies
+    /// the displayed value by 100) are not suitable, since the scaled display cannot be parsed back into the same value.
     /// </summary>
     [Parameter] public string? NumberFormat { get; set; }
 
@@ -254,7 +297,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
-    /// Callback executed when the user clears the number field by either clicking 'X' or hitting escape.
+    /// Callback executed when the user clears the number field by clicking the clear button.
     /// </summary>
     [Parameter] public EventCallback OnClear { get; set; }
 
@@ -294,7 +337,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
-    /// How many decimal places the value should be rounded to.
+    /// How many decimal places the value should be rounded to. When not provided, the precision is derived
+    /// from the fractional digits of the <see cref="Step"/> parameter (if any); otherwise no rounding is applied.
+    /// A negative value rounds to a power of ten (e.g. -2 rounds to the nearest hundred).
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetPrecision))]
@@ -333,12 +378,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? ClearButtonIconName { get; set; }
 
     /// <summary>
-    /// Whether to shows the clear button when the BitNumberField has value.
+    /// Accessible label text for the clear button (for screen reader users), useful for localization.
+    /// </summary>
+    [Parameter] public string? ClearButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// Whether to show the clear button when the BitNumberField has a value,
+    /// resetting the value to null with a single click (most useful with nullable value types).
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
 
     /// <summary>
-    /// Difference between two adjacent values of the number field.
+    /// The difference between two adjacent values of the number field, applied when spinning the value using
+    /// the increment/decrement buttons, the Up/Down arrow keys or the mouse wheel.
+    /// A fractional step (e.g. "0.01") also implies the rounding precision of the field, unless an explicit
+    /// <see cref="Precision"/> is provided. It is a string to support any numeric type of the field;
+    /// an unparsable value falls back to 1.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetStep))]
@@ -463,7 +518,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (NumberFormat is not null)
         {
-            value = CleanValue(value);
+            // The formatted display is produced with the current culture (e.g. "1.234,50" in German),
+            // so its culture-specific separators have to be mapped back to the invariant form before
+            // the symbol stripping and the invariant parse.
+            value = CleanValue(MapCultureSeparatorsToInvariant(value));
         }
 
         // The input collapsed to an empty string purely because digit normalization stripped its
@@ -523,6 +581,46 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     /// <summary>
+    /// Returns the value for the aria-valuenow attribute, which per the ARIA spec must be a plain
+    /// decimal number, so it is always rendered with the invariant culture.
+    /// </summary>
+    private string? GetAriaValueNow()
+    {
+        var value = AriaValueNow ?? CurrentValue;
+
+        return value is null ? null : BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
+    }
+
+    /// <summary>
+    /// The aria-valuemin/valuemax attributes render only when an explicit Min/Max is provided
+    /// (announcing the underlying type's extremes would be noise) and, like aria-valuenow,
+    /// must be plain invariant decimal numbers.
+    /// </summary>
+    private string? GetAriaValueMin()
+    {
+        return Min is null ? null : BindConverter.FormatValue(_min, CultureInfo.InvariantCulture)?.ToString();
+    }
+
+    private string? GetAriaValueMax()
+    {
+        return Max is null ? null : BindConverter.FormatValue(_max, CultureInfo.InvariantCulture)?.ToString();
+    }
+
+    /// <summary>
+    /// Returns the value for the aria-valuetext attribute. Per the ARIA authoring practices it should
+    /// only be present when the plain number would be ambiguous or incomplete - i.e. when the visible
+    /// text (formatted or user-typed non-Latin digits) differs from the aria-valuenow number.
+    /// </summary>
+    private string? GetAriaValueText()
+    {
+        if (AriaValueText.HasValue()) return AriaValueText;
+
+        var display = GetDisplayValueAsString();
+
+        return string.Equals(display, GetAriaValueNow(), StringComparison.Ordinal) ? null : display;
+    }
+
+    /// <summary>
     /// Returns the string to display in the input. When digit normalization preserved the user's
     /// original text (see <see cref="TryParseValueFromString"/>), that text is shown as long as it
     /// still corresponds to the current value; otherwise the regular formatted value is used.
@@ -555,7 +653,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     protected override string? FormatValueAsString(TValue? value)
     {
         if (value is null) return null;
-        if (NumberFormat is null) return value.ToString();
+
+        // The displayed text must round-trip through TryParseValueFromString, which parses with the
+        // invariant culture. A culture-sensitive ToString would render "1,5" in e.g. a German culture
+        // and then fail to parse (or worse, parse as 15, since ',' is the invariant group separator).
+        if (NumberFormat is null) return BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
 
         return _typeOfValue == typeof(byte) ? Convert.ToByte(value).ToString(NumberFormat)
              : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(value).ToString(NumberFormat)
@@ -601,6 +703,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         switch (e.Key)
         {
             case "ArrowUp":
+                // On key auto-repeat the input text cannot have changed since the previous step, so
+                // the JS roundtrip that reads the live text is skipped.
+                if (e.Repeat is false)
+                {
+                    await CommitPendingInputValue();
+                }
                 ChangeValue(+1);
 
                 if (OnIncrement.HasDelegate)
@@ -610,6 +718,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 break;
 
             case "ArrowDown":
+                if (e.Repeat is false)
+                {
+                    await CommitPendingInputValue();
+                }
                 ChangeValue(-1);
 
                 if (OnDecrement.HasDelegate)
@@ -620,6 +732,28 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             default:
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Commits the text currently sitting in the input element before a step is applied. Without the
+    /// Immediate mode, typed text only commits on blur/Enter, so stepping right after typing would
+    /// otherwise apply to the stale previous value instead of what the user currently sees.
+    /// The live text is read through JS; when that is unavailable (prerendering) it comes back empty
+    /// and the step simply applies to the last committed value.
+    /// </summary>
+    private async Task CommitPendingInputValue()
+    {
+        string? liveValue = null;
+        try
+        {
+            liveValue = await _js.BitUtilsGetProperty(InputElement, "value");
+        }
+        catch { }
+
+        if (liveValue.HasValue() && string.Equals(liveValue, GetDisplayValueAsString(), StringComparison.Ordinal) is false)
+        {
+            await SetCurrentValueAsStringAsync(liveValue);
         }
     }
 
@@ -637,7 +771,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _hasFocus = true;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
-        await _js.BitUtilsSelectText(InputElement);
+        // The text selection is handled in HandleOnFocus; the focus event always accompanies
+        // focusin, so selecting here too would just issue a duplicate JS call.
         await OnFocusIn.InvokeAsync(e);
     }
 
@@ -658,7 +793,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _hasFocus = true;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
-        await _js.BitUtilsSelectText(InputElement);
+
+        if (NoSelectOnFocus is false)
+        {
+            await _js.BitUtilsSelectText(InputElement);
+        }
+
         await OnFocus.InvokeAsync(e);
     }
 
@@ -689,7 +829,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             {
                 await InvokeAsync(async () =>
                 {
-                    await Task.Delay(400);
+                    await Task.Delay(Math.Max(1, ContinuousSpinDelay));
                     await ContinuousChangeValue(isIncrement, cts);
                 });
             }, cts.Token);
@@ -697,22 +837,24 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         catch (OperationCanceledException) { }
     }
 
-    private async Task HandleOnPointerUpOrOut()
+    private void HandleOnPointerUpOrOut()
     {
         ResetCts();
     }
 
     private async Task HandleOnMouseWheel(WheelEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
         if (e.ShiftKey is false) return;
 
         if (e.DeltaY < 0)
         {
+            await CommitPendingInputValue();
             ChangeValue(InvertMouseWheel ? -1 : +1);
         }
         else if (e.DeltaY > 0)
         {
+            await CommitPendingInputValue();
             ChangeValue(InvertMouseWheel ? +1 : -1);
         }
     }
@@ -740,7 +882,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         StateHasChanged();
 
-        await Task.Delay(75);
+        await Task.Delay(Math.Max(1, ContinuousSpinInterval));
         await ContinuousChangeValue(isIncrement, cts);
     }
 
@@ -763,38 +905,53 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         TValue result;
 
-        if (_typeOfValue == typeof(ushort))
+        if (_typeOfValue == typeof(float) || _typeOfValue == typeof(double))
         {
-            var r = factor > 0
-                        ? (Convert.ToInt16(CurrentValue) + Convert.ToInt16(_step))
-                        : (Convert.ToInt16(CurrentValue) - Convert.ToInt16(_step));
-            result = (TValue)(object)Convert.ToUInt16(r < 0 ? 0 : r);
+            // double covers the full range of both float and double; going out of range saturates to
+            // an infinity which the clamp below brings back to the min/max bound.
+            var r = Convert.ToDouble(CurrentValue) + (factor * Convert.ToDouble(_step));
+
+            var min = Convert.ToDouble(_min);
+            var max = Convert.ToDouble(_max);
+            r = r < min ? min : r > max ? max : r;
+
+            result = (TValue)Convert.ChangeType(r, _typeOfValue, CultureInfo.InvariantCulture);
         }
-        else if (_typeOfValue == typeof(uint))
+        else if (_typeOfValue == typeof(decimal))
         {
-            var r = factor > 0
-                        ? (Convert.ToInt32(CurrentValue) + Convert.ToInt32(_step))
-                        : (Convert.ToInt32(CurrentValue) - Convert.ToInt32(_step));
-            result = (TValue)(object)Convert.ToUInt32(r < 0 ? 0 : r);
-        }
-        else if (_typeOfValue == typeof(ulong))
-        {
-            var r = factor > 0
-                        ? (Convert.ToInt64(CurrentValue) + Convert.ToInt64(_step))
-                        : (Convert.ToInt64(CurrentValue) - Convert.ToInt64(_step));
-            result = (TValue)(object)Convert.ToUInt64(r < 0 ? 0 : r);
+            var current = Convert.ToDecimal(CurrentValue);
+            var delta = factor * Convert.ToDecimal(_step);
+
+            decimal r;
+            try
+            {
+                r = current + delta;
+            }
+            catch (OverflowException)
+            {
+                r = delta > 0 ? Convert.ToDecimal(_max) : Convert.ToDecimal(_min);
+            }
+
+            var min = Convert.ToDecimal(_min);
+            var max = Convert.ToDecimal(_max);
+            r = r < min ? min : r > max ? max : r;
+
+            result = (TValue)(object)r;
         }
         else
         {
-            result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(factor) * Convert.ToByte(_step)))
-                   : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(factor) * Convert.ToSByte(_step)))
-                   : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(factor) * Convert.ToInt16(_step)))
-                   : _typeOfValue == typeof(int) ? (TValue)(object)(Convert.ToInt32(CurrentValue) + (Convert.ToInt32(factor) * Convert.ToInt32(_step)))
-                   : _typeOfValue == typeof(long) ? (TValue)(object)(Convert.ToInt64(CurrentValue) + (Convert.ToInt64(factor) * Convert.ToInt64(_step)))
-                   : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(factor) * Convert.ToSingle(_step)))
-                   : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(factor) * Convert.ToDecimal(_step)))
-                   : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(factor) * Convert.ToDouble(_step)))
-                   : _zeroValue;
+            // All integral types (byte, sbyte, short, ushort, int, uint, long, ulong): decimal spans
+            // the whole long.MinValue..ulong.MaxValue range, so the arithmetic can neither overflow
+            // nor wrap around; the result is clamped before narrowing back to the target type. This
+            // also avoids the int-promotion of small-type arithmetic (byte + byte is an int) that
+            // cannot be unboxed back into the smaller TValue.
+            var r = Convert.ToDecimal(CurrentValue) + (factor * Convert.ToDecimal(_step));
+
+            var min = Convert.ToDecimal(_min);
+            var max = Convert.ToDecimal(_max);
+            r = r < min ? min : r > max ? max : r;
+
+            result = (TValue)Convert.ChangeType(r, _typeOfValue, CultureInfo.InvariantCulture);
         }
 
         result = CheckMinAndMax(result);
@@ -937,14 +1094,47 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return changed ? sb.ToString() : value;
     }
 
+    /// <summary>
+    /// Maps the current culture's group and decimal separators to their invariant equivalents
+    /// (group separators get removed, decimal separators become '.'). The group separators must be
+    /// handled first: in cultures like German the group separator is '.' itself, which would
+    /// otherwise collide with the invariant decimal point.
+    /// </summary>
+    private static string? MapCultureSeparatorsToInvariant(string? value)
+    {
+        if (value.HasNoValue()) return value;
+
+        var numberFormatInfo = CultureInfo.CurrentCulture.NumberFormat;
+        var result = value!;
+
+        foreach (var groupSeparator in new[] { numberFormatInfo.NumberGroupSeparator, numberFormatInfo.CurrencyGroupSeparator })
+        {
+            if (groupSeparator.HasValue())
+            {
+                result = result.Replace(groupSeparator, string.Empty);
+            }
+        }
+
+        foreach (var decimalSeparator in new[] { numberFormatInfo.NumberDecimalSeparator, numberFormatInfo.CurrencyDecimalSeparator })
+        {
+            if (decimalSeparator.HasValue() && decimalSeparator != ".")
+            {
+                result = result.Replace(decimalSeparator, ".");
+            }
+        }
+
+        return result;
+    }
+
+    private static readonly Regex _cleanValueRegex = new(@"-?\d*(?:\.\d*)?", RegexOptions.Compiled);
+
     private static string? CleanValue(string? value)
     {
         if (value.HasNoValue()) return null;
 
-        var pattern = new Regex(@"-?\d*(?:\.\d*)?");
-        var matchCollection = pattern.Matches(value!);
+        var matchCollection = _cleanValueRegex.Matches(value!);
 
-        return matchCollection is null ? value : string.Join("", matchCollection.Select(m => m.Value));
+        return string.Join("", matchCollection.Select(m => m.Value));
     }
 
     /// <summary>
@@ -997,60 +1187,94 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private void OnSetStep()
     {
         var step = CleanValue(NormalizeNumericParameter(Step));
-        if (BindConverter.TryConvertTo(step, CultureInfo.InvariantCulture, out TValue? result))
+        if (BindConverter.TryConvertTo(step, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
-            _step = result ?? ((TValue)(object)1);
+            _step = result;
         }
         else
         {
-            _step = (TValue)(object)1;
+            // A direct (TValue)(object)1 cast would throw an InvalidCastException for any non-int
+            // TValue (an int cannot be unboxed as a double/decimal/...), so the fallback goes through
+            // the same converter used by the constructor.
+            BindConverter.TryConvertTo("1", CultureInfo.InvariantCulture, out _step!);
         }
+
+        // The precision can be derived from the Step parameter, so it has to be recomputed whenever
+        // the Step changes (an explicitly provided Precision parameter still takes precedence).
+        OnSetPrecision();
     }
 
     private void OnSetPrecision()
     {
-        _precision = Precision is not null ? Precision.Value : CalculatePrecision();
+        _precision = Precision ?? CalculatePrecision();
     }
 
     private TValue Normalize(TValue value)
     {
+        // No rounding is applied unless an explicit Precision is provided or a fractional Step
+        // implies one. Rounding by default would silently mutilate user input (e.g. a plain
+        // BitNumberField<double> turning a typed "1.23" into "1").
+        if (_precision is not int precision) return value;
+
         if (value is double doubleValue)
         {
-            return (TValue)Convert.ChangeType(Math.Round(doubleValue, _precision), _typeOfValue);
+            return (TValue)(object)RoundDouble(doubleValue, precision);
         }
-        else if (value is float floatValue)
+
+        if (value is float floatValue)
         {
-            return (TValue)Convert.ChangeType(Math.Round(floatValue, _precision), _typeOfValue);
+            return (TValue)(object)(float)RoundDouble(floatValue, precision);
         }
-        else if (value is decimal decimalValue)
+
+        if (value is decimal decimalValue)
         {
-            return (TValue)Convert.ChangeType(Math.Round(decimalValue, _precision), _typeOfValue);
+            return (TValue)(object)RoundDecimal(decimalValue, precision);
         }
 
         return value;
     }
 
-    private int CalculatePrecision()
+    private static double RoundDouble(double value, int precision)
     {
-        var step = NormalizeNumericParameter(Step) ?? _step?.ToString() ?? "1";
-        var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
-        if (regex.IsMatch(step) is false) return 0;
+        // Math.Round only accepts 0..15 digits for doubles; a negative precision means rounding to a
+        // power of ten (e.g. -1 rounds to the nearest ten), which is done by scaling.
+        if (precision >= 0) return Math.Round(value, Math.Min(precision, 15));
 
-        var matches = regex.Matches(step);
-        if (matches.Count == 0) return 0;
+        var scale = Math.Pow(10, -precision);
+        return Math.Round(value / scale) * scale;
+    }
 
-        var groups = matches[0].Groups;
-        if (groups[1] != null && groups[1].Length != 0)
+    private static decimal RoundDecimal(decimal value, int precision)
+    {
+        if (precision >= 0) return Math.Round(value, Math.Min(precision, 28));
+
+        try
         {
-            return -groups[1].Length;
+            var scale = (decimal)Math.Pow(10, -precision);
+            return Math.Round(value / scale) * scale;
         }
-
-        if (groups[2] != null && groups[2].Length != 0)
+        catch (OverflowException)
         {
-            return groups[2].Length;
+            // The scaled rounding went out of the decimal range; the original value is kept as is.
+            return value;
         }
+    }
 
-        return 0;
+    /// <summary>
+    /// Derives the rounding precision from the fractional digits of the <see cref="Step"/> parameter
+    /// (e.g. a Step of "0.25" implies 2 decimal places). Returns null (no rounding) when no Step is
+    /// provided or the Step has no fractional part.
+    /// </summary>
+    private int? CalculatePrecision()
+    {
+        var step = NormalizeNumericParameter(Step);
+        if (step.HasNoValue()) return null;
+
+        var dotIndex = step!.IndexOf('.');
+        if (dotIndex < 0) return null;
+
+        var fractionLength = step.AsSpan(dotIndex + 1).TrimEnd('0').Length;
+        return fractionLength == 0 ? null : fractionLength;
     }
 
     private void NormalizeValue()

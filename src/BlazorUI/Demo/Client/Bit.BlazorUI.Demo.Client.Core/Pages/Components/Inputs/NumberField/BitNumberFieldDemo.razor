@@ -6,11 +6,11 @@
 
 <PageOutlet Url="components/numberfield"
             Title="NumberField"
-            Description="A NumberField lets you enter and format numeric values, such as decimals or integers, with optional prefixes and suffixes." />
+            Description="A NumberField lets you enter and format numeric values of any .NET number type, with min/max clamping, stepping buttons, keyboard and mouse wheel support, and optional prefixes and suffixes." />
 
 <DemoPage Name="NumberField"
           SecondaryNames="@(["NumberInput"])"
-          Description="A NumberField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
+          Description="A NumberField (also known as a number input or spin button) allows entering any .NET numeric value (int, double, decimal, etc., including their nullable variants). It supports min/max clamping, custom steps, rounding precision, .NET number formatting, increment/decrement buttons in several layouts, keyboard (Up/Down arrows) and mouse wheel (Shift+wheel) interaction, non-Latin digit normalization, and full form validation integration."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -18,7 +18,12 @@
           GitHubUrl="Inputs/NumberField/BitNumberField.razor"
           GitHubDemoUrl="Inputs/NumberField/BitNumberFieldDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>Displays various basic configurations for the BitNumberField, including placeholders, disabled state, default values, step values, and required fields.</div>
+        <div>
+            The essential configurations of the BitNumberField: a plain field, a disabled field carrying a default value,
+            a placeholder that shows before any value is entered, and a required field.
+            The <b>TValue</b> type parameter selects the numeric type of the field (it is inferred automatically when a value is bound).
+            By default focusing the field selects its whole text for a quick overwrite; <b>NoSelectOnFocus</b> disables that.
+        </div>
         <br />
         <div class="example-box">
             <BitNumberField Label="Basic" TValue="int?" />
@@ -28,11 +33,16 @@
             <BitNumberField Label="Placeholder" TValue="int?" Placeholder="Enter a number..." />
             <br />
             <BitNumberField Label="Required" TValue="int?" Required />
+            <br />
+            <BitNumberField Label="NoSelectOnFocus" NoSelectOnFocus DefaultValue="1363" TValue="int?" />
         </div>
     </DemoExample>
 
     <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
-        <div>Demonstrates various label configurations for BitNumberField, including different label positions and custom label templates.</div>
+        <div>
+            The label of the BitNumberField can be positioned on any side of the input using the <b>LabelPosition</b> parameter,
+            and can be fully customized (with any markup or components) using the <b>LabelTemplate</b>.
+        </div>
         <br />
         <div class="example-box">
             <div>Label position:</div>
@@ -59,7 +69,12 @@
     </DemoExample>
 
     <DemoExample Title="Icons" RazorCode="@example3RazorCode" Id="example3">
-        <div>Demonstrates BitNumberField with different icons, including component icon and increment/decrement icons in various modes.</div>
+        <div>
+            An icon can be shown inside the field using the <b>IconName</b> parameter. The <b>Mode</b> parameter controls how the
+            increment/decrement buttons render: <b>Compact</b> stacks them at the end of the input, <b>Inline</b> puts them side by side
+            at the end, and <b>Spread</b> puts one on each side of the input. The button icons themselves can be replaced using
+            <b>IncrementIconName</b> and <b>DecrementIconName</b>. Holding a button down spins the value continuously.
+        </div>
         <br />
         <div class="example-box">
             <div> Component's Icon:</div>
@@ -86,15 +101,25 @@
     </DemoExample>
 
     <DemoExample Title="ShowClearButton" RazorCode="@example4RazorCode" Id="example4">
-        <div>Showcasing BitNumberField with a clean button in various configurations, including custom button icon and show this button.</div>
+        <div>
+            Enabling <b>ShowClearButton</b> renders a clear (X) button inside the field whenever it has a value,
+            resetting the value to null with a single click. It is most useful with nullable value types,
+            and its icon can be customized using the <b>ClearButtonIconName</b> parameter.
+        </div>
         <br />
         <div class="example-box">
             <BitNumberField Label="Age" TValue="int?" ShowClearButton DefaultValue="28" />
+            <br />
+            <BitNumberField Label="Custom icon" TValue="int?" ShowClearButton ClearButtonIconName="@BitIconName.Delete" DefaultValue="28" />
         </div>
     </DemoExample>
 
     <DemoExample Title="NumberFormat" RazorCode="@example5RazorCode" Id="example5">
-        <div>Demonstrates various number formatting options for BitNumberField, including examples with different number formats.</div>
+        <div>
+            The <b>NumberFormat</b> parameter formats the displayed value using standard or custom .NET numeric format strings,
+            such as <b>N0</b> (thousands grouping), <b>C0</b> (currency), or a custom mask like <b>000000</b> (zero padding).
+            The formatting is applied whenever the value is committed (on blur or Enter) while the bound value stays a plain number.
+        </div>
         <br />
         <div class="example-box">
             <BitNumberField Label="N0" DefaultValue="1234567890d" NumberFormat="N0" />
@@ -106,7 +131,11 @@
     </DemoExample>
 
     <DemoExample Title="Prefix & Suffix" RazorCode="@example6RazorCode" Id="example6">
-        <div>Demonstrates the use of prefixes and suffixes in BitNumberField, including examples with different prefix and suffix values.</div>
+        <div>
+            Static text can be rendered before and after the input using the <b>Prefix</b> and <b>Suffix</b> parameters
+            (or the fully-customizable <b>PrefixTemplate</b> and <b>SuffixTemplate</b>).
+            These adornments are visual only and are not part of the bound value.
+        </div>
         <br />
         <div class="example-box">
             <BitNumberField TValue="int" Label="Prefix" Prefix="Distance:" />
@@ -115,14 +144,17 @@
             <br />
             <BitNumberField TValue="int" Label="Prefix & Suffix" Prefix="Distance:" Suffix="km" />
             <br />
-            <BitNumberField TValue="int" Label="With buttons" Prefix="Distance:" Suffix="km" ShowButtons="true" />
+            <BitNumberField TValue="int" Label="With buttons" Prefix="Distance:" Suffix="km" Mode="BitSpinButtonMode.Compact" />
             <br />
             <BitNumberField TValue="int" Label="Disabled" Prefix="Distance:" Suffix="km" IsEnabled="false" />
         </div>
     </DemoExample>
 
     <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Demonstrates various binding scenarios with BitNumberField, including one-way and two-way binding.</div>
+        <div>
+            The value can be bound one-way (the field only reflects the source and its edits are discarded on the next render)
+            or two-way using <b>@@bind-Value</b>, where edits flow back into the bound field immediately upon commit.
+        </div>
         <br />
         <div class="example-box">
             <div>
@@ -138,7 +170,11 @@
     </DemoExample>
 
     <DemoExample Title="Min & Max" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Demonstrates setting minimum and maximum values in BitNumberField, including examples with various min and max constraints.</div>
+        <div>
+            The <b>Min</b> and <b>Max</b> parameters bound the value of the field: any value entered or spun outside the range
+            gets clamped to the nearest bound. When they are not provided, the natural range of the underlying numeric type applies
+            (so spinning can never overflow the type).
+        </div>
         <br />
         <div class="example-box">
             <BitNumberField Label="Min = 0" Min="0" @bind-Value="minValue" />
@@ -152,16 +188,55 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Precision" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>Specifies how many decimal places the value is rounded to.</div>
+    <DemoExample Title="Step" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            The <b>Step</b> parameter sets the amount added or removed on each spin, whether it comes from the increment/decrement
+            buttons, the Up/Down arrow keys, or the mouse wheel (while holding Shift). A fractional step such as <b>0.1</b> also
+            implies the rounding precision of typed values, unless an explicit <b>Precision</b> is provided.
+            Combined with <b>Min</b> and <b>Max</b>, stepping stops exactly at the bounds.
+            Stepping always applies to the value currently visible in the input, so typing a number and immediately
+            pressing an arrow key steps from the newly typed value.
+            Holding an increment/decrement button down spins the value continuously; the <b>ContinuousSpinDelay</b>
+            and <b>ContinuousSpinInterval</b> parameters control how soon the continuous spin starts and how fast it runs.
+        </div>
         <br />
         <div class="example-box">
-            <BitNumberField Precision="2" @bind-Value="precisionInputValue" Label="Rounding to 2 Decimal Places" />
+            <BitNumberField Label="Step = 2" Step="2" Mode="BitSpinButtonMode.Compact" @bind-Value="stepValue" />
+            <div>value: [@stepValue]</div>
+            <br />
+            <BitNumberField Label="Fractional step (0.1)" Step="0.1" Mode="BitSpinButtonMode.Compact" @bind-Value="fractionalStepValue" />
+            <div>value: [@fractionalStepValue]</div>
+            <br />
+            <BitNumberField Label="Step & Min & Max (5, 0, 25)" Step="5" Min="0" Max="25" Mode="BitSpinButtonMode.Compact" @bind-Value="stepMinMaxValue" />
+            <div>value: [@stepMinMaxValue]</div>
+            <br />
+            <BitNumberField Label="Fast continuous spin (hold a button)" Mode="BitSpinButtonMode.Compact"
+                            ContinuousSpinDelay="200" ContinuousSpinInterval="25"
+                            @bind-Value="fastSpinValue" />
+            <div>value: [@fastSpinValue]</div>
         </div>
     </DemoExample>
 
-    <DemoExample Title="HideInput" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <div>Demonstrates hiding the input field in BitNumberField while still allowing value changes.</div>
+    <DemoExample Title="Precision" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            The <b>Precision</b> parameter specifies how many decimal places the value is rounded to whenever it changes.
+            By default no rounding happens (or, if a fractional <b>Step</b> is set, its number of decimals is used).
+            A negative precision rounds to a power of ten, e.g. <b>-2</b> rounds to the nearest hundred.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitNumberField Precision="2" @bind-Value="precisionInputValue" Label="Rounding to 2 Decimal Places" />
+            <br />
+            <BitNumberField Precision="-2" @bind-Value="negativePrecisionInputValue" TValue="double" Label="Rounding to the nearest hundred (-2)" />
+            <div>value: [@negativePrecisionInputValue]</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="HideInput" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            Enabling <b>HideInput</b> hides the text input element while keeping the increment/decrement buttons functional,
+            turning the component into a pure stepper control. The current value can be surfaced elsewhere, like the label below.
+        </div>
         <br />
         <div class="example-box">
             <div>Hidden input:</div>
@@ -173,8 +248,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="InvertMouseWheel" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>Reverse the default scrolling behavior when adjusting numerical value in a number field using the mouse wheel.</div>
+    <DemoExample Title="InvertMouseWheel" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            The value can be changed by scrolling the mouse wheel over the field while holding the <b>Shift</b> key
+            (the Shift requirement keeps normal page scrolling intact). By default, scrolling up increments the value;
+            enabling <b>InvertMouseWheel</b> reverses that direction.
+        </div>
         <br />
         <div class="example-box">
             <BitToggle @bind-Value="invertMouseWheel" Text="Invert Mouse Wheel" />
@@ -183,11 +262,49 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <div>Handle events in BitNumberField, including increment, decrement, and change events.</div>
+    <DemoExample Title="Immediate" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            By default the value is committed when the input loses focus (or on Enter). Enabling <b>Immediate</b> commits on every
+            keystroke (the oninput event) instead. The <b>DebounceTime</b> parameter delays the commit until typing pauses for the
+            given milliseconds, while <b>ThrottleTime</b> rate-limits commits to at most one per interval.
+        </div>
         <br />
         <div class="example-box">
-            <BitNumberField Label="OnIncrement & OnDecrement" ShowButtons="true"
+            <BitNumberField Label="Immediate" TValue="int?" @bind-Value="immediateValue" Immediate />
+            <div>Value: [@immediateValue]</div>
+            <br />
+            <BitNumberField Label="Immediate & DebounceTime (300ms)" TValue="int?" @bind-Value="debounceValue" Immediate DebounceTime="300" />
+            <div>Value: [@debounceValue]</div>
+            <br />
+            <BitNumberField Label="Immediate & ThrottleTime (300ms)" TValue="int?" @bind-Value="throttleValue" Immediate ThrottleTime="300" />
+            <div>Value: [@throttleValue]</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="ReadOnly" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            The <b>ReadOnly</b> parameter makes the whole field read-only: typing, the spin buttons, the arrow keys and the mouse
+            wheel all stop changing the value, but the field remains focusable and its value stays selectable.
+            The <b>IsInputReadOnly</b> parameter only blocks typing in the input itself, while the value can still be changed
+            using the spin buttons, making the field behave like a stepper with a protected text box.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitNumberField Label="ReadOnly" ReadOnly Mode="BitSpinButtonMode.Compact" @bind-Value="readOnlyValue" />
+            <br />
+            <BitNumberField Label="IsInputReadOnly" IsInputReadOnly Mode="BitSpinButtonMode.Compact" @bind-Value="inputReadOnlyValue" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            The BitNumberField exposes rich events: <b>OnIncrement</b> and <b>OnDecrement</b> fire when the value is spun
+            (buttons or arrow keys) and receive the new value, <b>OnChange</b> fires whenever the committed value changes,
+            and <b>OnClear</b> fires when the value is cleared using the clear button.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitNumberField Label="OnIncrement & OnDecrement" Mode="BitSpinButtonMode.Compact"
                             OnIncrement="(double v) => onIncrementCounter++"
                             OnDecrement="(double v) => onDecrementCounter++" />
             <div>OnIncrement Counter: @onIncrementCounter</div>
@@ -195,14 +312,20 @@
             <br />
             <BitNumberField Label="OnChange" OnChange="(double v) => onChangeCounter++" />
             <div>OnChange Counter: @onChangeCounter</div>
+            <br />
+            <BitNumberField Label="OnClear" TValue="int?" ShowClearButton DefaultValue="5" OnClear="() => onClearCounter++" />
+            <div>OnClear Counter: @onClearCounter</div>
         </div>
     </DemoExample>
 
-    <DemoExample Title="NormalizeDigits" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="NormalizeDigits" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             Enables culture-agnostic normalization of non-Latin decimal digits (e.g. Persian "۱۲۳" or Arabic "١٢٣")
             and the Arabic decimal separator (٫) to their Latin equivalents before parsing. This makes the field accept
             numbers typed from the various Persian/Arabic keyboard layouts that emit different Unicode code points.
+            The same normalization also applies to the <b>Min</b>, <b>Max</b> and <b>Step</b> parameters, so constraints
+            like <b>Min="۱۰"</b> work consistently. The typed digits stay visible in the field as long as they represent
+            the exact bound value.
         </div>
         <br />
         <div>
@@ -232,8 +355,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-        <div>Demonstrates validation for BitNumberField within a form, including required fields and custom validation messages.</div>
+    <DemoExample Title="Validation" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <div>
+            The BitNumberField integrates with Blazor's <b>EditForm</b> and data annotations out of the box: validation messages
+            show up for out-of-range or missing values, the field gets the invalid styling, and the aria-invalid attribute is
+            rendered automatically for assistive technologies.
+        </div>
         <br />
         <div class="example-box">
             @if (string.IsNullOrEmpty(SuccessMessage))
@@ -254,7 +381,29 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Numeric Types" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <div>
+            The <b>TValue</b> type parameter of the BitNumberField accepts every .NET numeric type: byte, sbyte, short, ushort,
+            int, uint, long, ulong, float, double and decimal, plus their nullable variants. Spinning safely clamps at the
+            bounds of the underlying type, so a byte can never overflow past 255 and an int never wraps around at its maximum.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitNumberField Label="byte" Mode="BitSpinButtonMode.Compact" @bind-Value="byteValue" />
+            <div>value: [@byteValue]</div>
+            <br />
+            <BitNumberField Label="long" Mode="BitSpinButtonMode.Compact" @bind-Value="longValue" />
+            <div>value: [@longValue]</div>
+            <br />
+            <BitNumberField Label="double" Mode="BitSpinButtonMode.Compact" @bind-Value="doubleValue" Step="0.5" />
+            <div>value: [@doubleValue]</div>
+            <br />
+            <BitNumberField Label="decimal" Mode="BitSpinButtonMode.Compact" @bind-Value="decimalValue" Step="0.01" />
+            <div>value: [@decimalValue]</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b>, <b>IncrementIcon</b>, and <b>DecrementIcon</b> parameters.</div>
 
         <br />
@@ -301,8 +450,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
-        <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
+    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+        <div>
+            The appearance can be customized at every level: the root <b>Style</b> and <b>Class</b> parameters, plus the
+            <b>Styles</b> and <b>Classes</b> parameters that target each internal part of the component
+            (root, label, input container, input, buttons, icons, etc.), including the focus state.
+        </div>
         <br /><br />
         <div class="example-box">
             <div>Component's Style & Class:</div>
@@ -332,15 +485,18 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
-        <div>Use BitNumberField in right-to-left (RTL).</div>
+    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+        <div>
+            The BitNumberField fully supports right-to-left (RTL) rendering, either using its <b>Dir</b> parameter or a cascading
+            <b>BitDir.Rtl</b> value: the label, the buttons, the required indicator and the input alignment all flip accordingly.
+        </div>
         <br />
         <div dir="rtl">
             <div class="example-box">
                 <CascadingValue Value="BitDir.Rtl">
-                    <BitNumberField Label="برچسب در بالا" TValue="int" ShowButtons />
+                    <BitNumberField Label="برچسب در بالا" TValue="int" Mode="BitSpinButtonMode.Compact" />
                     <br />
-                    <BitNumberField Label="برچسب درخط" TValue="int" InlineLabel />
+                    <BitNumberField Label="برچسب در کنار" TValue="int" LabelPosition="BitLabelPosition.Start" />
                     <br />
                     <BitNumberField TValue="int" Required />
                     <br />

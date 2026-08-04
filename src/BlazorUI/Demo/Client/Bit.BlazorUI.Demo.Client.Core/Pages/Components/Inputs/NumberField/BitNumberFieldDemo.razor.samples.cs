@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
 public partial class BitNumberFieldDemo
 {
@@ -9,7 +9,9 @@ public partial class BitNumberFieldDemo
 
 <BitNumberField Label=""Placeholder"" TValue=""int?"" Placeholder=""Enter a number..."" />
 
-<BitNumberField Label=""Required"" TValue=""int?"" Required />";
+<BitNumberField Label=""Required"" TValue=""int?"" Required />
+
+<BitNumberField Label=""NoSelectOnFocus"" NoSelectOnFocus DefaultValue=""1363"" TValue=""int?"" />";
 
     private readonly string example2RazorCode = @"
 <BitNumberField Label=""Top (default)"" TValue=""int"" />
@@ -49,7 +51,9 @@ public partial class BitNumberFieldDemo
                 DecrementIconName=""@BitIconName.CalculatorSubtract"" />";
 
     private readonly string example4RazorCode = @"
-<BitNumberField Label=""Age"" TValue=""int?"" ShowClearButton DefaultValue=""28"" />";
+<BitNumberField Label=""Age"" TValue=""int?"" ShowClearButton DefaultValue=""28"" />
+
+<BitNumberField Label=""Custom icon"" TValue=""int?"" ShowClearButton ClearButtonIconName=""@BitIconName.Delete"" DefaultValue=""28"" />";
 
     private readonly string example5RazorCode = @"
 <BitNumberField Label=""N0"" DefaultValue=""1234567890d"" NumberFormat=""N0"" />
@@ -65,7 +69,7 @@ public partial class BitNumberFieldDemo
 
 <BitNumberField TValue=""int"" Label=""Prefix & Suffix"" Prefix=""Distance:"" Suffix=""km"" />
 
-<BitNumberField TValue=""int"" Label=""With buttons"" Prefix=""Distance:"" Suffix=""km"" ShowButtons=""true"" />
+<BitNumberField TValue=""int"" Label=""With buttons"" Prefix=""Distance:"" Suffix=""km"" Mode=""BitSpinButtonMode.Compact"" />
 
 <BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />";
 
@@ -95,39 +99,126 @@ private int maxValue;
 private int minMaxValue;";
 
     private readonly string example9RazorCode = @"
-<BitNumberField Precision=""2"" @bind-Value=""precisionInputValue"" Label=""Rounding to 2 Decimal Places"" />";
+<BitNumberField Label=""Step = 2"" Step=""2"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""stepValue"" />
+<div>value: [@stepValue]</div>
+
+<BitNumberField Label=""Fractional step (0.1)"" Step=""0.1"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""fractionalStepValue"" />
+<div>value: [@fractionalStepValue]</div>
+
+<BitNumberField Label=""Step & Min & Max (5, 0, 25)"" Step=""5"" Min=""0"" Max=""25"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""stepMinMaxValue"" />
+<div>value: [@stepMinMaxValue]</div>
+
+<BitNumberField Label=""Fast continuous spin (hold a button)"" Mode=""BitSpinButtonMode.Compact""
+                ContinuousSpinDelay=""200"" ContinuousSpinInterval=""25""
+                @bind-Value=""fastSpinValue"" />
+<div>value: [@fastSpinValue]</div>";
     private readonly string example9CsharpCode = @"
-    private double precisionInputValue = 3.1415;";
+private int stepValue;
+private double fractionalStepValue;
+private int stepMinMaxValue;
+private int fastSpinValue;";
 
     private readonly string example10RazorCode = @"
+<BitNumberField Precision=""2"" @bind-Value=""precisionInputValue"" Label=""Rounding to 2 Decimal Places"" />
+
+<BitNumberField Precision=""-2"" @bind-Value=""negativePrecisionInputValue"" TValue=""double"" Label=""Rounding to the nearest hundred (-2)"" />
+<div>value: [@negativePrecisionInputValue]</div>";
+    private readonly string example10CsharpCode = @"
+private double precisionInputValue = 3.1415;
+private double negativePrecisionInputValue;";
+
+    private readonly string example11RazorCode = @"
 <BitNumberField HideInput
                 @bind-Value=""hideInputValue""
                 Mode=""BitSpinButtonMode.Inline""
                 Label=""@hideInputValue.ToString()"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private int hideInputValue;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitToggle @bind-Value=""invertMouseWheel"" Text=""Invert Mouse Wheel"" />
 <BitNumberField InvertMouseWheel=""invertMouseWheel"" Label=""Use Shift + Mouse Wheel"" TValue=""int"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool invertMouseWheel;";
 
-    private readonly string example12RazorCode = @"
-<BitNumberField Label=""OnIncrement & OnDecrement"" ShowButtons=""true""
+    private readonly string example13RazorCode = @"
+<BitNumberField Label=""Immediate"" TValue=""int?"" @bind-Value=""immediateValue"" Immediate />
+<div>Value: [@immediateValue]</div>
+
+<BitNumberField Label=""Immediate & DebounceTime (300ms)"" TValue=""int?"" @bind-Value=""debounceValue"" Immediate DebounceTime=""300"" />
+<div>Value: [@debounceValue]</div>
+
+<BitNumberField Label=""Immediate & ThrottleTime (300ms)"" TValue=""int?"" @bind-Value=""throttleValue"" Immediate ThrottleTime=""300"" />
+<div>Value: [@throttleValue]</div>";
+    private readonly string example13CsharpCode = @"
+private int? immediateValue;
+private int? debounceValue;
+private int? throttleValue;";
+
+    private readonly string example14RazorCode = @"
+<BitNumberField Label=""ReadOnly"" ReadOnly Mode=""BitSpinButtonMode.Compact"" @bind-Value=""readOnlyValue"" />
+
+<BitNumberField Label=""IsInputReadOnly"" IsInputReadOnly Mode=""BitSpinButtonMode.Compact"" @bind-Value=""inputReadOnlyValue"" />";
+    private readonly string example14CsharpCode = @"
+private int readOnlyValue = 10;
+private int inputReadOnlyValue = 10;";
+
+    private readonly string example15RazorCode = @"
+<BitNumberField Label=""OnIncrement & OnDecrement"" Mode=""BitSpinButtonMode.Compact""
                 OnIncrement=""(double v) => onIncrementCounter++""
                 OnDecrement=""(double v) => onDecrementCounter++"" />
 <div>OnIncrement Counter: @onIncrementCounter</div>
 <div>OnDecrement Counter: @onDecrementCounter</div>
 
 <BitNumberField Label=""OnChange"" OnChange=""(double v) => onChangeCounter++"" />
-<div>OnChange Counter: @onChangeCounter</div>";
-    private readonly string example12CsharpCode = @"
+<div>OnChange Counter: @onChangeCounter</div>
+
+<BitNumberField Label=""OnClear"" TValue=""int?"" ShowClearButton DefaultValue=""5"" OnClear=""() => onClearCounter++"" />
+<div>OnClear Counter: @onClearCounter</div>";
+    private readonly string example15CsharpCode = @"
 private int onIncrementCounter;
 private int onDecrementCounter;
-private int onChangeCounter;";
+private int onChangeCounter;
+private int onClearCounter;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
+<BitNumberField Label=""Without NormalizeDigits"" @bind-Value=""normalizeOffValue"" Placeholder=""۱۲۳"" />
+<div>Value: @normalizeOffValue</div>
+
+<BitNumberField Label=""With NormalizeDigits (۱۲۳)"" @bind-Value=""normalizeOnValue"" NormalizeDigits Placeholder=""۱۲۳"" />
+<div>Value: @normalizeOnValue</div>
+
+<BitNumberField Label=""Fractioned NormalizeDigits (۱۲٫۵)"" @bind-Value=""normalizeDecimalValue"" NormalizeDigits Placeholder=""۱۲٫۵"" Precision=""2"" />
+<div>Value: @normalizeDecimalValue</div>
+
+
+<BitNumberField Label=""Custom DigitsNormalizer (۱٬۲۳۴)"" @bind-Value=""customNormalizerValue"" DigitsNormalizer=""CustomDigitsNormalizer"" Placeholder=""۱٬۲۳۴"" />
+<div>Value: @customNormalizerValue</div>";
+    private readonly string example16CsharpCode = @"
+private int? normalizeOffValue;
+private int? normalizeOnValue;
+private double? normalizeDecimalValue;
+private int? customNormalizerValue;
+
+// Custom normalizer: maps any Unicode decimal digit to its Latin equivalent
+// and strips spaces and thousand separators (Latin ',' and Persian '٬').
+private string? CustomDigitsNormalizer(string? value)
+{
+    if (string.IsNullOrEmpty(value)) return value;
+
+    var sb = new StringBuilder(value.Length);
+    foreach (var c in value)
+    {
+        if (c is ' ' or ',' or '٬') continue;
+
+        var digit = CharUnicodeInfo.GetDecimalDigitValue(c);
+        sb.Append(digit >= 0 ? (char)('0' + digit) : c);
+    }
+
+    return sb.ToString();
+}";
+
+    private readonly string example17RazorCode = @"
 <EditForm Model=""@validationModel"">
     <DataAnnotationsValidator />
 
@@ -136,7 +227,7 @@ private int onChangeCounter;";
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 public class BitNumberFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
@@ -146,7 +237,25 @@ public class BitNumberFieldValidationModel
 
 private BitNumberFieldValidationModel validationModel = new();";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example18RazorCode = @"
+<BitNumberField Label=""byte"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""byteValue"" />
+<div>value: [@byteValue]</div>
+
+<BitNumberField Label=""long"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""longValue"" />
+<div>value: [@longValue]</div>
+
+<BitNumberField Label=""double"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""doubleValue"" Step=""0.5"" />
+<div>value: [@doubleValue]</div>
+
+<BitNumberField Label=""decimal"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""decimalValue"" Step=""0.01"" />
+<div>value: [@decimalValue]</div>";
+    private readonly string example18CsharpCode = @"
+private byte byteValue = 5;
+private long longValue = 1_000_000_000_000;
+private double doubleValue = 1.5;
+private decimal decimalValue = 0.05m;";
+
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>Component Icon (FontAwesome):</div>
@@ -171,7 +280,7 @@ private BitNumberFieldValidationModel validationModel = new();";
                 IncrementIcon=""@BitIconInfo.Bi(""plus-circle-fill"")""
                 DecrementIcon=""@BitIconInfo.Bi(""dash-circle-fill"")"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -267,53 +376,16 @@ private BitNumberFieldValidationModel validationModel = new();";
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example21RazorCode = @"
 <CascadingValue Value=""BitDir.Rtl"">
 
-    <BitNumberField Label=""برچسب در بالا"" TValue=""int"" ShowButtons />
+    <BitNumberField Label=""برچسب در بالا"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />
 
-    <BitNumberField Label=""برچسب درخط"" TValue=""int"" InlineLabel />
+    <BitNumberField Label=""برچسب در کنار"" TValue=""int"" LabelPosition=""BitLabelPosition.Start"" />
 
     <BitNumberField TValue=""int"" Required />
 
     <BitNumberField Label=""الزامی"" TValue=""int"" Required />
 
 </CascadingValue>";
-
-    private readonly string example13RazorCode = @"
-<BitNumberField Label=""Without NormalizeDigits"" @bind-Value=""normalizeOffValue"" Placeholder=""۱۲۳"" />
-<div>Value: @normalizeOffValue</div>
-
-<BitNumberField Label=""With NormalizeDigits (۱۲۳)"" @bind-Value=""normalizeOnValue"" NormalizeDigits Placeholder=""۱۲۳"" />
-<div>Value: @normalizeOnValue</div>
-
-<BitNumberField Label=""Fractioned NormalizeDigits (۱۲٫۵)"" @bind-Value=""normalizeDecimalValue"" NormalizeDigits Placeholder=""۱۲٫۵"" Precision=""2"" />
-<div>Value: @normalizeDecimalValue</div>
-
-
-<BitNumberField Label=""Custom DigitsNormalizer (۱٬۲۳۴)"" @bind-Value=""customNormalizerValue"" DigitsNormalizer=""CustomDigitsNormalizer"" Placeholder=""۱٬۲۳۴"" />
-<div>Value: @customNormalizerValue</div>";
-    private readonly string example13CsharpCode = @"
-private int? normalizeOffValue;
-private int? normalizeOnValue;
-private double? normalizeDecimalValue;
-private int? customNormalizerValue;
-
-// Custom normalizer: maps any Unicode decimal digit to its Latin equivalent
-// and strips spaces and thousand separators (Latin ',' and Persian '٬').
-private string? CustomDigitsNormalizer(string? value)
-{
-    if (string.IsNullOrEmpty(value)) return value;
-
-    var sb = new StringBuilder(value.Length);
-    foreach (var c in value)
-    {
-        if (c is ' ' or ',' or '٬') continue;
-
-        var digit = CharUnicodeInfo.GetDecimalDigitValue(c);
-        sb.Append(digit >= 0 ? (char)('0' + digit) : c);
-    }
-
-    return sb.ToString();
-}";
 }

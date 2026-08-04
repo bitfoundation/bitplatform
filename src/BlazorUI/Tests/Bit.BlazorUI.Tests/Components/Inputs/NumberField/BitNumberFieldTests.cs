@@ -315,21 +315,11 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        int? expectedMinValue = int.MinValue;
-        int? expectedMaxValue = int.MaxValue;
 
-        if (max is not null)
-        {
-            expectedMaxValue = int.Parse(max);
-        }
-
-        if (min is not null)
-        {
-            expectedMinValue = int.Parse(min);
-        }
-
-        Assert.AreEqual(expectedMinValue.HasValue ? expectedMinValue.ToString() : null, input.GetAttribute("aria-valuemin"));
-        Assert.AreEqual(expectedMaxValue.HasValue ? expectedMaxValue.ToString() : null, input.GetAttribute("aria-valuemax"));
+        // The aria-valuemin/max attributes only render when an explicit Min/Max is provided;
+        // announcing the underlying type's extremes (e.g. -2147483648) would just be noise.
+        Assert.AreEqual(min is not null ? int.Parse(min).ToString() : null, input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual(max is not null ? int.Parse(max).ToString() : null, input.GetAttribute("aria-valuemax"));
     }
 
     [Ignore]
@@ -943,11 +933,14 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var input = component.Find("input");
+
+        // aria-valuetext only renders when it adds information over the plain aria-valuenow number:
+        // either an explicitly provided text or a formatted display that differs from the raw value.
         var expectedResult = ariaValueText.HasValue()
             ? ariaValueText
             : numberFormat.HasValue()
                 ? component.Instance.Value.ToString(numberFormat)
-                : component.Instance.Value.ToString();
+                : null;
         Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
     }
 

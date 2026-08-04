@@ -77,28 +77,15 @@
 
         @if (HideInput)
         {
+            @* A hidden input only carries the value (e.g. for form posting); constraint, interaction
+               and aria attributes have no effect on it. *@
             <input @ref="InputElement" @attributes="@InputHtmlAttributes"
                    form=""
-                   min="@_min"
-                   max="@_max"
                    name="@Name"
-                   step="@_step"
                    id="@_inputId"
-                   readonly="@(ReadOnly || IsInputReadOnly)"
-                   required="@Required"
-                   autofocus="@AutoFocus"
-                   inputmode="@_inputMode"
-                   placeholder="@Placeholder"
-                   aria-labelledby="@_labelId"
                    value="@CurrentValueAsString"
                    disabled="@(IsEnabled is false)"
-                   type="hidden"
-                   aria-valuemin="@_min"
-                   aria-valuemax="@_max"
-                   aria-describedby="@AriaDescription"
-                   aria-valuenow="@(AriaValueNow ?? CurrentValue)"
-                   aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
-                   aria-disabled="@(IsEnabled is false)" />
+                   type="hidden" />
         }
         else
         {
@@ -113,10 +100,7 @@
                    @bind-value:set="@HandleOnStringValueSet"
                    @bind-value:event="@(Immediate ? "oninput" : "onchange")"
                    form=""
-                   min="@_min"
-                   max="@_max"
                    name="@Name"
-                   step="@_step"
                    id="@_inputId"
                    readonly="@(ReadOnly || IsInputReadOnly)"
                    required="@Required"
@@ -124,30 +108,32 @@
                    autofocus="@AutoFocus"
                    inputmode="@_inputMode"
                    placeholder="@Placeholder"
-                   aria-labelledby="@_labelId"
+                   aria-label="@AriaLabel"
+                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                    disabled="@(IsEnabled is false)"
                    class="bit-nfl-inp@(Mode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
                    autocomplete="@(AutoComplete ?? "off")"
                    type="text"
-                   aria-valuemin="@_min"
-                   aria-valuemax="@_max"
+                   role="spinbutton"
+                   aria-valuemin="@GetAriaValueMin()"
+                   aria-valuemax="@GetAriaValueMax()"
                    aria-describedby="@AriaDescription"
-                   aria-valuenow="@(AriaValueNow ?? CurrentValue)"
-                   aria-valuetext="@(AriaValueText ?? GetDisplayValueAsString())"
+                   aria-valuenow="@GetAriaValueNow()"
+                   aria-valuetext="@GetAriaValueText()"
                    aria-disabled="@(IsEnabled is false)" />
 
-                   @if (ShowClearButton && (CurrentValue is not null || _tempValue.HasValue()))
-                    {
-                        <button @onclick="HandleOnClearButtonClick"
-                                style="@Styles?.ClearButton"
-                                class="bit-nfl-cbt @Classes?.ClearButton"
-                                type="button"
-                                aria-hidden="true"
-                                aria-label="Clear text"
-                                disabled="@(IsEnabled is false)">
-                            <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
-                        </button>
-                    }
+            @if (ShowClearButton && (CurrentValue is not null || _tempValue.HasValue()))
+            {
+                <button @onclick="HandleOnClearButtonClick"
+                        style="@Styles?.ClearButton"
+                        class="bit-nfl-cbt @Classes?.ClearButton"
+                        type="button"
+                        tabindex="-1"
+                        aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
+                        disabled="@(IsEnabled is false)">
+                    <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                </button>
+            }
         }
 
         @if (Mode == BitSpinButtonMode.Compact)
@@ -159,7 +145,7 @@
                         @onpointerdown="() => HandleOnPointerDown(true)"
                         type="button"
                         tabindex="-1"
-                        date-is-focusable="false"
+                        data-is-focusable="false"
                         style="@Styles?.IncrementButton"
                         class="bit-nfl-aup @Classes?.IncrementButton"
                         disabled="@(IsEnabled is false)"
@@ -178,7 +164,7 @@
                         @onpointerdown="() => HandleOnPointerDown(false)"
                         type="button"
                         tabindex="-1"
-                        date-is-focusable="false"
+                        data-is-focusable="false"
                         style="@Styles?.DecrementButton"
                         class="bit-nfl-adn @Classes?.DecrementButton"
                         disabled="@(IsEnabled is false)"
