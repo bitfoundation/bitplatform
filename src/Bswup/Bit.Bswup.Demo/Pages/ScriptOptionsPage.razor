@@ -1,0 +1,175 @@
+﻿@page "/script-options"
+
+<PageTitle>Script Options - bit Bswup</PageTitle>
+
+<h1>Script Options</h1>
+<p class="docs-lead">
+    Every option of the <code>bit-bswup.js</code> script tag. All of them are optional - remove any
+    attribute to fall back to its default.
+</p>
+
+<CodeBlock Language="html" Code="@ScriptTagCode" />
+
+<h2>Quick reference</h2>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>Attribute</th><th>Default</th><th>Summary</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>scope</code></td><td><code>/</code></td><td>Service worker scope; also namespaces the cache buckets.</td></tr>
+            <tr><td><code>log</code></td><td><code>warn</code></td><td>Log level: <code>none</code>, <code>error</code>, <code>warn</code>, <code>info</code>, <code>verbose</code>, <code>debug</code>.</td></tr>
+            <tr><td><code>sw</code></td><td><code>service-worker.js</code></td><td>Path of the service worker file.</td></tr>
+            <tr><td><code>handler</code></td><td><code>bitBswupHandler</code></td><td>Name of the global function receiving lifecycle events.</td></tr>
+            <tr><td><code>blazorScript</code></td><td><em>auto-detected</em></td><td>Path of the Blazor entry script, when it lives at a non-default path.</td></tr>
+            <tr><td><code>updateInterval</code></td><td><code>0</code> (off)</td><td>Seconds between automatic update checks.</td></tr>
+            <tr><td><code>updateOnVisibility</code></td><td><code>false</code></td><td>Check for an update whenever the tab returns to the foreground.</td></tr>
+            <tr><td><code>stallTimeout</code></td><td><code>60</code></td><td>Seconds of total service worker silence before a first install falls back to a network boot.</td></tr>
+            <tr><td><code>persistStorage</code></td><td><code>false</code></td><td>Request eviction-resistant storage at startup.</td></tr>
+            <tr><td><code>options</code></td><td><code>bitBswup</code></td><td>Name of a global object to read all of these settings from.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<h2 id="scope">scope</h2>
+<p>
+    The scope of the service worker. Defaults to <code>/</code>. A service worker can only control URLs
+    beneath its own folder unless the server sends a <code>Service-Worker-Allowed</code> header, so if
+    your app is mounted on a sub-path (e.g. <code>https://host/myapp/</code>) set this to that sub-path.
+</p>
+<p>
+    If the browser refuses the configured scope, Bswup automatically retries with the default scope -
+    the folder containing the service worker script - so the app keeps offline support rather than losing
+    the service worker entirely; the fallback is reported as a console warning.
+</p>
+<Callout Type="note" Title="Scoped cache buckets (changed in v-10-6-0)">
+    The scope also namespaces the caches: buckets are named <code>bit-bswup:&lt;scope-path&gt; - &lt;version&gt;</code>,
+    so several Bswup apps mounted under different scopes on one origin keep fully independent caches.
+    The previous scope-less name made sibling apps evict each other's caches on every update. On upgrade,
+    entries from a legacy-named bucket are migrated without re-downloading.
+</Callout>
+
+<h2 id="log">log</h2>
+<p>
+    The log level of the Bswup logger. Available options: <code>none</code>, <code>error</code>,
+    <code>warn</code>, <code>info</code>, <code>verbose</code>, and <code>debug</code>. Each level
+    includes everything above it (e.g. <code>info</code> also shows <code>warn</code> and
+    <code>error</code>). Defaults to <code>warn</code>; use <code>none</code> to silence all output.
+</p>
+
+<h2 id="sw">sw</h2>
+<p>The file path of the service worker file. Defaults to <code>service-worker.js</code>.</p>
+
+<h2 id="handler">handler</h2>
+<p>
+    The name of the global handler function for service worker events. Defaults to
+    <code>bitBswupHandler</code> - which is also the name the built-in progress script registers, so the
+    two wire up without configuration. The handler is re-resolved until found, so it may be registered
+    after <code>bit-bswup.js</code> loads.
+</p>
+<Callout Type="note" Title="No handler? The app still boots">
+    If no handler is ever registered, Bswup still completes a first install on its own - it drives the
+    finish handshake itself so the app boots instead of waiting for the stall watchdog. Updates are simply
+    left staged until the next full restart.
+</Callout>
+
+<h2 id="blazorscript">blazorScript</h2>
+<p>
+    The path of the Blazor entry-point script (the one you added <code>autostart="false"</code> to).
+    When omitted, Bswup auto-detects both the Blazor Web App script (<code>_framework/blazor.web.js</code>)
+    and the standalone Blazor WebAssembly script (<code>_framework/blazor.webassembly.js</code>), so you
+    only need to set this if your script lives at a non-default path.
+</p>
+<p>
+    Matching is fingerprint-tolerant: the fingerprinted names .NET 9+ emits when the script is referenced
+    through <code>@@Assets["..."]</code> / the ImportMap (e.g. <code>_framework/blazor.web.&lt;fingerprint&gt;.js</code>)
+    are recognized automatically, both for the auto-detected defaults and for an explicitly configured value.
+</p>
+
+<h2 id="updateinterval">updateInterval</h2>
+<p>
+    Number of seconds between automatic update checks. By default the browser only re-checks the service
+    worker on navigation and roughly every 24 hours, so a long-lived SPA tab can run a stale version for a
+    long time. Set a positive number (e.g. <code>3600</code> for hourly) to have Bswup call
+    <code>reg.update()</code> on a timer. Checks are skipped while the tab is in the background and resume
+    when it becomes visible again. Omit or set <code>0</code> to disable (the default).
+</p>
+
+<h2 id="updateonvisibility">updateOnVisibility</h2>
+<p>
+    When <code>true</code>, Bswup checks for an update every time the tab returns to the foreground (the
+    <code>visibilitychange</code> event) - a lightweight way to catch updates right when a user comes back
+    to a tab they left open. Disabled by default.
+</p>
+
+<h2 id="stalltimeout">stallTimeout</h2>
+<p>
+    Number of seconds of complete service worker <em>silence</em> (no message, no lifecycle event) after
+    which, on a <strong>first install</strong> only, Bswup stops waiting and starts Blazor directly from
+    the network. This is the last line of defense against install failures that report nothing - most
+    notably the browser terminating the service worker mid-install (Chromium kills installs after
+    ~5 minutes) - which would otherwise leave the app frozen behind the splash forever.
+</p>
+<p>
+    The page is uncontrolled at that point, so it behaves exactly as if no service worker existed, and the
+    install is retried on the next load. Every progress message resets the timer, so a slow-but-healthy
+    download never triggers it - only true silence does. Defaults to <code>60</code>; set <code>0</code>
+    to disable. Updates are unaffected: the app is already running when an update stalls.
+</p>
+
+<h2 id="persiststorage">persistStorage</h2>
+<p>
+    When <code>true</code>, Bswup asks the browser to make the origin's storage persistent
+    (<code>navigator.storage.persist()</code>) at startup. By default everything Bswup caches lives in
+    <em>best-effort</em> storage: browsers silently reclaim it under disk pressure, and Safari deletes
+    <strong>all</strong> storage for a site that has not been interacted with for seven days - the user
+    comes back offline to an app that no longer boots. Persistent storage exempts the origin from that
+    eviction.
+</p>
+<Callout Type="tip" Title="Better odds: ask at a high-signal moment">
+    This is disabled by default because the request can show a permission prompt (Firefox) and grant odds
+    are engagement-based elsewhere. For the best odds, leave it off and call
+    <a href="javascript-api#persiststorage"><code>BitBswup.persistStorage()</code></a> yourself from a user
+    gesture - after login, or from an "install app" button.
+</Callout>
+
+<h2 id="options">options</h2>
+<p>
+    The name of a global configuration object to read settings from. Defaults to <code>bitBswup</code>.
+    Every option above can also be supplied as a property of that object; the object is merged over the
+    built-in defaults first, and any script-tag attribute then overrides the matching property. This is
+    the way to configure Bswup when the script is injected dynamically, where attribute-based
+    configuration may not be readable.
+</p>
+<CodeBlock Language="javascript" Code="@OptionsObjectCode" />
+
+<div class="pager">
+    <a href="getting-started">
+        <span class="pager-label">Previous</span>
+        <b>← Getting Started</b>
+    </a>
+    <a class="pager-next" href="service-worker">
+        <span class="pager-label">Next</span>
+        <b>Service Worker Settings →</b>
+    </a>
+</div>
+
+@code {
+    private const string ScriptTagCode = @"<script src=""_content/Bit.Bswup/bit-bswup.js""
+        scope=""/""
+        log=""verbose""
+        sw=""service-worker.js""
+        handler=""bitBswupHandler""
+        blazorScript=""_framework/blazor.webassembly.js""
+        updateInterval=""3600""
+        updateOnVisibility=""true""
+        stallTimeout=""60""
+        persistStorage=""false""
+        options=""bitBswup""></script>";
+
+    private const string OptionsObjectCode = @"<script>
+    window.bitBswup = { sw: 'my-sw.js', updateInterval: 3600 };
+</script>
+<!-- ...later, possibly injected dynamically: -->
+<script src=""_content/Bit.Bswup/bit-bswup.js""></script>";
+}
