@@ -10,7 +10,7 @@ public sealed class BitOpenLayersMapProvider : BitMapProviderBase
     /// OpenLayers version used by this provider. Keep in sync with <c>OL_VER</c> in
     /// <c>wwwroot/openlayers/bit-map-ol-loader.js</c>; both reference the same release.
     /// </summary>
-    public const string OpenLayersVersion = "10.5.0";
+    public const string OpenLayersVersion = "10.6.0-pre-01";
 
     /// <summary>Tile URL template (XYZ).</summary>
     public string TileUrl { get; set; } = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
