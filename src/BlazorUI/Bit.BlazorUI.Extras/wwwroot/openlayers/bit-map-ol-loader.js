@@ -9,7 +9,7 @@
 //
 // Keep OL_VER below in sync with `BitOpenLayersMapProvider.OpenLayersVersion` (which
 // drives the stylesheet URL and the C# XML doc); both reference the same release.
-const OL_VER = '10.6.0-pre-01';
+const OL_VER = '10.5.0';
 const u = (p) => `https://esm.sh/ol@${OL_VER}${p ? '/' + p : ''}?bundle`;
 
 // Guard against re-execution: if this loader script is injected twice (e.g. two
