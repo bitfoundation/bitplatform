@@ -1,4 +1,4 @@
-@page "/components/fileupload"
+﻿@page "/components/fileupload"
 @page "/components/file-upload"
 
 <PageOutlet Url="components/fileupload"
@@ -621,86 +621,88 @@
             would sweep through the whole batch.
         </div>
         <br />
-        <BitFileUpload @ref="bitFileUpload" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
-                       Classes="@(new() { Dragging = "custom-drop-zone" })">
-            <LabelTemplate>
-                @if (FileUploadIsEmpty())
-                {
-                    @* a real button rather than a clickable div, so the drop zone is reachable with Tab
-                       and activated with Enter or Space like the built-in browse button it replaces. *@
-                    <button type="button" class="browse-file" @onclick="() => bitFileUpload.Browse()">
-                        <div class="browse-file-header">
-                            <i class="bit-icon bit-icon--CloudUpload" />
-                            <div>
-                                Drag and drop or
-                            </div>
-                            <div>
-                                <strong>
-                                    Browse file
-                                </strong>
-                            </div>
-                        </div>
-
-                        <div class="browse-file-footer">
-                            <div>
-                                Max file size: 2 MB
-                            </div>
-                            <div>
-                                Supported file types: jpg, jpeg, png, bmp
-                            </div>
-                        </div>
-                    </button>
-                }
-            </LabelTemplate>
-            <FileViewTemplate Context="file">
-                @if (file.Status != BitFileUploadStatus.Removed)
-                {
-                    <div class="file-list">
-                        <div class="file-info">
-                            <div class="file-info-ico">
-                                <i class="bit-icon bit-icon--FileImage" />
-                            </div>
-                            <div class="file-info-data">
-                                <div class="file-info-title">
-                                    <div class="file-info-name">@file.Name</div>
-                                    @* each action names the file it acts on and applies to that file
-                                       alone, which is what the context of the template is there for. *@
-                                    <div class="file-info-btns">
-                                        <button type="button" aria-label="@($"Upload {file.Name}")" @onclick="() => bitFileUpload.Upload(file)">
-                                            <i class="bit-icon bit-icon--CloudUpload upload-ico" />
-                                        </button>
-                                        <button type="button" aria-label="@($"Remove {file.Name}")" @onclick="() => bitFileUpload.RemoveFile(file)">
-                                            <i class="bit-icon bit-icon--ChromeClose remove-ico" />
-                                        </button>
-                                    </div>
+        <div>
+            <BitFileUpload @ref="bitFileUpload" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
+                           Classes="@(new() { Dragging = "custom-drop-zone" })">
+                <LabelTemplate>
+                    @if (FileUploadIsEmpty())
+                    {
+                        @* a real button rather than a clickable div, so the drop zone is reachable with Tab
+                           and activated with Enter or Space like the built-in browse button it replaces. *@
+                        <button type="button" class="browse-file" @onclick="() => bitFileUpload.Browse()">
+                            <div class="browse-file-header">
+                                <i class="bit-icon bit-icon--CloudUpload" />
+                                <div>
+                                    Drag and drop or
                                 </div>
-                                @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
-                                {
-                                    var fileUploadPercent = GetFileUploadPercent(file);
-                                    <div class="file-info-subtitle">@GetFileUploadSize(file) - @fileUploadPercent%</div>
-                                    <div class="file-info-progressbar-container">
-                                        <div class="file-info-progressbar" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="@(file.Status == BitFileUploadStatus.Completed ? "file-info-s-msg" : "file-info-e-msg")">@GetUploadMessageStr(file)</div>
-                                }
+                                <div>
+                                    <strong>
+                                        Browse file
+                                    </strong>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="file-list-footer">
-                            <div>
-                                Max file size: 2 MB
+                            <div class="browse-file-footer">
+                                <div>
+                                    Max file size: 2 MB
+                                </div>
+                                <div>
+                                    Supported file types: jpg, jpeg, png, bmp
+                                </div>
                             </div>
-                            <div>
-                                Supported file types: jpg, jpeg, png, bmp
+                        </button>
+                    }
+                </LabelTemplate>
+                <FileViewTemplate Context="file">
+                    @if (file.Status != BitFileUploadStatus.Removed)
+                    {
+                        <div class="file-list">
+                            <div class="file-info">
+                                <div class="file-info-ico">
+                                    <i class="bit-icon bit-icon--FileImage" />
+                                </div>
+                                <div class="file-info-data">
+                                    <div class="file-info-title">
+                                        <div class="file-info-name">@file.Name</div>
+                                        @* each action names the file it acts on and applies to that file
+                                           alone, which is what the context of the template is there for. *@
+                                        <div class="file-info-btns">
+                                            <button type="button" aria-label="@($"Upload {file.Name}")" @onclick="() => bitFileUpload.Upload(file)">
+                                                <i class="bit-icon bit-icon--CloudUpload upload-ico" />
+                                            </button>
+                                            <button type="button" aria-label="@($"Remove {file.Name}")" @onclick="() => bitFileUpload.RemoveFile(file)">
+                                                <i class="bit-icon bit-icon--ChromeClose remove-ico" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
+                                    {
+                                        var fileUploadPercent = GetFileUploadPercent(file);
+                                        <div class="file-info-subtitle">@GetFileUploadSize(file) - @fileUploadPercent%</div>
+                                        <div class="file-info-progressbar-container">
+                                            <div class="file-info-progressbar" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="@(file.Status == BitFileUploadStatus.Completed ? "file-info-s-msg" : "file-info-e-msg")">@GetUploadMessageStr(file)</div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="file-list-footer">
+                                <div>
+                                    Max file size: 2 MB
+                                </div>
+                                <div>
+                                    Supported file types: jpg, jpeg, png, bmp
+                                </div>
                             </div>
                         </div>
-                    </div>
-                }
-            </FileViewTemplate>
-        </BitFileUpload>
+                    }
+                </FileViewTemplate>
+            </BitFileUpload>
+        </div>
         <br />
         <BitButton OnClick="HandleUploadOnClick">Upload</BitButton>
     </DemoExample>

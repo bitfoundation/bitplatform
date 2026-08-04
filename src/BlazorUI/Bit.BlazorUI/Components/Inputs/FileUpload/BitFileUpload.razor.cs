@@ -1934,6 +1934,7 @@ public partial class BitFileUpload : BitComponentBase
         if (fileInfo.Status is BitFileUploadStatus.Removed) return;
 
         _uploadQueue.Remove(fileInfo);
+        fileInfo.IsQueued = false;
 
         // a file on its way out has no reason to keep sending itself, so its in-flight request is dropped
         // before anything else - otherwise the bytes would keep flowing to an endpoint that is about to be
