@@ -1,152 +1,98 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <base href="/" />
     <meta charset="utf-8" />
-    <title>bit Bswup Demo</title>
+    <title>bit Bswup - Blazor Service Worker Update Progress</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps." />
+    <meta name="theme-color" content="#03173d" />
     <link href="manifest.json" rel="manifest" />
+    <link rel="icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    <style>
-        #bit-bswup {
-            position: fixed;
-            background: #fff;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            top: 0;
-            padding: 20px;
-            text-align: center;
-            display: none;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        .bit-bswup-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 70%;
-            margin: 0 auto;
-            margin-top: 45px;
-        }
-
-        .bit-bswup-title,
-        #bit-bswup-percent {
-            font-size: 20px;
-        }
-
-        #bit-bswup-description {
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .bit-bswup-progress {
-            border: 1px solid #ebebff;
-            background-color: #eee;
-            border-radius: 4px;
-            width: 100%;
-            height: 5px;
-        }
-
-        #bit-bswup-progress-bar {
-            background-color: #538fc3;
-            border-radius: 2px;
-            height: 5px;
-        }
-
-        #bit-bswup-reload {
-            display: none;
-            position: fixed;
-            top: 10px;
-            right: 10px;
-        }
-
-        #bit-bswup-assets {
-            font-size: 10px;
-            overflow: auto;
-            height: 666px;
-            text-align: left;
-        }
-    </style>
+    <script>
+        // Applied before first paint so the persisted theme never flashes.
+        (function () {
+            try {
+                var theme = localStorage.getItem('bswup-demo-theme');
+                if (theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) { }
+        })();
+    </script>
+    <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css" />
+    <link rel="stylesheet" href="app.css" />
 </head>
 
 <body>
-    <div id="bit-bswup">
-        <div class="bit-bswup-container">
-            <p class="bit-bswup-title">New version is available</p>
-            <p id="bit-bswup-description">Downloading updates, please wait...</p>
+    <!--
+        This markup mirrors what the BswupProgress Razor component renders. It is hand-written
+        here (instead of using the component) because in a standalone Blazor WebAssembly app
+        the splash must exist BEFORE Blazor starts - on a first install, Blazor only boots
+        after the download completes. bit-bswup.progress.js self-initializes from the
+        data-bit-bswup-* attributes below, exactly as it does for the component.
+    -->
+    <div id="bit-bswup"
+         data-bit-bswup-config="true"
+         data-bit-bswup-auto-reload="false"
+         data-bit-bswup-show-logs="false"
+         data-bit-bswup-show-assets="false"
+         data-bit-bswup-app-container="#app"
+         data-bit-bswup-hide-app="true"
+         data-bit-bswup-auto-hide="true"
+         data-bit-bswup-handler="bswupDemoHandler">
+        <div class="bit-bswup-container splash-container">
+            <img class="splash-logo" src="icon-512.png" alt="bit Bswup" width="80" height="80" />
+            <p class="bit-bswup-title">bit Bswup</p>
+            <p class="bit-bswup-description">Preparing the app for offline use, please wait...</p>
             <div class="bit-bswup-progress">
-                <div id="bit-bswup-progress-bar" style="width: 0%"></div>
+                <div id="bit-bswup-progress-bar"
+                     role="progressbar"
+                     aria-label="Update download progress"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"
+                     style="width: 0%"></div>
             </div>
-            <p id="bit-bswup-percent">0 %</p>
-            <ul id="bit-bswup-assets"></ul>
+            <p id="bit-bswup-percent">0%</p>
+            <ul id="bit-bswup-assets" style="display: none;"></ul>
+            <div id="bit-bswup-error" class="bit-bswup-error" style="display: none;" role="alert">
+                <p class="bit-bswup-error-title">Update failed to install</p>
+                <p id="bit-bswup-error-message" class="bit-bswup-error-message"></p>
+                <pre id="bit-bswup-error-details" class="bit-bswup-error-details"></pre>
+                <button id="bit-bswup-error-retry" type="button">Retry</button>
+            </div>
         </div>
     </div>
-    <button id="bit-bswup-reload">Update ready, Click to reload!</button>
+    <!-- Kept OUTSIDE #bit-bswup so a finished background update can surface the button
+         without revealing the splash overlay over the running app. -->
+    <button id="bit-bswup-reload" type="button" style="display: none;">Update ready - click to reload</button>
+    <span id="bit-bswup-reload-status" role="status" class="bit-bswup-visually-hidden"
+          style="position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap;"></span>
 
-    <div id="app">Loading...</div>
+    <div id="app">
+        <div class="app-loading">
+            <img src="icon-512.png" alt="" width="64" height="64" />
+            <span>Loading bit Bswup docs...</span>
+        </div>
+    </div>
 
-    <script>
-        const appEl = document.getElementById('app');
-        const bswupEl = document.getElementById('bit-bswup');
-        const descriptionLabel = document.getElementById('bit-bswup-description');
-        const progressBar = document.getElementById('bit-bswup-progress-bar');
-        const percentLabel = document.getElementById('bit-bswup-percent');
-        const reloadButton = document.getElementById('bit-bswup-reload');
-        const assetsUl = document.getElementById('bit-bswup-assets');
-
-        function bitBswupHandler(type, data) {
-            switch (type) {
-
-                case BswupMessage.updateFound: return console.log('an update found.');
-
-                case BswupMessage.stateChanged: return console.log('state has changed to:', data.currentTarget.state);
-
-                case BswupMessage.activate: return console.log('new version activated:', data.version);
-
-                case BswupMessage.downloadStarted:
-                    appEl.style.display = 'none';
-                    bswupEl.style.display = 'block';
-                    return console.log('downloading assets started:', data?.version);
-
-                case BswupMessage.downloadProgress:
-                    const li = document.createElement('li');
-                    li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
-                    assetsUl.prepend(li);
-                    const percent = Math.round(data.percent);
-                    progressBar.style.width = `${percent}%`;
-                    percentLabel.innerHTML = `${percent} %`;
-                    return console.log('asset downloaded:', data);
-
-                case BswupMessage.downloadFinished:
-                    if (data.firstInstall) {
-                        descriptionLabel.textContent = 'Downloading finished, starting Blazor...';
-                        data.reload().then(() => {
-                            appEl.style.display = 'block';
-                            bswupEl.style.display = 'none';
-                        });
-                    } else {
-                        descriptionLabel.textContent = 'Downloading finished, ready to reload.';
-                        reloadButton.style.display = 'block';
-                        reloadButton.onclick = data.reload;
-                    }
-                    return console.log('downloading assets finished.');
-
-                case BswupMessage.updateReady:
-                    reloadButton.style.display = 'block';
-                    reloadButton.onclick = data.reload;
-                    return console.log('new update ready.');
-            }
-        }
-    </script>
-    <script src="_framework/blazor.webassembly.js" autostart=false></script>
+    <script src="demo.js"></script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <!-- The docs site dogfoods Bswup itself: hourly update polling plus a check every time
+         the tab returns to the foreground. bit-bswup.progress.js registers the default
+         bitBswupHandler and drives the splash above; bswupDemoHandler (demo.js) is chained
+         after it to feed the Live Playground event log. -->
     <script src="_content/Bit.Bswup/bit-bswup.js"
             scope="/"
             log="none"
             sw="service-worker.js"
             handler="bitBswupHandler"
-            blazorScript="_framework/blazor.webassembly.js"></script>
+            updateInterval="3600"
+            updateOnVisibility="true"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
 </body>
 
 </html>
