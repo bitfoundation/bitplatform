@@ -24,6 +24,11 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#endif
         builder.HasIndex(p => p.ShortId).IsUnique();
 
+        builder.HasOne(p => p.Category)
+               .WithMany(c => c.Products)
+               .HasForeignKey(p => p.CategoryId)
+               .OnDelete(DeleteBehavior.Restrict);
+
         //#if (multitenant == true)
         void HasData(Product product)
         {
@@ -69,7 +74,9 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#endif
 
         var defaultVersion = 1;
-        DateTimeOffset baseDate = DateTimeOffset.Parse("2022-07-12", styles: DateTimeStyles.AssumeUniversal);
+        // InvariantCulture is load bearing: OnModelCreating runs on whatever culture is ambient, and without it this
+        // literal throws under ar-SA (UmAlQura) and parses as the year 2643 under fa-IR (Persian calendar).
+        DateTimeOffset baseDate = DateTimeOffset.Parse("2022-07-12", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
 
         // --- Benz Entries (19 cars) ---
         // https://www.mercedes-benz.ca/en/all-vehicles

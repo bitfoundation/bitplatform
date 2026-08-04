@@ -86,9 +86,22 @@ public partial class AddOrEditProductPage
 
     private async Task HandleOnUploadComplete(BitFileInfo fileInfo)
     {
-        product.HasPrimaryImage = true;
-        product.PrimaryImageAltText = fileInfo.Message;
-        isManagingFile = false;
+        try
+        {
+            if (Id is not null)
+            {
+                product = await productController.Get(Id.Value, CurrentCancellationToken);
+            }
+            else
+            {
+                product.HasPrimaryImage = true;
+                product.PrimaryImageAltText = fileInfo.Message;
+            }
+        }
+        finally
+        {
+            isManagingFile = false;
+        }
     }
 
     private async Task HandleOnUploadFailed(BitFileInfo fileInfo)

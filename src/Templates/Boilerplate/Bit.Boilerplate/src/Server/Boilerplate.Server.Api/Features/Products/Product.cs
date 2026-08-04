@@ -19,8 +19,8 @@ public partial class Product
     [Range(0, int.MaxValue)]
     public int ShortId { get; set; }
         //#if (database != "PostgreSQL" && database != "SqlServer")
-        = Environment.TickCount; // Using a database sequence for this is recommended.
-                                 //#endif
+        = Random.Shared.Next(10_051, int.MaxValue); // Using a database sequence for this is recommended. 10_051 is where the seeded products end.
+                                                    //#endif
 
     [Required, MaxLength(64)]
     public string? Name { get; set; }
