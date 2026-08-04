@@ -334,7 +334,7 @@ private string? uncontrolledValue = ""A"";";
     }
 </style>
 
-<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
     
     <BitChoiceGroup Label=""Pick one"" Required TItem=""BitChoiceGroupOption<string>"" TValue=""string"" @bind-Value=""validationModel.Value"">

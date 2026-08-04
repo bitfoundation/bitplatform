@@ -148,7 +148,7 @@
     <br />
     @if (string.IsNullOrEmpty(successMessage))
     {
-        <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+        <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" novalidate>
             <DataAnnotationsValidator />
 
             <BitChoiceGroup Label="Pick one" Required Items="basicItems" @bind-Value="validationModel.Value" />

@@ -545,7 +545,7 @@ private readonly List<Order> basicCustoms =
     }
 </style>
 
-<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
     
     <BitChoiceGroup Label=""Pick one"" Required @bind-Value=""validationModel.Value""

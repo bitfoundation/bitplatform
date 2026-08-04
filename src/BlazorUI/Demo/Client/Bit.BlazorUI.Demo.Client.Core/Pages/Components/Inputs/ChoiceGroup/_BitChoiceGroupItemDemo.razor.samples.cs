@@ -374,7 +374,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
     }
 </style>
 
-<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
     
     <BitChoiceGroup Label=""Pick one"" Required Items=""basicItems"" @bind-Value=""validationModel.Value"" />
