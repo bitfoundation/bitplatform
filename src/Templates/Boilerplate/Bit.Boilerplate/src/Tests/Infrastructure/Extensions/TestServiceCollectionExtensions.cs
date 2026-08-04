@@ -1,7 +1,5 @@
 using Boilerplate.Tests.Services;
 using Boilerplate.Shared.Features.Statistics;
-using Boilerplate.Tests.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Infrastructure;
 

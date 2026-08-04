@@ -1135,6 +1135,12 @@
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>无密码登录禁用成功</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>无法验证您的通行密钥，因此未将其移除。请重试。</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>该通行密钥在服务器上已不存在；已从此设备中移除。</value>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>清除</value>
   </data>
@@ -1331,6 +1337,9 @@
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>您不能删除此 SuperAdmin 用户</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>您无法撤销此超级管理员用户的会话</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>您不能删除当前会话</value>
   </data>
@@ -1354,6 +1363,9 @@
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>页面 URL</value>
+  </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>页面 URL 必须是应用内的相对 URL，例如 /products。</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>您未获授权</value>
@@ -1425,6 +1437,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>租户名称 '{0}' 已被占用。</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>租户名称 '{0}' 为保留名称，无法使用。</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>未找到租户。</value>
   </data>
@@ -1448,6 +1463,9 @@
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>域名 '{0}' 已被占用。</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>域名 '{0}' 为保留域名，无法使用。</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>您尚未选择任何租户。切换到您的某个租户，或创建一个新租户即可开始。</value>

@@ -26,17 +26,29 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="System.Net" />
         <Using Include="System.Net.Http.Headers" />
         <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Text.RegularExpressions" />
         <Using Include="Boilerplate.Shared" />
+        <Using Include="Boilerplate.Shared.Features.Identity" />
         <Using Include="Boilerplate.Server.Web" />
+        <Using Include="Boilerplate.Server.Api.Infrastructure.Data" />
+        <Using Include="Boilerplate.Server.Api.Features.Identity.Models" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
         <Using Include="Boilerplate.Tests.Infrastructure" />
+        <Using Include="Boilerplate.Tests.Infrastructure.Services" />
+        <Using Include="Boilerplate.Tests.Features.Identity" />
         <Using Include="Microsoft.AspNetCore.Http" />
         <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Microsoft.EntityFrameworkCore" />
+        <Using Include="Microsoft.Extensions.Hosting" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
         <Using Include="Microsoft.Playwright" />
         <Using Include="Microsoft.Playwright.MSTest" />
         <Using Include="FakeItEasy" />
+        <Using Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Boilerplate.Tests.Infrastructure.Components" />
     </ItemGroup>
 
 </Project>

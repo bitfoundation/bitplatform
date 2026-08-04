@@ -6,6 +6,12 @@ public partial class TenantDto
     /// <summary>
     /// The tenant's name must match sub domain name restrictions, so the tenant
     /// can get resolved from the sub domain for anonymous requests (See TenantProvider).
+    /// <para>
+    /// SECURITY: this is a <b>shape</b> check only, and it also runs client-side. It deliberately does not know
+    /// which labels are already taken by the deployment itself - the server rejects those separately
+    /// (See <c>ReservedTenantNames</c>), because the name is the sub domain resolution key and creating a
+    /// tenant is self-service. Do not treat matching this pattern as sufficient.
+    /// </para>
     /// </summary>
     public const string NAME_REGEX_PATTERN = "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$";
 

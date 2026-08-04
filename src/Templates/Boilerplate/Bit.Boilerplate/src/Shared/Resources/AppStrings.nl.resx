@@ -1135,6 +1135,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Wachtwoordloze aanmelding succesvol uitgeschakeld</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>Je toegangssleutel kon niet worden geverifieerd en is daarom niet verwijderd. Probeer het opnieuw.</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>Deze toegangssleutel bestaat niet meer op de server; hij is van dit apparaat verwijderd.</value>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>Wissen</value>
   </data>
@@ -1331,6 +1337,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Je kunt deze SuperAdmin-gebruiker niet verwijderen</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>U kunt de sessies van deze SuperAdmin-gebruiker niet intrekken</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Je kunt je huidige sessie niet verwijderen</value>
   </data>
@@ -1354,6 +1363,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Paginage-URL</value>
+  </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>De pagina-URL moet een relatieve URL binnen de app zijn, zoals /products.</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>Je bent niet geautoriseerd</value>
@@ -1425,6 +1437,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>De tenantnaam '{0}' is al in gebruik.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>De tenantnaam '{0}' is gereserveerd en kan niet worden gebruikt.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Tenant kon niet worden gevonden.</value>
   </data>
@@ -1448,6 +1463,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Het domein '{0}' is al in gebruik.</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Het domein '{0}' is gereserveerd en kan niet worden gebruikt.</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Je hebt nog geen tenant geselecteerd. Wissel naar een van je tenants of maak een nieuwe aan om te beginnen.</value>

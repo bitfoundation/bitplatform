@@ -58,6 +58,7 @@
     <Project Path="BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
     <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
   </Folder>
@@ -78,19 +79,22 @@
   </Folder>
   <Folder Name="/Bswup/">
     <File Path="Bswup/README.md" />
-    <Project Path="Bswup/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
-    <Project Path="Bswup/Bit.Bswup.NewDemo/Bit.Bswup.NewDemo.Client/Bit.Bswup.NewDemo.Client.csproj" />
-    <Project Path="Bswup/Bit.Bswup.NewDemo/Bit.Bswup.NewDemo/Bit.Bswup.NewDemo.csproj" />
     <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
+    <Project Path="Bswup/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
   </Folder>
-  <Folder Name="/Bswup/FullDemo/">
-    <Project Path="Bswup/FullDemo/Client/Bit.Bswup.Demo.Client.csproj" />
-    <Project Path="Bswup/FullDemo/Server/Bit.Bswup.Demo.Server.csproj" />
+  <Folder Name="/Bswup/Demos/">
+    <Project Path="Bswup/Demos/BasicDemo/Bit.Bswup.BasicDemo.csproj" />
+  </Folder>
+  <Folder Name="/Bswup/Demos/FullDemo/">
+    <Project Path="Bswup/Demos/FullDemo/Client/Bit.Bswup.FullDemo.Client.csproj" />
+    <Project Path="Bswup/Demos/FullDemo/Server/Bit.Bswup.FullDemo.Server.csproj" />
   </Folder>
   <Folder Name="/Brouter/">
     <File Path="Brouter/README.md" />
+    <Project Path="Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj" />
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
   </Folder>
+  <Folder Name="/Brouter/Demos/" />
   <Folder Name="/Brouter/Demos/Auto/">
     <Project Path="Brouter/Demos/Auto/Bit.Brouter.Demos.Auto/Bit.Brouter.Demos.Auto.csproj" />
     <Project Path="Brouter/Demos/Auto/Bit.Brouter.Demos.Auto.Client/Bit.Brouter.Demos.Auto.Client.csproj" />

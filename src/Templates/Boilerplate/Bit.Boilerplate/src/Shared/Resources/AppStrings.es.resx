@@ -1135,6 +1135,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Inicio de sesión sin contraseña deshabilitado exitosamente</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>No se pudo verificar tu clave de acceso, por lo que no se eliminó. Inténtalo de nuevo.</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>Esta clave de acceso ya no existe en el servidor; se ha eliminado de este dispositivo.</value>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>Limpiar</value>
   </data>
@@ -1331,6 +1337,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>No puedes eliminar este usuario SuperAdmin</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>No puedes revocar las sesiones de este usuario SuperAdmin</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu sesión actual</value>
   </data>
@@ -1354,6 +1363,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>URL de la página</value>
+  </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>La URL de la página debe ser una URL relativa dentro de la aplicación, como /products.</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>No estás autorizado</value>
@@ -1425,6 +1437,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>El nombre de inquilino '{0}' ya está en uso.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>El nombre de inquilino '{0}' está reservado y no se puede utilizar.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>No se pudo encontrar el inquilino.</value>
   </data>
@@ -1448,6 +1463,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>El dominio '{0}' ya está en uso.</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>El dominio '{0}' está reservado y no se puede utilizar.</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Aún no has seleccionado ningún inquilino. Cambia a uno de tus inquilinos o crea uno nuevo para comenzar.</value>

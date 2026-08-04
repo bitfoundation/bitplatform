@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignUp;
 
@@ -11,7 +9,30 @@ public partial class SignUpPage
 
     private bool isWaiting;
     private Action? pubSubUnsubscribe;
+    private AppDataAnnotationsValidator? validatorRef;
+
+    private const string EmailTabKey = nameof(SignUpRequestDto.Email);
+    private const string PhoneNumberTabKey = nameof(SignUpRequestDto.PhoneNumber);
     private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.CreateVersion7().ToString() };
+
+    /// <summary>
+    /// Both tabs bind to the same model, so a value typed on one and then left behind would still be submitted - from
+    /// a text box the user can no longer see. An account is meant to be registered with a single identifier and grow
+    /// the second one later from Settings, so only the tab in view is kept.
+    /// </summary>
+    private void CleanModel(BitPivotItem tab)
+    {
+        if (tab.Key is PhoneNumberTabKey)
+        {
+            signUpModel.Email = null;
+            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignUpRequestDto.Email)));
+        }
+        else
+        {
+            signUpModel.PhoneNumber = null;
+            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignUpRequestDto.PhoneNumber)));
+        }
+    }
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;
@@ -93,7 +114,10 @@ public partial class SignUpPage
             pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
                 // External sign-in creates a new user automatically, so we only need to navigate to the sign-in page to automatically sign-in the user by provided OTP.
-                NavigationManager.NavigateTo(uriString!.ToString()!, replace: true);
+                var url = uriString?.ToString();
+                if (Uri.IsAppRelativeUrl(url) is false) return;
+
+                NavigationManager.NavigateTo(url, replace: true);
             });
 
             var port = localHttpServer.EnsureStarted();

@@ -14,8 +14,6 @@ public class StartChatRequest
     /// When the chat panel is reopened, the client must resend the chat history to the server.
     /// </summary>
     public List<AiChatMessage> ChatMessagesHistory { get; set; } = [];
-
-    public Uri? ServerApiAddress { get; set; } // Getting the api address in ChatBot Hub has some complexities, specially when using Azure SignalR or being behind a reverse proxy, so we pass it from the client side.
 }
 
 public enum AiChatMessageRole
@@ -29,7 +27,11 @@ public class AiChatMessage
     public AiChatMessageRole Role { get; set; }
     public string? Content { get; set; }
 
-    [JsonIgnore]
+    /// <summary>
+    /// False for an answer that was cancelled or failed mid-stream. The client keeps such a message on screen
+    /// (tagged as canceled), but the server drops it from the history it sends to the model, so a truncated
+    /// sentence is never replayed as a complete previous answer.
+    /// </summary>
     public bool Successful { get; set; } = true;
 }
 

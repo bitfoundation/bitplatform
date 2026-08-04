@@ -10,7 +10,6 @@ using Boilerplate.Client.Web;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Server.Web.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 

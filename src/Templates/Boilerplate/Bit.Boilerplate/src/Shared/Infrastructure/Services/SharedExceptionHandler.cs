@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 
@@ -23,7 +22,7 @@ public partial class SharedExceptionHandler
     {
         var exceptionMessageToLog = exception.Message;
 
-        if (exception.InnerException is not null)
+        if (exception is not AggregateException && exception.InnerException is not null)
             exceptionMessageToLog += $"{Environment.NewLine}{GetExceptionMessageToLog(exception.InnerException)}";
 
         if (exception is AggregateException aggregateException)
@@ -54,7 +53,7 @@ public partial class SharedExceptionHandler
         if (exception is ClientNotSupportedException)
             return true; // Example of an exception that we might want to ignore.
 
-        if (exception.InnerException is not null && IgnoreException(exception.InnerException))
+        if (exception is not AggregateException && exception.InnerException is not null && IgnoreException(exception.InnerException))
             return true;
 
         if (exception is AggregateException aggExp)
@@ -73,6 +72,8 @@ public partial class SharedExceptionHandler
     {
         var data = new Dictionary<string, object?>();
 
+        var isTransientException = IsTransientException(exp);
+
         foreach (var item in exp.Data.Keys.Cast<string>()
             .Zip(exp.Data.Values.Cast<object?>())
             .ToDictionary(item => item.First, item => item.Second))
@@ -90,7 +91,7 @@ public partial class SharedExceptionHandler
             }
         }
 
-        if (exp.InnerException is not null)
+        if (exp is not AggregateException && exp.InnerException is not null)
         {
             var innerData = GetExceptionData(exp.InnerException);
 
@@ -129,7 +130,7 @@ public partial class SharedExceptionHandler
             data["KnownException"] = true;
         }
 
-        if (IsTransientException(exp))
+        if (isTransientException)
         {
             data["TransientException"] = true;
         }
@@ -143,7 +144,7 @@ public partial class SharedExceptionHandler
     {
         return (exp is TimeoutException)
              || (exp is WebException webExp && webExp.WithData("Status", webExp.Status).Status is WebExceptionStatus.ConnectFailure)
-             || (exp?.InnerException is not null && IsTransientException(exp.InnerException))
+             || (exp is not AggregateException && exp?.InnerException is not null && IsTransientException(exp.InnerException))
              || (exp is HttpIOException httpIOExp && httpIOExp.WithData("HttpRequestError", httpIOExp.HttpRequestError).HttpRequestError is not HttpRequestError.UserAuthenticationError)
              || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsTransientException))
              || (exp is SocketException sockExp && sockExp.WithData("SocketErrorCode", sockExp.SocketErrorCode).SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut)

@@ -1,14 +1,6 @@
 //+:cnd:noEmit
-using Humanizer;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Server.Api.Features.Identity.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
@@ -45,7 +37,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
     /// These comments will also be used in swagger/scalar docs and ui.
     /// </summary>
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -89,13 +81,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
     }
 
-    [HttpPost, Produces<SignInResponseDto>()]
+    [HttpPost, Produces<SignInResponseDto>(), EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
         var user = await userManager.FindUser(request)
-                    ?? await userManager.CreateUserWithDemoRole(request, request.Password); // Check out SignInModalService for more details
+                    ?? await userManager.CreateUserWithDemoRole(request); // Check out SignInModalService for more details
 
         await SignIn(request, user, cancellationToken);
     }
@@ -143,16 +135,16 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         if (signInResult.IsLockedOut)
-        {
-            var tryAgainIn = (user.LockoutEnd! - TimeProvider.GetUtcNow()).Value;
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", tryAgainIn);
-        }
+            throw UserLockedOutException(user);
 
         if (signInResult.RequiresTwoFactor)
         {
             if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
             {
                 signInResult = await TwoFactorSignIn(user, request.TwoFactorCode);
+
+                if (signInResult.IsLockedOut)
+                    throw UserLockedOutException(user);
             }
             else
             {
@@ -169,18 +161,25 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await DbContext.SaveChangesAsync(cancellationToken);
     }
 
+    private BadRequestException UserLockedOutException(User user)
+    {
+        var tryAgainIn = (user.LockoutEnd! - TimeProvider.GetUtcNow()).Value;
+        return new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithData("UserId", user.Id).WithExtensionData("TryAgainIn", tryAgainIn);
+    }
+
     private async Task<Microsoft.AspNetCore.Identity.SignInResult> TwoFactorSignIn(User user, string code)
     {
         var result = await signInManager.TwoFactorRecoveryCodeSignInAsync(code);
 
         if (result.Succeeded is false)
         {
-            result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, code, false, false);
-        }
+            var authenticatorProvider = userManager.Options.Tokens.AuthenticatorTokenProvider;
 
-        if (result.Succeeded is false)
-        {
-            result = await signInManager.TwoFactorAuthenticatorSignInAsync(code, false, false);
+            result = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider, code)
+                ? await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, code, false, false)
+                : await userManager.VerifyTwoFactorTokenAsync(user, authenticatorProvider, code)
+                    ? await signInManager.TwoFactorAuthenticatorSignInAsync(code, false, false)
+                    : await FailedTwoFactorSignIn(user);
         }
 
         if (result.Succeeded is true && user.OtpRequestedOn != null)
@@ -193,6 +192,19 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Counts exactly one failed attempt for a two-factor code that matched no provider, mirroring what a single
+    /// SignInManager two-factor call would have done.
+    /// </summary>
+    private async Task<Microsoft.AspNetCore.Identity.SignInResult> FailedTwoFactorSignIn(User user)
+    {
+        await userManager.AccessFailedAsync(user);
+
+        return await userManager.IsLockedOutAsync(user)
+            ? Microsoft.AspNetCore.Identity.SignInResult.LockedOut
+            : Microsoft.AspNetCore.Identity.SignInResult.Failed;
     }
 
     //#if (multitenant == true)
@@ -243,9 +255,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var maxPrivilegedSessionsClaimValues = await userClaimsService.GetClaimValues<int?>(userId, AppClaimTypes.MAX_PRIVILEGED_SESSIONS, cancellationToken);
 
-        var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v == -1); // -1 means no limit
+        var maxPrivilegedSessionsCount = maxPrivilegedSessionsClaimValues.Max() ?? AppSettings.Identity.MaxPrivilegedSessionsCount;
 
-        var maxPrivilegedSessionsCount = hasUnlimitedPrivilegedSessions ? -1 : maxPrivilegedSessionsClaimValues.Max() ?? AppSettings.Identity.MaxPrivilegedSessionsCount; // If no claim is found, use the default value from app settings.
+        var hasUnlimitedPrivilegedSessions = maxPrivilegedSessionsClaimValues.Any(v => v is AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS)
+            || maxPrivilegedSessionsCount is AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS;
+
+        if (hasUnlimitedPrivilegedSessions)
+        {
+            maxPrivilegedSessionsCount = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS;
+        }
 
         var isPrivileged = hasUnlimitedPrivilegedSessions ||
             userSession.Privileged is true || // Once session gets privileged, it stays privileged until gets deleted.
@@ -289,15 +307,49 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 throw new UnauthorizedException().WithData("Reason", "Refresh token is expired.");
 
             // Refresh token rotation detection: If the refresh token is used more than once, then it means the token has been compromised, so we should reject the request.
+            // The first tolerance absorbs the gap between RenewedOn being written here and the replacement token being
+            // stamped by AppJwtSecureDataFormat.Protect afterwards. The second one covers a lost rotation response:
+            // that client still holds the superseded token, and RetryDelegatingHandler re-sends the request within
+            // seconds, so a rotation that just happened is not yet treated as reuse.
             long issuedAtClaimValue = refreshTicket.Principal.GetClaimValue<long>("iat");
-            long difference = Math.Abs(issuedAtClaimValue - (userSession.RenewedOn ?? userSession.StartedOn));
-            if (difference > 30) // Allow 30s window to prevent lockouts caused by lost rotation responses.
+            long lastRotatedOn = userSession.RenewedOn ?? userSession.StartedOn;
+            long difference = Math.Abs(issuedAtClaimValue - lastRotatedOn);
+            if (difference > 30 && (TimeProvider.GetUtcNow().ToUnixTimeSeconds() - lastRotatedOn) > 10)
                 throw new UnauthorizedException().WithData("Reason", "Refresh token rotation detected.");
 
             var user = userSession.User!;
 
             if (await signInManager.ValidateSecurityStampAsync(userSession.User, securityStamp) is false)
                 throw new UnauthorizedException().WithData("Reason", "Security stamp has been updated (for example after 2fa configuration)");
+
+            var elevatedSessionExpiresOn = refreshTicket.Principal.GetElevatedSessionExpiresOn();
+
+            if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
+            {
+                if (await userManager.IsLockedOutAsync(user))
+                    throw UserLockedOutException(user);
+
+                var elevatedAccessTokenExpired = user.ElevatedAccessTokenRequestedOn is null ||
+                                                 (TimeProvider.GetUtcNow() - user.ElevatedAccessTokenRequestedOn.Value) > AppSettings.Identity.BearerTokenExpiration;
+
+                if (elevatedAccessTokenExpired && user.TwoFactorEnabled is false)
+                    throw new BadRequestException(nameof(AppStrings.ExpiredToken)).WithData("UserId", user.Id);
+
+                var tokenIsValid = (elevatedAccessTokenExpired is false
+                        && await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn!.Value.ToUniversalTime()}"), request.ElevatedAccessToken))
+                    || await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.ElevatedAccessToken);
+                if (tokenIsValid is false)
+                {
+                    await userManager.AccessFailedAsync(user);
+                    throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData("UserId", user.Id);
+                }
+                else
+                {
+                    user.ElevatedAccessTokenRequestedOn = null; // invalidates token
+                    await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+                    elevatedSessionExpiresOn = NewElevatedSessionExpiresOn();
+                }
+            }
 
             //#if (multitenant == true)
             // The tenant claim gets read from the user session (not from the passed refresh token), which is kept in sync
@@ -332,28 +384,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             }
             //#endif
 
-            // Carry the elevated session forward across refresh token calls (e.g. tenant switches) instead of losing it.
-            // Since the claim holds the moment until which the session stays elevated, a passed (stale) value is harmless
-            // because the ELEVATED_ACCESS policy re-checks it against the current time (see AuthPolicies.ELEVATED_ACCESS).
-            var elevatedSessionExpiresOn = refreshTicket.Principal.GetElevatedSessionExpiresOn();
-
-            if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
-            {
-                var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"), request.ElevatedAccessToken)
-                    || await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.ElevatedAccessToken);
-                if (tokenIsValid is false)
-                {
-                    await userManager.AccessFailedAsync(user);
-                    throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData("UserId", user.Id);
-                }
-                else
-                {
-                    user.ElevatedAccessTokenRequestedOn = null; // invalidates token
-                    await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
-                    elevatedSessionExpiresOn = NewElevatedSessionExpiresOn();
-                }
-            }
-
             if (elevatedSessionExpiresOn is not null)
             {
                 userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, elevatedSessionExpiresOn.Value.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)));
@@ -370,23 +400,22 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 
+            await DbContext.SaveChangesAsync(cancellationToken);
+
             return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
         }
         catch (UnauthorizedException) when (userSession is not null)
         {
             DbContext.UserSessions.Remove(userSession);
-            throw;
-        }
-        finally
-        {
             await DbContext.SaveChangesAsync(cancellationToken);
+            throw;
         }
     }
 
     /// <summary>
     /// For either otp or magic link
     /// </summary>
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -429,7 +458,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         //#if (signalR == true)
         var userConnectionIds = await DbContext.UserSessions
-            .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id)
+            .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
         sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SharedAppMessages.SHOW_MESSAGE, pushMessage, null, cancellationToken));
@@ -446,7 +475,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await Task.WhenAll(sendMessagesTasks);
     }
 
-    [HttpPost]
+    [HttpPost, EnableRateLimiting(AppRateLimitPolicies.IDENTITY)]
     public async Task SendTwoFactorToken(SignInRequestDto request, CancellationToken cancellationToken)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -502,7 +531,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             //#if (signalR == true)
             var userConnectionIds = await DbContext.UserSessions
-                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id)
+                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.SignalRConnectionId != null)
                 .Select(us => us.SignalRConnectionId!)
                 .ToArrayAsync(cancellationToken);
             sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken));

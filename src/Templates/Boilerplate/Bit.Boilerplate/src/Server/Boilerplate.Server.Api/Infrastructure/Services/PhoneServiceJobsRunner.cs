@@ -36,7 +36,7 @@ public partial class PhoneServiceJobsRunner
                 { "JobId", context.BackgroundJob.Id },
                 { "TwilioErrorCode", (exp as ApiException)?.Code }
             });
-            if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
+            if (cancellationToken.IsCancellationRequested || exp is not KnownException)
                 throw; // To retry the job
         }
     }

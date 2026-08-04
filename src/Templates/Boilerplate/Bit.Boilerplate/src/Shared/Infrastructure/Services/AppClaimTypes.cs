@@ -18,6 +18,12 @@ public class AppClaimTypes
     public const string MAX_PRIVILEGED_SESSIONS = "mx-p-s";
 
     /// <summary>
+    /// The <see cref="MAX_PRIVILEGED_SESSIONS"/> value meaning "no limit": every session of the user is privileged,
+    /// no matter how many devices she signs in from. It is what the built-in admin roles carry.
+    /// </summary>
+    public const int UNLIMITED_PRIVILEGED_SESSIONS = -1;
+
+    /// <summary>
     /// Unix time seconds: the moment until which the session stays elevated (stored like the JWT's exp claim).
     /// The session is considered elevated as long as the current time hasn't passed this value, so a stale
     /// (already-passed) value is harmless and can be safely carried across refresh token calls.

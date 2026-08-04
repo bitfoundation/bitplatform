@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
 namespace Boilerplate.Client.Core.Components.Pages.Settings.Account;
 
 public partial class ChangePhoneNumberTab
@@ -52,6 +49,10 @@ public partial class ChangePhoneNumberTab
     private async Task SendToken()
     {
         if (isWaiting || sendModel.PhoneNumber == PhoneNumber) return;
+
+        // Proving the NEW number (the code sent below) is only half of it - the server also requires the user to prove
+        // she still holds the CURRENT identifiers, by quoting a code sent to them. That is what elevated access is.
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
         isWaiting = true;
 

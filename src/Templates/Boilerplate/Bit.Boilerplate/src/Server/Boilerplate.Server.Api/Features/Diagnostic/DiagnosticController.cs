@@ -1,11 +1,5 @@
 //+:cnd:noEmit
-using System.Text;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 using Boilerplate.Shared.Features.Diagnostic;
-using Boilerplate.Server.Api.Features.Identity.Models;
 //#if (signalR == true || notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
@@ -32,28 +26,30 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
 
         result.AppendLine($"Client IP: {HttpContext.Connection.RemoteIpAddress}");
 
+        result.AppendLine($"IsFromCDN: {Request.IsFromCDN().ToString().ToLowerInvariant()}");
+
         result.AppendLine($"Trace => {Request.HttpContext.TraceIdentifier}");
 
+        // This endpoint must serve anonymous callers: the diagnostic modal is reachable by anonymous visitors
+        // (7 header taps / Ctrl+Shift+X), and an anonymous visitor's own push subscription / SignalR connection
+        // is not owned by any UserSession. So the rule is ownership, not authentication: an identifier that
+        // belongs to nobody is the caller's own and passes; an identifier that belongs to a UserSession may only
+        // be acted on by that same session.
         var isAuthenticated = User.IsAuthenticated();
-        Guid? userSessionId = null;
-        UserSession? userSession = null;
-
-        if (isAuthenticated)
-        {
-            userSessionId = User.GetSessionId();
-            userSession = await DbContext
-                .UserSessions.SingleAsync(us => us.Id == userSessionId, cancellationToken);
-        }
+        var callerUserSessionId = isAuthenticated ? User.GetSessionId() : (Guid?)null;
 
         result.AppendLine($"IsAuthenticated: {isAuthenticated.ToString().ToLowerInvariant()}");
 
         //#if (notification == true)
         if (string.IsNullOrEmpty(pushNotificationSubscriptionDeviceId) is false)
         {
-            var subscription = await DbContext.PushNotificationSubscriptions.Include(us => us.UserSession)
+            var subscription = await DbContext.PushNotificationSubscriptions
                 .FirstOrDefaultAsync(d => d.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
 
             result.AppendLine($"Subscription exists: {(subscription is not null).ToString().ToLowerInvariant()}");
+
+            if (subscription?.UserSessionId is not null && subscription.UserSessionId != callerUserSessionId)
+                throw new ResourceNotFoundException().WithData("Reason", "The push notification subscription belongs to another user session.");
 
             await pushNotificationService.RequestPush(new()
             {
@@ -69,6 +65,14 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         //#if (signalR == true)
         if (string.IsNullOrEmpty(signalRConnectionId) is false)
         {
+            var connectionOwnerUserSessionId = await DbContext.UserSessions
+                .Where(us => us.SignalRConnectionId == signalRConnectionId)
+                .Select(us => (Guid?)us.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (connectionOwnerUserSessionId is not null && connectionOwnerUserSessionId != callerUserSessionId)
+                throw new ResourceNotFoundException().WithData("Reason", "The SignalR connection belongs to another user session.");
+
             var success = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", new Dictionary<string, string?> { { "pageUrl", PageUrls.Terms }, { "action", "testAction" } }, cancellationToken);
             if (success is false) // Client would return false if it's unable to show the message with custom action.
             {

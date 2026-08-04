@@ -4,6 +4,23 @@ public partial class _BitChoiceGroupItemDemo
 {
     private string oneWayValue = "A";
     private string twoWayValue = "A";
+    private string readOnlyValue = "A";
+    private bool showAutoFocus;
+    private string? uncontrolledValue = "A";
+
+    private string? changedValue;
+    private string? clickedItem;
+    private string? focusedItem;
+    private string? blurredItem;
+
+    private int dynamicCounter = 3;
+    private string? dynamicValue = "1";
+    private List<BitChoiceGroupItem<string>> dynamicItems =
+    [
+        new() { Text = "Item 1", Value = "1" },
+        new() { Text = "Item 2", Value = "2" },
+        new() { Text = "Item 3", Value = "3" }
+    ];
 
     private string itemTemplateValue = "Day";
     private string itemTemplateValue2 = "Day";
@@ -95,6 +112,41 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Item D", Value = "D", Class = "custom-item" }
     ];
 
+    private readonly List<BitChoiceGroupItem<string>> prefixItems =
+    [
+        new() { Text = "Standard", Value = "Standard", Prefix = "$0 — " },
+        new() { Text = "Express", Value = "Express", Prefix = "$10 — " },
+        new() { Text = "Overnight", Value = "Overnight", Prefix = "$25 — " }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> suffixItems =
+    [
+        new() { Text = "Standard", Value = "Standard", Suffix = "Free" },
+        new() { Text = "Express", Value = "Express", Suffix = "$10" },
+        new() { Text = "Overnight", Value = "Overnight", Suffix = "$25" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> descriptionItems =
+    [
+        new() { Text = "Daily", Value = "Daily", Description = "Backs up every night at 2 AM." },
+        new() { Text = "Weekly", Value = "Weekly", Description = "Backs up every Sunday at 2 AM." },
+        new() { Text = "Monthly", Value = "Monthly", Description = "Backs up on the first day of each month." }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> deploymentItems =
+    [
+        new() { Text = "Development", Value = "Development" },
+        new() { Text = "Staging", Value = "Staging" },
+        new() { Text = "Production", Value = "Production" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> titleItems =
+    [
+        new() { Text = "1 h", Value = "1h", Title = "Delivered within one hour of dispatch" },
+        new() { Text = "24 h", Value = "24h", Title = "Delivered within one business day" },
+        new() { Text = "72 h", Value = "72h", Title = "Delivered within three business days" }
+    ];
+
     private readonly List<BitChoiceGroupItem<string>> itemLabelTemplates =
     [
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
@@ -117,6 +169,24 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "بخش ت", Value = "D" }
     ];
 
+
+    private void AddDynamicItem()
+    {
+        dynamicCounter++;
+        dynamicItems = [.. dynamicItems, new BitChoiceGroupItem<string> { Text = $"Item {dynamicCounter}", Value = $"{dynamicCounter}" }];
+    }
+
+    private void RemoveDynamicItem()
+    {
+        if (dynamicItems.Count <= 1) return;
+
+        dynamicItems = [.. dynamicItems.Take(dynamicItems.Count - 1)];
+    }
+
+    private void ReverseDynamicItems()
+    {
+        dynamicItems = [.. Enumerable.Reverse(dynamicItems)];
+    }
 
     private void HandleValidSubmit()
     {

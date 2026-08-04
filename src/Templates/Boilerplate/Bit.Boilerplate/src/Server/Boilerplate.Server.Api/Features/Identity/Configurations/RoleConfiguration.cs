@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Features.Identity.Models;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
@@ -28,6 +27,14 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.HasIndex(role => role.NormalizedName).IsUnique(false);
         builder.HasUniqueIndexOnNullable(role => new { role.Name, role.TenantId }, role => role.TenantId);
 
+        //#if (database != "MySql")
+        //#if (IsInsideProjectTemplate == true)
+        // MySQL has no filtered indexes: MySqlMigrationsSqlGenerator silently DROPS the filter, which would turn this
+        // into an unconditional UNIQUE(Name) - and since every tenant gets its own t-admin and demo role
+        // (See TenantController.Create), creating the second tenant would then fail with a duplicate-key error.
+        // Under MySql the uniqueness of global role names is therefore left to AppRoleValidator, which already scopes
+        // role names by TenantId.
+        //#endif
         builder.HasIndex(role => role.Name)
             //#if (database == "PostgreSQL")
             .HasFilter($"\"{nameof(Role.TenantId)}\" IS NULL")
@@ -35,6 +42,7 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
             .HasFilter($"[{nameof(Role.TenantId)}] IS NULL")
             //#endif
             .IsUnique();
+        //#endif
         //#endif
         //#if (IsInsideProjectTemplate == true)
         /*

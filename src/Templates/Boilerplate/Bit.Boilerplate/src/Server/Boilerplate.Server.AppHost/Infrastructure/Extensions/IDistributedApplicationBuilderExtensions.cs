@@ -14,6 +14,17 @@ public static class IDistributedApplicationBuilderExtensions
 {
     extension(IDistributedApplicationBuilder builder)
     {
+        /// <summary>
+        /// Adds a Keycloak identity server with the development realm of the <c>./Infrastructure/Realms</c> folder imported into it.
+        /// https://aspire.dev/integrations/security/keycloak/
+        /// </summary>
+        public IResourceBuilder<KeycloakResource> AddKeycloak()
+        {
+            return builder.AddKeycloak("keycloak", 8080)
+                .WithDataVolume()
+                .WithRealmImport("./Infrastructure/Realms");
+        }
+
         //#if (redis == true)
         /// <summary>
         /// Adds a Redis instance configured for FusionCache hybrid caching (L2 cache) and SignalR backplane.
@@ -216,6 +227,37 @@ public static class IDistributedApplicationBuilderExtensions
                 .WithReference(serverWebProject, tunnel);
 
             return mauiapp;
+        }
+
+        /// <summary>
+        /// Gives every container of the application model a persistent lifetime, so that they are created once and are
+        /// then reused by every subsequent run, instead of being re-created and booted up from scratch each and every time.
+        /// </summary>
+        /// <remarks>
+        /// Call it right before <see cref="IDistributedApplicationBuilder.Build"/>, so all the resources are already added
+        /// while the application model is still mutable.
+        /// </remarks>
+        public IDistributedApplicationBuilder UsePersistentContainers()
+        {
+            foreach (var container in builder.Resources.OfType<ContainerResource>().ToArray())
+            {
+                builder.CreateResourceBuilder(container)
+                    .WithEnvironment(context =>
+                    {
+                        // Aspire injects its own OTLP endpoint (https://aspire.dev.internal:<port>) into the containers,
+                        // and that port is allocated again on every run. Since the environment variables are part of the
+                        // container's lifecycle key, leaving them in place makes Aspire re-create every container on each
+                        // run ("Found existing Container, but calculated lifecycle key doesn't match"), which defeats the
+                        // whole purpose. Dropping them costs us the containers' telemetry in the Aspire dashboard only.
+                        foreach (var otelVariable in context.EnvironmentVariables.Keys.Where(key => key.StartsWith("OTEL_")).ToArray())
+                        {
+                            context.EnvironmentVariables.Remove(otelVariable);
+                        }
+                    })
+                    .WithLifetime(ContainerLifetime.Persistent);
+            }
+
+            return builder;
         }
     }
 }

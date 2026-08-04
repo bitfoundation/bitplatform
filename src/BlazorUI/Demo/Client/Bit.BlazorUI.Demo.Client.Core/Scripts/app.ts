@@ -30,17 +30,19 @@ function registerSideRailScrollSpy(id: string, dotnetObj: any, methodName: strin
     const update = () => {
         frame = 0;
 
-        // The activation line sits just below the sticky header: a section scrolled to via the rail
-        // lands at 90-112px from the top (its scroll-margin), so it must fall on the active side of
-        // the line. The active section is then the last one in document order whose top has passed
-        // the line; before the first one arrives there (page top), the first entry stands in.
-        const line = 130;
+        // A section scrolled to via the rail lands with its top at its own scroll-margin-top, and
+        // that margin varies per page (7rem on plain pages, 11rem under a pivot's extra sticky bar)
+        // and per element (the chrome cards use 90px), so each section's activation line is derived
+        // from its computed scroll-margin-top plus a little slack for rounding. The active section
+        // is then the last one in document order whose top has passed its line; before the first
+        // one arrives there (page top), the first entry stands in.
         let current: string | null = null;
 
         for (const sectionId of sectionIds) {
             const element = document.getElementById(sectionId);
             if (element == null) continue;
 
+            const line = (parseFloat(getComputedStyle(element).scrollMarginTop) || 0) + 18;
             if (element.getBoundingClientRect().top <= line) {
                 current = sectionId;
             }

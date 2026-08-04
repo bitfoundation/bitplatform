@@ -1,11 +1,7 @@
-using Riok.Mapperly.Abstractions;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
-
 namespace Boilerplate.Server.Api.Features.Identity;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class IdentityMapper
@@ -19,8 +15,6 @@ public static partial class IdentityMapper
 
     [MapProperty(nameof(@User.ConcurrencyStamp), nameof(@UserDto.Version))]
     public static partial UserDto Map(this User source);
-    public static partial User Map(this UserDto source);
-    public static partial void Patch(this UserDto source, User destination);
     public static partial void Patch(this EditUserRequestDto source, User destination);
     public static partial IQueryable<UserDto> Project(this IQueryable<User> query);
 

@@ -1,7 +1,7 @@
 using Firebase.Messaging;
-using Plugin.LocalNotification;
-using Microsoft.Extensions.Logging;
 using static Android.Provider.Settings;
+
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 

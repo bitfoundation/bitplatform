@@ -1135,6 +1135,12 @@
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>تم تعطيل تسجيل الدخول بدون كلمة مرور بنجاح</value>
   </data>
+  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>تعذّر التحقق من مفتاح المرور الخاص بك، لذلك لم تتم إزالته. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>لم يعد مفتاح المرور هذا موجودًا على الخادم؛ تمت إزالته من هذا الجهاز.</value>
+  </data>
   <data name="Clear" xml:space="preserve">
     <value>مسح</value>
   </data>
@@ -1331,6 +1337,9 @@
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة مستخدم SuperAdmin هذا</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>لا يمكنك إنهاء جلسات هذا المستخدم المسؤول</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة جلساتك الحالية</value>
   </data>
@@ -1354,6 +1363,9 @@
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>رابط الصفحة</value>
+  </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>يجب أن يكون عنوان الصفحة عنوانًا نسبيًا داخل التطبيق، مثل /products.</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>غير مصرح لك</value>
@@ -1425,6 +1437,9 @@
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>اسم المستأجر '{0}' مستخدم بالفعل.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>اسم المستأجر '{0}' محجوز ولا يمكن استخدامه.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>لم يتم العثور على المستأجر.</value>
   </data>
@@ -1448,6 +1463,9 @@
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>النطاق '{0}' مستخدم بالفعل.</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>النطاق '{0}' محجوز ولا يمكن استخدامه.</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>لم تقم بتحديد أي مستأجر بعد. بدّل إلى أحد مستأجريك أو أنشئ مستأجرًا جديدًا للبدء.</value>

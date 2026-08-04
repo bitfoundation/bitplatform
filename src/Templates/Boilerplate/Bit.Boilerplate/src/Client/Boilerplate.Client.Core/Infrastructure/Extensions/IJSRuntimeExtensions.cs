@@ -1,6 +1,6 @@
 //+:cnd:noEmit
-using System.Reflection;
 //#if (notification == true)
+using Boilerplate.Shared.Features.PushNotification;
 //#endif
 
 namespace Microsoft.JSInterop;

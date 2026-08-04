@@ -1,13 +1,4 @@
 using System.Text;
-using System.Runtime.CompilerServices;
-using Boilerplate.Shared.Features.Identity;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR.Client;
-//#endif
-//#if (offlineDb == true)
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Client.Core.Infrastructure.Data;
-//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 

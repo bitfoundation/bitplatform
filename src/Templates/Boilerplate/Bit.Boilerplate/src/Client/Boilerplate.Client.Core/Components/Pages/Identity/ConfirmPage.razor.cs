@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ConfirmPage
@@ -30,6 +27,8 @@ public partial class ConfirmPage
 
     [Parameter, SupplyParameterFromQuery(Name = "phoneToken")]
     public string? PhoneTokenQueryString { get; set; }
+
+    private string GetSafeReturnUrl() => Uri.IsAppRelativeUrl(ReturnUrlQueryString, requireLeadingSlash: false) ? ReturnUrlQueryString : PageUrls.Home;
 
 
     protected override async Task OnInitAsync()
@@ -86,7 +85,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
+            NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
             isEmailConfirmed = true;
         });
@@ -98,7 +97,7 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email, ReturnUrl = ReturnUrlQueryString }, CurrentCancellationToken);
+            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email, ReturnUrl = GetSafeReturnUrl() }, CurrentCancellationToken);
         });
     }
 
@@ -116,7 +115,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
+            NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
             isPhoneConfirmed = true;
         });

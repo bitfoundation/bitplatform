@@ -10,8 +10,8 @@ import { Ads } from './Ads';
 //#endif
 
 // Expose classes on window global
-(window as any).App = App;
-(window as any).WebInteropApp = WebInteropApp;
 //#if (ads == true)
 (window as any).Ads = Ads;
 //#endif
+(window as any).App = App;
+(window as any).WebInteropApp = WebInteropApp;

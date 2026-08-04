@@ -59,7 +59,7 @@ public partial class ProductDto
         if (CultureInfoManager.InvariantGlobalization is false)
         {
             return CultureInfo.CurrentCulture.TextInfo.IsRightToLeft
-                    ? $"{Price:N0} {CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol}"
+                    ? $"{Price.ToString($"N{CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalDigits}")} {CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol}"
                     : Price.ToString("C");
         }
 

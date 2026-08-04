@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 /// <summary>

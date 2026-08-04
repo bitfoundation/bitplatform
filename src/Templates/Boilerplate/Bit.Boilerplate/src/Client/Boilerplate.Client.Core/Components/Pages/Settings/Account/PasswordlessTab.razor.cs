@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
 namespace Boilerplate.Client.Core.Components.Pages.Settings.Account;
 
 public partial class PasswordlessTab
@@ -83,30 +80,45 @@ public partial class PasswordlessTab
         }
         catch (Exception ex)
         {
-            // we can safely ignore the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
-            // In case passkey is no longer valid, the browser would show a message dialog itself.
+            // Regardless of whether the user actively cancelled the operation, it timed out, or the passkey is no
+            // longer valid, the browser throws the same generic error, so we cannot distinguish the root cause.
+            // The local flag is deliberately NOT cleared here: it used to be cleared in a `finally`, which meant a
+            // cancelled ceremony flipped the UI to "not configured" while the server-side credential was untouched
+            // and passwordless sign-in still worked - the UI asserted a security state the server did not hold.
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
+            SnackBarService.Warning(Localizer[nameof(AppStrings.DisablePasswordlessFailedMessage)]);
             return;
         }
-        finally
-        {
-            // Regardless of whether the user actively cancelled the operation, it has timed out or the passkey is no longer valid,
-            // the browser throws the same generic error.
-            // As a result, we cannot reliably distinguish the root cause of the failure.
-            // To allow the user to attempt configuration again, we must clear the stored user ID here.
-            await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
-            isConfigured = false;
-        }
 
-        var verifyResult = await identityController
+        // Proof of possession. A failed assertion does not return a value here - fido2.MakeAssertionAsync
+        // throws on the server - so reaching the next line means verification passed. The server also consumes
+        // the challenge at this point, so this assertion cannot be replayed for sign-in.
+        await identityController
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .VerifyWebAuthAssertion(assertion, CurrentCancellationToken);
 
-        await userController
-            .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
-            .DeleteWebAuthnCredential(assertion, CurrentCancellationToken);
+        try
+        {
+            await userController
+                .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
+                .DeleteWebAuthnCredential(assertion, CurrentCancellationToken);
 
-        SnackBarService.Success(Localizer[nameof(AppStrings.DisablePasswordlessSucsessMessage)]);
+            SnackBarService.Success(Localizer[nameof(AppStrings.DisablePasswordlessSucsessMessage)]);
+        }
+        catch (ResourceNotFoundException)
+        {
+            // The server has no such credential - the row was removed out of band (table wiped etc).
+            // The local flag is the ONLY thing left claiming a passkey
+            // exists, so clearing it here is the whole point: otherwise the user is stuck with a toggle that
+            // says "configured" and can never be turned off.
+            SnackBarService.Warning(Localizer[nameof(AppStrings.PasswordlessAlreadyRemovedMessage)]);
+        }
+
+        // Reached on success and on "already gone" - both mean the server holds no credential for this user.
+        // NOT reached when the ceremony itself failed or was cancelled, which is the case that used to lie to the
+        // user by reporting a revocation that never happened.
+        await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
+        isConfigured = false;
     }
 
     protected override async Task OnAfterFirstRenderAsync()

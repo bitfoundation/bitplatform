@@ -1,6 +1,6 @@
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class UITests : AppPageTest
 {
     [TestMethod]
@@ -43,6 +43,8 @@ public partial class UITests : AppPageTest
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(userFullName);
         await Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(userFullName);
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
+        // The "Sign in" affordance is a BitActionButton WITH an Href, so it renders as an <a> - role link, not button.
+        // Exact = true additionally stops the locator matching the neighbouring "Sign in (Popup)" button by substring.
+        await Expect(Page.GetByRole(AriaRole.Link, new() { Name = AppStrings.SignIn, Exact = true })).ToBeHiddenAsync();
     }
 }

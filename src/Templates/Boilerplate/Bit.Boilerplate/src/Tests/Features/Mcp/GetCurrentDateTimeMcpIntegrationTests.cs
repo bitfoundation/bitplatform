@@ -1,9 +1,6 @@
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Time.Testing;
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Client.Core.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Features.Mcp;
 
@@ -71,7 +68,7 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         // The GetCurrentDateTime tool must be advertised by the server (See [McpServerTool] in AppChatbot.Tools.cs).
         var tools = await mcpClient.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
-        Assert.IsTrue(tools.Any(t => t.Name == "GetCurrentDateTime"), "The MCP server must expose the GetCurrentDateTime tool.");
+        Assert.Contains(t => t.Name == "GetCurrentDateTime", tools, "The MCP server must expose the GetCurrentDateTime tool.");
 
         // Invoke it for the UTC timezone; the tool converts the (faked) UtcNow into that timezone and echoes it back as text.
         var result = await mcpClient.CallToolAsync("GetCurrentDateTime",
@@ -80,13 +77,13 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         var text = result.Content.OfType<TextContentBlock>().First().Text;
 
-        Assert.IsTrue(result.IsError is not true, $"The GetCurrentDateTime tool call returned an error. Result: '{text}'.");
+        Assert.AreNotEqual(true, result.IsError, $"The GetCurrentDateTime tool call returned an error. Result: '{text}'.");
 
         // The tool formats the instant with the round-trip ("o") format. Assert on a second-precision prefix of the faked
         // UTC time so the check is immune to sub-second/offset formatting differences, plus that it names the timezone.
         var expectedUtc = TimeZoneInfo.ConvertTime(fakeTimeProvider.GetUtcNow(), TimeZoneInfo.Utc);
-        Assert.IsTrue(text.Contains(expectedUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture)),
+        Assert.Contains(expectedUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture), text,
             $"Tool result did not contain the faked current date/time. Result: '{text}'.");
-        Assert.IsTrue(text.Contains("UTC"), $"Tool result did not mention the requested timezone. Result: '{text}'.");
+        Assert.Contains("UTC", text, $"Tool result did not mention the requested timezone. Result: '{text}'.");
     }
 }
