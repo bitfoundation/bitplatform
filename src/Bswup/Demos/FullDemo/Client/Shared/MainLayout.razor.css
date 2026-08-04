@@ -5,7 +5,7 @@
    like a permanent error. Scoped CSS reaches it because the element lives in this layout's
    own markup. */
 #blazor-error-ui {
-    color-scheme: light only;
+    color-scheme: only light;
     /* The demo's body sets 'color: white', which would be unreadable on lightyellow. */
     color: black;
     background: lightyellow;

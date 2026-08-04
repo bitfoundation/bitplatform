@@ -101,7 +101,9 @@
         updateInterval=""3600""
         updateOnVisibility=""true""></script>";
 
-    private const string ServiceWorkerCode = @"// wwwroot/service-worker.published.js
+    private const string ServiceWorkerCode = @"// Put the same content in BOTH files:
+// wwwroot/service-worker.js (used during development)
+// wwwroot/service-worker.published.js (used when published)
 self.assetsExclude = [/\.scp\.css$/];
 self.caseInsensitiveUrl = true;
 

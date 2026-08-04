@@ -254,6 +254,7 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
 
     vm.createContext(sandbox);
 
+    let loadedBundle = 'bit-bswup.sw.js';
     const api = {
         self: sandbox,
         handlers,
@@ -290,13 +291,14 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
         },
         /** Run the real bundle. Everything above must already be configured. */
         load(bundle = 'bit-bswup.sw.js') {
+            loadedBundle = bundle;
             vm.runInContext(readBundle(bundle), sandbox);
             return api;
         },
         /** Read a top-level function declared by the bundle (they become globals in a script). */
         fn(name) {
             const f = sandbox[name];
-            if (typeof f !== 'function') throw new Error(`bit-bswup.sw.js does not expose ${name}()`);
+            if (typeof f !== 'function') throw new Error(`${loadedBundle} does not expose ${name}()`);
             return f;
         },
         /** Decoded status messages the worker broadcast (plain string commands are kept as-is). */
@@ -411,7 +413,8 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
         for (const [k, v] of Object.entries(attrs || {})) byId[id].setAttribute(k, v);
     }
 
-    const listeners = {};
+    const listeners = {};           // window-level registrations
+    const documentListeners = {};   // document-level registrations, kept separate so tests can tell the targets apart
     const observers = [];
     const scripts = [];
     const reloads = { count: 0 };
@@ -467,15 +470,19 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
             return appContainer && sel === appContainer.selector ? appContainer.el : null;
         },
         createElement,
-        addEventListener: (t, fn) => { (listeners[t] ||= []).push(fn); },
+        addEventListener: (t, fn) => { (documentListeners[t] ||= []).push(fn); },
         removeEventListener: (t, fn) => {
-            const list = listeners[t] || [];
+            const list = documentListeners[t] || [];
             const index = list.indexOf(fn);
             if (index !== -1) list.splice(index, 1);
         },
     };
     sandbox.addEventListener = (t, fn) => { (listeners[t] ||= []).push(fn); };
-    sandbox.removeEventListener = sandbox.document.removeEventListener;
+    sandbox.removeEventListener = (t, fn) => {
+        const list = listeners[t] || [];
+        const index = list.indexOf(fn);
+        if (index !== -1) list.splice(index, 1);
+    };
     sandbox.caches = new FakeCacheStorage();
 
     vm.createContext(sandbox);
@@ -484,6 +491,7 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
         window: sandbox,
         elements: byId,
         listeners,
+        documentListeners,
         observers,
         reloads,
         registrations,
@@ -541,7 +549,8 @@ export function createPageContext({ elements = {}, appContainer = null, readySta
             };
             api.swListeners = swListeners;
         },
-        fire(type) { (listeners[type] || []).forEach(fn => fn()); },
+        /** Dispatch an event to both targets, like a bubbling browser event reaching each. */
+        fire(type) { [...(listeners[type] || []), ...(documentListeners[type] || [])].forEach(fn => fn()); },
         /** Deliver a message from the service worker to the page. */
         message(data, source) { (api.swListeners?.message || []).forEach(fn => fn({ data, source: source || { postMessage() { } } })); },
         load(bundle) {
