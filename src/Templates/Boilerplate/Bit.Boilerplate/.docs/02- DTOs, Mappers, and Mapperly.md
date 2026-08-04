@@ -297,9 +297,22 @@ public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancell
 
 **Why use Patch() instead of Map()?**
 
-- **Preserves unchanged properties**: Only updates the properties sent by the client
+- **Writes onto the tracked entity**: only the members the DTO exposes are touched, so entity-only state the DTO does
+  not carry (`CreatedOn`, `TenantId`, navigations) survives the update.
 - **Respects Entity State**: Maintains EF Core change tracking
-- **Security**: Prevents overposting attacks
+- **Security**: Prevents overposting attacks — a client cannot reach an entity member that has no DTO counterpart. For
+  a member that *is* on the DTO but must stay server-owned, add `[MapperIgnoreTarget]`; see
+  [`ProductsMapper`](/src/Server/Boilerplate.Server.Api/Features/Products/ProductsMapper.cs), which ignores
+  `Product.HasPrimaryImage` for exactly that reason.
+
+> `Patch()` is **not** a partial update. Mapperly never sees the request body, so the generated method assigns every
+> mapped member unconditionally. A member omitted from the JSON arrives as its default — `null`, `0`, or the DTO's
+> property initializer — and overwrites the stored value. `CategoryDto.Color` defaults to `"#FFFFFF"`, so a PUT that
+> leaves `color` out will repaint the category white. Send the whole DTO.
+
+`Patch()` also carries `Version` from the client DTO onto the entity, and `AppDbContext.OnSavingChanges` copies that
+value into `OriginalValues`, which is what turns it into the `WHERE Id = @id AND Version = @clientVersion` optimistic
+concurrency check. A DTO without `Version`, or a mapper that ignores it, silently loses that protection.
 
 ### Client-Side Patch Usage
 

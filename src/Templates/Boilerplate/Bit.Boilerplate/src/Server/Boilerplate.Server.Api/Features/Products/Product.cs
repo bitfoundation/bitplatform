@@ -19,8 +19,8 @@ public partial class Product
     [Range(0, int.MaxValue)]
     public int ShortId { get; set; }
         //#if (database != "PostgreSQL" && database != "SqlServer")
-        = Environment.TickCount; // Using a database sequence for this is recommended.
-                                 //#endif
+        = (int)(Environment.TickCount64 / 4_000); // Using a database sequence for this is recommended.
+                                                 //#endif
 
     [Required, MaxLength(64)]
     public string? Name { get; set; }
