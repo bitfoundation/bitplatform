@@ -225,7 +225,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         if (string.IsNullOrEmpty(accessToken))
             return null;
 
-        var isValid = await Task.Run(() => IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated());
+        var isValid = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated();
 
         if (isValid) return accessToken;
 

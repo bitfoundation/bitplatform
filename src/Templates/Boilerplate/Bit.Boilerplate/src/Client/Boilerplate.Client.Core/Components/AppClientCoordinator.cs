@@ -50,66 +50,63 @@ public partial class AppClientCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            await Task.Run(async () =>
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
             {
-                unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
+                var (url, replace, forceLoad) = ParseNavigateToOptions(uri?.ToString()!);
+
+                if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
+                    return;
+
+                NavigationManager.NavigateTo(url, forceLoad, replace);
+            }));
+            //#if (signalR == true)
+            unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
+            {
+                if (payload is null) return;
+
+                var appProblemDetails = payload is JsonElement jsonDocument
+                    ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
+                    : (AppProblemDetails)payload;
+
+                ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
+            }));
+            //#endif
+
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                try
                 {
-                    var (url, replace, forceLoad) = ParseNavigateToOptions(uri?.ToString()!);
-
-                    if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
-                        return;
-
-                    NavigationManager.NavigateTo(url, forceLoad, replace);
-                }));
-                //#if (signalR == true)
-                unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
-                {
-                    if (payload is null) return;
-
-                    var appProblemDetails = payload is JsonElement jsonDocument
-                        ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<AppProblemDetails>())! /* Message gets published from server through SignalR */
-                        : (AppProblemDetails)payload;
-
-                    ExceptionHandler.Handle(appProblemDetails, displayKind: ExceptionDisplayKind.NonInterrupting);
-                }));
-                //#endif
-
-                if (AppPlatform.IsBlazorHybrid is false)
-                {
-                    try
-                    {
-                        BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
-                        var userAgentData = await userAgent.Extract();
-                        TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
-                    }
-                    finally
-                    {
-                        BitButil.UseNormalInvoke();
-                    }
+                    BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
+                    var userAgentData = await userAgent.Extract();
+                    TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
                 }
-                TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-                TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-                TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
-
-                //#if (appInsights == true)
-                _ = appInsights.AddTelemetryInitializer(new()
+                finally
                 {
-                    Data = new()
-                    {
-                        ["ai.application.ver"] = TelemetryContext.AppVersion,
-                        ["ai.session.id"] = TelemetryContext.AppSessionId,
-                        ["ai.device.locale"] = TelemetryContext.Culture
-                    }
-                });
-                //#endif
+                    BitButil.UseNormalInvoke();
+                }
+            }
+            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
 
-                NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-                AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
-                //#if (signalR == true)
-                SubscribeToSignalRSharedAppMessages();
-                //#endif
-                await PropagateAuthState(firstRun: true, AuthenticationStateTask);
+            //#if (appInsights == true)
+            _ = appInsights.AddTelemetryInitializer(new()
+            {
+                Data = new()
+                {
+                    ["ai.application.ver"] = TelemetryContext.AppVersion,
+                    ["ai.session.id"] = TelemetryContext.AppSessionId,
+                    ["ai.device.locale"] = TelemetryContext.Culture
+                }
             });
+            //#endif
+
+            NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+            AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            //#if (signalR == true)
+            SubscribeToSignalRSharedAppMessages();
+            //#endif
+            await PropagateAuthState(firstRun: true, AuthenticationStateTask);
         }
     }
 
