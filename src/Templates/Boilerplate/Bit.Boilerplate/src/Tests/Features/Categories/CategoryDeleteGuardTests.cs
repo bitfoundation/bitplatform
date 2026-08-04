@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.Data.Common;
 using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Features.Categories;
 
@@ -19,7 +20,12 @@ namespace Boilerplate.Tests.Features.Categories;
 /// and cannot be satisfied by any amount of application-level checking.
 /// </para>
 /// </summary>
-[TestClass, TestCategory("IntegrationTest")]
+/// <remarks>
+/// <c>DoNotParallelize</c> for the same reason as <c>ProductImageLifecycleTests</c>: each of these tests creates a
+/// product through the real endpoint, and without the ShortId sequence that value is a coarse clock reading
+/// (See <c>Product.ShortId</c>), so concurrent creates collide on its unique index.
+/// </remarks>
+[TestClass, TestCategory("IntegrationTest"), DoNotParallelize]
 public partial class CategoryDeleteGuardTests
 {
     // Seeded tenant-admin of the default (fallback) tenant; holds ProductCatalog_Manage. See UserConfiguration.
@@ -48,9 +54,15 @@ public partial class CategoryDeleteGuardTests
 
         try
         {
-            await Assert.ThrowsExactlyAsync<BadRequestException>(
+            var refused = await Assert.ThrowsExactlyAsync<BadRequestException>(
                 () => categories.Delete(category.Id, category.Version, TestContext.CancellationToken),
-                "A non-empty category must be refused, and with the localized CategoryNotEmpty message rather than a 500.");
+                "A non-empty category must be refused rather than deleted.");
+
+            // The type alone would also be satisfied by an unrelated BadRequestException. Key is what survives the
+            // wire - AppProblemDetails' implicit conversion re-attaches it client-side - and it is what pins this to
+            // the guard's own localized message rather than to any 400 the endpoint happens to produce.
+            Assert.AreEqual(nameof(AppStrings.CategoryNotEmpty), refused.Key,
+                "The refusal must carry the localized CategoryNotEmpty message, not a generic bad request.");
         }
         finally
         {
@@ -87,9 +99,11 @@ public partial class CategoryDeleteGuardTests
 
             // IgnoreQueryFilters: this bare scope has no HttpContext, so the tenant-aware filter has no current tenant
             // to resolve. See TenantProvider.GetCurrentTenantId.
-            // The provider raises its own exception type for a foreign-key violation (SqliteException, NpgsqlException,
-            // SqlException), and ExecuteDeleteAsync does not wrap it, so the assertion is on the base type.
-            await Assert.ThrowsAsync<Exception>(
+            // DbException, not Exception: the provider raises its own type for a foreign-key violation
+            // (SqliteException, NpgsqlException, SqlException) and ExecuteDeleteAsync does not wrap it, so DbException
+            // is the narrowest common base. Accepting any Exception would let a null reference or a tenant-filter
+            // failure pass for the constraint this test is about.
+            await Assert.ThrowsAsync<DbException>(
                 () => dbContext.Categories
                                 .IgnoreQueryFilters()
                                 .Where(c => c.Id == category.Id)

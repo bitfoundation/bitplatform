@@ -97,9 +97,11 @@ public partial class ProductCultureSafetyTests
                 if (unprovidered.IsMatch(line) is false)
                     continue;
 
-                // CultureInfo.InvariantCulture, CultureInfo.CurrentCulture and a bare `provider` all count as naming
-                // one; the failure mode is omitting the argument entirely, which silently means CurrentCulture.
-                if (line.Contains("Culture", StringComparison.Ordinal))
+                // InvariantCulture is the only provider that is right here, so it is the only one accepted. Seed data
+                // is fixed literals: there is no reader whose locale it should follow. CultureInfo.CurrentCulture is
+                // rejected rather than treated as "a provider was named" - naming the ambient culture explicitly is
+                // exactly as locale-dependent as omitting the argument, which is the bug this test exists for.
+                if (line.Contains("InvariantCulture", StringComparison.Ordinal))
                     continue;
 
                 offenders.Add($"{Path.GetRelativePath(configurationsRoot, file)}:{lineNumber} -> {line.Trim()}");
@@ -107,8 +109,10 @@ public partial class ProductCultureSafetyTests
         }
 
         Assert.IsEmpty(offenders,
-            "A date parsed without a format provider uses CultureInfo.CurrentCulture. Entity configuration runs " +
-            "inside OnModelCreating, so the seed values then depend on the developer's OS locale:\n" + string.Join("\n", offenders));
+            "Entity configuration runs inside OnModelCreating, on whatever culture the process happens to be in, so a " +
+            "date parsed there must name CultureInfo.InvariantCulture. Omitting the provider - or passing " +
+            "CultureInfo.CurrentCulture, or a variable holding one - makes the seed values depend on the developer's " +
+            "OS locale:\n" + string.Join("\n", offenders));
     }
 
     /// <summary>

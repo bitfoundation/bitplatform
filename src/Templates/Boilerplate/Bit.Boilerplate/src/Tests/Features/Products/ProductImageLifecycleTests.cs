@@ -27,7 +27,13 @@ namespace Boilerplate.Tests.Features.Products;
 /// upload endpoint rather than a database write, because the whole defect lives in what that endpoint does or
 /// does not stamp on the product row.
 /// </summary>
-[TestClass, TestCategory("IntegrationTest")]
+/// <remarks>
+/// <c>DoNotParallelize</c> because these tests create products through the real <c>ProductController.Create</c>, and on
+/// a provider without the ShortId sequence that value comes from a coarse clock reading (See <c>Product.ShortId</c>) -
+/// two creates close enough together collide on its unique index. Serialising the class puts a server boot between
+/// them. The demo-grade generator is deliberate; the tests must not be what forces it to be more than that.
+/// </remarks>
+[TestClass, TestCategory("IntegrationTest"), DoNotParallelize]
 public partial class ProductImageLifecycleTests
 {
     // Seeded tenant-admin of the default (fallback) tenant; holds ProductCatalog_Manage. See UserConfiguration.

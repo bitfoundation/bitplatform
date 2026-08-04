@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using System.Data.Common;
 using Boilerplate.Shared.Features.Categories;
 
 namespace Boilerplate.Server.Api.Features.Categories;
