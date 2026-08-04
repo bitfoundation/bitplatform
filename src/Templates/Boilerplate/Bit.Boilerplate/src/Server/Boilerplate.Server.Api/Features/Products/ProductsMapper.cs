@@ -20,12 +20,15 @@ public static partial class ProductsMapper
     public static partial ProductDto Map(this Product source);
 
     //#if(module == "Admin")
+    // ShortId is allocated by the server (See Product.ShortId) and HasPrimaryImage is written by AttachmentController
+    // and by ProductController.Create, so neither may come from the client. PrimaryImageAltText is deliberately NOT in
+    // that list: the admin form offers it as an editable field, seeded from the image analysis agent when one runs.
     [MapperIgnoreSource(nameof(Product.ShortId))]
-    [MapperIgnoreTarget(nameof(Product.HasPrimaryImage)), MapperIgnoreTarget(nameof(Product.PrimaryImageAltText))]
+    [MapperIgnoreTarget(nameof(Product.HasPrimaryImage))]
     public static partial Product Map(this ProductDto source);
 
     [MapperIgnoreSource(nameof(Product.ShortId))]
-    [MapperIgnoreTarget(nameof(Product.HasPrimaryImage)), MapperIgnoreTarget(nameof(Product.PrimaryImageAltText))]
+    [MapperIgnoreTarget(nameof(Product.HasPrimaryImage))]
     public static partial void Patch(this ProductDto source, Product destination);
     //#endif
 }

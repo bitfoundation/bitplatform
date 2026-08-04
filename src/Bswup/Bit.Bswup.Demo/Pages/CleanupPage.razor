@@ -1,0 +1,52 @@
+﻿@page "/cleanup"
+
+<PageTitle>Backing Out of Bswup - bit Bswup</PageTitle>
+
+<h1>Backing Out of Bswup</h1>
+<p class="docs-lead">
+    Fully remove Bswup from a deployed app - dropping offline support, or recovering clients stuck on a
+    broken worker or cache - with the self-destructing cleanup worker.
+</p>
+
+<p>
+    Replace the <em>content</em> of your <code>service-worker.js</code> <strong>and</strong>
+    <code>service-worker.published.js</code> (the file deployed builds actually ship, via the
+    <code>ServiceWorker</code> item's <code>PublishedContent</code> mapping) with:
+</p>
+<CodeBlock Language="javascript" Code="self.importScripts('_content/Bit.Bswup/bit-bswup.sw-cleanup.js');" />
+
+<h2>What happens next</h2>
+<p>On its next update check, every client installs this self-destructing worker instead. It:</p>
+<ol>
+    <li>activates immediately,</li>
+    <li>purges this app's Bswup and Blazor caches,</li>
+    <li>unregisters its own registration, and</li>
+    <li>signals open tabs to detach.</li>
+</ol>
+<p>
+    Tabs the previous worker controlled reload once; everything afterwards runs purely from the network,
+    even while the page keeps referencing <code>bit-bswup.js</code> - each later load just repeats the
+    register/self-unregister cycle silently, with no reloads.
+</p>
+<Callout Type="note" Title="When can the script tag go?">
+    Once no client has loaded the old app for as long as your cache headers require, the
+    <code>bit-bswup.js</code> script tag can be removed from the host document too.
+</Callout>
+
+<h2>Client-side reset without backing out</h2>
+<p>
+    If you only need to recover a <em>single</em> broken client (not remove Bswup from the deployment),
+    prefer <a href="javascript-api#forcerefresh"><code>BitBswup.forceRefresh()</code></a> - it clears this
+    app's caches, unregisters its worker, and reloads, without touching the deployed service worker file.
+</p>
+
+<div class="pager">
+    <a href="playground">
+        <span class="pager-label">Previous</span>
+        <b>← Live Playground</b>
+    </a>
+    <a class="pager-next" href="migration">
+        <span class="pager-label">Next</span>
+        <b>Migrating to 10-6-0 →</b>
+    </a>
+</div>

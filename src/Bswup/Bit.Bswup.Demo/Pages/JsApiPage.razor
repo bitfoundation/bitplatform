@@ -1,0 +1,129 @@
+﻿@page "/javascript-api"
+
+<PageTitle>JavaScript API - bit Bswup</PageTitle>
+
+<h1>JavaScript API</h1>
+<p class="docs-lead">
+    Bswup exposes a small global <code>BitBswup</code> object so you can drive the update lifecycle from
+    your own code - a "check for updates" button, a custom poller, a "reset app" action.
+</p>
+
+<Callout Type="tip" Title="Try every one of these live">
+    The <a href="playground">Live Playground</a> wires each of these methods to a button on this very site.
+</Callout>
+
+<h2 id="checkforupdate">BitBswup.checkForUpdate()</h2>
+<p>
+    Asks the browser to re-fetch the service worker script and check for a new version. If a new version is
+    found, the normal update flow runs (<code>updateFound</code> → <code>stateChanged</code> →
+    <code>updateReady</code>/<code>downloadFinished</code>). If the app is already on the latest version,
+    Bswup raises <code>updateNotFound</code> so you can stop a spinner or show an "up to date" message.
+</p>
+<p>
+    If the check itself fails for a transient reason (offline, server hiccup, a throttled background tab),
+    Bswup raises the non-blocking <code>updateCheckFailed</code> event instead of the install-path
+    <code>error</code> event, so the default progress handler does <strong>not</strong> hide the app or
+    show the install-failed UI; the payload still carries <code>reason</code>/<code>message</code> so you
+    can surface it yourself. Registration-aware and safe to call as often as you like - it is what powers
+    the built-in polling.
+</p>
+
+<h2 id="persiststorage">BitBswup.persistStorage()</h2>
+<p>
+    Requests durable, eviction-resistant storage for the origin via <code>navigator.storage.persist()</code>
+    and resolves with a boolean saying whether storage is now persistent. Without it the caches are
+    best-effort and can be reclaimed by the browser (Safari deletes all storage for a site not interacted
+    with for seven days). Calling it from a user gesture - after login, from an "install app" button - has
+    the best chance of being granted. Safe to call repeatedly: an already-persistent origin resolves
+    <code>true</code> without prompting again, and unsupported browsers resolve <code>false</code> with a
+    console warning.
+</p>
+
+<h2 id="skipwaiting">BitBswup.skipWaiting()</h2>
+<p>
+    If an update has finished downloading and is waiting, this activates it immediately (equivalent to
+    calling the <code>reload</code> callback from <code>updateReady</code>/<code>downloadFinished</code>).
+    Returns <code>true</code> when there was a waiting worker to activate, otherwise <code>false</code>.
+</p>
+
+<h2 id="forcerefresh">BitBswup.forceRefresh(cacheFilter?)</h2>
+<p>
+    Clears caches, unregisters the service worker controlling the current page, and reloads. Use this as a
+    last-resort "reset" when a client gets into a bad state. It only removes this app's own registration -
+    other apps mounted under different scopes on the same origin are left untouched.
+</p>
+<p>
+    By default it clears only the caches this app and Blazor own: the app's scope-qualified Bswup buckets,
+    legacy scope-less buckets, and <code>blazor-resources</code> caches. A sibling Bswup app's scoped
+    buckets are spared, and app-owned CacheStorage buckets (Workbox add-ons, offline app data, cached API
+    responses) are left intact, since those can hold data with no other copy. To change what gets cleared,
+    pass an optional <code>cacheFilter</code>: a string (prefix match), a <code>RegExp</code>, or a
+    predicate <code>(key) =&gt; boolean</code>:
+</p>
+<CodeBlock Language="javascript" Code="@ForceRefreshCode" />
+
+<h2>Polling for updates</h2>
+<p>
+    By default a service worker is only re-checked by the browser on navigation and roughly every 24 hours,
+    so a tab that stays open for a long time can keep running an old version. There are two ways to check
+    more often:
+</p>
+<ol>
+    <li>
+        Set <a href="script-options#updateinterval"><code>updateInterval</code></a> (and/or
+        <a href="script-options#updateonvisibility"><code>updateOnVisibility</code></a>) on the script tag
+        for built-in polling. Simplest, no extra code - this site uses both.
+    </li>
+    <li>Call <code>BitBswup.checkForUpdate()</code> yourself, from a timer or after a user action:</li>
+</ol>
+<CodeBlock Language="javascript" Code="@PollingCode" />
+<p>
+    Either way, the result surfaces through your handler: a found update flows through
+    <code>updateFound</code>/<code>updateReady</code>, "nothing new" flows through
+    <code>updateNotFound</code>, and a transient check failure flows through
+    <code>updateCheckFailed</code>:
+</p>
+<CodeBlock Language="javascript" Code="@PollingHandlerCode" />
+<Callout Type="note" Title="Background tabs">
+    Built-in polling skips checks while the tab is in the background (the browser throttles those timers
+    anyway); the next timer tick after the tab is foregrounded runs normally. For an <em>immediate</em>
+    check the moment the user comes back, also set <code>updateOnVisibility="true"</code>.
+</Callout>
+
+<div class="pager">
+    <a href="progress-ui">
+        <span class="pager-label">Previous</span>
+        <b>← Progress UI</b>
+    </a>
+    <a class="pager-next" href="playground">
+        <span class="pager-label">Next</span>
+        <b>Live Playground →</b>
+    </a>
+</div>
+
+@code {
+    private const string ForceRefreshCode = @"BitBswup.forceRefresh();                          // Bswup + Blazor caches (default)
+BitBswup.forceRefresh(() => true);                // every cache on the origin
+BitBswup.forceRefresh('bit-bswup');               // only Bswup's own caches
+BitBswup.forceRefresh(/^(bit-bswup|my-app-data)/) // a specific set";
+
+    private const string PollingCode = @"// an ordinary failed check (offline, server hiccup) does NOT reject - it is reported through
+// the UPDATE_CHECK_FAILED message below. This catch is only for unexpected errors, such as a
+// call made before the registration is ready.
+const checkNow = () => BitBswup.checkForUpdate()
+    .catch(err => console.warn('unexpected update check error:', err));
+
+// check every hour from your own code (equivalent to updateInterval=""3600"")
+setInterval(checkNow, 60 * 60 * 1000);
+
+// or check whenever the user clicks a button, and react to the result
+document.getElementById('check-updates').onclick = checkNow;";
+
+    private const string PollingHandlerCode = @"window.bitBswupHandler = (message, data) => {
+    switch (message) {
+        case 'UPDATE_NOT_FOUND': /* already up to date - stop the spinner */ break;
+        case 'UPDATE_CHECK_FAILED': /* transient failure - keep running, optionally notify */ break;
+        // updateFound / stateChanged / updateReady / downloadFinished drive the update UI
+    }
+};";
+}

@@ -1,0 +1,220 @@
+﻿@page "/events"
+
+<PageTitle>Events &amp; Handler - bit Bswup</PageTitle>
+
+<h1>Events &amp; Handler</h1>
+<p class="docs-lead">
+    Bswup reports its whole lifecycle through a single global handler function. Use the built-in
+    <a href="progress-ui">progress UI</a>, or write your own handler and drive any markup you like.
+</p>
+
+<p>
+    The handler's name is configured through the <a href="script-options#handler"><code>handler</code></a>
+    script attribute (default <code>bitBswupHandler</code>). It receives <code>(type, data)</code> where
+    <code>type</code> is one of the <code>BswupMessage</code> constants:
+</p>
+
+<h2>Event catalog</h2>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>BswupMessage</th><th>Value</th><th>Raised when</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>updateFound</code></td><td><code>UPDATE_FOUND</code></td><td>The browser found a new service worker version and started installing it.</td></tr>
+            <tr><td><code>stateChanged</code></td><td><code>STATE_CHANGED</code></td><td>The installing worker's lifecycle state changed (<code>data.currentTarget.state</code>).</td></tr>
+            <tr><td><code>downloadStarted</code></td><td><code>DOWNLOAD_STARTED</code></td><td>Asset download began. <code>data.version</code>, <code>data.firstInstall</code>.</td></tr>
+            <tr><td><code>downloadProgress</code></td><td><code>DOWNLOAD_PROGRESS</code></td><td>An asset finished. <code>data.percent</code> (0-100), <code>data.index</code> (1-based count), <code>data.asset</code> (<code>url</code>, <code>reqUrl</code>, <code>hash</code>).</td></tr>
+            <tr><td><code>downloadFinished</code></td><td><code>DOWNLOAD_FINISHED</code></td><td>All assets are staged. <code>data.firstInstall</code>, <code>data.reload()</code>, <code>data.cleanup()</code>.</td></tr>
+            <tr><td><code>updateReady</code></td><td><code>UPDATE_READY</code></td><td>A fully staged update is waiting to be activated (<code>data.reload()</code>).</td></tr>
+            <tr><td><code>activate</code></td><td><code>ACTIVATE</code></td><td>A new version activated (<code>data.version</code>).</td></tr>
+            <tr><td><code>updateNotFound</code></td><td><code>UPDATE_NOT_FOUND</code></td><td>An update check completed and the app is already on the latest version.</td></tr>
+            <tr><td><code>updateCheckFailed</code></td><td><code>UPDATE_CHECK_FAILED</code></td><td>An update check itself failed transiently (offline, server hiccup). Non-blocking - the app keeps running.</td></tr>
+            <tr><td><code>error</code></td><td><code>ERROR</code></td><td>A structured install failure - see <a href="#error-payload">below</a>.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>A complete handler</h2>
+<CodeBlock Language="javascript" Code="@HandlerCode" />
+
+<h2 id="download-finished">Finishing a download: <code>reload</code> and <code>cleanup</code></h2>
+<ul>
+    <li>
+        <code>data.reload()</code> activates the staged version. On a <strong>first install</strong> it
+        claims the clients and starts Blazor <em>with no reload</em>; on an <strong>update</strong> it
+        performs <code>SKIP_WAITING</code> and reloads.
+    </li>
+    <li>
+        <code>data.cleanup()</code> (optional) asks the active service worker to prune this app's stale
+        cache buckets right away. It is safe to call at any time - the worker declines while an update is
+        staged or staging (pruning then happens automatically on activation), and it never touches another
+        app's caches. Most apps never need it: the same pruning already runs on activation and after every
+        accepted update.
+    </li>
+</ul>
+
+<Callout Type="warning" Title="Breaking change: updates no longer auto-reload by default">
+    Since v-10-6-0, the built-in <code>BswupProgress</code> component's <code>AutoReload</code> parameter
+    defaults to <code>false</code>: when an update finishes downloading, the reload button is shown and the
+    new version activates when the user accepts it - an unprompted reload discards whatever in-page state
+    the user has mid-session. Set <code>AutoReload="true"</code> to restore the old behavior. First
+    installs are unaffected: they always complete the seamless claim-and-start flow (no reload).
+</Callout>
+
+<h2>Multi-tab updates</h2>
+<p>
+    Service workers are single-instance per origin, so accepting an update in one tab activates the new
+    version for every open tab. When that happens, Bswup has the new worker claim all clients and each
+    <em>other</em> tab reloads itself automatically (via <code>controllerchange</code>) onto the new
+    version. This keeps every tab consistent and avoids the classic failure where an old tab keeps running
+    old app code while its asset requests are served from the new version's cache (mismatched boot config /
+    DLL hashes). The first install is exempt: claiming a client for the first time starts Blazor and does
+    not trigger a reload.
+</p>
+
+<h2 id="error-payload">The <code>error</code> payload</h2>
+<p>Install failures are structured:</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>reason</code></td>
+                <td>
+                    One of <code>manifest</code>, <code>integrity</code>, <code>fetch</code>,
+                    <code>cache</code>, <code>request</code>, <code>install-incomplete</code>,
+                    <code>install-aborted</code>, or <code>install-infra</code> (the install died
+                    before/while touching CacheStorage - storage pressure, a broken private mode - always
+                    fatal).
+                </td>
+            </tr>
+            <tr><td><code>message</code></td><td>Human-readable description.</td></tr>
+            <tr><td><code>url</code> / <code>hash</code></td><td>The offending asset, when known.</td></tr>
+            <tr>
+                <td><code>fatal</code></td>
+                <td>
+                    Whether the install actually stopped. Under the default <code>lax</code> tolerance a
+                    failed asset is reported with <code>fatal: false</code> - the install still succeeds and
+                    the asset is fetched from the network on first use - so treat it as a warning, not a
+                    dead app. <code>fatal: true</code> means no usable staged version is available to this
+                    page - though a worker may still have been installed (a lax
+                    <code>install-infra</code> failure resolves the install so the worker can keep serving
+                    as a network pass-through).
+                </td>
+            </tr>
+            <tr>
+                <td><code>firstInstall</code></td>
+                <td>
+                    Where a fatal failure landed. <code>true</code>: before the app ever booted - Bswup
+                    starts the app without a service worker so it still boots. <code>false</code>: a
+                    background <em>update</em> failed - the app keeps running on the current version (the
+                    previous worker keeps serving).
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<CodeBlock Language="javascript" Code="@ErrorHandlerCode" />
+
+<div class="pager">
+    <a href="service-worker">
+        <span class="pager-label">Previous</span>
+        <b>← Service Worker Settings</b>
+    </a>
+    <a class="pager-next" href="progress-ui">
+        <span class="pager-label">Next</span>
+        <b>Progress UI →</b>
+    </a>
+</div>
+
+@code {
+    private const string HandlerCode = @"const appEl = document.getElementById('app');
+const bswupEl = document.getElementById('bit-bswup');
+const progressBar = document.getElementById('bit-bswup-progress-bar');
+const reloadButton = document.getElementById('bit-bswup-reload');
+
+function bitBswupHandler(type, data) {
+    switch (type) {
+        case BswupMessage.updateFound: return console.log('an update found.');
+
+        case BswupMessage.stateChanged: return console.log('state:', data.currentTarget.state);
+
+        case BswupMessage.activate: return console.log('new version activated:', data.version);
+
+        case BswupMessage.downloadStarted:
+            // A background update downloads behind the running app - only a first
+            // install owns the screen (firstInstall rides on every message).
+            if (data?.firstInstall === false) return;
+            appEl.style.display = 'none';
+            bswupEl.style.display = 'block';
+            return console.log('downloading assets started:', data?.version);
+
+        case BswupMessage.downloadProgress:
+            progressBar.style.width = `${Math.round(data.percent)}%`;
+            return console.log('asset downloaded:', data.asset.url, data);
+
+        case BswupMessage.downloadFinished:
+            if (data.firstInstall) {
+                // First install: claim + start Blazor, no page reload. Reveal the app even if
+                // the claim/start stalls or rejects - a hidden #app with no way out is worse
+                // than an app shown behind a stale splash.
+                const reveal = () => {
+                    appEl.style.display = 'block';
+                    bswupEl.style.display = 'none';
+                };
+                const failSafe = setTimeout(reveal, 10000);
+                data.reload()
+                    .catch(err => console.error('Bswup first install failed to start:', err))
+                    .then(() => { clearTimeout(failSafe); reveal(); });
+            } else {
+                // Update: let the user accept it.
+                reloadButton.style.display = 'block';
+                reloadButton.onclick = data.reload;
+            }
+            return console.log('downloading assets finished.');
+
+        case BswupMessage.updateReady:
+            reloadButton.style.display = 'block';
+            reloadButton.onclick = data.reload;
+            return console.log('new update ready.');
+
+        case BswupMessage.updateNotFound:
+            return console.log('already on the latest version.');
+
+        case BswupMessage.updateCheckFailed:
+            return console.warn('could not check for updates right now:', data);
+
+        case BswupMessage.error:
+            if (data.fatal === false) {
+                // lax tolerance: the install continued; the asset lazy-fills later.
+                return console.warn('Bswup asset skipped:', data.reason, data.message);
+            }
+            console.error('Bswup install error:', data.reason, data.message, data);
+            if (data.firstInstall) {
+                // Fatal first-install failure: Bswup force-starts Blazor from the network;
+                // reveal the app instead of leaving it booted behind the splash.
+                appEl.style.display = 'block';
+                bswupEl.style.display = 'none';
+            }
+            return;
+    }
+}";
+
+    private const string ErrorHandlerCode = @"case BswupMessage.error:
+    if (data.fatal === false) {
+        console.warn('Bswup asset skipped:', data.reason, data.message, data);
+        return;
+    }
+    if (data.firstInstall === false) {
+        // A background update failed - the running app is untouched.
+        return;
+    }
+    // Fatal first-install failure: Bswup force-starts Blazor from the network;
+    // reveal the app instead of leaving it booted behind the splash.
+    appEl.style.display = 'block';
+    bswupEl.style.display = 'none';
+    return;";
+}

@@ -63,9 +63,15 @@ public class BunitUITests
             Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user.GetUserId());
         }, timeout: TimeSpan.FromSeconds(30));
 
-        // A successful sign-in navigates the user to the return-url she came from.
+        // A successful sign-in navigates the user to the return-url she came from - but only after StoreTokens has
+        // raised AuthenticationStateChanged, which is the very thing the wait above returns on. Asserting the url
+        // straight after that wait is a race the assertion reliably wins, so it gets a wait of its own.
         var navigationManager = ctx.Services.GetRequiredService<NavigationManager>();
-        Assert.AreEqual(navigationManager.ToAbsoluteUri(PageUrls.Settings).ToString(), navigationManager.Uri,
-            "Signing in should have navigated to the panel's ReturnUrl (See SignInPanel.GetSafeReturnUrl).");
+
+        await cut.WaitForAssertionAsync(async () =>
+        {
+            Assert.AreEqual(navigationManager.ToAbsoluteUri(PageUrls.Settings).ToString(), navigationManager.Uri,
+                "Signing in should have navigated to the panel's ReturnUrl (See SignInPanel.GetSafeReturnUrl).");
+        }, timeout: TimeSpan.FromSeconds(30));
     }
 }
