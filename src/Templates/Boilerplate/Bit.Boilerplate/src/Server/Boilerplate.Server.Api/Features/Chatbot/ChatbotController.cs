@@ -8,6 +8,7 @@ namespace Boilerplate.Server.Api.Features.Chatbot;
     //#if (multitenant == true)
     Authorize(Policy = AuthPolicies.TENANT_SELECTED),
     //#endif
+    Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
     Authorize(Policy = AppFeatures.Management.SystemPrompts_Write)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {

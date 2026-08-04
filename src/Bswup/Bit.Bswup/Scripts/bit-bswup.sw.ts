@@ -1,4 +1,4 @@
-(self as any)['bit-bswup.sw version'] = '10.5.0';
+(self as any)['bit-bswup.sw version'] = '10.6.0-pre-01';
 
 // This file (and bit-bswup.sw-cleanup.ts) is a classic service-worker script loaded via
 // importScripts - not an ES module - and is compiled against the "WebWorker" lib (see
@@ -907,7 +907,7 @@ function getRangeHeader(req: Request) {
 // 206 itself (see serveAsset). Anything that can't be sliced safely - no Range header, a
 // non-200 status (opaque bodies are unreadable, 206 is already partial), a malformed or
 // multi-range spec, an unsatisfiable range, a read failure - falls back to returning the
-// response unchanged, which is exactly the pre-10.5.0 behavior.
+// response unchanged, which is exactly the pre-10-6-0 behavior.
 async function applyRangeHeader(req: Request, response: Response) {
     try {
         const rangeHeader = getRangeHeader(req);
@@ -1083,7 +1083,7 @@ function handleMessage(e: MessageEvent<string> & BswupExtendableEvent) {
         // NEWEST worker, not to the receiver: deleteOldCaches() spares only the receiver's own
         // CACHE_NAME, so with an update staged or staging it would destroy a LIVE cache.
         // Received by the old active worker, it would wipe the update's freshly downloaded
-        // cache and waste the entire download; received by a waiting worker (pre-10.5.0 pages
+        // cache and waste the entire download; received by a waiting worker (pre-10-6-0 pages
         // posted it there too), it would delete the ACTIVE worker's cache out from under every
         // running page, making old app code fetch new-version bytes - the classic SRI /
         // boot-hash corruption. A waiting worker always sees itself in registration.waiting,

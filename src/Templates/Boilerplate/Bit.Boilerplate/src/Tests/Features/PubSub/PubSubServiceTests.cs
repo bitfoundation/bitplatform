@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.PubSub;
 

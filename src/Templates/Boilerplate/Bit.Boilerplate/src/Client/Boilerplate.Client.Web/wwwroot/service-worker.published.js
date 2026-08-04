@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-// bit version: 10.5.0
+// bit version: 10.6.0-pre-01
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -18,10 +18,18 @@ self.addEventListener('push', function (event) {
 
 });
 
+function isAppRelativeUrl(pageUrl) {
+    try {
+        return new URL(pageUrl, self.registration.scope).href.startsWith(self.registration.scope);
+    } catch {
+        return false;
+    }
+}
+
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     const pageUrl = event.notification.data.pageUrl;
-    if (pageUrl != null) {
+    if (pageUrl != null && isAppRelativeUrl(pageUrl)) {
         event.waitUntil(
             clients
                 .matchAll({

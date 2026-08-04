@@ -28,8 +28,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit" Version="2.7.2" />
-        <PackageReference Include="MSTest" Version="4.3.0" />
+        <PackageReference Include="bunit" Version="2.8.6" />
+        <PackageReference Include="MSTest" Version="4.3.2" />
     </ItemGroup>
 
     <!-- IsRuntimeInvalid probes framework-internal members of these assemblies reflectively and
@@ -56,15 +56,6 @@
         <!-- Full library Styles tree for the reverse token-contract test: every mapper-emitted
              bit token (CSS custom property) must be declared or consumed somewhere in these stylesheets. -->
         <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- Component SCSS tree + the checked-in inventory for the per-component CSS variable
-             contract test (BitComponentCssVariablesContractTests): the per-component custom-property
-             names are documented public API and must not drift from the sources without an update. -->
-        <None Include="..\..\Bit.BlazorUI\Components\**\*.scss" Link="component-styles\%(RecursiveDir)%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI\component-css-variables.md" Link="component-css-variables.md">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

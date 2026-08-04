@@ -1,4 +1,4 @@
-﻿// bit version: 10.5.0
+// bit version: 10.6.0-pre-01
 
 // Development service worker of the Bswup docs site. The site dogfoods Bswup even during
 // development so the full first-install / update experience is visible on plain F5.

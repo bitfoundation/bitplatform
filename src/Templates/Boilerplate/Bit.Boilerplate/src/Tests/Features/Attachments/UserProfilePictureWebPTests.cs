@@ -1,9 +1,6 @@
 using ImageMagick;
 using System.Net.Http.Headers;
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Attachments;
-using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Attachments;
 

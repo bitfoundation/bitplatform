@@ -3,6 +3,8 @@
 @typeparam TItem
 @typeparam TValue
 
+@* The invalid state belongs to the choice as a whole, not to the option that happens to be focused,
+   so the group carries the aria-invalid too and not only the individual radio inputs of the base class. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="radiogroup"
@@ -10,21 +12,47 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel"
-     aria-labelledby="@GetAriaLabelledBy()">
+     aria-labelledby="@GetAriaLabelledBy()"
+     aria-describedby="@GetAriaDescribedBy()"
+     aria-required="@(Required ? "true" : null)"
+     aria-invalid="@(ValueInvalid is true ? "true" : null)"
+     aria-readonly="@(ReadOnly ? "true" : null)"
+     aria-disabled="@(IsEnabled ? null : "true")"
+     aria-orientation="@(Horizontal ? "horizontal" : "vertical")">
 
-    <label id="@_labelId"
-           disabled="@(IsEnabled is false)"
-           style="@Styles?.LabelContainer"
-           class="@Classes?.LabelContainer">
-        @if (LabelTemplate is not null)
-        {
-            @LabelTemplate
-        }
-        else if (Label.HasValue())
-        {
-            <span style="@Styles?.Label" class="bit-chg-lbl @Classes?.Label">@Label</span>
-        }
-    </label>
+    @if (HasLabel)
+    {
+        @* Not a label element: with no single input to point a "for" at, a label here would label
+           nothing; the group is named through aria-labelledby referencing this id instead. *@
+        <div id="@_labelId"
+             style="@Styles?.LabelContainer"
+             class="@Classes?.LabelContainer">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Label" class="bit-chg-lbl @Classes?.Label">@Label</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
+    {
+        <div id="@_descriptionId"
+             style="@Styles?.Description"
+             class="bit-chg-gds @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
 
     <div id="@_optionsContainerId" style="@Styles?.Container" class="bit-chg-cnt @Classes?.Container">
         @if (Options is not null || ChildContent is not null)
@@ -38,7 +66,7 @@
             @for (int i = 0; i < _items.Count; i++)
             {
                 var item = _items[i];
-                <_BitChoiceGroupItem @key="@($"{UniqueId}-{i}")" Item="item" ChoiceGroup="this" />
+                <_BitChoiceGroupItem @key="@($"{UniqueId}-{i}")" Item="item" Index="i" ChoiceGroup="this" />
             }
         }
     </div>

@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Management;
 
@@ -289,24 +287,20 @@ public partial class RolesPage
 
         var roleId = Guid.Parse(selectedRoleItem.Key!);
 
+        ClaimDto dto = new()
+        {
+            ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
+            ClaimValue = maxPrivilegedSessions.Value.ToString(CultureInfo.InvariantCulture),
+        };
+
         if (claim is not null)
         {
-            ClaimDto dto = new()
-            {
-                ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-                ClaimValue = maxPrivilegedSessions.Value.ToString(),
-            };
-
             await roleManagementController.UpdateClaims(roleId, [dto], CurrentCancellationToken);
+
+            claim.ClaimValue = dto.ClaimValue;
         }
         else
         {
-            ClaimDto dto = new()
-            {
-                ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-                ClaimValue = maxPrivilegedSessions.Value.ToString(),
-            };
-
             await roleManagementController.AddClaims(roleId, [dto], CurrentCancellationToken);
 
             selectedRoleClaims.Add(dto);
@@ -389,6 +383,8 @@ public partial class RolesPage
     private async Task RemoveAllUsersFromRole()
     {
         if (selectedRoleItem is null) return;
+
+        if (selectedRoleItem.Text == AppRoles.GlobalAdmin) return;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 

@@ -1,4 +1,4 @@
-// bit version: 10.5.0
+// bit version: 10.6.0-pre-01
 
 // Development service worker of the FullDemo. Unlike the standard Blazor template - whose
 // dev worker is a no-op so caching never hides source changes - this demo runs the full

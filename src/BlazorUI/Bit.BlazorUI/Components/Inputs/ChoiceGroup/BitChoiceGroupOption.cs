@@ -21,6 +21,11 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// The secondary text to show under the text of the BitChoiceGroup option.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
     /// Id attribute of the BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? Id { get; set; }
@@ -79,6 +84,11 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The text to show as a suffix for the BitChoiceGroup option, rendered after its content.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
     /// The custom template for the BitChoiceGroup option.
     /// </summary>
     [Parameter] public RenderFragment<BitChoiceGroupOption<TValue>>? Template { get; set; }
@@ -87,6 +97,15 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     /// Text to show as the content of BitChoiceGroup option.
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The title attribute (the native tooltip) of the BitChoiceGroup option. This is supplementary text only:
+    /// content that has to reach every user belongs in <see cref="Text"/> (or a template) or in
+    /// <see cref="Description"/>, both of which are visible and exposed to assistive technology.
+    /// <see cref="AriaLabel"/> is not an alternative: it only replaces the accessible name for assistive
+    /// technology and is never visible.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
     /// <summary>
     /// This value is returned when BitChoiceGroup option is checked.
@@ -121,6 +140,16 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
         await base.OnInitializedAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // The parameters of an option (IsEnabled, Value, ...) feed the parent's choice of which input
+        // carries the tab stop, and they are applied after the parent's own OnParametersSet has already
+        // run, so the memoized target has to be invalidated from here to be recomputed fresh after render.
+        Parent?.InvalidateInputTarget();
+    }
+
     // Renders the option's item in place, so the rendered order of the items always follows the
     // markup order of the options, even when an option is added or removed conditionally later on.
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -130,6 +159,7 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
         builder.OpenComponent<_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>>(0);
         builder.AddComponentParameter(1, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.ChoiceGroup), Parent);
         builder.AddComponentParameter(2, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.Item), this);
+        builder.AddComponentParameter(3, nameof(_BitChoiceGroupItem<BitChoiceGroupOption<TValue>, TValue>.Index), Index);
         builder.CloseComponent();
     }
 

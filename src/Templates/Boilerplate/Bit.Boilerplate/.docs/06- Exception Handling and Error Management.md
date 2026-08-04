@@ -50,12 +50,12 @@ These are **expected, business-logic exceptions** that represent predictable err
 - Thrown when authentication is required
 - HTTP Status Code: 401 (Unauthorized)
 
-5. **`ServerConnectionException`** ([`src/Shared/Infrastructure/Exceptions/ServerConnectionException.cs`](/src/Shared/Infrastructure/Exceptions/ServerConnectionException.cs))
-- Indicates connectivity issues between client and server
+5. **`TransientException`** ([`src/Shared/Infrastructure/Exceptions/TransientException.cs`](/src/Shared/Infrastructure/Exceptions/TransientException.cs))
+- Indicates a temporary failure, such as connectivity issues between client and server, that is worth retrying
 
 **Exception Inheritance:**
 - Exceptions that map to HTTP status codes (like `BadRequestException`, `UnauthorizedException`, `ResourceNotFoundException`) inherit from **`RestException`** ([`src/Shared/Infrastructure/Exceptions/RestException.cs`](/src/Shared/Infrastructure/Exceptions/RestException.cs)), which inherits from `KnownException` and provides HTTP status code mapping for REST APIs.
-- Exceptions that don't require HTTP status codes (like `DomainLogicException`, `ServerConnectionException`) inherit directly from **`KnownException`**.
+- Exceptions that don't require HTTP status codes (like `DomainLogicException`, `TransientException`) inherit directly from **`KnownException`**.
 
 ---
 
@@ -191,17 +191,19 @@ The project sends **RFC 7807-compliant** error responses to clients. This is a s
 
 ```json
 {
-  "type": "Boilerplate.Shared.Exceptions.TooManyRequestsException",
+  "type": "Boilerplate.Shared.Infrastructure.Exceptions.TooManyRequestsException",
   "title": "Please wait 1 minute before requesting another reset password token",
   "status": 429,
   "instance": "POST /api/identity/SendResetPasswordToken",
-  "extensions": {
-    "key": "WaitForResetPasswordTokenRequestResendDelay",
-    "traceId": "00-abc123...",
-    "TryAgainIn": "00:01:00"
-  }
+  "key": "WaitForResetPasswordTokenRequestResendDelay",
+  "traceId": "00-abc123...",
+  "TryAgainIn": "00:01:00"
 }
 ```
+
+`AppProblemDetails.Extensions` is a `[JsonExtensionData]` dictionary, so its entries are written as **top-level**
+members - there is no `extensions` object in a real response. A non-.NET consumer reads `body.traceId`, not
+`body.extensions.traceId`.
 
 ### Syntax
 
@@ -494,17 +496,17 @@ The project includes multiple exception handlers for different platforms, all in
 **Example of generated error response:**
 ```json
 {
-  "type": "Boilerplate.Shared.Exceptions.ResourceNotFoundException",
+  "type": "Boilerplate.Shared.Infrastructure.Exceptions.ResourceNotFoundException",
   "title": "User not found",
   "status": 404,
   "instance": "GET /api/user/123",
-  "extensions": {
-    "key": "UserNotFound",
-    "traceId": "00-abc123...",
-    "Email": "user@example.com"
-  }
+  "key": "UserNotFound",
+  "traceId": "00-abc123..."
 }
 ```
+
+A value attached with `WithData("Email", …)` would **not** appear here - it goes to the log scope only. Only
+`WithExtensionData()` adds members to the response.
 
 ---
 
@@ -520,7 +522,7 @@ The project includes multiple exception handlers for different platforms, all in
   - Unknown exceptions (Production): Show generic "Unknown error"
   - Unknown exceptions (Development): Show full stack trace
 - `GetExceptionMessageToLog()`: Formats exception for logging (includes inner exceptions)
-- `UnWrapException()`: Unwraps `AggregateException` and `TargetInvocationException`
+- `UnWrapException()`: Unwraps `TargetInvocationException`
 - `IgnoreException()`: Determines if an exception should be logged
 - `GetExceptionData()`: Extracts all data attached to the exception
 

@@ -19,12 +19,18 @@ public class AppRoles
 
     public const string Demo = "demo";
 
+    /// <summary>
+    /// Roles the system itself depends on, so they may not be renamed or deleted.
+    /// <see cref="Demo"/> is included because new accounts are assigned to it by name during sign-up
+    /// (See UserManagerExtensions.CreateUserWithDemoRole).
+    /// </summary>
     public static bool IsBuiltInRole(string name)
     {
         return name is GlobalAdmin
             //#if (multitenant == true)
             or TenantAdmin
             //#endif
+            or Demo
             ;
     }
 }

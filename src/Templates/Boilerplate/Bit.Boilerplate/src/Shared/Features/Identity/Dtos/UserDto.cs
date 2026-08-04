@@ -20,10 +20,6 @@ public partial class UserDto : IValidatableObject
     public string? PhoneNumber { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [Display(Name = nameof(AppStrings.Password))]
-    public string? Password { get; set; }
-
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.FullName))]
     public string? FullName { get; set; }
 

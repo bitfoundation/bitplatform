@@ -64,22 +64,56 @@ public partial class AppProblemDetails
     [JsonExtensionData]
     public Dictionary<string, object?> Extensions { get; set; } = new(StringComparer.Ordinal);
 
-    public string? Key { get; set; } // Gets filled by Extensions property.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Key { get; set; }
 
-    public ErrorResourcePayload? Payload { get; set; } = new(); // Gets filled by Extensions property.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ErrorResourcePayload? Payload { get; set; }
 
 
+    /// <remarks>
+    /// This runs inside the client's own error handling, so it must not throw: a body that reaches it without a
+    /// resolvable <see cref="Type"/>, without a <see cref="Key"/>, or naming a type this cannot construct has to
+    /// degrade into an <see cref="UnknownException"/> rather than replace the real failure with a
+    /// <c>MissingMethodException</c> in the user's face.
+    /// </remarks>
     public static implicit operator Exception(AppProblemDetails problemDetails)
     {
-        Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!)
-            ?? typeof(KnownException).Assembly.ExportedTypes.FirstOrDefault(t => problemDetails.Type?.EndsWith(t.Name) is true)
-            ?? typeof(UnknownException);
+        var title = problemDetails.Title ?? nameof(UnknownException);
+        var key = problemDetails.Key ?? nameof(UnknownException);
 
-        var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
+        Type exceptionType = ResolveExceptionType(problemDetails.Type) ?? typeof(UnknownException);
 
-        Exception exp = exceptionType == typeof(ResourceValidationException)
-                            ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
-                            : (Exception)Activator.CreateInstance(exceptionType, [.. args])!;
+        Exception exp;
+
+        if (exceptionType == typeof(ResourceValidationException))
+        {
+            exp = new ResourceValidationException(title, problemDetails.Payload);
+        }
+        else
+        {
+            // TransientException and the like only offer the (string) overload, so the constructor decides the
+            // argument shape rather than the other way around.
+            object? arg = exceptionType.GetConstructor([typeof(LocalizedString)]) is not null ? new LocalizedString(key, title) : title;
+
+            try
+            {
+                exp = Activator.CreateInstance(exceptionType, [arg]) as Exception ?? new UnknownException(title);
+            }
+            catch (Exception)
+            {
+                // The constructor itself can throw (Activator surfaces it as a TargetInvocationException), and this
+                // operator runs inside the client's own error handling - see the remarks above.
+                exp = new UnknownException(title);
+            }
+        }
+
+        // Assigned rather than left to the constructor: the (string) and the ResourceValidationException overloads
+        // both set Key to the localized message, and Key is what call sites compare against a nameof(AppStrings.X).
+        if (exp is KnownException knownException)
+        {
+            knownException.Key = key;
+        }
 
         foreach (var data in problemDetails.Extensions)
         {
@@ -87,5 +121,28 @@ public partial class AppProblemDetails
         }
 
         return exp;
+    }
+
+    private static Type? ResolveExceptionType(string? type)
+    {
+        if (string.IsNullOrEmpty(type))
+            return null;
+
+        var assembly = typeof(KnownException).Assembly;
+
+        var exceptionType = assembly.GetType(type)
+            ?? assembly.ExportedTypes.FirstOrDefault(t => type.EndsWith(t.Name, StringComparison.Ordinal));
+
+        // The fuzzy EndsWith fallback above matches any exported type name, not just exception ones.
+        if (exceptionType is null || typeof(Exception).IsAssignableFrom(exceptionType) is false || exceptionType.IsAbstract)
+            return null;
+
+        if (exceptionType == typeof(ResourceValidationException))
+            return exceptionType; // Built through its own constructor by the caller.
+
+        var isConstructible = exceptionType.GetConstructor([typeof(LocalizedString)]) is not null
+                           || exceptionType.GetConstructor([typeof(string)]) is not null;
+
+        return isConstructible ? exceptionType : null;
     }
 }

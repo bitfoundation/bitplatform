@@ -11,14 +11,15 @@
         border-color: $clr-brd-dis;
         background-color: $clr-bg-dis;
 
-        @media (hover: hover) {
-            &:hover {
-                border-color: $clr-brd-dis;
-            }
-        }
-
-        &:active {
-            background-color: $clr-bg-dis;
+        //the browse button carries the role color while enabled, but a disabled file input reads as a
+        //neutral form field whatever its role and variant (see the disabled conventions in
+        //theme-variables.scss), so it drops the role colors for the generic disabled trio and stops
+        //answering the pointer. the border and the background are left to the variant blocks below,
+        //since which of the two is painted at all is exactly what the variants disagree on.
+        .bit-fin-lbl {
+            cursor: default;
+            color: $clr-fg-dis;
+            pointer-events: none;
         }
     }
 }
@@ -27,35 +28,124 @@
     display: none;
 }
 
+//everything the three variants share; the colors themselves live in the variant blocks right below,
+//which is also why the border is declared without its color here.
 .bit-fin-lbl {
     outline: 0;
     display: flex;
     cursor: pointer;
     font-weight: 300;
     user-select: none;
-    color: $clr-fg-pri;
     align-items: center;
-    font-size: spacing(2);
     justify-content: center;
-    min-height: spacing(4.5);
     border-radius: spacing(0.5);
-    padding: spacing(0.5) spacing(2);
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    min-height: var(--bit-fin-lbl-height);
+    font-size: var(--bit-fin-lbl-fontsize);
+    padding: var(--bit-fin-lbl-padding);
 
-    @media (hover: hover) {
-        &:hover {
-            border-color: $clr-brd-pri-hover;
+    i {
+        margin-inline-end: spacing(0.625);
+    }
+}
+
+//Fill - the default: a solid block of the role color labelled in the role's on-color.
+.bit-fin-fil {
+    .bit-fin-lbl {
+        color: var(--bit-fin-clr-txt);
+        border-color: var(--bit-fin-clr);
+        background-color: var(--bit-fin-clr);
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: var(--bit-fin-clr-hover);
+                background-color: var(--bit-fin-clr-hover);
+            }
+        }
+
+        &:active {
+            border-color: var(--bit-fin-clr-active);
+            background-color: var(--bit-fin-clr-active);
         }
     }
 
-    &:active {
-        background-color: $clr-bg-pri-active;
+    &.bit-dis .bit-fin-lbl {
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+}
+
+//Outline: only the rule around the button carries the role color at rest, and it fills in like the Fill
+//variant once a pointer lands on it.
+.bit-fin-otl {
+    .bit-fin-lbl {
+        color: var(--bit-fin-clr);
+        border-color: var(--bit-fin-clr);
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--bit-fin-clr-txt);
+                background-color: var(--bit-fin-clr-hover);
+            }
+        }
+
+        &:active {
+            color: var(--bit-fin-clr-txt);
+            background-color: var(--bit-fin-clr-active);
+        }
     }
 
-    i {
-        padding-right: spacing(0.625);
+    &.bit-dis .bit-fin-lbl {
+        border-color: $clr-brd-dis;
+        background-color: transparent;
     }
+}
+
+//Text: neither rule nor fill at rest, for a file input that should not outweigh the fields around it.
+.bit-fin-txt {
+    .bit-fin-lbl {
+        color: var(--bit-fin-clr);
+        border-color: transparent;
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--bit-fin-clr-txt);
+                background-color: var(--bit-fin-clr-hover);
+            }
+        }
+
+        &:active {
+            color: var(--bit-fin-clr-txt);
+            background-color: var(--bit-fin-clr-active);
+        }
+    }
+
+    &.bit-dis .bit-fin-lbl {
+        border-color: transparent;
+        background-color: transparent;
+    }
+}
+
+//while a file is dragged over the component the browse button becomes the drop zone, and it does so the
+//same way in every variant: the hover shade of the role fills it, and the rule turns into a dashed one
+//in the on-color - the role color itself would vanish against that fill. the root class is repeated so
+//that the drop state outranks the per-variant :hover rules above, which are otherwise as specific.
+.bit-fin.bit-fin-drg {
+    .bit-fin-lbl {
+        border-style: dashed;
+        color: var(--bit-fin-clr-txt);
+        border-color: var(--bit-fin-clr-txt);
+        background-color: var(--bit-fin-clr-hover);
+    }
+}
+
+.bit-fin-dsc {
+    color: $clr-fg-sec;
+    margin-top: spacing(0.5);
+    font-size: var(--bit-fin-fs-fontsize);
 }
 
 .bit-fin-fl {
@@ -70,10 +160,10 @@
     color: $clr-fg-pri;
     align-items: center;
     flex-flow: row nowrap;
-    font-size: spacing(1.75);
     margin-top: spacing(0.375);
     border-radius: spacing(0.625);
     justify-content: space-between;
+    font-size: var(--bit-fin-itm-fontsize);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
@@ -98,6 +188,15 @@
     .bit-fin-msg {
         color: $clr-err;
     }
+}
+
+.bit-fin-prv {
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: spacing(0.5);
+    width: var(--bit-fin-prv-size);
+    height: var(--bit-fin-prv-size);
+    margin-inline-start: spacing(0.5);
 }
 
 .bit-fin-fic {
@@ -127,8 +226,8 @@
     color: $clr-fg-sec;
     align-items: center;
     flex-flow: row nowrap;
-    font-size: spacing(1.625);
     margin-top: spacing(0.25);
+    font-size: var(--bit-fin-fs-fontsize);
 }
 
 .bit-fin-fs {
@@ -139,13 +238,14 @@
 
 .bit-fin-rbt {
     display: flex;
+    flex-shrink: 0;
     cursor: pointer;
     color: $clr-fg-pri;
-    width: spacing(4.5);
     align-items: center;
-    height: spacing(4.5);
     justify-content: center;
     background-color: $clr-bg-sec;
+    width: var(--bit-fin-rbt-size);
+    height: var(--bit-fin-rbt-size);
 
     @media (hover: hover) {
         &:hover {
@@ -157,7 +257,73 @@
         background-color: $clr-bg-sec-active;
     }
 
-    i {
-        font-size: spacing(2);
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+        background-color: $clr-bg-dis;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $clr-bg-dis;
+            }
+        }
     }
+
+    i {
+        font-size: var(--bit-fin-ico-fontsize);
+    }
+}
+
+.bit-fin-lvr {
+    top: auto;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-fin-#{$role} {
+        --bit-fin-clr: #{role($tokens, main)};
+        --bit-fin-clr-txt: #{role($tokens, on)};
+        --bit-fin-clr-hover: #{role($tokens, hover)};
+        --bit-fin-clr-active: #{role($tokens, active)};
+    }
+}
+
+.bit-fin-sm {
+    --bit-fin-lbl-height: #{spacing(3.5)};
+    --bit-fin-lbl-fontsize: #{spacing(1.5)};
+    --bit-fin-lbl-padding: #{spacing(0.25)} #{spacing(1.5)};
+    --bit-fin-itm-fontsize: #{spacing(1.5)};
+    --bit-fin-fs-fontsize: #{spacing(1.375)};
+    --bit-fin-prv-size: #{spacing(4)};
+    --bit-fin-rbt-size: #{spacing(3.5)};
+    --bit-fin-ico-fontsize: #{spacing(1.5)};
+}
+
+.bit-fin-md {
+    --bit-fin-lbl-height: #{spacing(4.5)};
+    --bit-fin-lbl-fontsize: #{spacing(2)};
+    --bit-fin-lbl-padding: #{spacing(0.5)} #{spacing(2)};
+    --bit-fin-itm-fontsize: #{spacing(1.75)};
+    --bit-fin-fs-fontsize: #{spacing(1.625)};
+    --bit-fin-prv-size: #{spacing(5)};
+    --bit-fin-rbt-size: #{spacing(4.5)};
+    --bit-fin-ico-fontsize: #{spacing(2)};
+}
+
+.bit-fin-lg {
+    --bit-fin-lbl-height: #{spacing(5.5)};
+    --bit-fin-lbl-fontsize: #{spacing(2.25)};
+    --bit-fin-lbl-padding: #{spacing(0.75)} #{spacing(2.5)};
+    --bit-fin-itm-fontsize: #{spacing(2)};
+    --bit-fin-fs-fontsize: #{spacing(1.75)};
+    --bit-fin-prv-size: #{spacing(6.5)};
+    --bit-fin-rbt-size: #{spacing(5.5)};
+    --bit-fin-ico-fontsize: #{spacing(2.5)};
 }

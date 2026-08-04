@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable

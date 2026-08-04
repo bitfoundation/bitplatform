@@ -85,15 +85,16 @@ The modal provides several powerful diagnostic and maintenance actions:
 - **Use Case**: Testing error boundaries, exception handlers, and logging infrastructure
 
 #### 🔬 **Call Diagnostics API**
-- Sends a request to [`DiagnosticsController.PerformDiagnostics`](/src/Server/Boilerplate.Server.Api/Features/Diagnostics/DiagnosticsController.cs)
+- Sends a request to [`DiagnosticController.PerformDiagnostic`](/src/Server/Boilerplate.Server.Api/Features/Diagnostic/DiagnosticController.cs)
 - Returns comprehensive server-side diagnostics including:
   - Client IP address
   - HTTP trace identifier
   - Authentication status
+  - Current culture and UI culture
   - All HTTP request headers
-  - Server environment name
+  - Server environment name, and (when `multitenant` is on) the current `TenantId`
   - Base URLs
-  - Runtime information (AOT detection, GC configuration, etc.)
+- The modal then appends runtime information of its own (AOT detection, GC configuration, etc.) - that part is produced by the component, not by the API
 - **Also Tests**:
   - Push notification functionality (if subscribed)
   - SignalR connection (if connected)

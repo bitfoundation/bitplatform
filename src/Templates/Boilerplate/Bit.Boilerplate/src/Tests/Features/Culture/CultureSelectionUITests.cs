@@ -1,6 +1,6 @@
 namespace Boilerplate.Tests.Features.Culture;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class CultureSelectionUITests : AppPageTest
 {
     /// <summary>

@@ -1,7 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
@@ -46,6 +43,15 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     public async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
     {
+        // A response without an access token means the sign-in did not complete - typically a two-factor challenge.
+        // ConfirmEmail / ConfirmPhone can answer with one: register with both an e-mail and a phone, confirm one of
+        // them, turn 2FA on, then come back to confirm the other, and that confirmation's automatic sign-in is stopped
+        // by the second factor it has no way to ask for. Not being signed in there is fine - the user signs in again -
+        // but storing the empty response is not: on the Web client the null crosses JS interop as the string "null",
+        // which is non-empty enough to get past the token provider's guard and then throws while being parsed.
+        if (string.IsNullOrEmpty(response.AccessToken))
+            return;
+
         rememberMe ??= await storageService.IsPersistent("refresh_token");
 
         await storageService.SetItem("access_token", response!.AccessToken);

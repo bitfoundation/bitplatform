@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.SignalR.Client;
-
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public class SignalRInfiniteRetryPolicy : IRetryPolicy

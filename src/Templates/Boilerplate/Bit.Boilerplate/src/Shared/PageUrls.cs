@@ -4,8 +4,11 @@ using System.ComponentModel;
 namespace Boilerplate.Shared;
 
 // The [Description] attribute defines a short, human/AI friendly summary for a page.
-// Only pages that carry a [Description] are exposed by PageUrls.GetPages() / GetPagesMarkdown(),
-// which feed the chatbot's GetAppPages tool and the follow-up suggestions agent (see PageUrls.Pages.cs).
+// Only pages that carry a [Description] are exposed by PageUrls.GetPages() / GetPagesMarkdown() (see PageUrls.Pages.cs).
+// Those are published PUBLICLY and WITHOUT authentication at GET /llms.txt
+// (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs) and, when signalR is enabled, passed to the
+// chatbot's GetAppPages tool and the follow-up suggestions agent.
+// Do not describe a page here unless the description is safe for an anonymous reader.
 public static partial class PageUrls
 {
     [Description("Home page.")]

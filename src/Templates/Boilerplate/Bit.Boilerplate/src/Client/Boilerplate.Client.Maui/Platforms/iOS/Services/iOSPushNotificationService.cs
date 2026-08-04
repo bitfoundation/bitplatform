@@ -1,7 +1,7 @@
 using UIKit;
 using UserNotifications;
-using Plugin.LocalNotification;
-using Microsoft.Extensions.Logging;
+
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 

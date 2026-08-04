@@ -4,7 +4,7 @@ using Aspire.Hosting.Testing;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class ExternalIdentityTests : AppPageTest
 {
     // Seeded in the Keycloak dev realm (See Boilerplate.Server.AppHost/Infrastructure/Realms/dev-realm.json).

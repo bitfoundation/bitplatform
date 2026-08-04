@@ -1,8 +1,8 @@
 # Component CSS variables
 
 <!-- GENERATED FILE - do not edit by hand. Regenerated and verified by
-     BitComponentCssVariablesContractTests; on an intentional change, run that test and copy
-     the component-css-variables.generated.md it writes next to the test binaries over this file. -->
+     BitComponentCssVariablesContractTests; on an intentional change, run that test once - it
+     rewrites this file in place - then review the diff and commit it. -->
 
 Every bit BlazorUI component exposes its themable knobs as `--bit-<cmp>-*` CSS custom
 properties, assigned on the component root by its role/variant classes and consumed by its
@@ -10,7 +10,7 @@ internal selectors. They are **stable public API**: override them from app CSS
 (`.bit-btn { --bit-btn-clr: hotpink; }`) or per instance via the `Style` parameter
 (`Style="--bit-btn-clr: hotpink"`), and rely on this contract-tested inventory when upgrading.
 
-32 components, 270 variables.
+33 components, 281 variables.
 
 ## BitActionButton
 
@@ -127,12 +127,11 @@ internal selectors. They are **stable public API**: override them from app CSS
 - `--bit-chg-circle-size`
 - `--bit-chg-clr`
 - `--bit-chg-clr-bg`
-- `--bit-chg-clr-brd`
 - `--bit-chg-clr-dis`
 - `--bit-chg-clr-dis-text`
 - `--bit-chg-clr-focus`
 - `--bit-chg-clr-hover`
-- `--bit-chg-dot-position`
+- `--bit-chg-dot-size`
 - `--bit-chg-flex-direction`
 - `--bit-chg-flex-flow`
 - `--bit-chg-fontsize`
@@ -150,6 +149,21 @@ internal selectors. They are **stable public API**: override them from app CSS
 - `--bit-drp-clr-focus`
 - `--bit-drp-clr-hover`
 - `--bit-drp-clr-text`
+
+## BitFileInput
+
+- `--bit-fin-clr`
+- `--bit-fin-clr-active`
+- `--bit-fin-clr-hover`
+- `--bit-fin-clr-txt`
+- `--bit-fin-fs-fontsize`
+- `--bit-fin-ico-fontsize`
+- `--bit-fin-itm-fontsize`
+- `--bit-fin-lbl-fontsize`
+- `--bit-fin-lbl-height`
+- `--bit-fin-lbl-padding`
+- `--bit-fin-prv-size`
+- `--bit-fin-rbt-size`
 
 ## BitIcon
 

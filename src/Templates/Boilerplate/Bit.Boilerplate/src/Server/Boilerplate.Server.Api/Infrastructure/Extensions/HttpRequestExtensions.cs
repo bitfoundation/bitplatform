@@ -17,10 +17,14 @@ public static class HttpRequestExtensions
 
             var serverUrl = request.GetBaseUrl();
 
-            var origin = request.Query["origin"].Union(request.Headers["X-Origin"]).Select(o => new Uri(o)).FirstOrDefault();
+            var candidate = request.Query["origin"].Union(request.Headers["X-Origin"])
+                                                   .FirstOrDefault(o => string.IsNullOrWhiteSpace(o) is false);
 
-            if (origin is null)
+            if (candidate is null)
                 return serverUrl; // Assume that web app and server are hosted in one place.
+
+            if (Uri.TryCreate(candidate, UriKind.Absolute, out var origin) is false)
+                throw new BadRequestException($"Invalid origin {candidate}");
 
             if (origin == serverUrl || settings.IsTrustedOrigin(origin))
                 return origin;

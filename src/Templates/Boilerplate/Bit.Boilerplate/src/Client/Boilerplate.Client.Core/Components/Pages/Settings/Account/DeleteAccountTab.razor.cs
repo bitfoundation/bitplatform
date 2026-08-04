@@ -1,5 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-
 namespace Boilerplate.Client.Core.Components.Pages.Settings.Account;
 
 public partial class DeleteAccountTab

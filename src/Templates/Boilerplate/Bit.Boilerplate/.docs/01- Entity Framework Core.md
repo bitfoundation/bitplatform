@@ -450,10 +450,18 @@ dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --outpu
 `SyncService` uses `CommunityToolkit.DataSync` to synchronize data between the client-side offline database and the server database.
 Conventions:
 
-- Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs)
-- DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
+- Entity must inherit from `RepositoryControlledEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs)
+- DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Features/Todo/TodoItemDto.cs`](/src/Shared/Features/Todo/TodoItemDto.cs)
 - TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
-- Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
+- Repository: a class implementing `IRepository<TDto>` that *wraps* an `EntityTableRepository<TEntity>` and maps at
+  the boundary. Example:
+  [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
+
+> **Scoping caveat.** `TableController`'s by-id verbs (`ReadAsync` / `ReplaceAsync` / `DeleteAsync`) go straight to
+> the repository and never consult `AsQueryableAsync`, which is the only method that filters on `UserId`. The
+> shipped `TodoItemTableRepository` deliberately does **not** add a per-user check there: at sync time a device may
+> be pushing operations queued while it was in another user's hands. If your app has no such requirement, add the
+> ownership check in the wrapper — that is the only place it can live.
 
 ### Additional Resources
 

@@ -1,5 +1,4 @@
 using System.Net;
-using Boilerplate.Client.Core.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Server.Web.Infrastructure.Services;

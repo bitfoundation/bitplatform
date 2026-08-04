@@ -29,18 +29,18 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         <Using Include="Bit.BlazorUI.Demo.Shared" />
         <Watch Remove="*.scss" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.5.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.5.0">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.6.0-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.5.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.80" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.90" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
         <PackageReference Include="Velopack" Version="1.2.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
