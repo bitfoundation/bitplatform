@@ -1,8 +1,6 @@
 //+:cnd:noEmit
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Boilerplate.Server.Api.Infrastructure.Services;
-using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 

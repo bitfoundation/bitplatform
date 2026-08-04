@@ -22,8 +22,10 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
+        <Using Include="System.Net" />
         <Using Include="Riok.Mapperly.Abstractions" />
         <Using Include="Boilerplate.Shared.Infrastructure.Attributes" />
+        <Using Include="Boilerplate.Shared.Features.Identity.Dtos" />
         <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" />
     </ItemGroup>
 

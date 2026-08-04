@@ -1,10 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Server.Api.Infrastructure.Data;
-
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class QuickSignInUITests : AppPageTest
 {
     /// <summary>

@@ -118,10 +118,10 @@ The `[DtoResourceType]` attribute eliminates this repetition by specifying the r
 
 ### Example: CategoryDto
 
-Here's the actual `CategoryDto` from the project (`src/Shared/Dtos/Categories/CategoryDto.cs`):
+Here's the actual `CategoryDto` from the project (`src/Shared/Features/Categories/CategoryDto.cs`):
 
 ```csharp
-namespace Boilerplate.Shared.Dtos.Categories;
+namespace Boilerplate.Shared.Features.Categories;
 
 [DtoResourceType(typeof(AppStrings))]  // ✅ Specify resource type once!
 public partial class CategoryDto

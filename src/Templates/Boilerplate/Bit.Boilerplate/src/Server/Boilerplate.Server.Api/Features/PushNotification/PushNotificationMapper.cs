@@ -1,9 +1,9 @@
-using Riok.Mapperly.Abstractions;
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Server.Api.Features.PushNotification;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class PushNotificationMapper

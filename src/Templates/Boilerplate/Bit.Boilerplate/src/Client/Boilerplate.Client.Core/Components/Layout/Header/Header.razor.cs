@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components.Routing;
-
 namespace Boilerplate.Client.Core.Components.Layout.Header;
 
 public partial class Header : AppComponentBase

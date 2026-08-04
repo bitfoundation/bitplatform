@@ -250,6 +250,21 @@
                         "claim.name": "email",
                         "jsonType.label": "String"
                     }
+                },
+                {
+                    "id": "email-verified-mapper",
+                    "name": "email verified",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-property-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "userinfo.token.claim": "true",
+                        "user.attribute": "emailVerified",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "email_verified",
+                        "jsonType.label": "boolean"
+                    }
                 }
             ]
         },

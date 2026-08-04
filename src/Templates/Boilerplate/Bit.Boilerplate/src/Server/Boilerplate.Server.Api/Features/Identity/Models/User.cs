@@ -5,7 +5,6 @@ using Boilerplate.Server.Api.Features.Todo;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Server.Api.Features.Identity.Models;
 

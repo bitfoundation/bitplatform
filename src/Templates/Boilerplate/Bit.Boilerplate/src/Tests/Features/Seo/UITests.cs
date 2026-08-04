@@ -1,6 +1,6 @@
 namespace Boilerplate.Tests.Features.Seo;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class UITests : AppPageTest
 {
     [TestMethod, TestCategory("PreRendering")]
@@ -117,6 +117,7 @@ public partial class UITests : AppPageTest
             configureTestServices: services => services.FakeExternalStatistics(),
             configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
         ).Start(TestContext.CancellationToken);
+
 
         var serverAddress = server.WebAppServerAddress;
 

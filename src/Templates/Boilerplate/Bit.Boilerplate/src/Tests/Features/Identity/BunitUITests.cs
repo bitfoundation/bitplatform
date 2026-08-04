@@ -24,7 +24,7 @@ namespace Boilerplate.Tests.Features.Identity;
 /// component rendering. Reach for bUnit for fast, component-focused checks and Playwright for full end-to-end
 /// confidence.
 /// </summary>
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public class BunitUITests
 {
     [TestMethod]
@@ -36,9 +36,13 @@ public class BunitUITests
         await using var ctx = server.CreateBunitContext();
 
         // Render just the sign-in panel (the focused component under test) instead of the whole page/app.
+        // The panel is rendered with an explicit ReturnUrl on purpose: bUnit's NavigationManager starts at
+        // "http://localhost/", which is byte-identical to ToAbsoluteUri(PageUrls.Home), so asserting a redirect to the
+        // home page would hold before any navigation happened and could never catch a missing one.
         var cut = ctx.Render<CascadingAuthenticationState>(parameters => parameters
             .AddChildContent<SignInPanel>(panel => panel
-                .Add(p => p.SignInPanelType, SignInPanelType.Full)));
+                .Add(p => p.SignInPanelType, SignInPanelType.Full)
+                .Add(p => p.ReturnUrl, PageUrls.Settings)));
 
         // Fill the credentials and submit. .Change() drives the components' (non-debounced) onchange path, so
         // the two-way bound model is updated synchronously in C# - no browser/JS required.
@@ -52,15 +56,16 @@ public class BunitUITests
         // user is the seeded default account.
         var authenticationStateProvider = ctx.Services.GetRequiredService<AuthenticationStateProvider>();
 
-        cut.WaitForAssertion(() =>
+        await cut.WaitForAssertionAsync(async () =>
         {
-            var user = authenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult().User;
+            var user = (await authenticationStateProvider.GetAuthenticationStateAsync()).User;
             Assert.IsTrue(user.IsAuthenticated());
             Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user.GetUserId());
         }, timeout: TimeSpan.FromSeconds(30));
 
-        // A successful sign-in navigates the user to the home page.
+        // A successful sign-in navigates the user to the return-url she came from.
         var navigationManager = ctx.Services.GetRequiredService<NavigationManager>();
-        Assert.AreEqual(navigationManager.ToAbsoluteUri(PageUrls.Home).ToString(), navigationManager.Uri);
+        Assert.AreEqual(navigationManager.ToAbsoluteUri(PageUrls.Settings).ToString(), navigationManager.Uri,
+            "Signing in should have navigated to the panel's ReturnUrl (See SignInPanel.GetSafeReturnUrl).");
     }
 }

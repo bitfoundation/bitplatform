@@ -11,5 +11,8 @@ public class PushNotificationSubscriptionConfiguration : IEntityTypeConfiguratio
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasUniqueIndexOnNullable(b => b.UserSessionId);
+
+        builder.HasIndex(sub => sub.DeviceId)
+               .IsUnique();
     }
 }

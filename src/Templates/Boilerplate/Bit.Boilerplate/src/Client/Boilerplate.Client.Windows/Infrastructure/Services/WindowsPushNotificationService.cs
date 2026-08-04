@@ -1,3 +1,5 @@
+using Boilerplate.Shared.Features.PushNotification;
+
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public partial class WindowsPushNotificationService : PushNotificationServiceBase

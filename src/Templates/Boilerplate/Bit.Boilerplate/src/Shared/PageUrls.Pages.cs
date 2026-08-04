@@ -16,7 +16,10 @@ public static partial class PageUrls
     /// A page is included only when its <see cref="PageUrls"/> constant (or <see cref="SettingsSections"/> field)
     /// is decorated with a <see cref="DescriptionAttribute"/>, so this list automatically adapts to the
     /// enabled template features (Admin/Sales/multitenant/ads/...).
-    /// Consumed by both the chatbot's GetAppPages tool and <see cref="GetPagesMarkdown"/>.
+    /// Consumed by the public, unauthenticated GET /llms.txt endpoint
+    /// (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs) and, when signalR is enabled, by the
+    /// chatbot's GetAppPages tool and <see cref="GetPagesMarkdown"/>. The list is NOT filtered by the caller's
+    /// roles or features - every description is readable by anonymous clients.
     /// </summary>
     public static IReadOnlyList<PageInfo> GetPages()
     {
@@ -47,7 +50,7 @@ public static partial class PageUrls
 
     /// <summary>
     /// Builds a markdown list of the pages returned by <see cref="GetPages"/> (built by hand, no external library).
-    /// Used as context for the follow-up suggestions agent.
+    /// Used as context for the follow-up suggestions agent, which only exists when signalR is enabled.
     /// </summary>
     public static string GetPagesMarkdown()
     {

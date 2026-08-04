@@ -25,9 +25,12 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    ```csharp
    services.AddScoped<HtmlRenderer>();
    services.AddScoped<CultureInfoManager>();
-   services.TryAddSingleton(TimeProvider.System);
-   services.AddSingleton<SharedSettings>();
+   services.AddSingleton(TimeProvider.System);
+   services.AddSingleton(sp => { SharedSettings settings = new(); configuration.Bind(settings); return settings; });
+   services.AddOptions<SharedSettings>().Bind(configuration).ValidateDataAnnotations().ValidateOnStart();
+   services.ConfigureAuthorizationCore();
    services.AddLocalization();
+   services.AddSingleton<IMemoryCache, AppMemoryCache>();
    ```
 
 2. **`IClientCoreServiceCollectionExtensions.cs`** ([`src/Client/Boilerplate.Client.Core/Extensions/`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs))

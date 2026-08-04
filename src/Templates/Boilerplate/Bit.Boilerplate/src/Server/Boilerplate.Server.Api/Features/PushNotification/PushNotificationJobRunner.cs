@@ -5,11 +5,8 @@ using System.Collections.Concurrent;
 using Hangfire.Server;
 using System.Net;
 //#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
 using Boilerplate.Shared.Infrastructure.Dtos.SignalR;
 //#endif
-using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.PushNotification;
 

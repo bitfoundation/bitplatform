@@ -1135,6 +1135,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwordless sign-in disabled successfully</value>
   </data>
+    <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
+    <value>Could not verify your passkey, so it was not removed. Please try again.</value>
+  </data>
+    <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
+    <value>This passkey no longer exists on the server; it has been removed from this device.</value>
+  </data>
     <data name="Clear" xml:space="preserve">
     <value>Clear</value>
   </data>
@@ -1331,6 +1337,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>You can't remove this SuperAdmin user</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>You can't revoke the sessions of this SuperAdmin user</value>
+  </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>You can't remove your current session</value>
   </data>
@@ -1354,6 +1363,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Page URL</value>
+  </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>The page URL must be a relative URL within the app, such as /products.</value>
   </data>
     <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>You are not authorized</value>
@@ -1425,6 +1437,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>The tenant name '{0}' is already taken.</value>
   </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>The tenant name '{0}' is reserved and cannot be used.</value>
+  </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Tenant could not be found.</value>
   </data>
@@ -1448,6 +1463,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>The domain '{0}' is already taken.</value>
+  </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>The domain '{0}' is reserved and cannot be used.</value>
   </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>You haven't selected a tenant yet. Switch to one of your tenants or create a new one to get started.</value>

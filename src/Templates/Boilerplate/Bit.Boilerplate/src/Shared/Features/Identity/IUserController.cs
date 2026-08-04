@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity.Dtos;
 //#if (multitenant == true)
 using Boilerplate.Shared.Features.Tenants.Dtos;
 //#endif

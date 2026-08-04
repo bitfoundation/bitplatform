@@ -1,8 +1,5 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Server.Api.Features.Identity.Services;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Infrastructure.Services;
+using Boilerplate.Server.Shared;
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 //#if (signalR == true)
@@ -22,6 +19,7 @@ public partial class TenantController : AppControllerBase, ITenantController
     [AutoInject] private IFusionCache fusionCache = default!;
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private IdentityEmailService emailService = default!;
+    [AutoInject] private ServerSharedSettings serverSharedSettings = default!;
 
     [HttpGet]
     public async Task<TenantDto?> GetCurrentTenant(CancellationToken cancellationToken)
@@ -63,7 +61,7 @@ public partial class TenantController : AppControllerBase, ITenantController
         {
             RoleId = tenantAdminRole.Id,
             ClaimType = AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
-            ClaimValue = "-1"
+            ClaimValue = AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture)
         }, cancellationToken);
 
         await DbContext.UserRoles.AddAsync(new() { UserId = userId, RoleId = tenantAdminRole.Id, TenantId = tenantToAdd.Id }, cancellationToken);
@@ -97,10 +95,12 @@ public partial class TenantController : AppControllerBase, ITenantController
         }, cancellationToken);
 
         //#if (signalR == true)
-        // Each new tenant gets the 3 default system prompts upon creation.
+        // Each new tenant gets the default system prompts upon creation.
         await DbContext.SystemPrompts.AddRangeAsync([
             new() { PromptKind = PromptKind.Support, Markdown = SystemPromptConfiguration.GetInitialSystemPromptMarkdown(), TenantId = tenantToAdd.Id },
+            //#if (module == "Sales" || module == "Admin")
             new() { PromptKind = PromptKind.AnalyzeProductImage, Markdown = SystemPromptConfiguration.GetAnalyzeProductImageSystemPromptMarkdown(), TenantId = tenantToAdd.Id },
+            //#endif
             new() { PromptKind = PromptKind.FollowUpSuggestion, Markdown = SystemPromptConfiguration.GetFollowUpSuggestionSystemPromptMarkdown(), TenantId = tenantToAdd.Id }
         ], cancellationToken);
         //#endif
@@ -166,6 +166,8 @@ public partial class TenantController : AppControllerBase, ITenantController
         // any role. AssignDemoRole is idempotent, so calling it for both is safe (See UserManagerExtensions.AssignDemoRole).
         await userManager.AssignDemoRole(user.Id, tenantId);
 
+        var webAppUrl = HttpContext.Request.GetWebAppUrl();
+
         await DbContext.TenantUsers.AddAsync(new()
         {
             TenantId = tenantId,
@@ -177,7 +179,6 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         var inviterDisplayName = User.GetDisplayName();
         var tenantTitle = tenant.Title ?? tenant.Name!;
-        var webAppUrl = HttpContext.Request.GetWebAppUrl();
 
         List<Task> sendMessagesTasks = [];
 
@@ -204,10 +205,19 @@ public partial class TenantController : AppControllerBase, ITenantController
         // Enforcing uniqueness alone is NOT enough for production - verify domain ownership and add it to TrustedOrigins first.
         tenant.Domain = string.IsNullOrWhiteSpace(tenant.Domain) ? null : tenant.Domain.Trim().ToLowerInvariant();
 
+        if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
+            && ReservedTenantNames.IsReserved(tenant.Name, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
+            throw new ResourceValidationException((nameof(TenantDto.Name), [Localizer[nameof(AppStrings.ReservedTenantName), tenant.Name!]]));
+
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
         if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
             && await DbContext.Tenants.AnyAsync(t => t.Id != tenant.Id && t.Name == tenant.Name, cancellationToken))
             throw new ResourceValidationException((nameof(TenantDto.Name), [Localizer[nameof(AppStrings.DuplicateTenantName), tenant.Name!]]));
+
+        if (tenant.Domain is not null
+            && (entry.State is EntityState.Added || entry.Property(t => t.Domain).IsModified)
+            && ReservedTenantNames.IsReservedDomain(tenant.Domain, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
+            throw new ResourceValidationException((nameof(TenantDto.Domain), [Localizer[nameof(AppStrings.ReservedTenantDomain), tenant.Domain]]));
 
         if (tenant.Domain is not null
             && (entry.State is EntityState.Added || entry.Property(t => t.Domain).IsModified)

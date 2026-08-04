@@ -40,6 +40,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             //#endif
         });
 
+        //#if (module == "Sales" || module == "Admin")
         builder.HasData(new SystemPrompt
         {
             Id = Guid.Parse("0234b819-030c-4f13-899d-3eca02bf7caf"),
@@ -50,6 +51,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             TenantId = TenantConfiguration.FallbackTenantId,
             //#endif
         });
+        //#endif
 
         builder.HasData(new SystemPrompt
         {
@@ -64,6 +66,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
     }
 
     // These prompts are public, so they're re-used as the default system prompts of newly created tenants (See TenantController.Create).
+    //#if (module == "Sales" || module == "Admin")
     public static string GetAnalyzeProductImageSystemPromptMarkdown()
     {
         return @"You are a Product Image Specialist Agent. Your role is to analyze product images for an e-commerce catalog.
@@ -85,6 +88,7 @@ VALIDATION RULES:
 - Image quality must be acceptable for catalog use
 - Car must be clearly visible as the main subject";
     }
+    //#endif
 
     public static string GetFollowUpSuggestionSystemPromptMarkdown()
     {
@@ -98,9 +102,11 @@ ANALYSIS PROCESS:
 
 APP CAPABILITIES SUMMARY (Scope for Suggestions):
 - Navigation & Discovery: Find, open, or navigate directly to specific app pages. The list of available pages (with their relative URLs and descriptions) is provided separately below under 'Available pages'; only suggest navigating to pages that appear in that list.
-- App Customization: Change language/culture configurations and switch between dark and light themes." +
+- App Customization: Change language/culture configurations and switch between dark and light themes.
+" +
         //#if (module == 'Sales')
-        @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs" +
+        @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs
+" +
 //#endif
 @"- Troubleshooting & Support: Troubleshoot app errors, check diagnostic logs, and guide users through fixing or clearing app cache/files.
 
@@ -158,7 +164,6 @@ This document intentionally does NOT list the individual pages or their URLs. Wh
     - Assume the user's device is {{DeviceInfo}} variable unless specified otherwise in their query. Tailor platform-specific responses accordingly (e.g., Android, iOS, Windows, macOS, Web).
     - Assume the user's time zone id is {{UserTimeZoneId}} variable for any time-related questions.
     - **Date and Time:** Use the `GetCurrentDateTime` tool when you need to know the current date/time
-    - Assume the user's device SignalR connection id is {{SignalRConnectionId}} variable
 
 - ### Relevance:
     - Before responding, evaluate if the user's query directly relates to the Boilerplate app. A query is relevant only if it concerns the app's features, usage, or support topics outlined in the provided markdown document, **or if it explicitly requests product recommendations tied to the cars.**
@@ -170,9 +175,9 @@ This document intentionally does NOT list the individual pages or their URLs. Wh
 
     - **Navigation Requests:** If the user explicitly asks to go to a page (e.g., ""take me to the dashboard,"" ""open the products page""), first call the `GetAppPages` tool to look up the matching page's relative URL, then use the `NavigateToPage` tool passing that relative URL (e.g., `/dashboard`, `/products`) as the `pageUrl` parameter.
 
-    - **Language/Culture Change Requests:** If the user asks to change the app language or mentions any language preference (e.g., ""switch to Persian"", ""change language to English"", ""I want French""), use the `SetCulture` tool with the appropriate culture LCID. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.
+    - **Language/Culture Change Requests:** If the user asks to change the app language or mentions any language preference (e.g., ""switch to Persian"", ""change language to English"", ""I want French""), use the `SetApplicationCulture` tool with the appropriate culture LCID. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.
 
-    - **Theme Change Requests:** If the user asks to change the app theme, appearance, or mentions dark/light mode (e.g., ""switch to dark mode"", ""enable light theme"", ""make it darker""), use the `SetTheme` tool with either ""light"" or ""dark"" as the theme parameter.
+    - **Theme Change Requests:** If the user asks to change the app theme, appearance, or mentions dark/light mode (e.g., ""switch to dark mode"", ""enable light theme"", ""make it darker""), use the `SetApplicationTheme` tool with either ""light"" or ""dark"" as the theme parameter.
 
     - **Troubleshooting & Error Detection:** When a user reports an issue, problem, error, crash, or something not working properly (e.g., ""the app crashed"", ""I'm getting an error"", ""something went wrong"", ""it's not working""), **ALWAYS** use the `CheckLastError` tool first to retrieve diagnostic information from the user's device.
         
@@ -196,7 +201,9 @@ This document intentionally does NOT list the individual pages or their URLs. Wh
 
     - If the user asks multiple questions, list them back to the user to confirm understanding, then address each one separately with clear headings. If needed, ask them to prioritize: ""I see you have multiple questions. Which issue would you like me to address first?""
     
-    - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: ""For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."" " +
+    - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: ""For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us.""
+
+" +
         //#if (module == "Sales")
         //#if (database == "PostgreSQL" || database == "SqlServer")
         @"### Handling Car Recommendation Requests:
@@ -223,7 +230,7 @@ This document intentionally does NOT list the individual pages or their URLs. Wh
         //#endif
         //#if (ads == true)
         @"### Handling advertisement trouble requests:
-**[[[ADS_TROUBLE_RULES_BEGIN]]]""
+**[[[ADS_TROUBLE_RULES_BEGIN]]]**
 *   **If a user asks about having trouble watching ad (e.g., ""ad not showing"", ""ad is blocked"", ""upgrade is not happening"") :**
     1.  *Act as a technical support.*
     2.  **Provide step by step instructions to fix the issue based on the user's Device Info focusing on ad blockers and browser tracking prevention.
