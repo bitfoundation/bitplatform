@@ -22,7 +22,11 @@ internal static class CalloutsJsRuntimeExtensions
         string footerId,
         bool setCalloutWidth,
         bool fixedCalloutWidth,
-        int maxWindowWidth) where T : class
+        int maxWindowWidth,
+        // An optional cap on the scrollable content of the callout, in pixels. It is applied on top of
+        // the space the viewport leaves, so it can only ever make the list shorter; zero means the
+        // viewport alone decides, which is what the components that do not offer a cap pass.
+        int maxHeight = 0) where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -42,7 +46,8 @@ internal static class CalloutsJsRuntimeExtensions
             footerId,
             setCalloutWidth,
             fixedCalloutWidth,
-            maxWindowWidth);
+            maxWindowWidth,
+            maxHeight);
     }
 
     internal static ValueTask BitCalloutClearCallout(this IJSRuntime jsRuntime, string calloutId)

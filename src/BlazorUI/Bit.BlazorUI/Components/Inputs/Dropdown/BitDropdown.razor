@@ -113,6 +113,7 @@
          aria-expanded=@(IsOpen ? "true" : "false")
          aria-label="@AriaLabel"
          aria-labelledby="@(AriaLabel.HasValue() ? null : GetDropdownAriaLabelledby())"
+         aria-describedby="@(HasDescription ? _descriptionId : null)"
          aria-controls="@(IsOpen? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
@@ -140,7 +141,14 @@
                 @foreach (var item in _selectedItems.Take(GetDisplayedItemsCount()))
                 {
                     <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
-                        @GetText(item)
+                        @if (ChipTemplate is not null)
+                        {
+                            @ChipTemplate(item)
+                        }
+                        else
+                        {
+                            @GetText(item)
+                        }
                         @if (IsEnabled && ReadOnly is false)
                         {
                             @* A button so the chip can be removed with the keyboard and is announced as an action.
@@ -200,7 +208,9 @@
                        readonly="@ReadOnly"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
+                       aria-describedby="@(HasDescription ? _descriptionId : null)"
                        aria-autocomplete="list"
+                       aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
                        aria-controls="@(IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
@@ -279,6 +289,26 @@
             <option value="@GetValue(item)" selected>@GetText(item)</option>
         }
     </select>
+
+    @if (HasDescription)
+    {
+        @* Named by the combobox through aria-describedby, so it is read as part of the dropdown
+           instead of being left as text that only happens to sit under it. *@
+        <span id="@_descriptionId"
+              style="@Styles?.DescriptionContainer"
+              class="bit-drp-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">
+                    @Description
+                </span>
+            }
+        </span>
+    }
 </div>
 
 <div @onclick="CloseCalloutAndRestoreFocus"
@@ -386,7 +416,9 @@
                    readonly="@ReadOnly"
                    aria-label="@AriaLabel"
                    aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
+                   aria-describedby="@(HasDescription ? _descriptionId : null)"
                    aria-autocomplete="list"
+                   aria-activedescendant="@GetCommitTargetId()"
                    aria-controls="@_scrollContainerId"
                    placeholder="@Placeholder"
                    autocomplete="@BitAutoCompleteValue.NewPassword"
@@ -405,35 +437,42 @@
 
     @if (MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false)
     {
-        var (allSelected, anySelected) = GetSelectAllState();
-        var selectAllClasses = "bit-drp-sac bit-drp-iwr" +
-                               (allSelected ? " bit-drp-chd" : string.Empty) +
-                               (anySelected && allSelected is false ? " bit-drp-sai" : string.Empty) +
-                               (IsEnabled && ReadOnly is false ? string.Empty : " bit-drp-ids");
-        var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
-        <div style="@Styles?.SelectAllContainer"
-             class="@selectAllClasses @Classes?.SelectAllContainer">
-            @* Reached with the arrow keys like the options below it, so it stays out of the tab order too. *@
-            <button @onclick="HandleOnSelectAllClick"
-                    type="button"
-                    role="checkbox"
-                    tabindex="-1"
-                    style="@Styles?.SelectAllButton"
-                    class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
-                    disabled="@(IsEnabled is false || ReadOnly)"
-                    aria-checked="@selectAllAriaChecked">
-                <div style="@Styles?.SelectAllCheckBox"
-                     class="bit-drp-chb @Classes?.SelectAllCheckBox">
-                    <i aria-hidden="true"
-                       style="@Styles?.SelectAllCheckIcon"
-                       class="bit-drp-chm @itemCheckIconCss @Classes?.SelectAllCheckIcon" />
-                </div>
-                <span style="@Styles?.SelectAllText"
-                      class="bit-drp-itx @Classes?.SelectAllText">
-                    @(SelectAllText ?? "Select all")
-                </span>
-            </button>
-        </div>
+        @* One pass over the items for the three pieces of state, the first of which decides whether the
+           item is rendered at all: an empty list (or a search that matched nothing) leaves it with
+           nothing to select, and a control that cannot do anything is worse than no control. *@
+        var (hasCandidates, allSelected, anySelected) = GetSelectAllState();
+
+        if (hasCandidates)
+        {
+            var selectAllClasses = "bit-drp-sac bit-drp-iwr" +
+                                   (allSelected ? " bit-drp-chd" : string.Empty) +
+                                   (anySelected && allSelected is false ? " bit-drp-sai" : string.Empty) +
+                                   (IsEnabled && ReadOnly is false ? string.Empty : " bit-drp-ids");
+            var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
+            <div style="@Styles?.SelectAllContainer"
+                 class="@selectAllClasses @Classes?.SelectAllContainer">
+                @* Reached with the arrow keys like the options below it, so it stays out of the tab order too. *@
+                <button @onclick="HandleOnSelectAllClick"
+                        type="button"
+                        role="checkbox"
+                        tabindex="-1"
+                        style="@Styles?.SelectAllButton"
+                        class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
+                        disabled="@(IsEnabled is false || ReadOnly)"
+                        aria-checked="@selectAllAriaChecked">
+                    <div style="@Styles?.SelectAllCheckBox"
+                         class="bit-drp-chb @Classes?.SelectAllCheckBox">
+                        <i aria-hidden="true"
+                           style="@Styles?.SelectAllCheckIcon"
+                           class="bit-drp-chm @itemCheckIconCss @Classes?.SelectAllCheckIcon" />
+                    </div>
+                    <span style="@Styles?.SelectAllText"
+                          class="bit-drp-itx @Classes?.SelectAllText">
+                        @(SelectAllText ?? "Select all")
+                    </span>
+                </button>
+            </div>
+        }
     }
 
     <div id="@_scrollContainerId"
@@ -514,7 +553,11 @@
        the accessibility tree before its text changes for the change to be announced; only the text
        comes and goes, so the region stays quiet while there is nothing to announce. *@
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
-        @if (HasSearchText && IsLoading is false)
+        @if (IsMaxSelectedItemsReached)
+        {
+            @GetMaxSelectedItemsText()
+        }
+        else if (HasSearchText && IsLoading is false)
         {
             @GetSearchResultsText()
         }

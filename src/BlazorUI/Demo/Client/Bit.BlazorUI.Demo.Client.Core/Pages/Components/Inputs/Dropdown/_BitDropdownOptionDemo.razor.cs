@@ -146,6 +146,8 @@ public partial class _BitDropdownOptionDemo
     private string calloutState = "closed";
     private string focusState = "blurred";
 
+    private string? comparerValue = "F-APP";
+
     private bool isLoadingItems;
     private List<BitDropdownItem<string>> delayedItems = [];
 

@@ -26,8 +26,8 @@ namespace BitBlazorUI {
         // first would move the focus from the end of the document, where the callout is rendered.
         private static readonly CALLOUT_KEYS = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Tab'];
 
-        // These are only handled when the focus is not in the search/combo input, where they keep
-        // their caret behavior.
+        // These are only handled (on the trigger and in the callout alike) when the focus is not in the
+        // search/combo input, where they keep their caret behavior.
         private static readonly CARET_KEYS = ['Home', 'End'];
 
         // The keys that edit the text of the ComboBox input rather than navigate the list, so they
@@ -62,7 +62,9 @@ namespace BitBlazorUI {
                         return;
                     }
 
-                    if (Dropdowns.TRIGGER_KEYS.indexOf(e.key) > -1 || (e.key === ' ' && !isTextInput(e))) {
+                    if (Dropdowns.TRIGGER_KEYS.indexOf(e.key) > -1 ||
+                        (Dropdowns.CARET_KEYS.indexOf(e.key) > -1 && !isTextInput(e)) ||
+                        (e.key === ' ' && !isTextInput(e))) {
                         e.preventDefault();
                     }
                 };
@@ -113,7 +115,8 @@ namespace BitBlazorUI {
             Dropdowns._handlers.delete(id);
         }
 
-        public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean) {
+        public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean,
+                                      selectedIndex: number = -1, itemSize: number = 0) {
             const callout = document.getElementById(calloutId);
             if (!callout) return;
 
@@ -130,7 +133,7 @@ namespace BitBlazorUI {
             // In virtualize mode only the items around the visible window exist in the DOM, so moving
             // beyond it means scrolling first and continuing with the items rendered afterwards.
             if (virtualize && Dropdowns._isScrollable(scroller)) {
-                const scrolled = await Dropdowns._scrollFor(callout, scroller!, mode, items);
+                const scrolled = await Dropdowns._scrollFor(callout, scroller!, mode, items, selectedIndex, itemSize);
 
                 // A newer key press took over while the scroll was being rendered, so this one is
                 // working from an outdated window and must not move the focus back to it.
@@ -166,7 +169,8 @@ namespace BitBlazorUI {
 
         // Scrolls the item container for the jump modes and resolves once the items revealed by the
         // scroll have been rendered, mapping the mode to where the focus goes in the new window.
-        private static async _scrollFor(callout: HTMLElement, scroller: HTMLElement, mode: string, items: HTMLElement[]) {
+        private static async _scrollFor(callout: HTMLElement, scroller: HTMLElement, mode: string, items: HTMLElement[],
+                                       selectedIndex: number = -1, itemSize: number = 0) {
             const max = scroller.scrollHeight - scroller.clientHeight;
 
             let top: number;
@@ -176,6 +180,14 @@ namespace BitBlazorUI {
                 top = 0;
             } else if (mode === 'last') {
                 top = max;
+            } else if (mode === 'selected') {
+                // Opening a long list on a selection that has never been rendered: the element is not in
+                // the DOM to be found, so the list is scrolled to where its index says it is first. It is
+                // centred in the window rather than pinned to the top, which is what a native select does
+                // and what shows the items around the selection instead of only the ones after it.
+                if (selectedIndex < 0 || itemSize <= 0) return null;
+
+                top = (selectedIndex * itemSize) - ((scroller.clientHeight - itemSize) / 2);
             } else if (mode === 'prevPage') {
                 top = scroller.scrollTop - scroller.clientHeight;
                 nextMode = 'first';

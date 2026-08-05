@@ -114,6 +114,11 @@
         they cannot see. Headers without an <b>Id</b> of their own are given a generated one for that purpose.
         The <b>StickyHeaders</b> parameter pins the header of a group to the top of the list while its options are
         scrolled past, so a long grouped list never leaves the user looking at options whose group has scrolled away.
+        <br /><br />
+        The grouping survives a search: the headers of the groups that still have a match stay above them, and only
+        the ones left naming nothing &mdash; along with a divider that lost the options on one of its sides &mdash; go
+        with the options they framed. A result that arrived as a flat list would take the grouping away exactly when
+        the list is hardest to read, so the third example below keeps it while filtering.
     </div>
     <br />
     <div class="example-content">
@@ -134,6 +139,24 @@
                      MultiSelect
                      DefaultValues="@(Array.Empty<string>())"
                      Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            <Options>
+                @foreach (var item in groupedItems)
+                {
+                    <BitDropdownOption Text="@item.Text" Value="@item.Value" ItemType="item.ItemType" />
+                }
+            </Options>
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Grouping while searching"
+                     Immediate
+                     ShowSearchBox
+                     AutoFocusSearchBox
+                     HighlightSearch
+                     StickyHeaders
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Try 'a', then 'ric'"
                      TItem="BitDropdownOption<string>" TValue="string">
             <Options>
                 @foreach (var item in groupedItems)
@@ -249,11 +272,16 @@
     </BitDropdown>
 </DemoExample>
 
-<DemoExample Title="NoBorder & Transparent" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="Variants" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        The <b>NoBorder</b> parameter removes the border of the dropdown and <b>Transparent</b> removes its background,
-        so the control can sit on a colored or image surface without cutting a box out of it. They are independent and
-        combine freely; the callout keeps its own surface either way, so the items stay readable.
+        Three parameters change how much furniture the dropdown draws around itself. <b>NoBorder</b> removes its border
+        entirely, <b>Underlined</b> replaces the box with a single bottom border &mdash; the variant that suits a dense
+        form where a box per field would be too much &mdash; and <b>Transparent</b> removes the background, so the
+        control can sit on a colored or image surface without cutting a rectangle out of it. They are independent and
+        combine freely; the callout keeps its own surface either way, so the options stay readable. Since the two
+        borderless variants have no box to draw a focus ring around, the keyboard focus (and the invalid state) is
+        shown as an underline instead, which keeps the cue visible without inventing a border that the variant exists
+        to remove.
     </div>
     <br /><br />
     <div style="max-width:10rem">
@@ -268,6 +296,27 @@
         <br /><br />
         <BitDropdown NoBorder
                      MultiSelect
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Underlined
+                     Label="Underlined"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Underlined
+                     MultiSelect
+                     Label="Underlined multi select"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
@@ -323,6 +372,13 @@
         above or below the dropdown. In both cases the callout flips to the opposite side when there is not enough room,
         and its item list is capped to the space that is actually available, so it never runs past the edge of the
         screen. Scroll the page so that these dropdowns sit near the top or the bottom of the viewport to see it.
+        <br /><br />
+        <b>MaxHeight</b> caps the scrollable item list at a height of your own, in pixels, so a long list stays a
+        modest panel instead of stretching to whatever the viewport allows. It is applied on top of that available
+        space rather than in place of it, so it can only ever make the list shorter &mdash; a dropdown near the bottom
+        of the window is still limited by the room it actually has. Note that this is the one size a stylesheet cannot
+        reach: the height is measured and written as an inline style every time the callout opens, so a CSS rule would
+        always lose to it.
     </div>
     <br />
     <div class="example-content">
@@ -339,6 +395,16 @@
         <BitDropdown Label="TopAndBottom"
                      Placeholder="Select an item"
                      DropDirection="BitDropDirection.TopAndBottom"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in dropDirectionItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="MaxHeight (150px)"
+                     MaxHeight="150"
+                     Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in dropDirectionItems)
             {
@@ -808,7 +874,15 @@
         select events fire even when the already selected item is picked again, which is otherwise treated as a no-op.
         The open state of the callout is two-way bound via <b>IsOpen</b>, so it can be opened and closed from code, and
         the <b>OnOpen</b> and <b>OnClose</b> events report every change to it &mdash; a natural place to start fetching
-        the items on first open. Finally, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the focus of the
+        the items on first open.
+        <br /><br />
+        <b>ValueComparer</b> decides whether two values stand for the same selection, in place of the default equality
+        of the value type. That is what a value which is not its own identity needs: a record or a class used as the
+        value compares by reference by default, so a value arriving from a form, a query string or a fresh fetch would
+        never match the item it names, however equal the two look. The example below uses a case-insensitive comparer,
+        so the value <b>F-APP</b> selects the item whose value is <b>f-app</b>. The comparer governs every value
+        comparison the component makes &mdash; which item a value selects, which chip a removal takes away, whether a
+        typed term is already selected &mdash; so two values it calls equal are one and the same selection throughout. Finally, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the focus of the
         dropdown as a whole: they sit on the trigger and focusin/focusout bubble, so moving between the trigger and the
         ComboBox input inside it does not report a round trip through the outside.
     </div>
@@ -975,6 +1049,20 @@
         </BitDropdown>
         <br />
         <div>The dropdown is @focusState.</div>
+        <br /><br /><br /><br />
+        <div><b>ValueComparer</b>:</div><br />
+        <BitDropdown @bind-Value="comparerValue"
+                     Label="Case-insensitive values"
+                     Placeholder="Select an item"
+                     ValueComparer="StringComparer.OrdinalIgnoreCase"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br />
+        <div>Value: @comparerValue</div>
     </div>
 </DemoExample>
 
@@ -990,6 +1078,12 @@
         of a name, so <b>AutoSelectFirstMatch</b> lets a partial term stand for the first item it matches: typing
         <b>ban</b> and pressing Enter then selects <b>Banana</b>. It takes precedence over the <b>Dynamic</b> mode below,
         so a term that names an item the list already has selects that item instead of creating a second one beside it.
+        <br /><br />
+        Whichever item a commit would take &mdash; the one the typed text names exactly, or the first one it still
+        matches under <b>AutoSelectFirstMatch</b> &mdash; is marked in the list as you type, so what <b>Enter</b> is
+        about to select is visible before it is pressed rather than only afterwards. The same item is named to a screen
+        reader through the <b>aria-activedescendant</b> of the input, so the cue is not a visual-only one. When nothing
+        is marked, <b>Enter</b> either creates a new item (with <b>Dynamic</b>) or does nothing at all.
     </div>
     <br />
     <div class="example-content">
@@ -1042,6 +1136,10 @@
         When the <b>Chips</b> parameter is true, the selected items render as chips inside the dropdown instead of one
         joined text, each with its own remove button that is reachable with the keyboard and announced with the text of
         the item it removes. It works in both single and multi select modes and pairs naturally with the ComboBox mode.
+        <br /><br />
+        <b>ChipTemplate</b> draws the content of a chip from the option it stands for, which is what turns a bare list
+        of names into avatars, icons or colored categories. It replaces the text only: the remove button is still
+        rendered after it, so a chip stays removable however it is drawn.
     </div>
     <br />
     <div class="example-content">
@@ -1071,6 +1169,26 @@
         </BitDropdown>
         <br />
         <div>Values: @string.Join(',', comboBoxValues2)</div>
+        <br /><br />
+        <BitDropdown Chips
+                     MultiSelect
+                     Label="ChipTemplate"
+                     Placeholder="Select items"
+                     DefaultValues="@(new[] { "A", "D" })"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            <ChipTemplate Context="option">
+                <span class="custom-drp custom-drp-chip">
+                    <BitIcon IconName="@((option.Data as DropdownItemData)?.IconName)" />
+                    <span>@option.Text</span>
+                </span>
+            </ChipTemplate>
+            <Options>
+                @foreach (var item in dataItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" Data="item.Data" />
+                }
+            </Options>
+        </BitDropdown>
     </div>
 </DemoExample>
 
@@ -1297,7 +1415,8 @@
         result untouched. The <b>SelectAllText</b> parameter customizes its text. It is not available when the items
         come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected. It also honors
         <b>MaxSelectedItems</b>: it stops at the limit, and once there is no room left it clears the selection instead
-        of doing nothing.
+        of doing nothing. It also goes away when there is nothing left for it to select &mdash; an empty list, or a
+        search that matched nothing &mdash; instead of topping the empty state with a control that cannot do anything.
         While the callout is open, the <b>Ctrl+A</b> (or <b>Cmd+A</b>) shortcut toggles the same select all behavior
         from the keyboard, even when the select all item itself is not shown.
     </div>
@@ -1341,7 +1460,9 @@
         is visible before it is hit, and they become available again as soon as an item is unselected. The select all
         item honors the same limit and stops adding items once it is reached &mdash; and since it can then never reach
         "all selected", the next click on it clears the selection instead of leaving the user with a control that does
-        nothing.
+        nothing. The items turning unavailable is a change only a sighted user notices, so reaching the limit is also
+        announced to screen readers, with a message you can localize through <b>MaxSelectedItemsText</b> &mdash; and the
+        announcement goes quiet again as soon as unselecting an item makes room.
     </div>
     <br />
     <div class="example-content">
@@ -1516,8 +1637,9 @@
         Every piece of text the dropdown produces on its own is a parameter, so nothing has to stay in English in a
         localized app. <b>Placeholder</b>, <b>Label</b> and <b>SearchBoxPlaceholder</b> cover what is always visible;
         <b>SelectAllText</b>, <b>EmptyText</b>, <b>NoResultsText</b> and <b>LoadingText</b> cover the states of the
-        callout; and the composite formats <b>SelectedItemsTextFormat</b>, <b>OverflowTextFormat</b> and
-        <b>SearchResultsText</b> cover the texts built from a count, each receiving that count as <b>{0}</b>.
+        callout; and the composite formats <b>SelectedItemsTextFormat</b>, <b>OverflowTextFormat</b>,
+        <b>SearchResultsText</b> and <b>MaxSelectedItemsText</b> cover the texts built from a count, each receiving that
+        count as <b>{0}</b>.
         The strings only a screen reader ever reads are parameters too, so a localized dropdown does not fall back to
         English the moment it is used without sight: <b>ChipsRemoveButtonAriaLabel</b> (a composite format that
         receives the text of the item its chip stands for), <b>ClearButtonAriaLabel</b>, <b>SearchBoxAriaLabel</b>,
@@ -1544,6 +1666,8 @@
                      SearchBoxAriaLabel="Suchtext"
                      SearchBoxClearButtonAriaLabel="Text löschen"
                      ChipsRemoveButtonAriaLabel="{0} entfernen"
+                     MaxSelectedItems="3"
+                     MaxSelectedItemsText="Höchstens {0} Einträge ausgewählt"
                      TItem="BitDropdownOption<string>" TValue="string">
             <Options>
                 @foreach (var item in localizedItems)
@@ -1763,7 +1887,62 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
+<DemoExample Title="Description" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
+    <div>
+        The <b>Description</b> parameter renders a line of helper text under the dropdown &mdash; the place for the rule
+        that the label has no room for ("only the categories you have access to", "leave empty for all regions").
+        It is not decoration: the dropdown points at it with <b>aria-describedby</b>, so a screen reader reads it along
+        with the control instead of leaving it as text that merely happens to sit underneath. In the ComboBox mode the
+        editable input is described by it as well, since that is the element the user is actually typing into.
+        <b>DescriptionTemplate</b> replaces it with any content &mdash; a link, an icon, a warning that changes with the
+        selection &mdash; and is tied to the dropdown in exactly the same way.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Category"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     Description="Only the categories you have access to are listed."
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Combo
+                     Label="ComboBox"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Type to filter"
+                     Description="Type a few letters to narrow the list down."
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in comboBoxItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="DescriptionTemplate"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            <DescriptionTemplate>
+                <div class="custom-drp custom-drp-des">
+                    <BitIcon IconName="@BitIconName.Info" />
+                    <span>Nothing here is final &mdash; you can change it later.</span>
+                </div>
+            </DescriptionTemplate>
+            <Options>
+                @foreach (var item in basicItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </Options>
+        </BitDropdown>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
     <div>
         The <b>Color</b> parameter paints the accents of the dropdown &mdash; the focus border, the search box
         underline and icon, the group headers and the check boxes of the multi select items &mdash; in one of the theme
@@ -1870,7 +2049,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
     <div>
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
@@ -2007,7 +2186,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
     <div>
         The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
         and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
@@ -2052,7 +2231,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34" PreventRenderForMcpClient>
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
@@ -2121,7 +2300,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example35RazorCode" CsharpCode="@example35CsharpCode" Id="example35" PreventRenderForMcpClient>
     <div>
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the

@@ -29,6 +29,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private Dictionary<TItem, string>? _itemGroupIds;
     private Dictionary<TItem, string>? _itemHeaderIds;
     private int _selectionVersion;
+    private TItem? _commitTarget;
+    private string? _commitTargetCacheKey;
+    private int _commitTargetCacheVersion = -1;
+    private int _commitTargetSelectionVersion = -1;
+    private HashSet<TValue>? _valuesLookup;
+    private bool _valuesLookupHasNull;
+    private object? _valuesLookupSource;
+    private int _valuesLookupVersion = -1;
     private string? _displayItemsCacheKey;
     private int _displayItemsCacheVersion = -1;
     private int _displayItemsSelectionVersion = -1;
@@ -42,6 +50,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
     private ICollection<TItem>? _lastItemsReference;
+    private IEqualityComparer<TValue>? _lastValueComparer;
     private Virtualize<TItem>? _virtualizeElement;
     private string _scrollContainerId = string.Empty;
     private string _dropdownTextContainerId = string.Empty;
@@ -50,6 +59,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
     private string _labelId = string.Empty;
+    private string _descriptionId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
     private string _calloutId = string.Empty;
@@ -178,6 +188,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public string? ChipsRemoveIconName { get; set; }
 
     /// <summary>
+    /// The custom template for the content of a chip in the chips display, which receives the item the
+    /// chip stands for. It replaces the text of the chip only; the remove button is still rendered
+    /// after it, so a chip stays removable however its content is drawn.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ChipTemplate { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitDropdown.
     /// </summary>
     [Parameter] public BitDropdownClassStyles? Classes { get; set; }
@@ -251,6 +268,19 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The default values that will be initially used to set selected items in multi select mode if the Values parameter is not set.
     /// </summary>
     [Parameter] public IEnumerable<TValue?>? DefaultValues { get; set; }
+
+    /// <summary>
+    /// The description rendered below the dropdown, which is also tied to it as its accessible
+    /// description, so a screen reader reads it along with the dropdown instead of leaving it as text
+    /// that only happens to sit nearby.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// The custom template for the description of the dropdown, which replaces <see cref="Description"/>.
+    /// It is tied to the dropdown as its accessible description in the same way.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -391,10 +421,27 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public string? LoadingText { get; set; }
 
     /// <summary>
+    /// The maximum height of the scrollable item list of the callout in pixels, which is what keeps a
+    /// long list from taking over the screen. It is applied on top of the space the viewport leaves, so
+    /// it can only ever make the list shorter: a callout near the bottom of the window is still capped
+    /// by the room it has. A value that is not greater than zero (and null) leaves the viewport alone
+    /// to decide.
+    /// </summary>
+    [Parameter] public int? MaxHeight { get; set; }
+
+    /// <summary>
     /// The maximum number of items that can be selected in multi select mode.
     /// A value that is not greater than zero (and null) means no limit.
     /// </summary>
     [Parameter] public int? MaxSelectedItems { get; set; }
+
+    /// <summary>
+    /// The composite format of the message announced to screen readers once <see cref="MaxSelectedItems"/>
+    /// is reached, which receives that limit, for example "Maximum of {0} items selected". Reaching the
+    /// limit disables the items that are not selected yet, which is a change only a sighted user can
+    /// notice on their own. Defaults to the English message.
+    /// </summary>
+    [Parameter] public string? MaxSelectedItemsText { get; set; }
 
     /// <summary>
     /// The maximum number of selected items rendered in the dropdown itself. Beyond it, the chips display
@@ -537,6 +584,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     /// <summary>
     /// The custom template for the placeholder of the dropdown.
+    /// It has no effect in the ComboBox mode, where the placeholder belongs to the editable input and
+    /// can only be the plain text of <see cref="Placeholder"/>.
     /// </summary>
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? PlaceholderTemplate { get; set; }
 
@@ -674,6 +723,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     /// <summary>
     /// Shows the SearchBox element in the callout.
+    /// It has no effect in the ComboBox mode, where the input of the dropdown itself is what the items
+    /// are filtered by, and a second search field would only split the typing between two places.
     /// </summary>
     [Parameter] public bool ShowSearchBox { get; set; }
 
@@ -742,6 +793,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
+
+    /// <summary>
+    /// Renders the dropdown with only a bottom border in place of the box around it, which is the
+    /// variant that suits a dense form where a full box per field would be too much furniture.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
+
+    /// <summary>
+    /// Decides whether two values stand for the same selection, in place of the default equality of
+    /// <typeparamref name="TValue"/>. This is what a value type that is not its own identity needs: a
+    /// record or a class used as the value compares by reference by default, so a value that arrives
+    /// from a form, a query string or a fresh fetch would never match the item it names, however equal
+    /// the two look. It also decides which item a clicked value belongs to, so a comparer that treats
+    /// two different values as equal makes them one and the same selection.
+    /// </summary>
+    [Parameter] public IEqualityComparer<TValue>? ValueComparer { get; set; }
 
     /// <summary>
     /// The values of the selected items in multi select mode. (two-way bound)
@@ -884,10 +952,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     internal void RegisterOption(BitDropdownOption<TValue> option)
     {
         Items!.Add((option as TItem)!);
-        _searchedItems = null;
-        _itemPositions = null;
-        _displayItems = null;
-        _searchedItemsCache = null;
+        ResetItemCaches();
 
         UpdateSelectedItemsFromValues();
 
@@ -900,21 +965,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // cache is reset in OnParametersSet so a change to Items cannot reuse results from a previous set.
     internal bool ShouldRenderOptionItem(TItem item)
     {
-        if (HideSelectedItems)
+        var itemType = GetItemType(item);
+
+        if (HideSelectedItems && itemType == BitDropdownItemType.Normal && GetIsSelected(item)) return false;
+
+        // A header whose items were all filtered out (by a search, or because they are already selected)
+        // names nothing, and a divider that lost the items on one of its sides separates nothing, so both
+        // go with them. GetDisplayItems is what computes that set, and caches it along with its own result.
+        if (ShouldCollapseGroups && itemType is BitDropdownItemType.Header or BitDropdownItemType.Divider)
         {
-            var itemType = GetItemType(item);
+            GetDisplayItems();
 
-            if (itemType == BitDropdownItemType.Normal && GetIsSelected(item)) return false;
-
-            // A header whose items were all hidden by the line above names nothing, and a divider that
-            // lost the items on one of its sides separates nothing, so both go with them. GetDisplayItems
-            // is what computes that set, and caches it along with its own result.
-            if (itemType is BitDropdownItemType.Header or BitDropdownItemType.Divider)
-            {
-                GetDisplayItems();
-
-                if (_collapsedItems?.Contains(item) is true) return false;
-            }
+            if (_collapsedItems?.Contains(item) is true) return false;
         }
 
         if (SearchText is null) return true;
@@ -941,6 +1003,19 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _optionsVersion++;
     }
 
+    // Everything derived from the current set of items: the search result and the set it is looked up
+    // in, the list the callout renders, the positions of the items in it and the item a commit would
+    // take. They are dropped together because a change to the items invalidates all of them at once, and
+    // a site that dropped only some would leave the rest answering from a list that no longer exists.
+    private void ResetItemCaches()
+    {
+        _searchedItems = null;
+        _itemPositions = null;
+        _displayItems = null;
+        _searchedItemsCache = null;
+        _commitTargetCacheKey = null;
+    }
+
     private void RefreshOptions()
     {
         // Only options that render their item in place need the push re-render. In virtualize mode the
@@ -960,10 +1035,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         var item = (option as TItem)!;
         Items!.Remove(item);
-        _searchedItems = null;
-        _itemPositions = null;
-        _displayItems = null;
-        _searchedItemsCache = null;
+        ResetItemCaches();
 
         if (_selectedItems.Contains(item))
         {
@@ -1026,6 +1098,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (GetIsItemDisabled(item))
         {
             stringBuilder.Append(" bit-drp-ids");
+        }
+
+        if (GetIsCommitTarget(item))
+        {
+            stringBuilder.Append(" bit-drp-ctg");
         }
 
         return stringBuilder.ToString();
@@ -1172,11 +1249,57 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (MultiSelect)
         {
-            return Values?.Contains(value) ?? false;
+            return ContainsValue(value);
         }
         else
         {
-            return EqualityComparer<TValue>.Default.Equals(value, CurrentValue);
+            return Comparer.Equals(value, CurrentValue);
+        }
+    }
+
+    // The single place every value comparison in the component goes through, so a custom ValueComparer
+    // governs all of them - which item a value selects, which selected item a chip removes, whether a
+    // typed term is already selected - instead of only some.
+    private IEqualityComparer<TValue> Comparer => ValueComparer ?? EqualityComparer<TValue>.Default;
+
+    // Whether the given value is part of the current selection. This is asked once (often several times)
+    // per rendered item, so scanning Values for each of them made a long list with a long selection cost
+    // the product of the two; the values are looked up as a set instead, built once per selection.
+    private bool ContainsValue(TValue? value)
+    {
+        EnsureValuesLookup();
+
+        return value is null ? _valuesLookupHasNull : _valuesLookup!.Contains(value);
+    }
+
+    // The set is rebuilt whenever Values is replaced (every selection change assigns a new collection)
+    // or the selection changes, and it is dropped in OnParametersSet, which is where a collection the
+    // consumer mutated in place becomes visible to the component.
+    private void EnsureValuesLookup()
+    {
+        if (_valuesLookup is not null &&
+            ReferenceEquals(_valuesLookupSource, Values) &&
+            _valuesLookupVersion == _selectionVersion) return;
+
+        _valuesLookupSource = Values;
+        _valuesLookupVersion = _selectionVersion;
+        _valuesLookupHasNull = false;
+        // Built with the same comparer every other comparison uses, so the set answers exactly what a
+        // scan of Values would have - a custom ValueComparer governs the fast path too.
+        _valuesLookup = new HashSet<TValue>(Comparer);
+
+        if (Values is null) return;
+
+        foreach (var value in Values)
+        {
+            if (value is null)
+            {
+                _valuesLookupHasNull = true;
+            }
+            else
+            {
+                _valuesLookup.Add(value);
+            }
         }
     }
 
@@ -1487,6 +1610,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         ClassBuilder.Register(() => NoBorder ? "bit-drp-nbd" : string.Empty);
 
+        ClassBuilder.Register(() => Underlined ? "bit-drp-und" : string.Empty);
+
         ClassBuilder.Register(() => Transparent ? "bit-drp-trn" : string.Empty);
     }
 
@@ -1507,6 +1632,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _footerId = $"{_dropdownId}-footer";
 
         _labelId = $"{_dropdownId}-label";
+        _descriptionId = $"{_dropdownId}-description";
         _dropdownTextContainerId = $"{_dropdownId}-text-container";
 
         if (ItemsProvider is null && Items is null)
@@ -1564,18 +1690,24 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // Items (or the search inputs) may have changed with this parameter set, so drop any cached
         // search results (and item count) computed for the previous one; they get rebuilt on demand.
-        _searchedItems = null;
-        _itemPositions = null;
-        _displayItems = null;
-        _searchedItemsCache = null;
+        ResetItemCaches();
+
+        // A parameter set is where a Values collection the consumer mutated in place (rather than
+        // replacing) becomes visible to the component, so the set the selection is looked up in is
+        // rebuilt from it as well.
+        _valuesLookup = null;
 
         // A new Items collection has to resync the selected items, which still reference the previous
         // collection's instances: neither the Value nor the Values hook fires for it, and this point
         // (unlike those hooks) runs after every parameter of the batch - including a Values change
         // that arrived in the same set but was applied before the new Items - has been applied.
-        if (ReferenceEquals(_lastItemsReference, Items) is false)
+        // A new ValueComparer is the same story from the other side: the values did not change, but
+        // which item each of them names did.
+        if (ReferenceEquals(_lastItemsReference, Items) is false ||
+            ReferenceEquals(_lastValueComparer, ValueComparer) is false)
         {
             _lastItemsReference = Items;
+            _lastValueComparer = ValueComparer;
             UpdateSelectedItemsFromValues();
         }
 
@@ -1668,12 +1800,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             if (Combo)
             {
-                if (addDynamic && Dynamic && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item))) is false)
+                if (addDynamic && Dynamic && _selectedItems.Exists(si => Comparer.Equals(GetValue(si), GetValue(item))) is false)
                 {
                     _selectedItems.Add(item);
                     ClassBuilder.Reset();
                 }
-                else if (addDynamic is false && isSelected is false && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item))))
+                else if (addDynamic is false && isSelected is false && _selectedItems.Exists(si => Comparer.Equals(GetValue(si), GetValue(item))))
                 {
                     _selectedItems.Remove(item);
                     ClassBuilder.Reset();
@@ -1701,7 +1833,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             var oldSelectedItem = _selectedItems.FirstOrDefault();
 
-            var isSameItemSelected = oldSelectedItem == item;
+            // By value rather than by instance: the same option handed over as a fresh object (a list
+            // rebuilt on every render, an item that came back from the server) is still the selection the
+            // dropdown is already showing, and picking it again is still a reselection.
+            var isSameItemSelected = oldSelectedItem is not null && Comparer.Equals(GetValue(oldSelectedItem), GetValue(item));
 
             CurrentValue = GetValue(item);
 
@@ -1765,7 +1900,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             _selectedItems.Clear();
         }
 
-        var comparer = EqualityComparer<TValue>.Default;
+        var comparer = Comparer;
         if (MultiSelect)
         {
             if (Values?.Any() ?? false)
@@ -1773,15 +1908,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 foreach (var item in items)
                 {
                     if (GetItemType(item) != BitDropdownItemType.Normal) continue;
-                    if (Values.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
-                    if (ItemsProvider is not null && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item)))) continue;
+                    if (ContainsValue(GetValue(item)) is false) continue;
+                    if (ItemsProvider is not null && _selectedItems.Exists(si => comparer.Equals(GetValue(si), GetValue(item)))) continue;
 
                     _selectedItems.Add(item);
                 }
 
                 if (ItemsProvider is not null)
                 {
-                    _selectedItems.RemoveAll(si => Values.Contains(GetValue(si)) is false);
+                    _selectedItems.RemoveAll(si => ContainsValue(GetValue(si)) is false);
                 }
                 else
                 {
@@ -1790,7 +1925,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                         if (items.Contains(previousItem)) continue;
 
                         var value = GetValue(previousItem);
-                        if (Values.Any(v => comparer.Equals(v, value)) is false) continue;
+                        if (ContainsValue(value) is false) continue;
                         if (_selectedItems.Exists(si => comparer.Equals(GetValue(si), value))) continue;
 
                         _selectedItems.Add(previousItem);
@@ -1853,7 +1988,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // A single pass over Values (which may be long after a select all) instead of a lookup per
         // selected item, so ordering the selection stays linear in the size of the selection.
-        var indexes = new Dictionary<TValue, int>();
+        var indexes = new Dictionary<TValue, int>(Comparer);
         var nullIndex = -1;
         var index = 0;
         foreach (var value in Values)
@@ -2045,6 +2180,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await OpenCallout();
             await FocusItem("selected");
         }
+        // Home and End jump to the ends of the list from the closed dropdown as well, so reaching the
+        // last of a long list does not require opening it first and then pressing a second key. There is
+        // no caret to move here (the ComboBox mode, which has one, returned above).
+        else if (e.Key is "Home" or "End")
+        {
+            await OpenCallout();
+            await FocusItem(e.Key is "Home" ? "first" : "last");
+        }
         else if (IsPrintableKey(e))
         {
             await OpenCallout();
@@ -2141,7 +2284,32 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private ValueTask FocusItem(string mode, string? character = null)
     {
-        return _js.BitDropdownsFocusItem(_calloutId, mode, character, Virtualize);
+        return _js.BitDropdownsFocusItem(_calloutId, mode, character, Virtualize, GetSelectedItemIndex(mode), ItemSize);
+    }
+
+    // Where the selected item sits in the rendered list, which virtualization needs in order to reach it:
+    // only the items around the visible window exist in the DOM there, so a selection further down cannot
+    // be found - let alone focused - before the list has been scrolled to it, and a dropdown opened on a
+    // long list would show its top rather than what is currently selected.
+    // It is only knowable over a local collection; with an ItemsProvider the loaded window is all the
+    // component has, and the item of a value whose page was never fetched has no index to scroll to.
+    private int GetSelectedItemIndex(string mode)
+    {
+        if (mode != "selected") return -1;
+        if (Virtualize is false || ItemsProvider is not null) return -1;
+
+        var selected = _selectedItems.FirstOrDefault();
+        if (selected is null) return -1;
+
+        var index = 0;
+        foreach (var item in GetDisplayItems())
+        {
+            if (ReferenceEquals(item, selected)) return index;
+
+            index++;
+        }
+
+        return -1;
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -2477,16 +2645,27 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             _searchedItemsCacheKey = search;
             _searchedItemsCacheVersion = _optionsVersion;
             _searchedItemsCache = null;
+            // The headers and the dividers are kept: a group is part of what an item is, so a search
+            // that flattened the result into a bare list would take that away exactly when the list is
+            // hardest to read. Only the ones left standing for nothing are dropped, by GetDisplayItems.
             _searchedItems = SearchFunction is not null
                 ? [.. SearchFunction.Invoke(items, search)]
-                : [.. items.Where(i => GetItemType(i) == BitDropdownItemType.Normal && IsItemTextMatch(GetText(i)))];
+                : [.. items.Where(i => GetItemType(i) != BitDropdownItemType.Normal || IsItemTextMatch(GetText(i)))];
         }
 
         return _searchedItems;
     }
 
+    // Whether the headers and dividers that no longer stand for anything have to be collapsed, which is
+    // the case as soon as items can be missing from between them: a search filtered them out, or they are
+    // hidden because they are already selected. An ItemsProvider is left out of it because it hands over
+    // one window of the list at a time, where a header at the edge of the window still names the items of
+    // the next one.
+    private bool ShouldCollapseGroups => ItemsProvider is null && (HideSelectedItems || HasSearchText);
+
     // What the callout actually renders: the search result, minus the already selected items when they
-    // are meant to disappear from the list. Kept separate from GetSearchedItems so that the select all
+    // are meant to disappear from the list, and minus the headers and dividers those removals leave
+    // standing for nothing. Kept separate from GetSearchedItems so that the select all
     // item still works over the full result rather than over the leftovers. The result is cached like
     // the search itself, so that repeated reads during one render (and Virtualize, which re-renders
     // everything when handed a new collection instance) see the same list.
@@ -2494,7 +2673,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         var items = GetSearchedItems();
 
-        if (HideSelectedItems is false) return items;
+        if (ShouldCollapseGroups is false)
+        {
+            // Nothing is missing from between the headers and the dividers, so nothing is collapsed -
+            // and a set left over from a state where something was must not keep hiding them.
+            _collapsedItems = null;
+
+            return items;
+        }
 
         if (_displayItems is null ||
             _displayItemsCacheKey != SearchText ||
@@ -2505,10 +2691,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             _displayItemsCacheVersion = _optionsVersion;
             _displayItemsSelectionVersion = _selectionVersion;
 
-            var visible = items.Where(i => GetItemType(i) != BitDropdownItemType.Normal || GetIsSelected(i) is false).ToList();
+            var visible = HideSelectedItems
+                            ? items.Where(i => GetItemType(i) != BitDropdownItemType.Normal || GetIsSelected(i) is false).ToList()
+                            : [.. items];
 
-            // Removing the selected items can leave a group header naming nothing and a divider with a
-            // side missing, so the ones that no longer stand for anything go with the items they framed.
+            // Filtering the items out - by a search, or because they are already selected - can leave a
+            // group header naming nothing and a divider with a side missing, so the ones that no longer
+            // stand for anything go with the items they framed.
             _collapsedItems = GetCollapsedItems(visible);
             _displayItems = _collapsedItems.Count == 0 ? visible : visible.FindAll(i => _collapsedItems.Contains(i) is false);
         }
@@ -2604,6 +2793,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // Whether the label element carrying _labelId is rendered, so nothing references a missing element.
     private bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
+    // The same, for the description element carrying _descriptionId.
+    private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
     private string GetDropdownAriaLabelledby()
     {
         return HasLabel ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
@@ -2655,6 +2847,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // the callout can show "no results for what you typed" instead of "there is nothing here".
     private bool HasSearchText => SearchText is not null;
 
+    // Reaching the selection limit disables every item that is not selected yet, which is a change only a
+    // sighted user notices on their own, so it is said out loud once instead of leaving a screen reader
+    // user to discover that the list stopped responding.
+    private string GetMaxSelectedItemsText()
+    {
+        var max = MaxSelectedItems!.Value;
+
+        return MaxSelectedItemsText is not null
+                ? string.Format(MaxSelectedItemsText, max)
+                : $"Maximum of {max} items selected";
+    }
+
     private string GetSearchResultsText()
     {
         // With an ItemsProvider only a window of the results is loaded, so the number of results is
@@ -2674,8 +2878,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     }
 
     // Read on every render of the callout, so the items are counted in place rather than collected into
-    // a list first - the state only needs the two counts, not the items themselves.
-    private (bool AllSelected, bool AnySelected) GetSelectAllState()
+    // a list first - the state only needs the counts, not the items themselves. HasCandidates comes out
+    // of the same pass because the item is only rendered when there is something for it to select: an
+    // empty list (or a search that matched nothing) would otherwise be topped by a control that cannot do
+    // anything at all.
+    private (bool HasCandidates, bool AllSelected, bool AnySelected) GetSelectAllState()
     {
         var count = 0;
         var selectedCount = 0;
@@ -2692,10 +2899,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
         }
 
-        if (count == 0) return (false, false);
+        if (count == 0) return (false, false, false);
 
-        return (selectedCount == count, selectedCount > 0);
+        return (true, selectedCount == count, selectedCount > 0);
     }
+
+    // Whether the select all item is on the screen, which the callout's own layout has to agree on: its
+    // height is part of the space the scrollable item list cannot use (see GetCalloutScrollOffset).
+    private bool HasSelectAllItem => MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false && GetSelectAllState().HasCandidates;
 
     private bool IsSelectAllCandidate(TItem item)
     {
@@ -2717,7 +2928,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         var candidates = GetSelectAllCandidateItems();
         if (candidates.Count == 0) return;
 
-        var comparer = EqualityComparer<TValue>.Default;
+        var comparer = Comparer;
 
         List<TValue?> newValues;
         // Nothing more can be added once the selection limit is reached, so the item clears there too
@@ -2797,7 +3008,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             offset += Size switch { BitSize.Small => 26, BitSize.Large => 40, _ => 32 };
         }
 
-        if (MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false)
+        if (HasSelectAllItem)
         {
             offset += Size switch { BitSize.Small => 31, BitSize.Large => 45, _ => 37 };
         }
@@ -2826,7 +3037,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: PreserveCalloutWidth is false,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+            maxWindowWidth: 0,
+            maxHeight: MaxHeight is > 0 ? MaxHeight.Value : 0);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
@@ -2862,13 +3074,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             _providerPositions.TryAdd(_lastShownItems[i], request.StartIndex + i + 1);
         }
 
-        // The caches below are keyed on the search text and the options version, neither of which changes
-        // when the provider hands over a different window of items for the same search, so they have to be
+        // The caches are keyed on the search text and the options version, neither of which changes when
+        // the provider hands over a different window of items for the same search, so they have to be
         // dropped here or the new window would be filtered and positioned against the previous one.
-        _searchedItems = null;
-        _itemPositions = null;
-        _displayItems = null;
-        _searchedItemsCache = null;
+        ResetItemCaches();
 
         UpdateSelectedItemsFromValues();
         await InvokeAsync(StateHasChanged);
@@ -3000,10 +3209,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (Immediate) return;
 
-        await SearchComboItems(e);
+        // The change event of an input is the commit of what was typed, which the browser raises when the
+        // input loses the focus (and when Enter is pressed). Both of those are moments the dropdown has
+        // just dismissed the callout for, so the search here must not reveal it again behind the user.
+        await SearchComboItems(e, openCallout: false);
     }
 
-    private async Task SearchComboItems(ChangeEventArgs e)
+    private async Task SearchComboItems(ChangeEventArgs e, bool openCallout = true)
     {
         _searchText = e.Value?.ToString();
 
@@ -3013,7 +3225,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         await SearchVirtualized();
 
-        await OpenCallout();
+        if (openCallout)
+        {
+            await OpenCallout();
+        }
     }
 
     private async Task OpenCallout()
@@ -3062,41 +3277,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (hasItem) return;
         }
 
-        var searchItems = ItemsProvider is not null ? _lastShownItems : Items;
-        if (searchItems is not null && searchItems.Count > 0)
+        var target = FindCommitTarget(_comboInputText!);
+        if (target is not null)
         {
-            var item = FindItemFunction is not null ?
-                       FindItemFunction.Invoke(searchItems, _comboInputText!) :
-                       (searchItems).FirstOrDefault(i => GetText(i).HasValue() && _comboInputText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+            await AddOrRemoveSelectedItem(target);
 
-            if (item is not null && GetIsSelected(item) is false)
-            {
-                await AddOrRemoveSelectedItem(item);
-
-                return;
-            }
-        }
-
-        // Nothing matches the typed text exactly, so it stands for the first item it does match - the
-        // autocomplete behavior that lets a partially typed term be committed with a single Enter. It
-        // comes before the dynamic item below on purpose: a term that names an item the list already has
-        // should select that item rather than create a second one beside it.
-        // Only while a term is actually filtering the list: without one (or with one still shorter than
-        // MinSearchLength) the display items are the whole list, and its first item is not a match of
-        // anything the user typed.
-        if (AutoSelectFirstMatch && HasSearchText)
-        {
-            var match = GetDisplayItems().FirstOrDefault(i => GetItemType(i) == BitDropdownItemType.Normal &&
-                                                              GetIsHidden(i) is false &&
-                                                              GetIsEnabled(i) &&
-                                                              GetIsSelected(i) is false);
-
-            if (match is not null)
-            {
-                await AddOrRemoveSelectedItem(match);
-
-                return;
-            }
+            return;
         }
 
         if (Dynamic is false) return;
@@ -3172,6 +3358,83 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 await OnDynamicAdd.InvokeAsync(customItem);
             }
         }
+    }
+
+    // The existing item a commit of the given text would select, or null when the commit would create a
+    // new item (or do nothing at all). A term that names an item exactly takes that item; failing that,
+    // AutoSelectFirstMatch lets a partially typed term stand for the first item it still matches, which
+    // is what lets an autocomplete be committed with a single Enter - and it comes second on purpose, so
+    // a term that names an item the list already has selects it rather than creating a near-duplicate.
+    // The first-match branch only applies while a term is actually filtering the list: without one (or
+    // with one still shorter than MinSearchLength) the displayed items are the whole list, and its first
+    // item is not a match of anything the user typed.
+    // Both the commit itself and the cue the list shows go through here, so the highlighted item and the
+    // one Enter takes can never disagree.
+    private TItem? FindCommitTarget(string text)
+    {
+        var searchItems = ItemsProvider is not null ? _lastShownItems : Items;
+        if (searchItems is not null && searchItems.Count > 0)
+        {
+            var item = FindItemFunction is not null ?
+                       FindItemFunction.Invoke(searchItems, text) :
+                       searchItems.FirstOrDefault(i => GetText(i).HasValue() && text.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+
+            if (item is not null && GetIsSelected(item) is false) return item;
+        }
+
+        if (AutoSelectFirstMatch && HasSearchText)
+        {
+            return GetDisplayItems().FirstOrDefault(i => GetItemType(i) == BitDropdownItemType.Normal &&
+                                                         GetIsHidden(i) is false &&
+                                                         GetIsEnabled(i) &&
+                                                         GetIsSelected(i) is false);
+        }
+
+        return null;
+    }
+
+    // The id the commit target is referenced by from the ComboBox input, for the items that carry no id
+    // of their own. Only one item is the target at a time, so a single id is enough to stay unique.
+    internal string CommitTargetId => $"{_dropdownId}-ctg";
+
+    // Whether the given item is the one a commit would take, which the list shows so that the item Enter
+    // is about to select is visible before it is pressed rather than only after. The lookup is cached on
+    // the typed text (and the versions the item data and the selection are keyed by), since every
+    // rendered item asks about itself.
+    internal bool GetIsCommitTarget(TItem item)
+    {
+        var target = GetCommitTarget();
+
+        return target is not null && ReferenceEquals(target, item);
+    }
+
+    // The id of the element the ComboBox input points at with aria-activedescendant, so the item that is
+    // only visually indicated is reported to a screen reader as well. Null when nothing is indicated.
+    private string? GetCommitTargetId()
+    {
+        var target = GetCommitTarget();
+
+        if (target is null) return null;
+
+        return GetId(target) ?? CommitTargetId;
+    }
+
+    private TItem? GetCommitTarget()
+    {
+        if (Combo is false || ReadOnly || IsEnabled is false) return null;
+        if (_comboInputText.HasNoValue()) return null;
+
+        if (_commitTargetCacheKey != _comboInputText ||
+            _commitTargetCacheVersion != _optionsVersion ||
+            _commitTargetSelectionVersion != _selectionVersion)
+        {
+            _commitTargetCacheKey = _comboInputText;
+            _commitTargetCacheVersion = _optionsVersion;
+            _commitTargetSelectionVersion = _selectionVersion;
+            _commitTarget = FindCommitTarget(_comboInputText!);
+        }
+
+        return _commitTarget;
     }
 
     // The number of selected items the dropdown itself renders, the rest being collapsed into the

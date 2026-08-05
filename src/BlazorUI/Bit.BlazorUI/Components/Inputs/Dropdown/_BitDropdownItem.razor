@@ -4,7 +4,12 @@
 
 @{
     var itemType = Dropdown.GetItemType(Item);
-    var id = Dropdown.GetId(Item);
+
+    // The item a commit of the typed text would take, shown so that what Enter is about to select is
+    // visible before it is pressed. The ComboBox input names it with aria-activedescendant, which needs
+    // an id, so the ones that carry none borrow the dropdown's - only one item is the target at a time.
+    var isCommitTarget = itemType == BitDropdownItemType.Normal && Dropdown.GetIsCommitTarget(Item);
+    var id = Dropdown.GetId(Item) ?? (isCommitTarget ? Dropdown.CommitTargetId : null);
 
     // The wrapper of a header carries a class of its own because it, and not the header element inside
     // it, is the direct child of the scroll container, which is what a sticky header has to be to stick.
@@ -32,6 +37,19 @@
     var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
     var isDisabled = itemType == BitDropdownItemType.Normal && Dropdown.GetIsItemDisabled(Item);
 
+    // The separator matters: without it a hidden item that also carries a custom style would produce
+    // "display:none color:red", which the browser reads as one invalid declaration instead of two, and
+    // the item that was meant to be hidden stays on the screen.
+    var itemButtonClass = "bit-drp-itm" +
+                          (isSelected ? " bit-drp-sel" : string.Empty) +
+                          (isCommitTarget ? " bit-drp-ctg" : string.Empty);
+
+    var hiddenStyle = isHidden ? "display:none;" : string.Empty;
+    var headerStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemHeader}";
+    var itemWrapperStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemWrapper}";
+    var itemButtonStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemButton}";
+    var dividerStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemDivider}";
+
     // The part of the item text that matched the search, so it can be emphasized. It is rendered as
     // three separate pieces of text rather than as markup, so the item text is never treated as HTML.
     // The markup below is repeated in both branches on purpose: holding it in a local RenderFragment
@@ -57,7 +75,7 @@
         else
         {
             <div id="@headerId"
-                 style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemHeader"
+                 style="@headerStyle"
                  class="bit-drp-ihd @Dropdown.Classes?.ItemHeader">
                 @text
             </div>
@@ -68,7 +86,7 @@
         @if (Dropdown.MultiSelect)
         {
             <div role="presentation"
-                 style="@(isHidden ? "display: none" : "") @Dropdown.Styles?.ItemWrapper"
+                 style="@itemWrapperStyle"
                  class="@Dropdown.GetItemWrapperCssClasses(Item) @Dropdown.Classes?.ItemWrapper">
                 @* The options are navigated with the arrow keys and never with Tab (which closes the
                    callout), so they stay out of the tab order like the options of a listbox should. *@
@@ -131,8 +149,8 @@
                     title="@Dropdown.GetTitle(Item)"
                     tabindex="-1"
                     disabled=@isDisabled
-                    style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemButton"
-                    class="bit-drp-itm@(isSelected ? " bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
+                    style="@itemButtonStyle"
+                    class="@itemButtonClass @Dropdown.Classes?.ItemButton"
                     aria-label="@Dropdown.GetAriaLabel(Item)"
                     aria-setsize="@Dropdown.GetTotalItems()"
                     aria-disabled="@(isDisabled ? "true" : null)"
@@ -171,7 +189,7 @@
     {
         <div id="@id"
              role="separator"
-             style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemDivider"
+             style="@dividerStyle"
              class="bit-drp-sep @Dropdown.Classes?.ItemDivider">
         </div>
     }

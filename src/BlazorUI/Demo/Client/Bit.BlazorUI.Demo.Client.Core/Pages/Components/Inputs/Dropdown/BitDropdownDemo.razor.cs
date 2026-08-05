@@ -110,6 +110,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ChipTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The custom template for the content of a chip in the chips display, which receives the item the chip stands for. It replaces the text of the chip only; the remove button is still rendered after it.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitDropdownClassStyles?",
             DefaultValue = "null",
@@ -199,6 +206,20 @@ public partial class BitDropdownDemo
             Type = "int",
             DefaultValue = "0",
             Description = "The debounce time in milliseconds for the search and combo box inputs (applied when Immediate is enabled).",
+        },
+        new()
+        {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The description rendered below the dropdown, which is also tied to it as its accessible description through aria-describedby.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the description of the dropdown, which replaces Description and is tied to the dropdown in the same way.",
         },
         new()
         {
@@ -388,10 +409,24 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "MaxSelectedItemsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the message announced to screen readers once MaxSelectedItems is reached, which receives that limit, for example \"Maximum of {0} items selected\". Defaults to the English message.",
+        },
+        new()
+        {
             Name = "MaxDisplayedItems",
             Type = "int?",
             DefaultValue = "null",
             Description = "The maximum number of selected items rendered in the dropdown itself. Beyond it, the chips display collapses the extra ones into an overflow indicator and the text display switches to a summary. Zero or null renders every selected item.",
+        },
+        new()
+        {
+            Name = "MaxHeight",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The maximum height of the scrollable item list of the callout in pixels. It is applied on top of the space the viewport leaves, so it can only ever make the list shorter. A value that is not greater than zero (and null) leaves the viewport alone to decide.",
         },
         new()
         {
@@ -815,6 +850,20 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the default background color from the root element.",
+        },
+        new()
+        {
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the dropdown with only a bottom border in place of the box around it.",
+        },
+        new()
+        {
+            Name = "ValueComparer",
+            Type = "IEqualityComparer<TValue>?",
+            DefaultValue = "null",
+            Description = "Decides whether two values stand for the same selection, in place of the default equality of TValue. It governs every value comparison the component makes: which item a value selects, which selected item a chip removes, and whether a typed term is already selected.",
         },
         new()
         {
@@ -1271,6 +1320,20 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "DescriptionContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the description container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the description of the BitDropdown."
                },
                new()
                {

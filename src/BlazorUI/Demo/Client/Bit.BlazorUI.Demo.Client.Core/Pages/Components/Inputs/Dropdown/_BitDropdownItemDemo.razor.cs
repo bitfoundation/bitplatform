@@ -87,6 +87,7 @@ public partial class _BitDropdownItemDemo
 
     private ICollection<BitDropdownItem<string>>? virtualizeItems1;
     private ICollection<BitDropdownItem<string>>? virtualizeItems2;
+    private ICollection<BitDropdownItem<string>>? virtualizeItems3;
 
     private List<BitDropdownItem<string>> GetRtlItems() =>
     [
@@ -203,6 +204,8 @@ public partial class _BitDropdownItemDemo
     private string calloutState = "closed";
     private string focusState = "blurred";
 
+    private string? comparerValue = "F-APP";
+
     private bool isLoadingItems;
     private ICollection<BitDropdownItem<string>> delayedItems = [];
 
@@ -282,6 +285,10 @@ public partial class _BitDropdownItemDemo
                                      .ToArray();
 
         virtualizeItems2 = Enumerable.Range(1, 10_000)
+                                     .Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() })
+                                     .ToArray();
+
+        virtualizeItems3 = Enumerable.Range(1, 10_000)
                                      .Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() })
                                      .ToArray();
 

@@ -46,7 +46,10 @@
             }
         }
 
-        &.bit-drp-nbd {
+        // The borderless and the underlined variants have no box to draw the ring around, so the
+        // invalid state is shown as an underline-shaped, keyboard-only ring instead.
+        &.bit-drp-nbd,
+        &.bit-drp-und {
             .bit-drp-wrp {
                 &:focus {
                     outline: none;
@@ -138,9 +141,43 @@
     }
 }
 
+// Only a bottom border in place of the box, which is the dense-form variant of the other input
+// components. The keyboard focus cue follows the same shape, so the underline itself carries it.
+.bit-drp-und {
+    .bit-drp-wrp {
+        border-radius: 0;
+        border-width: 0 0 $shp-border-width;
+
+        @media (hover: hover) {
+            &:hover {
+                border-width: 0 0 $shp-border-width;
+            }
+        }
+
+        &:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        &:focus-visible {
+            @include focus-underline-ring(var(--bit-drp-clr-focus));
+        }
+    }
+}
+
 .bit-drp.bit-drp-trn {
     .bit-drp-wrp {
         background-color: transparent;
+    }
+}
+
+.bit-drp-des {
+    display: block;
+    padding-top: spacing(0.5);
+
+    span {
+        color: $clr-fg-pri;
+        font-size: spacing(1.25);
     }
 }
 
@@ -779,6 +816,15 @@
             background-color: transparent;
         }
     }
+}
+
+// The item a commit of the text typed into the ComboBox would take. It is shown the way hovering it
+// would, plus a rule down its leading edge, so that what Enter is about to select can be seen before it
+// is pressed instead of only afterwards.
+.bit-drp-itm.bit-drp-ctg,
+.bit-drp-iwr.bit-drp-ctg {
+    background-color: $clr-bg-pri-hover;
+    box-shadow: inset spacing(0.25) 0 0 0 var(--bit-drp-clr);
 }
 
 // The matched part of an item text while a search is active.

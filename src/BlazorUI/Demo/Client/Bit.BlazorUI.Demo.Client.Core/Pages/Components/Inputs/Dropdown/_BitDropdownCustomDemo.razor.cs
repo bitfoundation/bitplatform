@@ -82,6 +82,7 @@ public partial class _BitDropdownCustomDemo
 
     private ICollection<Product>? virtualizeCustoms1;
     private ICollection<Product>? virtualizeCustoms2;
+    private ICollection<Product>? virtualizeCustoms3;
 
     private List<Product> GetExternalIconCustoms() =>
     [
@@ -238,6 +239,8 @@ public partial class _BitDropdownCustomDemo
     private string calloutState = "closed";
     private string focusState = "blurred";
 
+    private string? comparerValue = "F-APP";
+
     private bool isLoadingItems;
     private ICollection<Product> delayedCustoms = [];
 
@@ -314,6 +317,10 @@ public partial class _BitDropdownCustomDemo
                                        .ToArray();
 
         virtualizeCustoms2 = Enumerable.Range(1, 10_000)
+                                       .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
+                                       .ToArray();
+
+        virtualizeCustoms3 = Enumerable.Range(1, 10_000)
                                        .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
                                        .ToArray();
 
