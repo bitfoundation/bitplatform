@@ -20,7 +20,7 @@ public partial class BitOtpInputDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the first input is auto focused on the first render. A component that starts out disabled cannot take the focus, so it is focused on the first render that finds it enabled instead of losing the auto focus altogether.",
+            Description = "If true, the first input left to fill is auto focused on the first render, so a component seeded with a partial code carries on where the typing stopped. A component that starts out disabled cannot take the focus, so it is focused on the first render that finds it enabled instead of losing the auto focus altogether.",
         },
         new()
         {
@@ -63,6 +63,13 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Paints the inputs with the error state without an EditContext taking part in it, which is what reports a code that the server has rejected (\"that code is not correct, try again\"): the failure only becomes known once the code has been submitted, so there is nothing for a validator to see. It also marks the inputs with aria-invalid, and a failing validation of an EditContext still shows the very same state on its own.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -88,6 +95,13 @@ public partial class BitOtpInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text rendered in place of every filled input, which hides the code without turning the inputs into password inputs, so a masking character of its own (a bullet, an asterisk, an emoji) can be used. The value of the component stays the code that was typed.",
+        },
+        new()
+        {
+            Name = "NormalizeDigits",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns the digits of the other numbering systems (the Persian ۰۱۲۳, the Arabic-Indic ٠١٢٣, the full width ０１２３ and the rest) into their ASCII form as they are typed or pasted, which is what lets a code that arrives in a message written in the language of the user be typed on the keyboard of that language rather than being rejected as if it were not a number at all. The conversion happens before the Pattern is applied and before the Type rejects what is not a digit, and the value of the component is the ASCII form that a server expects.",
         },
         new()
         {
@@ -119,6 +133,12 @@ public partial class BitOtpInputDemo
             Name = "OnInput",
             Type = "EventCallback<(ChangeEventArgs Event, int Index)>",
             Description = "oninput event callback for each input, receiving the event and the index of the input that raised it.",
+        },
+        new()
+        {
+            Name = "OnInvalid",
+            Type = "EventCallback<(string Value, int Index)>",
+            Description = "Callback for when what was typed, pasted or auto filled is rejected in full by the Type or the Pattern, so that nothing of it reaches the inputs. It receives the rejected text along with the index of the input that received it, and it is what turns a silent rejection into a visible one. A paste that only loses some of its characters, like a code copied with the dashes in it, is not a rejection and does not raise it.",
         },
         new()
         {
@@ -490,6 +510,8 @@ public partial class BitOtpInputDemo
 
 
 
+    private string? normalizeDigitsValue;
+
     private string? maskValue;
 
     private string? pasteValue;
@@ -499,6 +521,7 @@ public partial class BitOtpInputDemo
 
     private string? onChangeValue;
     private string? onFillValue;
+    private (string Value, int Index)? onInvalidArgs;
     private (FocusEventArgs Event, int Index)? onFocusInArgs;
     private (FocusEventArgs Event, int Index)? onFocusOutArgs;
     private (ChangeEventArgs Event, int Index)? onInputArgs;
@@ -530,6 +553,25 @@ public partial class BitOtpInputDemo
     private void HandleInvalidSubmit()
     {
         formIsValidSubmit = false;
+    }
+
+    private bool invalidState;
+    private BitOtpInput? invalidOtpInput;
+    private void HandleInvalidDemoFill(string? value)
+    {
+        // Only the server that issued the code knows whether it is the right one, so the error state is
+        // set from the answer it gives rather than from a validator.
+        invalidState = value != "123456";
+    }
+
+    private async Task HandleInvalidDemoRetry()
+    {
+        invalidState = false;
+
+        if (invalidOtpInput is null) return;
+
+        await invalidOtpInput.Clear();
+        await invalidOtpInput.FocusAsync();
     }
 
 
@@ -568,7 +610,13 @@ public partial class BitOtpInputDemo
 <BitOtpInput Label=""Text"" Type=""BitInputType.Text"" />
 <BitOtpInput Label=""Number"" Type=""BitInputType.Number"" />
 <BitOtpInput Label=""Password"" Type=""BitInputType.Password"" />
-<BitOtpInput Label=""Number, with the telephone keypad"" Type=""BitInputType.Number"" InputMode=""BitInputMode.Tel"" />";
+<BitOtpInput Label=""Number, with the telephone keypad"" Type=""BitInputType.Number"" InputMode=""BitInputMode.Tel"" />
+
+<BitOtpInput Label=""Number, typed or pasted in any numbering system"" Length=""6""
+             Type=""BitInputType.Number"" NormalizeDigits @bind-Value=""normalizeDigitsValue"" />
+<div>Value: @normalizeDigitsValue</div>";
+    private readonly string example3CsharpCode = @"
+private string? normalizeDigitsValue;";
 
     private readonly string example4RazorCode = @"
 <BitOtpInput Label=""Bullet"" Mask=""●"" DefaultValue=""12345"" />
@@ -649,6 +697,10 @@ private string? twoWayValue;";
 <BitOtpInput Label=""OnFill"" OnFill=""v => onFillValue = v"" />
 <div>OnFill value: @onFillValue</div>
 
+<BitOtpInput Label=""OnInvalid (digits only)"" Type=""BitInputType.Number"" OnInvalid=""args => onInvalidArgs = args"" />
+<div>Rejected: @onInvalidArgs?.Value</div>
+<div>Input index: @onInvalidArgs?.Index</div>
+
 <BitOtpInput Label=""OnFocusIn"" OnFocusIn=""args => onFocusInArgs = args"" />
 <div>Focus type: @onFocusInArgs?.Event.Type</div>
 <div>Input index: @onFocusInArgs?.Index</div>
@@ -671,6 +723,7 @@ private string? twoWayValue;";
     private readonly string example12CsharpCode = @"
 private string? onChangeValue;
 private string? onFillValue;
+private (string Value, int Index)? onInvalidArgs;
 private (FocusEventArgs Event, int Index)? onFocusInArgs;
 private (FocusEventArgs Event, int Index)? onFocusOutArgs;
 private (ChangeEventArgs Event, int Index)? onInputArgs;
@@ -726,11 +779,46 @@ private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
     private readonly string example15RazorCode = @"
+<BitOtpInput @ref=""invalidOtpInput"" Label=""Verification code"" Length=""6""
+             Type=""BitInputType.Number""
+             Invalid=""invalidState""
+             OnFill=""HandleInvalidDemoFill"" />
+
+@if (invalidState)
+{
+    <BitMessage Color=""BitColor.Error"">That code is not correct. Try 123456.</BitMessage>
+}
+
+<BitStack Horizontal FitWidth Gap=""0.5rem"">
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleInvalidDemoRetry"">Clear & retry</BitButton>
+</BitStack>";
+    private readonly string example15CsharpCode = @"
+private bool invalidState;
+private BitOtpInput? invalidOtpInput;
+
+private void HandleInvalidDemoFill(string? value)
+{
+    // Only the server that issued the code knows whether it is the right one, so the error state is
+    // set from the answer it gives rather than from a validator.
+    invalidState = value != ""123456"";
+}
+
+private async Task HandleInvalidDemoRetry()
+{
+    invalidState = false;
+
+    if (invalidOtpInput is null) return;
+
+    await invalidOtpInput.Clear();
+    await invalidOtpInput.FocusAsync();
+}";
+
+    private readonly string example16RazorCode = @"
 <BitOtpInput Label=""Fill"" Variant=""BitVariant.Fill"" DefaultValue=""12345"" />
 <BitOtpInput Label=""Outline"" Variant=""BitVariant.Outline"" DefaultValue=""12345"" />
 <BitOtpInput Label=""Text"" Variant=""BitVariant.Text"" DefaultValue=""12345"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitOtpInput Label=""Primary"" Accent=""BitColor.Primary"" />
 <BitOtpInput Label=""Secondary"" Accent=""BitColor.Secondary"" />
 <BitOtpInput Label=""Tertiary"" Accent=""BitColor.Tertiary"" />
@@ -740,12 +828,12 @@ private void HandleInvalidSubmit() { }";
 <BitOtpInput Label=""SevereWarning"" Accent=""BitColor.SevereWarning"" />
 <BitOtpInput Label=""Error"" Accent=""BitColor.Error"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitOtpInput Label=""Small"" Size=""BitSize.Small"" />
 <BitOtpInput Label=""Medium"" Size=""BitSize.Medium"" />
 <BitOtpInput Label=""Large"" Size=""BitSize.Large"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         gap: 1rem;
@@ -761,6 +849,15 @@ private void HandleInvalidSubmit() { }";
 
     .custom-root {
         margin-inline: 1rem;
+    }
+
+    .custom-label {
+        color: tomato;
+        letter-spacing: 0.1rem;
+    }
+
+    .custom-wrapper {
+        gap: 0.25rem;
     }
 
     .custom-input {
@@ -789,19 +886,24 @@ private void HandleInvalidSubmit() { }";
 <BitOtpInput Class=""custom-class"" />
 
 
-<BitOtpInput Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+<BitOtpInput Label=""Styles""
+             Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                               Label = ""color: blueviolet; letter-spacing: 0.1rem;"",
+                               InputsWrapper = ""gap: 0.25rem;"",
                                Input = ""border-color: blueviolet;"",
                                Filled = ""background-color: #f3e8ff;"",
                                Focused = ""box-shadow: blueviolet 0 0 1rem;"" })"" />
 
-<BitOtpInput Length=""6"" Separator=""-""
+<BitOtpInput Label=""Classes"" Length=""6"" Separator=""-""
              Classes=""@(new() { Root = ""custom-root"",
+                                Label = ""custom-label"",
+                                InputsWrapper = ""custom-wrapper"",
                                 Input = ""custom-input"",
                                 Filled = ""custom-filled"",
                                 Focused = ""custom-focused"",
                                 Separator = ""custom-separator"" })"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitOtpInput Label=""پیش‌فرض"" Dir=""BitDir.Rtl"" />
 <BitOtpInput Label=""معکوس"" Reversed Dir=""BitDir.Rtl"" />
 <BitOtpInput Label=""جداکننده"" Length=""6"" Separator=""-"" Dir=""BitDir.Rtl"" />";

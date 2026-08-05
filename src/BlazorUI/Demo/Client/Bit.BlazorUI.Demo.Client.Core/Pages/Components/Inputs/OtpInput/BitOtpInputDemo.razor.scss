@@ -16,6 +16,15 @@
         margin-inline: 1rem;
     }
 
+    .custom-label {
+        color: tomato;
+        letter-spacing: 0.1rem;
+    }
+
+    .custom-wrapper {
+        gap: 0.25rem;
+    }
+
     .custom-input {
         border-radius: 50%;
         border: 1px solid tomato;

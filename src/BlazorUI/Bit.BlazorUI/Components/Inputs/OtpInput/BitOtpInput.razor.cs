@@ -23,6 +23,10 @@ public partial class BitOtpInput : BitInputBase<string?>
     private ElementReference[] _inputRefs = [];
     private DotNetObjectReference<BitOtpInput> _dotnetObj = default!;
 
+    // The rules that decide which characters the code may hold. They are plain parameters, so they can
+    // change at any time, and the characters that are already in the inputs have to follow them.
+    private (bool Uppercase, bool NormalizeDigits, string? Pattern, BitInputType? Type) _restrictions;
+
     // The index whose clearing was already applied by the keydown handler (Delete). The input event
     // that the browser raises afterwards must not clear it a second time, otherwise it would undo the
     // auto shift that the keydown handler has already performed.
@@ -83,6 +87,16 @@ public partial class BitOtpInput : BitInputBase<string?>
     [Parameter] public string? InputAriaLabelFormat { get; set; }
 
     /// <summary>
+    /// Paints the inputs with the error state without an EditContext taking part in it, which is what
+    /// reports a code that the server has rejected ("that code is not correct, try again"): the failure
+    /// only becomes known once the code has been submitted, so there is nothing for a validator to see.
+    /// It also marks the inputs with aria-invalid, and a failing validation of an EditContext still shows
+    /// the very same state on its own.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
+
+    /// <summary>
     /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
     /// phone brings up without changing the element that is rendered. It defaults to the keyboard that
     /// matches the <see cref="Type"/>, so it is only needed to ask for a keyboard the type does not imply,
@@ -102,6 +116,16 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// used. The value of the component stays the code that was typed.
     /// </summary>
     [Parameter] public string? Mask { get; set; }
+
+    /// <summary>
+    /// Turns the digits of the other numbering systems (the Persian ۰۱۲۳, the Arabic-Indic ٠١٢٣, the
+    /// full width ０１２３ and the rest) into their ASCII form as they are typed or pasted, which is what
+    /// lets a code that arrives in a message written in the language of the user be typed on the keyboard
+    /// of that language rather than being rejected as if it were not a number at all. The conversion
+    /// happens before the <see cref="Pattern"/> is applied and before the <see cref="Type"/> rejects what
+    /// is not a digit, and the value of the component is the ASCII form that a server expects.
+    /// </summary>
+    [Parameter] public bool NormalizeDigits { get; set; }
 
     /// <summary>
     /// Disables both the SMS auto fill of the OTP through the WebOTP API of the browser and the
@@ -128,6 +152,16 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// oninput event callback for each input.
     /// </summary>
     [Parameter] public EventCallback<(ChangeEventArgs Event, int Index)> OnInput { get; set; }
+
+    /// <summary>
+    /// Callback for when what was typed, pasted or auto filled is rejected in full by the
+    /// <see cref="Type"/> or the <see cref="Pattern"/>, so that nothing of it reaches the inputs. It
+    /// receives the rejected text along with the index of the input that received it, and it is what
+    /// turns a silent rejection into a visible one, a message or a shake of the row. A paste that only
+    /// loses some of its characters, like a code copied with the dashes in it, is not a rejection and
+    /// does not raise it.
+    /// </summary>
+    [Parameter] public EventCallback<(string Value, int Index)> OnInvalid { get; set; }
 
     /// <summary>
     /// onkeydown event callback for each input.
@@ -238,6 +272,11 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
+        // A Backspace or a Delete that is still waiting for the input event the browser raises after it
+        // would otherwise write its result over the cleared inputs.
+        _handledClearIndex = -1;
+        _pendingShiftIndex = -1;
+
         Array.Clear(_inputValues);
 
         CurrentValueAsString = string.Empty;
@@ -269,7 +308,11 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (value.HasNoValue()) return;
 
         var sanitized = SanitizeValue(value);
-        if (sanitized.HasNoValue()) return;
+        if (sanitized.HasNoValue())
+        {
+            await OnInvalid.InvokeAsync((value, Math.Clamp(index, 0, _length - 1)));
+            return;
+        }
 
         // A code that fills the whole component always lands on the first input, no matter which one
         // received the paste, since anything else would drop its leading characters. A shorter one is
@@ -333,6 +376,10 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         ClassBuilder.Register(() => Reversed ? "bit-otp-rvs" : string.Empty);
 
+        // The base class registers the very same class for a failing validation, so it is only added here
+        // when it is not already there, otherwise it would end up in the class attribute twice.
+        ClassBuilder.Register(() => Invalid && ValueInvalid is not true ? "bit-inv" : string.Empty);
+
         ClassBuilder.Register(() => ReadOnly ? "bit-otp-rdl" : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-otp-req" : string.Empty);
@@ -373,9 +420,17 @@ public partial class BitOtpInput : BitInputBase<string?>
             ResizeInputs();
         }
 
+        // Narrowing the set of characters that the code may hold has to reach the characters that are
+        // already in the inputs too, otherwise the component would keep showing (and reporting) a code
+        // that it would now reject, and widening it has to give a code that was cut down on its way in a
+        // chance to be applied again.
+        var restrictions = (Uppercase, NormalizeDigits, Pattern, Type);
+        var restrictionsChanged = _restrictions != restrictions;
+        _restrictions = restrictions;
+
         // A null CurrentValue is a request to clear the inputs, which is why it is compared as an empty
         // string here instead of being skipped like it used to be.
-        if ((CurrentValue ?? string.Empty) != string.Join(string.Empty, _inputValues))
+        if (restrictionsChanged || (CurrentValue ?? string.Empty) != string.Join(string.Empty, _inputValues))
         {
             SetInputsValue(CurrentValue);
 
@@ -404,25 +459,29 @@ public partial class BitOtpInput : BitInputBase<string?>
             _dotnetObj = DotNetObjectReference.Create(this);
         }
 
-        if (IsEnabled is false) return;
-
         // A disabled input cannot take the focus, so a component that starts out disabled is focused on
         // the first render that finds it enabled rather than losing the auto focus altogether.
-        if (AutoFocus && _autoFocused is false)
+        if (IsEnabled && AutoFocus && _autoFocused is false)
         {
             _autoFocused = true;
 
-            await _inputRefs[0].FocusAsync();
+            // The first input left to fill rather than the first input of the row, so that a component
+            // seeded with a partial code puts the caret where the typing is meant to carry on. A complete
+            // code has none, in which case the first input is the one to land on.
+            var emptyIndex = Array.FindIndex(_inputValues, v => v.HasNoValue());
+
+            await _inputRefs[emptyIndex < 0 ? 0 : emptyIndex].FocusAsync();
         }
 
-        // A read-only component is showing a code rather than waiting for one, so it must not ask the
-        // browser for the code that arrives by SMS.
-        var smsAutoFill = NoSmsAutoFill is false && ReadOnly is false;
+        // A read-only or a disabled component is showing a code rather than waiting for one, so it must
+        // not ask the browser for the code that arrives by SMS, and one that is turned off while the
+        // request is pending has to drop it rather than leaving the permission prompt of the browser up
+        // over a component that would refuse the code anyway.
+        var smsAutoFill = NoSmsAutoFill is false && ReadOnly is false && IsEnabled;
 
         // The javascript side listens on the root element and resolves the input from the event target,
-        // so it only needs to be set up again when the number of inputs changes (or when the component
-        // becomes enabled after having started out disabled), and when the SMS request itself has to be
-        // made or dropped.
+        // so it only needs to be set up again when the number of inputs changes, and when the SMS
+        // request itself has to be made or dropped.
         if (_setupLength == _length && _setupSmsAutoFill == smsAutoFill) return;
 
         _setupLength = _length;
@@ -517,6 +576,18 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (Placeholder.HasNoValue()) return null;
 
         return Placeholder!.Length == _length ? Placeholder[index].ToString() : Placeholder;
+    }
+
+    // The aria-invalid that the base class manages for a failing validation travels in the
+    // InputHtmlAttributes, which are splatted before this attribute is rendered, so the value that would
+    // have been splatted has to be carried over here rather than being dropped.
+    private string? GetAriaInvalid()
+    {
+        if (Invalid || ValueInvalid is true) return "true";
+
+        return InputHtmlAttributes?.TryGetValue("aria-invalid", out var ariaInvalid) is true
+                ? ariaInvalid?.ToString()
+                : null;
     }
 
     private string GetInputAriaLabel(int index)
@@ -645,8 +716,15 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (IsEnabled is false || ReadOnly || InvalidValueBinding())
         {
             _inputValues[index] = oldValue;
+
+            // Nothing was written, so there is no value to commit and no code that has just been
+            // completed either: raising OnFill here would submit the code a read-only component is
+            // merely showing.
+            await OnInput.InvokeAsync((e, index));
+            return;
         }
-        else if (newValue.HasValue())
+
+        if (newValue.HasValue())
         {
             var diff = TransformValue(DiffValues(oldRendered, newValue));
 
@@ -660,6 +738,8 @@ public partial class BitOtpInput : BitInputBase<string?>
                 if (sanitized.HasNoValue())
                 {
                     _inputValues[index] = oldValue;
+
+                    await OnInvalid.InvokeAsync((diff, index));
                 }
                 else
                 {
@@ -679,6 +759,8 @@ public partial class BitOtpInput : BitInputBase<string?>
             else if (IsAllowedValue(diff) is false)
             {
                 _inputValues[index] = oldValue;
+
+                await OnInvalid.InvokeAsync((diff, index));
             }
             else
             {
@@ -725,9 +807,13 @@ public partial class BitOtpInput : BitInputBase<string?>
         _pendingShiftIndex = -1;
 
         if (IsEnabled is false) return;
-        if (e.Code is null && e.Key is null) return;
 
-        await NavigateInput(e.Code ?? string.Empty, e.Key ?? string.Empty, index);
+        // A keystroke that identifies itself with neither of the two is nothing the navigation can act
+        // on, but it is still a keystroke the consumer asked to be told about.
+        if (e.Code is not null || e.Key is not null)
+        {
+            await NavigateInput(e.Code ?? string.Empty, e.Key ?? string.Empty, index);
+        }
 
         await OnKeyDown.InvokeAsync((e, index));
     }
@@ -842,7 +928,10 @@ public partial class BitOtpInput : BitInputBase<string?>
             _ => -1 // For Tab key
         };
 
-        if (targetIndex is not -1)
+        // Asking the browser to focus the input that already has the focus raises no event and changes
+        // nothing, so the round trip is skipped for the keys that land back where they started: an arrow
+        // pressed at either end of the code, or the vertical pair of arrows in a horizontal row.
+        if (targetIndex is not -1 && targetIndex != index)
         {
             await _inputRefs[targetIndex].FocusAsync();
         }
@@ -974,9 +1063,34 @@ public partial class BitOtpInput : BitInputBase<string?>
         return new string([.. TransformValue(value!).Where(c => char.IsWhiteSpace(c) is false && IsAllowedChar(c))]);
     }
 
-    // The invariant casing on purpose: a code is a sequence of symbols rather than a word, so the casing
-    // rules of the current culture (the dotless i of Turkish above all) must not take part in it.
-    private string TransformValue(string value) => Uppercase ? value.ToUpperInvariant() : value;
+    private string TransformValue(string value)
+    {
+        // The invariant casing on purpose: a code is a sequence of symbols rather than a word, so the
+        // casing rules of the current culture (the dotless i of Turkish above all) must not take part.
+        if (Uppercase)
+        {
+            value = value.ToUpperInvariant();
+        }
+
+        if (NormalizeDigits)
+        {
+            value = ToAsciiDigits(value);
+        }
+
+        return value;
+    }
+
+    private static string ToAsciiDigits(string value)
+    {
+        // Every decimal digit of Unicode carries the number it stands for, whichever numbering system it
+        // belongs to, so the whole set of them is covered without a table of the single alphabets. The
+        // common case of a code that is already written in ASCII allocates nothing.
+        if (value.All(c => char.IsDigit(c) is false || char.IsAsciiDigit(c))) return value;
+
+        return new string([.. value.Select(c => char.IsDigit(c) && char.IsAsciiDigit(c) is false
+                                                ? (char)('0' + (int)char.GetNumericValue(c))
+                                                : c)]);
+    }
 
     private static string DiffValues(string oldValue, string newValue)
     {

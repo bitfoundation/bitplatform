@@ -38,7 +38,6 @@
 }
 
 .bit-otp-inp {
-    display: flex;
     cursor: text;
     //a form control does not inherit the font of the page on its own, so both halves of it have to be
     //asked for explicitly, otherwise the code would be drawn in the default font of the browser while
@@ -47,9 +46,7 @@
     font-family: inherit;
     text-align: center;
     color: $clr-fg-pri;
-    align-items: center;
     box-sizing: border-box;
-    justify-content: center;
     -moz-appearance: textfield;
     width: var(--bit-otp-size);
     height: var(--bit-otp-size);

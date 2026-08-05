@@ -1303,4 +1303,423 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual("134", com.Instance.Value);
         Assert.AreEqual("3", com.FindAll(".bit-otp-inp")[2].GetAttribute("value"));
     }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOtpInputShouldRespectInvalid(bool invalid)
+    {
+        // A code that the server has rejected is only known to be wrong once it has been submitted, so
+        // there is nothing for a validator to see and the error state has to be set from the outside.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Invalid, invalid);
+        });
+
+        Assert.AreEqual(invalid, com.Find(".bit-otp").ClassList.Contains("bit-inv"));
+
+        foreach (var input in com.FindAll(".bit-otp-inp"))
+        {
+            Assert.AreEqual(invalid ? "true" : null, input.GetAttribute("aria-invalid"));
+        }
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldFollowTheInvalidChanges()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("bit-inv"));
+
+        com.Render(parameters => parameters.Add(p => p.Invalid, false));
+
+        Assert.IsFalse(com.Find(".bit-otp").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldKeepTheAriaInvalidOfTheInputHtmlAttributes()
+    {
+        // The aria-invalid of a failing validation travels in the InputHtmlAttributes, which are splatted
+        // before the attribute of the Invalid parameter is rendered, so it must not be dropped by it.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-invalid", "true" } });
+        });
+
+        foreach (var input in com.FindAll(".bit-otp-inp"))
+        {
+            Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        }
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldRaiseOnInvalidForARejectedCharacter()
+    {
+        (string Value, int Index)? invalidArgs = null;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Type, BitInputType.Number);
+            parameters.Add(p => p.OnInvalid, args => invalidArgs = args);
+        });
+
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "a" });
+
+        Assert.IsNotNull(invalidArgs);
+        Assert.AreEqual("a", invalidArgs.Value.Value);
+        Assert.AreEqual(1, invalidArgs.Value.Index);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotRaiseOnInvalidForAnAcceptedCharacter()
+    {
+        var invalidCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Type, BitInputType.Number);
+            parameters.Add(p => p.OnInvalid, _ => invalidCallCount++);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual(0, invalidCallCount);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldRaiseOnInvalidForAPastedCodeThatIsRejectedInFull()
+    {
+        (string Value, int Index)? invalidArgs = null;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Type, BitInputType.Number);
+            parameters.Add(p => p.OnInvalid, args => invalidArgs = args);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("abcd", 2));
+
+        Assert.IsNotNull(invalidArgs);
+        Assert.AreEqual("abcd", invalidArgs.Value.Value);
+        Assert.AreEqual(2, invalidArgs.Value.Index);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotRaiseOnInvalidWhenAPasteOnlyLosesSomeCharacters()
+    {
+        // A code copied with the dashes in it still fills the inputs, so it is not a rejection.
+        var invalidCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 6);
+            parameters.Add(p => p.Type, BitInputType.Number);
+            parameters.Add(p => p.OnInvalid, _ => invalidCallCount++);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("123-456", 0));
+
+        Assert.AreEqual("123456", com.Instance.Value);
+        Assert.AreEqual(0, invalidCallCount);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldApplyAnUppercaseThatIsTurnedOnAtRuntime()
+    {
+        // Narrowing the set of characters the code may hold has to reach the characters that are already
+        // in the inputs, otherwise the component would keep showing a code it would now reject.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "ab1c");
+        });
+
+        Assert.AreEqual("ab1c", com.Instance.Value);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Uppercase, true);
+        });
+
+        Assert.AreEqual("AB1C", com.Instance.Value);
+        Assert.AreEqual("A", com.FindAll(".bit-otp-inp")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldApplyAPatternThatChangesAtRuntime()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "1a2b");
+        });
+
+        Assert.AreEqual("1a2b", com.Instance.Value);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Pattern, "^[0-9]$");
+        });
+
+        Assert.AreEqual("12", com.Instance.Value);
+
+        var inputs = com.FindAll(".bit-otp-inp");
+        Assert.AreEqual("1", inputs[0].GetAttribute("value"));
+        Assert.AreEqual("2", inputs[1].GetAttribute("value"));
+        Assert.IsTrue(string.IsNullOrEmpty(inputs[2].GetAttribute("value")));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldApplyATypeThatChangesAtRuntime()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "1a2b");
+        });
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Type, BitInputType.Number);
+        });
+
+        Assert.AreEqual("12", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldForwardAKeyDownItCannotNavigateWith()
+    {
+        // A keystroke that identifies itself with neither a key nor a code is nothing the navigation can
+        // act on, but it is still a keystroke the consumer asked to be told about.
+        var keyDownCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.OnKeyDown, _ => keyDownCallCount++);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].KeyDownAsync(new KeyboardEventArgs());
+
+        Assert.AreEqual(1, keyDownCallCount);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldDisableTheHiddenFieldAlongWithTheComponent()
+    {
+        // A disabled component contributes nothing to the form it sits in.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Name, "otp");
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.DefaultValue, "12");
+        });
+
+        Assert.IsTrue(com.Find("input[type=hidden]").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldRenderNoHiddenFieldWithoutAName()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+        });
+
+        Assert.AreEqual(0, com.FindAll("input[type=hidden]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputClearShouldDoNothingWhenDisabled()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        await com.InvokeAsync(() => com.Instance.Clear());
+
+        Assert.AreEqual("1234", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldReportTheValueOnEveryKeystrokeThroughOnChange()
+    {
+        var onChangeValues = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.OnChange, v => onChangeValues.Add(v));
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+
+        CollectionAssert.AreEqual(new[] { "1", "12" }, onChangeValues);
+    }
+
+    [TestMethod,
+        DataRow("۱۲۳۴۵۶"), // Persian
+        DataRow("١٢٣٤٥٦"), // Arabic-Indic
+        DataRow("１２３４５６") // full width
+    ]
+    public async Task BitOtpInputShouldNormalizeThePastedDigitsOfTheOtherNumberingSystems(string code)
+    {
+        // A code that arrives in a message written in the language of the user has to reach the server in
+        // the ASCII form that it expects.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 6);
+            parameters.Add(p => p.Type, BitInputType.Number);
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue(code, 0));
+
+        Assert.AreEqual("123456", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNormalizeATypedDigitOfAnotherNumberingSystem()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Type, BitInputType.Number);
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "۵" });
+
+        Assert.AreEqual("5", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldRejectTheDigitsOfTheOtherNumberingSystemsByDefault()
+    {
+        // The conversion is opt-in, so a component that did not ask for it keeps rejecting them the way
+        // it rejects any other character that is not an ASCII digit.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Type, BitInputType.Number);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "۵" });
+
+        Assert.IsTrue(string.IsNullOrEmpty(com.Instance.Value));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldKeepTheNonDigitsWhileNormalizingTheDigits()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("a۲b۴", 0));
+
+        Assert.AreEqual("a2b4", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotCallOnFillWhileReadOnly()
+    {
+        // A read-only component is showing a code rather than waiting for one, so an input event that
+        // reaches it must not submit the code it is merely showing.
+        var onFillCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, "12");
+            parameters.Add(p => p.OnFill, _ => onFillCallCount++);
+        });
+
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "9" });
+
+        Assert.AreEqual("12", com.Instance.Value);
+        Assert.AreEqual(0, onFillCallCount);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldStillForwardOnInputWhileReadOnly()
+    {
+        var inputIndex = -1;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.OnInput, args => inputIndex = args.Index);
+        });
+
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "9" });
+
+        Assert.AreEqual(1, inputIndex);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldNotAskForTheSmsCodeWhenDisabled()
+    {
+        // A component that is turned off while the request of the browser is pending has to drop it
+        // rather than leaving its permission prompt up over a component that would refuse the code.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+        });
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"];
+
+        Assert.AreEqual(1, invocations.Count);
+        Assert.AreEqual(true, invocations[0].Arguments[3]);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.AreEqual(2, invocations.Count);
+        Assert.AreEqual(false, invocations[1].Arguments[3]);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotApplyTheMaskToThePlaceholderOfAnEmptyInput()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Mask, "●");
+            parameters.Add(p => p.Placeholder, "0");
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "7" });
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        Assert.AreEqual("●", inputs[0].GetAttribute("value"));
+        Assert.IsTrue(string.IsNullOrEmpty(inputs[1].GetAttribute("value")));
+        Assert.AreEqual("0", inputs[1].GetAttribute("placeholder"));
+    }
 }
