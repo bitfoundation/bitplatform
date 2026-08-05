@@ -178,8 +178,10 @@
         <div>
             <b>Separator</b> draws a piece of text between the boxes, the way a long code is usually printed in the
             message that delivers it. It is purely decorative: it is hidden from screen readers, it does not take
-            the focus, and it never becomes part of the value, so a code pasted with the very same separators in it
-            still fills the boxes correctly.
+            the focus, and it is never rendered as a part of the value. A pasted code is filtered by the same rules
+            as a typed one, so the separators of a code copied with them in it are dropped when
+            <b>Type</b> is <code>BitInputType.Number</code> or a <b>Pattern</b> that rejects them is set, and are
+            taken as characters of the code otherwise.
         </div>
         <br />
         <div>
@@ -489,8 +491,9 @@
     <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             In a right-to-left direction the boxes are laid out from right to left and the arrow keys swap along
-            with them, so the left arrow still moves towards the box that looks like the previous one. The value
-            itself keeps its logical order: the first box is always the first character of the code.
+            with them, so the left arrow still moves towards the box that sits on the visual left, which is the
+            one holding the next character. The value itself keeps its logical order: the first box is always the
+            first character of the code.
         </div>
         <br /><br />
         <div dir="rtl">

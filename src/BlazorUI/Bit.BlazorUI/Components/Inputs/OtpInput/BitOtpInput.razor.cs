@@ -536,22 +536,34 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         StringBuilder cssStyles = new();
 
-        if (Styles?.Input is not null)
+        if (Styles.Input is not null)
         {
-            cssStyles.Append(Styles?.Input);
+            cssStyles.Append(Styles.Input);
         }
 
-        if (Styles?.Filled is not null && _inputValues[index].HasValue())
+        // The segments are joined with a semicolon rather than with a space, since a style that omits
+        // its trailing one would otherwise swallow the declaration appended after it.
+        if (Styles.Filled is not null && _inputValues[index].HasValue())
         {
-            cssStyles.Append(' ').Append(Styles?.Filled);
+            AppendStyle(cssStyles, Styles.Filled);
         }
 
-        if (Styles?.Focused is not null && _inputFocusStates[index])
+        if (Styles.Focused is not null && _inputFocusStates[index])
         {
-            cssStyles.Append(' ').Append(Styles?.Focused);
+            AppendStyle(cssStyles, Styles.Focused);
         }
 
         return cssStyles.ToString();
+    }
+
+    private static void AppendStyle(StringBuilder styles, string style)
+    {
+        if (styles.Length > 0 && styles[^1] is not ';')
+        {
+            styles.Append(';');
+        }
+
+        styles.Append(style);
     }
 
     private string GetInputClasses(int index)
@@ -789,6 +801,10 @@ public partial class BitOtpInput : BitInputBase<string?>
             _handledClearIndex = index;
 
             await Task.Delay(1);
+
+            // The component may be gone by the time the delay above resumes, in which case writing the
+            // value and asking the browser for the focus would run against a disposed component.
+            if (IsDisposed) return;
 
             if (AutoShift)
             {
