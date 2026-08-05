@@ -258,7 +258,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "FindItemFunction",
-            Type = "Func<ICollection<TItem>, string, TItem>?",
+            Type = "Func<ICollection<TItem>, string, TItem?>?",
             Description = "Finds the item the text committed in the ComboBox mode stands for, in place of the default comparison of that text with the item texts, ignoring case. It receives the items and the committed text; the item it returns gets selected, and only when it returns none does AutoSelectFirstMatch and then Dynamic get their turn.",
         },
         new()
@@ -1854,7 +1854,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "FocusComboInputAsync",
-            Type = "ValueTask",
+            Type = "ValueTask FocusComboInputAsync()",
             Description = "Gives focus to the combo input element.",
         },
         new()
@@ -1866,7 +1866,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "FocusSearchInputAsync",
-            Type = "ValueTask",
+            Type = "ValueTask FocusSearchInputAsync()",
             Description = "Gives focus to the search input element.",
         }
     ];

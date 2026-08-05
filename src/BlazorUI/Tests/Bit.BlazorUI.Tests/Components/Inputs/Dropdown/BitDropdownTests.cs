@@ -2360,6 +2360,30 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownAutoSelectFirstMatchShouldWaitForMinSearchLength()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("b");
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSearchLength, 3);
+            parameters.Add(p => p.AutoSelectFirstMatch, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("b");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // The list is not filtered by a term shorter than MinSearchLength, so its first item is not a
+        // match of anything the user typed and must not be committed.
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
     public void BitDropdownComboDebounceShouldAlsoDelayTheFiltering()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

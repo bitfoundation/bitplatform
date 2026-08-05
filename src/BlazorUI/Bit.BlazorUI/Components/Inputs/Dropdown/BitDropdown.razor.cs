@@ -290,7 +290,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// committed text; the item it returns gets selected, and only when it returns none does
     /// <see cref="AutoSelectFirstMatch"/> and then <see cref="Dynamic"/> get their turn.
     /// </summary>
-    [Parameter] public Func<ICollection<TItem>, string, TItem>? FindItemFunction { get; set; }
+    [Parameter] public Func<ICollection<TItem>, string, TItem?>? FindItemFunction { get; set; }
 
     /// <summary>
     /// Enables fit-content value for the width of the root element.
@@ -2960,7 +2960,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // autocomplete behavior that lets a partially typed term be committed with a single Enter. It
         // comes before the dynamic item below on purpose: a term that names an item the list already has
         // should select that item rather than create a second one beside it.
-        if (AutoSelectFirstMatch)
+        // Only while a term is actually filtering the list: without one (or with one still shorter than
+        // MinSearchLength) the display items are the whole list, and its first item is not a match of
+        // anything the user typed.
+        if (AutoSelectFirstMatch && HasSearchText)
         {
             var match = GetDisplayItems().FirstOrDefault(i => GetItemType(i) == BitDropdownItemType.Normal &&
                                                               GetIsHidden(i) is false &&

@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitDropdown TItem="BitDropdownOption<string>" TValue="string"
+             MultiSelect
+             IsLoading="IsLoading"
+             DefaultValues="@(new[] { "1", "3" })">
+    <BitDropdownOption TValue="string" Text="First" Value="@("1")" />
+    <BitDropdownOption TValue="string" Text="Second" Value="@("2")" />
+    <BitDropdownOption TValue="string" Text="Last" Value="@("3")" />
+</BitDropdown>
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+}

@@ -112,15 +112,10 @@ private readonly List<BitDropdownItem<string>> basicItems =
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <Options>
-        <BitDropdownOption Text=""Fruits"" ItemType=""BitDropdownItemType.Header"" />
-        <BitDropdownOption Text=""Apple"" Value=""f-app"" />
-        <BitDropdownOption Text=""Banana"" Value=""f-ban"" />
-        <BitDropdownOption Text=""Orange"" Value=""f-ora"" />
-        <BitDropdownOption ItemType=""BitDropdownItemType.Divider"" />
-        <BitDropdownOption Text=""Vegetables"" ItemType=""BitDropdownItemType.Header"" />
-        <BitDropdownOption Text=""Broccoli"" Value=""v-bro"" />
-        <BitDropdownOption Text=""Carrot"" Value=""v-car"" />
-        <BitDropdownOption Text=""Lettuce"" Value=""v-let"" />
+        @foreach (var item in groupedItems)
+        {
+            <BitDropdownOption Text=""@item.Text"" Value=""@item.Value"" ItemType=""item.ItemType"" />
+        }
     </Options>
 </BitDropdown>
 

@@ -72,7 +72,7 @@
         ending the group. Headers and dividers are not options, so they are skipped by the keyboard navigation and the
         typeahead, they are never matched by a search, and the select all item ignores them. The grouping is not only
         visual: every option points at the header that names it, so a screen reader reads
-        "Broccoli, option, 5 of 7, Vegetables" instead of leaving the user to infer the group from a heading they
+        "Broccoli, option, 7 of 18, Vegetables" instead of leaving the user to infer the group from a heading they
         cannot see. Headers without an <b>Id</b> of their own are given a generated one for that purpose.
         The <b>StickyHeaders</b> parameter pins the header of a group to the top of the list while its items are
         scrolled past, so a long grouped list never leaves the user looking at items whose group has scrolled away.
@@ -90,7 +90,7 @@
                      MultiSelect
                      Items="GetGroupedCustoms()"
                      NameSelectors="nameSelectors"
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      Placeholder="Select items" />
     </div>
 </DemoExample>
@@ -650,7 +650,7 @@
                      MultiSelect
                      Items="GetBasicCustoms()"
                      Placeholder="Select items"
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      NameSelectors="nameSelectors"
                      OnSelectItem="(Product item) => selectedItem2 = item" />
         <br />
@@ -997,7 +997,7 @@
                      Items="GetBasicCustoms()"
                      NameSelectors="nameSelectors"
                      Placeholder="Select items"
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      SearchBoxPlaceholder="Search items"
                      Label="Custom text & search" />
     </div>

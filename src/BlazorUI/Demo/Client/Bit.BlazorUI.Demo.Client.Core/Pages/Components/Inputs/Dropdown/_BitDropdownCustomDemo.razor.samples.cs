@@ -106,7 +106,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              MultiSelect
              Items=""GetGroupedCustoms()""
              NameSelectors=""nameSelectors""
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Placeholder=""Select items"" />";
     private readonly string example2CsharpCode = @"
 public class Product
@@ -405,6 +405,19 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Placeholder=""Select an item""
              DropDirection=""BitDropDirection.TopAndBottom"" />";
     private readonly string example7CsharpCode = @"
+public class Product
+{
+    public string? Label { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
 private ICollection<Product>? dropDirectionCustoms;
 
 protected override void OnInitialized()
@@ -1108,7 +1121,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              MultiSelect
              Items=""GetBasicCustoms()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              NameSelectors=""nameSelectors""
              OnSelectItem=""(Product item) => selectedItem2 = item"" />
 <div>Selected Value: @selectedItem2?.Value</div>
@@ -1650,7 +1663,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              SearchBoxPlaceholder=""Search items""
              Label=""Custom text & search"" />";
     private readonly string example20CsharpCode = @"
@@ -2273,6 +2286,19 @@ private IEnumerable<string?> localizationValues = [""f-app"", ""f-ban"", ""v-bro
              ResponsiveCloseIconName=""@BitIconName.ChromeClose""
              ComboBoxAddButtonIconName=""@BitIconName.CircleAddition"" />";
     private readonly string example26CsharpCode = @"
+public class Product
+{
+    public string? Label { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
 private List<Product> comboBoxCustoms = new()
 {
     new() { Text = ""Apple"", Value = ""f-app"" },
