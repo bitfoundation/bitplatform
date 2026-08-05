@@ -245,7 +245,7 @@
             "displayName": "Use bit Brouter?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "true",
+            "defaultValue": "false",
             "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
         },
         "nameToLower": {
