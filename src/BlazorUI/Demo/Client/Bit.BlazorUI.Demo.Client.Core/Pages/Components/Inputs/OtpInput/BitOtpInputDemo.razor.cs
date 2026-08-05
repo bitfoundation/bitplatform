@@ -84,6 +84,13 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Puts the component into the busy state of a code that has been submitted and is being checked, which is the step between the OnFill and the answer that either lets the user through or sets the Invalid. It paints an indeterminate progress bar under the inputs, marks the group with aria-busy so that the wait is announced rather than only shown, and holds the code still the way the ReadOnly does, so that nothing can be typed, pasted or cut over a code whose answer is already on its way. The Clear of the consumer is deliberately not blocked by it.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -119,6 +126,13 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Merged",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Glues the inputs of each group together into a single field instead of leaving them standing next to each other: the gaps between them are closed, the rule they share is drawn once, and only the two ends of every group keep their rounding, which is the look of a code printed in a single box. The groups are the ones the Separator makes, so a separator with a SeparatorInterval of 3 renders a six character code as two joined boxes of three.",
+        },
+        new()
+        {
             Name = "NormalizeDigits",
             Type = "bool",
             DefaultValue = "false",
@@ -129,7 +143,7 @@ public partial class BitOtpInputDemo
             Name = "NoSmsAutoFill",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Disables both the SMS auto fill of the OTP through the WebOTP API of the browser and the one-time-code autofill of the inputs themselves.",
+            Description = "Disables both the SMS auto fill of the OTP through the WebOTP API of the browser and the one-time-code autofill of the inputs themselves. It also renders the attributes that keep the password manager extensions (1Password, LastPass, Bitwarden, Dashlane) from filling the inputs and from putting their badge over them, since an autocomplete of \"off\" is a request those extensions deliberately ignore.",
         },
         new()
         {
@@ -352,6 +366,13 @@ public partial class BitOtpInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the separator rendered between the inputs of the otp input.",
+                },
+                new()
+                {
+                    Name = "Loader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the progress bar rendered under the inputs while the otp input is in the loading state.",
                 }
             ]
         }
@@ -630,6 +651,40 @@ public partial class BitOtpInputDemo
         await invalidOtpInput.FocusAsync();
     }
 
+    private bool isLoading;
+    private bool loadingInvalid;
+    private BitOtpInput? loadingOtpInput;
+    private string loadingDescription = "Enter the 6 digit code we sent you. Try 123456.";
+    private async Task HandleLoadingDemoFill(string? value)
+    {
+        // The code is on its way to the server, which is what the component says while the answer is
+        // awaited: the boxes are held still and the wait is announced along with the group.
+        isLoading = true;
+        loadingInvalid = false;
+        loadingDescription = "Checking the code…";
+
+        await Task.Delay(2000);
+
+        isLoading = false;
+        loadingInvalid = value != "123456";
+
+        loadingDescription = loadingInvalid
+            ? "That code is not correct or has expired. Try 123456."
+            : "That code is correct.";
+    }
+
+    private async Task HandleLoadingDemoRetry()
+    {
+        isLoading = false;
+        loadingInvalid = false;
+        loadingDescription = "Enter the 6 digit code we sent you. Try 123456.";
+
+        if (loadingOtpInput is null) return;
+
+        await loadingOtpInput.Clear();
+        await loadingOtpInput.FocusAsync();
+    }
+
 
 
     private readonly string example1RazorCode = @"
@@ -736,6 +791,22 @@ private string? maskValue;";
 <BitOtpInput Label=""Reversed Vertical"" Vertical Reversed />";
 
     private readonly string example9RazorCode = @"
+<BitOtpInput Label=""Merged"" Length=""6"" Merged Type=""BitInputType.Number"" />
+
+<BitOtpInput Label=""Merged, grouped by 3"" Length=""6"" Merged Separator=""-"" SeparatorInterval=""3""
+             Type=""BitInputType.Number"" />
+
+<BitOtpInput Label=""Merged, filled"" Length=""6"" Merged Variant=""BitVariant.Fill""
+             Type=""BitInputType.Number"" DefaultValue=""123456"" />
+
+<BitOtpInput Label=""Merged, underlined"" Length=""6"" Merged Variant=""BitVariant.Text""
+             Type=""BitInputType.Number"" />
+
+<BitOtpInput Label=""Merged, vertical"" Length=""4"" Merged Vertical Type=""BitInputType.Number"" />
+
+<BitOtpInput Label=""Merged, reversed"" Length=""4"" Merged Reversed Type=""BitInputType.Number"" />";
+
+    private readonly string example10RazorCode = @"
 <BitOtpInput Label=""Verification code"" Length=""6"" />
 
 <BitOtpInput AriaLabel=""Enter the 6 digit code sent to your phone"" Length=""6"" />
@@ -747,7 +818,7 @@ private string? maskValue;";
 <BitOtpInput Label=""Described group"" Length=""6""
              Description=""Enter the code from the text message we sent to +1 555 0100."" />";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitOtpInput Label=""Paste a code"" Length=""6"" Type=""BitInputType.Number"" @bind-Value=""pasteValue"" />
 <div>Value: @pasteValue</div>
 
@@ -757,21 +828,21 @@ private string? maskValue;";
 <div>Value: @transformedPasteValue</div>
 
 <BitOtpInput Label=""Without the SMS auto fill"" Length=""6"" NoSmsAutoFill />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? pasteValue;
 private string? transformedPasteValue;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitOtpInput Label=""One-way"" Value=""@oneWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
 <BitOtpInput Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string? oneWayValue;
 private string? twoWayValue;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitOtpInput Label=""OnChange"" OnChange=""v => onChangeValue = v"" />
 <div>OnChange value: @onChangeValue</div>
 
@@ -801,7 +872,7 @@ private string? twoWayValue;";
 <BitOtpInput Label=""OnPaste"" OnPaste=""args => onPasteArgs = args"" />
 <div>Focus type: @onPasteArgs?.Event.Type</div>
 <div>Input index: @onPasteArgs?.Index</div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private string? onChangeValue;
 private string? onFillValue;
 private (string Value, int Index)? onInvalidArgs;
@@ -811,7 +882,7 @@ private (ChangeEventArgs Event, int Index)? onInputArgs;
 private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
 private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitOtpInput @ref=""apiOtpInput"" Label=""OTP"" Length=""6"" DefaultValue=""123456"" />
 
 <BitStack Horizontal FitWidth Gap=""0.5rem"" Wrap>
@@ -820,7 +891,7 @@ private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => apiOtpInput?.BlurAsync()"">Blur</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleClearClick"">Clear</BitButton>
 </BitStack>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitOtpInput? apiOtpInput;
 
 private async Task HandleClearClick()
@@ -831,7 +902,7 @@ private async Task HandleClearClick()
     await apiOtpInput.FocusAsync();
 }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -847,7 +918,7 @@ private async Task HandleClearClick()
 
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 public class ValidationOtpInputModel
 {
     [Required(ErrorMessage = ""The OTP value is required."")]
@@ -860,7 +931,7 @@ private ValidationOtpInputModel validationOtpInputModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitOtpInput @ref=""invalidOtpInput"" Label=""Verification code"" Length=""6""
              Type=""BitInputType.Number""
              Invalid=""invalidState""
@@ -870,7 +941,7 @@ private void HandleInvalidSubmit() { }";
 <BitStack Horizontal FitWidth Gap=""0.5rem"">
     <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleInvalidDemoRetry"">Clear & retry</BitButton>
 </BitStack>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private bool invalidState;
 private BitOtpInput? invalidOtpInput;
 private string invalidDescription = ""Enter the 6 digit code we sent you. Try 123456."";
@@ -898,12 +969,59 @@ private async Task HandleInvalidDemoRetry()
     await invalidOtpInput.FocusAsync();
 }";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
+<BitOtpInput @ref=""loadingOtpInput"" Label=""Verification code"" Length=""6""
+             Type=""BitInputType.Number""
+             Invalid=""loadingInvalid""
+             IsLoading=""isLoading""
+             Description=""@loadingDescription""
+             OnFill=""HandleLoadingDemoFill"" />
+
+<BitStack Horizontal FitWidth Gap=""0.5rem"">
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleLoadingDemoRetry"">Clear & retry</BitButton>
+</BitStack>";
+    private readonly string example17CsharpCode = @"
+private bool isLoading;
+private bool loadingInvalid;
+private BitOtpInput? loadingOtpInput;
+private string loadingDescription = ""Enter the 6 digit code we sent you. Try 123456."";
+
+private async Task HandleLoadingDemoFill(string? value)
+{
+    // The code is on its way to the server, which is what the component says while the answer is
+    // awaited: the boxes are held still and the wait is announced along with the group.
+    isLoading = true;
+    loadingInvalid = false;
+    loadingDescription = ""Checking the code…"";
+
+    await Task.Delay(2000);
+
+    isLoading = false;
+    loadingInvalid = value != ""123456"";
+
+    loadingDescription = loadingInvalid
+        ? ""That code is not correct or has expired. Try 123456.""
+        : ""That code is correct."";
+}
+
+private async Task HandleLoadingDemoRetry()
+{
+    isLoading = false;
+    loadingInvalid = false;
+    loadingDescription = ""Enter the 6 digit code we sent you. Try 123456."";
+
+    if (loadingOtpInput is null) return;
+
+    await loadingOtpInput.Clear();
+    await loadingOtpInput.FocusAsync();
+}";
+
+    private readonly string example18RazorCode = @"
 <BitOtpInput Label=""Fill"" Variant=""BitVariant.Fill"" DefaultValue=""12345"" />
 <BitOtpInput Label=""Outline"" Variant=""BitVariant.Outline"" DefaultValue=""12345"" />
 <BitOtpInput Label=""Text"" Variant=""BitVariant.Text"" DefaultValue=""12345"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitOtpInput Label=""Primary"" Accent=""BitColor.Primary"" />
 <BitOtpInput Label=""Secondary"" Accent=""BitColor.Secondary"" />
 <BitOtpInput Label=""Tertiary"" Accent=""BitColor.Tertiary"" />
@@ -913,12 +1031,12 @@ private async Task HandleInvalidDemoRetry()
 <BitOtpInput Label=""SevereWarning"" Accent=""BitColor.SevereWarning"" />
 <BitOtpInput Label=""Error"" Accent=""BitColor.Error"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitOtpInput Label=""Small"" Size=""BitSize.Small"" />
 <BitOtpInput Label=""Medium"" Size=""BitSize.Medium"" />
 <BitOtpInput Label=""Large"" Size=""BitSize.Large"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         gap: 1rem;
@@ -995,7 +1113,7 @@ private async Task HandleInvalidDemoRetry()
                                 Focused = ""custom-focused"",
                                 Separator = ""custom-separator"" })"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitOtpInput Label=""پیش‌فرض"" Dir=""BitDir.Rtl"" />
 <BitOtpInput Label=""معکوس"" Reversed Dir=""BitDir.Rtl"" />
 <BitOtpInput Label=""جداکننده"" Length=""6"" Separator=""-"" Dir=""BitDir.Rtl"" />";

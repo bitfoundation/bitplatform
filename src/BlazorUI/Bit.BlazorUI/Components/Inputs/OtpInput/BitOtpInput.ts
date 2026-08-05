@@ -39,6 +39,24 @@ namespace BitBlazorUI {
                 (inputs.find(i => !i.value) ?? inputs[inputs.length - 1]).focus();
             }, { signal });
 
+            // A code is copied as often as it is pasted (out of one tab and into another, out of the page
+            // and into an app), and each box being an input of its own is what would otherwise turn a copy
+            // into the single character the focused box holds. The whole code goes onto the clipboard
+            // instead, which is what a single input holding it would have handed over.
+            root.addEventListener('copy', (e: ClipboardEvent) => {
+                OtpInput.writeCodeToClipboard(e, root);
+            }, { signal });
+
+            // A cut is that same copy, with the code taken out of the inputs afterwards. The clipboard has
+            // to be written synchronously here, so the clearing is what is left to the round trip.
+            root.addEventListener('cut', (e: ClipboardEvent) => {
+                if (!OtpInput.writeCodeToClipboard(e, root)) return;
+
+                dotnetObj.invokeMethodAsync('ClearValue').catch(() => {
+                    // the component may already be disposed at this point, which is not an error here.
+                });
+            }, { signal });
+
             root.addEventListener('paste', async (e: ClipboardEvent) => {
                 const input = OtpInput.getInput(e);
                 if (!input) return;
@@ -84,6 +102,27 @@ namespace BitBlazorUI {
             const target = e.target as HTMLInputElement;
 
             return target?.tagName === 'INPUT' && target.classList.contains('bit-otp-inp') ? target : null;
+        }
+
+        /**
+         * Puts the whole code on the clipboard of the event, and reports whether it did. A code that is
+         * not shown is left alone (the boxes are holding a masking character rather than the code, and a
+         * password input refuses to be copied for the very same reason), and so is an empty one.
+         */
+        private static writeCodeToClipboard(e: ClipboardEvent, root: HTMLElement): boolean {
+            if (!OtpInput.getInput(e)) return false;
+            if (!e.clipboardData) return false;
+            if (root.dataset.bitOtpNocopy === 'true') return false;
+
+            const code = Array.from(root.querySelectorAll<HTMLInputElement>('input.bit-otp-inp'))
+                              .map(i => i.value)
+                              .join('');
+            if (!code) return false;
+
+            e.clipboardData.setData('text/plain', code);
+            e.preventDefault();
+
+            return true;
         }
 
         private static getIndex(root: HTMLElement, input: HTMLInputElement): number {

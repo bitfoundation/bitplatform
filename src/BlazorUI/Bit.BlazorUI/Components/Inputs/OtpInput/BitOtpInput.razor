@@ -6,7 +6,10 @@
      aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     @* read by the javascript side at the moment of a copy, so that turning the masking on and off never
+        has to tear the listeners (and the pending WebOTP request behind them) down and set them up again. *@
+     data-bit-otp-nocopy="@(IsCodeHidden ? "true" : null)">
 
     @{
         var hasLabel = LabelTemplate is not null || Label.HasValue();
@@ -36,8 +39,17 @@
         var inputType = GetInputType();
         var inputMode = GetInputMode();
         var autoComplete = NoSmsAutoFill ? BitAutoCompleteValue.Off : BitAutoCompleteValue.OneTimeCode;
-        var separatorInterval = Math.Max(1, SeparatorInterval);
-        var hasSeparator = SeparatorTemplate is not null || Separator.HasValue();
+        @* A password manager fills (and puts its badge over) whatever looks like a field to it, and an
+           autocomplete of "off" is a request the extensions deliberately ignore, since it is what a site
+           refusing to work with them looks like. The attributes each of them reads instead are rendered
+           along with it, so that a component asked to keep the platform out of the code keeps the
+           extensions out of it as well. They are not rendered otherwise, since offering the code from the
+           authenticator vault it was issued by is exactly what a password manager is there for. *@
+        var noAutoFill = NoSmsAutoFill ? "true" : null;
+        @* the very same two values decide the groups that the merged layout glues together, so both are
+           taken from the members that compute them rather than from a copy of the rules. *@
+        var separatorInterval = NormalizedSeparatorInterval;
+        var hasSeparator = HasSeparator;
     }
     @* The description is referenced by the group rather than by each input on purpose: an aria-describedby
        on every one of them would make a screen reader read the whole hint again at every single character
@@ -47,7 +59,10 @@
          class="bit-otp-iwr @Classes?.InputsWrapper"
          aria-label="@(hasLabel ? null : AriaLabel)"
          aria-labelledby="@(hasLabel ? _labelId : null)"
-         aria-describedby="@(hasDescription ? _descriptionId : null)">
+         aria-describedby="@(hasDescription ? _descriptionId : null)"
+         @* the code is being checked, which is a wait the user is in the middle of rather than a piece of
+            decoration, so it is announced on the group that holds the code instead of only being drawn. *@
+         aria-busy="@(IsLoading ? "true" : null)">
         @for (var i = 0; i < _length; i++)
         {
             int index = i;
@@ -73,12 +88,16 @@
                    type="@inputType"
                    autocorrect="off"
                    spellcheck="false"
-                   readonly="@ReadOnly"
+                   readonly="@IsReadOnly"
                    required="@Required"
                    autocapitalize="none"
                    id="@_inputIds[index]"
                    inputmode="@inputMode"
                    autocomplete="@autoComplete"
+                   data-1p-ignore="@noAutoFill"
+                   data-bwignore="@noAutoFill"
+                   data-lpignore="@noAutoFill"
+                   data-form-type="@(NoSmsAutoFill ? "other" : null)"
                    value="@GetInputValue(index)"
                    style="@GetInputStyles(index)"
                    class="@GetInputClasses(index)"
@@ -94,6 +113,15 @@
                    disabled="@(IsEnabled is false)" />
         }
     </div>
+
+    @if (IsLoading)
+    {
+        @* The wait itself is carried by the aria-busy of the group above, so the bar is nothing but the
+           drawing of it and is kept away from the screen readers that already announce the group. *@
+        <div aria-hidden="true"
+             style="@Styles?.Loader"
+             class="bit-otp-ldr @Classes?.Loader"></div>
+    }
 
     @if (hasDescription)
     {

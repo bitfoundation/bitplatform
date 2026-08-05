@@ -114,6 +114,17 @@ public partial class BitOtpInput : BitInputBase<string?>
     public bool Invalid { get; set; }
 
     /// <summary>
+    /// Puts the component into the busy state of a code that has been submitted and is being checked, which
+    /// is the step between the <see cref="OnFill"/> and the answer that either lets the user through or sets
+    /// the <see cref="Invalid"/>. It paints an indeterminate progress bar under the inputs, marks the group
+    /// with aria-busy so that the wait is announced rather than only shown, and holds the code still the way
+    /// the <see cref="BitInputBase{TValue}.ReadOnly"/> does, so that nothing can be typed over a code whose
+    /// answer is already on its way.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool IsLoading { get; set; }
+
+    /// <summary>
     /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
     /// phone brings up without changing the element that is rendered. It defaults to the keyboard that
     /// matches the <see cref="Type"/>, so it is only needed to ask for a keyboard the type does not imply,
@@ -142,6 +153,16 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// used. The value of the component stays the code that was typed.
     /// </summary>
     [Parameter] public string? Mask { get; set; }
+
+    /// <summary>
+    /// Glues the inputs of each group together into a single field instead of leaving them standing next to
+    /// each other: the gaps between them are closed, the rule they share is drawn once, and only the two
+    /// ends of every group keep their rounding, which is the look of a code printed in a single box. The
+    /// groups are the ones the <see cref="Separator"/> makes, so a separator with a
+    /// <see cref="SeparatorInterval"/> of 3 renders a six character code as two joined boxes of three.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Merged { get; set; }
 
     /// <summary>
     /// Turns the digits of the other numbering systems (the Persian ۰۱۲۳, the Arabic-Indic ٠١٢٣, the
@@ -334,7 +355,9 @@ public partial class BitOtpInput : BitInputBase<string?>
     }
 
     /// <summary>
-    /// Clears the value of all of the inputs of the BitOtpInput.
+    /// Clears the value of all of the inputs of the BitOtpInput. It does nothing while the component is
+    /// disabled or read-only, and it is deliberately not refused by the <see cref="IsLoading"/>: that state
+    /// belongs to the consumer calling this, whose answer from the server is usually what clears the code.
     /// </summary>
     public async Task Clear()
     {
@@ -372,7 +395,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     [JSInvokable("SetValue")]
     public async Task _SetValue(string value, int index)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (IsEnabled is false || IsReadOnly || InvalidValueBinding()) return;
         if (value.HasNoValue()) return;
 
         var sanitized = SanitizeValue(TransformPastedValue(value));
@@ -399,6 +422,24 @@ public partial class BitOtpInput : BitInputBase<string?>
         // Unlike an event callback, a JSInvokable method does not re-render the component on its own,
         // so an uncontrolled component would keep showing the inputs it had before the paste.
         StateHasChanged();
+    }
+
+    [JSInvokable("ClearValue")]
+    public async Task _ClearValue()
+    {
+        // Unlike the Clear of the consumer, a cut is the user editing the code, so it is refused by the
+        // states that refuse a keystroke as well.
+        if (IsEnabled is false || IsReadOnly) return;
+
+        // A cut is a copy that takes the code with it, and the javascript side has already put the whole
+        // code on the clipboard by the time this is called, so all that is left of it is the clearing.
+        await Clear();
+
+        if (IsDisposed) return;
+
+        // The whole code was taken out of the inputs at once, wherever the caret happened to be, so the
+        // typing carries on at the start of an empty code rather than in the middle of one.
+        await FocusAsync();
     }
 
 
@@ -441,11 +482,15 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         ClassBuilder.Register(() => Reversed ? "bit-otp-rvs" : string.Empty);
 
+        ClassBuilder.Register(() => Merged ? "bit-otp-mrg" : string.Empty);
+
         // The base class registers the very same class for a failing validation, so it is only added here
         // when it is not already there, otherwise it would end up in the class attribute twice.
         ClassBuilder.Register(() => Invalid && ValueInvalid is not true ? "bit-inv" : string.Empty);
 
-        ClassBuilder.Register(() => ReadOnly ? "bit-otp-rdl" : string.Empty);
+        ClassBuilder.Register(() => IsReadOnly ? "bit-otp-rdl" : string.Empty);
+
+        ClassBuilder.Register(() => IsLoading ? "bit-otp-ldg" : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-otp-req" : string.Empty);
 
@@ -553,7 +598,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // not ask the browser for the code that arrives by SMS, and one that is turned off while the
         // request is pending has to drop it rather than leaving the permission prompt of the browser up
         // over a component that would refuse the code anyway.
-        var smsAutoFill = NoSmsAutoFill is false && ReadOnly is false && IsEnabled;
+        var smsAutoFill = NoSmsAutoFill is false && IsReadOnly is false && IsEnabled;
 
         // The javascript side listens on the root element and resolves the input from the event target, so
         // it does not care how many inputs there are and only has to be set up again when the SMS request
@@ -585,7 +630,34 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private int NormalizedLength => Math.Max(1, Length);
 
+    // The code is held still by the read-only state that the consumer asked for and by the busy state of a
+    // code that has already been submitted alike, so everything the user could edit it with consults the
+    // two together. The programmatic API is deliberately left out of it: the busy state belongs to the
+    // consumer, so a Clear of its own must not be refused by the very state it has just switched on.
+    private bool IsReadOnly => ReadOnly || IsLoading;
+
     private bool HasFocusedStyling => Classes?.Focused is not null || Styles?.Focused is not null;
+
+    // The Length is a plain parameter, so a component that shrank between the render that laid the inputs
+    // out and the event that one of them raises leaves that event addressing an input which is no longer
+    // part of it, and every array of the component is sized by the Length.
+    private bool IsStaleIndex(int index) => index < 0 || index >= _inputValues.Length;
+
+    private bool HasSeparator => SeparatorTemplate is not null || Separator.HasValue();
+
+    private int NormalizedSeparatorInterval => Math.Max(1, SeparatorInterval);
+
+    // The groups that the separators cut the row of inputs into, which is what the merged layout glues
+    // together: an input opens a group when it is the first of the row or the first after a separator, and
+    // it closes one when it is the last of the row or the last before a separator. A group of a single
+    // input opens and closes at once, which is what keeps all of its corners rounded.
+    private bool IsGroupStart(int index) => index == 0 || (HasSeparator && index % NormalizedSeparatorInterval == 0);
+
+    private bool IsGroupEnd(int index) => index == _length - 1 || (HasSeparator && (index + 1) % NormalizedSeparatorInterval == 0);
+
+    // The characters of a code that is not shown must not reach the clipboard either, the very same way a
+    // password input refuses to be copied, so the javascript side is told to leave the copy alone.
+    private bool IsCodeHidden => Mask.HasValue() || Type is BitInputType.Password;
 
     private void ResizeInputs()
     {
@@ -735,7 +807,9 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private string GetInputClasses(int index)
     {
-        if (Classes is null)
+        // The inputs are re-rendered on every keystroke and there is one of these per input, so the common
+        // case of a component with neither custom classes nor the merged layout builds no string at all.
+        if (Classes is null && Merged is false)
         {
             return _inputValues[index].HasValue() ? "bit-otp-inp bit-otp-fld" : "bit-otp-inp";
         }
@@ -744,7 +818,22 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         cssClasses.Append("bit-otp-inp");
 
-        if (Classes.Input is not null)
+        // Only the two ends of a group keep their rounding while the inputs of it are glued together, and
+        // only the inputs inside of one share their rule with the input before them.
+        if (Merged)
+        {
+            if (IsGroupStart(index))
+            {
+                cssClasses.Append(" bit-otp-gst");
+            }
+
+            if (IsGroupEnd(index))
+            {
+                cssClasses.Append(" bit-otp-gnd");
+            }
+        }
+
+        if (Classes?.Input is not null)
         {
             cssClasses.Append(' ').Append(Classes.Input);
         }
@@ -753,13 +842,13 @@ public partial class BitOtpInput : BitInputBase<string?>
         {
             cssClasses.Append(" bit-otp-fld");
 
-            if (Classes.Filled is not null)
+            if (Classes?.Filled is not null)
             {
                 cssClasses.Append(' ').Append(Classes.Filled);
             }
         }
 
-        if (Classes.Focused is not null && _inputFocusStates[index])
+        if (Classes?.Focused is not null && _inputFocusStates[index])
         {
             cssClasses.Append(' ').Append(Classes.Focused);
         }
@@ -769,7 +858,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private async Task HandleOnFocusIn(FocusEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsStaleIndex(index)) return;
 
         _inputFocusStates[index] = true;
         // Re-render so the Focused class/style is applied. This must not rely on the implicit
@@ -783,7 +872,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // The pull back runs after the callback so that the consumer is told about the input the user
         // actually reached before the focus is corrected, and it is skipped for a component that is only
         // showing a code, where clicking a character is a way of reading it rather than of typing it.
-        if (Sequential is false || ReadOnly || IsDisposed) return;
+        if (Sequential is false || IsReadOnly || IsDisposed) return;
 
         var emptyIndex = Array.FindIndex(_inputValues, v => v.HasNoValue());
 
@@ -796,7 +885,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private async Task HandleOnFocusOut(FocusEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsStaleIndex(index)) return;
 
         _inputFocusStates[index] = false;
         // Re-render so the Focused class/style is removed regardless of whether an OnFocusOut
@@ -807,6 +896,8 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private async Task HandleOnInput(ChangeEventArgs e, int index)
     {
+        if (IsStaleIndex(index)) return;
+
         var oldValue = _inputValues[index];
         var newValue = e.Value?.ToString()?.Trim() ?? string.Empty;
 
@@ -819,10 +910,24 @@ public partial class BitOtpInput : BitInputBase<string?>
         _handledClearIndex = -1;
         _pendingShiftIndex = -1;
 
-        _inputValues[index] = string.Empty;
+        // Emptying the input before the wait is what lets the browser apply its own default behavior
+        // before a new value is written over it. The one case it must not be done in is the clear that the
+        // keydown handler owns: that handler writes the resulting values itself, and it may have written
+        // them already (the browser does not promise to raise the input event within the millisecond that
+        // the handler waits), in which case this would take a character of the shifted code back out.
+        if (handledClear is false)
+        {
+            _inputValues[index] = string.Empty;
+        }
+
         await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding())
+        // The component may have been resized (or taken down altogether) while the delay above was
+        // pending, in which case everything below would run past the end of the arrays that the resize
+        // replaced.
+        if (IsDisposed || IsStaleIndex(index)) return;
+
+        if (IsEnabled is false || IsReadOnly || InvalidValueBinding())
         {
             _inputValues[index] = oldValue;
 
@@ -930,7 +1035,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         _handledClearIndex = -1;
         _pendingShiftIndex = -1;
 
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || IsStaleIndex(index)) return;
 
         // A keystroke that identifies itself with neither of the two is nothing the navigation can act
         // on, but it is still a keystroke the consumer asked to be told about.
@@ -958,7 +1063,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         {
             // Arrow navigation stays available in the states below, since it changes nothing but the
             // focus; only the two keys that clear a character bail out here.
-            if (ReadOnly || InvalidValueBinding()) return;
+            if (IsReadOnly || InvalidValueBinding()) return;
 
             if (_inputValues[index].HasValue())
             {
@@ -1002,7 +1107,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         {
             // Arrow navigation stays available in the states below, since it changes nothing but the
             // focus; only the two keys that clear a character bail out here.
-            if (ReadOnly || InvalidValueBinding()) return;
+            if (IsReadOnly || InvalidValueBinding()) return;
 
             // Unlike Backspace, Delete on a collapsed caret is a no-op in the browser, so the input is
             // cleared here and the (possible) input event is told to keep this result. The flag is set
@@ -1012,9 +1117,10 @@ public partial class BitOtpInput : BitInputBase<string?>
 
             await Task.Delay(1);
 
-            // The component may be gone by the time the delay above resumes, in which case writing the
-            // value and asking the browser for the focus would run against a disposed component.
-            if (IsDisposed) return;
+            // The component may be gone (or resized into one that no longer has this input) by the time the
+            // delay above resumes, in which case writing the value and asking the browser for the focus
+            // would run against a disposed component or past the end of the arrays of the resized one.
+            if (IsDisposed || IsStaleIndex(index)) return;
 
             if (AutoShift)
             {
@@ -1090,6 +1196,8 @@ public partial class BitOtpInput : BitInputBase<string?>
         }
     }
 
+    /// <param name="value">The characters to write into the inputs, which are filtered on their way in.</param>
+    /// <param name="startIndex">The index of the input that the first of those characters lands in.</param>
     /// <param name="clearRest">
     /// Whether the inputs the value does not reach are emptied. A value assigned to the component is the
     /// whole code, so everything it leaves over has to go; a chunk that arrives at one input (a paste or an
@@ -1171,6 +1279,11 @@ public partial class BitOtpInput : BitInputBase<string?>
         // characters are dropped for the very same reason. Neither of them is a character a code is ever
         // made of, so no input type and no pattern has to be consulted about them.
         if (char.IsControl(value) || char.GetUnicodeCategory(value) is UnicodeCategory.Format) return false;
+
+        // A character outside of the basic plane (an emoji above all) is a pair of chars rather than one,
+        // and every input of the component holds a single char, so letting one through would split it into
+        // the two halves of a character that no font can draw and no server can read back.
+        if (char.IsSurrogate(value)) return false;
 
         // int.TryParse used to stand in for the numeric check, which rejected any numeric code longer
         // than int.MaxValue has digits and accepted a leading sign.

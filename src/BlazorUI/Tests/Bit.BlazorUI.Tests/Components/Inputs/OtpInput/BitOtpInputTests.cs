@@ -766,6 +766,30 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitOtpInputShouldKeepTheShiftedCodeWhenTheInputEventOfADeleteArrivesLate()
+    {
+        // The browser does not promise to raise the input event of a Delete within the millisecond that the
+        // keydown handler waits, and the handler owning the clear had already written the shifted code by
+        // then, so a late event used to take one of its characters back out.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.AutoShift, true);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        // The keydown is awaited to the end, so the shift is already applied when the input event of the
+        // deleted selection reaches the component.
+        await com.FindAll(".bit-otp-inp")[0].KeyDownAsync(new KeyboardEventArgs { Code = "Delete", Key = "Delete" });
+        Assert.AreEqual("234", com.Instance.Value);
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "" });
+
+        Assert.AreEqual("234", com.Instance.Value);
+        Assert.AreEqual("2", com.FindAll(".bit-otp-inp")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
     public async Task BitOtpInputShouldRejectACharacterThatDoesNotMatchThePattern()
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
@@ -2225,6 +2249,339 @@ public class BitOtpInputTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.BlurAsync());
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"].Count);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOtpInputShouldRespectMerged(bool merged)
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Merged, merged);
+        });
+
+        Assert.AreEqual(merged, com.Find(".bit-otp").ClassList.Contains("bit-otp-mrg"));
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        // Without a separator the whole row is a single group, so only its two ends are marked.
+        Assert.AreEqual(merged, inputs[0].ClassList.Contains("bit-otp-gst"));
+        Assert.IsFalse(inputs[0].ClassList.Contains("bit-otp-gnd"));
+        Assert.IsFalse(inputs[1].ClassList.Contains("bit-otp-gst"));
+        Assert.IsFalse(inputs[1].ClassList.Contains("bit-otp-gnd"));
+        Assert.AreEqual(merged, inputs[2].ClassList.Contains("bit-otp-gnd"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldMarkTheEndsOfEveryGroupWhenMerged()
+    {
+        // The groups of the merged layout are the ones the separators cut the row into, so a six character
+        // code with a separator every three inputs is glued into two boxes of three.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 6);
+            parameters.Add(p => p.Merged, true);
+            parameters.Add(p => p.Separator, "-");
+            parameters.Add(p => p.SeparatorInterval, 3);
+        });
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        var starts = new List<int>();
+        var ends = new List<int>();
+        for (var i = 0; i < inputs.Count; i++)
+        {
+            if (inputs[i].ClassList.Contains("bit-otp-gst")) starts.Add(i);
+            if (inputs[i].ClassList.Contains("bit-otp-gnd")) ends.Add(i);
+        }
+
+        CollectionAssert.AreEqual(new[] { 0, 3 }, starts);
+        CollectionAssert.AreEqual(new[] { 2, 5 }, ends);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldMarkASingleInputGroupAsBothEndsWhenMerged()
+    {
+        // A group of a single input opens and closes at once, which is what keeps all of its corners
+        // rounded instead of leaving it with two flat sides.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Merged, true);
+            parameters.Add(p => p.Separator, "-");
+        });
+
+        foreach (var input in com.FindAll(".bit-otp-inp"))
+        {
+            Assert.IsTrue(input.ClassList.Contains("bit-otp-gst"));
+            Assert.IsTrue(input.ClassList.Contains("bit-otp-gnd"));
+        }
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldKeepTheCustomClassesOfAMergedInput()
+    {
+        // The merged layout builds the class list of every input, so the slots of the consumer have to
+        // survive that path as well as the fast one.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Merged, true);
+            parameters.Add(p => p.DefaultValue, "1");
+            parameters.Add(p => p.Classes, new BitOtpInputClassStyles { Input = "custom-input", Filled = "custom-filled" });
+        });
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        Assert.IsTrue(inputs[0].ClassList.Contains("custom-input"));
+        Assert.IsTrue(inputs[0].ClassList.Contains("custom-filled"));
+        Assert.IsTrue(inputs[0].ClassList.Contains("bit-otp-fld"));
+        Assert.IsTrue(inputs[1].ClassList.Contains("custom-input"));
+        Assert.IsFalse(inputs[1].ClassList.Contains("custom-filled"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOtpInputShouldRespectIsLoading(bool isLoading)
+    {
+        // The code has been submitted and is being checked, which is the step between the fill and the
+        // answer that either lets the user through or paints the error state.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.IsLoading, isLoading);
+        });
+
+        var root = com.Find(".bit-otp");
+
+        Assert.AreEqual(isLoading, root.ClassList.Contains("bit-otp-ldg"));
+        Assert.AreEqual(isLoading ? 1 : 0, com.FindAll(".bit-otp-ldr").Count);
+        Assert.AreEqual(isLoading ? "true" : null, com.Find(".bit-otp-iwr").GetAttribute("aria-busy"));
+
+        // A code whose answer is already on its way must not be edited any more than a read-only one.
+        Assert.AreEqual(isLoading, com.Find(".bit-otp-inp").HasAttribute("readonly"));
+        Assert.AreEqual(isLoading, root.ClassList.Contains("bit-otp-rdl"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldFollowTheIsLoadingAndMergedChanges()
+    {
+        // Both of them repaint the component, so the class list has to be rebuilt when either is switched
+        // at runtime, which is exactly what the busy state of a code being checked does.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+        });
+
+        var root = com.Find(".bit-otp");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-otp-ldg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-otp-mrg"));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Merged, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("bit-otp-ldg"));
+        Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("bit-otp-mrg"));
+        Assert.AreEqual(1, com.FindAll(".bit-otp-ldr").Count);
+        Assert.IsTrue(com.FindAll(".bit-otp-inp")[0].ClassList.Contains("bit-otp-gst"));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Merged, false);
+        });
+
+        Assert.IsFalse(com.Find(".bit-otp").ClassList.Contains("bit-otp-ldg"));
+        Assert.IsFalse(com.Find(".bit-otp").ClassList.Contains("bit-otp-mrg"));
+        Assert.AreEqual(0, com.FindAll(".bit-otp-ldr").Count);
+        Assert.IsFalse(com.FindAll(".bit-otp-inp")[0].ClassList.Contains("bit-otp-gst"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotAcceptInputWhileLoading()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.DefaultValue, "12");
+        });
+
+        await com.FindAll(".bit-otp-inp")[2].InputAsync(new ChangeEventArgs { Value = "3" });
+        Assert.AreEqual("12", com.Instance.Value);
+
+        // The keys that take the code apart are refused the very same way.
+        await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = "Backspace", Key = "Backspace" });
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "" });
+        Assert.AreEqual("12", com.Instance.Value);
+
+        await com.InvokeAsync(() => com.Instance._SetValue("999", 0));
+        Assert.AreEqual("12", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldNotAskForTheSmsCodeWhileLoading()
+    {
+        // A code that is already being checked is not a code the component is still waiting for.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.IsLoading, true);
+        });
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"];
+
+        Assert.AreEqual(1, invocations.Count);
+        Assert.AreEqual(false, invocations[0].Arguments[3]);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldStillClearProgrammaticallyWhileLoading()
+    {
+        // The busy state belongs to the consumer, so its own Clear must not be refused by the very state
+        // it has just switched on, unlike the cut of a user.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        await com.InvokeAsync(() => com.Instance.Clear());
+
+        Assert.IsTrue(string.IsNullOrEmpty(com.Instance.Value));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputCutShouldClearTheWholeCode()
+    {
+        // The javascript side has put the whole code on the clipboard by the time this is called, so all
+        // that is left of a cut is the clearing.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        await com.InvokeAsync(() => com.Instance._ClearValue());
+
+        Assert.IsTrue(string.IsNullOrEmpty(com.Instance.Value));
+
+        foreach (var input in com.FindAll(".bit-otp-inp"))
+        {
+            Assert.IsTrue(string.IsNullOrEmpty(input.GetAttribute("value")));
+        }
+
+        // The typing carries on at the start of the emptied code rather than wherever the caret happened
+        // to be when the code was cut out of the inputs.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldSurviveALengthThatShrinksWhileAnInputEventIsPending()
+    {
+        // The input handler waits for the browser to apply its own default behavior before writing a new
+        // value, and the Length is a plain parameter, so the component can be resized in the middle of
+        // that wait: everything after it used to run past the end of the arrays the resize replaced.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "12");
+        });
+
+        var pendingInput = com.FindAll(".bit-otp-inp")[3].InputAsync(new ChangeEventArgs { Value = "9" });
+
+        com.Render(parameters => parameters.Add(p => p.Length, 2));
+
+        await pendingInput;
+
+        Assert.AreEqual(2, com.FindAll(".bit-otp-inp").Count);
+        Assert.AreEqual("12", com.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public async Task BitOtpInputCutShouldBeRefusedLikeAKeystroke(bool readOnly, bool isLoading)
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        await com.InvokeAsync(() => com.Instance._ClearValue());
+
+        Assert.AreEqual("1234", com.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(null, null, null),
+        DataRow("●", null, "true"),
+        DataRow(null, BitInputType.Password, "true")
+    ]
+    public void BitOtpInputShouldKeepAHiddenCodeOffTheClipboard(string? mask, BitInputType? type, string? expected)
+    {
+        // The boxes of a masked code are holding a masking character rather than the code, and a password
+        // input refuses to be copied for the very same reason, so the javascript side is told to leave the
+        // copy alone instead of handing the code it cannot see over to the clipboard.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Mask, mask);
+            parameters.Add(p => p.Type, type);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-otp").GetAttribute("data-bit-otp-nocopy"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOtpInputShouldKeepThePasswordManagersOutOfTheCodeWithNoSmsAutoFill(bool noSmsAutoFill)
+    {
+        // An autocomplete of "off" is a request the extensions deliberately ignore, so the attributes each
+        // of them reads instead are rendered along with it.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.NoSmsAutoFill, noSmsAutoFill);
+        });
+
+        var input = com.Find(".bit-otp-inp");
+
+        Assert.AreEqual(noSmsAutoFill ? "true" : null, input.GetAttribute("data-1p-ignore"));
+        Assert.AreEqual(noSmsAutoFill ? "true" : null, input.GetAttribute("data-lpignore"));
+        Assert.AreEqual(noSmsAutoFill ? "true" : null, input.GetAttribute("data-bwignore"));
+        Assert.AreEqual(noSmsAutoFill ? "other" : null, input.GetAttribute("data-form-type"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldRejectACharacterOutsideOfTheBasicPlane()
+    {
+        // Every input holds a single char, so an emoji (a pair of them) would be split into two halves of
+        // a character that no font can draw and no server can read back.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("1🔒2", 0));
+
+        Assert.AreEqual("12", com.Instance.Value);
     }
 
     [TestMethod]

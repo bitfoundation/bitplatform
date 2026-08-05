@@ -41,4 +41,10 @@ public class BitOtpInputClassStyles
     /// Custom CSS classes/styles for the separator rendered between the inputs of the otp input.
     /// </summary>
     public string? Separator { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the progress bar rendered under the inputs while the otp input is
+    /// in the loading state.
+    /// </summary>
+    public string? Loader { get; set; }
 }
