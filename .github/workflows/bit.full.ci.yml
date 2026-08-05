@@ -472,9 +472,10 @@ jobs:
         dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output ./packages --configuration Release
 
-    - name: Generate CSS/JS files Bswup
-      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
-
+    # No "Generate CSS/JS files" pre-step: unlike the BlazorUI projects above, Bit.Bswup generates
+    # its bundles as part of the build itself (see IncludeBswupAssetsAsStaticWebAsset /
+    # BuildBswupAssetsOnCrossTargeting in Bit.Bswup.csproj), so the build below emits them from a
+    # clean checkout on its own.
     - name: Build and pack Bswup
       run: |
         dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
